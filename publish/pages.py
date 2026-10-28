@@ -482,8 +482,8 @@ class Site:
                 e(anchor), e(title), meta,
                 ("<span>records: " + ", ".join('<a href="/r/%s">%s</a>' % (e(r), e(r)) for r in links[:12]) + "</span>") if links else "",
                 ('<details><summary>What changed</summary><pre class="md">%s</pre></details>' % e(body)) if body else ""))
-            rss.append("<item><title>%s</title><link>https://fshy.ajam.dev/changes/#%s</link><guid>%s</guid><pubDate>%s</pubDate></item>" % (
-                e(title), e(anchor), e(hid), e(when)))
+            rss.append("<item><title>%s</title><link>%s/changes/#%s</link><guid>%s</guid><pubDate>%s</pubDate></item>" % (
+                e(title), e(llms.BASE), e(anchor), e(hid), e(when)))
         # the published ledger says when, which record and field, the rung and the source; the values are on the record
         led = db.execute("SELECT at, rid, path, rung, url FROM ledger ORDER BY at DESC LIMIT 500").fetchall()
         lh = "".join('<tr><td>%s</td><td><a href="/r/%s">%s</a></td><td><code>%s</code></td><td>%s</td><td>%s</td></tr>' % (
@@ -498,7 +498,8 @@ class Site:
              '<th>rung</th><th>source</th></tr></thead><tbody>%s</tbody></table></div>' % (num(len(led)), lh)) if lh else "")
         self.page("changes/index.html", "Changes", body)
         self.write("changes.xml", '<?xml version="1.0" encoding="utf-8"?><rss version="2.0"><channel><title>fshy changes</title>'
-                   '<link>https://fshy.ajam.dev/changes/</link><description>Corrections to the fshy corpus</description>%s</channel></rss>' % "".join(rss[:100]))
+                   '<link>%s/changes/</link><description>Corrections to the fshy corpus</description>%s</channel></rss>' % (
+                       e(llms.BASE), "".join(rss[:100])))
 
     def about(self, counts):
         v = self.ctx["vocab"]
@@ -523,7 +524,7 @@ class Site:
             'its staleness window ends. The fresh or stale label is computed in your browser against today. <i>inherited</i> means the record '
             'was carried from an earlier source and its check date is an upper bound.</p><h3>Unknown values</h3>%s'
             '<h2 id="api">Query it</h2><ul>'
-            '<li>Remote MCP for agents: <code>claude mcp add --transport http fshy https://fshy.ajam.dev/mcp</code> '
+            '<li>Remote MCP for agents: <code>claude mcp add --transport http fshy %s/mcp</code> '
             '(tools: help, search, filter, get, entity, need, sql, worklist).</li>'
             '<li>HTTP: <code>/api/v1/search?q=</code>, <code>/api/v1/records?topic=storage&amp;no_card=1&amp;sort=usd_per_tb_month</code>, '
             '<code>/api/v1/sql?q=SELECT ...</code> (read-only), <code>/api/v1/need/&lt;id&gt;</code>, <code>/api/v1/record/&lt;topic&gt;/&lt;slug&gt;</code>, '
@@ -538,7 +539,7 @@ class Site:
             'infrastructure that is not a public offer.</p>'
             '<p>Build: commit <code>%s</code>, data as of %s, %d records, %d providers.</p></div>'
         ) % (tbl("verdict"), tbl("confidence"), tbl("binding"), tbl("identity_kind"), tbl("identity_basis"), tbl("unknown_class"),
-             round(man["public_db"]["gzip_bytes"] / 1e6, 1), e(man["public_db"]["sha256"]),
+             e(llms.BASE), round(man["public_db"]["gzip_bytes"] / 1e6, 1), e(man["public_db"]["sha256"]),
              counts.get("leaves", 0), disp.get("kept", 0), disp.get("modified", 0), disp.get("withheld", 0), disp.get("excluded", 0),
              counts.get("excluded", 0), e(self.meta.get("commit")), e(self.meta.get("as_of")), counts.get("records", 0), counts.get("entities", 0))
         self.page("about/index.html", "About and API", body)
@@ -574,7 +575,7 @@ def render(repo, dist, ctx):
     s.changes()
     s.about(counts)
     s.simple()
-    base = "https://fshy.ajam.dev"
+    base = llms.BASE
     urls = (["/", "/need/", "/graveyard/", "/changes/", "/about/"] + ["/t/%s/" % t for t, _, _ in TOPICS]
             + ["/t/%s/rejected/" % t for t, _, _ in TOPICS] + ["/need/%s/" % x["id"] for x in ctx["needs"]["needs"]]
             + ["/p/%s/" % eid for eid in sorted(ctx["ents"])])

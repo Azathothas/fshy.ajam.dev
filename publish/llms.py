@@ -25,7 +25,11 @@ import sqlite3
 from urllib.request import pathname2url
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-BASE = "https://fshy.ajam.dev"
+# The site's origin and its source repository. A fork sets both in the environment of the build; every absolute
+# link of the wiki, the sitemap, the feed and these files comes from them.
+BASE = os.environ.get("FSHY_ORIGIN", "https://fshy.ajam.dev").rstrip("/")
+REPO = os.environ.get("FSHY_REPO", "https://github.com/Azathothas/fshy.ajam.dev").rstrip("/")
+LICENCE = "0BSD"
 
 # The most bytes one file holds: what an agent can read whole and still work. The corpus measures 3.7 bytes
 # per token (test_llms.py estimates it the way a cl100k or o200k tokenizer splits text), so 300,000 bytes is

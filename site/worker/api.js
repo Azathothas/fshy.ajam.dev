@@ -611,7 +611,7 @@ export async function help(store, env) {
     `Vocabularies: ${Object.entries(vocab).filter(([d]) => !['grp', 'verdict'].includes(d)).map(([d, t]) => `${d}: ${t.join(' ')}`).join('; ')}.`,
     ``,
     `Needs: ${nd.needs.map((n) => n.id).join(', ')}.`,
-    `Full record pages: https://fshy.ajam.dev/r/<topic>/<slug>; JSON: /api/v1/record/<topic>/<slug>.`,
+    `Full record pages: /r/<topic>/<slug> on this host; JSON: /api/v1/record/<topic>/<slug>.`,
   ].join('\n');
   store.cache.help = text;
   return text;

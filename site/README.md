@@ -91,6 +91,18 @@ when a record changes.
 `Cache-Control: public, max-age=300` and `Access-Control-Allow-Origin: *` from `static/_headers`. The paths there
 do not overlap, because a second matching rule appends to a header instead of replacing it.
 
+## Fork
+
+A fork that serves the site on its own domain changes these settings, and nothing else:
+
+| where | what |
+| --- | --- |
+| the environment of the build | `FSHY_ORIGIN`, the origin of the site, and `FSHY_REPO`, the URL of the source repository ([`../publish/README.md`](../publish/README.md)) |
+| `wrangler.jsonc` | `routes`, the custom domain, and `vars.FSHY_HOST`, the host that the MCP endpoint accepts |
+
+The MCP endpoint accepts its own host, `localhost`, `127.0.0.1`, `[::1]` and `*.workers.dev`. It refuses other
+hosts with 403.
+
 ## Deploy
 
 ⚠ **The site is not deployed.** When it is, the deploy is a Cloudflare Workers Builds trigger on this

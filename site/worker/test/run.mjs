@@ -368,6 +368,11 @@ test('MCP: initialize, list, call, errors', async () => {
   assert.equal((await call('/mcp', { method: 'DELETE' })).res.status, 405);
   const host = await call('/mcp', { method: 'POST', headers: { host: 'evil.example', 'content-type': 'application/json' }, body: '{}' });
   assert.equal(host.res.status, 403);
+  const ping = JSON.stringify({ jsonrpc: '2.0', id: 9, method: 'ping' });
+  const own = await call('/mcp', { method: 'POST', headers: { host: 'fshy.example', 'content-type': 'application/json' }, body: ping }, { ...env, FSHY_HOST: 'fshy.example' });
+  assert.equal(own.res.status, 200, 'the host named by FSHY_HOST is allowed');
+  const v6 = await call('/mcp', { method: 'POST', headers: { host: '[::1]:8787', 'content-type': 'application/json' }, body: ping });
+  assert.equal(v6.res.status, 200, 'the IPv6 loopback of wrangler dev is allowed');
   const parse = await call('/mcp', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{nope' });
   assert.equal(parse.json.error.code, -32700);
   const pv = await rpc('ping', null, { 'mcp-protocol-version': '1999-01-01' });
