@@ -67,7 +67,7 @@ Source: [fmhy.net](https://fmhy.net), fetched 2026-10-28. The site is a VitePres
   On a line with several links, only the bold ones count as stars. Source: the contributing guide at
   [fmhy.net/other/contributing](https://fmhy.net/other/contributing) and the README of
   [github.com/fmhy/edit](https://github.com/fmhy/edit).
-- **How scarce a star is.** I counted bullet lines in the raw pages on 2026-10-28. The star share is 54 of 330
+- **How scarce a star is.** The count is of bullet lines in the raw pages on 2026-10-28. The star share is 54 of 330
   bullets on `ai.md`, 32 of 176 on `storage.md` and 97 of 967 on `developer-tools.md`. That is 10 to 18 percent.
 - **Toggle.** A switch in the page menu hides every list item that is not starred. The page script adds the class
   `starred-only` to the `html` element, and one CSS rule hides the other items. A second switch shows the index
@@ -83,7 +83,7 @@ Source: [fmhy.net](https://fmhy.net), fetched 2026-10-28. The site is a VitePres
   [fmhy.net/recently-removed](https://fmhy.net/recently-removed). It lists removals of the last 30 days. Each item
   links to the commit that removed it. It shows no date and no reason. `scripts/generate-removed.js` builds it from
   git history.
-- **Weight.** I measured with `curl` and gzip. The AI page is 29.0 KB of HTML. The shared files are 140 KB for the
+- **Weight.** The figures come from `curl` and gzip. The AI page is 29.0 KB of HTML. The shared files are 140 KB for the
   theme script, 46 KB for the framework script and 203 KB for the stylesheet. The shared total is about 390 KB.
   Ours is 9.6 KB. This gap is the reason section 0 forbids a framework.
 
@@ -98,7 +98,7 @@ Sources: [fmhy/edit](https://github.com/fmhy/edit) and [fmhy/FMHY](https://githu
   git history, because the removed page reads it. A second workflow deploys the API.
 - **One page for search.** `scripts/generate-single-page.js` joins all pages into `docs/public/single-page.md`. The
   guide tells a submitter to search this file with the browser's find command before a submission.
-- **Linter.** `scripts/lint-markdown.js` checks the Markdown. The checks I read are: a starred, index or redirect
+- **Linter.** `scripts/lint-markdown.js` checks the Markdown. The checks are: a starred, index or redirect
   line must have a bold link; no space between a bracket and a parenthesis; unclosed brackets, parentheses and bold
   marks; double spaces; spacing around slashes; and a duplicate primary URL inside one section.
 - **Pull requests.** A workflow labels each pull request `core` or `docs` by the files it changes. A code owners
@@ -111,7 +111,7 @@ Sources: [fmhy/edit](https://github.com/fmhy/edit) and [fmhy/FMHY](https://githu
   and only trusted staff can see them.
 - **Backups.** [github.com/fmhy/FMHY/wiki/Backups](https://github.com/fmhy/FMHY/wiki/Backups) lists official
   domains, verified third-party mirrors, a GitHub copy, a Reddit copy, a paste-site copy, a zip of the Markdown and
-  API mirrors that serve the whole text on one page. I found no JSON feed on that page.
+  API mirrors that serve the whole text on one page. The page lists no JSON feed.
 
 ### 2.3 How fmhy handles volume, and what is not public
 
@@ -131,19 +131,19 @@ Source: [`.github/CONTRIBUTING.md`](https://github.com/fmhy/edit/blob/main/.gith
 - **Staff only approve.** Trusted staff review and approve. The contact form hides contact details from everyone else.
 - **Low GitHub backlog.** At the fetch the edit repository had 18 open items. The real queue is in the chat server.
 
-What I could not verify. The chat server rules, the staff roster, the number of reviewers and the rubric for
-earning a star are not published in any page I could read. The subreddit wiki page `find-new-sites` answered the
-page reader with a bot challenge, so I did not read it. I found no link-checking workflow in `fmhy/edit`. The
+Not verified. The chat server rules, the staff roster, the number of reviewers and the rubric for
+earning a star are not published in any page that the study could read. The subreddit wiki page `find-new-sites` answered the
+page reader with a bot challenge, so it was not read. `fmhy/edit` has no link-checking workflow. The
 linter finds syntax faults and duplicate URLs. The recently removed page is the only public trace of dead links.
 
 ### 2.4 Five other sites that fmhy lists
 
-I picked these from the pages `developer-tools.md`, `privacy.md` and `misc.md` of fmhy. I chose the ones that teach
+These come from the pages `developer-tools.md`, `privacy.md` and `misc.md` of fmhy. Each one teaches
 something about presentation or intake.
 
 **free-for.dev.** [free-for.dev](https://free-for.dev/) and
 [github.com/ripienaar/free-for-dev](https://github.com/ripienaar/free-for-dev). The scope is close to ours. The site
-page is JavaScript only, so I read the README. It is one Markdown file of about 272 KB with a table of contents.
+page is JavaScript only, so the study read the README. It is one Markdown file of about 272 KB with a table of contents.
 The top of the file states the rules for entry: a free tier, not a trial, and a time-boxed tier must last a year.
 The contribution guide lists services it does not accept. A new entry must use the pull request template and tick
 every box, or the pull request is closed. Lesson for us: say the entry rules at the top of the page, and make
@@ -166,7 +166,7 @@ format. Lesson: a mechanical check before a human reads, and a check on the shap
 
 **FilterLists.** [filterlists.com](https://filterlists.com/) and
 [github.com/collinbarrett/FilterLists](https://github.com/collinbarrett/FilterLists). The site page is JavaScript only,
-so I could not read its layout. The repository keeps the directory as JSON files in `services/Directory/data/`, one
+so its layout was not readable. The repository keeps the directory as JSON files in `services/Directory/data/`, one
 file per kind: lists, tags, licences, maintainers, languages and forks. It has a `lint.sh` and a `directory.yml`
 workflow. The labels include `directory-data`, `url-validation`, `duplicate`, `archival` and `needs work`. Lesson:
 labels that name the check that failed, and a label for a dead entry.
@@ -269,8 +269,8 @@ process entries. This plan does not change that.
 ## 4. Recommendations
 
 Each recommendation has the same fields: change, reason, files, byte cost, acceptance check, priority.
-The byte costs of CSS and JS come from a measurement: I appended the draft snippet to the shipped file and
-compared the gzip sizes. The scripts are in section 9.
+The byte costs of CSS and JS come from a measurement: the draft snippet was appended to the shipped file and
+the gzip sizes were compared. The scripts are in section 9.
 
 ### R1. A pick mark that the record fields compute
 
@@ -345,8 +345,7 @@ emoji legend of section 6 and the six verdict words. Add the same legend, as a t
 each record page's fact block with the word "key".
 
 **Reason.** The home page is the only page that explains verdicts. A reader who arrives on a topic page from a
-search sees pills and symbols with no explanation. fmhy lists an "Emoji Legend" in its menu. I could not read that page, so I
-cannot say how well it explains the symbols. The README of `fmhy/edit` repeats the three main marks.
+search sees pills and symbols with no explanation. fmhy lists an "Emoji Legend" in its menu. That page was not readable, so how well it explains the symbols is unknown. The README of `fmhy/edit` repeats the three main marks.
 
 **Files.** `publish/pages.py`: add `Site.key()` next to `Site.chips()`, and call it from `Site.topic`, the rejected
 page and `Site.need`. Reuse the table that `Site.home` builds for "Reading a verdict". Add the legend table to
@@ -425,7 +424,7 @@ holds the count and a link to the new page, so `#paid` still works as an anchor.
 
 **Reason.** The compute page is 684,756 bytes raw and 99,037 gzip. The paid group is 294,629 raw and 40,541 gzip. The
 move takes the page to 390,127 raw and about 58,500 gzip, which is 41 percent less. A reader who wants free
-capacity does not read the paid list, and an agent has the Markdown files. The client is a person with no budget,
+capacity does not read the paid list, and an agent has the Markdown files. The reader's need is free capacity,
 so paid-only offers are the lowest-value block on the page.
 
 **Files.** `publish/pages.py`, `Site.topic`. The code loops over `GROUPS[:3]` and writes the sections. Take `paid` out
@@ -478,7 +477,7 @@ shown". Press a chip. The address bar changes and the page does not reload. With
 **Reason.** fmhy has two views for this: monthly posts and a 30-day page of removals (section 2.1). Readers return to
 a catalogue to see what changed. Today we cannot answer "what was added this month". The store has no added date, and
 the ledger cannot give one. The ledger has 821 rows, all dated 2026-10-28. Of these, 227 rows for 88 records have an
-empty `path`. They may mark creation, but I did not verify that. Check `scripts/fr add` in the research repository
+empty `path`. They may mark creation, but this is not verified. Check `scripts/fr add` in the research repository
 before you rely on them. Verdict changes are in the ledger under the path `$.verdict`: 10 rows so far. They feed the
 "removed" half of the page.
 
@@ -707,7 +706,7 @@ tokens equals the count of rows in the `pick` view. `/api/v1/records?topic=compu
 It adds the pick colours, and it raises the control border contrast. Add a rule for forced-colour mode. Do not add a
 manual theme switch.
 
-**Reason.** I computed the contrast of every pair in today's stylesheet. All text pairs pass 4.5. The control
+**Reason.** The contrast of every pair was computed in today's stylesheet. All text pairs pass 4.5. The control
 border `--ctl` is the weakest, at 3.03 in light. A manual switch costs more than it gives. It needs the dark token
 set a second time, about +336 raw. It needs an inline script in the `head` of every page to avoid a flash, and
 that script would add about 120 bytes to each of 2,950 pages. The system setting already works, and fmhy's
@@ -794,7 +793,7 @@ Notes for the implementer.
 - The tag colours keep one job each. Green is for usable, amber for trial, indigo for paid, red for fails and grey for
   dead. Colour never carries a meaning alone, because each pill holds the word.
 
-WCAG 2.x contrast ratios. I computed each with the relative luminance formula of WCAG 2.x. The minimum is 4.5 for
+WCAG 2.x contrast ratios. Each ratio uses the relative luminance formula of WCAG 2.x. The minimum is 4.5 for
 text and 3.0 for a control border, a stripe or a focus ring.
 
 | pair | light | dark | minimum |
@@ -824,8 +823,7 @@ text and 3.0 for a control border, a stripe or a focus ring.
 | stripe `--dd` on `--bg` | 6.31 | 8.52 | 3.0 |
 | focus ring `--acc` on `--bg` | 5.97 | 8.30 | 3.0 |
 
-Before this change the control border was 3.03 in light and 3.86 in dark. It passed by a thin margin in light, so I
-raised it.
+Before this change the control border was 3.03 in light and 3.86 in dark. It passed by a thin margin in light, so the new value is higher.
 
 The stripe rules, with the cost measured in R8:
 
@@ -1118,10 +1116,10 @@ the emoji.
 
 ## 9. Byte costs, scripts and the review checklist
 
-### 9.1 How I measured
+### 9.1 How the costs were measured
 
-For each CSS or JS change, I wrote the draft text, appended it to the shipped file, and took the difference of
-`gzip -9` sizes. The base sizes are 4,810 bytes for `style.css` and 4,812 bytes for `app.js`. Repeat the method like
+For each CSS or JS change, the draft text was appended to the shipped file, and the difference of
+`gzip -9` sizes was taken. The base sizes are 4,810 bytes for `style.css` and 4,812 bytes for `app.js`. Repeat the method like
 this.
 
 ```python
