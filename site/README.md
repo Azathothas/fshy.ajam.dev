@@ -56,7 +56,9 @@ either file thus reaches a browser that holds the old copy, because `_headers` c
 
 ⚠ The page shell (header, topic bar, footer) repeats on about 2,900 provider pages, so each byte added to it is
 paid on each of them. Keep markup that only the script uses, such as the ARIA state of the search box, in the
-script.
+script. The footer links to the licence and to the report section of the about page with relative links, which
+are short. Each record has a "report an error" link that opens the Correction form of the source repository with
+the record filled in.
 
 ## Files for agents: llms.txt, llms-full.txt and Markdown pages
 

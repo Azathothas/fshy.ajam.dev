@@ -551,6 +551,10 @@ def generate(pub_db, dist):
              "Three rules hold in these files and in the API alike. Card, phone and ID requirements are yes, no or "
              "unknown (1, 0 or NULL), and unknown never means no. A record goes stale on its `stale on` date "
              "(`stale_on`); compare it with today. A price that did not parse is unknown (NULL), not free.", "",
+             "To report an error in a record or an offer that is missing, open an issue with the Correction form or "
+             "the New offer form: %s/issues/new/choose. A report is a lead: a research lane checks it against the "
+             "provider's own pages before a record changes. The code and the records are under the %s licence, "
+             "%s/blob/main/LICENSE; a quote from a provider's page stays with its owner." % (REPO, LICENCE, REPO), "",
              "## Topics", ""]
     for t, name, desc, rids, cnt in topic_rows:
         lines.append("- [%s](%s/t/%s.md): %s%d records: %s. Rejected and dead: %s/t/%s/rejected.md; in full: %s/t/%s/llms-full.txt"

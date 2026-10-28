@@ -39,9 +39,13 @@ schema, its vocabularies and worked queries. To build the wiki and serve it loca
 ## Report an error or a missing offer
 
 Open an issue with the **Correction** form or the **New offer** form. Give the record and a link to the
-provider's own page. A report is a lead, not evidence: a research lane checks it against the provider's pages
+provider's own page. Each record on the wiki has a "report an error" link that opens the Correction form with the
+record filled in. A report is a lead, not evidence: a research lane checks it against the provider's pages
 before a record changes. The issue closes when a publish carries the result. See
 [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
+⛔ Do not report a leaked secret, a personal detail or a vulnerability in a public issue. See
+[`SECURITY.md`](SECURITY.md).
 
 ## How the data is made
 
@@ -52,5 +56,9 @@ corpus to this repository. The projection removes process notes, personal detail
 
 ## Licence
 
-[0BSD](LICENSE), for the data and the code. The records restate public facts in their own words and cite each
-source by URL. A short quote identifies the sentence that proves a value.
+[0BSD](LICENSE), for the code and for the records' own words. The records restate public facts in their own
+words and cite each source by URL. A short quote from a provider's page identifies the sentence that proves a
+value. The quote stays with its owner, and this licence does not grant it.
+
+Third-party code: the search box uses MiniSearch 7.2.0 (MIT, `site/static/assets/minisearch.LICENSE.txt`), and
+the Worker uses sql.js 1.15.2 (MIT), which npm installs with its licence file.

@@ -10,6 +10,7 @@ import html
 import json
 import os
 import re
+from urllib.parse import quote
 
 import llms
 
@@ -119,7 +120,8 @@ class Site:
             '<nav class="topics" aria-label="Topics">%s</nav><main id="main">%s</main>'
             '<footer><p>Built from commit <code>%s</code>, data as of %s. Every value links to its source; freshness is computed '
             'in your browser against today. <a href="/about/#read">How to read a record</a> &middot; <a href="/changes.xml">RSS</a> '
-            '&middot; <a href="/api/v1/help.txt">API primer</a></p><p>For research and education only; not legal advice.</p></footer>'
+            '&middot; <a href="/api/v1/help.txt">API primer</a></p><p>For research and education only; not legal advice. Code and data: <a href="/about/#licence">0BSD</a>. '
+            '<a href="/about/#report">Report an error</a>.</p></footer>'
             '<script src="%s" defer></script></body></html>'
         ) % (e(title + " - fshy" if title != "fshy" else "fshy"), e(desc), self.css, extra_head, util, nav, body, e(commit), e(self.meta.get("as_of")),
              self.js)
@@ -380,7 +382,8 @@ class Site:
         if c["category"]:
             meta.append("<span>%s</span>" % e(c["category"]))
         meta += ["<code>%s</code>" % e(rid), '<a href="/api/v1/record/%s.json">JSON</a>' % e(rid),
-                 '<a href="/compare/?r=%s">compare</a>' % e(rid)]
+                 '<a href="/compare/?r=%s">compare</a>' % e(rid),
+                 '<a href="%s/issues/new?template=correction.yml&amp;record=%s">report an error</a>' % (e(llms.REPO), e(quote(rid)))]
         if solo:
             meta.append('<a href="/api/v1/entity/%s.json">provider JSON</a>' % e(c["eid"]))
             head = "<h1>%s</h1>" % e(c["provider"])
@@ -537,11 +540,27 @@ class Site:
             'commentary are not published. Of %d source values, %d are published as written, %d were rewritten (for example an '
             'archive mirror replaced by its origin URL) and %d are not published; %d belong to %d records about '
             'infrastructure that is not a public offer.</p>'
-            '<p>Build: commit <code>%s</code>, data as of %s, %d records, %d providers.</p></div>'
+            '<p>Build: commit <code>%s</code>, data as of %s, %d records, %d providers.</p>'
+            '<h2 id="report">Report an error or a missing offer</h2><p>Each record has a <i>report an error</i> link. It '
+            'opens the <a href="%s/issues/new?template=correction.yml">Correction form</a> with the record filled in. For an '
+            'offer that the catalogue does not have, use the <a href="%s/issues/new?template=new-offer.yml">New offer form</a>. '
+            'A report is a lead: a research lane checks it against the pages of the provider before a record changes. The issue '
+            'closes when a publish carries the result.</p><p>Do not report a leaked secret, a personal detail or a vulnerability '
+            'in a public issue. Read the <a href="%s/security/policy">security policy</a> first.</p>'
+            '<h2 id="contribute">Contribute</h2><p>The site, the API, the MCP endpoint and the publish tools are in '
+            '<a href="%s">the source repository</a>. A pull request that improves them is welcome: read '
+            '<a href="%s/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> first. A pull request that changes <code>data/</code> '
+            'is not merged, because the export writes <code>data/</code> from the research corpus. Report a correction '
+            'with an issue.</p>'
+            '<h2 id="licence">Licence</h2><p>The code and the records are under the <a href="%s/blob/main/LICENSE">%s licence</a>. '
+            'A record restates public facts in its own words and cites each source by URL. A short quote from the page of a '
+            'provider identifies the sentence that proves a value, and stays with its owner. The search box uses MiniSearch '
+            '(MIT) and the Worker uses sql.js (MIT).</p></div>'
         ) % (tbl("verdict"), tbl("confidence"), tbl("binding"), tbl("identity_kind"), tbl("identity_basis"), tbl("unknown_class"),
              e(llms.BASE), round(man["public_db"]["gzip_bytes"] / 1e6, 1), e(man["public_db"]["sha256"]),
              counts.get("leaves", 0), disp.get("kept", 0), disp.get("modified", 0), disp.get("withheld", 0), disp.get("excluded", 0),
-             counts.get("excluded", 0), e(self.meta.get("commit")), e(self.meta.get("as_of")), counts.get("records", 0), counts.get("entities", 0))
+             counts.get("excluded", 0), e(self.meta.get("commit")), e(self.meta.get("as_of")), counts.get("records", 0), counts.get("entities", 0),
+             *([e(llms.REPO)] * 6 + [e(llms.LICENCE)]))
         self.page("about/index.html", "About and API", body)
 
     def simple(self):

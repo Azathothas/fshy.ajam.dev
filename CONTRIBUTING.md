@@ -1,8 +1,12 @@
 # Contributing
 
+⛔ Do not report a leaked secret, a personal detail or a vulnerability in a public issue. See
+[`SECURITY.md`](SECURITY.md).
+
 ## Report an error in a record
 
-Open an issue with the **Correction** form. Give:
+Open an issue with the **Correction** form. The "report an error" link of each record on the wiki opens the form
+with the record filled in. Give:
 
 - the record, for example `inference/groq` (the path under `data/records/` without `.json`);
 - what is wrong: the field, what the record says, and what the provider says now;
@@ -12,6 +16,11 @@ Open an issue with the **Correction** form. Give:
 
 Open an issue with the **New offer** form. Give the topic, the name of the provider, what it offers, and a link
 to the provider's own page.
+
+## Report a problem with the site or a tool
+
+Open an issue with the **Site or tool problem** form. Give the page, the API route, the MCP tool or the file,
+and what happens.
 
 ## What happens to a report
 

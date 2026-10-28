@@ -40,6 +40,7 @@ request. A merge session reviews that pull request, merges it, and exports the p
 | How do I build, preview or serve the site? | [`site/README.md`](site/README.md) |
 | How is a document, a commit or a comment written here? | [`docs/conventions.md`](docs/conventions.md) |
 | How does the public report an error or a missing offer? | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
+| How is a vulnerability or a leak reported? | [`SECURITY.md`](SECURITY.md) |
 
 ## 4. Done
 
