@@ -12,6 +12,11 @@ export const BANNED = [
 const BANNED_RE = new RegExp('\\b(' + BANNED.join('|') + ')\\b', 'i');
 const FIRST = new Set(['SELECT', 'WITH', 'VALUES', 'EXPLAIN']);
 export const MAX_SQL_CHARS = 10000;
+// SQLite's white space is space, tab, LF, VT, FF and CR. These are white space to JavaScript (\s) or to Python
+// (str.isspace) and not to SQLite.
+export const ODD_SPACE_CODES = [0x1c, 0x1d, 0x1e, 0x1f, 0x85, 0xa0, 0x1680, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004,
+  0x2005, 0x2006, 0x2007, 0x2008, 0x2009, 0x200a, 0x2028, 0x2029, 0x202f, 0x205f, 0x3000, 0xfeff];
+const ODD_SPACE = new RegExp('[' + ODD_SPACE_CODES.map((c) => String.fromCharCode(c)).join('') + ']');
 
 export class GuardError extends Error {}
 
@@ -76,8 +81,13 @@ export function guard(sql, limit) {
   if (sql.length > MAX_SQL_CHARS) throw new GuardError('query longer than ' + MAX_SQL_CHARS + ' characters');
   if (sql.includes('\u0000')) throw new GuardError('NUL byte in query');
   const bare = strip(sql);
-  // JavaScript takes U+FEFF as white space and SQLite does not, so the guard and SQLite would read two statements
-  if (bare.includes('\ufeff')) throw new GuardError('U+FEFF (a byte order mark) outside a literal; SQLite does not read it as white space');
+  // a character that JavaScript or Python takes as white space and SQLite does not: the guard and SQLite would
+  // read different statements, and the guard's twin in the research repository would read a third
+  const odd = ODD_SPACE.exec(bare);
+  if (odd) {
+    throw new GuardError('U+' + odd[0].charCodeAt(0).toString(16).toUpperCase().padStart(4, '0') +
+      ' outside a literal: SQLite does not read it as white space');
+  }
   // one statement: a single trailing semicolon is tolerated and removed
   const semi = bare.search(/;\s*$/);
   const body = semi >= 0 ? bare.slice(0, semi) : bare;
