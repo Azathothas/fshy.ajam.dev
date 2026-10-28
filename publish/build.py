@@ -8,7 +8,12 @@ usage:
 
 The only input is data/. Every file in it is written by publish/export.py from the projection of the research
 corpus; nothing in data/ is edited by hand. The store is derived and never committed. Standard library only.
-Exit codes: 0 ok, 1 a check failed, 2 usage.
+
+The contract with the export: data/meta.json names the schema_version of the data, and data/tables/ holds one
+file per table of schema.sql with exactly its columns. This build reads SCHEMA_VERSION only. It refuses data of
+another version, an unknown table file and an unknown or missing column, because a load through the schema would
+drop or blank that value without a message.
+Exit codes: 0 ok, 1 a check failed, 2 usage, 3 data/ does not match this build (version, tables or columns).
 """
 import argparse
 import collections
@@ -27,7 +32,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
 sys.path.insert(0, HERE)
 
-SCHEMA_VERSION = "1"
+SCHEMA_VERSION = "1"  # the version of data/ this build reads; publish/export.py writes the same one
+DERIVED = ("rno", "lid_min", "lid_max", "doc", "sha256", "path")  # record columns build() makes, never in data/
 TABLES = ("entity", "alias", "evidence", "limit_row", "claim", "fx", "unknown", "edge", "drift", "history",
           "history_link", "ledger", "capture", "vocab")
 FTS_COLUMNS = ("name", "offer", "limits", "egress", "identity", "access", "notes", "evidence", "extras")
@@ -108,11 +114,43 @@ def fts_columns(o, url, aliases, ent):
     return tuple(fts_text(" ".join(x for x in cols[c] if x)) for c in FTS_COLUMNS)
 
 
+class DataError(Exception):
+    """data/ is not what this build reads: another schema version, or another set of tables or columns."""
+
+
 def read_jsonl(path):
     if not os.path.exists(path):
         return []
     with open(path, encoding="utf-8") as f:
         return [json.loads(ln) for ln in f if ln.strip()]
+
+
+def read_meta(data):
+    """data/meta.json, after the version and the set of table files are checked."""
+    meta = json.load(open(os.path.join(data, "meta.json"), encoding="utf-8"))
+    v = meta.get("schema_version")
+    if v != SCHEMA_VERSION:
+        raise DataError("data/meta.json has schema_version %r, and this build reads schema_version %r only. The export "
+                        "and publish/ disagree: update publish/ (schema.sql, build.py) to the version of the data, or "
+                        "export again with this publish/." % (v, SCHEMA_VERSION))
+    tdir = os.path.join(data, "tables")
+    have = {f[:-len(".jsonl")] for f in os.listdir(tdir) if f.endswith(".jsonl")} if os.path.isdir(tdir) else set()
+    want = {"record"} | set(TABLES)
+    if have != want:
+        raise DataError("data/tables/ has the unknown table file(s) %s and lacks %s"
+                        % (sorted(have - want) or "none", sorted(want - have) or "none"))
+    return meta
+
+
+def table_rows(data, t, cols):
+    """The rows of data/tables/<t>.jsonl, refused when their keys are not exactly `cols`."""
+    rows = read_jsonl(os.path.join(data, "tables", t + ".jsonl"))
+    keys = set().union(*rows) if rows else set()
+    extra, lack = keys - set(cols), (set(cols) - keys) if rows else set()
+    if extra or lack:
+        raise DataError("data/tables/%s.jsonl has the column(s) %s that schema.sql does not have, and lacks %s"
+                        % (t, sorted(extra) or "none", sorted(lack) or "none"))
+    return rows
 
 
 def git_info():
@@ -129,12 +167,18 @@ def git_info():
 
 
 def build(data, out_db):
-    """data/ -> a public store at out_db. -> counts."""
-    meta_in = json.load(open(os.path.join(data, "meta.json"), encoding="utf-8"))
-    rows = sorted(read_jsonl(os.path.join(data, "tables", "record.jsonl")), key=lambda r: r["rid"])
-    ents = {e["eid"]: e for e in read_jsonl(os.path.join(data, "tables", "entity.jsonl"))}
+    """data/ -> a public store at out_db. -> counts. Raises DataError when data/ is not what this build reads."""
+    meta_in = read_meta(data)
+    schema = sqlite3.connect(":memory:")
+    schema.executescript(open(os.path.join(HERE, "schema.sql"), encoding="utf-8").read())
+    tcols = {t: [c[1] for c in schema.execute("PRAGMA table_info(%s)" % t)] for t in ("record",) + TABLES}
+    schema.close()
+    cols = tcols["record"]
+    tables = {t: table_rows(data, t, tcols[t]) for t in TABLES}
+    rows = sorted(table_rows(data, "record", [c for c in cols if c not in DERIVED]), key=lambda r: r["rid"])
+    ents = {e["eid"]: e for e in tables["entity"]}
     aliases = collections.defaultdict(set)
-    for a in read_jsonl(os.path.join(data, "tables", "alias.jsonl")):
+    for a in tables["alias"]:
         if a["kind"] == "alias":
             aliases[a["eid"]].add(a["alias"])
     lap("read")
@@ -146,7 +190,6 @@ def build(data, out_db):
     db.execute("PRAGMA journal_mode=OFF")
     db.execute("PRAGMA synchronous=OFF")
     db.executescript(open(os.path.join(HERE, "schema.sql"), encoding="utf-8").read())
-    cols = [c[1] for c in db.execute("PRAGMA table_info(record)")]
     lid, leaf_rows, fts, recs = 0, [], [], []
     for rno, row in enumerate(rows, 1):
         rel = os.path.join("records", row["rid"] + ".json")
@@ -174,10 +217,9 @@ def build(data, out_db):
     db.executemany("INSERT INTO leaf VALUES (?,?,?,?,?)", leaf_rows)
     counts = {"records": len(recs), "leaves": len(leaf_rows)}
     for t in TABLES:
-        tcols = [c[1] for c in db.execute("PRAGMA table_info(%s)" % t)]
-        trows = read_jsonl(os.path.join(data, "tables", t + ".jsonl"))
-        db.executemany("INSERT OR IGNORE INTO %s (%s) VALUES (%s)" % (t, ",".join(tcols), ",".join("?" * len(tcols))),
-                       [tuple(x.get(c) for c in tcols) for x in trows])
+        tc, trows = tcols[t], tables[t]
+        db.executemany("INSERT OR IGNORE INTO %s (%s) VALUES (%s)" % (t, ",".join(tc), ",".join("?" * len(tc))),
+                       [tuple(x.get(c) for c in tc) for x in trows])
         counts[t] = len(trows)
     db.executemany("INSERT INTO text_fts (docid, name, offer, limits, egress, identity, access, notes, evidence, extras)"
                    " VALUES (?,?,?,?,?,?,?,?,?,?)", fts)
@@ -272,7 +314,11 @@ def main(argv=None):
     if not os.path.exists(os.path.join(a.data, "meta.json")):
         print("build: %s has no meta.json; publish/export.py writes it" % a.data, file=sys.stderr)
         return 1
-    report = {"store": build(a.data, a.db)}
+    try:
+        report = {"store": build(a.data, a.db)}
+    except DataError as e:
+        print("build: %s" % e, file=sys.stderr)
+        return 3
     hits = leak_scan(a.db, data=a.data)
     over = []
     if a.site:

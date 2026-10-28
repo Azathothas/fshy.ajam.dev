@@ -33,6 +33,7 @@ Then test the Worker and the files for agents from the repository root:
 node site/worker/test/run.mjs
 node site/worker/test/smoke.mjs
 python publish/test_llms.py --site site/dist
+python publish/test_publish.py
 ```
 
 `smoke.mjs` starts `wrangler dev` on port 8791, or on the port in `FSHY_SMOKE_PORT`. It asks the API, the SQL

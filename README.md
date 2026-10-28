@@ -15,7 +15,7 @@ publishes for its service apply to its use.
 | --- | --- |
 | `data/records/<topic>/<slug>.json` | one record per offer: the published corpus |
 | `data/tables/*.jsonl` | derived tables: entities, aliases, evidence, limits, claims, history and others |
-| `data/meta.json` | the date the data is valid for, the source commit, and the counts |
+| `data/meta.json` | the schema version of the data, the date the data is valid for, the source commit, and the counts |
 | `publish/` | the tools that write `data/` and build the store and the site from it ([`publish/README.md`](publish/README.md)) |
 | `site/` | the static wiki, the read-only HTTP API and the MCP endpoint ([`site/README.md`](site/README.md)) |
 | `docs/` | how a reviewed change reaches this repository, and how to write here |

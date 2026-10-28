@@ -90,29 +90,38 @@ names, and confirm CI is green. Then merge it with `gh pr merge <number> --merge
 
 ## 6. Publish
 
-Run this after one or more merges. First bring `f-research` to the new main:
+Run this after one or more merges, in `fshy.ajam.dev`. The export fetches `origin` in `f-research` and
+publishes the commit at `origin/main`. ⭐ It never reads the working tree of `f-research`. The branch that is
+checked out there and an edit that is not committed do not change what is published.
 
 ```bash
-git -C ../f-research checkout main
-git -C ../f-research pull --ff-only
+git checkout main
+git pull --ff-only
+python publish/export.py --source ../f-research
 ```
 
-Then, in `fshy.ajam.dev`:
+The last line of the output names the `source_commit`. Use its first 7 characters as SHORT below:
 
 ```bash
-git checkout -b publish/YYYY-MM-DD
-python publish/export.py --source ../f-research
+git checkout -b publish/SHORT
 python publish/build.py --site site/dist
 node site/worker/test/run.mjs
+python publish/test_llms.py --site site/dist
+python publish/test_publish.py
 git add data
-git commit -m "data: publish the research corpus at <short commit>"
+git commit -m "data: publish the research corpus at SHORT"
 gh pr create --fill
 ```
 
-`export.py` builds the projection with the research repository's own rules, writes `data/`, and scans every
-file with both sets of leak rules. With one hit, it writes nothing. Read `git diff --stat main -- data` before
-the commit: the changed record files must match the runs you merged. Merge the publish pull request after CI is
-green. The merge session may merge its own publish pull request.
+`export.py` refuses a commit that is not on `origin/main`. It builds the projection with the research
+repository's own rules. It checks that `publish/build.py` rebuilds the same store from the written files, and it
+scans every file with both sets of leak rules. With one failed check, `data/` does not change. Read
+`git diff --stat main -- data` before the commit: the changed record files must match the runs you merged.
+Merge the publish pull request after CI is green. The merge session may merge its own publish pull request.
+
+If the export stops with a contract problem (schema version, tables, columns or `needs.json`), the research
+repository changed its store. Do not publish. Change `publish/` first, as [`../publish/README.md`](../publish/README.md)
+says in "The contract between export and build", in its own pull request.
 
 ## 7. Public reports
 
