@@ -129,3 +129,6 @@ public store without record JSON, leaves and evidence quotes, which are served a
    tables over 1,000 rows, for example a cross join or a join on `<>`. sql.js has no progress handler, so the plan
    is the budget. A join with `=` on an indexed column passes.
 3. The rate limits: 30 SQL requests a minute for each address, and `limits.cpu_ms`.
+
+**Headers.** `static/_headers` sets a Content-Security-Policy on every page: scripts, styles, images and requests
+come from the site itself only. `smoke.mjs` checks that `wrangler dev` sends it.
