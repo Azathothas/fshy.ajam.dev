@@ -18,7 +18,8 @@ permissions:
 
 concurrency:
   group: build-${{ github.ref }}
-  cancel-in-progress: true
+  # a new push cancels the old run of a pull request; every commit of main keeps its run
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
@@ -91,6 +92,9 @@ jobs:
       - name: publish tools
         run: python3 publish/test_publish.py
 
-      - name: no data yet
+      # main holds a publish, so data/ that is missing is a change that removed it, and the build would skip
+      - name: data/ exists
         if: hashFiles('data/meta.json') == ''
-        run: echo "data/ is empty until the first publish; the build has nothing to check"
+        run: |
+          echo "data/meta.json is missing; a pull request must not remove data/, and the build cannot run without it" >&2
+          exit 1

@@ -6,9 +6,11 @@ export const CORS = {
   'access-control-allow-origin': '*',
   'access-control-expose-headers': 'x-fshy-commit, server-timing, mcp-protocol-version',
 };
+// the static files get these from static/_headers; a response of the Worker gets them here
+const SAFE = { 'x-content-type-options': 'nosniff', 'referrer-policy': 'no-referrer' };
 
 export function baseHeaders(store, extra = {}) {
-  const h = new Headers({ ...CORS, ...extra });
+  const h = new Headers({ ...CORS, ...SAFE, ...extra });
   if (store && store.commit) h.set('x-fshy-commit', store.commit);
   return h;
 }
