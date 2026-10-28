@@ -147,8 +147,23 @@ LEAK_SAMPLES = [  # (text, a leak rule must match it)
     ("Not in dossier/compute (searched: example, no record).", True), ("it is recorded once, in dossier/x/y.json", True),
     ("a number the census did not have", True), ("the compute census stops there", True),
     ("3 percent of the 1 TB a day serving target", True),
-    ("the US Census Bureau API gives 500 calls a day", False), ("a dossier of the case", False),
+    ("the US Census Bureau API gives 500 calls a day", False), ("a dossier of the case", True),
     ("data/records/compute/x.json", False), ("results (search: free)", False),
+    # round 3, warn level
+    ("The dossier holds firebase-studio.json", True), ("the existing dossier record says dead", True),
+    ("Cr" + chr(0xe9) + "er un dossier partag" + chr(0xe9), False), ("le dossier de partage", False),
+    ("per BRIEF " + chr(0xa7) + "0.3 escalation ladder", True), ("the provider " + chr(0xa7) + "6.1c says", False),
+    ("Two corrections to batch 1.", True), ("Batch 1 carried the 30-day expiry", True),
+    ("Applications for Batch 4 are closed", False), ("Batch 256 MB per request", False),
+    ("Candidates: (a) the Entrance plan", True), ("Three readings were considered.", True),
+    ("Log x-project/evidence/experiments/05-worker/logs/final.json", True),
+    ("https://example.com/evidence/experiments/1", False),
+]
+HID_SAMPLES = [
+    ("2026-10-28T135534Z/operator-rulings-of-2026-10-28", True), ("2026-10-24T032000Z/review-found-58-defects", True),
+    ("2026-10-22T041230Z/seed-corrections-reverted", True), ("2026-10-22T061500Z/own-the-disk-is-not-an-option", True),
+    ("2026-10-22T030702Z/repod-range-claim-withdrawn", False), ("2026-10-22T144500Z/hetzner-fair-use", False),
+    ("2026-10-22T030705Z", False),
 ]
 TITLE_SAMPLES = [
     ("The operator decided seven open questions", True), ("A review found 58 defects in the three answers", True),
@@ -166,6 +181,13 @@ def leak_checks(tmp):
     wrong = [(s, want) for s, want in TITLE_SAMPLES if any(r.search(s) for r in titles) != want]
     check("the history title rule matches a narrative title and passes a correction (%d samples)" % len(TITLE_SAMPLES),
           titles and not wrong, wrong)
+    hids = [re.compile(p["re"]) for p in build.leak_rules() if p.get("scope") == "history.hid"]
+    wrong = [(s, want) for s, want in HID_SAMPLES if any(r.search(s) for r in hids) != want]
+    check("the history id rule matches a narrative id and passes a neutral one (%d samples)" % len(HID_SAMPLES),
+          hids and not wrong, wrong)
+    fails = {p["id"] for p in build.leak_rules() if p.get("level", "fail") == "fail"}
+    check("the rules of the research process of round 2, L15 to L20, fail", {"L15", "L16", "L17", "L18", "L19", "L20"} <= fails,
+          sorted(fails))
     levels = {p.get("level", "fail") for p in build.leak_rules()}
     check("every leak rule has the level fail or warn", levels <= {"fail", "warn"}, levels)
     bad, good = os.path.join(tmp, "body-bad.md"), os.path.join(tmp, "body-good.md")

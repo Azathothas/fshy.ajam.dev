@@ -73,7 +73,14 @@ recomputes it and refuses data that changed after the export, with exit 3.
 A `warn` rule is for a shape that the data on `main` still has, while the research repository removes it. The
 export refuses the shape at once, so no new publish carries it. After the first publish whose build shows no
 warning for the rule, remove its level, so the build fails on the shape too. A rule with a `scope`, for example
-`history.title`, reads only that column.
+`history.title` or `history.hid`, reads only that column.
+
+L15 to L20 (paths and search notes of the research process, its census, the workload of the reader, and
+narrative history titles) fail since the publish of 2026-10-28 had no hit. L21 to L26 are `warn`: the word for the
+private record store, a section of an internal document, an earlier batch of the research, its reasoning steps, a
+path into a private experiments folder, and a narrative history id. A name that only the research repository
+knows, for example the name of a seed corpus, never goes in this public file; the research repository's own
+rules hold it.
 
 To check a text before it becomes public, for example the body of a pull request or a comment, scan it:
 
