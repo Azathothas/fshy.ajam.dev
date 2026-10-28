@@ -1,0 +1,35 @@
+// fshy: the static wiki in ./dist plus a Worker for the read-only API and the MCP endpoint.
+// ./dist is written by `python publish/build.py --site site/dist`; nothing here is a secret.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "fshy",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-10-26",
+  "workers_dev": false,
+  "preview_urls": true,
+  "routes": [{ "pattern": "fshy.ajam.dev", "custom_domain": true }],
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page",
+    "run_worker_first": [
+      "/api/v1/search",
+      "/api/v1/records",
+      "/api/v1/sql",
+      "/api/v1/need/*",
+      "/api/v1/worklist/*",
+      "/api/v1/record/*",
+      "/api/v1/entity-search",
+      "/mcp",
+      "/r/*"
+    ]
+  },
+  "rules": [{ "type": "CompiledWasm", "globs": ["**/*.wasm"], "fallthrough": false }],
+  "ratelimits": [
+    { "name": "RL_API", "namespace_id": "1001", "simple": { "limit": 120, "period": 60 } },
+    { "name": "RL_SQL", "namespace_id": "1002", "simple": { "limit": 30, "period": 60 } }
+  ],
+  "observability": { "enabled": true, "head_sampling_rate": 0.1 },
+  "limits": { "cpu_ms": 10000 }
+}
