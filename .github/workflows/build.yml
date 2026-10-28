@@ -60,7 +60,7 @@ jobs:
           exit $fail
 
       # a Dependabot body quotes the release notes and the commits of another project
-      - name: the pull request credits no tool
+      - name: the pull request credits no tool, and matches no leak rule
         if: github.event_name == 'pull_request' && github.event.pull_request.user.login != 'dependabot[bot]'
         env:
           TITLE: ${{ github.event.pull_request.title }}
@@ -68,6 +68,7 @@ jobs:
         run: |
           printf '%s\n\n%s\n' "$TITLE" "$BODY" > "$RUNNER_TEMP/pr"
           sh .githooks/commit-msg "$RUNNER_TEMP/pr"
+          python3 publish/build.py --scan "$RUNNER_TEMP/pr"
 
       - name: build the store and the site, and scan for leaks
         if: hashFiles('data/meta.json') != ''

@@ -19,9 +19,11 @@ usage:
    the commit as source_commit.
 6. Build a store from the written files with publish/build.py and compare each table with the research store.
    A value that the build drops or changes stops the export.
-7. Scan every written file with this repository's leak rules and with the research repository's leak rules.
+7. Scan every written file with this repository's leak rules, of both levels, and with the research
+   repository's leak rules. meta.json gets files_sha256, a digest of every written file, which build.py checks.
 
-With one failed check or one leak hit, data/ does not change.
+With one failed check or one leak hit, data/ does not change. The target is data/ of this repository, or a new or
+empty directory: the export refuses any other --data, because it replaces its target.
 Exit codes: 0 written, 1 a check failed, 2 usage, 3 the source is not a research checkout.
 """
 import argparse
@@ -199,6 +201,7 @@ def export(pub_db, out, commit):
     m["source_commit"] = commit
     m["counts"] = json.loads(meta.get("counts") or "{}")  # the projection's own accounting, read by the wiki
     m["tables"] = counts
+    m["files_sha256"] = build.files_digest(out)  # build.py recomputes it, so a hand edit of data/ shows
     with open(os.path.join(out, "meta.json"), "w", encoding="utf-8", newline="\n") as f:
         f.write(json.dumps(m, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
     return counts
@@ -273,10 +276,38 @@ def source_leak_rx(tree):
     return re.compile("|".join("(?:%s)" % p for p in rules["leak_scan"]))
 
 
+def check_target(data, allow_unmerged):
+    """The export replaces its target. It writes only to data/ of this repository, or to a directory that is new or
+    empty, so a mistyped --data never deletes somebody's files."""
+    default = os.path.normcase(data) == os.path.normcase(os.path.join(ROOT, "data"))
+    if allow_unmerged and default:
+        raise Refused("--allow-unmerged writes a test export only: give --data with another directory", 2)
+    if not default and os.path.exists(data) and (not os.path.isdir(data) or os.listdir(data)):
+        raise Refused("--data %s exists and is not empty. The export writes only to data/ of this repository, or to a "
+                      "new or empty directory" % data, 2)
+
+
+def replace_dir(out, data):
+    """Move `out` to `data`. An old `data` is renamed aside first and removed last, and it is put back if the move
+    fails, so there is never a moment with no data/ and a failure leaves the old one."""
+    old = None
+    if os.path.exists(data):
+        old = "%s.old-%d" % (data, os.getpid())
+        os.rename(data, old)
+    try:
+        shutil.move(out, data)
+    except OSError:
+        if old:
+            rmtree(data)
+            os.rename(old, data)
+        raise
+    if old:
+        cleanup(old)
+
+
 def run(a):
     data = os.path.abspath(a.data)
-    if a.allow_unmerged and os.path.normcase(data) == os.path.normcase(os.path.join(ROOT, "data")):
-        raise Refused("--allow-unmerged writes a test export only: give --data with another directory", 2)
+    check_target(data, a.allow_unmerged)
     top, commit = resolve(os.path.abspath(a.source), a.ref, not a.no_fetch, a.allow_unmerged)
     tmp = tempfile.mkdtemp(prefix="fshy-export-")
     try:
@@ -299,19 +330,20 @@ def run(a):
         if problems:
             raise Refused("publish/build.py does not rebuild the research store from the written data:\n  "
                           + "\n  ".join(problems))
-        hits = build.leak_scan(data=out)
+        # both levels: a warn rule only warns in the build of data that is already on main, never in a new export
+        hits = build.leak_scan(data=out, levels=("fail", "warn"))
         rx = source_leak_rx(tree)
         for root, _, files in os.walk(out):
             for fn in files:
                 p = os.path.join(root, fn)
                 if rx.search(open(p, encoding="utf-8").read()):
-                    hits.append((os.path.relpath(p, out), "a research leak rule matched"))
+                    hits.append((os.path.relpath(p, out), "a research leak rule matched", "research"))
         if hits:
-            for where, ctx in hits[:40]:
-                print("LEAK %s: %s" % (where, ctx.replace("\n", " ")[:200]), file=sys.stderr)
-            raise Refused("%d leak hit(s)" % len(hits))
-        rmtree(data)
-        shutil.move(out, data)
+            for where, ctx, rid in hits[:40]:
+                print("LEAK %s %s: %s" % (where, rid, ctx.replace("\n", " ")[:200]), file=sys.stderr)
+            raise Refused("%d leak hit(s), by rule: %s" % (len(hits), ", ".join(
+                "%s %d" % (k, v) for k, v in sorted(collections.Counter(h[2] for h in hits).items()))))
+        replace_dir(out, data)
         return {"written": os.path.relpath(data, ROOT).replace(os.sep, "/"), "source_commit": commit, "counts": counts}
     finally:
         cleanup(tmp)
