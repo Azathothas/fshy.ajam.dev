@@ -4,11 +4,14 @@ name: build
 # Worker's tests, once under node and once on workerd. A pull request from a fork must not change data/: only
 # publish/export.py writes it. Commit messages and the pull request must not credit a tool.
 # The actions are pinned by commit; the comment names the tag. The toolchain versions are in publish/README.md.
+# Every Monday at 06:00 UTC it also builds main, so a broken toolchain shows before a publish does.
 
 on:
   pull_request:
   push:
     branches: [main]
+  schedule:
+    - cron: "0 6 * * 1"
 
 permissions:
   contents: read
@@ -43,6 +46,7 @@ jobs:
           fi
 
       - name: commit messages credit no tool, and each subject is under 101 characters
+        if: github.event_name != 'schedule'
         env:
           BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || github.event.before }}
           HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
@@ -55,8 +59,9 @@ jobs:
           done
           exit $fail
 
+      # a Dependabot body quotes the release notes and the commits of another project
       - name: the pull request credits no tool
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.event.pull_request.user.login != 'dependabot[bot]'
         env:
           TITLE: ${{ github.event.pull_request.title }}
           BODY: ${{ github.event.pull_request.body }}

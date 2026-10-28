@@ -8,6 +8,10 @@ The tools that write the published corpus and build everything that serves it. S
 | Node | 22.15 or later, for wrangler and the Worker tests; CI uses 24 |
 | git | any recent version, for the export |
 
+Each Monday, Dependabot proposes updates of the actions and of the npm packages of `site/` at 04:00 UTC
+([`../.github/dependabot.yml`](../.github/dependabot.yml)), and CI builds `main` at 06:00 UTC. A toolchain that
+breaks thus shows before a publish does. MiniSearch is not updated there, because the site serves a copy of it.
+
 ## The two stages
 
 | stage | command | input | output | who runs it |
