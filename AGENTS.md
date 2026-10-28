@@ -48,7 +48,9 @@ A change is done when these pass and CI is green:
 ```bash
 python publish/build.py --site site/dist
 node site/worker/test/run.mjs
+python publish/test_llms.py --site site/dist
 ```
 
 The first command builds the store, the wiki and the Worker copy from `data/` and scans all of it for leaks.
-The second runs the Worker's tests against that build; run `npm ci` in `site/` once before it.
+The second runs the Worker's tests against that build; run `npm ci` in `site/` once before it. The third checks
+the files for agents.

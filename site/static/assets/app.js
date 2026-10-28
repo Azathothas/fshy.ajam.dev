@@ -1,31 +1,53 @@
-/* fshy wiki: freshness badges, filter chips, name search (MiniSearch), full-text search page, compare page. */
+/* fshy wiki: freshness, filter chips, name search (MiniSearch), full-text search page, compare page. No framework. */
 (function () {
   'use strict';
   var today = new Date().toISOString().slice(0, 10);
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  // verdict terms in vorder, their short labels (scripts/fshy/pages.py VERDICT_LABEL), topic names (pages.py TOPICS)
+  var VT = ['qualifies', 'qualifies-with-caveat', 'trial-only', 'paid-only', 'fails-identity', 'fails-egress', 'fails-quota', 'dead'];
+  var VL = ['★ qualifies', 'caveat', 'trial', 'paid', 'fails: identity', 'fails: egress', 'fails: quota', 'dead'];
+  var TN = { storage: 'Storage', compute: 'Compute', inference: 'Inference', egress: 'Egress and tunnels', 'ip-proxy': 'IP and proxies',
+    'crawler-scraper': 'Crawling', debrid: 'Debrid', 'netdisk-pan': 'Netdisk and pan', 'databases-kv': 'Databases and KV', email: 'Email',
+    'domains-dns': 'Domains and DNS', 'ci-cd-runners': 'CI runners', 'coding-subs': 'Coding subscriptions' };
+  function pill(v) { var i = typeof v === 'number' ? v : VT.indexOf(v); return '<span class="v v-' + esc(VT[i] || v) + '">' + esc(VL[i] || v) + '</span>'; }
+  function usd(v, sfx) { return v == null ? '' : 'USD ' + (v < 1000 ? String(+(+v).toFixed(2)) : (+v).toFixed(0)) + sfx; }
+  function topics(ts) { return (ts || []).map(function (t) { return TN[t] || t; }).join(', '); }
+  function lane(vs) { // list class from the longest verdict label, as pages.py lane()
+    var w = Math.max.apply(null, vs.map(function (v) { var i = VT.indexOf(v); return (VL[i] || v || '').length; }).concat([0]));
+    return 'list' + (w > 11 ? '' : w > 6 ? ' lm' : ' ls');
+  }
+
+  // ---------------------------------------------------------------- keep the current topic visible in the scrolling topic bar
+  var tn = $('.topics'), tc = tn && $('[aria-current]', tn);
+  if (tc && tn.scrollWidth > tn.clientWidth) {
+    tn.scrollLeft += tc.getBoundingClientRect().left - tn.getBoundingClientRect().left - (tn.clientWidth - tc.offsetWidth) / 2;
+  }
 
   // ---------------------------------------------------------------- freshness, computed against today
-  $$('.b.fr').forEach(function (b) {
-    var so = b.getAttribute('data-stale-on'), basis = b.getAttribute('data-basis'), ck = b.getAttribute('data-checked');
-    if (!so || so === 'None') { return; }
-    var stale = so <= today;
-    b.classList.add(stale ? 'stale' : 'fresh');
-    b.textContent = (stale ? 'stale' : 'fresh') + (basis === 'inherited' ? ', inherited' : '');
-    b.title = 'checked ' + (ck || '?') + (basis === 'inherited' ? ' (upper bound)' : '') + '; stale on ' + so;
-  });
+  function fresh(root) {
+    $$('.fr', root).forEach(function (b) {
+      var h = b.closest('[data-stale-on]'), so = b.getAttribute('data-stale-on') || (h && h.getAttribute('data-stale-on'));
+      if (!so || so === 'None') { return; }
+      var stale = so <= today, inh = b.getAttribute('data-basis') === 'inherited';
+      b.className = 'fr ' + (stale ? 'stale' : 'fresh');
+      b.textContent = (stale ? 'stale' : 'fresh') + (inh ? ', inherited' : '');
+      b.title = 'checked ' + (b.getAttribute('data-checked') || '?') + (inh ? ' (upper bound)' : '') + '; stale on ' + so;
+    });
+  }
+  fresh();
   $$('[data-f]').forEach(function (r) {
     var so = r.getAttribute('data-stale-on');
     if (so && so !== 'None' && so > today) { r.setAttribute('data-f', (r.getAttribute('data-f') + ' fresh').trim()); }
   });
 
-  // ---------------------------------------------------------------- filter chips (fmhy-style class toggles)
+  // ---------------------------------------------------------------- filter chips (class toggles on <html>)
   function recount() {
     var c = $('.chips .count'); if (!c) { return; }
-    var rows = $$('li.e[data-f], tr[data-f], section.rec[data-f]');
+    var rows = $$('.e[data-f]');
     var vis = rows.filter(function (r) { return r.offsetParent !== null; }).length;
-    c.textContent = vis + ' of ' + rows.length + ' shown';
+    c.textContent = vis === rows.length ? rows.length + ' shown' : vis + ' of ' + rows.length + ' shown';
   }
   $$('.chips button[data-chip]').forEach(function (b) {
     b.setAttribute('aria-pressed', 'false');
@@ -70,37 +92,47 @@
         searchOptions: { boost: { name: 4, aliases: 2, domain: 2 }, fuzzy: 0.2, prefix: true, tokenize: tokenize, processTerm: function (t) { return t; } } });
       ms.addAll(rows.map(function (r, i) { return { id: i, i: i, name: r[1], aliases: (r[2] || []).join(' '), domain: r[3] || '' }; }));
     });
+    loading.catch(function () { loading = null; });
     return loading;
   }
-  var VORD = ['qualifies', 'caveat', 'trial', 'paid', 'fails: identity', 'fails: egress', 'fails: quota', 'dead'];
   function nameHits(q, n) {
     if (!ms || !q) { return []; }
     return ms.search(q).slice(0, n || 12).map(function (h) { return names[h.i]; });
   }
   var box = $('#q'), drop = $('#qr'), sel = -1;
-  function renderDrop() {
-    var q = box.value.trim(); if (!q) { drop.hidden = true; return; }
-    var hits = nameHits(q, 10);
-    drop.innerHTML = hits.map(function (r) {
-      return '<a href="/p/' + esc(r[0]) + '/">' + esc(r[1]) + ' <small>' + esc((r[4] || []).join(', ')) + ' &middot; ' + r[6] +
-        ' record' + (r[6] === 1 ? '' : 's') + ' &middot; best: ' + esc(VORD[r[5]] || '') + '</small></a>';
-    }).join('') + '<a href="/search/?q=' + encodeURIComponent(q) + '"><b>Search all text for "' + esc(q) + '"</b></a>';
-    drop.hidden = false; sel = -1;
+  function setOpen(on) {
+    drop.hidden = !on; box.setAttribute('aria-expanded', on ? 'true' : 'false');
+    if (!on) { sel = -1; box.removeAttribute('aria-activedescendant'); }
   }
-  if (box) {
+  function renderDrop() {
+    var q = box.value.trim(); if (!q) { setOpen(false); return; }
+    var hits = nameHits(q, 10);
+    drop.innerHTML = hits.map(function (r, i) {
+      return '<a id="qo' + i + '" role="option" href="/p/' + esc(r[0]) + '/">' + esc(r[1]) + pill(r[5]) + '<small>' + esc(topics(r[4])) +
+        ' &middot; ' + r[6] + ' record' + (r[6] === 1 ? '' : 's') + '</small></a>';
+    }).join('') + '<a id="qo' + hits.length + '" role="option" class="all" href="/search/?q=' + encodeURIComponent(q) + '">Search all text for “' + esc(q) + '”</a>';
+    sel = -1; box.removeAttribute('aria-activedescendant'); setOpen(true);
+  }
+  if (box && drop) {
+    // the combobox exists only with this script, so its roles and states are set here rather than in every page
+    box.setAttribute('role', 'combobox'); box.setAttribute('aria-autocomplete', 'list');
+    box.setAttribute('aria-expanded', 'false'); box.setAttribute('aria-controls', 'qr');
+    drop.setAttribute('role', 'listbox'); drop.setAttribute('aria-label', 'Matching providers');
     box.addEventListener('focus', function () { loadNames().then(renderDrop).catch(function () {}); });
-    box.addEventListener('input', function () { if (ms) { renderDrop(); } else { loadNames().then(renderDrop); } });
+    box.addEventListener('input', function () { if (ms) { renderDrop(); } else { loadNames().then(renderDrop).catch(function () {}); } });
     box.addEventListener('keydown', function (ev) {
       var a = $$('a', drop);
-      if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+      if ((ev.key === 'ArrowDown' || ev.key === 'ArrowUp') && !drop.hidden) {
         ev.preventDefault(); sel = Math.max(-1, Math.min(a.length - 1, sel + (ev.key === 'ArrowDown' ? 1 : -1)));
-        a.forEach(function (x, i) { x.classList.toggle('sel', i === sel); });
-      } else if (ev.key === 'Enter' && sel >= 0 && a[sel]) { ev.preventDefault(); location.href = a[sel].href; }
-      else if (ev.key === 'Escape') { drop.hidden = true; }
+        a.forEach(function (x, i) { x.setAttribute('aria-selected', i === sel ? 'true' : 'false'); });
+        if (sel >= 0) { box.setAttribute('aria-activedescendant', a[sel].id); a[sel].scrollIntoView({ block: 'nearest' }); } else { box.removeAttribute('aria-activedescendant'); }
+      } else if (ev.key === 'Enter' && sel >= 0 && a[sel] && !drop.hidden) { ev.preventDefault(); location.href = a[sel].href; }
+      else if (ev.key === 'Escape') { setOpen(false); }
     });
-    document.addEventListener('click', function (ev) { if (!ev.target.closest('form.q')) { drop.hidden = true; } });
+    document.addEventListener('click', function (ev) { if (!ev.target.closest('form.q')) { setOpen(false); } });
     document.addEventListener('keydown', function (ev) {
-      if (ev.key === '/' && document.activeElement !== box && !/input|textarea/i.test(document.activeElement.tagName)) { ev.preventDefault(); box.focus(); }
+      var t = document.activeElement;
+      if (ev.key === '/' && t !== box && !/^(input|textarea|select)$/i.test(t.tagName) && !t.isContentEditable) { ev.preventDefault(); box.focus(); }
     });
   }
 
@@ -110,24 +142,31 @@
     var q = new URLSearchParams(location.search).get('q') || '';
     if (box) { box.value = q; }
     if (q) {
-      sr.innerHTML = '<p>Searching...</p>';
+      document.title = q + ' - Search - fshy';
+      sr.innerHTML = '<p class="lede">Searching…</p>';
       loadNames().then(function () {
         var nh = nameHits(q, 8);
-        var html = nh.length ? '<h2>Providers</h2><ul class="list">' + nh.map(function (r) {
-          return '<li class="e hit"><a class="n" href="/p/' + esc(r[0]) + '/">' + esc(r[1]) + '</a> <small>' + esc((r[4] || []).join(', ')) +
-            ' &middot; ' + r[6] + ' records</small></li>';
-        }).join('') + '</ul>' : '';
-        sr.innerHTML = html + '<h2>Full text</h2><div id="ft"><p>Loading...</p></div>';
+        sr.innerHTML = (nh.length ? '<h2>Providers <small>' + nh.length + '</small></h2><ul class="plain">' + nh.map(function (r) {
+          return '<li><a href="/p/' + esc(r[0]) + '/"><b>' + esc(r[1]) + '</b></a> ' + pill(r[5]) + ' <small>' + esc(topics(r[4])) +
+            ' &middot; ' + r[6] + ' record' + (r[6] === 1 ? '' : 's') + '</small></li>';
+        }).join('') + '</ul>' : '') + '<h2>Full text</h2><div id="ft" aria-live="polite"><p>Loading…</p></div>';
         return fetch('/api/v1/search?limit=50&q=' + encodeURIComponent(q));
       }).then(function (r) { return r.json(); }).then(function (d) {
-        var cols = d.columns || [], ix = {}; cols.forEach(function (c, i) { ix[c] = i; });
-        var rows = d.rows || [];
-        $('#ft').innerHTML = rows.length ? '<ul class="list">' + rows.map(function (r) {
-          var rid = r[ix.rid];
-          return '<li class="e hit"><a class="n" href="/r/' + esc(rid) + '">' + esc(r[ix.provider]) + '</a> <span class="b">' + esc(r[ix.verdict]) +
-            '</span> <span class="b">' + esc(r[ix.identity]) + '</span> <small>' + esc(rid) + (ix.matched != null && r[ix.matched] ? ' &middot; matched in ' + esc(r[ix.matched]) : '') +
-            '</small><div class="s">' + esc(r[ix.summary] || '') + '</div></li>';
-        }).join('') + '</ul>' : '<p>No full-text match.</p>';
+        var ix = {}; (d.columns || []).forEach(function (c, i) { ix[c] = i; });
+        var rows = d.rows || [], ft = $('#ft');
+        ft.innerHTML = rows.length ? '<ul class="' + lane(rows.map(function (r) { return r[ix.verdict]; })) + '">' + rows.map(function (r) {
+          var rid = r[ix.rid], t = rid.split('/')[0], id = r[ix.identity] || '', def = id.slice(-1) === '?';
+          var price = usd(r[ix.usd_per_tb_month], '/TB-mo') || usd(r[ix.usd_month], '/mo');
+          var card = r[ix.card] === 'no' && !def ? '<span class="ok">no card</span>' : r[ix.card] === 'yes' ? '<span class="w">card</span>' : '<span class="u">card?</span>';
+          var m = ix.matched != null && r[ix.matched] ? '<span class="mt">matched in ' + esc(r[ix.matched]) + '</span>' : '';
+          return '<li class="e" data-stale-on="' + esc(r[ix.stale_on]) + '">' + pill(r[ix.verdict]) + '<a class="n" href="/r/' + esc(rid) + '">' +
+            esc(r[ix.provider]) + '</a>' + (price ? '<span class="pr">' + esc(price) + '</span>' : '') +
+            (r[ix.summary] ? '<p class="s">' + esc(r[ix.summary]) + '</p>' : '') + '<p class="f"><span class="tp">' + esc(TN[t] || t) +
+            '</span><span class="id">' + esc(id) + '</span>' + card + (r[ix.phone] === 'yes' ? '<span class="w">phone</span>' : '') +
+            '<span class="rg">' + esc(r[ix.confidence]) + '</span><span class="fr"></span>' + m + '</p></li>';
+        }).join('') + '</ul>' + (d.total > rows.length ? '<p class="needs">Showing ' + rows.length + ' of ' + d.total + ' matches.</p>' : '')
+          : '<p>No full-text match.</p>';
+        fresh(ft);
       }).catch(function () { var ft = $('#ft'); if (ft) { ft.innerHTML = '<p>Full-text search is unavailable right now; name matches are above.</p>'; } });
     }
   }
@@ -139,19 +178,23 @@
     if (ids.length) {
       Promise.all(ids.map(function (id) { return fetch('/api/v1/record/' + id + '.json').then(function (r) { return r.ok ? r.json() : null; }); })).then(function (recs) {
         recs = recs.filter(Boolean);
-        var f = [['provider', function (x) { return x.card.provider; }], ['verdict', function (x) { return x.card.verdict; }],
-          ['evidence rung', function (x) { return x.card.confidence; }], ['identity', function (x) { return x.card.identity_kind + (x.card.identity_basis === 'defaulted' ? '?' : ''); }],
+        if (!recs.length) { cmp.innerHTML = '<p>None of those records exist.</p>'; return; }
+        var h = function (s) { return esc(s).replace(/\n/g, '<br>'); };
+        var f = [['provider', function (x) { return '<a href="/r/' + esc(x.rid) + '"><b>' + esc(x.card.provider) + '</b></a>'; }],
+          ['verdict', function (x) { return pill(x.card.verdict); }],
+          ['evidence rung', function (x) { return h(x.card.confidence); }],
+          ['identity', function (x) { return h(x.card.identity_kind + (x.card.identity_basis === 'defaulted' ? '?' : '')); }],
           ['card', function (x) { return x.card.needs_card === 1 ? 'yes' : x.card.needs_card === 0 ? 'no' : '?'; }],
-          ['free tier', function (x) { return (x.record.free_tier || {}).stated; }], ['price', function (x) { return x.record.price_per_tb_month; }],
-          ['USD/month', function (x) { return x.card.usd_month; }], ['USD/TB-month', function (x) { return x.card.usd_per_tb_month; }],
-          ['per-object cap', function (x) { return (x.record.per_object_cap || {}).stated; }], ['retention', function (x) { return (x.record.retention || {}).stated; }],
-          ['egress', function (x) { return (x.record.egress || {}).terms; }], ['binding', function (x) { return x.record.binding; }],
-          ['limits', function (x) { return (x.record.limits || []).map(function (l) { return l.kind + ': ' + l.value; }).join('\n'); }],
-          ['interface', function (x) { return (x.record.interface || []).join(', '); }], ['reliability', function (x) { return x.record.reliability_note; }],
-          ['checked', function (x) { return x.card.checked_on + ' (' + x.card.verified_basis + '), stale on ' + x.card.stale_on; }]];
-        cmp.innerHTML = '<table class="cmp"><tbody>' + f.map(function (row) {
-          return '<tr><th>' + esc(row[0]) + '</th>' + recs.map(function (x) { return '<td>' + esc(row[1](x)).replace(/\n/g, '<br>') + '</td>'; }).join('') + '</tr>';
-        }).join('') + '</tbody></table>';
+          ['free tier', function (x) { return h((x.record.free_tier || {}).stated); }], ['price', function (x) { return h(x.record.price_per_tb_month); }],
+          ['USD/month', function (x) { return h(x.card.usd_month); }], ['USD/TB-month', function (x) { return h(x.card.usd_per_tb_month); }],
+          ['per-object cap', function (x) { return h((x.record.per_object_cap || {}).stated); }], ['retention', function (x) { return h((x.record.retention || {}).stated); }],
+          ['egress', function (x) { return h((x.record.egress || {}).terms); }], ['binding', function (x) { return h(x.record.binding); }],
+          ['limits', function (x) { return h((x.record.limits || []).map(function (l) { return l.kind + ': ' + l.value; }).join('\n')); }],
+          ['interface', function (x) { return h((x.record.interface || []).join(', ')); }], ['reliability', function (x) { return h(x.record.reliability_note); }],
+          ['checked', function (x) { return h(x.card.checked_on + ' (' + x.card.verified_basis + '), stale on ' + x.card.stale_on); }]];
+        cmp.innerHTML = '<div class="tw"><table class="cmp"><tbody>' + f.map(function (row) {
+          return '<tr><th scope="row">' + esc(row[0]) + '</th>' + recs.map(function (x) { return '<td>' + row[1](x) + '</td>'; }).join('') + '</tr>';
+        }).join('') + '</tbody></table></div>';
       });
     }
   }

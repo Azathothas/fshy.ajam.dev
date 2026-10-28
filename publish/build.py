@@ -249,7 +249,11 @@ def main(argv=None):
     if a.site:
         import site_gen  # noqa: E402
         report["files"] = site_gen.generate(ROOT, a.db, os.path.abspath(a.site), TIMES, lap)
+        import llms  # noqa: E402
+        llms.generate(a.db, os.path.abspath(a.site))
+        lap("site-llms")
         hits += leak_scan(dist=os.path.abspath(a.site))
+        lap("leak-scan")
     report["leaks"] = len(hits)
     report["times"] = TIMES
     for where, ctx in hits[:40]:

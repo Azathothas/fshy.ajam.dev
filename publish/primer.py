@@ -160,6 +160,6 @@ def _text(db):
 if __name__ == "__main__":
     import sys
     here = os.path.dirname(os.path.abspath(__file__))
-    path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(here, "..", "..", ".tmp", "fshy", "local.db")
+    path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(here, "..", ".tmp", "fshy", "public.db")
     sys.stdout.reconfigure(encoding="utf-8")
     sys.stdout.write(text(path))
