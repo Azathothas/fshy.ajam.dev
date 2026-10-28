@@ -80,6 +80,33 @@ Read all of it. Then check these, in this order:
    Then compare the value in the line with the page. One wrong value is a stop.
 6. **The shape of the diff.** `git diff --stat origin/main...origin/rq/RUN -- dossier` shows which records
    changed. Open two new or changed records at random and read them in full against the run's question.
+7. **The baseline.** A row of `scripts/research/baseline.tsv` hides a violation from the gate. The gate reads the
+   baseline of the same tree, so one pull request can add a violation and the row that hides it. In `f-research`,
+   read the rows that the pull request adds:
+
+   ```bash
+   git diff origin/main...origin/BRANCH -- scripts/research/baseline.tsv
+   ```
+
+   A research run adds no row, because `scripts/rq land` refuses one. Another pull request that adds rows fails
+   the CI job `baseline` until it carries the label `rq:baseline`. Apply the label only when both are true:
+
+   - Each added row comes from a rule that the pull request adds or widens, in
+     `scripts/fshy/rules/projection.json` or `scripts/research/checks.py`.
+   - No added row names a record that the pull request adds or edits. Compare the record id of each added row
+     with this list:
+
+     ```bash
+     git diff --name-only origin/main...origin/BRANCH -- dossier
+     ```
+
+   Then apply the label. CI runs again:
+
+   ```bash
+   gh pr edit NUMBER --repo Azathothas/f-research --add-label rq:baseline
+   ```
+
+   ⚠ A row that names a record that the pull request touches is a send-back, not a label.
 
 If a check fails, do not merge. Write what is wrong, with the record and the field, as a comment:
 
@@ -105,6 +132,7 @@ that you close without a merge, run `scripts/rq cleanup RUN` after the close.
 
 A pull request that is not a run (code, documents, rules) gets a code review: read the diff, run the checks it
 names, and confirm CI is green. Then merge it with `gh pr merge <number> --merge`. ⛔ Do not merge your own.
+In `f-research`, also do step 7 of section 3, the baseline.
 
 A Dependabot pull request in `fshy.ajam.dev` is not the merge session's own work, so the merge session may merge
 it. Before the merge:
