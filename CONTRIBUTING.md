@@ -37,8 +37,9 @@ and what happens.
 research repository, and a hand edit would be lost at the next publish. Report the correction with an issue.
 
 A pull request that improves the site, the API or the publish tools is welcome. Follow
-[`AGENTS.md`](AGENTS.md) and [`docs/conventions.md`](docs/conventions.md), and make
-`python publish/build.py --site site/dist` and `node site/worker/test/run.mjs` pass.
+[`AGENTS.md`](AGENTS.md) and [`docs/conventions.md`](docs/conventions.md), and make the checks in
+[`AGENTS.md`](AGENTS.md) section 4 pass. CI runs them, and it also refuses a commit message or a pull request that
+credits a tool.
 
 ## Scope
 
