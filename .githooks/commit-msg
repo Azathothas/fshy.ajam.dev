@@ -7,8 +7,9 @@
 
 msg="$1"
 
-# the tools and the models that a credit line names; B and E are word boundaries that every grep -E reads
-tools='claude|anthropic|chatgpt|gpt-?[0-9o]|openai|copilot|gemini|codex|kimi|cursor|llm|an? ai|ai (assistant|agent|model)'
+# the AI models and assistants that a credit line names, by name or by family; a model name may carry a version
+# (GPT-4o, Llama 3.1). B and E are word boundaries that every grep -E reads.
+tools='claude|anthropic|chatgpt|gpt[-.0-9a-z]*|openai|gemini|bard|copilot|llama[-.0-9a-z]*|mistral|codex|cursor|kimi|an? llm|llms?|an? ai|ai (assistant|agent|model)'
 B='(^|[^[:alnum:]])'
 E='([^[:alnum:]]|$)'
 
@@ -24,17 +25,18 @@ if grep -qiE "$lead" "$msg"; then
     refuse "refuses a trailer that credits a co-author or a generator" "$lead"
 fi
 
-# any other "...-by:" trailer that names a tool: Assisted-by, Reviewed-by, Signed-off-by, Helped-by
-trailer="^[[:space:]]*[a-z-]+-by[[:space:]]*:.*$B($tools)$E"
+# any other "...-by:" trailer, and a trailer about a model, an assistant or a tool, that names one:
+# Assisted-by, Reviewed-by, Signed-off-by, Helped-by, Model, AI-Assistant, Tool
+trailer="^[[:space:]]*([a-z-]+-by|ai|ai-[a-z-]+|assistant|model|llm|agent|tool|generator)[[:space:]]*:.*$B($tools)$E"
 if grep -qiE "$trailer" "$msg"; then
-    refuse "refuses a trailer that names a tool" "$trailer"
+    refuse "refuses a trailer that names a model or an assistant" "$trailer"
 fi
 
-# a credit sentence: a verb of making, then with, by, using, via or through, then a tool within 40 characters
-verbs='generated|written|made|created|built|drafted|authored|co-?authored|produced|assisted|coded|edited|reviewed'
+# a credit sentence: a verb of making, then with, by, using, via or through, then a model within 40 characters
+verbs='built|made|written|generated|powered|assisted|created|drafted|authored|co-?authored|produced|coded|edited|reviewed'
 credit="$B($verbs)[[:space:]]+(with|by|using|via|through)(.{0,40}[^[:alnum:]])?($tools)$E"
 if grep -qiE "$credit" "$msg"; then
-    refuse "refuses a line that credits a tool" "$credit"
+    refuse "refuses a line that credits a model or an assistant" "$credit"
 fi
 
 # the addresses and the links that a tool writes in its credit line
