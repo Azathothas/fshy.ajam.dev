@@ -1,0 +1,47 @@
+name: build
+
+# Builds the store, the wiki and the Worker copy from data/ alone, scans all of it for leaks, and runs the
+# Worker's tests. A pull request from a fork must not change data/: only publish/export.py writes it.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: data/ changes only through a publish
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+        run: |
+          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -q '^data/'; then
+            echo "data/ is written by publish/export.py only; report a correction with an issue" >&2
+            exit 1
+          fi
+
+      - name: build the store and the site, and scan for leaks
+        if: hashFiles('data/meta.json') != ''
+        run: python3 publish/build.py --site site/dist
+
+      - name: Worker tests
+        if: hashFiles('data/meta.json') != ''
+        run: |
+          cd site && npm ci --no-audit --no-fund && cd ..
+          node site/worker/test/run.mjs
+
+      - name: no data yet
+        if: hashFiles('data/meta.json') == ''
+        run: echo "data/ is empty until the first publish; the build has nothing to check"

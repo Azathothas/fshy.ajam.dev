@@ -1,0 +1,382 @@
+// Node tests for the fshy Worker, without wrangler: the guard, the text and ranking rules, and the
+// whole Worker fetch handler (API, permalinks, MCP) over the store's Worker copy.
+//
+//   node site/worker/test/run.mjs
+//
+// Inputs: FSHY_DB (default .tmp/fshy/worker.db) is served as the Worker DB through a fake ASSETS
+// binding, split into two chunks with a manifest made here. Other assets come from FSHY_DIST
+// (default site/dist) when present; record and entity-file tests are skipped without it.
+
+import { registerHooks } from 'node:module';
+import { createHash } from 'node:crypto';
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import test from 'node:test';
+import assert from 'node:assert/strict';
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const SITE = resolve(HERE, '..', '..');
+const REPO = resolve(SITE, '..');
+const DB = process.env.FSHY_DB || join(REPO, '.tmp', 'fshy', 'worker.db');
+const DIST = process.env.FSHY_DIST || join(SITE, 'dist');
+const HAVE_DIST = existsSync(join(DIST, 'api', 'v1', 'entity'));
+
+// workerd imports *.wasm as a compiled WebAssembly.Module (wrangler rule CompiledWasm); do the same
+registerHooks({
+  load(url, context, nextLoad) {
+    if (url.endsWith('.wasm')) return { format: 'module', source: 'export default globalThis.__fshyWasm;', shortCircuit: true };
+    return nextLoad(url, context);
+  },
+});
+globalThis.__fshyWasm = await WebAssembly.compile(readFileSync(join(SITE, 'node_modules', 'sql.js', 'dist', 'sql-wasm-browser.wasm')));
+
+if (!existsSync(DB)) {
+  console.error('no worker DB at ' + DB + '; build it with python publish/build.py --site site/dist, or set FSHY_DB');
+  process.exit(2);
+}
+const dbBytes = readFileSync(DB);
+const half = Math.ceil(dbBytes.length / 2);
+const CHUNKS = { 'data/w/test.000': dbBytes.subarray(0, half), 'data/w/test.001': dbBytes.subarray(half) };
+const MANIFEST = {
+  schema_version: '1', commit: 'testcommit0123456789', as_of: '2026-10-27',
+  worker_db: { chunks: Object.keys(CHUNKS), bytes: dbBytes.length, sha256: createHash('sha256').update(dbBytes).digest('hex') },
+};
+
+function assetResponse(path) {
+  if (path === 'data/manifest.json') return new Response(JSON.stringify(MANIFEST), { headers: { 'content-type': 'application/json' } });
+  if (CHUNKS[path]) return new Response(CHUNKS[path]);
+  const f = join(DIST, ...path.split('/'));
+  if (existsSync(f) && statSync(f).isFile()) return new Response(readFileSync(f));
+  if (path === 'api/v1/needs.json') return new Response(readFileSync(join(REPO, 'scripts', 'fshy', 'rules', 'needs.json')));
+  return new Response('<!doctype html><title>404</title>', { status: 404, headers: { 'content-type': 'text/html' } });
+}
+
+const assetLog = [];
+const ASSETS = {
+  async fetch(req) {
+    const path = decodeURIComponent(new URL(req.url).pathname.replace(/^\/+/, ''));
+    assetLog.push(path);
+    return assetResponse(path);
+  },
+};
+const denyAll = { limit: async () => ({ success: false }) };
+const allowAll = { limit: async () => ({ success: true }) };
+const env = { ASSETS, RL_API: allowAll, RL_SQL: allowAll };
+
+const { guard, strip, GuardError } = await import('../guard.js');
+const text = await import('../text.js');
+const rank = await import('../rank.js');
+const worker = (await import('../index.js')).default;
+
+const ORIGIN = 'http://127.0.0.1:8790';
+async function call(path, init = {}, e = env) {
+  const t0 = performance.now();
+  const res = await worker.fetch(new Request(ORIGIN + path, init), e);
+  const ms = performance.now() - t0;
+  const body = res.status === 204 || res.status === 202 || res.status === 301 ? '' : await res.text();
+  let json = null;
+  try { json = JSON.parse(body); } catch { /* TSV or empty */ }
+  return { res, body, json, ms };
+}
+let rpcId = 0;
+async function rpc(method, params, headers = {}) {
+  const msg = { jsonrpc: '2.0', id: ++rpcId, method, ...(params ? { params } : {}) };
+  return call('/mcp', { method: 'POST', headers: { 'content-type': 'application/json', accept: 'application/json, text/event-stream', ...headers }, body: JSON.stringify(msg) });
+}
+const timings = {};
+
+// ------------------------------------------------------------------ guard
+
+test('guard accepts read-only statements and appends LIMIT', () => {
+  assert.equal(guard('SELECT 1', 10).sql, 'SELECT 1\nLIMIT 10');
+  assert.equal(guard('select rid from record;', 5).sql, 'select rid from record\nLIMIT 5');
+  assert.equal(guard('SELECT 1 LIMIT 3', 10).sql, 'SELECT 1 LIMIT 3');
+  assert.equal(guard('WITH t AS (SELECT 1 AS x) SELECT x FROM t', 7).appendedLimit, true);
+  assert.ok(guard('VALUES (1), (2)', 2));
+  assert.ok(guard('EXPLAIN QUERY PLAN SELECT * FROM record', 2));
+  assert.ok(guard("SELECT 'delete from record; drop table x' AS s", 2), 'keywords inside literals are fine');
+  assert.ok(guard('SELECT 1 -- update; drop\n', 2), 'keywords inside comments are fine');
+  assert.ok(guard('SELECT "update" FROM (SELECT 1 AS "update")', 2), 'quoted identifiers are stripped');
+  assert.ok(guard('SELECT * FROM pragma_table_info(\'record\')', 2), 'pragma_ functions are not the PRAGMA keyword');
+  assert.equal(guard('SELECT 1 -- note', 4).sql, 'SELECT 1 -- note\nLIMIT 4', 'LIMIT lands after a line comment');
+  assert.equal(guard("SELECT ';' -- a;b", 4).sql, "SELECT ';' -- a;b\nLIMIT 4");
+  assert.equal(strip("a 'b' \"c\" [d] -- e\n/* f */ g").length, "a 'b' \"c\" [d] -- e\n/* f */ g".length);
+});
+
+test('guard refuses writes, sessions and stacked statements', () => {
+  const refuse = [
+    'DELETE FROM record', 'delete from record', 'UPDATE record SET verdict = 1', 'INSERT INTO meta VALUES (1, 2)',
+    'DROP TABLE record', 'PRAGMA query_only=OFF', 'ATTACH DATABASE \'x\' AS y', 'VACUUM', 'BEGIN', 'COMMIT',
+    'SELECT 1; DELETE FROM record', 'SELECT 1; SELECT 2', 'WITH x AS (SELECT 1) DELETE FROM record',
+    'SELECT replace(rid, \'a\', \'b\') FROM record', 'CREATE TEMP TABLE t (x)', 'SELECT * FROM temp.sqlite_master',
+    'REINDEX', 'ANALYZE', 'SAVEPOINT a', 'RELEASE a', 'ROLLBACK', 'DETACH y', 'ALTER TABLE record ADD x',
+    'SELECT 1 /* unterminated', "SELECT 'unterminated", '', '   ', 'record', '(SELECT 1)',
+    'INSERT INTO text_fts(text_fts) VALUES (\'optimize\')',
+  ];
+  for (const q of refuse) assert.throws(() => guard(q, 10), GuardError, q);
+});
+
+// ------------------------------------------------------------------ text and ranking
+
+test('ftsText is the twin of build.py fts_text', () => {
+  // expected values printed by build.py's fts_text
+  const cases = [
+    ['\u767E\u5EA6\u7F51\u76D8 free 2TB', '\u767E\u5EA6\u7F51\u76D8 \u767E\u5EA6 \u5EA6\u7F51 \u7F51\u76D8 free 2TB'],
+    ['115\u7F51\u76D8vip', '115\u7F51\u76D8 \u7F51\u76D8vip'],
+    ['\uD55C\uAD6D\uC5B4 \uD14D\uC2A4\uD2B8', '\uD55C\uAD6D\uC5B4 \uD55C\uAD6D \uAD6D\uC5B4 \uD14D\uC2A4\uD2B8 \uD14D\uC2A4 \uC2A4\uD2B8'],
+    ['\u3072\u3089\u304C\u306A\u30AB\u30BF\u30AB\u30CA', '\u3072\u3089\u304C\u306A\u30AB\u30BF\u30AB\u30CA \u3072\u3089 \u3089\u304C \u304C\u306A \u306A\u30AB \u30AB\u30BF \u30BF\u30AB \u30AB\u30CA'],
+    ['a\u4E2Db', 'a\u4E2D \u4E2Db'],
+    ['plain ascii', 'plain ascii'],
+    ['\u963F\u91CC\u4E91\u76D8/\u5938\u514B', '\u963F\u91CC\u4E91\u76D8 \u963F\u91CC \u91CC\u4E91 \u4E91\u76D8/\u5938\u514B \u5938\u514B'],
+  ];
+  for (const [i, o] of cases) assert.equal(text.ftsText(i), o);
+});
+
+test('normalize and the MATCH builder', () => {
+  assert.equal(text.normalize('  H\u00E9tzner   STRASSE \u00DF '), 'hetzner strasse ss');
+  assert.equal(text.normalize('\uFF28\uFF45\uFF54\uFF5A\uFF4E\uFF45\uFF52'), 'hetzner');
+  assert.equal(text.ftsMatch('Hetzner storage box'), 'hetzner* storage* box*');
+  assert.equal(text.ftsMatch('s3 no-card'), 's3 "no-card"');
+  assert.equal(text.ftsMatch('\u767E\u5EA6\u7F51\u76D8'), '\u767E\u5EA6 \u5EA6\u7F51 \u7F51\u76D8');
+  assert.equal(text.ftsMatch('offer:gpu OR "x"'), '"offer:gpu" or x');
+  assert.equal(text.ftsMatch('*** ---'), '');
+});
+
+test('bm25 from a matchinfo blob, and edit distance', () => {
+  // p=1 phrase, c=2 columns, n=10 rows; a = [10, 20]; l = [5, 40]; x = col0 (2 hits, 3 all, 2 docs), col1 (0, 4, 3)
+  const u = new Uint32Array([1, 2, 10, 10, 20, 5, 40, 2, 3, 2, 0, 4, 3]);
+  const r = rank.bm25(new Uint8Array(u.buffer), [4, 2]);
+  const idf = Math.log(1 + (10 - 2 + 0.5) / (2 + 0.5));
+  const want = (4 * idf * 2 * 2.2) / (2 + 1.2 * (1 - 0.75 + (0.75 * 5) / 10));
+  assert.ok(Math.abs(r.score - want) < 1e-9);
+  assert.deepEqual(r.matched, ['name']);
+  assert.equal(rank.editDistance('hetzer', 'hetzner', 1), 1);
+  assert.equal(rank.editDistance('hetzner', 'hertz', 1), 2);
+  assert.equal(rank.fuzzBudget('abc'), 0);
+  assert.equal(rank.fuzzBudget('abcd'), 1);
+  assert.equal(rank.fuzzBudget('abcdefgh'), 2);
+});
+
+test('name scoring tiers', () => {
+  const idx = rank.buildNameIndex([
+    { eid: 'hetzner', alias: 'Hetzner', kind: 'name' },
+    { eid: 'hetzner', alias: 'Hetzner Storage Box', kind: 'provider' },
+    { eid: 'other', alias: 'Not Hetzner', kind: 'name' },
+    { eid: 'box', alias: 'Box', kind: 'name' },
+  ]);
+  const by = (q) => Object.fromEntries(rank.scoreNames(idx, q).map((h) => [h.eid, h.score]));
+  assert.deepEqual(by('hetzner'), { hetzner: 100, other: 40 });
+  assert.deepEqual(by('hetzner sto'), { hetzner: 60 });
+  assert.deepEqual(by('hetzer'), { hetzner: 30, other: 30 });
+  assert.deepEqual(by('storage hetzner'), { hetzner: 30 });
+});
+
+// ------------------------------------------------------------------ Worker over the real store
+
+test('cold and warm search; headers', async () => {
+  const cold = await call('/api/v1/search?q=hetzner');
+  timings.cold_search_ms = cold.ms;
+  assert.equal(cold.res.status, 200, cold.body);
+  assert.equal(cold.res.headers.get('x-fshy-commit'), MANIFEST.commit);
+  assert.equal(cold.res.headers.get('cache-control'), 'public, max-age=300');
+  assert.equal(cold.res.headers.get('access-control-allow-origin'), '*');
+  assert.match(cold.res.headers.get('server-timing'), /db;desc="cold load";dur=/);
+  timings.server_timing_cold = cold.res.headers.get('server-timing');
+  assert.ok(assetLog.includes('data/w/test.000') && assetLog.includes('data/w/test.001'), 'both chunks fetched');
+  const j = cold.json;
+  assert.deepEqual(j.columns.slice(0, 3), ['rid', 'provider', 'verdict']);
+  assert.ok(j.rows.length > 0 && j.rows.length <= 20);
+  assert.match(j.rows[0][0], /hetzner/);
+  assert.match(j.rows[0].at(-1), /^name\(/);
+  const warm = await call('/api/v1/search?q=hetzner');
+  timings.warm_search_ms = warm.ms;
+  assert.doesNotMatch(warm.res.headers.get('server-timing'), /cold/);
+  const n = assetLog.filter((p) => p === 'data/manifest.json').length;
+  assert.equal(n, 1, 'the DB is loaded once per isolate');
+});
+
+test('search: text hits, filters, TSV, CJK, limits', async () => {
+  const r = await call('/api/v1/search?q=webdav%20unlimited&topic=storage&grp=usable&limit=5');
+  assert.equal(r.res.status, 200, r.body);
+  assert.ok(r.json.rows.length <= 5);
+  for (const row of r.json.rows) assert.match(row[0], /^storage\//);
+  const t = await call('/api/v1/search?q=hetzner&format=tsv&limit=3');
+  assert.match(t.res.headers.get('content-type'), /tab-separated/);
+  const lines = t.body.trim().split('\n');
+  assert.equal(lines[0].split('\t')[0], 'rid');
+  assert.match(lines.find((l) => l.startsWith('# ')), /^# 3 of \d+ rows; offset=3 for more/);
+  const t0 = performance.now();
+  const c = await call('/api/v1/search?q=' + encodeURIComponent('\u767E\u5EA6'));
+  timings.cjk_search_ms = performance.now() - t0;
+  assert.equal(c.res.status, 200, c.body);
+  assert.ok(c.json.rows.length > 0, 'CJK query finds records');
+  timings.cjk_top = c.json.rows.slice(0, 3).map((x) => x[0]);
+  const fuzzy = await call('/api/v1/search?q=hetzer');
+  assert.ok(fuzzy.json.rows.some((x) => /hetzner/.test(x[0])), 'one typo still finds the name');
+  assert.equal((await call('/api/v1/search')).res.status, 400);
+  assert.equal((await call('/api/v1/search?q=x&limit=51')).res.status, 400);
+  assert.equal((await call('/api/v1/search?q=x&format=xml')).res.status, 400);
+});
+
+test('records: filter, price sort, NULL exclusion footer', async () => {
+  const r = await call('/api/v1/records?topic=storage&no_card=1&sort=usd_per_tb_month&limit=5');
+  assert.equal(r.res.status, 200, r.body);
+  const j = r.json;
+  const ci = j.columns.indexOf('usd_per_tb_month');
+  const prices = j.rows.map((x) => x[ci]);
+  assert.ok(prices.every((v) => v != null), 'NULL prices are excluded');
+  assert.deepEqual([...prices].sort((a, b) => a - b), prices, 'ascending');
+  assert.ok(j.excluded_null && j.excluded_null.usd_per_tb_month > 0, 'NULL exclusion reported');
+  for (const x of j.rows) assert.equal(x[j.columns.indexOf('card')], 'no');
+  const t = await call('/api/v1/records?topic=storage&no_card=1&sort=usd_per_tb_month&limit=5&format=tsv');
+  assert.match(t.body, /# excluded for NULL usd_per_tb_month: \d+/);
+  const m = await call('/api/v1/records?topic=compute&max_usd_month=5&iface=api&order=desc&sort=usd_month');
+  assert.equal(m.res.status, 200, m.body);
+  const mi = m.json.columns.indexOf('usd_month');
+  assert.ok(m.json.rows.every((x) => x[mi] <= 5));
+  const u = await call('/api/v1/records?topic=storage&bogus=1&limit=1');
+  assert.ok(u.json.notes.some((n) => /ignored parameter: bogus/.test(n)));
+  assert.equal((await call('/api/v1/records?sort=rno')).res.status, 400);
+  assert.equal((await call('/api/v1/records?limit=201')).res.status, 400);
+});
+
+test('sql: guarded, capped, GET and POST', async () => {
+  const bad = await call('/api/v1/sql?q=' + encodeURIComponent('DELETE FROM record'));
+  assert.equal(bad.res.status, 400);
+  assert.match(bad.json.error, /refused/);
+  const ok = await call('/api/v1/sql?q=' + encodeURIComponent('SELECT topic, count(*) AS n FROM record GROUP BY topic ORDER BY n DESC'));
+  assert.equal(ok.res.status, 200, ok.body);
+  assert.deepEqual(ok.json.columns, ['topic', 'n']);
+  assert.ok(ok.json.rows.length > 5);
+  const post = await call('/api/v1/sql', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ q: 'SELECT rid FROM record', limit: 3 }) });
+  assert.equal(post.res.status, 200, post.body);
+  assert.equal(post.json.rows.length, 3);
+  assert.equal(post.json.truncated, true);
+  assert.equal(post.res.headers.get('cache-control'), 'no-store');
+  const err = await call('/api/v1/sql?q=' + encodeURIComponent('SELECT nope FROM record'));
+  assert.equal(err.res.status, 400);
+  assert.match(err.json.error, /SQL error/);
+  assert.doesNotMatch(err.body, /at \w+ \(/, 'no stack trace');
+  const fts = await call('/api/v1/sql?q=' + encodeURIComponent("SELECT r.rid FROM text_fts JOIN record r ON r.rno = text_fts.docid WHERE text_fts MATCH 'webdav*' LIMIT 3"));
+  assert.equal(fts.res.status, 200, fts.body);
+  const limited = await call('/api/v1/sql?q=SELECT%201', {}, { ...env, RL_SQL: denyAll });
+  assert.equal(limited.res.status, 429);
+  assert.equal(limited.res.headers.get('retry-after'), '60');
+  assert.equal((await call('/api/v1/sql', { method: 'PUT' })).res.status, 405);
+});
+
+test('query_only holds even past the guard', async () => {
+  const { getStore } = await import('../db.js');
+  const { store } = await getStore(env, globalThis.__fshyWasm);
+  assert.throws(() => store.db.exec('DELETE FROM record'), /readonly|read-only|query_only/i);
+  assert.equal(store.db.exec('SELECT total_changes()')[0].values[0][0], 0);
+});
+
+test('need, worklist, entity-search', async () => {
+  const list = await call('/api/v1/need/');
+  assert.equal(list.res.status, 200, list.body);
+  assert.ok(list.json.rows.some((x) => x[0] === 's3-storage-no-card'));
+  const n = await call('/api/v1/need/s3-storage-no-card');
+  assert.equal(n.res.status, 200, n.body);
+  const pi = n.json.columns.indexOf('usd_per_tb_month');
+  const vals = n.json.rows.map((x) => x[pi]);
+  assert.ok(vals.every((v) => v != null));
+  assert.deepEqual([...vals].sort((a, b) => a - b), vals);
+  assert.ok(Array.isArray(n.json.null_rows));
+  timings.need_rows = `${n.json.rows.length} ranked + ${n.json.null_rows.length} unranked of ${n.json.total}`;
+  assert.equal((await call('/api/v1/need/nope')).res.status, 404);
+  const gpu = await call('/api/v1/need/free-gpu');
+  assert.equal(gpu.res.status, 200, gpu.body);
+  for (const kind of ['stale', 'drift', 'changes', 'unparsed']) {
+    const w = await call(`/api/v1/worklist/${kind}?limit=3`);
+    assert.equal(w.res.status, 200, kind + ': ' + w.body);
+    assert.ok(w.json.rows.length <= 3);
+  }
+  const st = await call('/api/v1/worklist/stale?topic=storage&as_of=2027-06-01&forecast_days=30&limit=2');
+  assert.ok(st.json.notes.some((x) => /stale_on <= 2027-07-01/.test(x)));
+  assert.equal((await call('/api/v1/worklist/held')).res.status, 400);
+  assert.equal((await call('/api/v1/worklist/stale?as_of=yesterday')).res.status, 400);
+  const es = await call('/api/v1/entity-search?q=hetzner');
+  assert.equal(es.res.status, 200, es.body);
+  assert.equal(es.json.rows[0][0], 'hetzner');
+  assert.equal(es.json.rows[0][6], 100);
+});
+
+test('permalinks and record JSON', async () => {
+  const r = await call('/r/storage/hetzner-storage-box');
+  assert.equal(r.res.status, 301);
+  assert.equal(r.res.headers.get('location'), ORIGIN + '/p/hetzner/#storage--hetzner-storage-box');
+  assert.ok(r.res.headers.get('x-fshy-commit'));
+  assert.equal((await call('/r/storage/no-such-record')).res.status, 404);
+  assert.equal((await call('/api/v1/record/storage/no-such-record')).res.status, 404);
+  if (!HAVE_DIST) { console.log('# skipped record JSON: no ' + DIST); return; }
+  const j = await call('/api/v1/record/storage/hetzner-storage-box.json');
+  assert.equal(j.res.status, 200, j.body);
+  assert.equal(j.json.rid, 'storage/hetzner-storage-box');
+  for (const k of ['card', 'record', 'claims', 'unknown', 'history', 'drift']) assert.ok(k in j.json, k);
+});
+
+test('MCP: initialize, list, call, errors', async () => {
+  const init = await rpc('initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 't', version: '0' } });
+  assert.equal(init.res.status, 200, init.body);
+  assert.equal(init.json.result.protocolVersion, '2025-06-18');
+  assert.deepEqual(init.json.result.capabilities, { tools: { listChanged: false } });
+  assert.equal(init.json.result.serverInfo.name, 'fshy');
+  const future = await rpc('initialize', { protocolVersion: '2099-01-01' });
+  assert.equal(future.json.result.protocolVersion, '2025-11-25');
+  const note = await call('/mcp', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) });
+  assert.equal(note.res.status, 202);
+  assert.equal((await rpc('ping')).json.result && true, true);
+  const tl = await rpc('tools/list');
+  const names = tl.json.result.tools.map((t) => t.name);
+  assert.deepEqual(names, ['help', 'search', 'filter', 'get', 'entity', 'need', 'sql', 'worklist']);
+  const toolJson = JSON.stringify(tl.json.result.tools);
+  timings.tools_list_chars = toolJson.length;
+  const { estimateTokens } = await import('../mcp.js');
+  timings.tools_list_tokens_est = estimateTokens(toolJson);
+  const s = await rpc('tools/call', { name: 'search', arguments: { q: 'hetzner', limit: 5 } });
+  assert.equal(s.json.result.isError, false);
+  const txt = s.json.result.content[0].text;
+  assert.match(txt.split('\n')[0], /^rid\tprovider\tverdict/);
+  assert.match(txt, /hetzner/);
+  const q = await rpc('tools/call', { name: 'sql', arguments: { query: 'DELETE FROM record' } });
+  assert.equal(q.json.result.isError, true);
+  assert.match(q.json.result.content[0].text, /refused/);
+  const g = await rpc('tools/call', { name: 'get', arguments: { ids: ['storage/hetzner-storage-box'], detail: 'card' } });
+  assert.match(g.json.result.content[0].text, /storage\/hetzner-storage-box/);
+  if (HAVE_DIST) {
+    const gf = await rpc('tools/call', { name: 'get', arguments: { ids: ['storage/hetzner-storage-box'], detail: 'full', fields: ['record.free_tier', 'card.verdict'] } });
+    assert.equal(gf.json.result.isError, false, gf.body);
+    assert.ok(JSON.parse(gf.json.result.content[0].text).records[0]['card.verdict']);
+  }
+  const e = await rpc('tools/call', { name: 'entity', arguments: { name: 'hetzner' } });
+  assert.match(e.json.result.content[0].text, /# entity hetzner/);
+  const nd = await rpc('tools/call', { name: 'need', arguments: {} });
+  assert.match(nd.json.result.content[0].text, /s3-storage-no-card/);
+  const wl = await rpc('tools/call', { name: 'worklist', arguments: { kind: 'drift', limit: 2 } });
+  assert.equal(wl.json.result.isError, false);
+  const h = await rpc('tools/call', { name: 'help', arguments: {} });
+  assert.match(h.json.result.content[0].text, /fshy|record/);
+  const big = await rpc('tools/call', { name: 'sql', arguments: { query: "SELECT rid, summary, summary || summary || summary AS s FROM record", limit: 200 } });
+  assert.ok(estimateTokens(big.json.result.content[0].text) <= 20100);
+  const unk = await rpc('tools/call', { name: 'nope', arguments: {} });
+  assert.equal(unk.json.error.code, -32602);
+  assert.equal((await rpc('resources/list')).json.error.code, -32601);
+  assert.equal((await call('/mcp')).res.status, 405);
+  assert.equal((await call('/mcp', { method: 'DELETE' })).res.status, 405);
+  const host = await call('/mcp', { method: 'POST', headers: { host: 'evil.example', 'content-type': 'application/json' }, body: '{}' });
+  assert.equal(host.res.status, 403);
+  const parse = await call('/mcp', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{nope' });
+  assert.equal(parse.json.error.code, -32700);
+  const pv = await rpc('ping', null, { 'mcp-protocol-version': '1999-01-01' });
+  assert.equal(pv.res.status, 400);
+  const lim = await call('/mcp', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'ping' }) }, { ...env, RL_API: denyAll });
+  assert.equal(lim.res.status, 429);
+  const pre = await call('/mcp', { method: 'OPTIONS' });
+  assert.equal(pre.res.status, 204);
+});
+
+test('report', () => {
+  for (const [k, v] of Object.entries(timings)) console.log('# ' + k + ': ' + (typeof v === 'number' ? v.toFixed(1) : JSON.stringify(v)));
+});
