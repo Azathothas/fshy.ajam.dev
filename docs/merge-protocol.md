@@ -4,10 +4,9 @@
 "Review and merge the research pull requests". Any agent in any tool can be the merge session. It needs a
 checkout of both repositories and `gh` access to both.
 
-⚠ `scripts/rq review RUN`, `scripts/rq merge RUN` and `scripts/rq cleanup RUN` read the state of the run in
-`.tmp/rq/` of the research clone that ran it. On another clone they stop with "no run". Until they can read a
-run from its pull request alone, start the merge session in the research clone that ran the run. A merge session
-in another tool is still a different session, so the rule in the next paragraph holds.
+`scripts/rq review RUN`, `scripts/rq merge RUN`, `scripts/rq cleanup RUN` and `scripts/rq report RUN` work in
+any clone. They read the run manifest, `history/ledger/RUN/manifest.json`, on `origin/rq/RUN` or on `origin/main`.
+⚠ A run that landed before 2026-10-28 has no manifest; for such a run, use the research clone that ran it.
 
 A merge session is the third key. The first key is the research harness's own checks (lint, integrator, gate).
 The second key is the audit, where a second model re-reads a sample of each lane's claims. The third key is a
@@ -107,6 +106,15 @@ that you close without a merge, run `scripts/rq cleanup RUN` after the close.
 A pull request that is not a run (code, documents, rules) gets a code review: read the diff, run the checks it
 names, and confirm CI is green. Then merge it with `gh pr merge <number> --merge`. ⛔ Do not merge your own.
 
+A Dependabot pull request in `fshy.ajam.dev` is not the merge session's own work, so the merge session may merge
+it. Before the merge:
+
+1. Read the diff of `site/package-lock.json`: the resolved versions, and any new package or install script.
+2. For a change of `wrangler`, `miniflare` or `workerd`, run `node site/worker/test/smoke.mjs` on the branch.
+3. Merge after CI is green. Close a Dependabot pull request that a merged pull request already covers.
+
+The merge closes the Dependabot alerts that it fixes.
+
 ## 6. Publish
 
 Run this after one or more merges, in `fshy.ajam.dev`. The export fetches `origin` in `f-research` and
@@ -119,7 +127,9 @@ git pull --ff-only
 python publish/export.py --source ../f-research
 ```
 
-The last line of the output names the `source_commit`. Use its first 7 characters as SHORT below:
+The last line of the output names the `source_commit`. Use its first 7 characters as SHORT below. If a branch
+`publish/SHORT` exists already, for example for a second publish of one commit after a change of the tools, use
+`publish/SHORT-2`.
 
 ```bash
 git checkout -b publish/SHORT
