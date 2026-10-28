@@ -29,7 +29,21 @@ git -C f-research config core.hooksPath .githooks
 git -C fshy.ajam.dev config core.hooksPath .githooks
 ```
 
-The commands in sections 2 to 5 run in `f-research`. The commands in section 6 run in `fshy.ajam.dev`.
+The commands in sections 2 to 5 run in `f-research`. The commands in sections 6 and 7 run in `fshy.ajam.dev`,
+and the export of section 6 reads `f-research` beside it.
+
+## Text that the public can read
+
+⛔ **A comment, a pull request title or body, a commit message and an issue in `fshy.ajam.dev` follow rule 4 of
+[`../AGENTS.md`](../AGENTS.md).** They are public, and an edit keeps the old text in the edit history.
+
+- Cite a defect by its file and line. Never quote a line that is itself the leak.
+- Do not name a path, an issue number or a review file of the research repository.
+- Before you post, write the text to a file and scan it. CI scans the title and the body of each pull request too:
+
+  ```bash
+  python publish/build.py --scan draft.md
+  ```
 
 ## 2. List what waits for review
 
@@ -123,6 +137,10 @@ repository's own rules. It checks that `publish/build.py` rebuilds the same stor
 scans every file with both sets of leak rules. With one failed check, `data/` does not change. Read
 `git diff --stat main -- data` before the commit: the changed record files must match the runs you merged.
 Merge the publish pull request after CI is green. The merge session may merge its own publish pull request.
+
+A leak rule of level `warn` in `publish/rules/leak.json` fails the export, and only warns in the build of the
+data that is already on `main`. If the build of the new data shows no warning for a `warn` rule, remove its level
+in a pull request after the publish. Then the build fails on that shape too.
 
 If the export stops with a contract problem (schema version, tables, columns, `needs.json` or a topic), the
 research repository changed its store or its topics. Do not publish. Change `publish/` first, as [`../publish/README.md`](../publish/README.md)

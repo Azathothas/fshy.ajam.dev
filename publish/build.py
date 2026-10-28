@@ -5,6 +5,7 @@ and the Worker copy.
 usage:
   python publish/build.py --check               build the store into .tmp/fshy/, verify it, exit 0 or 1
   python publish/build.py --site site/dist      the store, the Worker copy, the wiki and the API files
+  python publish/build.py --scan FILE...        the leak rules over text files, for example a pull request body
 
 The only input is data/. Every file in it is written by publish/export.py from the projection of the research
 corpus; nothing in data/ is edited by hand. The store is derived and never committed. Standard library only.
@@ -139,6 +140,9 @@ def read_meta(data):
     if have != want:
         raise DataError("data/tables/ has the unknown table file(s) %s and lacks %s"
                         % (sorted(have - want) or "none", sorted(want - have) or "none"))
+    if meta.get("files_sha256") and meta["files_sha256"] != files_digest(data):
+        raise DataError("the files of data/ do not match files_sha256 of data/meta.json: a file changed after the "
+                        "export. Never edit data/ by hand; export again.")
     return meta
 
 
@@ -251,19 +255,36 @@ def make_worker_db(public_db, out_db):
     return os.path.getsize(out_db)
 
 
-def leak_rx():
-    pats = json.load(open(os.path.join(HERE, "rules", "leak.json"), encoding="utf-8"))["patterns"]
-    return re.compile("|".join("(?:%s)" % p["re"] for p in pats))
+def leak_rules():
+    """The rules of rules/leak.json. A rule has a level, fail (the default) or warn, and can have a scope,
+    table.column, that limits it to one column of the store and of data/tables/."""
+    return json.load(open(os.path.join(HERE, "rules", "leak.json"), encoding="utf-8"))["patterns"]
 
 
-def leak_scan(db_path=None, dist=None, data=None):
-    """Every text value of every table, every text file of the site and of data/. -> [(where, context)]."""
-    rx, hits = leak_rx(), []
+def leak_rx(levels=("fail",)):
+    """One expression for the rules of these levels that have no scope; m.lastgroup is the rule id."""
+    pats = [p for p in leak_rules() if p.get("level", "fail") in levels and not p.get("scope")]
+    if not pats:
+        return re.compile(r"(?!x)x")
+    return re.compile("|".join("(?P<%s>%s)" % (p["id"], p["re"]) for p in pats))
+
+
+def leak_scan(db_path=None, dist=None, data=None, levels=("fail",)):
+    """Every text value of every table, every text file of the site and of data/.
+    -> [(where, context, rule id)]. The rule id "history" is the check of the public history columns."""
+    rx, hits = leak_rx(levels), []
+    scoped = [(p["id"], p["scope"].split(".", 1), re.compile(p["re"])) for p in leak_rules()
+              if p.get("scope") and p.get("level", "fail") in levels]
 
     def hit(where, s):
         m = rx.search(s or "")
         if m:
-            hits.append((where, s[max(0, m.start() - 60): m.end() + 40]))
+            hits.append((where, s[max(0, m.start() - 60): m.end() + 40], m.lastgroup))
+
+    def scope_hit(rid, where, v, srx):
+        m = srx.search(v or "") if isinstance(v, str) else None
+        if m:
+            hits.append((where, v[max(0, m.start() - 60): m.end() + 40], rid))
     if db_path:
         db = sqlite3.connect(db_path)
         for (t,) in db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'text_fts%'"):
@@ -271,10 +292,15 @@ def leak_scan(db_path=None, dist=None, data=None):
                 for v in row:
                     if isinstance(v, str):
                         hit(t, v)
+        for rid, (t, c), srx in scoped:
+            for (v,) in db.execute("SELECT %s FROM %s" % (c, t)):
+                scope_hit(rid, "%s.%s" % (t, c), v, srx)
         # a public history entry is its date, status, title and linked records; the rest is process narrative
-        for (hid,) in db.execute("SELECT hid FROM history WHERE body IS NOT NULL OR supersedes IS NOT NULL "
-                                 "OR confidence IS NOT NULL"):
-            hits.append(("history " + hid, "a public history row carries a body, a supersedes line or a confidence"))
+        if "fail" in levels:
+            for (hid,) in db.execute("SELECT hid FROM history WHERE body IS NOT NULL OR supersedes IS NOT NULL "
+                                     "OR confidence IS NOT NULL"):
+                hits.append(("history " + hid, "a public history row carries a body, a supersedes line or a confidence",
+                             "history"))
         db.close()
     for top in (d for d in (dist, data) if d):
         for root, _, files in os.walk(top):
@@ -284,7 +310,38 @@ def leak_scan(db_path=None, dist=None, data=None):
                     b = f.read()
                 if b"\0" not in b[:8192]:  # every text file, whatever its extension; a store or a gzip is binary
                     hit(os.path.relpath(p, top), b.decode("utf-8", errors="replace"))
+    if data:
+        for rid, (t, c), srx in scoped:
+            for row in read_jsonl(os.path.join(data, "tables", t + ".jsonl")):
+                scope_hit(rid, "data/tables/%s.jsonl %s" % (t, c), row.get(c), srx)
     return hits
+
+
+def files_digest(data):
+    """One SHA-256 over the path and the SHA-256 of every file in data/records/ and data/tables/, sorted by path.
+    The export writes it to meta.json as files_sha256; the build recomputes it, so a hand edit of data/ shows."""
+    lines = []
+    for sub in ("records", "tables"):
+        for root, _, files in os.walk(os.path.join(data, sub)):
+            for fn in files:
+                p = os.path.join(root, fn)
+                with open(p, "rb") as f:
+                    h = hashlib.sha256(f.read()).hexdigest()
+                lines.append("%s\t%s\n" % (os.path.relpath(p, data).replace(os.sep, "/"), h))
+    return hashlib.sha256("".join(sorted(lines)).encode("utf-8")).hexdigest()
+
+
+def scan_text(paths):
+    """--scan: every leak rule without a scope, of both levels, over text files, for example the draft of a pull
+    request body or a comment. -> exit code."""
+    rx, n = leak_rx(("fail", "warn")), 0
+    for p in paths:
+        s = open(p, encoding="utf-8", errors="replace").read()
+        for m in rx.finditer(s):
+            n += 1
+            print("LEAK %s %s: ...%s..." % (p, m.lastgroup, s[max(0, m.start() - 40): m.end() + 30].replace("\n", " ")),
+                  file=sys.stderr)
+    return 1 if n else 0
 
 
 def asset_sizes(dist):
@@ -307,10 +364,13 @@ def main(argv=None):
     ap.add_argument("--db", default=os.path.join(ROOT, ".tmp", "fshy", "public.db"))
     ap.add_argument("--site", default=None, help="write the wiki and API files to this directory")
     ap.add_argument("--check", action="store_true", help="build the store, scan it, exit 0 or 1")
+    ap.add_argument("--scan", nargs="+", metavar="FILE", help="scan these text files with the leak rules, and exit")
     ap.add_argument("--quiet", action="store_true")
     a = ap.parse_args(argv)
+    if a.scan:
+        return scan_text(a.scan)
     if not (a.site or a.check):
-        ap.error("give --check or --site DIR")
+        ap.error("give --check, --site DIR or --scan FILE")
     if not os.path.exists(os.path.join(a.data, "meta.json")):
         print("build: %s has no meta.json; publish/export.py writes it" % a.data, file=sys.stderr)
         return 1
@@ -319,7 +379,20 @@ def main(argv=None):
     except DataError as e:
         print("build: %s" % e, file=sys.stderr)
         return 3
-    hits = leak_scan(a.db, data=a.data)
+    meta = json.load(open(os.path.join(a.data, "meta.json"), encoding="utf-8"))
+    if not meta.get("files_sha256"):
+        print("build: warning: data/meta.json has no files_sha256, so a hand edit of data/ cannot show; export again",
+              file=sys.stderr)
+    level = {p["id"]: p.get("level", "fail") for p in leak_rules()}
+    found = leak_scan(a.db, data=a.data, levels=("fail", "warn"))
+    hits = [h for h in found if level.get(h[2], "fail") == "fail"]
+    warned = collections.Counter(h[2] for h in found if level.get(h[2]) == "warn")
+    why = {p["id"]: p["why"] for p in leak_rules()}
+    for rid, n in sorted(warned.items()):
+        first = next(h for h in found if h[2] == rid)
+        print("build: warning: %d match(es) of the warn rule %s (%s); the export refuses them. First: %s: ...%s..."
+              % (n, rid, why[rid], first[0], first[1].replace("\n", " ")), file=sys.stderr)
+    report_warn = dict(warned)
     over = []
     if a.site:
         import site_gen  # noqa: E402
@@ -336,9 +409,10 @@ def main(argv=None):
         for rel, n in over:
             print("build: %s is %d bytes; a static asset holds at most %d" % (rel, n, ASSET_MAX_BYTES), file=sys.stderr)
     report["leaks"] = len(hits)
+    report["warnings"] = report_warn
     report["times"] = TIMES
-    for where, ctx in hits[:40]:
-        print("LEAK %s: ...%s..." % (where, ctx.replace("\n", " ")), file=sys.stderr)
+    for where, ctx, rid in hits[:40]:
+        print("LEAK %s %s: ...%s..." % (where, rid, ctx.replace("\n", " ")), file=sys.stderr)
     if not a.quiet:
         print(json.dumps(report))
     return 1 if hits or over else 0
