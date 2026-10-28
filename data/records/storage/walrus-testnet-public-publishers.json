@@ -1,0 +1,94 @@
+{
+  "topic": "storage",
+  "slug": "walrus-testnet-public-publishers",
+  "provider": "Walrus Testnet public publishers (Mysten Labs + community)",
+  "url": "https://docs.wal.app/docs/system-overview/public-aggregators-and-publishers",
+  "category": "p2p",
+  "free_tier": {
+    "stated": "No account, no key, no quota. Docs quote only a per-request limit: 'Most aggregators and publishers limit requests to 10 MiB by default'. In practice the reference publisher accepted 300 MiB and 1 GiB. Max storage duration is 53 epochs; on Testnet 1 epoch = 1 day.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.wal.app/docs/network-reference",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: 1 GiB",
+    "bytes": 1073741824,
+    "source_url": "https://docs.wal.app/docs/network-reference",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "retention: 53 epochs max, 1 day per epoch on Testnet = 53 days, and 'Walrus wipes the data periodically without warning'",
+    "days": 1,
+    "source_url": "https://docs.wal.app/docs/network-reference",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "unmetered. Reads are served by ~55 independent community aggregators plus the Mysten reference aggregator; all returned CORS-open bytes with no metering observed and no auth header.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Plain HTTP: PUT $PUBLISHER/v1/blobs?epochs=N --upload-file; GET $AGGREGATOR/v1/blobs/<blobId>. OpenAPI at /v1/api. Machine-readable operator list at https://docs.wal.app/operators.json (updated weekly). Walrus CLI + TypeScript SDK also exist (github.com/MystenLabs/walrus).",
+  "chaining": "16 public Testnet publishers in operators.json (3 live-tested: walrus.space, tududes, banansen) x unlimited keyless PUTs x unlimited blobs. Any number of blobs per publisher; distinct content hashes so no account dimension is needed at all. Store 10 TiB as 20,000 x 500 MiB blobs, or 10,000 x 1 GiB against community aggregators. Also: 53-epoch max means re-upload on a rolling schedule, so 'capacity' = (publishers x disk) not a per-identity tier.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "retention: 53 epochs max, 1 day",
+      "source": "https://docs.wal.app/docs/network-reference"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: 1 GiB",
+      "source": "https://docs.wal.app/docs/network-reference"
+    }
+  ],
+  "limits_note": "per-object-cap: 1 GiB verified write; read path has a per-object-cap of 500 MiB on the Mysten reference aggregator (403 SIZE_EXCEEDED, 'the blob size exceeds the maximum allowed size: 524288000') while community aggregators served the same 1 GiB blob fine. retention: 53 epochs max, 1 day per epoch on Testnet = 53 days, and 'Walrus wipes the data periodically without warning'. request-rate: 10 x 1 MiB PUTs back-to-back all returned 200, no shaping seen; no rate limit documented on Testnet.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: No account, no key, no quota. Docs quote only a per-request limit: 'Most aggregators and publishers limit requests to 10 MiB by de",
+    "country": null
+  },
+  "reliability_note": "Testnet is periodically wiped without warning and publishers are volunteer-run (2 of 5 tested endpoints were down: h2o-nodes 502, atalma connection refused); treat as ephemeral, not archive.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://docs.wal.app/docs/system-overview/public-aggregators-and-publishers",
+      "date": "2026-10-21",
+      "proved": "'You do not need to run your own daemon... community operators expose public aggregator and publisher services'; 'Most aggregators and publishers limit requests to 10 MiB by default'"
+    },
+    {
+      "url": "https://docs.wal.app/docs/network-reference",
+      "date": "2026-10-21",
+      "proved": "epoch duration Testnet 1 day, Mainnet 2 weeks; 'Maximum number of epochs for which storage can be bought 53'; 'Data persistence ... Walrus wipes the data periodically without warning'"
+    },
+    {
+      "url": "https://publisher.walrus-testnet.walrus.space/v1/blobs?epochs=53",
+      "date": "2026-10-21",
+      "proved": "probe: PUT --upload-file <1 GiB random> -> 200 in 165 s, blobId AzBDr3weHh3aHfjIdql5DT8z357Y1FGK3nDIJC5KEeI, storageSize 4888852000"
+    },
+    {
+      "url": "https://aggregator.walrus-testnet.walrus.space/v1/blobs/<1",
+      "date": "2026-10-21",
+      "proved": "probe: GET GiB id> -> 403 SIZE_EXCEEDED 524288000; GET https://walrus-testnet-aggregator.stakely.io/v1/blobs/<same id> -> 200, 1073741824 bytes, sha256 matches original byte-for-byte"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: 16 parallel 3 MiB ranged GETs of a 50 MiB blob -> 200/206, 50,331,648 bytes in 1.98 s (25.4 MB/s) vs 3.97 MB/s single-stream (13.2 s) — 6.4x from concurrency"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No account, no key, no quota. Docs quote only a per-request limit: 'Most aggregators and publishers limit requests to 10 MiB by default'. In practice the reference publisher accepted 300 MiB and 1 GiB. Max storage duration is 53 epochs; on Testnet 1 epoch = 1 day.",
+  "extras": {
+    "unit_note": "free_tier.unit is 'mixed' because the headline is denominated in MiB or KiB, which the schema enum does not carry; the verbatim free_tier.stated keeps the true unit. See the storage-dossier handover."
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

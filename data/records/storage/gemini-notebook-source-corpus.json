@@ -1,0 +1,91 @@
+{
+  "topic": "storage",
+  "slug": "gemini-notebook-source-corpus",
+  "provider": "Gemini Notebook (formerly NotebookLM) — source corpus",
+  "url": "https://support.google.com/gemininotebook/answer/16269187?hl=en",
+  "category": "AI notebook / RAG product",
+  "free_tier": {
+    "stated": "100 notebooks/user x 50 sources/notebook x 200 MB per source = 1,000,000 MB ≈ 1 TB free. Also 500,000 words/source cap and no page limit.",
+    "unit": "TB",
+    "metered_on": "unstated",
+    "source_url": "https://support.google.com/gemininotebook/answer/16213268?hl=en",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap 200 MB",
+    "bytes": 200000000,
+    "source_url": "https://support.google.com/gemininotebook/answer/16213268?hl=en",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://support.google.com/gemininotebook/answer/16213268?hl=en",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "No egress metering or fee anywhere in the product. Reads happen through Google's own UI/API, not a CDN URL.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "No official public API for consumer accounts. Working path is the reverse-engineered internal batchexecute API: `notebooklm-py` (19,838 stars, pushed 2026-10-21) exposes Python, CLI, MCP server, and a local REST server; `notebooklm-mcp` (202) and `notebooklm-rest-api` (91) wrap it.",
+  "tooling": "pip install notebooklm-py; `notebooklm source add`, `notebooklm ask`, `notebooklm generate`, `notebooklm download`. Google Cloud has a *separate* documented Enterprise API (notebooks.sources.uploadFile) that requires a Workspace/Cloud entitlement.",
+  "chaining": "100 notebooks x 50 x 200 MB = 1 TB per Google account. Google accounts are free and email-only, so N accounts linearise. Upskilling to Plus/Pro only raises the per-notebook source cap (100/300), so the notebook count stays at 200/500 — the free tier already gives the widest notebook multiplier per dollar.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap 200 MB",
+      "source": "https://support.google.com/gemininotebook/answer/16213268?hl=en"
+    }
+  ],
+  "limits_note": "per-object-cap 200 MB or 500,000 words. Notebook cap is per-user; source cap is per-notebook; 'sharing a notebook does not change the source limit for any collaborator'. Copy-protected PDFs are rejected outright. Consumer API is undocumented and Google has changed *enforced* limits without updating the published tables.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email",
+    "country": null
+  },
+  "reliability_note": "READ-BACK IS EXTRACTED TEXT, NOT ORIGINAL BYTES. There is no 'download source' button; the platform keeps a static extracted copy and the original file is not retrievable. Third-party extensions (Notebook Clipper, nlm tools, notebooklm-tui) export sources as Markdown/TXT/PDF of the *extracted text*; notebooklm-tui saves PDFs as per-page PNGs. So this is the brief's rule 4 case — a host that gives storage but not your bytes back. It is a genuine 1 TB of free ingest, and a genuinely usable grounded-RAG corpus, but it is not a byte-exact archive. Rate limits apply and heavy use is throttled; the shared CI account-pool discussion in the wrapper's own docs is the tell.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://support.google.com/gemininotebook/answer/16269187?hl=en",
+      "date": "2026-10-21",
+      "proved": "'The current limit is 500,000 words per source or up to 200MB for local uploads. There's no page limit.'"
+    },
+    {
+      "url": "https://support.google.com/gemininotebook/answer/16213268?hl=en",
+      "date": "2026-10-21",
+      "proved": "'Notebooks | 100/user'; 'Sources | 50/notebook' (Standard column); 'Sharing a notebook does not change the source limit'"
+    },
+    {
+      "url": "https://github.com/teng-lin/notebooklm-py",
+      "date": "2026-10-21",
+      "proved": "19,838 stars, description 'Full programmatic access to Gemini Notebook's features—including capabilities the web UI doesn't expose'; pushed_at 2026-10-21T19:38:11Z"
+    },
+    {
+      "url": "https://notebookclipper.com/docs/notebook/export-sources",
+      "date": "2026-10-21",
+      "proved": "export is 'the text Gemini Notebook extracted from each source, as Markdown, plain text or PDF' — not the original file"
+    },
+    {
+      "url": "https://ainotechou.com/notelm-source/",
+      "date": "2026-10-21",
+      "proved": "'元のPDFには戻らない！HTML形式への変換' (does not return to the original PDF)"
+    },
+    {
+      "url": "https://docs.cloud.google.com/gemini/enterprise/notebooklm-enterprise/docs/api-notebooks-sources",
+      "date": "2026-10-21",
+      "proved": "separate Enterprise API exists but is entitlement-gated"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "100 notebooks/user x 50 sources/notebook x 200 MB per source = 1,000,000 MB ≈ 1 TB free. Also 500,000 words/source cap and no page limit.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

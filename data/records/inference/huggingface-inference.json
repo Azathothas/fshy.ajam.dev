@@ -1,0 +1,70 @@
+{
+  "topic": "inference",
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "not applicable"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "any OpenAI-compatible client",
+  "chaining": "pairs with an agent through the router; the scarce link is the monthly credit, and the 401-as-HTML shape means a body-classifying client fails before it reads the quota",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "monthly Inference Providers credits: Free Users none (credits purchase required); PRO Users USD 2.00; Team or Enterprise Organizations USD 2.00 per seat",
+      "source": "https://huggingface.co/docs/inference-providers/pricing"
+    }
+  ],
+  "slug": "huggingface-inference",
+  "provider": "Hugging Face Inference Providers",
+  "url": "https://router.huggingface.co/v1",
+  "category": "inference endpoint, platform allocation",
+  "free_tier": {
+    "stated": "no monthly credits on a free account. 'Free users can use Inference Providers by purchasing credits, or by upgrading to PRO'; monthly credits are granted to PRO and to Team or Enterprise organizations",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://huggingface.co/docs/inference-providers/pricing",
+    "read_on": "2026-10-22",
+    "notes": "the pricing doc's eligibility row reads 'Free Users: yes (credits purchase required)'. So the router is reachable to a free account and only by paying, which is the same shape as a paid-only product with a free door"
+  },
+  "limits_note": "the monthly credits granted to PRO, Team and Enterprise are shared among all members of an organisation and applied before any pay-as-you-go usage is billed; none of them is available to a free account",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "a Hugging Face account plus purchased credits, or a PRO subscription; a free account is refused by price rather than by key",
+    "country": null
+  },
+  "reliability_note": "the router returns its 401 as an HTML document rather than JSON, so a probe that classifies on body shape mis-handles it",
+  "confidence": "documented",
+  "confidence_note": "the eligibility text, the monthly credit amounts per account type and the credit-application rule are quoted from the first-party Inference Providers pricing page; the router's HTML error body for an unauthenticated call is from a probe",
+  "evidence": [
+    {
+      "url": "probe:https://router.huggingface.co/v1/chat/completions",
+      "date": "2026-10-22",
+      "proved": "an unauthenticated POST returned 401 with a 3087-byte body, an HTML document, not JSON. The endpoint exists and gates on a key; no key existed here, so no quota was read"
+    },
+    {
+      "url": "https://huggingface.co/docs/inference-providers/pricing",
+      "date": "2026-10-22",
+      "proved": "'PRO users and Team or Enterprise organizations receive monthly credits to use with Inference Providers. Free users can use Inference Providers by purchasing credits, or by upgrading to PRO'; the eligibility table reads 'Free Users — yes (credits purchase required)'"
+    },
+    {
+      "url": "https://huggingface.co/docs/inference-providers/pricing",
+      "date": "2026-10-28",
+      "proved": "monthly Inference Providers credits go to PRO and Team or Enterprise accounts; a free user must purchase credits",
+      "capture": "sha256:e504cc1b75dcdd772ced798f26f0ac05de98b2c9a513ddfe51b1b9b925498f79",
+      "quote": "PRO users and Team or Enterprise organizations receive monthly credits to use with Inference Providers. Free users can use Inference Providers by purchasing credits, or by upgrading to [PRO](https://huggingface.co/subscribe/pro):"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-28T09:47:54.946Z",
+  "binding": "none",
+  "notes": "It does not: the pricing documentation grants monthly credits to PRO and to Team or Enterprise only, and a free user reaches the router by purchasing credits. The verdict moves from qualifies-with-caveat to paid-only. The 401-as-HTML finding stands and is unchanged. Hugging Face also sells Jobs containers in the compute topic on the same account.",
+  "binding_note": "no free allowance exists to bind: the free account can call the router only against purchased credits, so there is no ceiling on a free tier to name"
+}

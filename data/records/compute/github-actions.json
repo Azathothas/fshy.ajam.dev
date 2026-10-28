@@ -1,0 +1,298 @@
+{
+  "topic": "compute",
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "notes": null
+  },
+  "interface": [
+    "ssh"
+  ],
+  "interface_detail": "a workflow YAML in .github/workflows; a runner with a shell and a network",
+  "tooling": "a full Ubuntu, Windows or macOS runner with a shell, package managers and a checkout",
+  "chaining": "a runner is a real machine for up to six hours, destroyed at the end of the job",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "Quoted: 'Each job in a workflow can run for up to 6 hours of execution time. If a job reaches this limit, the job is terminated and fails.' The row is headed 'All GitHub-hosted runners'.",
+      "source": "https://docs.github.com/en/actions/reference/limits"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "Quoted: 'If a workflow run reaches this limit, the workflow run is cancelled. This period includes execution duration, and time spent on waiting and approval.' The threshold is 35 days per workflow run, so the workflow cap is 35 days and the job cap is 6 hours; the job cap binds first.",
+      "source": "https://docs.github.com/en/actions/reference/limits"
+    },
+    {
+      "kind": "request-rate",
+      "value": "Quoted: 'The shortest interval you can run scheduled workflows is once every 5 minutes.' A schedule is also only honoured on the default branch.",
+      "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "Quoted: 'In a public repository, scheduled workflows are automatically disabled when no repository activity has occurred in 60 days.'",
+      "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows"
+    },
+    {
+      "kind": "request-rate",
+      "value": "Job concurrency on the Free plan: 'Total concurrent jobs' 20, 'Maximum concurrent macOS jobs' 5, GPU 'Not applicable'. GitHub Support can raise it on a ticket.",
+      "source": "https://docs.github.com/en/actions/reference/limits"
+    },
+    {
+      "kind": "write-gated",
+      "value": "No inbound reachability and no persistent disk. Quoted: 'When the job has finished, the VM is automatically decommissioned.' IPs are dynamic: 'GitHub-hosted runners use dynamically assigned IP addresses from shared infrastructure.'",
+      "source": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/about-githubs-ip-addresses"
+    },
+    {
+      "kind": "write-gated",
+      "value": "The 'unlimited' is scoped by contract, not by meter. Quoted from the Additional Product Terms: 'If using GitHub-hosted runners, any other activity unrelated to the production, testing, deployment, or publication of the software project associated with the repository where GitHub Actions are used' should not be done. Also: 'Any activity that places a burden on our servers, where that burden is disproportionate to the benefits provided to users (for example, don't use Actions as a content delivery network or as part of a serverless application ...)'.",
+      "source": "https://docs.github.com/en/site-policy/github-terms/github-terms-for-additional-products-and-features"
+    }
+  ],
+  "limits_note": "The shape, the unlimited term, the 6-hour job cap, the 35-day workflow cap, the 5-minute cron floor, the 60-day schedule disablement and the 20-job concurrency are each quoted from a GitHub page read on 2026-10-24. The 6-hour cap is the one that binds: 6 hours x 20 concurrent jobs = 120 job-hours of wall clock, or 480 vCPU-hours, in any rolling window.",
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "verified_at": "2026-10-24T04:00:19.000Z",
+  "price_per_tb_month": null,
+  "notes": "The shape is confirmed exactly as the operator's answer states it: 4 vCPU, 16 GB RAM, 14 GB SSD, workflow label ubuntu-latest, on a public repository, on an email alone. Two things the phrase 'free and unlimited' hides, and both were read on a page today. First, the sentence is a vendor claim on a documentation page and the same vendor's Additional Product Terms scope it: Actions is for 'production, testing, deployment, or publication of the software project associated with the repository', and it may not be used where the burden is 'disproportionate to the benefits provided to users', with 'don't use Actions as a content delivery network or as part of a serverless application' as the worked example. So the meter is unlimited and the permitted use is not; the constraint is contractual and discretionary, which is a worse ceiling than a number because there is no threshold at which it is safe. Second, the phrase '14 GiB SSD' in the corpus understates the vendor: GitHub writes 14 GB, decimal, which is about 13.0 GiB. The record keeps the vendor's number and unit. Not established: the egress term, which no page publishes; and whether enforcement of the terms clause looks like a job cancellation, a repository disablement or an account suspension in practice.",
+  "slug": "github-actions",
+  "provider": "GitHub Actions",
+  "url": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners",
+  "category": "CI runner",
+  "free_tier": {
+    "stated": "On a public repository: 'Use of the standard GitHub-hosted runners is free and unlimited on public repositories.' The billing page repeats it as 'The use of standard GitHub-hosted runners is free: In public repositories / For GitHub Pages / For Dependabot.' On a private repository the GitHub Free plan gets 2,000 minutes a month instead. No card, no phone and no identity document is required for either. The word 'unlimited' is GitHub's own, and it is qualified by the Additional Product Terms, not by the billing page: see limits.",
+    "unit": "unlimited",
+    "metered_on": "wall-clock",
+    "source_url": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners",
+    "read_on": "2026-10-24",
+    "notes": "The unlimited half is the whole finding. The private-repo 2,000 minutes is the smaller half of the same account and a different product: 2,000 minutes is 33.3 hours of wall clock."
+  },
+  "retention": {
+    "stated": "Quoted: 'When the job begins, GitHub automatically provisions a new VM for that job. All steps in the job execute on the VM ... When the job has finished, the VM is automatically decommissioned.' Nothing on the VM survives the job. Artifacts and caches are separate services: caches are evicted after 7 days without access, capped at 10 GB per repository on GitHub Free.",
+    "days": 0,
+    "source_url": "https://docs.github.com/en/actions/how-tos/manage-runners/github-hosted-runners/use-github-hosted-runners",
+    "notes": "0 means the disk is destroyed at job end. Cache and artifact storage is a different service with its own clock."
+  },
+  "egress": {
+    "terms": "not published on any page read: no egress quota, shaping tier or per-byte price is stated for a standard GitHub-hosted runner.",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://docs.github.com/en/site-policy/acceptable-use-policies/github-acceptable-use-policies"
+  },
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Quoted: 'To get started with GitHub.com, you need to have a personal account and a verified email address.' No phone: 'If you have been selected for mandatory 2FA, that does not mean you have to provide GitHub with your phone number.' No card and no hold, but this half is inferred rather than quoted, and the inference is stated: GitHub never writes 'no payment method is needed for public-repo Actions'. What the pages do say is that the card block is conditional on a quota being used up ('If your account does not have a valid payment method on file, usage is blocked once you use up your quota'), that public-repo standard runners are not billed at all, and that the always-charged products are the exception ('Larger runners are always charged for' and 'Usage of larger runners is always blocked until you set up a payment method'). A product that bills nothing has no quota to exhaust, so no card is demanded to use it. That is a documented absence, not a documented exemption, and it is one signup away from being settled.",
+    "country": null
+  },
+  "evidence": [
+    {
+      "url": "https://docs.github.com/en/actions/reference/limits",
+      "date": "2026-10-22",
+      "proved": "each job on a GitHub-hosted runner can run up to 6 hours and is terminated and failed at the limit"
+    },
+    {
+      "url": "https://docs.github.com/en/actions/reference/limits",
+      "date": "2026-10-22",
+      "proved": "a job matrix generates at most 256 jobs per workflow run; a workflow run is capped at 35 days"
+    },
+    {
+      "url": "https://docs.github.com/en/actions/reference/limits",
+      "date": "2026-10-22",
+      "proved": "self-hosted jobs are capped at 5 days of execution and 24 hours of queue time"
+    },
+    {
+      "url": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners",
+      "date": "2026-10-22",
+      "proved": "'Use of the standard GitHub-hosted runners is free and unlimited on public repositories', quoted; the ubuntu-latest shape is 4 vCPU, 16 GB RAM and 14 GB disk"
+    },
+    {
+      "url": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners",
+      "date": "2026-10-24",
+      "proved": "quoted: 'For public repositories ... each GitHub-hosted runner is a new virtual machine (VM) hosted by GitHub' and 'Use of the standard GitHub-hosted runners is free and unlimited on public repositories', with ubuntu-latest listed at 4 vCPU, 16 GB and 14 GB"
+    },
+    {
+      "url": "https://docs.github.com/en/billing/concepts/product-billing/github-actions",
+      "date": "2026-10-24",
+      "proved": "quoted: 'GitHub Actions usage is free for self-hosted runners and for public repositories that use standard GitHub-hosted runners'"
+    },
+    {
+      "url": "https://docs.github.com/en/actions/reference/limits",
+      "date": "2026-10-24",
+      "proved": "quoted: 'All GitHub-hosted runners | Job execution time | 6 hours ... Each job in a workflow can run for up to 6 hours of execution time'"
+    },
+    {
+      "url": "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows",
+      "date": "2026-10-24",
+      "proved": "quoted: 'The shortest interval you can run scheduled workflows is once every 5 minutes' and 'In a public repository, scheduled workflows are automatically disabled when no repository activity has occurred in 60 days'"
+    },
+    {
+      "url": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Use of the standard GitHub-hosted runners is free and unlimited on public repositories.' and the shape table row '| Linux | 4 | 16 GB | 14 GB | x64 | `ubuntu-latest`, `ubuntu-24.04`, `ubuntu-22.04`, `ubuntu-26.04` |'"
+    },
+    {
+      "url": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners",
+      "date": "2026-10-24",
+      "proved": "quoted: 'With the exception of single-CPU runners, each GitHub-hosted runner is a new virtual machine (VM) hosted by GitHub.' The single-CPU `ubuntu-slim` label is a container at 1 CPU / 5 GB / 14 GB, not the default."
+    },
+    {
+      "url": "https://docs.github.com/en/billing/concepts/product-billing/github-actions",
+      "date": "2026-10-24",
+      "proved": "quoted: 'The use of standard GitHub-hosted runners is free:' followed by the bullet list 'In public repositories', 'For GitHub Pages', 'For Dependabot', with the note 'Larger runners are always charged for, even when used by public repositories or when you have quota available from your plan.'"
+    },
+    {
+      "url": "https://docs.github.com/en/billing/concepts/product-billing/github-actions",
+      "date": "2026-10-24",
+      "proved": "quoted: 'GitHub Actions usage is free for self-hosted runners and for public repositories that use standard GitHub-hosted runners.' The free-minutes table row 'GitHub Free | 500 MB | 2,000 | 10 GB | Not applicable' is the private-repo allowance, not the public one."
+    },
+    {
+      "url": "https://docs.github.com/en/actions/reference/limits",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Each job in a workflow can run for up to 6 hours of execution time. If a job reaches this limit, the job is terminated and fails.' Row category 'All GitHub-hosted runners'."
+    },
+    {
+      "url": "https://docs.github.com/en/actions/reference/limits",
+      "date": "2026-10-24",
+      "proved": "quoted: 'If a workflow run reaches this limit, the workflow run is cancelled. This period includes execution duration, and time spent on waiting and approval.' Threshold column: '35 days / workflow run'."
+    },
+    {
+      "url": "https://docs.github.com/en/actions/reference/limits",
+      "date": "2026-10-24",
+      "proved": "concurrency table quoted: '| Standard GitHub-hosted runner | Free | 20 | 5 | Not applicable |' — 20 total concurrent jobs, 5 macOS, no GPU jobs."
+    },
+    {
+      "url": "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows",
+      "date": "2026-10-24",
+      "proved": "quoted: 'The shortest interval you can run scheduled workflows is once every 5 minutes.' and 'In a public repository, scheduled workflows are automatically disabled when no repository activity has occurred in 60 days.'"
+    },
+    {
+      "url": "https://docs.github.com/en/actions/how-tos/manage-runners/github-hosted-runners/use-github-hosted-runners",
+      "date": "2026-10-24",
+      "proved": "quoted, two sentences from the same section: 'When the job begins, GitHub automatically provisions a new VM for that job.' and 'When the job has finished, the VM is automatically decommissioned.'"
+    },
+    {
+      "url": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/about-githubs-ip-addresses",
+      "date": "2026-10-24",
+      "proved": "quoted: 'GitHub-hosted runners use dynamically assigned IP addresses from shared infrastructure.' No static address is available to a standard runner."
+    },
+    {
+      "url": "https://docs.github.com/en/site-policy/github-terms/github-terms-for-additional-products-and-features",
+      "date": "2026-10-24",
+      "proved": "quoted: 'If using GitHub-hosted runners, any other activity unrelated to the production, testing, deployment, or publication of the software project associated with the repository where GitHub Actions are used.' And: 'Any activity that places a burden on our servers, where that burden is disproportionate to the benefits provided to users (for example, don't use Actions as a content delivery network or as part of a serverless application ...)'"
+    },
+    {
+      "url": "https://docs.github.com/en/site-policy/github-terms/github-terms-for-additional-products-and-features",
+      "date": "2026-10-24",
+      "proved": null
+    },
+    {
+      "url": "https://docs.github.com/en/get-started/start-your-journey/creating-an-account-on-github",
+      "date": "2026-10-24",
+      "proved": "quoted: 'To get started with GitHub.com, you need to have a personal account and a verified email address.'"
+    },
+    {
+      "url": "https://docs.github.com/en/authentication/securing-your-account-with-two-factor-authentication-2fa/about-mandatory-two-factor-authentication",
+      "date": "2026-10-24",
+      "proved": "quoted: 'If you have been selected for mandatory 2FA, that does not mean you have to provide GitHub with your phone number. You only have to provide your phone number if you use SMS for 2FA.'"
+    },
+    {
+      "url": "https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching",
+      "date": "2026-10-24",
+      "proved": "quoted: 'GitHub will remove any cache entries that have not been accessed in over 7 days.' and 'By default, the limit is 10 GB per repository'."
+    },
+    {
+      "url": "https://docs.github.com/en/site-policy/acceptable-use-policies/github-acceptable-use-policies",
+      "date": "2026-10-24",
+      "proved": "quoted: 'If we determine your bandwidth usage to be significantly excessive in relation to other users of similar features, we reserve the right to suspend your Account, throttle your file hosting, or otherwise limit your activity' — a discretionary clause, not a published number."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "extras": {
+    "shape": {
+      "vcpu": 4,
+      "ram_gib": 16,
+      "disk_gib": 14,
+      "gpu_class": null,
+      "gpu_count": null,
+      "note": "ubuntu-latest on a public repository, quoted from the vendor table as 'Linux | 4 | 16 GB | 14 GB | x64'. RAM and disk are the vendor's decimal GB, kept unconverted: 16 GB is about 14.9 GiB and 14 GB is about 13.0 GiB. The private-repo default is a different shape: 2 vCPU / 8 GB / 14 GB."
+    },
+    "billing_model": "free",
+    "session_cap": {
+      "wall_clock_min": 360,
+      "idle_reap_s": null,
+      "restart_required": true,
+      "note": "6 hours per job on a GitHub-hosted runner, then the VM is destroyed and the job fails. 35 days per workflow run including queue and approval time. A scheduled workflow is the only way to start again, at a floor of once every 5 minutes, and it is disabled after 60 days without repository activity."
+    },
+    "keep_rate": {
+      "value": 0.0,
+      "basis": "a public-repository runner is not billed at all; there is no rate to keep",
+      "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners"
+    },
+    "persistent_storage": {
+      "included_gib": 0,
+      "price_gib_month": "artifacts and caches are separate services: cache is 10 GB per repository on GitHub Free, artifacts 500 MB, both billed if exceeded and both needing a payment method",
+      "durability": "none on the runner: the VM is decommissioned at job end",
+      "survives_stop": false,
+      "survives_destroy": false,
+      "max_retention": "the job; caches evict after 7 days without access"
+    },
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": false,
+      "ports": "none inbound: the VM is decommissioned at job end and its address is dynamic and shared",
+      "static_ip": false,
+      "ipv6": null,
+      "per_session_bytes": null
+    },
+    "free_tier_kind": "free-forever",
+    "census_rows": [
+      "github-actions"
+    ],
+    "topic_note": "belongs to ci-cd-runners; recorded here to stop the double count",
+    "granularity": {
+      "min_billed_s": 60,
+      "rounding_s": null
+    },
+    "burst_x": 20.0,
+    "wave2": {
+      "verdict_change": "fails-quota -> qualifies-with-caveat on 2026-10-22"
+    },
+    "price_arithmetic": "USD 0.00 on a public repository. 24 hours a day is four 6-hour jobs, and the vendor charges nothing for standard runners on a public repository, so 4 vCPU x 24 h = 96 vCPU-hours a day at USD 0.00. With 20 concurrent jobs the ceiling is 4 x 6 x 20 = 480 vCPU-hours in any rolling six-hour window, and 4 x 24 x 20 = 1,920 vCPU-hours in a day if every slot is kept full. The private-repo alternative is 2,000 minutes a month = 33.3 hours of one job.",
+    "term": "none",
+    "m10h_usd": 0.0,
+    "m24h_usd": 0.0,
+    "concurrency": {
+      "jobs_at_once": 20,
+      "macos_jobs_at_once": 5,
+      "gpu_jobs_at_once": 0,
+      "source": "https://docs.github.com/en/actions/reference/limits",
+      "note": "GitHub Free plan, standard GitHub-hosted runners. GitHub Support can raise it on a ticket. 20 jobs x 4 vCPU = 80 vCPU at once, which is the number that turns one runner into a cluster."
+    },
+    "schedule": {
+      "min_interval": "once every 5 minutes",
+      "disablement": "in a public repository, scheduled workflows are automatically disabled when no repository activity has occurred in 60 days",
+      "branch": "scheduled workflows run only on the default branch",
+      "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows"
+    },
+    "units": "RAM and disk are the vendor's decimal GB. ram_gib and disk_gib hold the vendor's number unconverted, per the corpus rule that a vendor's unit is kept and flagged, so 16 GB RAM is about 14.9 GiB and 14 GB disk is about 13.0 GiB.",
+    "burst_note": "20 concurrent jobs on the Free plan, each 4 vCPU: 80 vCPU at once. burst_x is the concurrency multiplier over a single runner.",
+    "wave3": {
+      "verified": [
+        "shape 4 vCPU / 16 GB / 14 GB on ubuntu-latest, public repo",
+        "the exact 'free and unlimited' sentence",
+        "6-hour job cap",
+        "35-day workflow cap",
+        "20 concurrent jobs on Free",
+        "5-minute cron floor",
+        "60-day schedule disablement",
+        "email-only identity, no card and no phone"
+      ],
+      "corrected": "the corpus wrote 14 GiB; the vendor writes 14 GB decimal, about 13.0 GiB",
+      "new": "the Additional Product Terms scope the unlimited term to work on the repository's own software project, which the billing and limits pages do not say"
+    }
+  },
+  "binding": "retention-clamped",
+  "binding_note": "the 6-hour job cap, not money and not concurrency: the minutes are free and unlimited on a public repository, so what fails is continuity. A workload that must survive more than six hours needs its state outside the runner, and the terms scope the machine to work on the repository it belongs to.",
+  "confidence_note": "every field the verdict rests on is quoted from a first-party GitHub page read on 2026-10-24: shape, the unlimited term, the 6-hour job cap, the concurrency table, the cron floor, the 60-day disablement and the terms scoping. The egress term is not published and is recorded as absent, not as unlimited.",
+  "tier": "GitHub Free, public repository, standard GitHub-hosted runner"
+}

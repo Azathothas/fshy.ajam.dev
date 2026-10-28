@@ -1,0 +1,105 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "naver-mybox",
+  "provider": "Naver MYBOX (네이버 마이박스)",
+  "url": "https://mybox.naver.com",
+  "category": "consumer-pan",
+  "free_tier": {
+    "stated": "30 GB free: '국내 최대 무료 용량 30GB'. MYBOX+ adds 50 GB, 150 GB, 300 GB, 2 TB, 5 TB, 10 TB or 20 TB on top of the base",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://help.naver.com/service/5594/contents/329?lang=ko",
+    "read_on": "2026-10-21"
+  },
+  "per_object_cap": {
+    "stated": "4 GB per file on the free 30 GB plan; maxFileBytes is returned per account and depends on the plan",
+    "bytes": 4000000000,
+    "source_url": "https://bokgoon.com/free-cloud-storage-services/"
+  },
+  "retention": {
+    "stated": "Dormant after two years without a login, and stored files are deleted",
+    "days": 730,
+    "source_url": "https://bokgoon.com/free-cloud-storage-services/"
+  },
+  "egress": {
+    "terms": "No egress fee documented. The binding limit is the API's 50,000 downloads a day, flat across all plan tiers up to 20 TB",
+    "metered": true,
+    "free_allowance": "50,000 downloads a day",
+    "price_per_tb": null,
+    "source_url": "https://developers.mybox.naver.com/getting-started"
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "an official MYBOX Open API with personal access tokens against https://open-api.mybox.naver.com/v1, bearer mbx_pat_ tokens with a 30, 60, 90 or 180-day lifetime and at most five per account. No rclone backend",
+  "chaining": "30 GB times N Naver IDs, where each needs a real-name-verifiable Naver account. 30 GB is 6% of the 500 GB floor, so it only helps if Naver ID creation is already solved",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "4 GB per file on the free plan",
+      "source": "https://bokgoon.com/free-cloud-storage-services/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "50,000 API downloads a day, 30 searches a minute and 240 deletes a minute",
+      "source": "https://developers.mybox.naver.com/getting-started"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "two years without a login makes the account dormant and deletes the files",
+      "source": "https://bokgoon.com/free-cloud-storage-services/"
+    }
+  ],
+  "identity_cost": {
+    "kind": "national-id",
+    "detail": "a Naver account that passes Korean real-name verification, which is the wall the forum reports agree on",
+    "country": "kr"
+  },
+  "reliability_note": "An explicit excess-use clause: bulk calls or excess use get access restricted without notice, and dormant accounts and their tokens fail. The market consolidated and MYBOX is the only Korean free personal drive left",
+  "confidence": "reported",
+  "evidence": [
+    {
+      "url": "https://help.naver.com/service/5594/contents/329?lang=ko",
+      "date": "2026-10-21",
+      "proved": "'국내 최대 무료 용량 30GB를 제공'"
+    },
+    {
+      "url": "https://developers.mybox.naver.com/getting-started",
+      "date": "2026-10-21",
+      "proved": "the API daily limits table gives '50,000회/일' for downloads across 30 GB to 20 TB, and '단시간 대량 호출, 어뷰징 등이 감지될 경우 ... 서비스 이용이 제한될 수 있습니다'"
+    },
+    {
+      "url": "https://developers.mybox.naver.com/docs/dms_storage",
+      "date": "2026-10-21",
+      "proved": "GET /v1/drive/storage with a bearer PAT returns quotaBytes, usedBytes and maxFileBytes"
+    },
+    {
+      "url": "https://bokgoon.com/free-cloud-storage-services/",
+      "date": "2026-10-21",
+      "proved": "MYBOX 30 GB, '파일 1개당 4GB(무료 30GB 기준)', '2년 이상 미로그인 시 휴면 전환, 저장 파일 삭제'"
+    },
+    {
+      "url": "https://webhardrank.kr/legal-file-sharing-webhard-alternatives/",
+      "date": "2026-10-21",
+      "proved": "'네이버 MYBOX 30GB 무료' as the largest domestic free tier"
+    },
+    {
+      "url": "probe:https://open-api.mybox.naver.com/v1/drive/storage",
+      "date": "2026-10-21",
+      "proved": "401 with {\"code\":\"PLAT-401\",\"message\":\"UNAUTHORIZED\"}, so the API is live"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "binding": "per-object-cap",
+  "binding_note": "30 GB and 4 GB per file are both far under the filter, and with a 730-day dormancy deletion the retention clock is a third reason. The per-file cap is the one that survives even a multiplication of accounts.",
+  "notes": "The cleanest documented API in the Asian drive set and the smallest quota. Recorded because an official API with personal access tokens is rare in this population, and because two years of dormancy deleting the bytes is a retention fact that a reader would not guess.",
+  "extras": {
+    "access_mode": "registration-gated",
+    "api_tokens": "5 per account, 30 to 180-day lifetime",
+    "dormancy_days": 730,
+    "aliases": [
+      "Naver MYBOX (네이버 마이박스)"
+    ]
+  }
+}

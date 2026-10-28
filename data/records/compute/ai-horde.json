@@ -1,0 +1,89 @@
+{
+  "topic": "compute",
+  "slug": "ai-horde",
+  "provider": "AI Horde",
+  "url": "https://aihorde.net/",
+  "category": "inference API",
+  "free_tier": {
+    "stated": "Text and image generation on volunteer GPUs, free, with no account: the README says use API key '0000000000' for anonymous usage, with 'No need to register', and that 'anyone can use it for free, even anonymously'. Kudos never expire and can never be bought or sold.",
+    "unit": "none",
+    "metered_on": "wall-clock",
+    "source_url": "https://aihorde.net/",
+    "read_on": "2026-10-22",
+    "notes": "perpetual"
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://aihorde.net/",
+    "notes": null
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://aihorde.net/",
+    "notes": null
+  },
+  "egress": {
+    "terms": "not stated",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://aihorde.net/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "inferred from the tooling the provider documents; not probed",
+  "tooling": "not stated",
+  "chaining": "The only way to raise priority is to run a worker, which needs a GPU; a rented GPU would earn kudos, but kudos earned per GPU-hour are not published, so the trade is unmeasured.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "Anonymous calls sit at the lowest priority and the service 'may be restricted for anonymous users during high load'. The measured pool on 2026-10-22 was 51 workers over 28 text models, so supply is thin and the queue, not a quota, is what limits a job: priority rises only with kudos, earned by contributing a GPU for a user does not have.",
+      "source": "https://aihorde.net/"
+    }
+  ],
+  "limits_note": "Anonymous calls sit at the lowest priority and the service 'may be restricted for anonymous users during high load'. The measured pool on 2026-10-22 was 51 workers over 28 text models, so supply is thin and the queue, not a quota, is what limits a job: priority rises only with kudos, earned by contributing a GPU for a user does not have.",
+  "binding": "request-rate",
+  "binding_note": "Anonymous calls sit at the lowest priority and the service 'may be restricted for anonymous users during high load'. The measured pool on 2026-10-22 was 51 workers over 28 text models, so supply is thin and the queue, not a quota, is what limits a job: priority rises only with kudos, earned by contributing a GPU for a user does not have.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://aihorde.net/api/v2/status/heartbeat",
+      "date": "2026-10-22",
+      "proved": "probe.py record: status 200, 97 bytes, sha256 167f597e7d69, elapsed 899 ms, no challenge detected"
+    },
+    {
+      "url": "https://aihorde.net/api/v2/status/models?type=text",
+      "date": "2026-10-22",
+      "proved": "probe.py record, read with no API key: status 200, 3570 bytes, sha256 12f94b1ca5b0, and parsing the body gives 28 text models served by 51 workers, every model with at least one worker, median queue ETA 103 s, smallest models at ETA 0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Haidra-Org/AI-Horde/main/README.md",
+      "date": "2026-10-22",
+      "proved": "anonymous section: 'Use API key 0000000000', 'Lowest priority in generation queues', 'No need to register'"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Haidra-Org/AI-Horde/main/README.md",
+      "date": "2026-10-22",
+      "proved": "kudos 'can never be bought or sold' and 'kudos never expire'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "Two front ends share the API: Stable Horde for images and KoboldAI Horde for text. The measured model list is a catalog read without a key: it proves the pool is live and public, not that an anonymous generation completes, because a generation needs a POST and the broker has no POST route. The 51-worker figure is one sample at 2026-10-22T15:34Z and volunteer pools swing by hour. A pseudonymous registered account starts at 25 kudos and outranks anonymous.",
+  "extras": {
+    "wave2": {
+      "class": "decentralized-free-inference",
+      "free_tier_kind": "perpetual",
+      "shape": null
+    }
+  }
+}

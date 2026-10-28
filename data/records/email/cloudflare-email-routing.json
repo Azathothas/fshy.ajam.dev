@@ -1,0 +1,76 @@
+{
+  "topic": "email",
+  "slug": "cloudflare-email-routing",
+  "provider": "Cloudflare Email Routing",
+  "url": "https://developers.cloudflare.com/email-service/",
+  "category": "inbound routing",
+  "free_tier": {
+    "stated": "unlimited inbound email on Workers Free and Paid; 200 destination addresses, 200 rules per domain, 30 domains per zone",
+    "unit": "unlimited",
+    "metered_on": "request-count",
+    "source_url": "https://developers.cloudflare.com/email-service/platform/pricing/",
+    "read_on": "2026-10-22",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "25 MiB inbound message; larger messages are rejected",
+    "bytes": 26214400,
+    "notes": "",
+    "source_url": "https://developers.cloudflare.com/email-service/platform/limits/"
+  },
+  "retention": {
+    "stated": "not applicable: messages are forwarded, not stored",
+    "days": null,
+    "notes": "",
+    "source_url": "https://developers.cloudflare.com/email-service/platform/limits/"
+  },
+  "egress": {
+    "terms": "not applicable: inbound only on the free plan",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://developers.cloudflare.com/email-service/platform/pricing/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "the Cloudflare dashboard, wrangler for Worker handlers",
+  "chaining": "the inbound half of the free mail chain and the only unmetered thing in this topic: unlimited inbound on a domain the client already holds, forwarded to a mailbox. Its scarce link is the 200 verified destinations at the account level.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "25 MiB inbound message; larger messages are rejected",
+      "source": "https://developers.cloudflare.com/email-service/platform/limits/"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a Cloudflare account with the domain delegated to Cloudflare nameservers",
+    "country": null
+  },
+  "reliability_note": "a routing rule maps one pattern to one destination; a fan-out to several destinations needs a Worker",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://developers.cloudflare.com/email-service/platform/pricing/",
+      "date": "2026-10-22",
+      "proved": "'Inbound emails (Email Routing) | Unlimited | Unlimited' across Workers Free and Paid, while outbound is 'Not available' on Workers Free"
+    },
+    {
+      "url": "https://developers.cloudflare.com/email-service/platform/limits/",
+      "date": "2026-10-22",
+      "proved": "200 routing rules per domain, 200 destination addresses per account, and a 25 MiB inbound message limit"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T03:20:00.000Z",
+  "notes": "Inbound is genuinely unmetered and is the one unlimited thing in this topic. The 200-destination cap is the quiet one.",
+  "extras": {
+    "stale_after_days": 90
+  },
+  "binding": "none",
+  "binding_note": "nothing in the vocabulary binds the volume: inbound is unlimited and the 25 MiB message cap bounds a single message rather than a day. What actually caps the shape is the 200 destination addresses per account, which is a count and not one of the six kinds",
+  "interface_detail": "MX records on the zone, with rules mapping a pattern to a destination or a Worker",
+  "limits_note": "counts of things, not rates, so no vocabulary kind names them: 200 destination addresses per account, shared across every domain; 200 routing rules per domain and 30 domains per zone",
+  "confidence_note": "no probe: the inbound path could not be exercised from this host. route1, route2 and route3.mx.cloudflare.net answered 550 on the sender's IPv6 reverse lookup, and TCP 25 was reset over IPv4, so no SMTP-level evidence was obtained either way"
+}

@@ -1,0 +1,90 @@
+{
+  "topic": "compute",
+  "slug": "baidu-ai-studio",
+  "provider": "Baidu AI Studio",
+  "url": "https://aistudio.baidu.com/",
+  "category": "notebook runtime",
+  "free_tier": {
+    "stated": "8 points a day, where 'each point buys 2 hours of the advanced GPU V100 16GB or 1 hour of the advanced GPU V100 32GB', so the daily allowance is 8 hours on a V100 32GB or 16 hours on a V100 16GB; the same documentation caps the advanced GPU at 48 hours a week at bronze level",
+    "unit": "hours",
+    "metered_on": "wall-clock",
+    "source_url": "https://ai.baidu.com/ai-doc/AISTUDIO/nk39v9kec",
+    "read_on": "2026-04-27",
+    "notes": "allowance"
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://aistudio.baidu.com/",
+    "notes": null
+  },
+  "retention": {
+    "stated": "the daily window is somewhere between 2.6 and 8 hours and the container is destroyed rather than paused, so a checkpoint outside the persistent mount is lost each day; the Chinese real-name requirement is the harder wall.",
+    "days": null,
+    "source_url": "https://aistudio.baidu.com/",
+    "notes": null
+  },
+  "egress": {
+    "terms": "not stated",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://aistudio.baidu.com/"
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "inferred from the tooling the provider documents; not probed",
+  "tooling": "not stated",
+  "chaining": "A V100 32 GB is the only free card found that can hold a 13B model unquantised, and as a chain element it is the training half and never the serving half.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "48 hours a week on the advanced GPU at bronze level, which is below the 8 hours a day the daily points would otherwise allow",
+      "source": "https://ai.baidu.com/ai-doc/AISTUDIO/1kczvydw9"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "a running project is terminated 10 minutes after it stops being used",
+      "source": "https://ai.baidu.com/ai-doc/AISTUDIO/nk39v9kec"
+    }
+  ],
+  "limits_note": "the daily window is somewhere between 2.6 and 8 hours and the container is destroyed rather than paused, so a checkpoint outside the persistent mount is lost each day; the Chinese real-name requirement is the harder wall.",
+  "binding": "volume-quota",
+  "binding_note": "the weekly cap of 48 hours at bronze level binds before the daily allowance: 8 hours a day is 56 hours a week, which the weekly cap refuses",
+  "identity_cost": {
+    "kind": "national-id",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "confidence": "reported",
+  "evidence": [
+    {
+      "url": "https://linux.do/t/topic/2068176",
+      "date": "2026-04-27",
+      "proved": "quoted, translated: Baidu AI Studio gives 2.6 hours of V100 32 GB a day, is extremely unstable, and writing large files crashes the container [re-read 2026-10-22: fetch exit 0, token overlap 0.0; the original capture stands]"
+    },
+    {
+      "url": "https://ai.baidu.com/ai-doc/AISTUDIO/nk39v9kec",
+      "date": "2026-10-22",
+      "proved": "quoted, translated from the vendor help page: 'each point buys 2 hours of the advanced GPU V100 16GB or 1 hour of the advanced GPU V100 32GB', and 'running a project each day grants 8 points', so the published daily allowance is 8 hours on a V100 32GB, which is the top of the stored 2.6-to-8-hour range and not the bottom; the same page states the environment 'keeps running for 10 minutes' after the browser closes and 'after 10 minutes it will be terminated', which supports the destroyed-not-paused claim. Supports the quota and the retention; the real-name gate is not on this page and stays reported"
+    }
+  ],
+  "verdict": "fails-identity",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "A V100 at 32 GB a day for years is a real perpetual allowance and worth recording even though the door is shut, because the number is what makes the door worth naming. The daily figure is 2.6, 3 to 4 or 8 hours depending on the poster, which is the signature of a shifting allocation; the range is recorded rather than a point.",
+  "extras": {
+    "wave2": {
+      "class": "free-gpu-notebook",
+      "free_tier_kind": "allowance",
+      "shape": {
+        "vcpu": null,
+        "ram_gib": null,
+        "gpu_class": "V100",
+        "gpu_count": 1,
+        "vram_gib": 32
+      }
+    }
+  }
+}

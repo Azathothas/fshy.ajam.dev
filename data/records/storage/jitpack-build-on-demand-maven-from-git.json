@@ -1,0 +1,84 @@
+{
+  "topic": "storage",
+  "slug": "jitpack-build-on-demand-maven-from-git",
+  "provider": "JitPack (jitpack.io) - build-on-demand Maven from git",
+  "url": "https://jitpack.io",
+  "category": "registry",
+  "free_tier": {
+    "stated": "Bounded by the size of the git repo it builds from, not by a storage quota: a build fails with 'Git error. Max repo size 250MB exceeded'. JitPack builds any public git repo on demand and serves the resulting Maven artifacts at com.github.<user>.<repo>:<tag>.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://github.com/jitpack/jitpack.io/issues/4898",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: 250 MB",
+    "bytes": 250000000,
+    "source_url": "https://github.com/jitpack/jitpack.io/issues/4898",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://github.com/jitpack/jitpack.io/issues/4898",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free. Artifacts served from jitpack.io CDN with no billing.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Any Maven/Gradle resolver pointed at https://jitpack.io; JitPack build API at /api/builds/<group>/<artifact> (open, returns build status per tag). No dedicated CLI beyond Maven/Gradle; no rclone backend.",
+  "chaining": "unlimited public git repos x unlimited tags/commits x 250 MB repo each. Because artifacts are *derived*, storage is the repo's, and the same content is rebuilt per tag - so it amplifies, it does not multiply storage. 250 MB x N repos is the honest ceiling.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: 250 MB",
+      "source": "https://github.com/jitpack/jitpack.io/issues/4898"
+    }
+  ],
+  "limits_note": "per-object-cap: 250 MB repo size (hard build error). request-rate: builds are queued per-IP (anonymous builds are rate limited; the API exposes per-tag build state). retention: build artifacts are cached but a failing/expired build is rebuilt on demand - not durable storage.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: ard-capped at 250 MB. Read path live and public (verified /api/builds/com.github.jitpack/maven-simple returning ok states across dozens of tags). unlimited public git repos x unlimit",
+    "country": null
+  },
+  "reliability_note": "Build service, not storage: artifacts can be evicted and rebuilt, and repo size is hard-capped at 250 MB. Read path live and public (verified /api/builds/com.github.jitpack/maven-simple returning ok states across dozens of tags).",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://github.com/jitpack/jitpack.io/issues/4898",
+      "date": "2026-10-21",
+      "proved": "'Build issue Max repo size 250MB exceeded'; 'Git error. Max repo size 250MB exceeded'"
+    },
+    {
+      "url": "https://jitpack.io/api/builds/com.github.jitpack/maven-simple",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200 JSON, dozens of tag/commit entries with status 'ok'"
+    },
+    {
+      "url": "https://docs.jitpack.io/building/",
+      "date": "2026-10-21",
+      "proved": "build-on-demand model"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Bounded by the size of the git repo it builds from, not by a storage quota: a build fails with 'Git error. Max repo size 250MB exceeded'. JitPack builds any public git repo on demand and serves the resulting Maven artifacts at com.github.<user>.<repo>:<tag>.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "Bounded by the size of the git repo it builds from, not by a storage quota: a build fails with 'Git error. Max repo size 250MB exceeded'. JitPack builds any public git repo on demand and serves the resulting Maven artifacts at com.github.<user>.<repo>:<tag>.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

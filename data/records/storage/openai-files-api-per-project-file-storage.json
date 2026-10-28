@@ -1,0 +1,108 @@
+{
+  "topic": "storage",
+  "slug": "openai-files-api-per-project-file-storage",
+  "provider": "OpenAI Files API — per-project file storage",
+  "url": "https://developers.openai.com/api/reference/resources/files/methods/create",
+  "category": "LLM provider /v1/files",
+  "free_tier": {
+    "stated": "2.5 TB per project; 512 MB per file; no organization-wide storage cap; orgs may create up to 2,000 projects by default",
+    "unit": "objects",
+    "metered_on": "stored-bytes",
+    "source_url": "https://help.openai.com/en/articles/8724843-file-storage-quota-errors-for-api-users",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "512 MB per file",
+    "bytes": 512000000,
+    "source_url": "https://help.openai.com/en/articles/8724843-file-storage-quota-errors-for-api-users",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://help.openai.com/en/articles/8724843-file-storage-quota-errors-for-api-users",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Not metered separately for upload/download of files; retrieval is a plain authenticated GET. No published per-GB transfer fee on the Files API surface.",
+    "metered": true
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "REST `POST/GET/DELETE /v1/files`, `GET /v1/files/{file_id}/content`; OpenAI SDKs; works through OpenAI-compatible gateways",
+  "tooling": "openai-python, openai-node, curl; `purpose` field selects the lifecycle class",
+  "chaining": "2,000 projects/org x 2.5 TB = nominally 5 PB per org. Files are project-scoped and cannot be moved between projects, so a pooler must track (project -> file_id). Because `purpose=batch` and `purpose=vision` are both uploadable AND downloadable, they are the only two classes usable as actual storage.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "512 MB per file",
+      "source": "https://help.openai.com/en/articles/8724843-file-storage-quota-errors-for-api-users"
+    }
+  ],
+  "limits_note": "per-object-cap 512 MB. Upload rate 1,000 requests/min/authenticated user. Vector-store attachment has its own 2,000 files/min/org limit. `purpose` is the real gate — see reliability_note.",
+  "identity_cost": {
+    "kind": "any-phone",
+    "detail": "any-phone",
+    "country": null
+  },
+  "reliability_note": "READ GATE IS PER-PURPOSE, NOT PER-ACCOUNT. An OpenAI staff-adjacent answer on the developer forum gives the directionality table: assistants up/NO down; user_data up/NO down; fine-tune up/NO down; evals up/NO down; **batch up/YES down**; **vision up/YES down**; *_output down only. So `purpose=user_data` and `purpose=assistants` are write-only — uploading there is data loss. Storage is genuinely free (no per-GB-day charge for raw files; the $0.10/GB-day on the pricing page is *vector store* storage, not Files API storage). Identity: ChatGPT signup is email-only, but generating the FIRST API key now mandates phone verification (SMS or WhatsApp, one number reusable 3x, rolled out to a listed set of countries). That is the binding constraint here.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://developers.openai.com/api/reference/resources/files/methods/create",
+      "date": "2026-10-21",
+      "proved": "'Individual files can be up to 512 MB, and each project can store up to 2.5 TB of files in total. There is no organization-wide storage limit. Uploads ... rate-limited to 1,000 requests per minute'"
+    },
+    {
+      "url": "https://help.openai.com/en/articles/8724843-file-storage-quota-errors-for-api-users",
+      "date": "2026-10-21",
+      "proved": "'OpenAI currently supports a file storage quota of 2.5 TB of files per project', updated 2 days ago"
+    },
+    {
+      "url": "https://help.openai.com/en/articles/9186755-managing-projects-in-the-api-platform",
+      "date": "2026-10-21",
+      "proved": "'Organizations can create up to 2,000 projects by default'; 'Project resources (such as files, assistants, storage, or threads) are scoped to the project'"
+    },
+    {
+      "url": "https://developers.openai.com/api/reference/resources/files/",
+      "date": "2026-10-21",
+      "proved": "'Retrieve file content: get /files/{file_id}/content'"
+    },
+    {
+      "url": "https://community.openai.com/t/file-uploads-error-why-can-t-i-download-files-with-purpose-user-data/1357013",
+      "date": "2026-10-21",
+      "proved": "directionality table; 'Not allowed to download files of purpose: user_data'"
+    },
+    {
+      "url": "https://community.openai.com/t/not-allowed-to-download-files-of-purpose-assistants/528220",
+      "date": "2026-10-21",
+      "proved": "'You can't download files that you've uploaded to the assistants yourself'"
+    },
+    {
+      "url": "https://platform.openai.com/docs/pricing",
+      "date": "2026-10-21",
+      "proved": "'File search | Storage | $0.10 / GB per day (1 GB free)' — this is vector-store storage, NOT raw file storage"
+    },
+    {
+      "url": "https://help.openai.com/en/articles/8983040-what-does-phone-verification-look-like",
+      "date": "2026-10-21",
+      "proved": "'Phone verification is now mandated on platform.openai.com for generating your initial API key'"
+    },
+    {
+      "url": "https://api.openai.com/v1/files",
+      "date": "2026-10-21",
+      "proved": "PROBE: curl -D - -> HTTP/1.1 401, Content-Length 616, real JSON error, x-openai-proxy-wasm; /v1/files/{id}/content also 401/616 — endpoint live, not a 0-byte 200"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "price_per_tb_month": "free (raw file storage); vector-store storage $0.10/GB/day after 1 GB — avoid attaching to vector stores",
+  "notes": "2.5 TB per project; 512 MB per file; no organization-wide storage cap; orgs may create up to 2,000 projects by default",
+  "extras": {
+    "price_verbatim": "free (raw file storage); vector-store storage $0.10/GB/day after 1 GB — avoid attaching to vector stores"
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

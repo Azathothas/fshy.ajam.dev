@@ -1,0 +1,94 @@
+{
+  "topic": "storage",
+  "slug": "mastodonapp-uk-mstdn-social-mastodon-social-and-the-stoc",
+  "provider": "mastodonapp.uk / mstdn.social / mastodon.social and the stock-Mastodon mass — 100 MiB per object, unlimited per account",
+  "url": "https://mastodonapp.uk",
+  "category": "fediverse-mastodon",
+  "free_tier": {
+    "stated": "Per-account UNLIMITED. Per-file: 103809024 bytes = 99 MiB (video), 16 MiB image on almost every stock instance. mastodonapp.uk raises the IMAGE cap to 99 MiB too, which is the unusual bit.",
+    "unit": "unlimited",
+    "metered_on": "unstated",
+    "source_url": "https://mastodonapp.uk/api/v2/instance",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "Per-file: 103809024 bytes = 99 MiB",
+    "bytes": 103809024,
+    "source_url": "https://mastodonapp.uk/api/v2/instance",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://mastodonapp.uk/api/v2/instance",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free. Media is offloaded to plain S3-compatible buckets behind the instance domain — verified on two live instances: mastodon.world serves from `s3.eu-central-2.wasabisys.com/mastodonworld/...` (Wasabi), mstdn.jp serves from `img.mstdn.jp/media_attachments/files/...`.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Mastodon REST API v1; `toot` CLI; Mastodon.py; Mastodon-API clients in every language.",
+  "chaining": "THE quantity finding of this slot. Stock Mastodon has no per-account media quota — only a per-file validator. So a Mastodon account is a per-object-capped, per-account-unlimited store whose only real ceiling is (a) 30 uploads/30 min and (b) the operator's disk. There are thousands of open-registration instances. 1,000 instances x 99 MiB/object x 1,440 uploads/day is not the right sum; the right sum is 'each account is bounded by rate, not bytes', which makes the fediverse a permanent, free, CDN-fronted write target of effectively instance-disk size.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "Per-file: 103809024 bytes = 99 MiB",
+      "source": "https://mastodonapp.uk/api/v2/instance"
+    }
+  ],
+  "limits_note": "per-object-cap 99 MiB video / 16 MiB image typical; per-account unlimited; request-rate 30 uploads / 30 min / user; 8 attachments per status; 1,500 authenticated API calls / 5 min.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: min / user; 8 attachments per status; 1,500 authenticated API calls / 5 min. fediverse-mastodon",
+    "country": null
+  },
+  "reliability_note": "Registration state varies per instance and flips often — mastodon.social, mstdn.social, mstdn.jp, mastodon.world, mastodon.gamedev.place all reported registrations=true at probe time; mas.to, fosstodon.org, chaos.social, toot.community, mastodon.online reported false. Re-probe before relying on any one.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://mastodonapp.uk/api/v2/instance",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, image_size_limit=103809024, video_size_limit=103809024, registrations.enabled=true"
+    },
+    {
+      "url": "https://mastodon.social/api/v2/instance",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, image_size_limit=16777216, video_size_limit=103809024, registrations.enabled=true"
+    },
+    {
+      "url": "https://mstdn.jp/api/v2/instance",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, 16777216/103809024, registrations.enabled=true"
+    },
+    {
+      "url": "https://mastodon.world",
+      "date": "2026-10-21",
+      "proved": "probe: HEAD media URL -> 200, image/png, 1640544 bytes, Cache-Control: public, max-age=315576000, immutable; origin URL = s3.eu-central-2.wasabisys.com/mastodonworld/media_attachments/files/117/479/508/370/053..."
+    },
+    {
+      "url": "https://img.mstdn.jp/media_attachments/files/117/478/448/419/166/526/original/dc54343aadba4cee",
+      "date": "2026-10-21",
+      "proved": "probe: HEAD ... -> 200, image/png, 1557834 bytes, Cache-Control: public, max-age=315576000, immutable"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Per-account UNLIMITED. Per-file: 103809024 bytes = 99 MiB (video), 16 MiB image on almost every stock instance. mastodonapp.uk raises the IMAGE cap to 99 MiB too, which is the unusual bit.",
+  "extras": {
+    "verdict_note": "PLAN.md §3.2 rules fails-quota by default, because no row in this set clears 500 GiB per unit for a user.",
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "Per-account UNLIMITED. Per-file: 103809024 bytes = 99 MiB (video), 16 MiB image on almost every stock instance. mastodonapp.uk raises the IMAGE cap to 99 MiB too, which is the unusual bit.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

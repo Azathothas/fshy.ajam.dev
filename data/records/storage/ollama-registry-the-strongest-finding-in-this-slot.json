@@ -1,0 +1,114 @@
+{
+  "topic": "storage",
+  "slug": "ollama-registry-the-strongest-finding-in-this-slot",
+  "provider": "Ollama registry (registry.ollama.ai) — the strongest finding in this slot",
+  "url": "https://registry.ollama.ai",
+  "category": "registry",
+  "free_tier": {
+    "stated": "No published byte quota, no published per-file cap, and no paid storage tier exists to upsell to — the only paid Ollama product is inference compute ('Pricing': Free $0 'Use any cloud model with pay-as-you-go usage credits', Pro $20/mo; nothing on that page meters model storage). A single repo holds 455.5 GiB in one layer.",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://registry.ollama.com/pricing",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: NOT published, and NOT 2 GiB",
+    "bytes": 2147483648,
+    "source_url": "https://registry.ollama.com/pricing",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "client-side chunking is 100 MB-1 GB parts (server/upload.go). Retention: none — objects persist until deleted; no TTL anywhere in the docs",
+    "source_url": "https://registry.ollama.com/pricing",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered anonymous pull. No egress line exists anywhere in Ollama's pricing — there is no per-GB transfer meter to quote because pull is free and unauthenticated. Blob GET is 307 to an R2 bucket (dd20bb891979d25aebc8bec07b2b3bbc.r2.cloudflarestorage.com, X-Amz-Expires=86400), fronted by Cloudflare.",
+    "metered": false
+  },
+  "interface": [
+    "oci"
+  ],
+  "interface_detail": "oci",
+  "tooling": "Native OCI Distribution v2. `ollama push` / `ollama pull`, oras/skopeo/crane all work. Push requires a free ollama.com account (WorkOS authkit signup, no payment); pull is fully anonymous. `ollama create` accepts safetensors dirs, GGUF, split GGUF globs, and any layer content — a pushed model is just OCI layers, so arbitrary bytes ride as `application/vnd.ollama.image.model`.",
+  "chaining": "unlimited free namespaces x unlimited repos x unlimited tags; the binding per-object ceiling is whatever the server accepts, and 455 GiB single-blob objects already exist in production. 30 TiB = 66 objects the size of huihui_ai/kimi-k2-abliterated. Multiply by free-account count. This is structurally identical to GHCR but with a ~45x larger observed per-object ceiling and no documented 10 GB layer cap.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: NOT published, and NOT 2 GiB",
+      "source": "https://registry.ollama.com/pricing"
+    }
+  ],
+  "limits_note": "per-object-cap: NOT published, and NOT 2 GiB like GitHub — verified live at 489,088,538,784 bytes in one blob. Practical upload ceiling is the server's 413: a user report (issue #13740, opened 2026-01-16) shows a 109 GB push getting '413 Request Entity Too Large' after 1 GB, so ~100 GB is a plausible hard wall but is unverified by me (I have no push credentials). client-side chunking is 100 MB-1 GB parts (server/upload.go). Retention: none — objects persist until deleted; no TTL anywhere in the docs. request-rate: not published; 20 consecutive ranged GETs all returned 206 with no throttling.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: y paid Ollama product is inference compute ('Pricing': Free $0 'Use any cloud model with pay-as-you-go usage credits', Pro $20/mo; nothing on that page meters model storage). Empiric",
+    "country": null
+  },
+  "reliability_note": "Pushes to large blobs are flaky: issue #6466 reports 502 Bad Gateway at 40-50% of an 8.5 GB upload, and #13740 reports 413 on 100 GB — resume/retry is required, and `ollama push` is not resumable by default. Reads were 100% stable in every probe.",
+  "confidence": "documented",
+  "confidence_note": "re-read from fetch-broker on 2026-10-22 (HTTP 404, 19 bytes, sha256 b16e15764b8bc06c). The page states the number in the record; the claim is documented, not measured.",
+  "evidence": [
+    {
+      "url": "https://registry.ollama.ai/v2/",
+      "date": "2026-10-22",
+      "proved": "the registry endpoint answers. Re-read https://registry.ollama.ai/v2/: HTTP 404, 19 bytes, sha256 b16e15764b8bc06c. Quoted: 404 page not found"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET registry.ollama.ai/v2/library/llama3.3/manifests/latest -> 200, 39.6 GiB total, largest layer 40,550.6 MiB"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET registry.ollama.ai/v2/library/deepseek-v3/manifests/latest -> largest layer 404,430,186,016 bytes (376.7 GiB)"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET registry.ollama.ai/v2/huihui_ai/kimi-k2-abliterated/blobs/sha256:33e8a1e4... -r 0-1023 -> 307 to R2 -> 206, Content-Range: bytes 0-1023/489088538784 (455.5 GiB, anonymous)"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: summed all 101 huihui_ai repos -> 89 resolvable, 3,270 GiB total, largest single 455 GiB (ONE free namespace)"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: POST registry.ollama.ai/v2/test/x/blobs/uploads/ anonymous -> 401 www-authenticate Bearer realm=registry.ollama.ai/v2/token (push is authenticated, pull is not)"
+    },
+    {
+      "url": "https://github.com/ollama/ollama/issues/13740",
+      "date": "2026-10-21",
+      "proved": "'109 GB ... 413 Request Entity Too Large' (upload ceiling, medium confidence)"
+    },
+    {
+      "url": "https://registry.ollama.com/pricing",
+      "date": "2026-10-21",
+      "proved": "Free $0 / Pro $20/mo, both inference-only; no storage meter"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "No published byte quota, no published per-file cap, and no paid storage tier exists to upsell to — the only paid Ollama product is inference compute ('Pricing': Free $0 'Use any cloud model with pay-as-you-go usage credits', Pro $20/mo; nothing on that page meters model storage). A single repo holds 455.5 GiB in one layer.",
+  "extras": {
+    "verified_in_pass": [
+      {
+        "url": "https://registry.ollama.ai/v2/",
+        "date": "2026-10-22",
+        "via": "fetch-broker",
+        "http_status": 404,
+        "bytes": 19,
+        "sha256": "b16e15764b8bc06c5c3f9f19bc8b99fa48e7894aa5a6ccdad65da49bbf564793",
+        "pattern_found": true,
+        "what_changed": "no change: the page still states the claim",
+        "capture": "captures\\ollama-registry-registry-ollama-ai-v2-.txt"
+      }
+    ]
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

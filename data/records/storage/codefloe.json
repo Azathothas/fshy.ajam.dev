@@ -1,0 +1,92 @@
+{
+  "topic": "storage",
+  "slug": "codefloe",
+  "provider": "CodeFloe (Forgejo, Hetzner Germany)",
+  "url": "https://codefloe.com",
+  "category": "registry",
+  "free_tier": {
+    "stated": "5 GB Git + 20 GB packages + 10 GB Git LFS + 10 GB attachments per account/organization; unlimited public and private repositories",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://docs.codefloe.com/usage-quotas/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.codefloe.com/usage-quotas/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Single small operator on one Hetzner box; nightly off-site backups with 90-day retention described as disaster recovery, not per-account restore",
+    "days": 90,
+    "source_url": "https://docs.codefloe.com/usage-quotas/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Download traffic for packages, container images and LFS is counted per account per month but 'There is no limit today' — unlimited, and the endpoint is Cloudflare-fronted. Git clones, release assets and attachments are explicitly not counted.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "webdav",
+    "oci",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Full Forgejo API v1 (packages, generic, OCI registry, releases, LFS) + rclone's Gitea/Forgejo-compatible WebDAV-free REST via any HTTP client; OCI via ORAS/skopeo; package registry speaks Generic/Docker/npm/PyPI etc.",
+  "chaining": "Unlimited free accounts -> 5+20+10+10 = 45 GB of separately-metered pools per identity. Because packages (20 GB) and LFS (10 GB) are separate pools from Git (5 GB), one account yields ~45 GB across four subjects, and each further account carries the same 45 GB. Registry blobs are anonymous-pullable, so shard across repos like any OCI store.",
+  "limits": [],
+  "limits_note": "Per-account quotas only (5 GB git / 20 GB packages / 10 GB LFS / 10 GB attachments). Download counter booked hourly at the edge proxy; a limit will be set later (currently 429 only after an as-yet-unset threshold). Uploads and Git ops never blocked by traffic limits. 2500 CI minutes/month.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: cross four subjects, and each further account carries the same 45 GB. Registry blobs are anonymous-pullable, so shard across repos like any OCI store. Per-account quotas only (5 GB git / 20 GB packages / 10 GB LFS / 10",
+    "country": null
+  },
+  "reliability_note": "Single small operator on one Hetzner box; nightly off-site backups with 90-day retention described as disaster recovery, not per-account restore. Explicit published policy of monitoring several accounts used to exceed its quota and deleting/suspending — the chaining path is actively watched, unlike GitLab's.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://docs.codefloe.com/usage-quotas/",
+      "date": "2026-10-21",
+      "proved": "'Git repo size 5 GB | \"Packages\" size 20 GB | Git LFS 10 GB | Attachments 10 GB'; 'There is no limit today' on download traffic"
+    },
+    {
+      "url": "https://codefloe.com/pricing",
+      "date": "2026-10-21",
+      "proved": "'Unlimited public and private repositories', '5 GB Git storage per account'"
+    },
+    {
+      "url": "https://codefloe.com/api/v1/version",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> {\"version\":\"16.0.6\"} (live Forgejo 16, not a brochure)"
+    },
+    {
+      "url": "https://codefloe.com/v2/",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 401 WWW-Authenticate Bearer realm=https://codefloe.com/v2/token (registry live)"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: anonymous token for CodeFloe/forgejo-codefloe:pull -> 200, then GET /v2/CodeFloe/forgejo-codefloe/manifests/latest with that token -> 200 application/vnd.oci.image.index.v1+json, docker-content-digest sha256:d75b4b8f... (anonymous OCI pull works)"
+    },
+    {
+      "url": "https://codefloe.com/user/sign_up",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200 (open registration)"
+    },
+    {
+      "url": "https://codefloe.com/api/v1/packages/CodeFloe?limit=5",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, lists container packages incl. sha256-digest tags (anonymous package enumeration)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "5 GB Git + 20 GB packages + 10 GB Git LFS + 10 GB attachments per account/organization; unlimited public and private repositories",
+  "extras": {},
+  "binding": "none",
+  "binding_note": "no constraint in the record binds at this scale; the record carries no limit of a kind the vocabulary names"
+}

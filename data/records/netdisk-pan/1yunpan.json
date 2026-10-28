@@ -1,0 +1,109 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "1yunpan",
+  "provider": "1yunpan (易云盘)",
+  "url": "https://www.1yunpan.com",
+  "category": "Cloudreve-family drive with native S3 and WebDAV",
+  "free_tier": {
+    "stated": "100 GB on registration plus 400 GB earned by daily check-in, so 500 GB is reachable on a free account but only through a login streak. The free plan also carries 1 TB of monthly bandwidth",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://www.1yunpan.com/",
+    "read_on": "2026-10-21",
+    "notes": "the pricing block reads '100GB Storage +400GB via check-in' and the check-in panel says 'up to 500GB free'"
+  },
+  "per_object_cap": {
+    "stated": "Not published",
+    "bytes": null,
+    "source_url": "https://www.1yunpan.com/"
+  },
+  "retention": {
+    "stated": "Not published. The 400 GB is drip-fed by daily check-in, so an account that stops logging in cannot earn the rest",
+    "days": null,
+    "source_url": "https://www.1yunpan.com/"
+  },
+  "egress": {
+    "terms": "1 TB per month on the free Starter tier, published, then paid. Direct links are served from per-user subdomains with Cache-Control: public, max-age=15552000",
+    "metered": true,
+    "free_allowance": "1 TB per month",
+    "price_per_tb": null,
+    "source_url": "https://www.1yunpan.com/"
+  },
+  "interface": [
+    "s3",
+    "webdav",
+    "rest"
+  ],
+  "tooling": "rclone s3 against s3.1yunpan.com, rclone webdav, s3cmd, any S3 SDK, and a raw GET on the per-user host. Registration is an email address and an emailed six-digit code with no phone field in the DOM; Google and GitHub OAuth are also offered",
+  "chaining": "The strongest chaining candidate in its group: a free bucket that answers both S3 and WebDAV drops into a chunk-and-replicate scheme as a first-class target with no AList shim. The 1 TB monthly bandwidth is the binding number, not the 500 GB of space",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "1 TB of bandwidth per month on the free tier",
+      "source": "https://www.1yunpan.com/"
+    },
+    {
+      "kind": "write-gated",
+      "value": "400 of the 500 GB is granted 5 GB at a time by daily check-in",
+      "source": "https://www.1yunpan.com/"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an email address and an emailed six-digit code; the register form has username, password, confirm, email, email_code and an agreement checkbox with no phone or mobile input present",
+    "country": null
+  },
+  "reliability_note": "Reads are real: a 1,326,142,372-byte MP4 came back byte-exact against Content-Length with Range honoured, and a ranged GET returned 206 with a correct Content-Range. The 400 GB is streak-gated, so an account that stops logging in loses headroom",
+  "confidence": "reported",
+  "evidence": [
+    {
+      "url": "https://www.1yunpan.com/",
+      "date": "2026-10-21",
+      "proved": "rendered pricing 'Starter CNY 0/month, 1TB Monthly Bandwidth, 100GB Storage +400GB via check-in'"
+    },
+    {
+      "url": "probe:https://id5mjj37zbn85c.1yunpan.com/Videos/test.mp4",
+      "date": "2026-10-21",
+      "proved": "HTTP 200, Content-Length 1326142372, 1326142372 bytes downloaded, sha256 04b36ea0dc7a3bac5776b37432e16ad6d5a560a7da32b1ad7efbf00bfb5b6be7, so a 1.33 GB object came back byte-exact"
+    },
+    {
+      "url": "probe:https://id5mjj37zbn85c.1yunpan.com/Videos/test.mp4#range",
+      "date": "2026-10-21",
+      "proved": "Range bytes=1000000-1000255 returned HTTP 206 with Content-Range bytes 1000000-1000255/1326142372 and 256 bytes"
+    },
+    {
+      "url": "probe:https://s3.1yunpan.com/",
+      "date": "2026-10-21",
+      "proved": "HTTP 400 with S3 XML InvalidArgument / Invalid path, and /testbucket returned 403 AccessDenied / Missing AWS authentication, so it is a real S3 implementation"
+    },
+    {
+      "url": "probe:https://s3.1yunpan.com/testbucket",
+      "date": "2026-10-21",
+      "proved": "403 AccessDenied with real S3 error semantics rather than a stub"
+    },
+    {
+      "url": "https://www.1yunpan.com/register",
+      "date": "2026-10-21",
+      "proved": "the form DOM has username, password, confirm, email, email_code and 2FA support, and zero phone or mobile inputs"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "price_per_tb_month": "Pro at CNY 29/month is 1 TB storage and 10 TB/month; the free tier is not purchasable and has no per-terabyte price",
+  "binding": "per-ip-shaping",
+  "binding_note": "1 TB a month is 33 GB a day, which is 3% of the client's serving target, so the traffic figure binds long before the 500 GB of capacity does. One 1 TiB refill would exhaust a month in a single morning.",
+  "notes": "500 GB reachable on an email address with no phone is unusual, and the S3 endpoint answering real S3 error semantics is what makes it useful: rclone, restic and Duplicati can each treat an account as a bucket. The check-in ladder is a daily quota rather than a wall-clock trial, so it is repeatable, but it also means the account is worth less the moment the streak stops.",
+  "extras": {
+    "access_mode": "registration-gated",
+    "free_tier_exists": true,
+    "check_in_bytes": 429496729600,
+    "bandwidth_bytes_month": 1099511627776,
+    "oauth": [
+      "email",
+      "google",
+      "github"
+    ],
+    "s3_endpoint": "https://s3.1yunpan.com",
+    "fronting": "direct links carry Server: cloudflare and CF-Cache-Status: DYNAMIC"
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "topic": "egress",
+  "slug": "wg-tcp-tunnel",
+  "provider": "wg-tcp-tunnel (arkq)",
+  "url": "https://github.com/arkq/wg-tcp-tunnel",
+  "category": "tool (wireguard transport)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "no service and no account; source under MIT",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://github.com/arkq/wg-tcp-tunnel",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://github.com/arkq/wg-tcp-tunnel",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://github.com/arkq/wg-tcp-tunnel",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not applicable; the software states no volume; ingress: tcp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://github.com/arkq/wg-tcp-tunnel"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "wg-tcp-tunnel --src-tcp/--dst-udp on one end, --src-udp/--dst-tcp on the other",
+  "tooling": "cmake plus Boost.Asio; systemd and Termux runit units in tree",
+  "chaining": "composes with any TCP forwarder that hands over a raw stream, including an ngrok TCP endpoint, and with a plain public-IP host.",
+  "limits": [],
+  "limits_note": "",
+  "binding": "none",
+  "binding_note": "the constraint is a public-IP server at the far end, outside the vocabulary; the build can also reach the far end through ngrok",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no account; a public-IP server and a client",
+    "country": "None"
+  },
+  "reliability_note": "source-built only; no release artefacts; the ngrok path inherits ngrok's connection accounting",
+  "confidence": "documented",
+  "confidence_note": "a measured run through the ngrok path would raise it, and would be the first measurement of a hosted tunnel carrying WireGuard",
+  "evidence": [
+    {
+      "url": "https://github.com/arkq/wg-tcp-tunnel",
+      "date": "2026-10-23",
+      "proved": "the purpose sentence, both invocations, and the Endpoint rewrite"
+    },
+    {
+      "url": "https://github.com/arkq/wg-tcp-tunnel",
+      "date": "2026-10-23",
+      "proved": "\"-DENABLE_NGROK=ON ... --ngrok-api-key=KEY --ngrok-dst-tcp-endpoint=ENDPOINT\"; the tunnel can use an NGROK endpoint as its destination"
+    },
+    {
+      "url": "https://github.com/arkq/wg-tcp-tunnel",
+      "date": "2026-10-23",
+      "proved": "tags v1.1.2 latest, no GitHub release objects, last commit 2026-08-28; 38 stars"
+    },
+    {
+      "url": "https://github.com/arkq/wg-tcp-tunnel",
+      "date": "2026-10-23",
+      "proved": "build options -DENABLE_WEBSOCKET and -DENABLE_RUNIT (Termux service)"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The only wrapper that ships a mode for a hosted forwarder by name: with -DENABLE_NGROK=ON the client dials an ngrok TCP endpoint instead of the server's IP. That is the shortest documented path from a free hosted tunnel to a WireGuard datagram, and it costs one ngrok connection from the free monthly allowance. No release object exists, so a deployment builds from source with Boost and CMake.",
+  "extras": {
+    "wg_path": "none",
+    "wg_detail": "\"This project is a simple UDP-over-TCP tunneling. The main purpose of it is to allow WireGuard to work over TCP\"; server '--src-tcp=0.0.0.0:51820 --dst-udp=127.0.0.1:51820', client '--src-udp=127.0.0.1:51822 --dst-tcp=<SERVER-IP>:51820' with Endpoint = 127.0.0.1:51822",
+    "ingress": "tcp",
+    "volume_tib_month": null,
+    "volume_stated": "not applicable; the software states no volume",
+    "bytes_transit": "yes",
+    "transit_note": "the far end forwards into the local WireGuard listener",
+    "hosting_requirement": "a host on a public address running the server half, or an ngrok TCP endpoint in its place",
+    "last_release": "v1.1.2 tag, no release object, last commit 2026-08-28",
+    "stars": 38
+  }
+}

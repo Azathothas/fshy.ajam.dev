@@ -1,0 +1,82 @@
+{
+  "topic": "storage",
+  "slug": "cloud-firestore",
+  "provider": "Cloud Firestore",
+  "url": "https://firebase.google.com/products/firestore",
+  "category": "paas",
+  "free_tier": {
+    "stated": "1 GiB stored data on the free tier; 50,000 document reads/day; 20,000 writes/day; 10 GiB/month outbound",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://firebase.google.com/docs/firestore/quotas",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://firebase.google.com/docs/firestore/quotas",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://firebase.google.com/docs/firestore/quotas",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Metered — 10 GiB/month outbound free, then GCP rates. 10 GiB/month = ~340 MB/day, 1,500x short of 500 GB/day.",
+    "metered": true,
+    "free_allowance": "10 GiB per month"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Firebase Admin SDK, client SDKs, REST/gRPC API, `gcloud firestore export` to a bucket; documents are JSON-ish with a native `Bytes` type (no base64 bloat)",
+  "chaining": "1 GiB per database; 'Cloud Firestore allows exactly one free database per project'. 500 GB needs 500 projects, each with its own billing-less free quota and its own 10 GiB/month egress.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "20,000 writes/day",
+      "source": "https://firebase.google.com/docs/firestore/quotas"
+    }
+  ],
+  "limits_note": "1 GiB total; 1 MiB per document; 1 MiB - 89 bytes per field value; 50K reads/day; 20K writes/day; 7.5 KiB max index entry; only ONE free database per project",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Reliable; has a native Bytes type so no base64 overhead. The 20K writes/day cap means 1 GiB at 1 MiB/doc = 1,024 documents, which is trivially fine, but re-writing or migrating burns the quota. Single-field indexes add storage you do not control.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://firebase.google.com/docs/firestore/quotas",
+      "date": "2026-10-21",
+      "proved": "'Stored data | 1 GiB'; 'Outbound data transfer | 10 GiB per month'; 'Maximum size for a document | 1 MiB (1,048,576 bytes)'; 'Maximum size of a field value | 1 MiB - 89 bytes'"
+    },
+    {
+      "url": "https://firebase.google.com/docs/firestore/pricing",
+      "date": "2026-10-21",
+      "proved": "'Document reads 50,000 per day'; 'Document writes 20,000 per day'; 'Cloud Firestore allows exactly one free database per project'"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "arithmetic: 50,000 reads/day x 1 MiB max document = 52.4 GB/day of theoretical read — 10x short of 500 GB/day, and the 10 GiB/month egress cap cuts it to 340 MB/day"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "1 GiB stored data on the free tier; 50,000 document reads/day; 20,000 writes/day; 10 GiB/month outbound",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "1 GiB stored data on the free tier; 50,000 document reads/day; 20,000 writes/day; 10 GiB/month outbound",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "request-rate",
+  "binding_note": "calls are bounded rather than bytes, which is fatal to a nightly job on a monthly counter"
+}

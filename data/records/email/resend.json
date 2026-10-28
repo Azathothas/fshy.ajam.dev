@@ -1,0 +1,84 @@
+{
+  "topic": "email",
+  "slug": "resend",
+  "provider": "Resend",
+  "url": "https://resend.com/pricing",
+  "category": "transactional sender",
+  "free_tier": {
+    "stated": "3,000 emails/month and 100/day, 3 domains, 3 inboxes, 30-day retention",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://resend.com/pricing",
+    "read_on": "2026-10-22",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: a message count rather than an object",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": "logs kept 30 days; inbound messages count against the same quota",
+    "days": null,
+    "notes": "",
+    "source_url": "https://resend.com/docs/knowledge-base/resend-sending-limits"
+  },
+  "egress": {
+    "terms": "not applicable: an outbound sender",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://resend.com/pricing"
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "curl, any HTTP client",
+  "chaining": "the outbound half of the free mail chain: unlimited inbound from Cloudflare Email Routing or Forward Email, then 100 messages a day out through Resend. The daily cap is the scarce link.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "100 emails per UTC calendar day, resetting at 00:00 UTC",
+      "source": "https://resend.com/docs/knowledge-base/resend-sending-limits"
+    },
+    {
+      "kind": "request-rate",
+      "value": "10 requests per second per account",
+      "source": "https://resend.com/docs/knowledge-base/resend-sending-limits"
+    },
+    {
+      "kind": "request-rate",
+      "value": "received email counts against both the daily and the monthly quota",
+      "source": "https://resend.com/docs/knowledge-base/resend-sending-limits"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an account and a verified sending domain; no card on the free plan",
+    "country": null
+  },
+  "reliability_note": "sending pauses above a 4% bounce rate, which is a reputation cap rather than a volume cap",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://resend.com/docs/knowledge-base/resend-sending-limits",
+      "date": "2026-10-22",
+      "proved": "'daily email quota of 100 emails/day and 3,000 emails/month', a UTC calendar day rather than a rolling window, multiple recipients counting separately, 10 requests per second, and received mail counting against the quota"
+    },
+    {
+      "url": "probe:smtp://smtp.resend.com:587",
+      "date": "2026-10-22",
+      "proved": "banner 250, EHLO advertises SIZE and 8BITMIME, STARTTLS completed, and AUTH LOGIN returned 334. The submission endpoint answers; no message was sent"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T03:20:00.000Z",
+  "notes": "A spike at 23:50 UTC gets 100 more at midnight, which is the one burst the boundary allows.",
+  "extras": {
+    "stale_after_days": 90
+  },
+  "binding": "request-rate",
+  "binding_note": "100/day rather than 3,000/month: the 30:1 ratio means the monthly figure cannot be spent in a burst, and the page states the UTC boundary explicitly.",
+  "interface_detail": "https://api.resend.com/emails",
+  "confidence_note": "no message was sent, so no delivery is proved. The submission path was probed: smtp.resend.com:587 answered 250, STARTTLS completed, and AUTH LOGIN returned 334"
+}

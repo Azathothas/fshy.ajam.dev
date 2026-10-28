@@ -1,0 +1,578 @@
+{
+  "topic": "debrid",
+  "slug": "premiumize",
+  "provider": "Premiumize",
+  "url": "https://www.premiumize.me/api",
+  "category": "multi-hoster / debrid (link unrestrict + torrent cache + usenet + cloud storage)",
+  "tier": "premium",
+  "free_tier": {
+    "stated": "No free tier. Access is a paid membership, priced at 9.99 EUR / 11.99 USD for one month or 69.99 EUR / 79.99 USD for one year, and every membership or renewal fills the fair-use balance to 1,000 points.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://www.premiumize.me/premium",
+    "read_on": "2026-10-23",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "No maximum file size: 'Individual transfers are not subject to a specified maximum file size.'",
+    "bytes": null,
+    "source_url": "https://www.premiumize.me/legal"
+  },
+  "retention": {
+    "stated": "Cloud storage is included (1 TB) and content expires; the terms allow deletion to enforce the storage limit: 'If this storage limit is exceeded, Premiumize.me reserves the right to arbitrarily delete files from the cloud storage until the storage limit is complied with again.' No expiry period is published.",
+    "days": null,
+    "source_url": "https://www.premiumize.me/legal"
+  },
+  "egress": {
+    "terms": "Fair-use points, not bytes: 'The use of the Service is subject to a fair-use limit based on available points ... In cases of excessive usage exceeding available points, access to services is temporarily restricted until the daily replenishment of 30 points at midnight (UTC) or until additional booster points are purchased.'",
+    "metered": true,
+    "free_allowance": "1,000 points per membership period; 30 points replenished daily at 00:00 UTC",
+    "price_per_tb": null,
+    "source_url": "https://www.premiumize.me/legal"
+  },
+  "interface": [
+    "rest",
+    "webdav",
+    "ftp",
+    "sftp"
+  ],
+  "interface_detail": "REST under https://www.premiumize.me/api/ with an apikey or an OAuth 2.0 token (device-code and PKCE flows); cloud storage is reachable over WebDAV, FTP and SFTP.",
+  "endpoint": "https://www.premiumize.me/api/",
+  "tooling": "zurg, rclone, Infuse over WebDAV, Stremio add-ons, official apps",
+  "chaining": "The only mainstream debrid with both usenet and 1 TB of retained cloud storage, so it is the archive layer: a completed transfer stays addressable after the transfer list is cleared.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "1,000 fair-use points per membership period, 30 replenished per day at 00:00 UTC; overspend returns account_limit_reached",
+      "source": "https://www.premiumize.me/legal"
+    },
+    {
+      "kind": "request-rate",
+      "value": "8 concurrent API requests (third-party client's documented ceiling)",
+      "source": "https://notes.debridmediamanager.com/providers/premiumize/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "none: 'Individual transfers are not subject to a specified maximum file size', but per-service daily traffic or link limits may apply and are shown on the services overview",
+      "source": "https://www.premiumize.me/legal"
+    },
+    {
+      "kind": "request-rate",
+      "value": "no number published; the API returns the string code 'rate_limit_reached' ('You've made too many API requests too quickly.') inside a normal 200 response",
+      "source": "https://www.premiumize.me/api"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "fair-use points as a fraction 0-1 in account/info limit_used, per-service multipliers in services/list fairusefactor",
+      "source": "https://www.premiumize.me/api"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "1,000 fair-use points per rolling 30 days, 1 point per GB, replenished 30 points per day at midnight UTC",
+      "source": "https://www.premiumize.me/legal"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "usenet traffic is charged at a factor of 2, so 1,000 points are about 500 GB of usenet",
+      "source": "https://blog.premiumize.me/fair-use-boosters-and-other-limits/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "1 TB of cloud storage per membership; the terms allow deletion of files above it",
+      "source": "https://www.premiumize.me/legal"
+    },
+    {
+      "kind": "request-rate",
+      "value": "per-service daily traffic or link limits may be imposed and are shown in the supported-services overview",
+      "source": "https://www.premiumize.me/legal"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "points per month, multiplied by `fairusefactor` 1x-5x per host",
+      "source": "https://www.premiumize.me/api/services/list"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "1 TB cloud storage included per account",
+      "source": "https://www.premiumize.me/premium"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "1000 GB cloud storage per premium membership",
+      "source": "https://www.premiumize.me/help/article/cloud-storage-limit"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "all cloud data deleted at contract end",
+      "source": "https://www.premiumize.me/legal"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "fair-use points per membership; exceeding them deducts booster balance",
+      "source": "https://blog.premiumize.me/enjoy-1-tb-dedicated-tb-cloud-space-latest-fair-use-and-booster-changes/"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "1000 GB of traffic per rolling balance, refilled 30 GB/day",
+      "source": "https://www.premiumize.me/help/article/download-limit"
+    }
+  ],
+  "limits_note": "Point cost is not uniform: the API returns a per-service 'fairusefactor' that multiplies point consumption for that host, so one host can drain the same balance faster than another. The /fairuse page that explains it is behind a login and was not read.",
+  "binding": "volume-quota",
+  "binding_note": "The only account-level counter is points; a 1 TiB/month client spends them at a per-host multiplier and hits account_limit_reached, not a connection or per-file limit.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "'An e-mail address is required for registration'; disposable-mail domains are refused and the vendor may exclude providers. Card or voucher to pay. No phone number in the pages read.",
+    "country": null
+  },
+  "reliability_note": "Fair-use exhaustion restricts all access until the daily 30-point top-up, not just the offending transfer; a missing key and a wrong key return the same authentication_failed string; a domain-restricted signup can fail before any payment.",
+  "confidence": "documented",
+  "confidence_note": "The 8-request concurrency figure is a third party's and is attributed. A live call spending points would raise the metering half to measured.",
+  "evidence": [
+    {
+      "url": "https://www.premiumize.me/api",
+      "date": "2026-10-23",
+      "proved": "The error envelope {status, message, code}, the statement that 'The HTTP status is 200 for normal responses including business-logic errors', and the four retry classes: transient (link_generation_failed, transient_error), semi-permanent (service_down, service_limit_reached, account_limit_reached, rate_limit_reached, semi_permanent_error), permanent (service_unsupported, not_found, authentication_failed, permission_denied, invalid_request, permanent_error), unknown (unknown_error, HTTP 500). Account fields limit_used and booster_points. Services endpoint returns 'fairusefactor'."
+    },
+    {
+      "url": "https://www.premiumize.me/legal",
+      "date": "2026-10-23",
+      "proved": "'Every premium membership or renewal replenishes the points balance to a maximum of 1,000 points ... temporarily restricted until the daily replenishment of 30 points at midnight (UTC)'; 'Individual transfers are not subject to a specified maximum file size'; the cloud-storage deletion clause"
+    },
+    {
+      "url": "https://www.premiumize.me/premium",
+      "date": "2026-10-23",
+      "proved": "1 month 9.99 EUR / 11.99 USD; 1 year 69.99 EUR / 79.99 USD; 1 TB cloud storage, WebDAV, FTP, SFTP, RSS, developer API."
+    },
+    {
+      "url": "https://notes.debridmediamanager.com/providers/premiumize/",
+      "date": "2026-10-23",
+      "proved": "Third-party client notes: '8 concurrent API requests'; the code-to-action map (rate_limit_reached pauses one minute, account_limit_reached/service_limit_reached report a spent allowance, not_found treats the torrent as gone); 'Premiumize answers a missing key and a wrong key identically.'"
+    },
+    {
+      "url": "https://www.premiumize.me/api",
+      "date": "2026-10-23",
+      "proved": "the error-code table where rate_limit_reached, service_limit_reached, account_limit_reached and authentication_failed are all HTTP 200; 'limit_used - Fair-use fraction in [0, 1]'; the OAuth2 device-code flow at https://www.premiumize.me/token; the endpoint list (transfer/create, transfer/directdl, cache/check, item/listall, zip/generate)"
+    },
+    {
+      "url": "https://www.premiumize.me/premium",
+      "date": "2026-10-23",
+      "proved": "'1 TB Cloud Storage', '1 Month 9.99EUR/US$11.99', '1 Year 69.99EUR/US$79.99', and no free plan in the table"
+    },
+    {
+      "url": "https://www.premiumize.me/features",
+      "date": "2026-10-23",
+      "proved": "'Connect to your cloud with WebDAV, FTP, or SFTP. Mount your storage as a network drive'"
+    },
+    {
+      "url": "https://rclone.org/premiumizeme/",
+      "date": "2026-10-23",
+      "proved": "an official rclone backend 'added in v1.49', Tier 3, configured by an interactive OAuth token rather than an API key"
+    },
+    {
+      "url": "https://rclone.org/overview/",
+      "date": "2026-10-23",
+      "proved": "premiumizeme is the only debrid service in rclone's backend table; no real-debrid, alldebrid, torbox, debrid-link, linksnappy, deepbrid or mega-debrid backend exists"
+    },
+    {
+      "url": "https://www.premiumize.me/premium",
+      "date": "2026-10-23",
+      "proved": "'1 Month 9.99€/US$11.99' and '1 Year 69.99€/US$79.99' (5.75€ / US$6.57 per month), 1 TB cloud storage included"
+    },
+    {
+      "url": "https://www.premiumize.me/legal",
+      "date": "2026-10-23",
+      "proved": null
+    },
+    {
+      "url": "https://www.premiumize.me/features",
+      "date": "2026-10-23",
+      "proved": "1 TB cloud storage, remote upload, WebDAV/FTP/SFTP access, RSS automation, developer API"
+    },
+    {
+      "url": "https://blog.premiumize.me/fair-use-boosters-and-other-limits/",
+      "date": "2026-10-23",
+      "proved": "vendor blog: '1 GB of usage equals 1 point', usenet factor 2, '1,000 points still allow for about 500 GB' of usenet, and booster packages of 1,000 points"
+    },
+    {
+      "url": "https://www.premiumize.me/",
+      "date": "2026-10-23",
+      "proved": "'All features included with one membership, starting at 5.75 EUR / month'"
+    },
+    {
+      "url": "probe:https://www.premiumize.me/api/services/list",
+      "date": "2026-10-23",
+      "proved": "36 services in `cache`, 20 in `directdl`, 10 in `queue`, plus `fairusefactor` 1-5 and per-service `aliases`/`regexpatterns`; no key required, 8683 bytes"
+    },
+    {
+      "url": "probe:https://www.premiumize.me/services",
+      "date": "2026-10-23",
+      "proved": "the old services page is now a features page listing '1TB Cloud Storage', 'WebDAV, FTP & SFTP Access' and 'Developer API' - the host list has moved to /api/services/list"
+    },
+    {
+      "url": "https://www.premiumize.me/premium",
+      "date": "2026-10-23",
+      "proved": "'1 Month 9.99€/US$11.99' and '1 Year 69.99€/US$79.99'"
+    },
+    {
+      "url": "https://www.premiumize.me/api",
+      "date": "2026-10-23",
+      "proved": "`GET /api/services/list` documented with `fairusefactor` in the response"
+    },
+    {
+      "url": "https://www.premiumize.me/premium",
+      "date": "2026-10-23",
+      "proved": "'1 Month 9.99 EUR/US$11.99' and '1 Year 69.99 EUR/US$79.99 (5.75 EUR/US$6.57 per month)', plus '1 TB Cloud Storage'"
+    },
+    {
+      "url": "https://web.archive.org/web/20230927114455/https://www.premiumize.me/premium",
+      "date": "2023-09-27",
+      "proved": "EUR-only table: 9.99/month, 24.99/3 months, 69.99/12 months - the 3-month term existed then"
+    },
+    {
+      "url": "https://web.archive.org/web/20241015025657/https://www.premiumize.me/premium",
+      "date": "2024-10-15",
+      "proved": "the same three EUR terms, unchanged"
+    },
+    {
+      "url": "https://web.archive.org/web/20251001005551/https://www.premiumize.me/premium",
+      "date": "2025-10-01",
+      "proved": "USD prices appear in front of the EUR ones: US$11.99/month, US$29.99/3 months, US$79.99/12 months, with the EUR column unchanged"
+    },
+    {
+      "url": "https://www.premiumize.me/legal",
+      "date": "2026-10-23",
+      "proved": "'after automatic contract end, access to the Service is no longer possible and all data in the cloud storage will be irretrievably deleted'; a 72-hour grace only for failed payments; 'a month is defined as 30 days'"
+    },
+    {
+      "url": "https://www.premiumize.me/help/article/cloud-premium-expire",
+      "date": "2026-10-23",
+      "proved": "'we keep your files for a short time after your premium membership has expired' with no number, followed by 'we will unfortunately have to delete your files permanently'"
+    },
+    {
+      "url": "https://www.premiumize.me/help/article/cloud-storage-limit",
+      "date": "2026-10-23",
+      "proved": "'you can store up to 1000 GB in your personal cloud storage' and oldest-first deletion when over it"
+    },
+    {
+      "url": "https://www.premiumize.me/legal",
+      "date": "2026-10-23",
+      "proved": "'Fair use' points: a membership holds at most 1,000 points, 1 GB costs about 1 point, 30 points are replenished daily at midnight UTC; usenet is charged at a factor of 2."
+    },
+    {
+      "url": "https://www.premiumize.me/premium",
+      "date": "2026-10-23",
+      "proved": "EUR 9.99 per month, EUR 69.99 per year (US$11.99 / US$79.99); no free tier and no trial."
+    },
+    {
+      "url": "https://www.premiumize.me/premium",
+      "date": "2026-10-23",
+      "proved": "'1 TB Cloud Storage', 'WebDAV, FTP & SFTP Access', 'Developer API'; 1 month 9.99€/US$11.99, 1 year 69.99€/US$79.99"
+    },
+    {
+      "url": "https://www.premiumize.me/help/article/download-limit",
+      "date": "2026-10-23",
+      "proved": "'1000 points', 'Every day at midnight (UTC time zone) you will receive 30 points again', '1 point is equivalent to 1 GB of traffic', storage is not deducted"
+    },
+    {
+      "url": "https://www.premiumize.me/help/article/payment-methods",
+      "date": "2026-10-23",
+      "proved": "'We accept major credit cards, PayPal and cryptocurrencies for payment of your premium membership in most countries. Other payment methods may only be available in selected countries.'"
+    },
+    {
+      "url": "https://www.premiumize.me/premium",
+      "date": "2026-10-23",
+      "proved": "the price ladder (9.99 EUR / US$11.99 monthly, 69.99 EUR / US$79.99 yearly) and the shorter form of the rail claim: 'Credit Card, PayPal and more depending on your region'"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T02:22:02.000Z",
+  "price_per_tb_month": null,
+  "notes": "Candidates for the first failure: point exhaustion, the per-host fairusefactor making one host expensive, or the 8-request ceiling. Point exhaustion is documented with a number and a reset time; the per-host multiplier is documented as a field but its values are behind a login; the concurrency ceiling is third-party only. The 30-points-per-day figure is widely quoted as roughly 30 GB/day of ordinary traffic by users, which is an inference from an undisclosed point-to-byte rate and is not stated by the vendor. The cheapest of the eight per month is AllDebrid, but Premiumize is the cheapest that a plain 'rclone mount' can read, and it is the only one with usenet included. Abandonment condition: if the API reference gains a numeric rate limit, the 'no number' finding is stale. At the 30-point daily refill the sustained allowance is 900 GB per 30 days, so Premiumize is short of a 1 TiB month before any usenet is used. That is the arithmetic that decides this record, and it is why the verdict is a caveat rather than a clean qualify. The number of supported hosts is not published on any reachable page; premiumize.me/services redirects to /features, which lists capabilities and no host count. The 2026 site dropped the public host-list page entirely the API endpoint is now the only host list, and it is unauthenticated. The euro price has not moved in 36 months what changed is the packaging. A 3-month term at EUR 24.99 was sold from 2023 to at least 2025-10 and is gone in 2026, and USD moved to the front of the table at a rate the vendor fixes itself (11.99/9.99 = 1.200, 79.99/69.99 = 1.143), so the dollar buyer pays a different margin than the euro buyer. The EUR buyer's price history is flat. The cleanest documented answer: a lapsed Premiumize keeps nothing by contract. Its 72-hour payment grace is the only slack, and it applies to a failed payment, not to a deliberate pause. Abandonment condition: a published grace number supersedes the 0. Two things go wrong there: a vendor TB is not a TiB (1,000 GB = 0.9095 TiB, so the price per TiB is 10% higher, USD 12.32 not USD 11.21), and the sustainable rate is 30 points a day, which is 900 GB, not 1,000. The 1,000-point ceiling is only reachable once; after that Premiumize is USD 13.70 per TiB-month, which puts it 18x the cheapest allowance in the corpus rather than 15x. The best storage-per-euro of the paid multi-hosters and the only one with 1 TB persistent cloud storage plus WebDAV on every plan, but the fair-use balance makes it a 1 TB/month service in practice, and the annual price is the only way it gets near sub-5-euro bar. The coin list and the processor are not published. 'Cryptocurrencies' unnamed is weaker evidence than TorBox's 20-coin list: a client cannot tell in advance whether Monero is accepted, and the privacy property that makes a crypto rail useful depends on the coin.",
+  "extras": {
+    "failure_angle": "point exhaustion",
+    "strongest_signal": "account_limit_reached",
+    "account_states": "authentication_failed; permission_denied ('account restricted, unconfirmed'); account_limit_reached; rate_limit_reached; service_down",
+    "cache_miss": "the cache endpoint exists (documented 'Cache' section) but no not-cached code is documented; a miss appears as a transfer that must be created and waited on",
+    "host_removal": "'Premiumize.me reserves the right to impose daily traffic or link limits on transfers involving such services. Any applicable limits are transparently displayed on the Website in the overview of supported services.'",
+    "simultaneous_use": "the API ceiling is 8 concurrent requests (third-party). A second account is a second entry, not a second key.",
+    "auth_flows": "API key as Bearer, or OAuth2 with one scope 'full'. PKCE authorization code is the recommended default; a device-code flow exists '(for TVs, set-top boxes, CLI tools)' and posts response_type=device_code to /token, then polls with grant_type=device_code; a legacy password grant is also documented",
+    "unrestrict_endpoint": "POST /api/transfer/directdl - generates direct links from a hoster URL, magnet or torrent without storing it in the cloud",
+    "torrent_endpoints": "POST /api/transfer/create (src), GET /api/transfer/list, POST /api/transfer/retry, POST /api/transfer/delete, POST /api/transfer/clearfinished, POST /api/cache/check for instant availability",
+    "account_endpoints": "GET /api/account/info (limit_used, space_used deprecated), GET /api/services/list (per-service fairusefactor)",
+    "public_endpoints_no_account": "none found: every documented method needs the key or token",
+    "host_count_claimed": "not stated on the pages read",
+    "usenet": "yes, charged at a factor of 2 against the same points",
+    "torrent": "yes, magnet and torrent file",
+    "annual_plan": "EUR 69.99 / US$79.99 for 1 year",
+    "host_matrix": {
+      "published_daily_caps": false,
+      "source": "https://www.premiumize.me/api/services/list",
+      "cap_endpoint": "https://www.premiumize.me/api/services/list",
+      "cap_fields": [
+        "fairusefactor"
+      ],
+      "hosts_listed": 36,
+      "rows": [
+        {
+          "host": "1fichier.com",
+          "fairusefactor": 2
+        },
+        {
+          "host": "alfafile.net",
+          "fairusefactor": 2
+        },
+        {
+          "host": "bandcamp.com",
+          "fairusefactor": 1
+        },
+        {
+          "host": "clicknupload.to",
+          "fairusefactor": 1
+        },
+        {
+          "host": "dailyuploads.net",
+          "fairusefactor": 5
+        },
+        {
+          "host": "down.mdiaload.com",
+          "fairusefactor": 5
+        },
+        {
+          "host": "downup.me",
+          "fairusefactor": 2
+        },
+        {
+          "host": "emload.com",
+          "fairusefactor": 1
+        },
+        {
+          "host": "fastfile.cc",
+          "fairusefactor": 4
+        },
+        {
+          "host": "file.al",
+          "fairusefactor": 3
+        },
+        {
+          "host": "filecat.net",
+          "fairusefactor": 3
+        },
+        {
+          "host": "filefactory.com",
+          "fairusefactor": 2
+        },
+        {
+          "host": "filer.net",
+          "fairusefactor": 2
+        },
+        {
+          "host": "filesmonster.com",
+          "fairusefactor": 4
+        },
+        {
+          "host": "filestore.me",
+          "fairusefactor": 1
+        },
+        {
+          "host": "filextras.com",
+          "fairusefactor": 5
+        },
+        {
+          "host": "gofile.io",
+          "fairusefactor": 1
+        },
+        {
+          "host": "hexload.com",
+          "fairusefactor": 3
+        },
+        {
+          "host": "hitfile.net",
+          "fairusefactor": 3
+        },
+        {
+          "host": "hotlink.cc",
+          "fairusefactor": 2
+        },
+        {
+          "host": "isra.cloud",
+          "fairusefactor": 1
+        },
+        {
+          "host": "jumploads.com",
+          "fairusefactor": 1
+        },
+        {
+          "host": "katfile.com",
+          "fairusefactor": 4
+        },
+        {
+          "host": "mediafire.com",
+          "fairusefactor": 1
+        },
+        {
+          "host": "mega.nz",
+          "fairusefactor": 1
+        },
+        {
+          "host": "modsbase.com",
+          "fairusefactor": 1
+        },
+        {
+          "host": "rapidgator.net",
+          "fairusefactor": 2
+        },
+        {
+          "host": "rapidrar.com",
+          "fairusefactor": 2
+        },
+        {
+          "host": "shareplace.org",
+          "fairusefactor": 1
+        },
+        {
+          "host": "streamtape.com",
+          "fairusefactor": 1
+        },
+        {
+          "host": "telegram.org",
+          "fairusefactor": 1
+        },
+        {
+          "host": "turbobit.net",
+          "fairusefactor": 3
+        },
+        {
+          "host": "ulozto.net",
+          "fairusefactor": 5
+        },
+        {
+          "host": "uploadgig.com",
+          "fairusefactor": 3
+        },
+        {
+          "host": "uploadrar.com",
+          "fairusefactor": 2
+        },
+        {
+          "host": "vidoza.net",
+          "fairusefactor": 1
+        }
+      ],
+      "note": "fairusefactor is a points multiplier, not a byte cap; the column is filled from it and the cap itself is unstated."
+    },
+    "matrix_ref": "matrix.md",
+    "factor_distribution": {
+      "1": 14,
+      "2": 9,
+      "3": 6,
+      "4": 3,
+      "5": 4
+    },
+    "price_history": [
+      {
+        "date": "2023-09-27",
+        "price": "EUR 9.99 / month",
+        "plan": "1 Month",
+        "source_url": "https://web.archive.org/web/20230927114455/https://www.premiumize.me/premium"
+      },
+      {
+        "date": "2023-09-27",
+        "price": "EUR 24.99 / 3 months",
+        "plan": "3 Months",
+        "source_url": "https://web.archive.org/web/20230927114455/https://www.premiumize.me/premium"
+      },
+      {
+        "date": "2023-09-27",
+        "price": "EUR 69.99 / 12 months",
+        "plan": "12 Months",
+        "source_url": "https://web.archive.org/web/20230927114455/https://www.premiumize.me/premium"
+      },
+      {
+        "date": "2024-10-15",
+        "price": "EUR 9.99 / month",
+        "plan": "1 Month",
+        "source_url": "https://web.archive.org/web/20241015025657/https://www.premiumize.me/premium",
+        "change_pct": 0.0
+      },
+      {
+        "date": "2025-10-01",
+        "price": "EUR 9.99 / month (US$11.99)",
+        "plan": "1 Month",
+        "source_url": "https://web.archive.org/web/20251001005551/https://www.premiumize.me/premium",
+        "change_pct": 0.0
+      },
+      {
+        "date": "2025-10-01",
+        "price": "EUR 24.99 / 3 months (US$29.99)",
+        "plan": "3 Months",
+        "source_url": "https://web.archive.org/web/20251001005551/https://www.premiumize.me/premium",
+        "change_pct": 0.0
+      },
+      {
+        "date": "2026-10-23",
+        "price": "EUR 9.99 / month (US$11.99)",
+        "plan": "1 Month",
+        "source_url": "https://www.premiumize.me/premium",
+        "change_pct": 0.0
+      },
+      {
+        "date": "2026-10-23",
+        "price": "EUR 69.99 / 12 months (US$79.99)",
+        "plan": "1 Year",
+        "source_url": "https://www.premiumize.me/premium",
+        "change_pct": 0.0
+      }
+    ],
+    "change_36m": "0.0% in EUR on the 1-month and 12-month terms",
+    "currency": "EUR and USD, both published; no conversion applied",
+    "merge_conflicts": {
+      "usenet": [
+        "yes, charged at a factor of 2 against the same points",
+        {
+          "lane": "pricing-history",
+          "value": true
+        }
+      ]
+    },
+    "storage": "1 TB",
+    "retention_map": {
+      "after_contract_end": {
+        "stated": null,
+        "days": 0,
+        "source_url": "https://www.premiumize.me/legal"
+      },
+      "payment_grace": {
+        "stated": "grace period after a failed payment",
+        "days": 3,
+        "source_url": "https://www.premiumize.me/legal"
+      },
+      "help_article_grace": {
+        "stated": "'a short time', no number",
+        "days": null,
+        "source_url": "https://www.premiumize.me/help/article/cloud-premium-expire"
+      }
+    },
+    "account_deletion": {
+      "stated": "account data is retained until the user deletes the account; no inactivity deletion published",
+      "days": null,
+      "source_url": "https://www.premiumize.me/privacy"
+    },
+    "reactivation": "starts empty: the cloud is deleted at contract end, so a renewal re-fetches",
+    "storage_model": "1000 GB dedicated cloud per membership",
+    "annual_eur_per_month": 5.75,
+    "storage_gb": 1024,
+    "payment_group": "crypto",
+    "payment": {
+      "card": true,
+      "paypal": true,
+      "crypto": [
+        "unspecified"
+      ],
+      "crypto_processor": "not published",
+      "local_rails": [],
+      "voucher": false,
+      "entry_price": "EUR 9.99 / month, USD 11.99 / month"
+    }
+  }
+}

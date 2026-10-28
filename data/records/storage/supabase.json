@@ -1,0 +1,84 @@
+{
+  "topic": "storage",
+  "slug": "supabase",
+  "provider": "Supabase",
+  "url": "https://supabase.com",
+  "category": "paas",
+  "free_tier": {
+    "stated": "1 GB file storage — PER ORGANIZATION, not per project; 5 GB egress + 5 GB cached egress per org; 2 free projects per user (across all orgs)",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://supabase.com/docs/guides/platform/manage-your-usage/storage-size",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://supabase.com/docs/guides/platform/manage-your-usage/storage-size",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "50 MB max file size on Free (global limit, cannot raise); 1 GB storage/org; projects paused after 7 days inactivity and must be manually restored; storage metered in GB-Hours so deleting late in the month barely helps; 5 GB egress hard-capped (overage not purchasable on Free).",
+    "days": 7,
+    "source_url": "https://supabase.com/docs/guides/platform/manage-your-usage/storage-size",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "5 GB uncached + 5 GB cached egress per org per month, unified across Database/Auth/Storage. Storage has its own Smart CDN so cache hits consume the cached bucket. THIS IS THE WALL: 1 GB stored can be served only 5x/month before the org is restricted.",
+    "metered": false
+  },
+  "interface": [
+    "s3-compatible",
+    "rest",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "s3",
+  "tooling": "Storage is S3-compatible (supabase storage S3 endpoint, aws CLI / boto3 / rclone `s3` remote with endpoint override), plus supabase-js and the REST storage API",
+  "chaining": "The premise '100 projects per free org' is WRONG on two counts: (a) quota is per ORGANIZATION not per project — 'The quota is applied to your entire organization, independent of how many projects you launch'; (b) the free project limit is TWO, and it is account-wide: 'You are granted two free projects. The project limit applies across all organizations where you are an Owner or Administrator... two Free Plan organizations with one project each, or one Free Plan organization with two projects.' So the ceiling is 2 projects x but only 1 GB + 5 GB egress TOTAL. Paused projects do not count toward the limit, so pause/unpause rotation is the only lever, and it is manual.",
+  "limits": [],
+  "limits_note": "50 MB max file size on Free (global limit, cannot raise); 1 GB storage/org; projects paused after 7 days inactivity and must be manually restored; storage metered in GB-Hours so deleting late in the month barely helps; 5 GB egress hard-capped (overage not purchasable on Free).",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Free projects pause after 1 week of inactivity — data persists but the project is offline until manually restored from the dashboard. Egress overage leads to a grace period then restriction until the next billing cycle.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://supabase.com/pricing",
+      "date": "2026-10-21",
+      "proved": "'1 GB file storage', '5 GB egress', '5 GB cached egress', 'Limit of 2 active projects'"
+    },
+    {
+      "url": "https://supabase.com/docs/guides/platform/billing-on-supabase",
+      "date": "2026-10-21",
+      "proved": "'You are granted two free projects. The project limit applies across all organizations where you are an Owner or Administrator... The quota is applied to your entire organization, independent of how many projects you launch within that organization.'"
+    },
+    {
+      "url": "https://supabase.com/docs/guides/platform/manage-your-usage/egress",
+      "date": "2026-10-21",
+      "proved": "'Free | 5 GB / 5 GB | -' (no overage on Free)"
+    },
+    {
+      "url": "https://supabase.com/docs/guides/storage/uploads/file-limits",
+      "date": "2026-10-21",
+      "proved": "'For Free projects, the limit can't exceed 50 MB'"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "1 GB file storage — PER ORGANIZATION, not per project; 5 GB egress + 5 GB cached egress per org; 2 free projects per user (across all orgs)",
+  "extras": {
+    "dead_end": {
+      "failure_class": "egress",
+      "why": "1 GB file storage — PER ORGANIZATION, not per project; 5 GB egress + 5 GB cached egress per org; 2 free projects per user (across all orgs)",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": "no constraint of a named kind was recorded; the verdict rests on the quota sentence rather than on a named limit"
+}

@@ -1,0 +1,96 @@
+{
+  "topic": "storage",
+  "slug": "hop-js-cdn-bunny-net-s-free-oss-mirror-of-npm-cdnjs",
+  "provider": "hop.js CDN (cdn.hopjs.net) — Bunny.net's free OSS mirror of npm + cdnjs",
+  "url": "https://hopjs.bunny.net/",
+  "category": "cdn",
+  "free_tier": {
+    "stated": "No quota of its own. It is a permanent mirror: every file is copied into Bunny Storage SSD and served from there, so your ceiling is the npm cap. Probed single files of 32.2 MB, 54.0 MB and 64.5 MB — all served complete and byte-identical to the unpkg copy (sha256 match on the 53,974,528-byte .node and the 64,458,752-byte .exe). No per-file cap was hit at any size tried.",
+    "unit": "unlimited",
+    "metered_on": "stored-bytes",
+    "source_url": "https://hopjs.bunny.net/about/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "single files of 32.2 MB",
+    "bytes": 32200000,
+    "source_url": "https://hopjs.bunny.net/about/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "No quota of its own. It is a permanent mirror: every file is copied into Bunny Storage SSD and served from there, so your ceiling is the npm cap",
+    "source_url": "https://hopjs.bunny.net/about/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and unmetered — it is a free public CDN; no account, no key, no billing surface at all. Origin->CDN transit is Bunny's own storage, so there is no origin bill either.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Plain HTTPS GET: https://cdn.hopjs.net/npm/<pkg>@<ver>/<path>. No auth. Drop-in for any HTTP client / rclone http remote / curl. NOTE the path form carries the version twice when the mirror rewrites you, and the un-versioned form 302s to a broken URL — always pin <pkg>@<ver> explicitly.",
+  "chaining": "This is the missing piece for the npm-as-storage chain: publish the blob to npm (email-only identity), then serve it from hop.js instead of jsDelivr and the 50 MB jsDelivr file cap stops applying. Publish a 64 MB shard per npm version, chain thousands of versions, serve all of them free with no bandwidth ceiling. Because the mirror is permanent and Bunny-hosted, an npm unpublish does not remove the served copy in the short term.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "1 TiB/day",
+      "source": "https://hopjs.bunny.net/about/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "11.3 MB/s",
+      "source": "https://hopjs.bunny.net/about/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "single files of 32.2 MB",
+      "source": "https://hopjs.bunny.net/about/"
+    }
+  ],
+  "limits_note": "per-object-cap: ~64 MB proven, likely bounded by npm's own ~100 MB tarball publish limit rather than by hop.js. cache-write-gated: only packages already in the npm/cdnjs index are mirrored — you cannot upload to hop.js directly, you publish upstream. /gh/ (GitHub) paths are not supported (404).",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "anonymous",
+    "country": null
+  },
+  "reliability_note": "Young third-party service (Bunny-backed, 119 PoPs, logging disabled by design). Single point of failure with no SLA; for a 1 TiB/day workload you would mirror across hop.js + unpkg + jsDelivr so one going away is not an outage. Sustained single-stream measured 11.3 MB/s vs jsDelivr's 6.4 MB/s on the same 32 MB object.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://cdn.hopjs.net/npm/@ffmpeg/core@0.12.10/dist/esm/ffmpeg-core.wasm",
+      "date": "2026-10-21",
+      "proved": "HTTP 200, 32,232,419 bytes (probed)"
+    },
+    {
+      "url": "https://cdn.hopjs.net/npm/@swc/core-win32-x64-msvc@1.7.0/swc.win32-x64-msvc.node",
+      "date": "2026-10-21",
+      "proved": "HTTP 200, 53,974,528 bytes, sha256 0c7aecd6… identical to the unpkg copy (probed)"
+    },
+    {
+      "url": "https://cdn.hopjs.net/npm/@ffmpeg-installer/win32-x64@4.1.0/ffmpeg.exe",
+      "date": "2026-10-21",
+      "proved": "HTTP 200, 64,458,752 bytes, sha256 c8abc49e… identical to unpkg (probed); jsDelivr 403s this exact file"
+    },
+    {
+      "url": "https://cdn.hopjs.net/gh/jquery/jquery@3.7.1/dist/jquery.min.js",
+      "date": "2026-10-21",
+      "proved": "404, so no GitHub proxy"
+    },
+    {
+      "url": "https://hopjs.bunny.net/about/",
+      "date": "2026-10-21",
+      "proved": "'every package is permanently distributed across Bunny Storage's globally deployed SSD regions'; 119 PoPs; all logging disabled"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No quota of its own. It is a permanent mirror: every file is copied into Bunny Storage SSD and served from there, so your ceiling is the npm cap. Probed single files of 32.2 MB, 54.0 MB and 64.5 MB — all served complete and byte-identical to the unpkg copy (sha256 match on the 53,974,528-byte .node and the 64,458,752-byte .exe). No per-file cap was hit at any size tried.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

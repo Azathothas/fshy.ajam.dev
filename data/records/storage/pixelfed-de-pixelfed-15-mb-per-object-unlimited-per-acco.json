@@ -1,0 +1,78 @@
+{
+  "topic": "storage",
+  "slug": "pixelfed-de-pixelfed-15-mb-per-object-unlimited-per-acco",
+  "provider": "pixelfed.de — Pixelfed, 15 MB per object, unlimited per account",
+  "url": "https://pixelfed.de",
+  "category": "fediverse-pixelfed",
+  "free_tier": {
+    "stated": "Per-account unlimited (Pixelfed has no per-user storage counter). Per-file image_size_limit = video_size_limit = 15360000 bytes (14.6 MiB); 12 attachments per status; image_matrix_limit 2,073,600 px (1920x1080).",
+    "unit": "unlimited",
+    "metered_on": "stored-bytes",
+    "source_url": "https://pixelfed.de/api/v1/instance",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "Per-file image_size_limit = video_size_limit = 15360000 bytes (14.6 MiB",
+    "bytes": 15309209,
+    "source_url": "https://pixelfed.de/api/v1/instance",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://pixelfed.de/api/v1/instance",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free, plain CDN path, no meter.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Pixelfed is a Mastodon-API derivative: POST /api/v1/media (multipart) then POST /api/v1/statuses with media_ids[]. OAuth2 via /api/v1/apps. Any Mastodon client library mostly works.",
+  "chaining": "Worst per-object cap in this slot (14.6 MiB, and photos-only MIME list: jpeg/png/gif/webp/mp4). The multiplier is broad: hundreds of Pixelfed instances, most open. Useful only as a fan-out target, never as primary.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "Per-file image_size_limit = video_size_limit = 15360000 bytes (14.6 MiB",
+      "source": "https://pixelfed.de/api/v1/instance"
+    }
+  ],
+  "limits_note": "per-object-cap 14.6 MiB; per-account unlimited; supported MIME restricted to image/jpeg,png,gif,webp + video/mp4 — no arbitrary blobs (PNG/JPEG wrapper needed).",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "pixelfed.social itself returned HTTP 521 (origin down) throughout this probe; pixelfed.art also 521. The software is fine, the flagship host was not.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://pixelfed.de/api/v1/instance",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, configuration.media_attachments.image_size_limit=15360000, video_size_limit=15360000, image_matrix_limit=2073600, statuses.max_media_attachments=12, registrations=true, version 3.5.3 (Pixelfed 0.15.1)"
+    },
+    {
+      "url": "https://pixelfed.social/api/v1/instance",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 521 (Cloudflare origin down); pixelfed.art -> 521"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Per-account unlimited (Pixelfed has no per-user storage counter). Per-file image_size_limit = video_size_limit = 15360000 bytes (14.6 MiB); 12 attachments per status; image_matrix_limit 2,073,600 px (1920x1080).",
+  "extras": {
+    "verdict_note": "PLAN.md §3.2 rules fails-quota by default, because no row in this set clears 500 GiB per unit for a user.",
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "Per-account unlimited (Pixelfed has no per-user storage counter). Per-file image_size_limit = video_size_limit = 15360000 bytes (14.6 MiB); 12 attachments per status; image_matrix_limit 2,073,600 px (1920x1080).",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

@@ -1,0 +1,81 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "yandex-disk",
+  "provider": "Yandex Disk (disk.yandex.com)",
+  "url": "https://disk.yandex.com/",
+  "category": "consumer-pan",
+  "free_tier": {
+    "stated": "5 GB of storage for an account with no plan, shared with Yandex Mail",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://yandex.com/support/yandex-360/customers/disk/web/en/enlarge/disk-space",
+    "read_on": "2026-10-22"
+  },
+  "per_object_cap": {
+    "stated": "1 GB per file without a Yandex 360 plan; 50 GB with any plan",
+    "bytes": 1000000000,
+    "source_url": "https://yandex.com/support/yandex-360/customers/disk/web/en/uploading.md"
+  },
+  "retention": {
+    "stated": "files persist until deleted; deleted files go to Trash for a period, but a file deleted over WebDAV is erased permanently",
+    "days": null,
+    "source_url": "https://yandex.com/support/yandex-360/customers/disk/web/en/webdav"
+  },
+  "egress": {
+    "terms": "no published egress meter; the reader's speed is whatever the service grants, and WebDAV access now requires a paid plan",
+    "metered": false,
+    "source_url": "https://yandex.com/support/yandex-360/customers/disk/web/en/webdav"
+  },
+  "interface": [
+    "rest",
+    "webdav"
+  ],
+  "tooling": "a documented REST API and a WebDAV endpoint; WebDAV needs an app password rather than the account password, and from 2026-06-22 it needs a Yandex 360 plan",
+  "chaining": "a 5 GB tier cannot hold anything at a user's  scale, so its only role is as a small always-available store for the state of a bridge",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "1 GB per file on the free tier",
+      "source": "https://yandex.com/support/yandex-360/customers/disk/web/en/uploading.md"
+    },
+    {
+      "kind": "write-gated",
+      "value": "WebDAV access requires a Yandex 360 plan from 2026-06-22",
+      "source": "https://yandex.com/support/yandex-360/customers/disk/web/en/webdav"
+    }
+  ],
+  "identity_cost": {
+    "kind": "any-phone",
+    "detail": "a Yandex ID is the gate, and Yandex registration is documented to accept a phone number from a wide set of countries, but no account was created",
+    "country": null
+  },
+  "reliability_note": "The free WebDAV path closed on 2026-06-22: the help page now states that WebDAV access requires a Yandex 360 plan. The REST API remains documented but the free tier's role is 5 GB.",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://yandex.com/support/yandex-360/customers/disk/web/en/uploading.md",
+      "date": "2026-10-22",
+      "proved": "'Maximum size of a single file for uploading to Yandex Disk: Without a Yandex 360 plan — 1 GB. With any Yandex 360 plan — 50 GB.'"
+    },
+    {
+      "url": "https://yandex.com/support/yandex-360/customers/disk/web/en/webdav",
+      "date": "2026-10-22",
+      "proved": "'Starting June 22, 2026, WebDAV access requires a Yandex 360 plan', and an app password is required rather than the account password"
+    },
+    {
+      "url": "https://yandex.com/support/yandex-360/customers/disk/web/en/enlarge/disk-space",
+      "date": "2026-10-22",
+      "proved": "'By default, users without a plan get 5 GB of storage space', and Yandex Mail shares that same pool with Disk"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-22T03:37:00.574Z",
+  "binding": "per-object-cap",
+  "notes": "The corpus's storage topic carries Yandex records; this one is scoped to the pan's role here. The fact that changed is WebDAV: the help page dated the closure to 2026-06-22, so a bridge that mounted Yandex over WebDAV stopped working on a published date rather than silently.",
+  "extras": {
+    "access_mode": "registration-gated",
+    "webdav_requires_plan_from": "2026-06-22",
+    "free_webdav": false
+  },
+  "binding_note": "5 GB total with a 1 GB per-file cap is three orders of magnitude below the working set, and the free WebDAV path that made it mountable closed in June 2026."
+}

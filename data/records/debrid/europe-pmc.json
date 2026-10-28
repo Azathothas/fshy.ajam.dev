@@ -1,0 +1,95 @@
+{
+  "topic": "debrid",
+  "slug": "europe-pmc",
+  "provider": "Europe PMC",
+  "url": "https://europepmc.org/RestfulWebService",
+  "category": "biomedical literature index with an open-access full-text subset",
+  "tier": "free",
+  "free_tier": {
+    "stated": "REST access to 'over 33 million publications', including '10.2 million full text articles and 6.5 million open access articles', with JSON or XML responses and pageSize up to 1000.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://europepmc.org/RestfulWebService",
+    "read_on": "2026-10-23",
+    "notes": "pageSize=1000 returned 786,907 bytes of JSON in one response here; pageSize=100 returned 88,669 bytes."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: one JSON/XML response per request, paged. The largest single response measured was 786,907 bytes at pageSize=1000.",
+    "bytes": null,
+    "source_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "the index is continuously updated; the bulk FTP tree carries dated snapshots (weekly for metadata, per-release for the OA subset)",
+    "days": null,
+    "source_url": "https://europepmc.org/downloads",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Free and unmetered from the EBI endpoint. No key, no account, no registration mentioned anywhere on the web-service page.",
+    "metered": false,
+    "free_allowance": "no byte allowance published",
+    "price_per_tb": null,
+    "source_url": "https://europepmc.org/RestfulWebService"
+  },
+  "interface": [
+    "rest",
+    "ftp",
+    "cli"
+  ],
+  "interface_detail": "GET https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=...&format=json&pageSize=1000&cursorMark=...; eight bulk content types are listed at /downloads and served over FTP.",
+  "endpoint": "https://www.ebi.ac.uk/europepmc/webservices/rest/search",
+  "tooling": "curl/python-requests for the API; lftp or curl for the FTP tree. No SDK needed.",
+  "chaining": "Use Europe PMC as the index (PMIDs, PMCIDs, licence flags, full-text availability) and pmc-oa-opendata as the byte store; the API's pageSize=1000 gives about 787 KB of metadata per call without an account.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "no numeric rate limit is published; paging is by pageSize/cursorMark and the largest single page is pageSize=1000",
+      "source": "https://europepmc.org/RestfulWebService"
+    }
+  ],
+  "limits_note": "The bulk path is FTP and it did not answer from this network: https://europepmc.org/ftp/oa/ returned 403 and ftp://europepmc.org/oa/ timed out after 20 s. That is a reachability fact about for a user, not a statement that the mirror is gone.",
+  "binding": "request-rate",
+  "binding_note": "With the FTP mirror unreachable here, the API is the only path, and it is one page per call with no published ceiling: at 787 KB per pageSize=1000 call, a TiB would take about 1.4 million calls, so the call rate decides the day's bytes, not any byte quota.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No key and no account: an anonymous GET returned 200 and 1,408 bytes. Nothing on the web-service page asks for registration.",
+    "country": null
+  },
+  "reliability_note": "No throttling signal was seen at the low rate used here; the FTP tree is the fragile part - one 403 on HTTPS and a timeout on port 21 make the bulk mirror look absent when it may only be filtered.",
+  "confidence": "documented",
+  "confidence_note": "The API was exercised at two page sizes with byte counts, and the bulk-path failures were observed. The 33M/10.2M/6.5M counts are the vendor's own page, not independently measured.",
+  "evidence": [
+    {
+      "url": "https://europepmc.org/RestfulWebService",
+      "date": "2026-10-23",
+      "proved": "'over 33 million publications', '10.2 million full text articles and 6.5 million open access articles', JSON/XML output"
+    },
+    {
+      "url": "https://europepmc.org/downloads",
+      "date": "2026-10-23",
+      "proved": "eight bulk content types (OA subset, author manuscripts, preprints, metadata, ID mappings, text-mined terms) served over FTP"
+    },
+    {
+      "url": "probe:https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=OPEN_ACCESS:Y&format=json&pageSize=1000",
+      "date": "2026-10-23",
+      "proved": "200, 786,907 bytes in one anonymous response - pageSize=1000 is accepted and returns real records"
+    },
+    {
+      "url": "probe:https://europepmc.org/ftp/oa/",
+      "date": "2026-10-23",
+      "proved": "403 over HTTPS - the FTP tree has no HTTPS mirror at that path"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T03:24:34.450Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Caveat is the bulk mirror, not the API. Metadata is effectively unlimited through pageSize=1000; full text at TiB scale depends on the FTP tree, which this network could not open.",
+  "extras": {
+    "page_1000_bytes": 786907,
+    "page_100_bytes": 88669,
+    "publications": 33000000,
+    "oa_fulltext": 6500000,
+    "ftp_https_status": 403
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "topic": "debrid",
+  "slug": "ddlbase",
+  "provider": "DDLBase",
+  "url": "https://ddlbase.com/",
+  "category": "DDL release index (Blu-ray and REMUX releases, host mirrors per post)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "No account to read the index or the feed: /rss returned 300 items. A post page shows two mirror slots anonymously and prints '(login for more mirrors)'.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://ddlbase.com/rss",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: an index, not storage",
+    "bytes": null,
+    "source_url": "https://ddlbase.com/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "Posts persist. The feed carries the 300 most recent items.",
+    "days": null,
+    "source_url": "https://ddlbase.com/rss",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No byte allowance: HTML and XML only. Each post's mirrors point at external hosts; the href behind 'Link 1' did not appear in the extracted page, so the host behind it is unverified.",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://ddlbase.com/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "RSS 2.0 at /rss (content-type application/rss+xml, 300 items, self-link /rss.php), sitemap at /sitemap.xml. /feed/ returns 404. No JSON API found.",
+  "endpoint": "https://ddlbase.com/rss",
+  "tooling": "RSS reader. The item title carries release name and size ('Gebo.And.The.Shadow... - 23.7 GB'), so size filtering needs no post fetch.",
+  "chaining": "Poll /rss, filter on size from the item title, then open the post for the two anonymous mirrors or log in for the rest.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "no published limit; 10 sequential /rss requests about 1.2 s apart and 8 concurrent requests all returned 200, and robots.txt is Allow: / for every agent",
+      "source": "probe:ddlbase.com/rss"
+    }
+  ],
+  "limits_note": "Anonymous posts show 'Mirror 1: Link 1' and 'Mirror 2: Link 2' then '(login for more mirrors)'. The wider mirror set sits behind an account.",
+  "binding": "request-rate",
+  "binding_note": "As with any index, the only thing that can throttle the client is page rate; the wider mirror set is an identity gate recorded in identity_cost rather than one of the seven constraints.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "A login is what unlocks mirrors beyond the first two. The registration form was not opened, so whether it asks for email alone or email plus captcha was not established.",
+    "country": null
+  },
+  "reliability_note": "Cloudflare plus LiteSpeed. /feed/ 404s while /rss works, so a client that guesses the conventional WordPress path gets nothing.",
+  "confidence": "documented",
+  "confidence_note": "Feed, post, robots.txt and both mirror slots were read on 2026-10-23. Registering and capturing the full mirror set would raise it to measured.",
+  "evidence": [
+    {
+      "url": "https://ddlbase.com/rss",
+      "date": "2026-10-23",
+      "proved": "content-type application/rss+xml, 300 items, titles that carry the size, self-link https://ddlbase.com/rss.php"
+    },
+    {
+      "url": "https://ddlbase.com/post/45631/gebo-and-the-shadow-2012-bluray-1080p-dts-hd-ma-5-1-avc-remux-framestor",
+      "date": "2026-10-23",
+      "proved": "'Mirror 1: Link 1', 'Mirror 2: Link 2', '(login for more mirrors)', MediaInfo block and 23.67 GiB filesize"
+    },
+    {
+      "url": "https://ddlbase.com/robots.txt",
+      "date": "2026-10-23",
+      "proved": null
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T01:52:28.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The deepest free feed measured at 300 items, and the only one that puts the size in the item title. The caveat is the mirror cap: two anonymous links per post. ddlbase.net answers as a separate XenForo forum and is not the same index.",
+  "extras": {
+    "feed_items": 300,
+    "feed_protocol": "rss2",
+    "account_for_links": true,
+    "anonymous_mirrors": 2
+  }
+}

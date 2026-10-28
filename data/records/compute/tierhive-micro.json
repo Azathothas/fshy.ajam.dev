@@ -1,0 +1,182 @@
+{
+  "topic": "compute",
+  "slug": "tierhive-micro",
+  "provider": "TierHive (Kernel Keepers LTD)",
+  "url": "https://tierhive.com/",
+  "category": "NAT VPS",
+  "tier": "Micro",
+  "free_tier": {
+    "stated": "No free tier, but a free startup credit that needs no card. The Micro card is USD 0.10 a month, billed at 0.000135 an hour: 128 MB RAM, 1 GB NVMe, Economy CPU, IOPS and network tiers, NAT IPv4 with 2 TCP and 2 UDP ports, and an IPv6 /64 per location. A minimum account top-up of USD 3 applies after registration, so USD 0.10 is the run rate and USD 3 is the first payment.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://tierhive.com/",
+    "read_on": "2026-10-24"
+  },
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "hourly billing, cancel anytime; the about page says 'If you put data on TierHive, we do everything possible to avoid any data loss, but in the event it happens, we will not recover it for you, you get a fresh, blank VPS'; the vendor states services auto-stop when credit runs out and are deleted about 3 days later",
+    "days": 3,
+    "source_url": "https://tierhive.com/about.php"
+  },
+  "egress": {
+    "terms": "no GB allowance at all: 'We do not give any specific arbitrary GB or TB number' - three network tiers plus a fair-use QoS policy, with burst to twice the advertised speed for 10 seconds",
+    "metered": false,
+    "free_allowance": "unmetered under fair use",
+    "price_per_tb": null,
+    "source_url": "https://tierhive.com/about.php"
+  },
+  "interface": [
+    "ssh"
+  ],
+  "interface_detail": "KVM guest with root; ports and the external IP are read from the panel's Subnet Config page or from /tmp/ports written by a deployment recipe",
+  "tooling": "any SSH client; a netinfo endpoint at control.tierhive.com/simple/netinfo returns the port map for a token in /opt/th-simple-token, which makes the mapping scriptable",
+  "chaining": "the cheapest always-on machine found anywhere in this corpus at USD 0.10 a month, with one UDP port to spare for WireGuard and an IPv6 /64 that has almost the full port range",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "2 TCP and 2 UDP forwarded ports per VPS, the first TCP port being SSH",
+      "source": "https://tierhive.com/blog/tierhive-howto/tierhive-vps-ports"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "no byte allowance; network is tiered and policed by fair use, with the cap stepped down 10 Mbit/s an hour while a guest holds 100 Mbit/s average",
+      "source": "https://tierhive.com/about.php"
+    },
+    {
+      "kind": "pull-count",
+      "value": "a USD 3 minimum top-up after registration, which at USD 0.000135 an hour is about 30 months of Micro runtime; the top-up is the first payment, not the monthly rate",
+      "source": "https://tierhive.com/"
+    }
+  ],
+  "binding": "per-ip-shaping",
+  "binding_note": "two UDP ports is the whole inbound budget, and 128 MB of RAM caps what runs; the network has no byte ceiling to hit first.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email, username and password only: the registration form has six fields, being username, email, password and four policy ticks, with no card, address, phone or ID field. The feature list states 'No credit card required' and the vendor states the free trial credit 'does not require a credit card or validation'. Payment, when the free credit runs out, is through FastSpring as merchant of record, which accepts credit and debit cards and charges the buyer's local VAT rate. No card hold is stated anywhere read. The terms bar free and disposable email addresses and bar signup from China, Russia, Brazil, Vietnam and Iran.",
+    "country": null
+  },
+  "reliability_note": "the vendor calls itself 'a no-SLA, budget service' and says 'it is not the place to host things you demand uptime for'; the status page showed every location operational on 2026-10-24 with 99.98 to 100 percent 90-day uptime; the terms bar signup from China, Russia, Brazil, Vietnam and Iran and reserve the right to suspend without warning",
+  "confidence": "documented",
+  "confidence_note": "price, shape, the top-up floor, the registration form and the free-credit claim are quoted from pages read today; the port count and the UDP protocol are quoted from the vendor's own how-to article read today; the WireGuard-on-the-smallest-plan claim is quoted from the vendor's own recipe listing; the entity is a Companies House record read today. The payment rail is FastSpring from the vendor's own about page and a provider post, and the card hold is not stated anywhere read",
+  "evidence": [
+    {
+      "url": "https://tierhive.com/",
+      "date": "2026-10-24",
+      "proved": "quoted price card: 'Micro | RAM 128 MB | NVMe SSD 1 GB | CPU Economy | $0.10/mo | 0.000135/hr'"
+    },
+    {
+      "url": "https://tierhive.com/blog/tierhive-howto/tierhive-vps-ports",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Your nat VPS is provided with 2 open TCP ports and 2 UDP port. By design the 1st TCP port is mapped to your VPS port 22/TCP.' and the example mapping 'the external port 2154/TCP HV is mapped to 22/TCP VPS, 2155/TCP HV to 2155/TCP VPS and 2154/UDP HV, 2155/UDP HV to their VPS equivalent'"
+    },
+    {
+      "url": "https://tierhive.com/",
+      "date": "2026-10-24",
+      "proved": "quoted feature list: 'Private /24 subnet per customer with 2 dedicated TCP ports per VPS', 'IPv6 /64 per location.', 'Global locations: USA, Germany, France, UK, Canada, Singapore', 'No credit card required'"
+    },
+    {
+      "url": "https://tierhive.com/about.php",
+      "date": "2026-10-24",
+      "proved": "quoted: 'TierHive is a no-SLA, budget service, probably the cheapest generally available KVM VPS that exists online right now' and 'It is not fast, and it is not the place to host things you demand uptime for.' and 'We do not give any specific arbitrary GB or TB number'"
+    },
+    {
+      "url": "https://tierhive.com/terms.php",
+      "date": "2026-10-24",
+      "proved": null
+    },
+    {
+      "url": "https://find-and-update.company-information.service.gov.uk/company/16294246",
+      "date": "2026-10-24",
+      "proved": null
+    },
+    {
+      "url": "https://tierhive.com/",
+      "date": "2026-10-24",
+      "proved": "quoted calculator footer: '1 Token = $1 USD' and 'A $3 minimum top up is required after registration to use this service.' and 'Cancel anytime. No contracts. No hidden fees. $3 minimum top-up amount.'"
+    },
+    {
+      "url": "https://tierhive.com/",
+      "date": "2026-10-24",
+      "proved": "quoted recipe listing: 'WireGuard XXS - WireGuard on smallest VPS on TierHive ... DO remember to map the VPS wireguard port to the external port using the TierHive Management Console'"
+    },
+    {
+      "url": "https://control.tierhive.com/register",
+      "date": "2026-10-24",
+      "proved": "the whole registration form, read in a headless browser because the text extractor is challenged: 'Username (36-Character Maximum)', 'Email address', 'Password (min. 8 characters)', four policy ticks and 'Create Account' - no card, address, phone or ID field"
+    },
+    {
+      "url": "https://tierhive.com/about.php",
+      "date": "2026-10-24",
+      "proved": "quoted: 'We even use a merchant-of-record system for payments via FastSpring, so technically you are never our direct customer, you are theirs, they just send us a signal that you have paid, and we add the tokens to your account.' and 'We do not give any specific arbitrary GB or TB number'"
+    },
+    {
+      "url": "https://www.lowendspirit.com/discussion/10814/tierhive-general-thread-discuss-updates-questions-latest-8gb-ram-available-in-some-locations/p12",
+      "date": "2026-10-24",
+      "proved": "the vendor's own post, reported because it is a forum and not the shop: 'They detect your location during checkout based on your IP and the details you enter, and they charge you the VAT or tax rate of your local country, or state'"
+    },
+    {
+      "url": "https://www.lowendspirit.com/discussion/11448/tierhive-16-locations-new-accepting-recurring-payments-vps-from-0-10-mo-10-bonus",
+      "date": "2026-10-24",
+      "proved": "the vendor's own post, reported: 'Minimum account top-up is only $3, which never expires, can last up to 30 months if the service is powered on' and 'Micro: 128MB RAM, 1GB Disk = ~$0.10/month (if ran 24/7)'"
+    },
+    {
+      "url": "https://tierhive.com/acceptable-use.php",
+      "date": "2026-10-24",
+      "proved": "quoted: 'TierHive is currently in Alpha status' and 'Data loss can occur at any time without warning' and 'Personal use VPN services are permitted'"
+    },
+    {
+      "url": "https://tierhive.com/status/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'All locations operational', with 'Amsterdam, NL Operational 99.98 % uptime', 'Frankfurt, DE Operational 100 % uptime' and 'London, UK Operational 99.99 % uptime' over 90 days"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "price_per_tb_month": null,
+  "notes": "The USD 0.10 row survives the checkout check and gets stronger. Registration is six fields with no card, no address, no phone and no ID, so this is the only sub-dollar machine in the band a buyer can actually start without a payment instrument. The first payment is not USD 0.10 but USD 3, a minimum top-up that the vendor says never expires and lasts about 30 months at this rate, so the effective annual cost is USD 1.20 of run rate against USD 3 of float. Two things are better evidenced today than before. The vendor's own recipe library lists 'WireGuard on smallest VPS on TierHive', which is a first-party statement that WireGuard runs on this exact tier, not an inference from a port count. And the status page shows every location operational with 99.98 to 100 percent 90-day uptime, which is the first uptime evidence in the band. The binding constraint is the two UDP ports and the 128 MB, not the price: one WireGuard listener uses half the UDP budget and leaves nothing for a second tunnel. Payment beyond the free credit goes through FastSpring at the buyer's local VAT rate, so a 20 percent VAT country pays USD 0.12 a month rather than USD 0.10. Not established: the card hold at the first top-up, and whether the USD 0.10 tier is deployable at every listed location or only some.",
+  "extras": {
+    "shape": {
+      "vcpu": 1,
+      "ram_gib": 0.125,
+      "disk_gib": 1,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "billing_model": "hourly",
+    "term": "hourly, no commitment",
+    "m10h_usd": 0.0405,
+    "m24h_usd": 0.1,
+    "price_arithmetic": "USD 0.000135 an hour x 730 = USD 0.09855 a month, which the vendor prints as '$0.10/mo'. Ten hours a day is 0.000135 x 300 = USD 0.0405. Hourly billing means a stopped machine costs only storage. The USD 3 minimum top-up / 0.09855 = about 30 months of 24/7 runtime.",
+    "out_of_pocket_usd": 3.0,
+    "renewal_usd": "same rate",
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": true,
+      "ports": "2 TCP and 2 UDP forwarded ports on the NAT IPv4, plus an IPv6 /64 with nearly the full port range",
+      "static_ip": false,
+      "ipv6": true,
+      "ipv6_prefix": "/64",
+      "per_session_bytes": null
+    },
+    "udp": "stated: '2 open TCP ports and 2 UDP port', with the panel mapping UDP to the same external port number",
+    "session_cap": {
+      "wall_clock_min": null,
+      "idle_reap_s": null,
+      "restart_required": false,
+      "note": "none; hourly billing, the machine persists while it is not destroyed"
+    },
+    "payment_rails": "FastSpring as merchant of record, credit and debit cards, buyer's local VAT applied; no card required for the free credit",
+    "first_payment_usd": 3.0,
+    "minimum_top_up_usd": 3.0,
+    "card_hold": "not stated on any page read",
+    "checkout_fields": "username, email, password and four policy ticks; no card, address, phone or ID",
+    "stock": "hourly and built to order from a resource calculator, not a stocked SKU; all locations shown operational on the status page on 2026-10-24",
+    "price_on_page": "USD 0.10/mo",
+    "cart_works": "unknown",
+    "signup_url": "https://control.tierhive.com/register",
+    "cart_evidence": "pricing page renders 'Micro RAM 128 MB NVMe SSD 1 GB CPU Economy $ 0.10 /mo 0.000135 /hr Deploy'; every Deploy button is href https://control.tierhive.com/register, so no price is rendered before an account exists",
+    "needs_account_first": true
+  },
+  "verified_at": "2026-10-24T04:26:37.000Z"
+}

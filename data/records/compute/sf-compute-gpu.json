@@ -1,0 +1,178 @@
+{
+  "topic": "compute",
+  "slug": "sf-compute-gpu",
+  "provider": "SF Compute (GPU",
+  "url": "https://sfcompute.com/",
+  "category": "GPU cloud",
+  "free_tier": {
+    "stated": "A market for whole 8-GPU nodes, not single GPUs. The homepage sells 'VMs, Bare Metal, & managed Slurm' and states 'Reserve the compute you need and resell what you don't'. Buying is an order on an orderbook priced in dollars per node-hour, where '1 node is 8 GPUs' and the order's count is a node count, so the smallest order the documentation shows is one node of 8 H100 or H200 cards; the smallest fill the documentation states is '1 node for 1 minute', on the resale side. SKUs are listed as 8 x H100 80GB HBM3 with 2,016 GiB memory, 1.5 TiB storage and 56 vCPUs, and 8 x H200 141GB with the same memory, storage and vCPU count. Object storage is sold at USD 0.14 per GiB-month with a 100 TiB default bucket cap, plus InfiniBand partitions, public IPv4, subnets and firewalls. The current rate is NOT published without an account: /pricing is a sign-in wall and the documented 'public' orderbook API answers 'missing authentication token' when called without a bearer token. The only rate printed on a public page is a marketing panel that shows 'Reserved price $3.00/gpu/hr' and 'Realized price $4.29/gpu/hr', with no SKU, GPU count or window attached to either figure. A second product is sold under the same name and is not behind a wall: Autoresearch publishes a rate card without a sign-in, with 'h100-1' at USD 0.084 a minute (USD 5.04 an hour) and a 15-minute idle window, an eight-GPU node at USD 40.32 an hour, batch jobs at 0.063 a minute per GPU, and 'There is no minimum charge' because billing ends when the node is stopped.",
+    "unit": "hours",
+    "metered_on": "wall-clock",
+    "source_url": "https://sfcompute.com/",
+    "read_on": "2026-10-22",
+    "notes": "none"
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://sfcompute.com/",
+    "notes": null
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://sfcompute.com/",
+    "notes": null
+  },
+  "egress": {
+    "terms": "not stated on the pages read: no egress term, byte allowance or egress price appears on the homepage, the orders, limits, instances, IP-address or object-storage pages read on 2026-10-22. The only network statements are that instances reach the internet over IPv4 using TCP, UDP and ICMP, that other layer 4 protocols are blocked, and that outbound SMTP on TCP and UDP port 25 is blocked",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://sfcompute.com/"
+  },
+  "interface": [
+    "rest",
+    "cli",
+    "s3-compatible"
+  ],
+  "interface_detail": "inferred from the tooling the provider documents; not probed",
+  "tooling": "documented first-party CLI and HTTP API: `curl -fsSL https://cli.sfcompute.com | bash` installs `sf`, `sf login` stores credentials, and the API is api.sfcompute.com `/v2` behind Bearer tokens. Object storage is S3-compatible and the docs use rclone against it. Nothing about the CLI was installed or run here, so the commands are read, not exercised.",
+  "chaining": "The 8-GPU minimum is the whole story for a user: there is no single-GPU lane here, and every purchase is a node for a window. The resale market is the compensating feature, because a reservation can be sold back at a limit price and the money returns as credits, which is the only way a solo buyer can commit to a long window without the idle time being pure loss. Object storage at USD 0.14 per GiB-month is expensive beside the storage topic's free tiers, so it is a place to cache a checkpoint for the length of a run, not to keep 10 TiB.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "The account compute cap binds before any rate matters: compute_max_total_node_hours 5760 account-wide and 720 on one SKU, measured as the area under the allocation schedule, with a 3600-second window that does not count. At 8 GPUs a node that is 720 node-hours per SKU, and only organization verification plus a support request raises it. The second wall is the 8-GPU granularity itself, which refuses a one-GPU experiment.",
+      "source": "https://sfcompute.com/"
+    }
+  ],
+  "limits_note": "The account compute cap binds before any rate matters: compute_max_total_node_hours 5760 account-wide and 720 on one SKU, measured as the area under the allocation schedule, with a 3600-second window that does not count. At 8 GPUs a node that is 720 node-hours per SKU, and only organization verification plus a support request raises it. The second wall is the 8-GPU granularity itself, which refuses a one-GPU experiment.",
+  "binding": "volume-quota",
+  "binding_note": "The account compute cap binds before any rate matters: compute_max_total_node_hours 5760 account-wide and 720 on one SKU, measured as the area under the allocation schedule, with a 3600-second window that does not count. At 8 GPUs a node that is 720 node-hours per SKU, and only organization verification plus a support request raises it. The second wall is the 8-GPU granularity itself, which refuses a one-GPU experiment.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "An account, then a card for prepaid compute credits: the quickstart states 'Buying compute time charges your organization. Make sure you have credits: check with `sf billing balance` or top up on the dashboard'. Object storage needs a billing profile, a primary billing contact and a payment method before a bucket or access key can be created, and is invoiced monthly to the default card, 'separate from prepaid compute credits'. Raising the compute caps needs the organization verified in the dashboard and a support request. No signup was performed, so the country list and any verification step beyond organization verification are not established.",
+    "country": null
+  },
+  "reliability_note": "no reliability event observed: nothing was ordered and no instance was run",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://sfcompute.com/",
+      "date": "2026-10-22",
+      "proved": "quoted: 'Get VMs, Bare Metal, & managed Slurm from the only cloud designed to let you sublease your reserved capacity when plans change.' and 'Reserve the compute you need and resell what you don't, so idle GPUs become revenue instead of sunk cost. Our scheduler allows tenants to sell back their idle compute to others.'"
+    },
+    {
+      "url": "https://sfcompute.com/",
+      "date": "2026-10-22",
+      "proved": "the resale panel prints, verbatim from the extracted page: 'Realized price' '$4.29/gpu/hr' with a red '43%' tag, then 'Reserved price' '$3.00/gpu/hr', then 'Reserved (3 mo) $302,400' with 'Resale revenue +$0', 'Burst at 1.5x $0', 'Burst at 4.5x $0' and 'Spot at 0.5x $0'"
+    },
+    {
+      "url": "https://docs.sfcompute.com/preview/orders.md",
+      "date": "2026-10-22",
+      "proved": "quoted: '`--max-rate` is the most you'll pay in dollars per node-hour; 1 node is 8 GPUs.' and the worked example 'sf orders create --side buy --pool dev --count 1 --start now --duration 1h --max-rate 20.00'"
+    },
+    {
+      "url": "https://docs.sfcompute.com/preview/guides/reselling.md",
+      "date": "2026-10-22",
+      "proved": "quoted: 'Fills use whole minutes, with a minimum of 1 node for 1 minute. You cannot set a larger minimum fill size.'"
+    },
+    {
+      "url": "https://docs.sfcompute.com/preview/orders.md",
+      "date": "2026-10-22",
+      "proved": "quoted: 'A buy order holds credits equal to its worst case, the limit price across the full requested window and node count. Your available balance is what remains after open holds.' and 'Placement fails with an insufficient-balance error when your available balance can't cover the hold.'"
+    },
+    {
+      "url": "https://docs.sfcompute.com/preview/instance-skus.md",
+      "date": "2026-10-22",
+      "proved": "quoted `sf skus list` output: 'sea-3-h100   8 x H100 80GB HBM3    2,016 GiB  1.5 TiB  56     sku_4UpxzQw7A8N' and 'iad-12-h200  8 x H200 141GB HBM3e  2,016 GiB  1.5 TiB  56     sku_NWhD6SrbjcXstGRvgl0eC'"
+    },
+    {
+      "url": "https://docs.sfcompute.com/preview/limits.md",
+      "date": "2026-10-22",
+      "proved": "quoted limit table: 'compute_max_total_node_hours 5760 1200 account' and 'compute_max_total_node_hours 720 720 sku_4UpxzQw7A8N' and 'compute_node_hours_free_window_seconds 3600 - account' and 'max_instances 64 12 account', plus 'SF Compute sets your limits. Verify your organization in the [SF Compute dashboard](https://sfcompute.com/dashboard/settings), then [contact us](https://sfcompute.com/contact) with the limit you need.' (markdown links as printed)"
+    },
+    {
+      "url": "https://docs.sfcompute.com/preview/object-storage.md",
+      "date": "2026-10-22",
+      "proved": "quoted: 'Storage costs $0.14 per GiB-month, prorated by amount stored and time kept.' and the capacity table row '| Bucket capacity | 100 TiB per bucket by default. [Contact us](https://sfcompute.com/contact) if you need a higher limit. |' and 'Storage charges are separate from prepaid compute credits.'"
+    },
+    {
+      "url": "https://sfcompute.com/pricing",
+      "date": "2026-10-22",
+      "proved": "login wall, not a page: the broker returned status 409 'login wall' with 'the extractor found 15 words in the page, under the 20 of a page; the providers that read it answered a sign-in page (contextdev, tinyfish, firecrawl, hyperbrowser), so the content is behind a sign-in, not empty', upstream_status 200, reason 'login-wall'"
+    },
+    {
+      "url": "https://api.sfcompute.com/preview/v2/orderbook/depth?requirements=accelerator:h100&start_at=1792713600&end_at=1792800000",
+      "date": "2026-10-22",
+      "proved": "with valid parameters the orderbook endpoint answered, byte for byte: {\"error\":{\"type\":\"authentication_error\",\"message\":\"missing authentication token\"}}. The same endpoint with the time bounds missing answered {\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Failed to deserialize query string: missing field `start_at`\"}}. The market price therefore needs a token, not merely a URL."
+    },
+    {
+      "url": "https://docs.sfcompute.com/preview/orderbook.md",
+      "date": "2026-10-22",
+      "proved": "quoted: 'The orderbook is the public, anonymized record of buy and sell orders on the market.' and 'Endpoints live under `/preview/v2/orderbook/` and require a Bearer token' - so 'public' describes the anonymization, not the access"
+    },
+    {
+      "url": "https://gpurentalprices.com/providers/sfcompute",
+      "date": "2026-10-22",
+      "proved": "reported, third party, historical only: 'SF Compute's prices have not been public since 25 September 2026. This provider was retired from our price tracker on 4 October 2026.' with the last recorded row '2026-09-24 10:09:38.375 UTC | H100 | spot / interruptible | $1.84 | 8 | Public pricing source https://sfcompute.com/#prices'"
+    },
+    {
+      "url": "https://sfcompute.com/news/realized-discount",
+      "date": "2026-10-22",
+      "proved": "quoted: 'The examples below build up this process, one decision at a time. Each node has eight GPUs.' and 'For a customer who bought at $4.50/GPU/hr, that brings their *realized* price to **$3.375/GPU/hr**' (illustrative values, stated in the article as not live quotes)"
+    },
+    {
+      "url": "https://autoresearch.sfcompute.com/",
+      "date": "2026-10-22",
+      "proved": "quoted pricing table row: 'h100-1 | $0.084/min ($5.04/hr) | 15 min idle window ($1.26 at most) | Fri 33% off, Sat/Sun 20% off' and 'h100-8 | $0.672/min ($40.32/hr) | 20 min idle window ($13.44 at most)' and 'cpu-2 | $0.003/min ($0.18/hr)' and 'cpu-8 | $0.012/min ($0.72/hr)'"
+    },
+    {
+      "url": "https://autoresearch.sfcompute.com/",
+      "date": "2026-10-22",
+      "proved": "quoted: 'Batch jobs (H100) | $0.063/min per GPU | - | 25% below interactive' and 'Job builds | $0.01/min | 300 min/month free' and 'Object storage | $0.10/GB-month | 100 GB free' and 'Snapshot storage | $0.10/GiB-month | 250 GiB free'"
+    },
+    {
+      "url": "https://autoresearch.sfcompute.com/",
+      "date": "2026-10-22",
+      "proved": "quoted, the minimum purchase: 'A node that goes idle keeps running for its idle window, and it bills while it runs. Stop the node, and billing ends at the stop. There is no minimum charge.'"
+    },
+    {
+      "url": "https://autoresearch.sfcompute.com/",
+      "date": "2026-10-22",
+      "proved": "quoted, the identity cost: 'Then add credit. A new account starts with $0, and a node needs credit to start. Ask your agent to add $25, or run `autor billing topup 25`. With no card on file, either one answers with a payment link. One payment adds the credit and saves your card.'"
+    },
+    {
+      "url": "https://autoresearch.sfcompute.com/",
+      "date": "2026-10-22",
+      "proved": "quoted, the queue that binds: 'A fair queue nobody can buy out' with 'batch jobs never take more than 85% of the fleet, machines stay held back for wakes, and a returning owner is served before any new request at any price' and 'Least served goes next: 100 jobs from one lab do not put you 101st.'"
+    },
+    {
+      "url": "https://autoresearch.sfcompute.com/",
+      "date": "2026-10-22",
+      "proved": "quoted, the single GPU is a container with a persistent disk: 'Interactive nodes: a container on an H100 with a persistent disk. Stop it and the files stay.' and the CLI example 'tulip running, $0.084/min' and 'stopped, disk parked, billing off'"
+    },
+    {
+      "url": "https://sfcompute.com/news/sfc-autoresearch",
+      "date": "2026-10-22",
+      "proved": "the product is SF Compute's own: the news index lists 'Introducing SF Autoresearch' dated September 11, 2026, from 'San Francisco Compute', which is what ties this host to the company whose market is at sfcompute.com"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "What is settled: the unit is a node of 8 GPUs, the smallest fill is 1 node for 1 minute, orders are bids against an orderbook rather than list prices, order placement requires prepaid credit equal to the worst case of the order, and the account cap is 5760 node-hours. What is NOT settled: the current per-GPU-hour rate. Four read paths were tried and each is recorded: the homepage answered 200 but carries only the marketing panel; /pricing answered a 409 login wall; /prices now redirects to the homepage (final_url https://sfcompute.com/), so the table a third-party tracker cites no longer exists there; the orderbook API answered authentication_error without a token. Two calls on the market product disagree about the direction of 'realized price': the docs define it as 'the cost per purchased GPU-hour after resale', which must sit BELOW the purchase rate, while the homepage panel prints 'Realized price $4.29/gpu/hr' against 'Reserved price $3.00/gpu/hr'. The 43% tag is consistent with 4.29/3.00 = 1.43, arithmetic of mine, and the page does not say what the tag measures, so the homepage figure is not recorded as a price. The panel's own chart carries the aria-label 'Reselling idle GPU hours each week lowers the realized price below the reserved rate', which fits the docs and not the printed numbers, so treat the panel as an animation caught mid-state. Also found, and recorded here rather than fixed: docs.sfcompute.com links /preview/spot-deployments from both the instances page and the reselling page and that path answers 404 on two spellings; /preview/deployments and /preview/procurements are named in the SKU page and also 404. would-settle: a token-holding read of `sf platform-constants` for the allocation-schedule grid, which is the real minimum order window, and one filled order to see whether the fill price lands near the USD 3.00 or the USD 1.84 figure. Not a recommendation: the reservation sizes in the homepage panel (the $302,400 three-month total) are for a quantity the page does not state.",
+  "extras": {
+    "wave2": {
+      "class": "gpu-market",
+      "free_tier_kind": "none",
+      "shape": {
+        "vcpu": 56,
+        "ram_gib": 2016,
+        "disk_gib": 1536,
+        "gpu_class": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 8,
+        "vram_gib": 80
+      }
+    }
+  }
+}

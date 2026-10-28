@@ -1,0 +1,68 @@
+{
+  "topic": "storage",
+  "slug": "telegraph",
+  "provider": "Telegraph (telegra.ph)",
+  "url": "https://telegra.ph",
+  "category": "media",
+  "free_tier": {
+    "stated": "Unlimited pages and unlimited uploaded images; no account-level byte quota. Each page is an independent object with a permanent URL.",
+    "unit": "unlimited",
+    "metered_on": "unstated",
+    "source_url": "https://telegra.ph/api",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://telegra.ph/api",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Unlimited pages and unlimited uploaded images; no account-level byte quota. Each page is an independent object with a permanent URL",
+    "source_url": "https://telegra.ph/api",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and unmetered, images served from telegra.ph CDN paths with no auth and no hotlink limit. Same infrastructure Telegram uses.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Telegraph API (api.telegra.ph): createAccount, createPage, editPage, getPage, getPageList, getViews. Wrappers: github.com/TABmk/telegraph-wrapper, python-telegraph, many Telegram bots.",
+  "chaining": "createAccount calls carry no stated limit (probe returned a fresh access_token instantly, no email), pages carry no stated limit, and each image is ~5 MB. Pages are editable indefinitely, so content is mutable in place.",
+  "limits": [],
+  "limits_note": "~5 MB per image (JPEG/PNG/GIF/MP4). Uploads are multipart POST to https://telegra.ph/upload, NOT an api.telegra.ph method, and it is not part of the official API. The python-telegraph client's own wording for that is 'NOT PART OF OFFICIAL API, USE AT YOUR OWN RISK', which records that the endpoint is undocumented and unsupported.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: error\"' or UNKNOWN_METHOD, while account creation and page API work perfectly. Assume upload needs a residential IP or a Telegram client. Unlimited createAccount calls (probe returne",
+    "country": null
+  },
+  "reliability_note": "Upload endpoint is undocumented and flaky from datacenter IPs: all four attempts (direct, via proxy, with browser UA/Origin/Referer) returned '\"Unknown error\"' or UNKNOWN_METHOD, while account creation and page API work perfectly. Assume upload needs a residential IP or a Telegram client.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://telegra.ph/api",
+      "date": "2026-10-21",
+      "proved": "full method list (createAccount/createPage/editPage/getPage/getPageList/getViews); no upload method documented"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET api.telegra.ph/createAccount?short_name=t&author_name=t -> {\"ok\":true,...\"access_token\":\"8705ef...\"} — keyless instant accounts"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: POST telegra.ph/upload multipart (PNG and JPEG, with and without UA+Origin+Referer) -> '\"Unknown error\"'; POST api.telegra.ph/upload -> {\"ok\":false,\"error\":\"UNKNOWN_METHOD\"}"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Unlimited pages and unlimited uploaded images; no account-level byte quota. Each page is an independent object with a permanent URL.",
+  "extras": {},
+  "binding": "none",
+  "binding_note": "no constraint in the record binds at this scale; the record carries no limit of a kind the vocabulary names"
+}

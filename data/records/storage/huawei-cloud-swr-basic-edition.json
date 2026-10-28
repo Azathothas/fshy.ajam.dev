@@ -1,0 +1,73 @@
+{
+  "topic": "storage",
+  "slug": "huawei-cloud-swr-basic-edition",
+  "provider": "Huawei Cloud SWR Basic Edition",
+  "url": "https://www.huaweicloud.com/intl/en-us/product/swr/",
+  "category": "registry",
+  "free_tier": {
+    "stated": "Free, and explicitly without a byte cap — the strongest storage wording of any registry checked: 'SWR is a free service, but some features (such as image scans and triggers) use other cloud services.' and 'No quotas are imposed on SWR images. You can push as many images as you need.' Quotas exist only on organisation/registry counts.",
+    "unit": "unlimited",
+    "metered_on": "stored-bytes",
+    "source_url": "https://support.huaweicloud.com/intl/en-us/swr_faq/swr_faq_0014.html",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://support.huaweicloud.com/intl/en-us/swr_faq/swr_faq_0014.html",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://support.huaweicloud.com/intl/en-us/swr_faq/swr_faq_0014.html",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "No per-GB egress fee is published for Basic Edition. The FAQ states 'The bandwidth of SWR dynamically changes based on actual usage', and only private-network access is discussed for billing: 'No additional fees are charged for private network access'. Public-network pushes are rate-limited rather than metered: 'the image push traffic for a single tenant is limited to 20 QPS. The traffic exceeding this value will be blocked ... Docker will receive 503'. Enterprise Edition is the metered one: images sit in OBS and 'you are billed for the OBS storage and traffic usage.'",
+    "metered": true
+  },
+  "interface": [
+    "oci"
+  ],
+  "interface_detail": "oci",
+  "tooling": "docker/skopeo/ORAS. Huawei's own SWR client (huaweicloud-sdk) plus standard OCI tooling.",
+  "chaining": "Organisation quota-bounded but image count unbounded, x N Huawei accounts. Because there is no byte quota, the limit is orgs/registries per account and 20 QPS push — parallel-push strategies must stay under that.",
+  "limits": [],
+  "limits_note": "20 QPS image push per tenant over the internet (503 + retry on excess); organisation and registry counts capped; no per-image byte quota published; Basic Edition lacks tags management, batch retention, OCI 1.1 (Enterprise has OCI v1.0/v1.1).",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Long-standing free tier with no storage meter, but Basic Edition has no tag management or batch retention, so cleanup is manual and slow.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://support.huaweicloud.com/intl/en-us/swr_faq/swr_faq_0014.html",
+      "date": "2026-10-21",
+      "proved": "(updated 2025-03-25) — 'No quotas are imposed on SWR images. You can push as many images as you need.'"
+    },
+    {
+      "url": "https://support.huaweicloud.com/intl/en-us/productdesc-swr/swr_03_0020.html",
+      "date": "2026-10-21",
+      "proved": "'SWR is a free service'; Enterprise is OBS-billed"
+    },
+    {
+      "url": "https://support.huaweicloud.com/intl/en-us/swr_faq/swr-faq-hk_en-pdf.pdf",
+      "date": "2026-10-21",
+      "proved": "'SWR Basic Edition is free but SWR Enterprise Edition is not'; 20 QPS push limit"
+    },
+    {
+      "url": "https://swr.cn-north-4.myhuaweicloud.com/v2/",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 401, Server: Web Server, Docker-Distribution-Api-Version: registry/2.0"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Free, and explicitly without a byte cap — the strongest storage wording of any registry checked: 'SWR is a free service, but some features (such as image scans and triggers) use other cloud services.' and 'No quotas are imposed on SWR images. You can push as many images as you need.' Quotas exist only on organisation/registry counts.",
+  "extras": {},
+  "binding": "none",
+  "binding_note": "no constraint in the record binds at this scale; the record carries no limit of a kind the vocabulary names"
+}

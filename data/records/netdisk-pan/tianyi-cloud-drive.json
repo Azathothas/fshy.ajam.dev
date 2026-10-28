@@ -1,0 +1,121 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "tianyi-cloud-drive",
+  "provider": "Tianyi Cloud Drive (天翼云盘, 189)",
+  "url": "https://cloud.189.cn",
+  "category": "carrier cloud",
+  "free_tier": {
+    "stated": "60 GB free per the Wikipedia table, with carrier promotions routinely granting 4 TB, 10 TB or 12 TB. Free uploads are capped at 2 GB a day, Gold at 200 GB, Platinum unlimited",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://zh.wikipedia.org/zh-cn/中国大陆网盘列表",
+    "read_on": "2026-10-21"
+  },
+  "per_object_cap": {
+    "stated": "2 GB per single-file upload on the free tier",
+    "bytes": 2000000000,
+    "source_url": "https://zh.wikipedia.org/wiki/中国大陆网盘列表"
+  },
+  "retention": {
+    "stated": "Promotional terabytes are attached to a China Telecom line and evaporate if it lapses. No retention clock on stored files",
+    "days": null,
+    "source_url": "https://www.v2ex.com/t/914183"
+  },
+  "egress": {
+    "terms": "Download is unmetered on net and throttled cross-carrier: '天翼云盘基本不限速，部分地区的非电信网络用户，可能会发现部分时段有限速'. The hard cap is on upload, not download",
+    "metered": true,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://linux.do/t/topic/578176"
+  },
+  "interface": [
+    "rest",
+    "webdav"
+  ],
+  "tooling": "OpenList drivers 189, 189_tv and 189pc, plus WebDAV out and CloudDrive2. The TV-edition OAuth client takes only an access token and is the one the community keeps alive because TV playback is unthrottled; a token can be minted by QR login, which the OpenList docs ship as an image",
+  "chaining": "4 to 12 TB per carrier-promo account is the largest single free pool in this group, and the TV client plus OpenList plus WebDAV path is fully documented. The binding constraint is not capacity but the 2 GB a day free upload allowance, and the promos ride a China Telecom line",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "2 GB a day of upload on the free tier, which is about 1.4 GB an hour",
+      "source": "https://linux.do/t/topic/578176"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "2 GB per single-file upload on the free tier",
+      "source": "https://zh.wikipedia.org/wiki/中国大陆网盘列表"
+    },
+    {
+      "kind": "write-gated",
+      "value": "the web login is now a slider human-verification check: 'Web 端登录已更换为滑动验证码，不再支持 OCR 与手动输入'",
+      "source": "https://openlistteam.github.io/docs/zh/guide/drivers/189.html"
+    }
+  ],
+  "identity_cost": {
+    "kind": "country-phone",
+    "detail": "+86 only. OpenList labels the interface 逆向接口 and the web login a slider human-verification step, so even a scripted login is closed",
+    "country": "86"
+  },
+  "reliability_note": "The TV-client OAuth path is the one that survives; the desktop-client path has been repeatedly broken by client-version checks. Promotional terabytes evaporate when the line lapses, TV clients are being pulled from app stores, and the 10 TB migration programme closed on 2026-09-27",
+  "confidence": "reported",
+  "evidence": [
+    {
+      "url": "https://github.com/OpenListTeam/OpenList/blob/main/drivers/189_tv/meta.go",
+      "date": "2026-10-21",
+      "proved": "Name '189CloudTV', DefaultRoot -11, access-token-only auth, type personal or family, upload_thread and rapid_upload"
+    },
+    {
+      "url": "https://zh.wikipedia.org/zh-cn/中国大陆网盘列表",
+      "date": "2026-10-21",
+      "proved": "电信天翼云盘, 60G free, 2G upload limit, login required"
+    },
+    {
+      "url": "https://linux.do/t/topic/578176",
+      "date": "2026-10-21",
+      "proved": "'普通用户上传限量（免费 2G/日，黄金 200G/日，铂金不限）'"
+    },
+    {
+      "url": "https://www.v2ex.com/t/914183",
+      "date": "2026-10-21",
+      "proved": "'我是电信用户，默认送了 12T 的天翼云盘空间', mounted through Alist and Kodi on a Sony TV"
+    },
+    {
+      "url": "probe:GET https://api.cloud.189.cn/open/share/getShareInfoByCodeV2.action?shareCode=ZNzuuaIneMJz",
+      "date": "2026-10-21",
+      "proved": "200 with an XML shareVO carrying fileName, shareId 1255019631818, isFolder true and needAccessCode 1, so share metadata is anonymous"
+    },
+    {
+      "url": "probe:GET https://cloud.189.cn/api/open/share/listShareDir.action",
+      "date": "2026-10-21",
+      "proved": "400 with InvalidArgument, so the listing is not anonymous"
+    },
+    {
+      "url": "https://linux.do/t/topic/2804647",
+      "date": "2026-10-21",
+      "proved": "'9月27号开始天翼云盘10T迁移不了了'"
+    },
+    {
+      "url": "https://linux.do/t/topic/675267",
+      "date": "2026-10-21",
+      "proved": "10 TB 死绑 accounts resold under CNY 10 with only a username and password"
+    }
+  ],
+  "verdict": "fails-identity",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "binding": "per-ip-shaping",
+  "binding_note": "The promo capacity is the largest free pool in the survey and it is unusable at 2 GB a day of upload: a 4 TB archive takes about 5.5 years. The identity gate sits in front of that, and the shaping would still bind behind it.",
+  "notes": "One record for the three deferred spellings: Tianyi Cloud Drive, the TV-edition variant, and the 天翼云盘 (China Telecom / 189邮箱) form. The TV client is the part worth knowing: it is the only interface that has survived, it takes an access token alone, and TV playback is unthrottled, which is why the community routes through it.",
+  "extras": {
+    "access_mode": "registration-gated",
+    "upload_cap_per_day_bytes": 2000000000,
+    "tv_oauth_client": "189CloudTV, access-token only, QR login documented",
+    "aliases": [
+      "Tianyi Cloud Drive / 天翼云盘 (189)",
+      "天翼云盘 / Tianyi Cloud Drive (189) incl. the TV-edition OAuth client",
+      "天翼云盘 (China Telecom / 189邮箱)",
+      "189Cloud",
+      "189CloudTV"
+    ],
+    "dead_bound_market": "10 TB accounts resold under CNY 10, username and password only"
+  }
+}

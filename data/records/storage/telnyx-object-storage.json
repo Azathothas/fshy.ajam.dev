@@ -1,0 +1,73 @@
+{
+  "topic": "storage",
+  "slug": "telnyx-object-storage",
+  "provider": "Telnyx Object Storage ($6/TB, zero metered egress)",
+  "url": "https://telnyx.com/pricing/storage",
+  "category": "object-storage",
+  "free_tier": {
+    "stated": "Unlimited, $0.006 per GiB/month (≈$6.14/TB), no platform fee. Confirmed live: '$0.006per GB/mo', '$0platform fee', and the page's own worked example '10,000 GB STORED … $60.00'.",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://telnyx.com/pricing/storage",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://telnyx.com/pricing/storage",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://telnyx.com/pricing/storage",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "'Egress fees | None'. This is the cheapest *combined* storage+egress number in this niche: $6/TB at rest with no egress metre at all, versus Bunny's $10 + $10 and CacheFly's $25 flat.",
+    "metered": true,
+    "price_per_tb": "$6/TB"
+  },
+  "interface": [
+    "s3-compatible"
+  ],
+  "interface_detail": "s3",
+  "tooling": "S3-compatible API; sign-up is self-serve ('SIGN UP FOR FREE' with a $0 PAYG tier). Operations are metred separately: $0.50/M state-change, $0.04/M state-read — negligible at blob-store access patterns but not at 1 TiB/day of small reads.",
+  "chaining": "This is the arithmetic answer to the assignment's question. Take a free origin (Internet Archive at $0, or an anonymous host), front it with Telnyx storage only where you must, and the egress line disappears. At 20 TiB it is $123/mo with unlimited reads — cheaper than Hetzner BX41 (€40.60 ≈ $45 for 20 TB, and still the champion on pure price) but with S3 semantics and no per-connection shaping. Note their competitor table prices AWS S3 at '$0.023 + $0.09 egress' to make exactly this point.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "1 TiB/day",
+      "source": "https://telnyx.com/pricing/storage"
+    }
+  ],
+  "limits_note": "per-object-cap: none published. Request pricing is per-operation, so a workload of 10 KB objects at 1 TiB/day (~100M reads/day) would cost ~$4/day in state-reads — fine; a workload of 1 KiB objects would not be.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "card",
+    "country": null
+  },
+  "reliability_note": "Already inventoried in A-P8 but only as a footnote; Card on file required for the PAYG tier. Their documented machine-readable endpoint GET /v2/public/pricing is 404 in practice — do not rely on it programmatically.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://telnyx.com/pricing/storage",
+      "date": "2026-10-21",
+      "proved": "'$0.006per GB/mo', '$0platform fee', 'Egress fees | None', example '10,000 GB STORED … $60.00' (read via read broker, live)"
+    },
+    {
+      "url": "https://api.telnyx.com/v2/public/pricing",
+      "date": "2026-10-21",
+      "proved": "HTTP 404 'Resource not found' (probed; the page's claim of a machine-readable rate card does not hold)"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "price_per_tb_month": "$6.14/TB stored (0.006/GiB), $0 egress, $0.04–0.50 per million operations.",
+  "notes": "Unlimited, $0.006 per GiB/month (≈$6.14/TB), no platform fee. Confirmed live: '$0.006per GB/mo', '$0platform fee', and the page's own worked example '10,000 GB STORED … $60.00'.",
+  "extras": {
+    "price_verbatim": "$6.14/TB stored (0.006/GiB), $0 egress, $0.04–0.50 per million operations."
+  },
+  "binding": "per-ip-shaping",
+  "binding_note": "one stream is shaped, and a user's throughput is the shaped rate times the number of streams"
+}

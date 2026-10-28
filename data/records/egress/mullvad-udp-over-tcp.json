@@ -1,0 +1,91 @@
+{
+  "topic": "egress",
+  "slug": "mullvad-udp-over-tcp",
+  "provider": "udp-over-tcp (mullvad)",
+  "url": "https://github.com/mullvad/udp-over-tcp",
+  "category": "tool (wireguard transport)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "no service and no account; a Rust library with two binaries, udp2tcp and tcp2udp",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://github.com/mullvad/udp-over-tcp",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://github.com/mullvad/udp-over-tcp",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://github.com/mullvad/udp-over-tcp",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not applicable; the software states no volume; ingress: tcp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://github.com/mullvad/udp-over-tcp"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "udp2tcp and tcp2udp binaries, or the Rust crate",
+  "tooling": "cargo; two binaries, embeddable as a library",
+  "chaining": "composes with a server host; the Mullvad deployment of it is a paid provider feature recorded elsewhere.",
+  "limits": [],
+  "limits_note": "",
+  "binding": "none",
+  "binding_note": "the constraint is the server half, which is why Mullvad itself can offer the feature and a client cannot get it for free",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no account",
+    "country": "None"
+  },
+  "reliability_note": "one udp2tcp instance handles one peer only; the server spawns a UDP socket per TCP connection",
+  "confidence": "documented",
+  "confidence_note": "its behaviour inside the Mullvad app is not testable without a subscription; the library's own protocol is documented",
+  "evidence": [
+    {
+      "url": "https://github.com/mullvad/udp-over-tcp",
+      "date": "2026-10-23",
+      "proved": "\"A library (and binaries) for tunneling UDP datagrams over a TCP stream\"; tcp2udp example forwarding 10.0.0.0:5001/TCP to 127.0.0.1:51820/UDP"
+    },
+    {
+      "url": "https://github.com/mullvad/udp-over-tcp",
+      "date": "2026-10-23",
+      "proved": "the wire format: \"Each datagram is preceded with a 16 bit unsigned integer in big endian byte order\""
+    },
+    {
+      "url": "https://github.com/mullvad/udp-over-tcp",
+      "date": "2026-10-23",
+      "proved": "588 stars, no GitHub releases, last push 2026-08-17"
+    },
+    {
+      "url": "https://mullvad.net/en/blog/introducing-wireguard-over-tcp-and-ipv6",
+      "date": "2026-10-23",
+      "proved": "Mullvad deploys WireGuard over TCP on its own servers and switches to it with 'mullvad relay set tunnel wireguard --protocol tcp'"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Included because it is the production-grade reference for the technique and the ancestor proxyguard names. Its existence also explains why the wrapper question is a hosting question: Mullvad can offer WireGuard over TCP because it owns the server half. A client with no host cannot get the same thing from a library. The 16-bit length prefix caps a datagram at 65535 bytes, which is not a real constraint for WireGuard's MTU.",
+  "extras": {
+    "wg_path": "none",
+    "wg_detail": "tcp2udp runs on the server and forwards to 127.0.0.1:51820; udp2tcp runs on the client beside the WireGuard interface",
+    "ingress": "tcp",
+    "volume_tib_month": null,
+    "volume_stated": "not applicable; the software states no volume",
+    "bytes_transit": "yes",
+    "transit_note": "through the tcp2udp server, which owns the UDP socket to WireGuard",
+    "hosting_requirement": "a server host running tcp2udp; the client binary goes beside the WireGuard interface",
+    "last_release": "no GitHub releases; last push 2026-08-17",
+    "stars": 588
+  }
+}

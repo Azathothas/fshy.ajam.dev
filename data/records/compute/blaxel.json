@@ -1,0 +1,160 @@
+{
+  "topic": "compute",
+  "slug": "blaxel",
+  "provider": "Blaxel",
+  "url": "https://blaxel.ai/pricing",
+  "category": "container and VM sandbox",
+  "free_tier": {
+    "stated": "'Up to $200 in free credits' on the pay-as-you-go plan, with 'Tier 0 | Free | 10' concurrent sandboxes. The page does not say what 'up to' depends on, and no expiry is stated.",
+    "unit": "mixed",
+    "metered_on": "wall-clock",
+    "source_url": "https://blaxel.ai/pricing",
+    "read_on": "2026-10-24",
+    "notes": "Credits are topped up to raise the tier; the free grant is bounded by a qualifier the page never explains."
+  },
+  "per_object_cap": {
+    "stated": "No per-sandbox vCPU or memory cap is published on the pricing page; the Custom plan advertises 'Up to 256 GB RAM per sandbox or job' as an upgrade over pay-as-you-go.",
+    "bytes": null,
+    "source_url": "https://blaxel.ai/pricing",
+    "notes": "The binding cap is lifetime, not shape."
+  },
+  "retention": {
+    "stated": "Sandboxes sit 'on automatic standby' with memory and filesystem snapshotted; Tier 0 and Tier 1 'enforce expiration dates (Tier 0 and 1, with respectively up to 7 and 30 days)'. In higher tiers unlimited persistence is permitted.",
+    "days": 7,
+    "source_url": "https://docs.blaxel.ai/Sandboxes/Expiration.md",
+    "notes": "Seven days at Tier 0 is the hard ceiling on how long one sandbox can exist."
+  },
+  "egress": {
+    "terms": "No egress charge is listed; outbound traffic can be constrained by a per-domain firewall and a proxy, which is a policy control rather than a meter.",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://blaxel.ai/pricing"
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": null,
+  "tooling": "not stated",
+  "chaining": "not stated",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "'Up to $200 in free credits', qualifier unexplained",
+      "source": "https://blaxel.ai/pricing"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "sandbox expiry at Tier 0 is at most 7 days",
+      "source": "https://docs.blaxel.ai/Sandboxes/Expiration.md"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "outbound can be restricted to a domain allowlist through the proxy",
+      "source": "https://docs.blaxel.ai/Sandboxes/Proxy-domains.md"
+    }
+  ],
+  "limits_note": "Every sandbox scales to zero after inactivity whether or not an expiry policy is set, so 'running' is not a state Blaxel holds by default.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Signup is 'Start for free' with no card shown on the pricing page; no hold is mentioned. Raising the tier requires a top-up, which introduces a card at that point.",
+    "country": null
+  },
+  "reliability_note": "'Automatic scale-to-zero after 5s inactivity' means a process with no client connection is suspended unless keep-alive is arranged; the docs offer process keep-alive as the workaround.",
+  "confidence": "documented",
+  "confidence_note": "The credit, the rates and the tier-0 expiry are first-party. What is not established: whether a keep-alive process suspends the 5-second standby timer in practice, and whether Tier 0 counts the 7-day limit from creation or from last wake.",
+  "evidence": [
+    {
+      "url": "https://blaxel.ai/pricing",
+      "date": "2026-10-02",
+      "proved": null
+    },
+    {
+      "url": "https://blaxel.ai/pricing",
+      "date": "2026-10-22",
+      "proved": "'Up to $200 in free credits. Spin up your first sandbox in under a second.' and 'Because Blaxel scales sandboxes to zero the second they're idle and resumes the full memory state in just 25 milliseconds' and '$0 compute costs on standby' and 'Up to 256 GB RAM per sandbox', quoted"
+    },
+    {
+      "url": "https://blaxel.ai/pricing",
+      "date": "2026-10-23",
+      "proved": "'Every account starts with free-tier quotas. As you top up credits, your tier automatically increases.', quoted; the page lists no dollar credit"
+    },
+    {
+      "url": "https://blaxel.ai/pricing",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Up to $200 in free credits', 'Access to all Blaxel products', 'Tier 0 | Free | 10' sandbox limit, and the rate 'Active CPU ... $0.0000115 / GB RAM · second' with '$0 compute costs on standby'."
+    },
+    {
+      "url": "https://docs.blaxel.ai/Sandboxes/Expiration.md",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Some quota tiers enforce expiration dates (Tier 0 and 1, with respectively up to 7 and 30 days). In higher tiers, unlimited persistence is permitted.'; 'the automatic standby (scale-to-zero) which happens to all sandboxes when inactive'."
+    },
+    {
+      "url": "https://docs.blaxel.ai/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Automatic scale-to-zero after 5s inactivity, resume from standby under 25ms even after weeks.'"
+    },
+    {
+      "url": "https://docs.blaxel.ai/Sandboxes/Standby-control.md",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Sandboxes stay active as long as there's an active connection to them'; 'You can also use process keep-alive to keep the sandbox running when you launch a process, even if there isn't an active connection to it.'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-24T01:52:56.000Z",
+  "price_per_tb_month": null,
+  "notes": "Blaxel prices CPU inside the RAM rate: USD 0.0000115 per GB of RAM per second is USD 0.0414 per GB-hour, so a 1 GB sandbox is USD 0.0414 an hour and USD 200 would be 4,831 hours, or a 4 GB sandbox USD 0.1656 an hour and 1,208 hours. Neither number is reachable as a month of uptime because of the 7-day Tier 0 expiry and the 5-second standby. The borrow against it: it is the cheapest per GB-hour of the sandbox providers here, and the right tool for bursty agent work.",
+  "extras": {
+    "talaria_m10h_usd": 49.68,
+    "talaria_m24h_usd": 119.23,
+    "nemo_m10h_usd": 50.67,
+    "keep_rate": 1.0,
+    "keep_rate_basis": null,
+    "billing_model": "per-second on active CPU, keyed to RAM",
+    "shape": {
+      "vcpu": 1,
+      "ram_gib": 1,
+      "disk_gib": null,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "session_cap": {
+      "wall_clock_min": 10080,
+      "idle_reap_s": 5,
+      "restart_required": false,
+      "note": "7-day maximum sandbox existence at Tier 0; standby after 5 s without a connection"
+    },
+    "persistent_storage": null,
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": true,
+      "ports": "exposed TCP ports and preview URLs",
+      "static_ip": null,
+      "ipv6": null,
+      "per_session_bytes": null
+    },
+    "price_note": null,
+    "free_tier_kind": "one-time-credit",
+    "burst_x": 1.0,
+    "ps": {
+      "gib": null,
+      "price": "on standby the compute is $0; disk is not priced on this page",
+      "durability": "full memory state is preserved across the suspend",
+      "on_stop": true,
+      "on_destroy": false,
+      "retention": "the page states no retention limit on a suspended sandbox"
+    },
+    "net": null,
+    "term": "one-time credit",
+    "m10h_usd": 12.42,
+    "m24h_usd": 30.22,
+    "price_arithmetic": "0.0000115 x 3600 = 0.0414 per GB-hour; 1 GB x 730 = 30.22; 200 / 0.0414 = 4831 h theoretical, capped by the 7-day expiry",
+    "credit_usd": 200,
+    "credit_months_at_shape": null,
+    "credit_hours_at_shape": 168,
+    "credit_expiry": "not stated"
+  },
+  "binding": "retention-clamped",
+  "tier": "Pay-as-you-go, Tier 0",
+  "binding_note": "A 7-day maximum existence beats the credit: USD 200 cannot buy a month because no single sandbox is allowed to live that long at Tier 0."
+}

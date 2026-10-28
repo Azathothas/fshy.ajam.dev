@@ -1,0 +1,77 @@
+{
+  "topic": "storage",
+  "slug": "openneuro",
+  "provider": "OpenNeuro",
+  "url": "https://openneuro.org",
+  "category": "academic",
+  "free_tier": {
+    "stated": "Free, no published per-dataset or per-account cap. 'Is this service free to use? Yes!' A 6.4 TB dataset has been deposited (staged incrementally).",
+    "unit": "TB",
+    "metered_on": "unstated",
+    "source_url": "https://docs.openneuro.org/faq.html",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.openneuro.org/faq.html",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "per-object-cap: none published; the real cap is a transient staging worker ('files are stored on a worker with relatively limited storage space'), so very large datasets must be uploaded in batches with ~24 h waits between snapshots. Retention: permanent, every version gets its own DOI; 36-month grace before forced CC0 release",
+    "days": 1080,
+    "source_url": "https://docs.openneuro.org/faq.html",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and anonymous. Objects live on Amazon S3 (`s3.amazonaws.com/openneuro.org`), public-read, ranged, CORS-open. No auth, no egress meter.",
+    "metered": false
+  },
+  "interface": [
+    "s3",
+    "git",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "s3",
+  "tooling": "openneuro-cli (`openneuro upload`) + git-annex, and DataLad. Read side is plain anonymous S3 GET — any S3 client, rclone's s3 remote with no credentials, or plain curl.",
+  "chaining": "Unlimited datasets, each a fresh S3 prefix under `openneuro.org/ds<ID>/`. Because the read side is unauthenticated S3, fetch volume never touches OpenNeuro's app tier.",
+  "limits": [],
+  "limits_note": "per-object-cap: none published; the real cap is a transient staging worker ('files are stored on a worker with relatively limited storage space'), so very large datasets must be uploaded in batches with ~24 h waits between snapshots. Retention: permanent, every version gets its own DOI; 36-month grace before forced CC0 release. Binding read limit is per-ip-shaping but weak.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "inferred from the category 'academic'; the source record states no identity cost, so this is a class assumption, not evidence",
+    "country": null
+  },
+  "reliability_note": "Large uploads fail in the staging area and require batch-then-wait choreography; BIDS format is mandatory and undeface-d datasets get deleted after the fact.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://docs.openneuro.org/faq.html",
+      "date": "2026-10-21",
+      "proved": "'Is this service free to use? Yes!', CC0 after 36-month grace, CLI upload supported"
+    },
+    {
+      "url": "https://github.com/OpenNeuroOrg/openneuro/issues/3683",
+      "date": "2026-10-21",
+      "proved": "'The full size is 6.4T', staging worker explanation, a batch-upload alternative route"
+    },
+    {
+      "url": "https://s3.amazonaws.com/openneuro.org/ds000001/dataset_description.json",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, 615 bytes, real BIDS JSON"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: 16 parallel ranged GETs of sub-01_T1w.nii.gz -> 3,200,000 bytes in 2.65s (1.21 MB/s) vs 1 connection 200,000 bytes in 3.26s (61 KB/s) — 20x linear scaling"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Free, no published per-dataset or per-account cap. 'Is this service free to use? Yes!' A 6.4 TB dataset has been deposited (staged incrementally).",
+  "extras": {},
+  "binding": "none",
+  "binding_note": "no constraint in the record binds at this scale; the record carries no limit of a kind the vocabulary names"
+}

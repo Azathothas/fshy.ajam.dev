@@ -1,0 +1,83 @@
+{
+  "topic": "storage",
+  "slug": "nebula-block-standard-object-storage-tier",
+  "provider": "Nebula Block — Standard object storage tier (storage free, egress billed)",
+  "url": "https://www.nebulablock.com/storage",
+  "category": "cheap-paid-object-storage",
+  "free_tier": {
+    "stated": "No storage quota on the Standard tier — it is priced at $0/GB/month by design: 'Standard — Stored data: Free — Durable, high-capacity storage. The default'. The paid tiers are Performance at $0.015/GB/month and Accelerated at $0.02/GB/month. There is no published cap on bytes stored, only 'availability varies — a tier can show as out of stock'.",
+    "unit": "unlimited",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.nebulablock.com/products/object-storage.md",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.nebulablock.com/products/object-storage.md",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.nebulablock.com/products/object-storage.md",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Billed, and this is the whole catch: 'Outgoing traffic is billed at $0.01/GB on all tiers; incoming traffic is included.' $0.01/GB = $10/TB, so a full 20 TB cold archive read once costs ~$200, and the 500 GB–1 TiB/day serving workload costs $150–$300/month. Cheaper than AWS at $0.09/GB but nowhere near free, and it inverts the usual shape — you pay to read, not to write.",
+    "metered": true,
+    "price_per_tb": "$10/TB"
+  },
+  "interface": [
+    "s3",
+    "cli"
+  ],
+  "interface_detail": "s3",
+  "tooling": "Real S3: s3cmd, boto3, AWS SDKs, documented setup pages per OS and per language. A workspace issues an access key pair; buckets live inside it and are private by default, switchable to public, in which case 'objects can be accessed directly via permanent URL'. Platform API exposes usage reporting (24h/7d/30d) and key rotation, and usage is metered hourly.",
+  "chaining": "Workspaces are the multiplier and nothing published caps how many you create. The genuinely interesting property is the price inversion: at $0 storage and $10/TB egress this is a very cheap place to PARK 20 TB (write-once, rare read = the cold-archive workload) and an expensive place to serve from. So the correct chain is Nebula Block as the backing store, with Cloudflare in front so the paid egress is consumed once by the cache rather than once per request.",
+  "limits": [],
+  "limits_note": "Practical gate is billing, not identity: 'Credit on your account' is a stated prerequisite, so a card is needed before the workspace will provision. Tier availability is not guaranteed — Standard can be out of stock. Bucket names get a platform prefix (u-<id>-<workspace>.<bucket>) which breaks any config that assumes the name you typed. No explicit per-object cap published.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "card",
+    "country": null
+  },
+  "reliability_note": "Canadian (Montreal/Quebec) provider, small. Do not hard-code a hostname.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://docs.nebulablock.com/products/object-storage.md",
+      "date": "2026-10-21",
+      "proved": "opened: 'Standard — Stored data: Free — Durable, high-capacity storage. The default'; 'Outgoing traffic is billed at $0.01/GB on all tiers; incoming traffic is included'; 'A Nebula Block account … Credit on your account — Standard workspaces store data free and bill outgoing traffic per GB'; 'Object storage is not covered by the public pricing page, so treat the console as authoritative.'"
+    },
+    {
+      "url": "https://www.nebulablock.com/storage",
+      "date": "2026-10-21",
+      "proved": "opened: 'Store for Free, Pay Only When You Download … Upload as much as you want. Storage is free. You only pay for what you pull out'; 'S3-compatible storage hosted in Canadian data centres'."
+    },
+    {
+      "url": "https://blog.nebulablock.com/store-serve-scale-unlock-ai-pipelines-with-nebula-block-object-storage/",
+      "date": "2026-10-21",
+      "proved": "opened: 'When public, objects can be accessed directly via permanent URL. When private, you must generate a time-limited download link'; client list boto3 / AWS CLI / Cyberduck."
+    },
+    {
+      "url": "https://www.nebulablock.com/pricing",
+      "date": "2026-10-21",
+      "proved": "opened and it does NOT contain storage pricing: it is the Libra OS subscription page ($5,000/mo Pilot, $25,000/mo Enterprise). The docs say so explicitly. Recording this because the obvious pricing URL is a decoy."
+    },
+    {
+      "url": "https://console.nebulablock.com/",
+      "date": "2026-10-21",
+      "proved": "PROBED: curl -> 200, 8,637 bytes (console is live). curl https://s3.nebulablock.com/ -> DNS failure. curl https://storage.nebulablock.com/ -> DNS failure. The endpoint is console-only, which is itself a chaining hazard."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "price_per_tb_month": "$0/TB/month storage on the Standard tier; $10/TB egress ($0.01/GB). Performance $15/TB/mo, Accelerated $20/TB/mo. Effective cost for the cold-archive workload (write once, read rarely) is ~$0/TB/mo; for the 1 TiB/day serving workload it is ~$300/mo, which fails the free-egress filter.",
+  "notes": "No storage quota on the Standard tier — it is priced at $0/GB/month by design: 'Standard — Stored data: Free — Durable, high-capacity storage. The default'. The paid tiers are Performance at $0.015/GB/month and Accelerated at $0.02/GB/month. There is no published cap on bytes stored, only 'availability varies — a tier can show as out of stock'.",
+  "extras": {
+    "price_verbatim": "$0/TB/month storage on the Standard tier; $10/TB egress ($0.01/GB). Performance $15/TB/mo, Accelerated $20/TB/mo. Effective cost for the cold-archive workload (write once, read rarely) is ~$0/TB/mo; for the 1 TiB/day serving workload it is ~$300/mo, which fails the free-egress filter."
+  },
+  "binding": "none",
+  "binding_note": "no constraint in the record binds at this scale; the record carries no limit of a kind the vocabulary names"
+}

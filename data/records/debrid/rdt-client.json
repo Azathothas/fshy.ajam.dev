@@ -1,0 +1,81 @@
+{
+  "topic": "debrid",
+  "slug": "rdt-client",
+  "provider": "RDT-Client",
+  "url": "https://github.com/rogerfar/rdt-client",
+  "category": "client: debrid download manager with a qBittorrent shim",
+  "tier": "free",
+  "free_tier": {
+    "stated": "The client is free; the README is explicit that the account behind it is not: 'You will need a Premium service at Real-Debrid, AllDebrid, Premiumize, Torbox or DebridLink, or a HIGHWAY account!'",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://github.com/rogerfar/rdt-client",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable for a user; the provider's cap applies.",
+    "bytes": null,
+    "source_url": "https://github.com/rogerfar/rdt-client",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: it manages the provider's torrent and usenet lists and deletes completed items locally after download.",
+    "days": null,
+    "source_url": "https://github.com/rogerfar/rdt-client",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Downloads the files to the local machine ('Download all files from Real-Debrid, AllDebrid, Premiumize, TorBox or HIGHWAY to your local machine automatically'), so it converts unmetered provider egress into local disk use.",
+    "metered": false,
+    "free_allowance": "none of its own",
+    "price_per_tb": null,
+    "source_url": "https://github.com/rogerfar/rdt-client"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "Web UI plus 'a fake qBittorrent API so you can hook up other applications like Sonarr, Radarr or Couchpotato'. Built on .NET 10 and Angular 21; runs as a Windows or Linux service or in Docker.",
+  "endpoint": "unverified: the project's default web port was not read; the service is configured through appsettings.json",
+  "tooling": "Docker, Windows service, Linux service; Sonarr, Radarr and Couchpotato as downstream clients.",
+  "chaining": "The download-to-disk counterpart to Decypharr's stream-in-place: Sonarr grabs through it, it fetches from the provider, unpacks, and leaves a normal file where the *arr stack expects one.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "none of its own; its polling interval is the provider's problem, and its own issue tracker carries reports of it treating client-side retries as provider 429s",
+      "source": "https://github.com/rogerfar/rdt-client"
+    }
+  ],
+  "limits_note": "The project's issue #952 documents a client-side false 429: 'Evidence this isn't a real RD 429 ... Direct curl from inside the container with the same API key ... all return 200. 30 rapid-fire calls in a row to /torrents also return 200.' A retry layer can invent a throttle that the provider never sent.",
+  "binding": "none",
+  "binding_note": "A pure client: the provider's per-object cap or add floor fails first.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account with the project; it stores the provider's key.",
+    "country": "None"
+  },
+  "reliability_note": "Its Polly retry pipeline has produced 429 warnings at ~10 ms execution time, which is too fast to be a network round trip; the log says throttled while the provider is healthy.",
+  "confidence": "documented",
+  "confidence_note": "README read today; the issue tracker entry is third-party observation of the client's behaviour, carried as such.",
+  "evidence": [
+    {
+      "url": "https://github.com/rogerfar/rdt-client",
+      "date": "2026-10-23",
+      "proved": "the six supported providers (Real-Debrid, AllDebrid, Premiumize, TorBox, DebridLink, HIGHWAY), usenet support limited to TorBox/Premiumize/HIGHWAY, automatic unpack, and 'Implements a fake qBittorrent API so you can hook up other applications like Sonarr, Radarr or Couchpotato'"
+    },
+    {
+      "url": "https://github.com/rogerfar/rdt-client/issues/952",
+      "date": "2026-10-23",
+      "proved": "a reported case of the client logging 429s while direct calls to /user, /torrents, /torrents/activeCount and /hosts/status returned 200 in the same container"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-23T01:51:00.000Z",
+  "price_per_tb_month": "USD 0 for a user",
+  "notes": "Named separately from Decypharr because the two make different tradeoffs: rdt-client downloads to disk, Decypharr serves in place over NFS/SMB. The client-side false-429 finding belongs for a user, not to Real-Debrid.",
+  "extras": {
+    "providers": "real-debrid, alldebrid, premiumize, torbox, debrid-link, high-way",
+    "usenet": "torbox, premiumize, high-way",
+    "arr_integration": "qBittorrent API shim"
+  }
+}

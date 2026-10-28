@@ -1,0 +1,101 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "ctfile",
+  "provider": "Ctfile (城通网盘, ctfile.com)",
+  "url": "https://www.ctfile.com/",
+  "category": "consumer-pan",
+  "free_tier": {
+    "stated": "5 TB of shared space on the free tier, 20 GB per file, and no upload speed cap",
+    "unit": "TB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://www.ctfile.com/register",
+    "read_on": "2026-10-22",
+    "notes": "the landing page and the register page agree on 5 TB and 20 GB; the help centre adds 20 GB free and 30 GB for Standard members"
+  },
+  "per_object_cap": {
+    "stated": "20 GB per file on the free tier; 30 GB on Standard",
+    "bytes": 20000000000,
+    "source_url": "https://www.ctfile.com/help",
+    "notes": "terms section 3.2.8 states the same two numbers as a default"
+  },
+  "retention": {
+    "stated": "files are deleted after 30 consecutive days without a sign-in on a free account, or 365 days on a paid account",
+    "days": 30,
+    "source_url": "https://www.ctfile.com/terms",
+    "notes": "terms section 3.2.5, quoted; the landing page states it as 'log in once a month to renew'"
+  },
+  "egress": {
+    "terms": "downloads are metered by tier rather than by byte: free accounts have no published volume cap but a slow channel, Standard is stated at 'up to 5MB/sec', and Super removes the limit; no per-GB egress price is published",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.ctfile.com/"
+  },
+  "interface": [
+    "rest",
+    "webdav",
+    "cli"
+  ],
+  "tooling": "first-party desktop client and a WebDAV endpoint; the free tier advertises WebDAV and the Super tier advertises 'WebDAV batch download'; the nfd-parser project ships a ct driver",
+  "chaining": "the only Chinese pan in this survey that a foreigner can self-register for with an email address alone, so it is the one that can sit under a self-hosted bridge without a +86 number",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "30 consecutive days without a sign-in deletes files on a free account",
+      "source": "https://www.ctfile.com/terms"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "20 GB per file on the free tier",
+      "source": "https://www.ctfile.com/terms"
+    },
+    {
+      "kind": "request-rate",
+      "value": "200,000 files and 10,000 folders per account; 10,000 file uploads per day; 5 concurrent download and 5 concurrent upload threads",
+      "source": "https://www.ctfile.com/terms"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "the register page offers email and password as the primary path with 'Sign up with phone instead' as the alternative; no card, no ID, no +86 requirement stated",
+    "country": null
+  },
+  "reliability_note": "Over-quota triggers deletion of the excess without prior notice, and the inactivity clock deletes a free account's files at 30 days; a monthly sign-in cron keeps it alive and nothing else does.",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://www.ctfile.com/register",
+      "date": "2026-10-22",
+      "proved": "the signup form offers Email and Password with a human-verification step, and states 'Sign up with phone instead'; the page advertises 5TB free, 20GB per file, and 'Direct link sharing, WebDAV and online media playback'"
+    },
+    {
+      "url": "https://www.ctfile.com/help",
+      "date": "2026-10-22",
+      "proved": "'Free users: Max 20GB per file / Standard members: Max 30GB per file', and the registration steps are email, password, email verification with no identity document"
+    },
+    {
+      "url": "https://www.ctfile.com/terms",
+      "date": "2026-10-22",
+      "proved": "section 3.2.5 deletes stored files after 30 consecutive days without sign-in on a free account; 3.2.7 caps an account at 200,000 files and 10,000 uploads per day; 3.2.8 caps a file at 20GB; 3.2.9 caps 5 concurrent download and 5 concurrent upload threads"
+    },
+    {
+      "url": "https://www.ctfile.com/",
+      "date": "2026-10-22",
+      "proved": "'Free users enjoy 5TB shared space, upgrade to membership for up to 70TB'; Standard CNY 28/month or CNY 98/year; Super CNY 38/month or CNY 258/year with 10TB shared and 2TB private"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T03:37:00.574Z",
+  "binding": "retention-clamped",
+  "notes": "5 TB free, 20 GB per file, email-only registration, WebDAV advertised. The 30-day inactivity deletion is the number that decides how it can be used: a monthly cron job keeps it, and nothing else does. Terms section 3.2.7 also caps the account at 200,000 files, which at 20 GB per file is a 4 PB nominal ceiling and therefore not the constraint.",
+  "extras": {
+    "access_mode": "registration-gated",
+    "registration": "email + password + human-verification step",
+    "webdav_tier": "advertised on the free tier and on Super as batch download",
+    "inactivity_days_free": 30,
+    "inactivity_days_paid": 365,
+    "file_count_cap": 200000,
+    "daily_upload_cap": 10000
+  },
+  "binding_note": "The identity gate is the one that usually closes a Chinese pan, and this one is open; what binds is the 30-day inactivity clock, which makes it a working set and not an archive."
+}

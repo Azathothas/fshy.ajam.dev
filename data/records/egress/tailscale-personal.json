@@ -1,0 +1,70 @@
+{
+  "topic": "egress",
+  "slug": "tailscale-personal",
+  "provider": "Tailscale Personal",
+  "url": "https://tailscale.com/pricing",
+  "category": "mesh network",
+  "free_tier": {
+    "stated": "6 users, unlimited user devices, 3 ACL groups, 50 tagged resources",
+    "unit": "users",
+    "metered_on": "identity-count",
+    "source_url": "https://tailscale.com/pricing",
+    "read_on": "2026-10-22",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "notes": "",
+    "source_url": "https://tailscale.com/pricing"
+  },
+  "egress": {
+    "terms": "signalling; direct WireGuard paths, DERP relay only when a direct path fails",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://tailscale.com/pricing"
+  },
+  "interface": [
+    "cli"
+  ],
+  "tooling": "tailscale",
+  "chaining": "signalling only, which is why its free tier is genuinely unlimited in bytes. It composes with a private mesh and not with a public serving tier.",
+  "limits": [],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a Tailscale account",
+    "country": null
+  },
+  "reliability_note": "DERP relays transit bytes when hole-punching fails and were not measured",
+  "confidence": "measured",
+  "evidence": [
+    {
+      "url": "https://tailscale.com/pricing",
+      "date": "2026-10-22",
+      "proved": "6 users, unlimited user devices and 50 tagged resources"
+    },
+    {
+      "url": "probe:tailscale://peer/ping",
+      "date": "2026-10-22",
+      "proved": "tailscale 1.102.4 on a live tailnet: `tailscale ping` replied 'pong from a peer (its tailnet address) via a LAN address on port 41641 in 100ms', a direct path; `netcheck` reported UDP true, both address families present, and the nearest DERP at Bengaluru 56.2 ms"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-22T03:20:00.000Z",
+  "notes": "Funnel, the product that puts bytes on Tailscale's relays, is capped and recorded separately.",
+  "extras": {
+    "stale_after_days": 180,
+    "bytes_transit": "conditional",
+    "transit_note": "peers negotiate a direct WireGuard path and DERP carries bytes only when hole-punching fails"
+  },
+  "binding": "request-rate",
+  "interface_detail": "tailscale up",
+  "limits_note": "counts of things, not rates, so no vocabulary kind names them: 6 users, unlimited user devices, 50 tagged resources; 1,000 ephemeral node-minutes per month",
+  "confidence_note": "this host runs Tailscale client 1.102.4 on a live tailnet: `tailscale ping` to a peer returned via a LAN address on port 41641, a direct WireGuard path and not DERP, and `netcheck` reported UDP true with the nearest DERP at Bengaluru 56.2 ms. Signalling is measured; no byte throughput was run over the mesh"
+}

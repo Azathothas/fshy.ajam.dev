@@ -1,0 +1,92 @@
+{
+  "topic": "storage",
+  "slug": "nostr-relays-as-blob-transport",
+  "provider": "Nostr relays as blob transport (event path, not Blossom)",
+  "url": "https://nips.nostr.com/94",
+  "category": "signalling-only",
+  "free_tier": {
+    "stated": "no storage quota, but a hard per-event size ceiling that is the real limit. Probed NIP-11 limitation.max_message_length: relay.damus.io 1,000,000 bytes; relay.primal.net 1,000,000 bytes; nos.lol 131,072 bytes. No payment_required, no auth_required on any of the three.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://relay.damus.io/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap ~1 MB",
+    "bytes": 1000000,
+    "source_url": "https://relay.damus.io/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://relay.damus.io/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "free and unmetered on all three.",
+    "metered": false
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "WebSocket, NIP-01 REQ/EVENT; NIP-94 kind 1063 carries file *metadata* only.",
+  "tooling": "nak, nostr-tools, any relay client. Blobs are pinned by sha256+url in tags; the bytes live elsewhere (Blossom).",
+  "chaining": "base64 in tags costs 4/3 the payload, so a 1 MB message cap is ~750 KB of useful bytes. This is the same failure shape as the GitHub-repo-as-blob-store dead end already recorded in 1.2.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap ~1 MB",
+      "source": "https://relay.damus.io/"
+    }
+  ],
+  "limits_note": "per-object-cap ~1 MB on the most generous relays, 128 KB on nos.lol. 1 TiB would be ~1.4 million events.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "anonymous",
+    "country": null
+  },
+  "reliability_note": "relays can be paid-gated (NIP-11 payment_required) and prune old events; several now require auth for writes. Correct use is metadata only, which is exactly what NIP-94 defines.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://relay.damus.io/",
+      "date": "2026-10-21",
+      "proved": "with Accept: application/nostr+json — literal: max_message_length 1000000, max_subscriptions 200, payment_required None, auth_required None"
+    },
+    {
+      "url": "https://nos.lol/",
+      "date": "2026-10-21",
+      "proved": "max_message_length 131072, max_subscriptions 100"
+    },
+    {
+      "url": "https://relay.primal.net/",
+      "date": "2026-10-21",
+      "proved": "max_message_length 1000000, max_subscriptions 20"
+    },
+    {
+      "url": "https://nips.nostr.com/94",
+      "date": "2026-10-21",
+      "proved": "NIP-94 defines kind 1063 file metadata with url/mime/sha256/size tags — metadata, not bytes"
+    },
+    {
+      "url": "https://github.com/renostr/nrps/blob/master/nrp-1.md",
+      "date": "2026-10-21",
+      "proved": "'the total size of the event can't be larger than 50 267 340 bytes (~50 MB)' as an upper protocol bound, far above what any public relay accepts"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "no storage quota, but a hard per-event size ceiling that is the real limit. Probed NIP-11 limitation.max_message_length: relay.damus.io 1,000,000 bytes; relay.primal.net 1,000,000 bytes; nos.lol 131,072 bytes. No payment_required, no auth_required on any of the three.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "no storage quota, but a hard per-event size ceiling that is the real limit. Probed NIP-11 limitation.max_message_length: relay.damus.io 1,000,000 bytes; relay.primal.net 1,000,000 bytes; nos.lol 131,072 bytes. No payment_required, no auth_required on any of the three.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

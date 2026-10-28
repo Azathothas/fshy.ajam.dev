@@ -1,0 +1,75 @@
+{
+  "topic": "storage",
+  "slug": "alibaba-cloud-acr-personal-edition",
+  "provider": "Alibaba Cloud ACR Personal Edition",
+  "url": "https://www.alibabacloud.com/product/acr",
+  "category": "registry",
+  "free_tier": {
+    "stated": "Free of charge with count-based quotas and NO published byte quota: 'Personal Edition is designed for individual developers. It is in public preview and is free of charge: Image pull and push: free'. Quotas table: 'Namespace quota 3 | Public repository quota 300 | Concurrent build quota 1 | Distribution performance (pull QPS) Not guaranteed'. No storage-size limit appears anywhere in the billing or specification page — billing is per-namespace and per-repo count, not per GB.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://www.alibabacloud.com/help/en/acr/product-overview/billing-description",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://www.alibabacloud.com/help/en/acr/product-overview/billing-description",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://www.alibabacloud.com/help/en/acr/product-overview/billing-description",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Push and pull are billed as free for Personal Edition ('Image pull and push: free'); there is no per-GB egress line item for this edition. Enterprise Edition is the opposite — images live in your OSS bucket and 'If you enable public network access and pull artifacts over the Internet, you are charged for outbound traffic over the Internet from OSS.'",
+    "metered": true
+  },
+  "interface": [
+    "oci",
+    "rclone"
+  ],
+  "interface_detail": "oci",
+  "tooling": "docker/skopeo/ORAS; no dedicated rclone backend, but ORAS pushes arbitrary files as OCI artifacts.",
+  "chaining": "3 namespaces x 300 public repos, x N Alibaba accounts. Because there is no byte quota, the repo count is the real ceiling, and each repo can hold many tags. Caveat: since 2024-09-04 each new Personal Edition instance is bound to one region with a dedicated endpoint, and 'Frequent image pulls trigger a TOOMANYREQUESTS error because the shared resource rate limit is reached' — keep concurrency under 10.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "review and is free of charge: Image pull and push: free'",
+      "source": "https://www.alibabacloud.com/help/en/acr/product-overview/billing-description"
+    }
+  ],
+  "limits_note": "3 namespaces, 300 public repositories, 1 concurrent build, no pull QPS guarantee. Official guidance: 'Keep concurrent image pulls below 10.' Since 2021-10-30, more than 10 concurrent uploads/downloads is throttled. New (post-2024-09-04) personal instances list 'Public endpoints cannot be used to pull images' among their restrictions — read that against the rate-limit guidance before betting on anonymous public pulls.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: read that against the rate-limit guidance before betting on anonymous public pulls. registry",
+    "country": null
+  },
+  "reliability_note": "Shared multi-tenant backend; consistent TOOMANYREQUESTS under parallel pulls, and public-pull behaviour on new personal endpoints is ambiguous in the docs.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://www.alibabacloud.com/help/en/acr/product-overview/billing-description",
+      "date": "2026-10-21",
+      "proved": "'free of charge: Image pull and push: free'; namespace 3 / public repo 300"
+    },
+    {
+      "url": "https://www.alibabacloud.com/help/en/acr/user-guide/individual-edition-instance-independent-domain-name-capacity-limit",
+      "date": "2026-10-21",
+      "proved": "'shared bandwidth model with no guaranteed egress bandwidth', TOOMANYREQUESTS, <10 concurrent pulls"
+    },
+    {
+      "url": "https://registry.cn-hangzhou.aliyuncs.com/v2/",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 401, Www-Authenticate: Bearer realm=\"https://dockerauth.cn-hangzhou.aliyuncs.com/auth\" (public pulls still go through a token realm; no anonymous token issued without credentials)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Free of charge with count-based quotas and NO published byte quota: 'Personal Edition is designed for individual developers. It is in public preview and is free of charge: Image pull and push: free'. Quotas table: 'Namespace quota 3 | Public repository quota 300 | Concurrent build quota 1 | Distribution performance (pull QPS) Not guaranteed'. No storage-size limit appears anywhere in the billing or specification page — billing is per-namespace and per-repo count, not per GB.",
+  "extras": {},
+  "binding": "write-gated",
+  "binding_note": "the write is a queue with a person or a rule in it, so the upload rate is set by somebody else"
+}

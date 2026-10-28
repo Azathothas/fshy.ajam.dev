@@ -1,0 +1,86 @@
+{
+  "topic": "egress",
+  "slug": "wstunnel",
+  "provider": "wstunnel",
+  "url": "https://github.com/erebe/wstunnel",
+  "category": "tool (wireguard transport)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "no service and no account; the software is a static binary released under an open licence",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://github.com/erebe/wstunnel",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://github.com/erebe/wstunnel",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://github.com/erebe/wstunnel",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not applicable; the software states no volume, and the tunnel's ceiling is whatever the host and the network in between allow; ingress: tcp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://github.com/erebe/wstunnel"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "wstunnel client / wstunnel server subcommands",
+  "tooling": "static binary per platform; a systemd unit is the documented server form",
+  "chaining": "a websocket upgrade passes through any TCP or HTTP forwarder that does not buffer, so a free HTTP-only hosted tunnel plus a wstunnel server converts a TCP-only path into a WireGuard path; the wstunnel server still has to run somewhere the client controls.",
+  "limits": [],
+  "limits_note": "",
+  "binding": "none",
+  "binding_note": "the constraint that decides this tool is outside the seven-kind vocabulary: a host with a public address at the far end, which the corpus treats as a paid resource rather than a free one",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no account; the client dials a wstunnel server the client or somebody else runs",
+    "country": "None"
+  },
+  "reliability_note": "the udp tunnel auto-closes after 30 s idle unless timeout_sec=0; the client sends websocket pings every 30 s by default; MTU must drop to about 1300 or packets fragment",
+  "confidence": "documented",
+  "confidence_note": "measured throughput on a named path would raise it; the README carries only a benchmark image with no numbers in text",
+  "evidence": [
+    {
+      "url": "https://github.com/erebe/wstunnel",
+      "date": "2026-10-23",
+      "proved": "the WireGuard recipe, the udp:// forward with timeout_sec, and the server --restrict-to flag"
+    },
+    {
+      "url": "https://github.com/erebe/wstunnel",
+      "date": "2026-10-23",
+      "proved": "release v11.1.0 published 2026-10-19, 7122 stars, last push 2026-10-19"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/erebe/wstunnel/master/README.md",
+      "date": "2026-10-23",
+      "proved": "\"If you see some throughput issue, be sure to lower the MTU of your wireguard interface ... to something like 1300 or you will endup fragmenting udp packet (due to overhead of other layer)\""
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The most maintained wrapper. It is not a WireGuard implementation: it forwards udp:// flows over a websocket or HTTP/2 connection, so the far end needs a wstunnel server. The README states HTTP/2 fails behind a buffering reverse proxy or CDN and that only a directly exposed server works, which makes websocket the usable transport behind a CDN.",
+  "extras": {
+    "wg_path": "none",
+    "wg_detail": "the README ships a WireGuard recipe: server 'wstunnel server --restrict-to localhost:51820 wss://[::]:443' and client \"wstunnel client -L 'udp://51820:localhost:51820?timeout_sec=0' wss://my.server.com:443\", with the WireGuard peer Endpoint changed to localhost:51820",
+    "ingress": "tcp",
+    "volume_tib_month": null,
+    "volume_stated": "not applicable; the software states no volume, and the tunnel's ceiling is whatever the host and the network in between allow",
+    "bytes_transit": "yes",
+    "transit_note": "the bytes cross the wstunnel server, then any CDN or forwarder in front of it",
+    "hosting_requirement": "a host with a public address running wstunnel server; the client half runs on the device",
+    "last_release": "v11.1.0 2026-10-19",
+    "stars": 7122
+  }
+}

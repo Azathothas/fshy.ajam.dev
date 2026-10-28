@@ -1,0 +1,90 @@
+{
+  "topic": "debrid",
+  "slug": "aiostreams-elfhosted",
+  "provider": "AIOStreams (ElfHosted public instance)",
+  "url": "https://aiostreams.elfhosted.com/stremio/configure",
+  "category": "hosted Stremio addon aggregator (combines other addons, filters and sorts, debrid-aware)",
+  "tier": "public instance",
+  "free_tier": {
+    "stated": "Free, no account to install: 'Use AIOStreams without hosting it yourself via community-run public instances.' On the ElfHosted instance, 'The most stable option due to being a professional service, but the public instance forcefully excludes P2P, HTTP, and Live stream types.'",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://docs.aiostreams.viren070.me/getting-started/public-instances/",
+    "read_on": "2026-10-23",
+    "notes": "The public instance is deliberately crippled by stream type, not only by rate, which is the opposite of what a free aggregator is wanted for."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: the addon aggregates stream descriptors",
+    "bytes": null,
+    "source_url": "https://docs.aiostreams.viren070.me/getting-started/public-instances/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: configuration lives in the client's browser and the URL; the public instance stores nothing",
+    "days": null,
+    "source_url": "https://aiostreams.elfhosted.com/stremio/configure",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No byte allowance published. Proxying is a paid feature ('4K MediaFlow-Proxy'); the public instance returns links only.",
+    "metered": false,
+    "free_allowance": "not published",
+    "price_per_tb": null,
+    "source_url": "https://aiostreams.elfhosted.com/stremio/configure"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "A configure wizard at /stremio/configure that emits a per-user manifest URL (config encoded in the path), plus a PWA manifest at /manifest.json for the standalone web app. The configure page is a 1,034-byte single-page-app shell, so nothing on it can be read from the HTML: its text was only visible through a search index's rendering, which is where 'Reasonable rate limits apply so it stays fast for everyone' and the Torrentio/AnimeKitsu notice come from.",
+  "tooling": "no install: configure in the browser, copy the generated manifest into Stremio. Also ships a browser front end so Stremio itself is optional ('Watch without Stremio').",
+  "chaining": "The aggregator layer: it folds Torrentio, Comet, MediaFusion and others into one list with shared filters, so a client with several addons configures one URL. Needs at least one underlying addon and, for cached playback, a debrid key.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "the instance's own notice says 'Reasonable rate limits apply so it stays fast for everyone'; the number is unpublished and the notice was read through a search index, not from the served HTML",
+      "source": "https://aiostreams.elfhosted.com/stremio/configure"
+    }
+  ],
+  "limits_note": "Stream-type exclusion is a second, harder limit that is not a counter: P2P, HTTP and Live results are removed outright on this instance per the official docs. Community instances that do allow them exist (aiostreams.fortheweak.cloud, aiostreams.stremiofr.com, aiostreams.stremio.ru) but were not read, and the 'does not log API keys' reassurance belongs to the stremio.ru instance's notice, not to ElfHosted's.",
+  "binding": "request-rate",
+  "binding_note": "Byte volume never reaches the instance - it returns links - so the first wall is the per-caller request limit, with the stream-type filter removing whole result classes before that.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "Nothing to install. A debrid key is required to resolve cached streams, and the instance does not log it.",
+    "country": "None"
+  },
+  "reliability_note": "Public instances are community-run and change: the official docs list only the ElfHosted one and point at a third-party uptime page for the rest. Stream-type filtering differs per instance, so results are not portable between them.",
+  "confidence": "documented",
+  "confidence_note": "The official docs page (read) and the served shell (measured) are the load-bearing sources. The rate-limit sentence and the Torrentio removal come from a search index's rendering of a page that renders client-side, so they are reported rather than read. A configured stream call would settle both and needs a debrid key.",
+  "evidence": [
+    {
+      "url": "https://aiostreams.elfhosted.com/stremio/configure",
+      "date": "2026-10-23",
+      "proved": "HTTP 200, 1,034 bytes: a single-page-app shell titled 'AIOStreams' with an empty root div and three script tags. It proves the route is served and proves nothing about the text on it."
+    },
+    {
+      "url": "https://aiostreams.elfhosted.com/manifest.json",
+      "date": "2026-10-23",
+      "proved": "HTTP 200, 725 bytes: the PWA manifest (name 'AIOStreams', short_name 'AIO', icons), not a Stremio addon manifest - the addon manifest is the per-user URL the wizard generates"
+    },
+    {
+      "url": "https://docs.aiostreams.viren070.me/getting-started/public-instances/",
+      "date": "2026-10-23",
+      "proved": "'There are several public instances run by the community'; ElfHosted's 'forcefully excludes P2P, HTTP, and Live stream types'; the Stable/Nightly channels; the uptime.ibbylabs.dev status page"
+    },
+    {
+      "url": "https://store.elfhosted.com/product/aiostreams-stremthru/",
+      "date": "2026-10-23",
+      "proved": "the paid tier: 'Your own private AIOStreams addon with a StremThru instance alongside', USD 9.00 / month"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T02:28:11.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The Torrentio ban matters for a free-only client: Torrentio is the addon with the best public hit rate, and this instance disables it 'respecting the Torrentio developer's request'. So the free aggregator is the free addon minus the best free source.",
+  "extras": {
+    "other_instances_seen": "aiostreams.fortheweak.cloud, aiostreams-nightly.fortheweak.cloud, aiostreams.stremiofr.com, aiostreams.stremio.ru, aiostreams.elfhosted.com",
+    "status_page": "https://uptime.ibbylabs.dev/",
+    "disabled_here": "Torrentio, AnimeKitsu (per the configure page)"
+  }
+}

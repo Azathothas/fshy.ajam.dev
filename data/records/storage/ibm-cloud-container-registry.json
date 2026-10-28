@@ -1,0 +1,82 @@
+{
+  "topic": "storage",
+  "slug": "ibm-cloud-container-registry",
+  "provider": "IBM Cloud Container Registry (free plan)",
+  "url": "https://www.ibm.com/products/container-registry",
+  "category": "registry",
+  "free_tier": {
+    "stated": "500 MB storage and 5 GB pull traffic per month: 'Amount of storage for images | 500 MB | Unlimited', 'Pull traffic | 5 GB per month | Unlimited' (Free vs Standard). Free-plan allowance confirmed in the quota doc: 'The free tier allowance for storage is 512 MB and traffic is 5120 MB.'",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://cloud.ibm.com/docs/Registry?topic=Registry-registry_overview",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://cloud.ibm.com/docs/Registry?topic=Registry-registry_overview",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://cloud.ibm.com/docs/Registry?topic=Registry-registry_overview",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Pull traffic is metered as a quota, not priced per GB on the free plan: 'Pull traffic across public connections counts toward usage and quota. Pull traffic across private connections doesn't count.' Exceed it and access stops — 'If you exceed your storage or pull traffic limits, you cannot push or pull images to and from your namespace.'",
+    "metered": true
+  },
+  "interface": [
+    "oci",
+    "cli"
+  ],
+  "interface_detail": "oci",
+  "tooling": "ibmcloud cr CLI, docker/skopeo. OCI distribution spec compliant.",
+  "chaining": "None — 512 MB is per IBM Cloud account and the overage behaviour is a hard stop, not a bill.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "traffic | 5 GB per month | Unlimited' (Free vs Standard)",
+      "source": "https://cloud.ibm.com/docs/Registry?topic=Registry-registry_overview"
+    }
+  ],
+  "limits_note": "512 MB storage, 5 GB pull traffic per month, per account across all namespaces in a registry instance; overage blocks push and pull entirely.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Hard cutoff on quota rather than overage billing, so a bulk workload simply stops mid-transfer.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://cloud.ibm.com/docs/Registry?topic=Registry-registry_overview",
+      "date": "2026-10-21",
+      "proved": "Free plan 500 MB storage / 5 GB pull traffic; 'you cannot push or pull images' on exceed"
+    },
+    {
+      "url": "https://cloud.ibm.com/docs/Registry?topic=Registry-registry_quota",
+      "date": "2026-10-21",
+      "proved": "'free tier allowance for storage is 512 MB and traffic is 5120 MB'"
+    },
+    {
+      "url": "https://us.icr.io/v2/",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 401, Server: IBM Cloud Container Registry, realm https://us.icr.io/oauth/token"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "500 MB storage and 5 GB pull traffic per month: 'Amount of storage for images | 500 MB | Unlimited', 'Pull traffic | 5 GB per month | Unlimited' (Free vs Standard). Free-plan allowance confirmed in the quota doc: 'The free tier allowance for storage is 512 MB and traffic is 5120 MB.'",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "500 MB storage and 5 GB pull traffic per month: 'Amount of storage for images | 500 MB | Unlimited', 'Pull traffic | 5 GB per month | Unlimited' (Free vs Standard). Free-plan allowance confirmed in the quota doc: 'The free tier allowance for storage is 512 MB and traffic is 5120 MB.'",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-ip-shaping",
+  "binding_note": "one stream is shaped, and a user's throughput is the shaped rate times the number of streams"
+}

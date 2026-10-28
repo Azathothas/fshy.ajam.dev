@@ -1,0 +1,105 @@
+{
+  "topic": "storage",
+  "slug": "repod-repository-for-open-data",
+  "provider": "RepOD — Repository for Open Data (ICM, University of Warsaw)",
+  "url": "https://repod.icm.edu.pl",
+  "category": "academic",
+  "free_tier": {
+    "stated": "No dataset-size limit at all: 'Repozytorium akceptuje zbiory danych o dowolnej wielkości. Jedynym ograniczeniem jest limit wielkości pojedynczego pliku, wynoszący 5GB' (the repository accepts datasets of any size; the only limit is 5 GB per single file). A sibling UW deposit guide adds '20 GB for the sum of files transferred simultaneously'. Storage itself is unpriced: 'Korzystanie z repozytorium nie wiąże się z żadnymi opłatami' (using the repository involves no fees).",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://info.repod.icm.edu.pl/?page_id=354",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "5 GB per single file",
+    "bytes": 5000000000,
+    "source_url": "https://info.repod.icm.edu.pl/?page_id=354",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Publication assigns a DOI and freezes that version — versions are immutable after publish, so this is write-once-per-version, not mutable working storage",
+    "source_url": "https://info.repod.icm.edu.pl/?page_id=354",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and unmetered. Public files are plain HTTP from repod.icm.edu.pl with no egress pricing anywhere in the product; downloads are the same Dataverse /api/access/datafile path used by Harvard. Probe: GET /api/access/datafile/39782 -> 200, 7,459 bytes returned, MD5 published per file for verification.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Native Dataverse 4.11 REST API, live and unauthenticated for reads: GET /api/info/version -> {\"version\":\"1.3.2-05b9a3acf7fe552a849e874762b86d0605e47186\"}; GET /api/search?q=*&type=dataset -> total_count 4545; type=file -> 65370 items. The repository's own policy page states uploads work 'zarowno przez graficzny interfejs ... jak i za pomocą interfejsu API' (both GUI and API). Standard Dataverse ingest: DVUploader (github.com/GlobalDataverseCommunityConsortium/dataverse-uploader), pyDataverse, SWORD v2. No rclone backend, but the REST loop is ~15 lines.",
+  "chaining": "Per-record cap is the unit, not per-account: unlimited datasets x unlimited size each, so 500 GB is 100 files of 5 GB inside one dataset — no account multiplication needed. Multiple datasets multiply further. One email/password account is enough; signup is self-service ('Sign up for an account to log in with your email or username and password').",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "5 GB per single file",
+      "source": "https://info.repod.icm.edu.pl/?page_id=354"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "5 GB/file",
+      "source": "https://info.repod.icm.edu.pl/?page_id=354"
+    }
+  ],
+  "limits_note": "Per-object-cap 5 GB/file and 20 GB per simultaneous transfer batch are the only hard numbers; there is NO per-dataset and NO per-account byte ceiling. 1,000 files per zip ingest (Dataverse default). Publication assigns a DOI and freezes that version — versions are immutable after publish, so this is write-once-per-version, not mutable working storage. Embargo up to 36 months.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: dnymi opłatami' (using the repository involves no fees). Institutional (ICM UW, Polish national open-science infrastructure since 2020), CoreTrustSeal-lineage Dataverse with per-file MD5 p",
+    "country": null
+  },
+  "reliability_note": "Institutional (ICM UW, Polish national open-science infrastructure since 2020), CoreTrustSeal-lineage Dataverse with per-file MD5 published; the real friction is moderation-by-metadata-quality, not bytes, and published versions cannot be edited in place.",
+  "confidence": "documented",
+  "confidence_note": "The conditional range behaviour was reproduced, both legs. Was documented; now documented.",
+  "evidence": [
+    {
+      "url": "https://repod.icm.edu.pl/api/info/version",
+      "date": "2026-10-22",
+      "proved": "the Dataverse version, which decides whether the quota endpoint exists. Re-read https://repod.icm.edu.pl/api/info/version: HTTP 200, 83 bytes, sha256 06a6ec2a82903eca. Quoted: {\"status\":\"OK\",\"data\":{\"version\":\"1.3.2-05b9a3acf7fe552a849e874762b86d0605e47186\"}}"
+    },
+    {
+      "url": "https://info.repod.icm.edu.pl/?page_id=354",
+      "date": "2026-10-21",
+      "proved": "'Repozytorium akceptuje zbiory danych o dowolnej wielkości. Jedynym ograniczeniem jest limit wielkości pojedynczego pliku, wynoszący 5GB' + same page states API upload is supported"
+    },
+    {
+      "url": "https://info.repod.icm.edu.pl/",
+      "date": "2026-10-21",
+      "proved": "'powstałym z myślą o wszystkich naukowcach i instytucjach' (built for all scientists and institutions); 'Korzystanie z repozytorium nie wiąże się z żadnymi opłatami'"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET /api/info/version -> 200 Dataverse 1.3.2; GET /api/access/datafile/39782 -> 200 7,459 bytes; GET /api/search?q=*&type=dataset -> 4,545 datasets live"
+    },
+    {
+      "url": "probe:https://repod.icm.edu.pl/api/access/datafile/39782",
+      "date": "2026-10-22",
+      "proved": "ranged GET 2026-10-22 on /api/access/datafile/39782: 206 Partial Content, Content-Range bytes 0-1023/7459; same request on /api/access/datafile/18: 200 OK, full Content-Length, no Content-Range"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "No dataset-size limit at all: 'Repozytorium akceptuje zbiory danych o dowolnej wielkości. Jedynym ograniczeniem jest limit wielkości pojedynczego pliku, wynoszący 5GB' (the repository accepts datasets of any size; the only limit is 5 GB per single file). A sibling UW deposit guide adds '20 GB for the sum of files transferred simultaneously'. Storage itself is unpriced: 'Korzystanie z repozytorium nie wiąże się z żadnymi opłatami' (using the repository involves no fees).",
+  "extras": {
+    "verified_in_pass": [
+      {
+        "url": "https://repod.icm.edu.pl/api/info/version",
+        "date": "2026-10-22",
+        "via": "fetch-broker",
+        "http_status": 200,
+        "bytes": 83,
+        "sha256": "06a6ec2a82903eca9e6937ee2c251d1894a8ff9418910e5a77806885e80dcd05",
+        "pattern_found": true,
+        "what_changed": "no change: the page still states the claim",
+        "capture": "captures\\repod-repod-icm-edu-pl-api-info-version.txt"
+      }
+    ]
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

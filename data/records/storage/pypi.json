@@ -1,0 +1,96 @@
+{
+  "topic": "storage",
+  "slug": "pypi",
+  "provider": "PyPI (Python Package Index)",
+  "url": "https://pypi.org",
+  "category": "registry",
+  "free_tier": {
+    "stated": "100 MB per file, 10 GB per project — both are *defaults*, both are raisable by filing a GitHub issue. Unlimited number of projects. Verified in warehouse source: MAX_FILESIZE = 100 * ONE_MIB, MAX_PROJECT_SIZE = 10 * ONE_GIB, UPLOAD_LIMIT_CAP = 1 GiB.",
+    "unit": "GiB",
+    "metered_on": "unstated",
+    "source_url": "https://docs.pypi.org/project-management/storage-limits/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "100 MB per file",
+    "bytes": 100000000,
+    "source_url": "https://docs.pypi.org/project-management/storage-limits/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "| Deletion is permanent and irreversible ('cannot be undone without administrative intervention')",
+    "source_url": "https://docs.pypi.org/project-management/storage-limits/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and unmetered. files.pythonhosted.org probe: Server: cloudflare, Cache-Control: 'max-age=365000000, immutable, public', Access-Control-Allow-Origin: *, no auth.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Legacy upload API POST /legacy/ (twine), JSON API GET /pypi/<name>/json for metadata, direct file GET from files.pythonhosted.org. Orgs/teams exist. Named wrapper class: pypi/* tools, twine, and warehouse itself. No rclone backend.",
+  "chaining": "UNBOUNDED via projects: unlimited projects x 10 GB each (raisable to 40 GB — uv and ruff were both granted 40 GB). 10 TiB = 1,024 projects at default 10 GB. Project creation is rate limited to 20/hour and 40/hour per IP, which is the binding constraint, not bytes.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "100 MB per file",
+      "source": "https://docs.pypi.org/project-management/storage-limits/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "100 MB/file",
+      "source": "https://docs.pypi.org/project-management/storage-limits/"
+    }
+  ],
+  "limits_note": "100 MB/file, 10 GB/project (both raisable; 40 GB grants are routine for large projects). 20 project creations/hour/user, 10/day/organization, 40/hour/IP (warehouse config.py defaults). Files cannot be uploaded to a release older than 14 days (MAXIMUM_AGE_FOR_NEW_UPLOADS). Deleting a file frees quota; yanking does NOT.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Deletion is permanent and irreversible ('cannot be undone without administrative intervention'). Releases are append-only in practice but files *can* be deleted to free project quota, so unlike npm this is not immutable-by-design — treat it as stable-but-deletable. Quota enforcement is a hard 400 at upload, so budget against the 10 GB project figure.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://docs.pypi.org/project-management/storage-limits/",
+      "date": "2026-10-21",
+      "proved": "'The current default limits are 100.0 MB for individual files and 10.0 GB for the entire project'; 'we can sometimes increase your limit'"
+    },
+    {
+      "url": "https://github.com/pypa/warehouse/blob/main/warehouse/constants.py",
+      "date": "2026-10-21",
+      "proved": "MAX_FILESIZE = 100 * ONE_MIB; MAX_PROJECT_SIZE = 10 * ONE_GIB; UPLOAD_LIMIT_CAP = ONE_GIB; MAXIMUM_AGE_FOR_NEW_UPLOADS = 14 days"
+    },
+    {
+      "url": "https://github.com/pypa/warehouse/blob/main/warehouse/config.py",
+      "date": "2026-10-21",
+      "proved": "PROJECT_CREATE_USER_RATELIMIT_STRING default '20 per hour'; PROJECT_CREATE_IP '40 per hour'; PROJECT_CREATE_ORGANIZATION '10 per day'"
+    },
+    {
+      "url": "https://github.com/pypi/support/issues/4260",
+      "date": "2026-10-21",
+      "proved": "'Project Limit Request: uv - 40 GB' (grant path is real and used)"
+    },
+    {
+      "url": "https://pypi.org/pypi/six/json",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, info.version 1.17.0, 2 urls (JSON API works anonymously)"
+    },
+    {
+      "url": "https://files.pythonhosted.org/packages/71/39/.../six-1.16.0.tar.gz",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, Content-Length: 34041, Cache-Control: 'max-age=365000000, immutable, public', Server: cloudflare"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "100 MB per file, 10 GB per project — both are *defaults*, both are raisable by filing a GitHub issue. Unlimited number of projects. Verified in warehouse source: MAX_FILESIZE = 100 * ONE_MIB, MAX_PROJECT_SIZE = 10 * ONE_GIB, UPLOAD_LIMIT_CAP = 1 GiB.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

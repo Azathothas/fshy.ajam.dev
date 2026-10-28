@@ -1,0 +1,91 @@
+{
+  "topic": "storage",
+  "slug": "buzzheavier",
+  "provider": "Buzzheavier",
+  "url": "https://buzzheavier.com",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "Storage explicitly unlimited ('Upload whatever size you want'); no per-file cap; no bandwidth cap. Free files start with an 8-day life, +2 days per download up to 60d, and become permanent at 30+ downloads every 60 days (live pricing page, 2026-08-24 capture; the 2026-10 live page is 404 to non-browser fetchers).",
+    "unit": "unlimited",
+    "metered_on": "stored-bytes",
+    "source_url": "https://buzzheavier.com/pricing",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "no per-file cap",
+    "source_url": "https://buzzheavier.com/pricing",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Free files start with an 8-day life, +2 days per download up to 60d, and become permanent at 30+ downloads every 60 days (live pricing page, 2026-08-24 capture; the 2026-10 live page is 404 to non-browser fetchers)",
+    "days": 8,
+    "source_url": "https://buzzheavier.com/pricing",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered. Help page: 'Bandwidth Limits? None. Go wild.' Downloads are served through Cloudflare with a Turnstile/hx gate but no transfer meter. Hotlinking historically allowed per 2024 FAQ.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "PUT upload to https://w.buzzheavier.com/{name} (anonymous) or /{parentId}/{name} with 'Authorization: Bearer <ACCOUNT_ID>'. Bash CLI github.com/Ognisty321/buzzheavier-cli; uploader modules in anasty17/mirror-leech-telegram-bot (PR #1938/#1939) and SilentDemonSD/WZML-X (PR #418); download resolver in towerwatchman/Atlas electron/downloads/hosts/buzzheavier.js.",
+  "chaining": "Anonymous PUT needs no account at all, so the ceiling is not per-account: it is 'as many files as you can push'. Account IDs are free, non-recoverable, email-less, and unlimited. The 45-day inactivity expiry resets when the same client re-downloads its own file (>10% or the download endpoint), and the same bytes may sit under 2-3 identifiers. Docs also expose ?expiry= and ?burner= for self-expiring uploads.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "no per-file cap",
+      "source": "https://buzzheavier.com/pricing"
+    }
+  ],
+  "limits_note": "No per-file cap (docs: 'name max 500 chars' is the only field limit). Upload rate: 2 req/s and 10 concurrent uploads per IP observed on FileDitch-class peers; Buzzheavier returned no rate headers in probes. Download path is Cloudflare-Turnstile gated: a plain curl GET of a file page returns 403 'Just a moment', and /{id}/download?t=... returns HTTP 204 + 'Hx-Redirect' back to the file page unless the browser completes the human-verification step. Retention: 8d base / +2d per download / 60d cap / permanent at 30 downloads per 60 days; older policy was 15d/+3d/45d/15 downloads.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: wn blog admits the cheap storage was storage resold below cost at ~$1/TB/month, which collapsed after a seizure at the upstream provider and a provider crackdown; they now pay ~EUR 5-6/TB/month. Free-tier terms h",
+    "country": null
+  },
+  "reliability_note": "they now pay ~EUR 5-6/TB/month. Free-tier terms have ratcheted twice (permanent -> 15d -> 8d base life) and can ratchet again. Download path is Cloudflare-challenge heavy, so unattended clients need the htmx/HX-Request mechanism or a real browser.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://buzzheavier.com/pricing",
+      "date": "2026-10-21",
+      "proved": "(captured 2026-08-24 via archive broker) — 'Free accounts: Files start with 8-day life / Each download adds 2 days (upto 60d) / Files become permanent with 30+ downloads every 60 days'; 'Paid accounts: Permanent storage EUR 18 / TB / Month'"
+    },
+    {
+      "url": "https://buzzheavier.com/blog/fresh_start",
+      "date": "2026-10-21",
+      "proved": "'Buzzheavier was running on borrowed time using storage exploits. Yeah, we managed to get storage costs down to about $1/TB/month... after the recent police raid, our provider caught on. Game over.' followed by 'we're now paying actual market rates - around 5-6 euros per terabyte per month'. The quoted words mean the operator obtained storage below market cost, and the upstream host was seized"
+    },
+    {
+      "url": "https://buzzheavier.com/help",
+      "date": "2026-10-21",
+      "proved": "'File Size Limit? Upload whatever size you want.' / 'Bandwidth Limits? None. Go wild.'"
+    },
+    {
+      "url": "https://w.buzzheavier.com/e2probe.txt",
+      "date": "2026-10-21",
+      "proved": "probe: PUT -> 201 Created, {\"id\":\"g8zb77txsh79\",\"locationId\":\"5urmb0o0baxx\",\"size\":34,\"expiry\":\"2026-10-25T16:05:50Z\",\"sha256\":...,\"md5\":...} — anonymous upload works with zero auth"
+    },
+    {
+      "url": "https://buzzheavier.com/g8zb77txsh79/download?t=",
+      "date": "2026-10-21",
+      "proved": "probe: GET ... -> 204 No Content + Hx-Redirect (challenge), and GET of the file page without a browser -> 403 cf-mitigated:challenge"
+    },
+    {
+      "url": "https://buzzheavier.com/api/locations",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200 {\"data\":[{\"id\":\"g65gmc5rfv2c\",\"name\":\"Asia-Pacific\"},{\"id\":\"m8sx6tb1ngx0\",\"name\":\"Western Europe\"},{\"id\":\"5urmb0o0baxx\",\"name\":\"Eastern Europe\"},{\"id\":\"3eb9t1559lkv\",\"name\":\"Central Europe\"},{\"id\":\"12brteedoy0f\",\"name\":\"Eastern US\"},{\"id\":\"95542dt0et21\",\"name\":\"Western US\"}]}"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Storage explicitly unlimited ('Upload whatever size you want'); no per-file cap; no bandwidth cap. Free files start with an 8-day life, +2 days per download up to 60d, and become permanent at 30+ downloads every 60 days (live pricing page, 2026-08-24 capture; the 2026-10 live page is 404 to non-browser fetchers).",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

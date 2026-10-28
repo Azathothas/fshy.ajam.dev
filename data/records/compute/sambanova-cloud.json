@@ -1,0 +1,89 @@
+{
+  "topic": "compute",
+  "slug": "sambanova-cloud",
+  "provider": "SambaNova Cloud",
+  "url": "https://cloud.sambanova.ai/plans",
+  "category": "inference API",
+  "free_tier": {
+    "stated": "No free lane left. The Free plan now reads 'Add a payment method and purchase credits to run your first requests'; the prior offer was USD 5 of free API credits with no card required, expiring after 30 days, and that grant was dropped on 2026-08-14. The rate-limit documentation still describes a 'Free Tier: Applied when there is no payment method linked with your account', which contradicts the plans page.",
+    "unit": "none",
+    "metered_on": "wall-clock",
+    "source_url": "https://cloud.sambanova.ai/plans",
+    "read_on": "2026-10-22",
+    "notes": "none"
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://cloud.sambanova.ai/plans",
+    "notes": null
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://cloud.sambanova.ai/plans",
+    "notes": null
+  },
+  "egress": {
+    "terms": "not stated",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://cloud.sambanova.ai/plans"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "inferred from the tooling the provider documents; not probed",
+  "tooling": "not stated",
+  "chaining": "nothing composes: needs a card before the first request.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "the free lane stops at the payment method, not at a quota: a call on an unfunded key returns 402 PAYMENT_METHOD_REQUIRED while /v1/models still answers 200, so a health check that reads the model list looks healthy while every completion is refused.",
+      "source": "https://cloud.sambanova.ai/plans"
+    }
+  ],
+  "limits_note": "the free lane stops at the payment method, not at a quota: a call on an unfunded key returns 402 PAYMENT_METHOD_REQUIRED while /v1/models still answers 200, so a health check that reads the model list looks healthy while every completion is refused.",
+  "binding": "write-gated",
+  "binding_note": "the free lane stops at the payment method, not at a quota: a call on an unfunded key returns 402 PAYMENT_METHOD_REQUIRED while /v1/models still answers 200, so a health check that reads the model list looks healthy while every completion is refused.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "a payment method and purchased credits before the first request: the plans page reads \"Add a payment method and purchase credits to run your first requests\", and the previous USD 5 no-card grant was dropped on 2026-08-14. The record does not name which payment methods are accepted, whether a card is required rather than another rail, any hold, debit or prepaid acceptance, or whether signup asks for an email or a phone. The rate-limit documentation still describes a \"Free Tier: Applied when there is no payment method linked with your account\", which contradicts the plans page",
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://cloud.sambanova.ai/plans",
+      "date": "2026-10-22",
+      "proved": "Free plan text: 'Start exploring SambaNova Cloud. Add a payment method and purchase credits to run your first requests', quoted"
+    },
+    {
+      "url": "https://www.usagepricing.com/blueprint/activity/sambanova-2026-08-14-free-credit-grant-dropped",
+      "date": "2026-08-22",
+      "proved": "the USD 5 no-card free-credit grant was dropped on 2026-08-14; the Free plan is now pay-as-you-go credits requiring a payment method"
+    },
+    {
+      "url": "https://docs.sambanova.ai/docs/en/models/rate-limits",
+      "date": "2026-10-22",
+      "proved": "documentation still lists 'Free Tier: Applied when there is no payment method linked with your account' and a Developer Tier at 20M tokens per day across all models, which contradicts the plans page"
+    }
+  ],
+  "verdict": "fails-identity",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "A refutation shaped like the ones the corpus already carries for Fly.io and PlanetScale. Two independent signals agree (the vendor plans page and a dated change tracker), and the stale rate-limit doc is the trap: a session reading only docs.sambanova.ai would record a free tier that no longer exists. Absent from dossier/compute/ before this record. The 20M-tokens-a-day Developer Tier figure is recorded here only as what the docs claim, not as capacity the client has.",
+  "extras": {
+    "wave2": {
+      "class": "refutation",
+      "free_tier_kind": "none",
+      "shape": {
+        "vcpu": null,
+        "ram_gib": null,
+        "gpu_class": null,
+        "gpu_count": 0
+      }
+    }
+  }
+}

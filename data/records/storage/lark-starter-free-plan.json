@@ -1,0 +1,77 @@
+{
+  "topic": "storage",
+  "slug": "lark-starter-free-plan",
+  "provider": "Lark (Feishu) Starter - free plan",
+  "url": "https://www.larksuite.com",
+  "category": "paas",
+  "free_tier": {
+    "stated": "100 GB total storage per organization on Starter (Free); 250 MB single-file limit for Docs uploads on Starter",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://www.larksuite.com/hc/en-US/articles/497171699982-overview-of-lark-plans",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "250 MB per file",
+    "bytes": 250000000,
+    "source_url": "https://www.larksuite.com/hc/en-US/articles/497171699982-overview-of-lark-plans",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://www.larksuite.com/hc/en-US/articles/497171699982-overview-of-lark-plans",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Downloads served from Lark CDN (ByteDance edge) at no metered charge; download via OpenAPI media download returns a signed URL, no per-GB line item anywhere in the plan table",
+    "metered": true
+  },
+  "interface": [
+    "rest",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Official OpenAPI v3 drive endpoints (upload_all for <=20MB, multipart upload of 4MB chunks above that) + first-party CLI larksuite/cli (17,762 stars, pushed 2026-10-21) with `lark-cli drive +upload`; no rclone backend",
+  "chaining": "100 GB x N free organizations. Starter is self-serve per organization and the quota is per-org, not per-user, so N disposable orgs = N x 100 GB. Paid Basic (5 TB) shows the ceiling is only billing, not architecture.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "250 MB per file",
+      "source": "https://www.larksuite.com/hc/en-US/articles/497171699982-overview-of-lark-plans"
+    }
+  ],
+  "limits_note": "250 MB per file for Docs on Starter (vs 50 GB on Pro); upload_all hard-caps at 20 MB by design, must use multipart; 5 QPS on upload_all; 4 MB fixed chunk size on multipart; upload transaction ID valid 1 day for resume",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Rate limits are explicit (5 QPS on single upload) and multipart is resumable, but Starter orgs that lapse back from a paid plan are force-collapsed to Starter member and storage caps - data above 100 GB becomes unwritable, not deleted.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://www.larksuite.com/hc/en-US/articles/497171699982-overview-of-lark-plans",
+      "date": "2026-10-21",
+      "proved": "table row: 'Total storage space | 100 GB | 5 TB | 15 TB | 15 TB + 30 GB x purchased seats'; 'Single file upload limit for Docs | 250 MB'"
+    },
+    {
+      "url": "https://open.larksuite.com/document/uAjLw4CM/ukTMukTMukTM/reference/drive-v1/file/upload_all",
+      "date": "2026-10-21",
+      "proved": "'please do not use this interface to upload files larger than 20MB... use the multipart upload interface', supports 5QPS"
+    },
+    {
+      "url": "https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal",
+      "date": "2026-10-21",
+      "proved": null
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "100 GB total storage per organization on Starter (Free); 250 MB single-file limit for Docs uploads on Starter",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

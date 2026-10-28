@@ -1,0 +1,77 @@
+{
+  "topic": "storage",
+  "slug": "openrouter-files-api",
+  "provider": "OpenRouter Files API (workspace files)",
+  "url": "https://openrouter.ai",
+  "category": "paas",
+  "free_tier": {
+    "stated": "10 GiB per workspace, stated verbatim: 'Each workspace can store up to 10 GiB in total. When the workspace is full, uploads return a 403 error.'",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://openrouter.ai/docs/guides/features/files-api",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap 100 MiB",
+    "bytes": 104857600,
+    "source_url": "https://openrouter.ai/docs/guides/features/files-api",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Keep your own copy of every file you upload.' Only model-created/promoted files are downloadable. Retention: indefinite.",
+    "source_url": "https://openrouter.ai/docs/guides/features/files-api",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Files API has 'no separate charge' and files 'do not expire' — but read-gated by design.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "POST /api/v1/files (multipart), GET /api/v1/files, GET /api/v1/files/{id}/content. Global endpoint only (eu./us. return 403).",
+  "chaining": "10 GiB x unlimited workspaces is arithmetically a chain, but it is useless here: you cannot get your own uploaded bytes back, and the client needs storage, not a write-only sink. This is the cleanest 'storage you cannot retrieve is not storage' instance found this round.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap 100 MiB",
+      "source": "https://openrouter.ai/docs/guides/features/files-api"
+    }
+  ],
+  "limits_note": "per-object-cap 100 MiB ('A larger file returns a 413 error'); 10 GiB per workspace; content-type sniffed from bytes and restricted to PDF/PNG/JPEG/GIF/WebP/DOCX/XLSX/PPTX/MP3/WAV/FLAC/OGG/UTF-8 text — arbitrary binaries are rejected at upload. **Upload-open / read-gated**: 'A request to GET /api/v1/files/{file_id}/content for an uploaded file returns a 400 error. Keep your own copy of every file you upload.' Only model-created/promoted files are downloadable. Retention: indefinite.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: t upload. **Upload-open / read-gated**: 'A request to GET /api/v1/files/{file_id}/content for an uploaded file returns a 400 error. Keep your own copy of every file you upload.' Only",
+    "country": null
+  },
+  "reliability_note": "Beta; in-region endpoints return 403. Downloaded files must be created by a sandbox/model, not uploaded by you.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://openrouter.ai/docs/guides/features/files-api",
+      "date": "2026-10-21",
+      "proved": "'The maximum file size is 100 MiB ... 413'; 'Each workspace can store up to 10 GiB in total'; 'Files that you upload cannot be downloaded directly'"
+    },
+    {
+      "url": "https://openrouter.ai/docs/api/api-reference/files/upload-a-file",
+      "date": "2026-10-21",
+      "proved": "'Maximum file size: 100 MB; empty files are rejected ... must be a PDF, a PNG/JPEG/GIF/WebP image, a DOCX/XLSX/PPTX, an MP3/WAV/FLAC/OGG, or UTF-8 text'"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "10 GiB per workspace, stated verbatim: 'Each workspace can store up to 10 GiB in total. When the workspace is full, uploads return a 403 error.'",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "10 GiB per workspace, stated verbatim: 'Each workspace can store up to 10 GiB in total. When the workspace is full, uploads return a 403 error.'",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

@@ -1,0 +1,110 @@
+{
+  "topic": "storage",
+  "slug": "4shared",
+  "provider": "4shared",
+  "url": "https://www.4shared.com/",
+  "category": "cloud-drive",
+  "free_tier": {
+    "stated": "15 GB free per account",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://www.4s.io/faq.jsp",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "2048 MB per file",
+    "bytes": 2048000000,
+    "source_url": "https://www.4s.io/faq.jsp",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "15 GB per account; 2048 MB per file (split larger files); max 30 subfolders per folder; free accounts deleted if not logged into for 180 days.",
+    "days": 180,
+    "source_url": "https://www.4s.io/faq.jsp",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free accounts get ad-supported downloads and no direct/hotlink embedding; direct downloads are a Premium feature ('Direct downloads (file embedding)' starts at the 100 GB / $14.99 per year tier).",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "webdav",
+    "rclone"
+  ],
+  "interface_detail": "webdav",
+  "tooling": "WebDAV endpoint live at webdav.4shared.com; REST API at api.4shared.com / upload.4shared.com (v1_2, JSON+XML); rclone's generic webdav backend has a 4shared-specific fix upstream (commit 65eee67 'webdav: fix Open Range requests to fix 4shared mount').",
+  "chaining": "15 GB x unlimited free accounts. Legacy accounts carry stored files; new-account free space is 15 GB.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "2048 MB per file",
+      "source": "https://www.4s.io/faq.jsp"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "deleted if not logged into for 180 days",
+      "source": "https://www.4s.io/faq.jsp"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "deletes the account and all files after 180 days",
+      "source": "https://www.4s.io/faq.jsp"
+    }
+  ],
+  "limits_note": "15 GB per account; 2048 MB per file (split larger files); max 30 subfolders per folder; free accounts deleted if not logged into for 180 days.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Free tier deletes the account and all files after 180 days of inactivity — that alone disqualifies it for a growing archive. Downloads are ad-gated unless you pay.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://www.4s.io/faq.jsp",
+      "date": "2026-10-21",
+      "proved": "'The space limit is 15 GB per account. Currently 4shared sets a 2048 MB size limitation per file'"
+    },
+    {
+      "url": "https://www.4s.io/faq.jsp",
+      "date": "2026-10-21",
+      "proved": "'Your free account and all your files will only be removed from 4shared if you don't log into your account for 180 days'"
+    },
+    {
+      "url": "https://e.4shared.com/premium.jsp",
+      "date": "2026-10-21",
+      "proved": "'Direct downloads (file embedding)' only on paid plans (100 GB $14.99/yr)"
+    },
+    {
+      "url": "https://webdav.4shared.com/",
+      "date": "2026-10-21",
+      "proved": "probe: OPTIONS -> 200, Allow: OPTIONS,PROPFIND,MKCOL,MOVE,PUT,DELETE,LOCK,UNLOCK — DAV is genuinely mounted"
+    },
+    {
+      "url": "https://webdav.4shared.com/",
+      "date": "2026-10-21",
+      "proved": "probe: PROPFIND Depth:0 -> 405 (method accepted by Allow but rejected unauthenticated; auth required)"
+    },
+    {
+      "url": "https://www.4s.io/developer/docs/",
+      "date": "2026-10-21",
+      "proved": "REST API v1_2 with upload/search/api host split"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "15 GB free per account",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "15 GB free per account",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

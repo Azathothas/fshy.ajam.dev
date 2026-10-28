@@ -1,0 +1,92 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "115-cloud-drive-115",
+  "provider": "115 Cloud Drive (115网盘)",
+  "url": "https://115.com",
+  "category": "consumer-pan",
+  "free_tier": {
+    "stated": "15 GB on every tier including 原石用户. Real capacity is only sold: 长期VIP 15 GB + 115 TB, 超级版 1 PB + 15 GB, 至尊版 5 PB + 15 GB",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://vip.115.com/?ac=page&ct=info&page_name=privilege_details",
+    "read_on": "2026-10-21"
+  },
+  "per_object_cap": {
+    "stated": "5 GB per file on a free account, 115 GB on VIP",
+    "bytes": 5000000000,
+    "source_url": "https://vip.115.com/?ac=page&ct=info&page_name=privilege_details"
+  },
+  "retention": {
+    "stated": "Not stated in the pages read",
+    "days": null,
+    "source_url": "https://115.com"
+  },
+  "egress": {
+    "terms": "No per-GB fee. Free accounts get 普通速度, the ordinary channel; VIP gets the priority channel. Share downloads require a login, so the egress path could not be tested anonymously",
+    "metered": true,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://115.com"
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "an official open platform at open.115.com with OAuth client id and secret; the OpenList '115_open' driver ships an OpenList-owned key pair so a user can mount without registering an app; the community WebDAV bridge gaoyb7/115drive-webdav",
+  "chaining": "Nothing to multiply. The desktop clients for Windows, macOS and Linux were withdrawn, so every third-party client depends on reverse-engineered web cookies, and the official API path needs identity-verified developer onboarding",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "5 GB per file on a free account",
+      "source": "https://vip.115.com/?ac=page&ct=info&page_name=privilege_details"
+    },
+    {
+      "kind": "write-gated",
+      "value": "the open platform requires 真实姓名, 证件类型, 证件号码, 证件照片 and 有效期 before an app is approved",
+      "source": "https://open.115.com/"
+    }
+  ],
+  "identity_cost": {
+    "kind": "country-phone",
+    "detail": "signup is phone-based, and 115's own support forum answered a foreigner asking about non-mainland numbers with '可以，您是哪个国家和地区的手机号'. The open platform is a second wall: real name, identity document type, number, photograph and expiry",
+    "country": "86"
+  },
+  "reliability_note": "The desktop clients were withdrawn, so third-party access runs on web cookies that break. The share-snap API returns a whole share tree with no auth (a 2.52 PB folder resolved anonymously) and the download call answers 990001 登录超时, so the read gate is absolute",
+  "confidence": "reported",
+  "evidence": [
+    {
+      "url": "https://vip.115.com/?ac=page&ct=info&page_name=privilege_details",
+      "date": "2026-10-21",
+      "proved": "capacity table 原石用户 15 GB, 特级版 '15 GB + 115 TB', 至尊版 '5 PB + 15 GB' upload cap 5 GB free and 115 GB VIP"
+    },
+    {
+      "url": "https://open.115.com/",
+      "date": "2026-10-21",
+      "proved": "developer onboarding is 签署协议, 入驻资料, 提交认证信息"
+    },
+    {
+      "url": "probe:https://webapi.115.com/share/snap?share_code=swzew4m3nc6&receive_code=i0d7",
+      "date": "2026-10-21",
+      "proved": "200, 981 B, no auth, share_title and file_size 2520415095564377 returned"
+    },
+    {
+      "url": "probe:https://webapi.115.com/share/downurl",
+      "date": "2026-10-21",
+      "proved": "200 with {\"state\":false,\"error\":\"登录超时，请重新登录。\",\"errno\":990001}, so the bytes are gated"
+    },
+    {
+      "url": "https://github.com/gaoyb7/115drive-webdav",
+      "date": "2026-10-21",
+      "proved": "a community WebDAV bridge exists, which is the only reason the drive is mountable at all"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "binding": "write-gated",
+  "binding_note": "15 GB free is under the filter and the capacity is paid, but the gate that actually closes it is the identity one: a real-name document for the open platform, or a cookie lifted from a browser session for everything else.",
+  "notes": "Recorded with both seed verdicts in mind: one wave said fails-quota, another fails-egress. The quota and the egress both fail and the identity wall is the reason neither can be tested; this record carries fails-egress because the read gate is the one that was probed and refused.",
+  "extras": {
+    "access_mode": "registration-gated",
+    "anonymous_read": "metadata only, bytes gated",
+    "files_per_cloud_download_job": 115
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "topic": "storage",
+  "slug": "git-annex-git-lfs-special-remote",
+  "provider": "git-annex git-lfs special remote (annex over any LFS host)",
+  "url": "https://git-annex.branchable.com/special_remotes/git-lfs/",
+  "category": "registry",
+  "free_tier": {
+    "stated": "N/A — a protocol adapter. Turns ANY git-lfs server (GitHub, GitLab, Bitbucket, a self-hosted Gitea) into an annex special remote, so the LFS host's quota applies but annex adds hash-verified partial clone and `whereis` across mirrors.",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://git-annex.branchable.com/special_remotes/git-lfs/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://git-annex.branchable.com/special_remotes/git-lfs/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "| Cannot delete = every mistake is permanent on the LFS side, and the host's month-storage accounting (GitHub) means you keep paying for it in quota",
+    "source_url": "https://git-annex.branchable.com/special_remotes/git-lfs/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "interface": [
+    "git"
+  ],
+  "interface_detail": "git",
+  "tooling": "`git annex initremote lfstest type=git-lfs url=... encryption=shared`. Supports gcrypt:: URL prefix for encrypting the git side too.",
+  "chaining": "Because annex can hold the same content on several LFS remotes, you can stack the 10 GiB/project GitLab allowance and the 10 GiB GitHub allowance as tiers of one logical dataset, with annex tracking which objects live where. Sharding a 1 TiB corpus across 100 GitLab projects becomes a `git annex copy --to` loop.",
+  "limits": [],
+  "limits_note": "Hard, documented limitations: 'The git-lfs protocol does not support deleting content, so git-annex cannot delete anything from a git-lfs special remote'; no upload resume; 'git-annex doesn't do batching. This may cause it to fall afoul of rate limiting of git-lfs servers' — which directly collides with GitLab's 1000 req/min LFS limit. Requires SHA256 backend for efficiency.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Cannot delete = every mistake is permanent on the LFS side, and the host's month-storage accounting (GitHub) means you keep paying for it in quota. No batching + per-object request = the exact workload LFS rate limits are designed to stop.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://git-annex.branchable.com/special_remotes/git-lfs/",
+      "date": "2026-10-21",
+      "proved": "limitations section quoted above"
+    },
+    {
+      "url": "https://git-annex.branchable.com/special_remotes/git-lfs/",
+      "date": "2026-10-21",
+      "proved": "example: 'git annex initremote lfstest type=git-lfs url=gcrypt::[address removed]:username/somerepo.git encryption=shared'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "N/A — a protocol adapter. Turns ANY git-lfs server (GitHub, GitLab, Bitbucket, a self-hosted Gitea) into an annex special remote, so the LFS host's quota applies but annex adds hash-verified partial clone and `whereis` across mirrors.",
+  "extras": {},
+  "binding": "none",
+  "binding_note": "no constraint in the record binds at this scale; the record carries no limit of a kind the vocabulary names"
+}

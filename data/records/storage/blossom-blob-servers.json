@@ -1,0 +1,92 @@
+{
+  "topic": "storage",
+  "slug": "blossom-blob-servers",
+  "provider": "Blossom blob servers (nostr.download, blossom.nostr.build, 24242.io)",
+  "url": "https://blossom.nostr.build/",
+  "category": "Nostr media/blob servers (content-addressed, keypair auth)",
+  "free_tier": {
+    "stated": "Per-object caps only, and small: nostr.build free uploads 20 MiB, hard cap 100 MiB, then storage plans 5 GB / $18/yr up to 500 GB / $240/yr. 24242.io: 100 MiB max file, files deleted after 60 days unaccessed. blossom.psbt.me: 1 month hosting, files under 1 MB.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://blossom.nostr.build/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://blossom.nostr.build/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "24242.io: 100 MiB max file, files deleted after 60 days unaccessed",
+    "days": 60,
+    "source_url": "https://blossom.nostr.build/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free CDN, global.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "BUD-01/BUD-06 HTTP API: PUT /upload, HEAD /upload, DELETE; auth is a signed Nostr event in the Authorization header, not an account.",
+  "tooling": "any Blossom client; curl with a signed event.",
+  "chaining": "Content-addressed by sha256, so it chunks naturally into the hoangvu12/free-s3 pattern — but 20 MiB chunks would need ~50,000 objects per TiB.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "deleted after 60 days",
+      "source": "https://blossom.nostr.build/"
+    }
+  ],
+  "limits_note": "20 MiB free / 100 MiB absolute on nostr.build; 100 MiB on 24242.io; 1 MB on psbt.me. Auth is a signed event, so 'no account' is real: 401 with x-reason 'Missing Blossom Authorization header'.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "anonymous",
+    "country": null
+  },
+  "reliability_note": "Pure per-object-cap failure. Included because the auth model (keypair, zero registration) is the most open I found anywhere, and because the 60-day idle deletion on 24242.io is a textbook retention-clamp.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://blossom.nostr.build/",
+      "date": "2026-10-21",
+      "proved": "'A hard cap of 100 MiB per upload (20 MiB for free uploads), with no limit on the number of uploads or retention'; plans $18/yr 5GB … $240/yr 500GB"
+    },
+    {
+      "url": "https://blossom.nostr.build/upload",
+      "date": "2026-10-21",
+      "proved": "HEAD returns 401, x-reason: 'Missing Blossom Authorization header, authorization required' (i.e. keypair auth, no signup)"
+    },
+    {
+      "url": "https://nostr.download/upload",
+      "date": "2026-10-21",
+      "proved": "401, x-reason: 'Auth header not found'"
+    },
+    {
+      "url": "https://24242.io/",
+      "date": "2026-10-21",
+      "proved": "'Max file size: 100MiB. Files are deleted if not accessed for 60 days.'"
+    },
+    {
+      "url": "https://blossom.psbt.me/",
+      "date": "2026-10-21",
+      "proved": "'Free Tier: 1-month hosting for files under 1 MB'"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Per-object caps only, and small: nostr.build free uploads 20 MiB, hard cap 100 MiB, then storage plans 5 GB / $18/yr up to 500 GB / $240/yr. 24242.io: 100 MiB max file, files deleted after 60 days unaccessed. blossom.psbt.me: 1 month hosting, files under 1 MB.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "retention",
+      "why": "Per-object caps only, and small: nostr.build free uploads 20 MiB, hard cap 100 MiB, then storage plans 5 GB / $18/yr up to 500 GB / $240/yr. 24242.io: 100 MiB max file, files deleted after 60 days unaccessed. blossom.psbt.me: 1 month hosting, files under 1 MB.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "retention-clamped",
+  "binding_note": "a clock, not a quota: bytes leave whether or not the client is finished with them"
+}

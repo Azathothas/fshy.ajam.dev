@@ -1,0 +1,82 @@
+{
+  "topic": "debrid",
+  "slug": "jackett",
+  "provider": "Jackett",
+  "url": "https://github.com/Jackett/Jackett",
+  "category": "self-hosted indexer proxy (Torznab over ~600 trackers)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "The software is free and the API key is generated locally by the instance. The cost is the machine it runs on, not a subscription.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://github.com/Jackett/Jackett",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: Torznab results",
+    "bytes": null,
+    "source_url": "https://github.com/Jackett/Jackett",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "the instance caches results per indexer (default 1,000 rows) and can bypass the cache with &cache=false",
+    "days": null,
+    "source_url": "https://github.com/Jackett/Jackett",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "no byte allowance: Torznab XML only; the transfer is client-to-swarm",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://github.com/Jackett/Jackett"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "Torznab and TorrentPotato over HTTP at the instance's own address: /api/v2.0/indexers/all/results/torznab/api?apikey=...&t=search&q=...",
+  "endpoint": "http://127.0.0.1:9117/api/v2.0/indexers/all/results/torznab/api",
+  "tooling": "A container or a .NET runtime on a free compute instance; Sonarr, Radarr and Prowlarr speak the same Torznab. FlareSolverr is integrated for Cloudflare-walled indexers.",
+  "chaining": "One Torznab endpoint in front of every tracker the client already has access to, which turns a dozen scrapers into one URL that the automation stack and a debrid cache check both use.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "no global limit: each indexer carries its own, and the instance absorbs repeats with a per-indexer result cache (default 1,000 rows)",
+      "source": "https://github.com/Jackett/Jackett"
+    }
+  ],
+  "limits_note": "The binding constraint is the machine: an instance needs a process that stays up, which for a user means a free compute service rather than local hardware. Trackers marked 'invite needed' in the indexer list 'have no active maintainer and may be broken'.",
+  "binding": "request-rate",
+  "binding_note": "The upstream trackers' own rate limits pass straight through, and the instance's cache is the only thing that reduces how often they are hit.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "Jackett itself needs no account. Individual indexers may need one, and the README marks some as invite-only with no active maintainer.",
+    "country": null
+  },
+  "reliability_note": "Cloudflare-walled indexers fail without FlareSolverr, and the README warns that invite-only entries may be broken; a client that only runs Jackett gets partial coverage and does not know which indexer failed unless it reads the dashboard.",
+  "confidence": "documented",
+  "confidence_note": "The README was read on 2026-10-23, including the Torznab query syntax, the cache setting and the FlareSolverr note. A running instance on free compute would raise it to measured.",
+  "evidence": [
+    {
+      "url": "https://github.com/Jackett/Jackett",
+      "date": "2026-10-23",
+      "proved": "Torznab and TorrentPotato endpoints, the /api/v2.0/indexers/all/results/torznab/api path with an apikey, 'Cache max results per indexer: Default is 1000', and the FlareSolverr integration"
+    },
+    {
+      "url": "https://github.com/Jackett/Jackett",
+      "date": "2026-10-23",
+      "proved": "'Trackers marked with (invite needed) have no active maintainer and may be broken or missing features'"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-23T01:52:28.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "'public torrent-search API behind Jackett' is really a private Torznab fan-out: Jackett adds no index of its own, it translates scrapers. The nearest hosted equivalent is TorrentClaw's Torznab endpoint, which needs a key and is PRO-gated.",
+  "extras": {
+    "protocol": "torznab",
+    "indexers": "hundreds listed in the README; the exact count was not established",
+    "requires_host": true,
+    "flaresolverr": true
+  }
+}

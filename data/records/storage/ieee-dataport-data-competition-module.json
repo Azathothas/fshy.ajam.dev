@@ -1,0 +1,110 @@
+{
+  "topic": "storage",
+  "slug": "ieee-dataport-data-competition-module",
+  "provider": "IEEE DataPort — Data Competition module (the free + public route)",
+  "url": "https://ieee-dataport.org/submit-dataset",
+  "category": "research-data-repository",
+  "free_tier": {
+    "stated": "2 TB per dataset for individual users, 10 TB for Institutional Subscribers. The Data Competition submission type is listed as FREE and carries the same 2 TB / 10 TB ceilings — 'Dataset files may total up to 2 TB or 10 TB for Institutional Subscribers'. Competition files are stored in Amazon S3 and can be downloaded by any logged-in IEEE DataPort user, and 'If Competition has No Access Restrictions, no entry needs to be made in the Access Control List box and all users of IEEE DataPort that are logged in will have access.' That is the only route on this platform where storage is free AND reads are free, because the two paid routes both gate reads: Standard Dataset (free upload) exposes files only to subscribers, and Open Access Dataset costs $1,950 to make them public.",
+    "unit": "TB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://ieee-dataport.org/submit-dataset",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "100 GB/file",
+    "bytes": 100000000000,
+    "source_url": "https://ieee-dataport.org/submit-dataset",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://ieee-dataport.org/submit-dataset",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free in the ordinary sense — downloads are served from IEEE's own S3 bucket (ieee-dataport.s3.amazonaws.com, which correctly returns 403 to anonymous listing rather than 200-with-empty-body) and there is no egress meter on the participant side. Real ceiling is per-user concurrency, not bytes.",
+    "metered": false
+  },
+  "interface": [
+    "s3",
+    "cli"
+  ],
+  "interface_detail": "web + s3",
+  "tooling": "Two real paths. (1) S3: a subscriber gets an AWS access key/secret and the bucket is ieee-dataport, with the dataset path /ieee-dataport/<DATASET TYPE>/<USERID>/<DATASETID> — AWS CLI, boto3, s3cmd, Cyberduck, CrossFTP, S3 Browser all documented. (2) Competition participants read via the 'AWS S3' tab which reveals per-file S3 URIs plus a 'View AWS Security Credentials' dialog with the secret key. Undocumented but usable: the web upload form needs no subscription at all.",
+  "chaining": "Datasets are unlimited per account and each carries an independent 2 TB ceiling, so the multiplier is datasets, not accounts — 10 datasets is 20 TB of nominal capacity on one free IEEE web account. Competition module can host several files per competition. Combining the two submission types on one account gives both a subscriber-upload path (S3) and a public-read path (competition).",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "100 GB/file",
+      "source": "https://ieee-dataport.org/submit-dataset"
+    }
+  ],
+  "limits_note": "write-gated + read-gated, and the gate differs by route. Standard Dataset: upload free, read requires IEEE DataPort subscription (~$480/yr). Open Access: read free to all, write costs $1,950 per dataset. Competition: both free, but the entry is framed as a time-limited challenge with start and end dates and 'Competitions must meet eligibility requirements and are not intended for general dataset publication'. Per-file cap is not stated; IEEE's own guidance is 'for large datasets, we recommend uploading a series of files that are 100 GB or less' — a soft 100 GB/file figure. Supported formats list is broad (zip, tar, 7z, iso, hdf5, parquet, avro, orc, mat, wav, mp4 …).",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email",
+    "country": null
+  },
+  "reliability_note": "S3 bucket is real and correctly access-controlled (403, not a fake 200). IEEE may unpublish Standard Dataset entries whose files were never uploaded. Competition entries are time-bounded by design, so treat the competition route as a lease with a declared end date rather than an archive.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://ieee-dataport.org/submit-dataset",
+      "date": "2026-10-21",
+      "proved": "'Open Access Dataset $1,950'; 'Data Competition FREE … 2 TB Cloud Storage'. This single page proves all three routes and their prices."
+    },
+    {
+      "url": "https://ieee-dataport.org/faq/what-fields-are-available-submit-data-competition-form",
+      "date": "2026-10-21",
+      "proved": "opened: 'Dataset files may total up to 2 TB or 10 TB for Institutional Subscribers'; 'Administrator must either check Restricted Access via Email List or check No Access Restrictions'; 'If Competition has No Access Restrictions … all users of IEEE DataPort that are logged in will have access.'"
+    },
+    {
+      "url": "https://ieee-dataport.org/help/upload-your-files-directly-ieee-dataport-s3-bucket",
+      "date": "2026-10-21",
+      "proved": "opened: bucket name ieee-dataport, path /ieee-dataport/<DATASET TYPE>/<USERID>/<DATASETID>, credentials 'only provided to subscribers', and the note that the web upload form 'does not require a subscription'."
+    },
+    {
+      "url": "https://ieee-dataport.org/faq/do-i-have-subscribe-ieee-dataport-order-download-datasets-and-tools-ieee-dataport",
+      "date": "2026-10-21",
+      "proved": "opened: 'Yes, users need to subscribe to access and/or download Standard datasets … Open Access datasets are available to all registered users.' Confirms the read gate."
+    },
+    {
+      "url": "https://ieee-dataport.org/getting-started",
+      "date": "2026-10-21",
+      "proved": "opened: 'Free Account: Download open access datasets, upload standard datasets up to 2TB, and join/host data competitions.' Identity is a plain IEEE web account."
+    },
+    {
+      "url": "https://ieee-dataport.org/open-access/heart-disease-dataset-comprehensive",
+      "date": "2026-10-21",
+      "proved": "PROBED: HTTP 200, 94,355 bytes of HTML, DOI 10.21227/dz4t-cm36 rendered, but no direct file link in the markup for a logged-out client — i.e. the open-access landing page is public while the object itself needs a session. Consistent with rule 2."
+    },
+    {
+      "url": "https://ieee-dataport.s3.amazonaws.com/?list-type=2&max-keys=2",
+      "date": "2026-10-21",
+      "proved": "curl -qsS -D - -> HTTP 403 with a proper <Error><Code>AccessDenied</Code>, not a 200. The bucket is real and locked; no anonymous listing."
+    },
+    {
+      "url": "https://ieee-dataport.org/news/ieee-society-members-get-free-ieee-dataport-subscription",
+      "date": "2026-10-21",
+      "proved": "opened: 'All IEEE Society members automatically have a free individual subscription' ($480/yr value) and 'Every IEEE DataPort member is given an AWS access key'. This is the subscription-free shortcut to the S3 path — an IEEE Society membership (student rate is low tens of USD) removes the read gate entirely."
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "price_per_tb_month": "0 via Data Competition or IEEE Society membership. Otherwise the read side costs $480/yr for unlimited datasets — at 2 TB that is $20/TB/year = $1.67/TB/month, which is below the wave-6 price floor, and it is a read licence not a per-TB rate. Open Access publication is a flat $1,950 per dataset, no…",
+  "notes": "2 TB per dataset for individual users, 10 TB for Institutional Subscribers. The Data Competition submission type is listed as FREE and carries the same 2 TB / 10 TB ceilings — 'Dataset files may total up to 2 TB or 10 TB for Institutional Subscribers'. Competition files are stored in Amazon S3 and can be downloaded by any logged-in IEEE DataPort user, and 'If Competition has No Access Restrictions, no entry needs to be made in the Access Control List box and all users of IEEE DataPort that are logged in will have access.' That is the only route on this platform where storage is free AND reads are free, because the two paid routes both gate reads: Standard Dataset (free upload) exposes files only to subscribers, and Open Access Dataset costs $1,950 to make them public.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "2 TB per dataset for individual users, 10 TB for Institutional Subscribers. The Data Competition submission type is listed as FREE and carries the same 2 TB / 10 TB ceilings — 'Dataset files may total up to 2 TB or 10 TB for Institutional Subscribers'. Competition files are stored in Amazon S3 and can be downloaded by any logged-in IEEE DataPort user, and 'If Competition has No Access Restrictions, no entry needs to be made in the Access Control List box and all users of IEEE DataPort that are logged in will have access.' That is the only route on this platform where storage is free AND reads are free, because the two paid routes both gate reads: Standard Dataset (free upload) exposes files…",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    },
+    "price_verbatim": "0 via Data Competition or IEEE Society membership. Otherwise the read side costs $480/yr for unlimited datasets — at 2 TB that is $20/TB/year = $1.67/TB/month, which is below the wave-6 price floor, and it is a read licence not a per-TB rate. Open Access publication is a flat $1,950 per dataset, not per TB."
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

@@ -1,0 +1,81 @@
+{
+  "topic": "debrid",
+  "slug": "debrid-media-manager",
+  "provider": "Debrid Media Manager",
+  "url": "https://debridmediamanager.com/",
+  "category": "hosted client: debrid library UI and Torznab/Newznab indexer",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free hosted web app, open source and self-hostable: 'This website is open source and you can also run this on your own machine ... no data or logs are stored on our servers'. The library, casting and transfer features need a debrid account; the indexer endpoint needs only a DMM API key.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://debridmediamanager.com/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: it manages the provider's library.",
+    "bytes": null,
+    "source_url": "https://debridmediamanager.com/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: state lives in the browser's local storage and in the debrid account.",
+    "days": null,
+    "source_url": "https://debridmediamanager.com/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No meter of its own; it serves the provider's links.",
+    "metered": false,
+    "free_allowance": "none of its own",
+    "price_per_tb": null,
+    "source_url": "https://debridmediamanager.com/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "A hosted web UI plus, in its own words, 'DMM also answers as a Torznab and Newznab indexer for Prowlarr, Sonarr and Radarr, and that only needs a DMM API key'. The login page offers Real-Debrid only.",
+  "endpoint": "https://debridmediamanager.com/",
+  "tooling": "Hosted, or self-hosted from source. Pairs with zurg for the filesystem route and with rclone for the mount. Neighbouring tools in the same ecosystem: Riven, CLI-Debrid, DUMB, CineSync.",
+  "chaining": "The only place in this layer where a *arr stack talks to a debrid ecosystem directly rather than through a qBittorrent shim: Prowlarr treats it as an indexer.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "not published; it is a shared hosted instance and every search fans out to the provider's API under the user's own key",
+      "source": "https://debridmediamanager.com/"
+    }
+  ],
+  "limits_note": "Because it calls the provider with the user's key, DMM's polling adds to the same per-key budget the user's other tools spend; the 250/min Real-Debrid ceiling is shared, not per application.",
+  "binding": "none",
+  "binding_note": "A pure client: the provider's 250/min and 20-second add floor fail first, and they are shared with every other client on the same key.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account with DMM; a debrid login for library features, or a DMM API key for the indexer endpoint alone.",
+    "country": "None"
+  },
+  "reliability_note": "Real-Debrid is the only login offered on the front page, so the tool's multi-provider reputation is ahead of what its own page shows; the login page is the thing to re-read before relying on another provider.",
+  "confidence": "documented",
+  "confidence_note": "The live front page was read today; it states the indexer feature and the single-provider login. The Torznab endpoint itself was not called.",
+  "evidence": [
+    {
+      "url": "https://debridmediamanager.com/",
+      "date": "2026-10-23",
+      "proved": "'DMM also answers as a Torznab and Newznab indexer for Prowlarr, Sonarr and Radarr, and that only needs a DMM API key'; 'No symlinks! Your whole debrid library in one folder'; open source and self-hostable; 'Login with Real Debrid' as the only offered provider"
+    },
+    {
+      "url": "https://notes.debridmediamanager.com/providers/realdebrid/",
+      "date": "2026-10-23",
+      "proved": "the same project's measurement work on the Real-Debrid add floor and its provider-specific limit notes"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-23T01:51:00.000Z",
+  "price_per_tb_month": "USD 0 for a user",
+  "notes": "Recorded because it is the one *arr-visible endpoint in the debrid world and because its project notes are the best public measurements of Real-Debrid's real behaviour. Abandonment condition: if the indexer endpoint starts requiring a debrid login, the 'only needs a DMM API key' line is stale.",
+  "extras": {
+    "arr_integration": "Torznab and Newznab indexer for Prowlarr, Sonarr and Radarr",
+    "providers_offered": "real-debrid on the login page",
+    "ecosystem": "zurg (WebDAV), rclone (mount), Riven, CLI-Debrid, DUMB, CineSync"
+  }
+}

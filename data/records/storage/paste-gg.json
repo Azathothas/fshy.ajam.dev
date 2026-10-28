@@ -1,0 +1,84 @@
+{
+  "topic": "storage",
+  "slug": "paste-gg",
+  "provider": "paste.gg",
+  "url": "https://paste.gg",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "10 MiB total per paste, 5 MiB per file. Anonymous pastes expire after 7 days; signed-in pastes can be permanent. Built on Cloudflare Workers.",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://paste.gg/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "5 MiB per file",
+    "bytes": 5242880,
+    "source_url": "https://paste.gg/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Anonymous pastes expire after 7 days; signed-in pastes can be permanent",
+    "days": 7,
+    "source_url": "https://paste.gg/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "free, served from Cloudflare's edge (Workers) — effectively CF-covered, cacheable, no metering.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "https://api.paste.gg/v1/pastes, JSON body {name, files:[{name, content:{format:'text', value}}]}; no key needed for anonymous, returns a deletion key. API keys available at Settings -> API keys.",
+  "chaining": "unlimited anonymous pastes x up to 10 MiB, but 7-day anonymous expiry makes it a hot/cache tier only. With free accounts: permanent pastes x unlimited per account — that is the only archive-shaped path.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "5 MiB per file",
+      "source": "https://paste.gg/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "expire after 7 days",
+      "source": "https://paste.gg/"
+    }
+  ],
+  "limits_note": "10 MiB total / 5 MiB per file; 7-day expiry anonymous; visibility public or unlisted when anonymous.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: 10 MiB total per paste, 5 MiB per file. Anonymous pastes expire after 7 days; signed-in pastes can be permanent. Built on Cloudflare Workers. CF Workers edge means fa",
+    "country": null
+  },
+  "reliability_note": "CF Workers edge means fast global reads and no egress bill. Anonymous content is dropped at 7 days by design; signed-in is required for anything you want to keep.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://paste.gg/",
+      "date": "2026-10-21",
+      "proved": "'All pastes: up to 10 MiB total and 5 MiB per file', 'Anonymous: public or unlisted, with expiration after 7 days'"
+    },
+    {
+      "url": "https://api.paste.gg/v1/pastes",
+      "date": "2026-10-21",
+      "proved": "probe: POST with 1 file -> {\"status\":\"success\",\"result\":{\"id\":\"89d9c016...\",\"visibility\":\"unlisted\"}}; GET /p/anonymous/89d9c016... -> 200"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "10 MiB total per paste, 5 MiB per file. Anonymous pastes expire after 7 days; signed-in pastes can be permanent. Built on Cloudflare Workers.",
+  "extras": {
+    "unit_note": "free_tier.unit is 'mixed' because the headline is denominated in MiB or KiB, which the schema enum does not carry; the verbatim free_tier.stated keeps the true unit. See the storage-dossier handover.",
+    "dead_end": {
+      "failure_class": "retention",
+      "why": "10 MiB total per paste, 5 MiB per file. Anonymous pastes expire after 7 days; signed-in pastes can be permanent. Built on Cloudflare Workers.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

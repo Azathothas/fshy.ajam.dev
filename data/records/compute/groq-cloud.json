@@ -1,0 +1,110 @@
+{
+  "topic": "compute",
+  "slug": "groq-cloud",
+  "provider": "Groq Cloud",
+  "url": "https://console.groq.com/docs/rate-limits",
+  "category": "inference API",
+  "free_tier": {
+    "stated": "A free plan per model, printed as RPM / RPD / TPM / TPD: openai/gpt-oss-120b and openai/gpt-oss-20b at 30 requests a minute, 1,000 a day, 8,000 tokens a minute and 200,000 tokens a day, which works out to 6.0M tokens a month per model. Paid Developer rates for the same model are USD 0.15 per 1M input and USD 0.60 per 1M output at 1,000 RPM and 250K TPM.",
+    "unit": "tokens",
+    "metered_on": "wall-clock",
+    "source_url": "https://console.groq.com/docs/rate-limits",
+    "read_on": "2026-10-22",
+    "notes": "recurring-daily-allowance"
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://console.groq.com/docs/rate-limits",
+    "notes": null
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://console.groq.com/docs/rate-limits",
+    "notes": null
+  },
+  "egress": {
+    "terms": "not stated",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://console.groq.com/docs/rate-limits"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "inferred from the tooling the provider documents; not probed",
+  "tooling": "not stated",
+  "chaining": "the daily pool is small but the latency is the point: 500 tokens a second on this model spends the 200K-token day in about 7 minutes of generation, so Groq is the cheap first pass and Cloudflare or DeepSeek takes the volume.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "the 8,000 tokens a minute binds before the 200,000 a day: at 8K TPM the day's whole allowance is reachable in 25 minutes of continuous traffic, so the pool is spent by mid-morning and the rest of the day is idle unless the job is paced.",
+      "source": "https://console.groq.com/docs/rate-limits"
+    }
+  ],
+  "limits_note": "the 8,000 tokens a minute binds before the 200,000 a day: at 8K TPM the day's whole allowance is reachable in 25 minutes of continuous traffic, so the pool is spent by mid-morning and the rest of the day is idle unless the job is paced.",
+  "binding": "request-rate",
+  "binding_note": "the 8,000 tokens a minute binds before the 200,000 a day: at 8K TPM the day's whole allowance is reachable in 25 minutes of continuous traffic, so the pool is spent by mid-morning and the rest of the day is idle unless the job is paced.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an account; a payment method (credit card, US bank account or SEPA debit account) is required to upgrade from the Free tier to the Developer tier. unverified: the sign-in methods, and whether a phone number is asked, are not stated on the pages read",
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://console.groq.com/docs/rate-limits",
+      "date": "2026-10-22",
+      "proved": "'openai/gpt-oss-120b | 30 | 1K | 8K | 200K' in the free plan rate limit table, quoted"
+    },
+    {
+      "url": "https://console.groq.com/docs/models",
+      "date": "2026-10-22",
+      "proved": "Developer plan pricing for gpt-oss-120b at $0.15 input and $0.60 output per 1M tokens with 250K TPM and 1K RPM, quoted"
+    },
+    {
+      "url": "https://console.groq.com/docs/rate-limits",
+      "date": "2026-10-22",
+      "proved": "'Rate limits apply at the organization level, not individual users. You can hit any limit type depending on which threshold you reach first', quoted"
+    },
+    {
+      "url": "https://console.groq.com/docs/rate-limits",
+      "date": "2026-10-28",
+      "proved": "the served page lists this row under Free Plan Limits, the tab selected by default, and the Developer Plan Limits tab lists 1K RPM, 500K RPD and 250K TPM for the same model",
+      "capture": "sha256:9015b2d9f7cab6652779f79f09e0d2c86b67f241e9c93ee3f68bc81ba06d5671",
+      "quote": "| openai/gpt-oss-120b | 30 | 1K | 8K | 200K | - | - |"
+    },
+    {
+      "url": "https://console.groq.com/docs/models",
+      "date": "2026-10-28",
+      "proved": "the models page prices openai/gpt-oss-120b at $0.15 input and $0.60 output per 1M tokens with 250K TPM and 1K RPM on the Developer plan",
+      "capture": "sha256:1156b95194ab22553056a57e793dc84c818cf3b3cc70da351982388b1c49f11a",
+      "quote": "| [OpenAIGPT OSS 120B](https://console.groq.com/docs/model/openai/gpt-oss-120b)openai/gpt-oss-120b | 500 | $0.15 input$0.60 output | 250K TPM1K RPM | 131,072 | 65,536 | - |"
+    },
+    {
+      "url": "https://console.groq.com/docs/billing-faqs",
+      "date": "2026-10-28",
+      "proved": "a payment method is named for the upgrade from the Free tier to the Developer tier",
+      "capture": "sha256:5a86f7cdf25eebd2b90d0dd4b7c2f280e287afbca704314de363888f7d62d109",
+      "quote": "To upgrade from the Free tier to the Developer tier, you'll need to provide a valid payment method (credit card, US bank account, or SEPA debit account)."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-28T09:47:56.210Z",
+  "notes": "Arithmetic, labelled estimate: 200,000 tokens a day is 6.0M a month per model, and about 24M a month across the four free text models if every model is used. At the Developer rate that 6.0M is worth roughly USD 0.90 to USD 3.60 a month depending on the input/output split. GPU-equivalent, labelled estimate: 6.0M output tokens a month at 500 tokens a second is about 3.3 hours of continuous single-stream generation a month. Confirms the corpus record (dossier/inference/groq.json): the numbers are unchanged on 2026-10-22. Adds the capacity shape, which that record does not carry.",
+  "extras": {
+    "wave2": {
+      "class": "capacity-shape",
+      "free_tier_kind": "recurring-daily-allowance",
+      "shape": {
+        "vcpu": null,
+        "ram_gib": null,
+        "gpu_class": "LPU",
+        "gpu_count": null
+      }
+    }
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "topic": "storage",
+  "slug": "synapse",
+  "provider": "Synapse (Sage Bionetworks)",
+  "url": "https://www.synapse.org",
+  "category": "academic",
+  "free_tier": {
+    "stated": "No clear public storage cap found. Platform is free SaaS on S3; documented pain point is a '1GB per day' quota on modelState (compute artifacts), not on file storage.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.synapse.org/synapse-docs/uploading-and-organizing-data",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.synapse.org/synapse-docs/uploading-and-organizing-data",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "per-object-cap: none documented for plain files; 1 GB/day on modelState. Retention: indefinite for public content",
+    "source_url": "https://docs.synapse.org/synapse-docs/uploading-and-organizing-data",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free to download for public projects; anonymous download of public entities is supported.",
+    "metered": false
+  },
+  "interface": [
+    "s3",
+    "rest",
+    "oci"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Python/Java/R clients (`synapseclient`), REST API, and a built-in Docker registry. Also supports custom storage locations (your own S3/GCS) — which makes it a metadata layer over someone else's bucket rather than storage itself.",
+  "chaining": "Unlimited projects per certified user. The interesting chain is the inverse: point Synapse at a custom S3/GCS location and you get a free DOI-style sharing and permissions layer over any bucket you already have.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "1GB per day",
+      "source": "https://docs.synapse.org/synapse-docs/uploading-and-organizing-data"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "1 GB/day",
+      "source": "https://docs.synapse.org/synapse-docs/uploading-and-organizing-data"
+    }
+  ],
+  "limits_note": "per-object-cap: none documented for plain files; 1 GB/day on modelState. Retention: indefinite for public content. Gate: upload requires 'certified user' status (a quiz), so no anonymous write path exists.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: te: upload requires 'certified user' status (a quiz), so no anonymous write path exists. academic",
+    "country": null
+  },
+  "reliability_note": "Certification gate plus no published quota means capacity is discretionary; large uploads are known to be throttled/queued without a documented ceiling. Treat quota as unverified.",
+  "confidence": "inferred",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://docs.synapse.org/synapse-docs/uploading-and-organizing-data",
+      "date": "2026-10-21",
+      "proved": "'you need to be a certified user', S3-backed, no quota stated"
+    },
+    {
+      "url": "https://docs.synapse.org/synapse-docs/custom-storage-locations",
+      "date": "2026-10-21",
+      "proved": "files can live in your own S3/GCS bucket, Synapse keeps metadata"
+    },
+    {
+      "url": "https://www.synapse.org/Synapse:syn4224222/discussion/threadId=1648",
+      "date": "2026-10-21",
+      "proved": "'Model State exceeded 1GB per day quota'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No clear public storage cap found. Platform is free SaaS on S3; documented pain point is a '1GB per day' quota on modelState (compute artifacts), not on file storage.",
+  "extras": {},
+  "binding": "per-ip-shaping",
+  "binding_note": "one stream is shaped, and a user's throughput is the shaped rate times the number of streams"
+}

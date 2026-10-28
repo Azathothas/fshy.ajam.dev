@@ -1,0 +1,121 @@
+{
+  "topic": "compute",
+  "slug": "psifactor-free",
+  "provider": "Psifactor",
+  "url": "https://psifactor.pl/?go=vps",
+  "category": "LXC-VPS",
+  "tier": "Darmowy VPS",
+  "free_tier": {
+    "stated": "Quoted: 'kontener LXC zarządzany przez Incus', 'do 2 GB RAM', 'do 10 GB limitu dysku (quota)', 'prawa root w VPS', 'dystrybucja Linuksa wybrana przez Ciebie'. Each container gets 'stały publiczny adres IPv6, nazwę hosta i rekord PTR', and incoming IPv4 arrives through forwarded ports on the host address. A shell account with 41 GB of quota plus 5 GB NextCloud and 5 GB Immich comes with it, and the quotas sum.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://psifactor.pl/?go=vps",
+    "read_on": "2026-10-24"
+  },
+  "per_object_cap": {
+    "stated": "quoted: 'możliwość podmontowania zasobów konta shell w kontenerze' with the note that the shell quota and the VPS quota 'może być efektywnie zsumowana'. The VPS page states no per-account server count."
+  },
+  "retention": {
+    "stated": "Quoted: 'Nie można posiadać VPS, o którym tu mowa, bez konta shell. Utrata konta shell, np. z powodu nieaktywności, jest równoznaczna z utratą VPS.' The terms also reserve the administrator's right to delete an account at any time without warning. No idle timeout is quantified for the VPS itself."
+  },
+  "egress": {
+    "terms": "quoted for the shell host: '1 Gbps bez limitu danych w Niemczech' (1 Gbit/s, no data limit, in Germany). No separate allowance is stated for the container.",
+    "metered": false,
+    "free_allowance": "no data limit stated",
+    "source_url": "https://psifactor.pl/?go=account"
+  },
+  "interface": [
+    "ssh",
+    "rest"
+  ],
+  "interface_detail": "root in an Incus-managed LXC container, reachable over a static public IPv6 with a PTR record; IPv4 inbound through agreed port forwards from the host address; HTTP/HTTPS reverse proxy from host to container; SSH to the shell account with optional TOTP 2FA",
+  "tooling": "any SSH client; Incus on the vendor side",
+  "chaining": "The only free row that gives root and a public IPv6 with reverse DNS on a 1 Gbit/s unmetered link, which is what a WireGuard node or an IPv6-reachable monitor actually needs.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "2 GB RAM and 10 GB disk per container; 41 GB plus 10 GB of side services on the shell account",
+      "source": "https://psifactor.pl/?go=vps"
+    },
+    {
+      "kind": "write-gated",
+      "value": "a shell account is a precondition, and the administrator decides whether a VPS is created at all",
+      "source": "https://psifactor.pl/?go=regulamin"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "losing the shell account, including through inactivity, loses the VPS",
+      "source": "https://psifactor.pl/?go=regulamin"
+    }
+  ],
+  "binding": "write-gated",
+  "binding_note": "Two human gates stand in front of the container: the shell account is manually approved, and the terms state that the administrator alone decides whether a VPS is created, and only for users 'z dłuższym stażem'.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "a one-off irreversible payment of PLN 0.01 as an identity check: the signup form carries 'Akceptuję to, że założenie konta wymaga bezzwrotnej wpłaty 0,01 PLN jako elementu weryfikacji tożsamości'. The form also asks first and last name, email, a login, and an IRC nick on #wtw, and the terms require presence on that channel. No card hold beyond the PLN 0.01, no phone, no document.",
+    "country": null
+  },
+  "reliability_note": "No reliability event observed. The project states it is hobbyist and non-commercial and that it 'nie zapewniają jakości usług porównywalnych z ofertami komercyjnymi'.",
+  "confidence": "documented",
+  "confidence_note": "Shape, the root statement, the IPv6 arrangement, the PLN 0.01 gate and the two-stage approval are quoted from the project's own pages read today. Whether a VPS is granted in practice, and how long it takes, is not established: the terms make it discretionary and cannot register.",
+  "evidence": [
+    {
+      "url": "https://psifactor.pl/?go=vps",
+      "date": "2026-10-24",
+      "proved": "quoted: 'kontener LXC zarządzany przez Incus', 'do 2 GB RAM', 'do 10 GB limitu dysku (quota)', 'prawa root w VPS', 'każdy kontener otrzymuje stały publiczny adres IPv6, nazwę hosta i rekord PTR', 'dostęp przychodzący po IPv4 odbywa się przez przekierowanie uzgodnionych portów'; page 'Ostatnia modyfikacja: 01.08.2026'"
+    },
+    {
+      "url": "https://psifactor.pl/?go=account",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Limit (quota): 41 GB + 5 GB (NextCloud) + 5 GB (Immich) [do negocjacji]'; '1 Gbps bez limitu danych w Niemczech, i7-8700, 64 GB RAM'; 'VPS w postaci kontenera typu LXC od Incus dla użytkowników z dłuższym stażem'; page 'Ostatnia modyfikacja: 17.09.2026'"
+    },
+    {
+      "url": "https://psifactor.pl/?go=newaccount",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Akceptuję to, że założenie konta wymaga bezzwrotnej wpłaty 0,01 PLN jako elementu weryfikacji tożsamości. Wpłata nie gwarantuje założenia konta.' Form fields: 'Imię i nazwisko', 'Mój email', 'Login', 'Nick na #wtw', 'Cel korzystania', 'Potrzebne usługi'"
+    },
+    {
+      "url": "https://psifactor.pl/?go=regulamin",
+      "date": "2026-10-24",
+      "proved": "quoted: 'VPS jest dedykowany Użytkownikom z dłuższym stażem, którzy posiadają już konto shell. O utworzeniu VPS decyduje administrator.'; 'obecność na kanale IRC' is a basic condition; 'Administrator może również w każdym momencie ... bez ostrzeżenia, usunąć konto shell lub VPS'; page 'Ostatnia modyfikacja: 24.08.2026'"
+    },
+    {
+      "url": "https://psifactor.pl/?go=vps",
+      "date": "2026-10-24",
+      "proved": "quoted footer: 'psifactor.pl 2014-2026' and a link to a live status page at psifactor.pl/status/. The project has been running under that name since 2014"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-24T04:12:03.000Z",
+  "price_per_tb_month": null,
+  "notes": "The best shape and the most conditional: a root LXC container with up to 2 GB of RAM, 10 GB of disk, a static public IPv6 with a PTR record, agreed IPv4 port forwards, and a 1 Gbit/s unmetered German uplink, for a one-off PLN 0.01 identity payment. What it costs is patience and a human: the shell account is manually approved, the container is granted only to users with standing, presence on an IRC channel is a stated condition, and the administrator may delete the account at any time without warning. The PLN 0.01 is a real payment, so the identity kind is card rather than email, but it is not a hold and not a subscription. Cannot register, so 'the administrator grants it' is the one link in the chain not observed. Recorded as reported-by-the-project, not as delivered.",
+  "extras": {
+    "shape": {
+      "vcpu": null,
+      "ram_gib": 2,
+      "disk_gib": 10,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "billing_model": "free",
+    "term": "indefinite while the shell account is active",
+    "m10h_usd": 0,
+    "m24h_usd": 0,
+    "price_arithmetic": "PLN 0.01 once, for identity verification; the container itself is PLN 0.00 with no recurring charge and no published rate to multiply",
+    "free_tier_kind": "free-forever-with-quota",
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": true,
+      "ports": "agreed ports forwarded from the host IPv4, plus a full public IPv6 per container",
+      "static_ip": true,
+      "ipv6": true,
+      "per_session_bytes": null
+    },
+    "session_cap": {
+      "wall_clock_min": null,
+      "idle_reap_s": null,
+      "restart_required": false,
+      "note": "no idle kill published for the container; the shell account carries an inactivity rule that is not quantified on the pages read"
+    }
+  }
+}

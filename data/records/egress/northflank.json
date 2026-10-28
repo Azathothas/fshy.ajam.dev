@@ -1,0 +1,90 @@
+{
+  "topic": "egress",
+  "slug": "northflank",
+  "provider": "Northflank",
+  "url": "https://northflank.com/docs/v1/application/network/configure-load-balancers",
+  "category": "paas l4 port",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Up to $20 a month of free resources on Northflank Cloud, across 2 services, 2 jobs, and 1 database.",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://northflank.com/pricing",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://northflank.com/docs/v1/application/network/configure-load-balancers",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://northflank.com/docs/v1/application/network/configure-load-balancers",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Free Sandbox is a $20/month resource credit; network egress is $0.06/GB for everyone, so the credit buys at most 333 GB of egress if nothing else is spent.; ingress: tcp+udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://northflank.com/docs/v1/application/network/configure-load-balancers"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "\"Load balancers can be included in Northflank templates for infrastructure as code\" plus a REST API.",
+  "tooling": "Dashboard, API, and template YAML (kind: LoadBalancer); point an A record at the provisioned IP.",
+  "chaining": "A Northflank UDP load balancer in front of a wg-quick sidecar gives a stable endpoint; the $20 credit and $0.06/GB egress cap the volume, not the protocol.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "$20/month of resources; egress $0.06/GB",
+      "source": "https://northflank.com/pricing"
+    }
+  ],
+  "limits_note": "",
+  "binding": "volume-quota",
+  "binding_note": "$20 of credit at $0.06/GB is 333 GB, 0.30 TiB, and only if no compute is spent. 1 TiB of egress alone would cost $61.44/month.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "\"Sandbox Free No card needed\".",
+    "country": "None"
+  },
+  "reliability_note": "\"Updating a load balancer triggers re-provisioning. There may be a brief traffic interruption during the update.\" Backends must be running, not paused.",
+  "confidence": "documented",
+  "confidence_note": "Whether the free Sandbox may create an L4 load balancer is not stated on any page read; that, and a live UDP probe on a provisioned IP, are what would settle it.",
+  "evidence": [
+    {
+      "url": "https://northflank.com/docs/v1/application/network/configure-load-balancers",
+      "date": "2026-10-23",
+      "proved": "L4 load balancers route \"external TCP or UDP traffic\", stable public IP, up to 100 ports, no rate limiting"
+    },
+    {
+      "url": "https://northflank.com/pricing",
+      "date": "2026-10-23",
+      "proved": "Free Sandbox: $20/month of resources, 2 services, no card; network egress $0.06/GB"
+    },
+    {
+      "url": "https://northflank.com/docs/v1/application/network/configure-ports",
+      "date": "2026-10-23",
+      "proved": "\"Only HTTP and HTTP/2 ports can be publicly exposed. TCP and UDP service ports require a separate Layer 4 load balancer\""
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The most capable L4 product technically, and the least clear commercially: the pricing page prices an egress gateway ($15/gateway/month) but never prices the load balancer, and the plan matrix has no load-balancer row. Treat free-tier LB access as open, not as granted.",
+  "extras": {
+    "wg_path": "inside-udp",
+    "wg_detail": "A team-level Layer 4 load balancer with Protocol: TCP or UDP, a stable public IP once Provisioned, up to 100 ports, no TLS termination and no rate limiting.",
+    "ingress": "tcp+udp",
+    "volume_tib_month": null,
+    "volume_stated": "Free Sandbox is a $20/month resource credit; network egress is $0.06/GB for everyone, so the credit buys at most 333 GB of egress if nothing else is spent.",
+    "bytes_transit": "yes",
+    "transit_note": "Northflank's cloud provisions the L4 balancer; the datagrams land on the client's service."
+  }
+}

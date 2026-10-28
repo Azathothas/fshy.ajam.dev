@@ -1,0 +1,85 @@
+{
+  "topic": "debrid",
+  "slug": "teldrive",
+  "provider": "Teldrive",
+  "url": "https://github.com/tgdrive/teldrive",
+  "category": "software (Telegram-backed drive, self-hosted)",
+  "tier": "self-hosted",
+  "free_tier": {
+    "stated": "No fee. 'Teldrive requires PostgreSQL and a Telegram account.' The bytes go into the client's own Telegram channels; the software is MIT-licensed.",
+    "unit": "unlimited",
+    "metered_on": "stored-bytes",
+    "source_url": "https://github.com/tgdrive/teldrive",
+    "read_on": "2026-10-23",
+    "notes": "'unlimited' is Telegram's own claim about the account, not Teldrive's about itself"
+  },
+  "per_object_cap": {
+    "stated": "Inherits Telegram's per-object ceiling: 2 GB on a free account, 4 GB with Premium.",
+    "bytes": null,
+    "source_url": "https://telegram.org/faq",
+    "notes": "Teldrive states no cap of its own"
+  },
+  "retention": {
+    "stated": "As long as the Telegram account and the channel survive. The project warns: 'Accounts and stored files can become unavailable; keep independent backups.'",
+    "days": null,
+    "source_url": "https://github.com/tgdrive/teldrive"
+  },
+  "egress": {
+    "terms": "Telegram's own terms; downloads come from Telegram's media DCs, at the speed a free account is allowed.",
+    "metered": false,
+    "free_allowance": "no allowance published",
+    "price_per_tb": null,
+    "source_url": "https://telegram.org/faq"
+  },
+  "interface": [
+    "rest",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "'Telegram-backed file storage with a web interface, an HTTP API, and rclone integration.' Login is by Telegram account, and channels are synced from the UI.",
+  "tooling": "Linux/Windows binaries, Nix, Docker or Podman; a maintained rclone fork (tgdrive/rclone) supplies the backend. PostgreSQL is mandatory.",
+  "chaining": "Turns a set of Telegram channels into one mounted filesystem, which is the only way to make the per-object cap stop being the unit of work: the client sees files, the backend shards them.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": null,
+      "source": "https://telegram.org/faq"
+    },
+    {
+      "kind": "request-rate",
+      "value": "Telegram flood control applies to the account Teldrive drives",
+      "source": "https://core.telegram.org/api/errors"
+    }
+  ],
+  "binding": "per-object-cap",
+  "binding_note": "Teldrive cannot change the object ceiling; it only hides it. At 1 TiB/month the 2 GB cap still splits every large object, and the account's upload flood limits (FLOOD_PREMIUM_WAIT_X on a non-Premium account) shape the rate.",
+  "identity_cost": {
+    "kind": "any-phone",
+    "detail": "A Telegram account plus api_id/api_hash, and a PostgreSQL instance the client must run. This is software, not a hosted service.",
+    "country": null
+  },
+  "reliability_note": "The project ships its own warning: 'Follow Telegram's terms and API limits. Accounts and stored files can become unavailable; keep independent backups.' A ban takes the whole drive with it.",
+  "confidence": "documented",
+  "confidence_note": "Requirements and the data-safety sentence are from the repository read today. No instance was deployed, so the effective throughput is unmeasured.",
+  "evidence": [
+    {
+      "url": "https://github.com/tgdrive/teldrive",
+      "date": "2026-10-23",
+      "proved": "'Teldrive requires PostgreSQL and a Telegram account.' and 'Telegram-backed file storage with a web interface, an HTTP API, and rclone integration.'"
+    },
+    {
+      "url": "https://github.com/tgdrive/teldrive",
+      "date": "2026-10-23",
+      "proved": "'Follow Telegram's terms and API limits. Accounts and stored files can become unavailable; keep independent backups.'"
+    },
+    {
+      "url": "https://teldrive-docs.pages.dev/docs/",
+      "date": "2026-10-23",
+      "proved": "'organize your Telegram files and unlock their full potential as cloud storage' with an rclone mount and optional encryption"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "price_per_tb_month": null,
+  "notes": "This is software the client must run, unlike every bot. It is recorded because it is the only maintained path that presents Telegram as a filesystem, and because the free compute tier can host it; abandon if the PostgreSQL requirement or the rclone fork stops being maintained.",
+  "verified_at": "2026-10-23T01:52:23.000Z"
+}

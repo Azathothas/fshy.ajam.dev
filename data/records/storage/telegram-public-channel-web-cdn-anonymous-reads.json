@@ -1,0 +1,79 @@
+{
+  "topic": "storage",
+  "slug": "telegram-public-channel-web-cdn-anonymous-reads",
+  "provider": "Telegram public-channel web CDN (t.me/s preview -> cdnN.telesco.pe) — anonymous reads",
+  "url": "https://t.me/s/telegram",
+  "category": "messaging",
+  "free_tier": {
+    "stated": "Not a storage tier — this is the READ path for files already in a public channel. Anonymous, no account, no token, no API key. Scraping the public preview of a channel yields directly-fetchable media URLs for every photo and video post.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://t.me/s/telegram",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://t.me/s/telegram",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "It is still validated (bogus token -> 404, no token -> 404), and one minted token 502'd transiently then recovered, so treat tokens as mint-on-demand, not permanent",
+    "source_url": "https://t.me/s/telegram",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and unmetered, served by Telegram's own nginx-backed web CDN (Server: nginx/1.30.1, Cache-Control: max-age=10800). Access-Control-Allow-Origin: * and Accept-Ranges advertised, so range requests and browser fetching work. This is genuinely CDN-friendly: put Cloudflare in front and the origin pull is a plain HTTP GET.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "No client needed — plain curl. Pattern: GET https://t.me/s/<channel> and regex https://cdn\\d\\.telesco\\.pe/file/<hash>.mp4?token=... The t.me embed widget (https://t.me/<channel>/<id>?embed=1) exposes a second, tokenless URL form (e.g. cdn4.telesco.pe/file/<long-hash>.jpg) that also serves 200/206 anonymously. Pagination works: ?before=<msg_id> walks arbitrarily far back.",
+  "chaining": "Iterate channels x ?before pagination. Anonymous scrape rate was tested at 12 requests back-to-back on t.me/s/telegram with 12x HTTP 200 — no rate limit encountered. Each channel page yields ~20 messages; a file-storage channel where every post is a 2 GB file would expose all of them this way.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "review of a channel yields directly-fetchable media URLs for every photo and video pos",
+      "source": "https://t.me/s/telegram"
+    },
+    {
+      "kind": "write-gated",
+      "value": "review HTML never emits a document element — checked t",
+      "source": "https://t.me/s/telegram"
+    }
+  ],
+  "limits_note": "CRITICAL SCOPE LIMIT, probed: this path exposes PHOTOS and VIDEOS only. The preview HTML never emits a document element — checked t.me/s/telegram, /durov, /tginfo, /tgbeta, /apkpure_official, /drweb, /securitylab: zero occurrences of tgme_widget_message_document, zero .pdf links. Arbitrary files (zips, parquet, models) are NOT reachable anonymously; only the media Telegram re-encodes for preview. Max observed media size is bounded by what the preview embeds.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: y in a public channel. Anonymous, no account, no token, no API key. Scraping the public preview of a channel yields directly-fetchable media URLs for every photo and video post. T",
+    "country": null
+  },
+  "reliability_note": "Token semantics are weaker than they look, which is good for us: a token minted for one video returned 206 on a completely different file (/file/7fde212b67.mp4 with c01503a63e's token) and on a file from a different channel, so the token is a viewer credential, not a per-file signature. It is still validated (bogus token -> 404, no token -> 404), and one minted token 502'd transiently then recovered, so treat tokens as mint-on-demand, not permanent. cdn2.telesco.pe 302s to another host; cdn1 is the one that serves bytes.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://cdn4.telesco.pe/file/<hash>.jpg",
+      "date": "2026-10-21",
+      "proved": "probe: curl -r 0-2047 -> 206, Content-Range: bytes 0-2047/4843, Access-Control-Allow-Origin: * — anonymous partial read works"
+    },
+    {
+      "url": "https://cdn1.telesco.pe/file/<hash>.mp4?token=",
+      "date": "2026-10-21",
+      "proved": "probe: curl -r 0-1023 ... -> 206, Content-Type: video/mp4, Content-Range: bytes 0-1023/2633811 — anonymous range read of video works"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: grep tgme_widget_message_document across 7 public channels -> 0 hits; this path carries media only, never arbitrary documents"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Not a storage tier — this is the READ path for files already in a public channel. Anonymous, no account, no token, no API key. Scraping the public preview of a channel yields directly-fetchable media URLs for every photo and video post.",
+  "extras": {},
+  "binding": "write-gated",
+  "binding_note": "the write is a queue with a person or a rule in it, so the upload rate is set by somebody else"
+}

@@ -1,0 +1,73 @@
+{
+  "topic": "storage",
+  "slug": "nostr-relays-nip-94-nip-96-file-metadata-index-only-not",
+  "provider": "Nostr relays + NIP-94/NIP-96 file metadata — index only, not bytes",
+  "url": "https://github.com/nostr-protocol/nips/blob/master/94.md",
+  "category": "nostr-relay",
+  "free_tier": {
+    "stated": "Zero bytes. NIP-94 is a *metadata* event: `url`, `m` (mime), `size`, `dim`, `i` (torrent infohash), `thumb`. The relay stores the JSON pointer, the file lives elsewhere.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://raw.githubusercontent.com/nostr-protocol/nips/master/94.md",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap = relay event size limit (~64 KB",
+    "bytes": 64000,
+    "source_url": "https://raw.githubusercontent.com/nostr-protocol/nips/master/94.md",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "until the instance is recycled; not persistent",
+    "source_url": "https://raw.githubusercontent.com/nostr-protocol/nips/master/94.md",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "n/a — relay never serves the file.",
+    "metered": false
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "websocket",
+  "tooling": "nostr websocket protocol (EVENT/REQ), `nak` CLI. Relays are free and accept arbitrary events, but the event size limit (typ. 64 KB) caps any inline-base64 trick at ~48 KB.",
+  "chaining": "Chains with Blossom: NIP-94/NIP-96 events make Blossom blobs discoverable and re-mirrorable. On its own this is not storage.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap = relay event size limit (~64 KB",
+      "source": "https://raw.githubusercontent.com/nostr-protocol/nips/master/94.md"
+    }
+  ],
+  "limits_note": "per-object-cap = relay event size limit (~64 KB typical), of which base64 payload is ~75%, so ~48 KB of real data per event — three orders of magnitude short of useful.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Relays are ephemeral and freely delete events; free relays exist in the thousands but none is a byte store.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://raw.githubusercontent.com/nostr-protocol/nips/master/94.md",
+      "date": "2026-10-21",
+      "proved": "tags are `url`, `m`, `size`, `dim`, `i` (torrent infohash), `thumb`; 'A relay for indexing shared files. For example, to promote torrents.' — confirms metadata-only semantics"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Zero bytes. NIP-94 is a *metadata* event: `url`, `m` (mime), `size`, `dim`, `i` (torrent infohash), `thumb`. The relay stores the JSON pointer, the file lives elsewhere.",
+  "extras": {
+    "verdict_note": "PLAN.md §3.2 rules fails-quota by default, because no row in this set clears 500 GiB per unit for a user.",
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "Zero bytes. NIP-94 is a *metadata* event: `url`, `m` (mime), `size`, `dim`, `i` (torrent infohash), `thumb`. The relay stores the JSON pointer, the file lives elsewhere.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

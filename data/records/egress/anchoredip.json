@@ -1,0 +1,100 @@
+{
+  "topic": "egress",
+  "slug": "anchoredip",
+  "provider": "AnchoredIP",
+  "url": "https://anchoredip.com/pricing",
+  "category": "dedicated IPv4 over WireGuard",
+  "tier": "trial",
+  "free_tier": {
+    "stated": "\"Trial $0/mo ... Runs for 7 days\" with one dedicated IPv4, one /48, two machines, and from the dedicated-ip page: \"Seven days on a real address out of the same range paying customers are in ... No card, and nobody to talk to.\"",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://anchoredip.com/pricing",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://anchoredip.com/pricing",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://anchoredip.com/pricing",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No allowance and no meter: \"We do not meter requests or bandwidth, so the plan decides how many addresses and machines you get and nothing decides how much you may send.\"; ingress: tcp+udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://anchoredip.com/pricing"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "Configuration file per machine plus a dashboard; no API named on the pages read.",
+  "tooling": "wg-quick; documented Docker pattern with one container per machine slot",
+  "chaining": "Pairs with a free-tier VM: the VM becomes the designated inbound peer and the whole lease egresses from one address.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "none: bandwidth is stated as unmetered, so there is no byte allowance to exceed",
+      "source": "https://anchoredip.com/vs/fixie"
+    }
+  ],
+  "limits_note": "",
+  "binding": "none",
+  "binding_note": "Nothing in the published terms fails at 1 TiB/month: the vendor says it does not meter bandwidth, and the trial carries the same unmetered transport as the paid tiers. What limits the shape is the lease, not a quota: one IPv4, two machines, and one designated peer that can receive inbound. That is an allocation limit with no kind in the constraint vocabulary, so it is recorded here rather than filed under a kind it is not.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "The trial needs no card: \"No card, and nobody to talk to.\" The paid tiers are \"Pay by Card\". A trial still needs an account, whose form was not read.",
+    "country": "None"
+  },
+  "reliability_note": "Outbound mail ports blocked on every lease by default; inbound works on one peer only, and a second peer claiming the address silently wins.",
+  "confidence": "documented",
+  "confidence_note": "Pricing, the trial terms, the unmetered claim and the inbound-peer rule are first-party. A trial run would confirm the inbound behaviour.",
+  "evidence": [
+    {
+      "url": "https://anchoredip.com/pricing",
+      "date": "2026-10-23",
+      "proved": "Trial USD 0 for 7 days with 1 IPv4, 1 /48 and 2 machines; Solo USD 19/mo; Team USD 49/mo; card payment"
+    },
+    {
+      "url": "https://anchoredip.com/dedicated-ip",
+      "date": "2026-10-23",
+      "proved": "\"One WireGuard config file\"; space registered at RIPE NCC and announced from AS41800; trial without a card"
+    },
+    {
+      "url": "https://anchoredip.com/vs/fixie",
+      "date": "2026-10-23",
+      "proved": "\"Bandwidth | [...] Not metered\" in the vendor's own comparison table"
+    },
+    {
+      "url": "https://anchoredip.com/docs/use-cases",
+      "date": "2026-10-23",
+      "proved": "one peer per lease receives inbound, because WireGuard routes an address to exactly one peer"
+    },
+    {
+      "url": "https://rdap.db.ripe.net/ip/194.0.109.1",
+      "date": "2026-10-24",
+      "proved": "194.0.109.0/24 is KZ-TROPYNIN-NET-109, country KZ, type ASSIGNED PA, registrant lrp-kz-individual-1-MNT / Tropynin Oleg; AS41800's holder is TROPYNIN-AS Tropynin Oleg. A personal PA assignment, not an eyeball broadband network, so the space is not ISP-registered."
+    }
+  ],
+  "verdict": "trial-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0 for 7 days, then USD 19 per month for Solo (1 IPv4, 1 /48, 2 machines)",
+  "notes": "The product is sold as an outbound identity first, with inbound as a secondary use: \"Everything else on the lease still egresses as the address.\" That is why the machine count is the binding constraint rather than the port count. Outbound 25, 465 and 587 are blocked until asked. Registration class measured 2026-10-24: ASSIGNED PA under an individual in KZ, so the lease is not ISP-registered and does not address rung 5. it invited an ISP reading that the registry does not support.",
+  "extras": {
+    "wg_path": "native-conf",
+    "wg_detail": "The address arrives as a configuration file: \"Set up by: One WireGuard config file\" and \"The address is delivered over a WireGuard tunnel to machines you already run\". One machine per lease may also receive: \"One machine per lease can also receive on the public address\".",
+    "ingress": "tcp+udp",
+    "volume_tib_month": null,
+    "volume_stated": "No allowance and no meter: \"We do not meter requests or bandwidth, so the plan decides how many addresses and machines you get and nothing decides how much you may send.\"",
+    "bytes_transit": "yes",
+    "transit_note": "AnchoredIP announces AS41800, whose holder is TROPYNIN-AS Tropynin Oleg, and the space is a personal PA assignment in Kazakhstan. The client can check the AS in public routing data. This says nothing about registration class, which is neither ISP nor organisation.",
+    "registration_class": "ASSIGNED PA under an individual, Kazakhstan. Not ISP-registered. Measured with RIPE RDAP 2026-10-24; see dossier/ip-proxy/anchoredip-registration-corrected.json."
+  }
+}

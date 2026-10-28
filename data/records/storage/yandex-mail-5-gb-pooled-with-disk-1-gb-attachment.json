@@ -1,0 +1,82 @@
+{
+  "topic": "storage",
+  "slug": "yandex-mail-5-gb-pooled-with-disk-1-gb-attachment",
+  "provider": "Yandex Mail — 5 GB pooled with Disk, 1 GB attachment",
+  "url": "https://360.yandex.com/mail/",
+  "category": "cloud-drive",
+  "free_tier": {
+    "stated": "Yandex's own docs: \"By default, users without a plan get 5 GB of storage space.\" Mail and Disk now share one pool: \"Emails and attachments in Yandex Mail now share storage with files on Yandex Disk.\" Attachment cap: \"The maximum attachment size is 1 GB. You can add larger files to messages only if you have a Yandex 360 plan.\"",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://yandex.com/support/yandex-360/customers/disk/web/en/enlarge/disk-space",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap 1 GB",
+    "bytes": 1000000000,
+    "source_url": "https://yandex.com/support/yandex-360/customers/disk/web/en/enlarge/disk-space",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://yandex.com/support/yandex-360/customers/disk/web/en/enlarge/disk-space",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered; mailbox service.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "IMAP probe-verified: `imap.yandex.com:993` -> `* OK Yandex IMAP4rev1 at imap.yandex.ru:993 ready` / `* CAPABILITY IMAP4rev1 CHILDREN UNSELECT LITERAL+ NAMESPACE XLIST UIDPLUS ENABLE ID AUTH=PLAIN AUTH=XOAUTH2 MOVE`. SMTP: `250-SIZE 53477376` = 51 MiB.",
+  "chaining": "5 GB × N accounts. The 1 GB attachment cap makes it look generous per message, but the pool is 5 GB, so one attachment is 20% of the account.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap 1 GB",
+      "source": "https://yandex.com/support/yandex-360/customers/disk/web/en/enlarge/disk-space"
+    }
+  ],
+  "limits_note": "per-object-cap 1 GB attachment (docs) but SMTP SIZE says 51 MiB — the 1 GB path is a Disk-upload link, not an SMTP attachment, so again link-vs-storage. Pool is 5 GB shared with Disk. Hard retention decay ladder documented: full -> attach >25 MB blocked; 44 days -> cannot send/read; 90 days -> **Disk may be cleared, files unrecoverable**.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: 5 GB of storage space.\" Mail and Disk now share one pool: \"Emails and attachments in Yandex Mail now share storage with files on Yandex Disk.\" Attachment cap: \"The maximum attachment s",
+    "country": null
+  },
+  "reliability_note": "The most explicit data-loss ladder of any provider here — 90 days over quota and Disk is wiped. Never use as primary copy.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://yandex.com/support/yandex-360/customers/disk/web/en/enlarge/disk-space",
+      "date": "2026-10-21",
+      "proved": "\"users without a plan get 5 GB\""
+    },
+    {
+      "url": "https://yandex.com/support/yandex-360/customers/mail/en/web/letter/attachments",
+      "date": "2026-10-21",
+      "proved": "1 GB attachment maximum"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: smtp.yandex.com:587 -> 250-SIZE 53477376; probe: imap.yandex.com:993 -> * OK Yandex IMAP4rev1 ready"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Yandex's own docs: \"By default, users without a plan get 5 GB of storage space.\" Mail and Disk now share one pool: \"Emails and attachments in Yandex Mail now share storage with files on Yandex Disk.\" Attachment cap: \"The maximum attachment size is 1 GB. You can add larger files to messages only if you have a Yandex 360 plan.\"",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "Yandex's own docs: \"By default, users without a plan get 5 GB of storage space.\" Mail and Disk now share one pool: \"Emails and attachments in Yandex Mail now share storage with files on Yandex Disk.\" Attachment cap: \"The maximum attachment size is 1 GB. You can add larger files to messages only if you have a Yandex 360 plan.\"",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

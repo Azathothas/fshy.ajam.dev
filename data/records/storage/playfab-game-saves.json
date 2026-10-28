@@ -1,0 +1,76 @@
+{
+  "topic": "storage",
+  "slug": "playfab-game-saves",
+  "provider": "PlayFab Game Saves (Development Mode titles)",
+  "url": "https://developer.microsoft.com/en-us/games/products/playfab/pricing/",
+  "category": "paas",
+  "free_tier": {
+    "stated": "Per Development Mode title: Profile storage 2 GB, Content and configuration storage 2 GB, 5 GB UGC storage. 10 Development Mode titles per studio. Game Saves adds 256 MB per player per title.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://learn.microsoft.com/en-us/gaming/playfab/features/pricing/development-mode",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: 256 MB",
+    "bytes": 256000000,
+    "source_url": "https://learn.microsoft.com/en-us/gaming/playfab/features/pricing/development-mode",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "per-object-cap: 256 MB per player for Game Saves; request-rate: 100 service endpoint requests per 2-minute period per title player (≈10 uploads/min); 1,000 unique lifetime users per Development Mode title; per-object-cap on UGC requests tiered by request body size. Retention: none stated — data persists until deleted, no expiry clause found.",
+    "source_url": "https://learn.microsoft.com/en-us/gaming/playfab/features/pricing/development-mode",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Billed by API request, not by byte, for the core services. Data Connections egress is metered (Same Region West US 2 = Free; Zone 1 intra-continental $0.02/GB). Development Mode: 'As long as your title is in Development Mode, consumption isn't counted towards any of your billable meters.'",
+    "metered": true
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "PlayFab REST APIs (Client/Server/Admin/Entity), official C#/Unity/JS SDKs. No rclone backend; a wrapper is ~50 lines against `https://<titleId>.playfabapi.com/`.",
+  "chaining": "4 GB (2 GB profile + 2 GB content) x 10 dev titles = 40 GB per studio, and studios are free and unlimited -> unbounded in aggregate. The sharper multiplier is Game Saves: 256 MB per player x 1,000 players per dev title = 256 GB per title x 10 titles = 2.5 TB per studio, and player identities are free to mint via LoginWithCustomID.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: 256 MB",
+      "source": "https://learn.microsoft.com/en-us/gaming/playfab/features/pricing/development-mode"
+    }
+  ],
+  "limits_note": "per-object-cap: 256 MB per player for Game Saves; request-rate: 100 service endpoint requests per 2-minute period per title player (≈10 uploads/min); 1,000 unique lifetime users per Development Mode title; per-object-cap on UGC requests tiered by request body size. Retention: none stated — data persists until deleted, no expiry clause found.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Titles in Development Mode cannot add users past 1,000 and must be launched (moved to a paid plan) to scale; Game Saves quota overrun throttles writes rather than erroring.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://learn.microsoft.com/en-us/gaming/playfab/player-progression/game-saves/limits",
+      "date": "2026-10-21",
+      "proved": "'Title players are limited to 256MB of storage per title' and '100 service endpoint requests in any 2-minute period' (page ms.date 2025-06-24)"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/gaming/playfab/features/pricing/development-mode",
+      "date": "2026-10-21",
+      "proved": "limits table: 'Profile storage 2 gigabytes (GB)', 'Content and configuration storage 2 GB', 'Titles in Development Mode 10 Titles', 'Unique users 1000 users created'"
+    },
+    {
+      "url": "https://developer.microsoft.com/en-us/games/products/playfab/pricing/",
+      "date": "2026-10-21",
+      "proved": "'File Storage 5 GB $0.11 per additional GB'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Per Development Mode title: Profile storage 2 GB, Content and configuration storage 2 GB, 5 GB UGC storage. 10 Development Mode titles per studio. Game Saves adds 256 MB per player per title.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

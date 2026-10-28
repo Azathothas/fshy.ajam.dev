@@ -1,0 +1,123 @@
+{
+  "topic": "storage",
+  "slug": "internet-archive",
+  "provider": "Internet Archive (IAS3 / petabox item upload)",
+  "url": "https://archive.org",
+  "category": "academic",
+  "free_tier": {
+    "stated": "1 TB hard limit per item page (\"Currently, there is a 1TB size limit for item pages\"), recommended 500 GB / 1,000 files per item; items per account unlimited. Single file \"should not be larger than ~500 to ~700 GB\".",
+    "unit": "TB",
+    "metered_on": "unstated",
+    "source_url": "https://help.archive.org/help/uploading-tips/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "1 TB/item",
+    "bytes": 1000000000000,
+    "source_url": "https://help.archive.org/help/uploading-tips/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://help.archive.org/help/uploading-tips/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered and free: every file in every item is a world-readable HTTP URL (https://archive.org/download/<id>/<file>) with no auth and no egress bill; IAS3 doc states \"ACLs are fake. permissions are: World readable, Item uploader writable.\" Every public item additionally gets an _archive.torrent with IA webseeding as a second free distribution path.",
+    "metered": false,
+    "source_url": "https://archive.org/download/<id>/<file>"
+  },
+  "interface": [
+    "s3-compatible",
+    "rest",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "s3",
+  "tooling": "IAS3 = S3-compatible REST (PUT = create item, multipart, x-archive-auto-make-bucket, x-archive-queue-derive:0, x-archive-size-hint); rclone backend 'internetarchive' (Tier 3, added v1.59, github.com/rclone/rclone 60.4k stars); official CLI/Python 'ia' github.com/jjjake/internetarchive (1,923 stars, pushed 2026-10-20); Rust client github.com/LucaCappelletti94/internetarchive-rs. S3 keys from archive.org/account/s3.php.",
+  "chaining": "Unlimited items per account x 1 TB/item = unbounded per single free account. Also unlimited free accounts. 10 TiB hot set = 10-20 items of 500 GB-1 TB. 20 TiB archive = ~20-40 items. Zip many small files (\"a zip file is considered one file\" for the daily cap).",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "1 TB/item",
+      "source": "https://help.archive.org/help/uploading-tips/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "500 GB/item",
+      "source": "https://help.archive.org/help/uploading-tips/"
+    }
+  ],
+  "limits_note": "1 TB/item hard, 500 GB/item recommended; 500-700 GB single-file ceiling; 5,000 files/day across all items (zip counts as 1); recommended <=10,000 files/item but API accepts 250,000; DELETE bucket not allowed; S3 Range headers ignored; only HTTP/1.1 REST, no ACLs; every upload enters a per-item catalog queue plus a global derive queue that can block writes (503-slowdown-spam). Use x-archive-queue-derive:0 to skip expensive derivation.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: ems (zip counts as 1); recommended <=10,000 files/item but API accepts 250,000; DELETE bucket not allowed; S3 Range headers ignored; only HTTP/1.1 REST, no ACLs; every upload enters",
+    "country": null
+  },
+  "reliability_note": "Writes are asynchronous through a per-item queue; the global derive queue can stall uploads and deletes for hours during backlogs, and large/high-file-count items time out and fail to derive. Items are permanent (no TTL) but nothing is guaranteed private.",
+  "confidence": "documented",
+  "confidence_note": "re-read from read-broker on 2026-10-22 (HTTP 200, 5433 bytes, sha256 48c2cd2e54f5effa). The page states the number in the record; the claim is documented, not measured.",
+  "evidence": [
+    {
+      "url": "https://help.archive.org/help/uploading-tips/",
+      "date": "2026-10-22",
+      "proved": "1 TB per item, 500 GB recommended. Re-read https://help.archive.org/help/uploading-tips/: HTTP 200, 5433 bytes, sha256 48c2cd2e54f5effa. Quoted: impact such as the type and size of the files you are uploading. ## **Is there a limit to the number of files or the size of the file that I can upload?** Currently, there is a 1TB size limit for item pages. However, from a systems perspective, we recommend a maximum of 1000 files or 500GB of data per item page. Keep in mind that most data files that are upload are used to derive multiple files that are used for the site and to allow us"
+    },
+    {
+      "url": "https://help.archive.org/help/uploading-tips/",
+      "date": "2026-10-21",
+      "proved": "'Currently, there is a 1TB size limit for item pages... we recommend a maximum of 1000 files or 500GB of data per item page'"
+    },
+    {
+      "url": "https://web.archive.org/web/20260113031534/https://archive.org/developers/ias3.html",
+      "date": "2026-10-21",
+      "proved": "PUT creates item, multipart, x-archive-auto-make-bucket, 'ACLs are fake... World readable', item->bucket mapping, https://s3.us.archive.org"
+    },
+    {
+      "url": "https://archivesupport.zendesk.com/hc/en-us/articles/360016700691-Uploading-Troubleshooting",
+      "date": "2026-10-21",
+      "proved": "'single file ... should not be larger than ~500 to ~700 GB'; 'less than 10,000 files, and where the files do not exceed 1TB'; 'API will allow up to 250,000 files'"
+    },
+    {
+      "url": "https://rclone.org/internetarchive/",
+      "date": "2026-10-21",
+      "proved": "rclone backend exists (Tier 3), notes per-item write queue and derive queue backpressure"
+    },
+    {
+      "url": "https://help.archive.org/help/archive-bittorrents/",
+      "date": "2026-10-21",
+      "proved": "1.4M items / ~1 PB distributed by BitTorrent as extra free egress"
+    },
+    {
+      "url": "https://s3.us.archive.org/",
+      "date": "2026-10-21",
+      "proved": "the IAS3 contract above is from the docs page only."
+    },
+    {
+      "url": "probe:https://archive.org/download/nasa/__ia_thumb.jpg",
+      "date": "2026-10-22",
+      "proved": "ranged GET 2026-10-22: 302 to a storage node then 206 Partial Content, 1,024 bytes, Content-Range bytes 0-1023/5399; anonymous"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "1 TB hard limit per item page (\"Currently, there is a 1TB size limit for item pages\"), recommended 500 GB / 1,000 files per item; items per account unlimited. Single file \"should not be larger than ~500 to ~700 GB\".",
+  "extras": {
+    "verified_in_pass": [
+      {
+        "url": "https://help.archive.org/help/uploading-tips/",
+        "date": "2026-10-22",
+        "via": "read-broker",
+        "http_status": 200,
+        "bytes": 5433,
+        "sha256": "48c2cd2e54f5effa68cd5fced7c6b5fb3d5045a2323827fd720e78345b324a82",
+        "pattern_found": true,
+        "what_changed": "no change: the page still states the claim",
+        "capture": "captures\\internet-archive-host-help-archive-org-help-uploading-tips-.txt"
+      }
+    ]
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

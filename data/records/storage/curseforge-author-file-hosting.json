@@ -1,0 +1,101 @@
+{
+  "topic": "storage",
+  "slug": "curseforge-author-file-hosting",
+  "provider": "CurseForge (Overwolf) author file hosting",
+  "url": "https://www.curseforge.com",
+  "category": "media",
+  "free_tier": {
+    "stated": "What IS verifiable is the observed size distribution: live file listings show modpacks at 89.1, 101.6 and 468.1 MB, and a single mod file at 66.7 MB. The one hard number surfaced is a *media* cap of 2 MB for images ('Why is it only 2MB??' - author complaint, still open, 'Future consideration'), and a forum report of a 350 MB mod upload being rejected without an external-URL option.",
+    "unit": "MB",
+    "metered_on": "unstated",
+    "source_url": "https://support.curseforge.com/en/support/solutions/articles/9000197241-file-size-limits",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://support.curseforge.com/en/support/solutions/articles/9000197241-file-size-limits",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "retention: indefinite for approved files; 'Files updates in order to increase visibility is not allowed' and files must carry a changelog",
+    "source_url": "https://support.curseforge.com/en/support/solutions/articles/9000197241-file-size-limits",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and CDN'd via CloudFront in front of S3: edge.forgecdn.net and mediafilez.forgecdn.net return 'X-Cache: Miss from cloudfront' and 'Server: AmazonS3'. No billing. Hotlink-protected - a guessed object path returns 403 from S3 rather than bytes, so URLs must come from the API.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "sftp",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Official upload API with `X-API-TOKEN` and multipart `metadata` + `file` (third-party implementations exist, e.g. TeamDman/SuperFactoryManager and BreakBB/DisenchantBuddy shell out to it); `cfwidget` mirrors file metadata (id, filesize, uploaded_at) publicly. No SFTP, no rclone.",
+  "chaining": "Unlimited projects per author account, unlimited files per project, unlimited versions. The provider therefore polices project count and not only request rate.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "approved files",
+      "source": "https://support.curseforge.com/en/support/solutions/articles/9000197241-file-size-limits"
+    },
+    {
+      "kind": "write-gated",
+      "value": "review gate', not as bulk storage",
+      "source": "https://support.curseforge.com/en/support/solutions/articles/9000197241-file-size-limits"
+    }
+  ],
+  "limits_note": "evidence points below 500 MB for mods (350 MB rejection reported, 468.1 MB modpack published, so the ceiling is game-dependent and enforced client-side per the August release notes: 'Added new client-side validation - preventing upload of large files on unsupported games'). retention: indefinite for approved files; 'Files updates in order to increase visibility is not allowed' and files must carry a changelog. request-rate: not published.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Reads are hotlink-gated (403 from S3 on constructed URLs) and the whole author surface is SSO-walled, so this is the least auditable of the game hosts. Moderation is active and rule-driven. Best treated as 'large-ish files with a review gate', not as bulk storage.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://www.curseforge.com/minecraft/modpacks/better-mc-forge-bmc4/files",
+      "date": "2026-10-21",
+      "proved": "file sizes 89.1 MB, 101.6 MB, 85.5 MB, 83.5 MB in the live listing"
+    },
+    {
+      "url": "https://www.curseforge.com/minecraft/modpacks/rlcraft/files",
+      "date": "2026-10-21",
+      "proved": "48.9/49.0/48.0 MB; a 51324367-byte file confirmed via api.cfwidget.com (id 4612979)"
+    },
+    {
+      "url": "https://curseforge-ideas.overwolf.com/ideas/CF-I-8110",
+      "date": "2026-10-21",
+      "proved": "'Why is it only 2MB??' media cap, status 'Future consideration'"
+    },
+    {
+      "url": "https://nullforums.net/threads/unable-to-upload-mod-file-larger-than-350mb-no-url-link-provided.102087/",
+      "date": "2026-10-21",
+      "proved": "Jan 2025: >350 MB mod rejected, no external-URL option offered"
+    },
+    {
+      "url": "https://blog.curseforge.com/platform-release-notes-august-26/",
+      "date": "2026-10-21",
+      "proved": "'Added new client-side validation - preventing upload of large files on unsupported games'"
+    },
+    {
+      "url": "https://support.curseforge.com/en/support/solutions/articles/9000197279-moderation-policies",
+      "date": "2026-10-21",
+      "proved": "'It is not allowed to upload multiple similar and/or low effort projects in an attempt to game the system'. In plain terms, the policy puts a ceiling on project count rather than only on request rate."
+    },
+    {
+      "url": "https://edge.forgecdn.net/files/5000/100/",
+      "date": "2026-10-21",
+      "proved": "probe: GET ... -> 302 then 403 from AmazonS3 via cloudfront (hotlink protection live)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "What IS verifiable is the observed size distribution: live file listings show modpacks at 89.1, 101.6 and 468.1 MB, and a single mod file at 66.7 MB. The one hard number surfaced is a *media* cap of 2 MB for images ('Why is it only 2MB??' - author complaint, still open, 'Future consideration'), and a forum report of a 350 MB mod upload being rejected without an external-URL option.",
+  "extras": {},
+  "binding": "write-gated",
+  "binding_note": "the write is a queue with a person or a rule in it, so the upload rate is set by somebody else"
+}

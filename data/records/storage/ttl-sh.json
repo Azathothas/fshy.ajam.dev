@@ -1,0 +1,90 @@
+{
+  "topic": "storage",
+  "slug": "ttl-sh",
+  "provider": "ttl.sh (anonymous ephemeral OCI registry)",
+  "url": "https://ttl.sh",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "No account, no quota. \"Free forever. Zero sign-up. Push any OCI artifact with a TTL.\" Storage is bounded only by the TTL, max advertised 24 hours.",
+    "unit": "unlimited",
+    "metered_on": "stored-bytes",
+    "source_url": "https://ttl.sh/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://ttl.sh/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://ttl.sh/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered and anonymous: blobs are 307-redirected to a presigned S3 URL (s3.us-east-1.storage.sh, X-Amz-Expires=1200), so bytes come off object storage, not the registry host. Range requests work.",
+    "metered": false
+  },
+  "interface": [
+    "s3-compatible",
+    "oci"
+  ],
+  "interface_detail": "oci",
+  "tooling": "Any distribution-spec client: oras, docker, skopeo, crane, regctl. Built on zot (per the repo: 'Zot runs an off-the-shelf image ghcr.io/project-zot/zot-linux-amd64 ... points zot at an S3-compatible bucket').",
+  "chaining": "Unlimited anonymous identities x unlimited repos x unlimited blobs. Because there is no account at all, repo names are the only namespace; rate-limiting is per-IP only, so N egress IPs = N x throughput. Effectively an unlimited free write/read buffer that garbage-collects itself.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "11 MB/s",
+      "source": "https://ttl.sh/"
+    }
+  ],
+  "limits_note": "TTL max 24h advertised (:5m/:1h/:6h/:24h), default 1h. No per-blob size cap found: I pushed 256MB and then 1.5GB monolithically with zero chunking and both were accepted (202 then 201). Upload is slow (~11 MB/s observed: 1.5GB in 2m11s), so throughput is the practical per-connection cap. _catalog is blocked by nginx (401), tags/list is open.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: No account, no quota. \"Free forever. Zero sign-up. Push any OCI artifact with a TTL.\" Storage is bounded only by the TTL, max adve",
+    "country": null
+  },
+  "reliability_note": "Expiry is best-effort: the deployment repo states 'Tag expiry is handled separately and is not yet wired up in this repo', and open issue #151 reports images not expiring. Data WILL vanish at TTL; do not treat as durable. Intermittent connect timeouts observed from this network.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://ttl.sh/",
+      "date": "2026-10-21",
+      "proved": "read live: 'Free forever. Zero sign-up. Push any OCI artifact with a TTL. No auth, no config, no account.'; 'Choose your TTL. Default is 1 hour, max is 24 hours.'"
+    },
+    {
+      "url": "https://ttl.sh/v2/probe<rand>/blobs/uploads/",
+      "date": "2026-10-21",
+      "proved": "probe: POST -> 202 Accepted with Location header, no credentials of any kind"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: PATCH .../blobs/uploads/<uuid> with 256MiB random -> 202, Range: 0-1048575; then PUT ?digest=sha256:... -> 201 Created; PUT /v2/probe4941/manifests/24h -> 201; GET /v2/probe4941/manifests/24h -> 200 returning the exact manifest"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: 1.5GB anonymous upload -> HTTP/1.1 202 Accepted, Range: 0-1499999999, then commit PUT -> 201 Created, digest sha256:1c5954e1c91f... (no 413, no chunking needed)"
+    },
+    {
+      "url": "https://s3.us-east-1.storage.sh/ttlsh-registry-data/...?X-Amz-Expires=1200",
+      "date": "2026-10-21",
+      "proved": "probe: GET blob -> 307 to (presigned, CF/S3-edge served); ranged GET -r 0-1048575 -> 206, 1048576 bytes"
+    },
+    {
+      "url": "https://github.com/replicatedhq/ttl.sh",
+      "date": "2026-10-21",
+      "proved": "read live: 'Tag expiry is handled separately and is not yet wired up in this repo'; zot-config.json.j2 confirms S3 driver, dedupe:false, retention delay 1h with deleteUntagged"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No account, no quota. \"Free forever. Zero sign-up. Push any OCI artifact with a TTL.\" Storage is bounded only by the TTL, max advertised 24 hours.",
+  "extras": {},
+  "binding": "per-ip-shaping",
+  "binding_note": "one stream is shaped, and a user's throughput is the shaped rate times the number of streams"
+}

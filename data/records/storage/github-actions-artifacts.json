@@ -1,0 +1,81 @@
+{
+  "topic": "storage",
+  "slug": "github-actions-artifacts",
+  "provider": "GitHub Actions Artifacts (public repositories)",
+  "url": "https://github.com/features/actions",
+  "category": "paas",
+  "free_tier": {
+    "stated": "Plan table still lists artifact storage 500 MB (Free) / 1 GB (Pro) / 2 GB (Team) / 50 GB (Enterprise), and that pool is SHARED with GitHub Packages. Billing docs state Actions usage is free for public repositories. Artifact storage for public repos is not metered in practice, but the docs do not say 'unlimited' explicitly — flag as ambiguity.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.github.com/en/billing/concepts/product-billing/github-actions",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.github.com/en/billing/concepts/product-billing/github-actions",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Retention: default 90 days; public repos may be set 1-90 days only (private repos 1-400 days)",
+    "days": 90,
+    "source_url": "https://docs.github.com/en/billing/concepts/product-billing/github-actions",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free. Downloads redirect to productionresultssa*.blob.core.windows.net. But the API download endpoint requires a token: anonymous GET of /actions/artifacts/{id}/zip returns 401.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "actions/upload-artifact@v4 (max 500 artifacts per job), REST /repos/{o}/{r}/actions/artifacts, gh CLI. Third-party: nightly.link (see above), monteslu/loukai and alexreich/SitePix both have commits literally titled 'bypass Actions artifact storage; upload directly to release', which in plain terms means moving the bytes to releases instead; the ecosystem's own conclusion is that releases beat artifacts.",
+  "chaining": "Unlimited public repos x 500 artifacts/job x jobs. But retention caps it: this is a rotating buffer, never an archive.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "Retention: default 90 days",
+      "source": "https://docs.github.com/en/billing/concepts/product-billing/github-actions"
+    }
+  ],
+  "limits_note": "Retention: default 90 days; public repos may be set 1-90 days only (private repos 1-400 days). retention-days on upload-artifact cannot exceed the repo/org setting. 500 artifacts per job. Anonymous download requires a token, hence the wrapper.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: cannot exceed the repo/org setting. 500 artifacts per job. Anonymous download requires a token, hence the wrapper. paas",
+    "country": null
+  },
+  "reliability_note": "Hard TTL — artifacts are deleted at expiry and cannot be restored. Separate 10 GB/repo cache is also 7-day-evicted. Fine as a 90-day hot tier, useless as an archive.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://docs.github.com/en/billing/concepts/product-billing/github-actions",
+      "date": "2026-10-21",
+      "proved": "'GitHub Actions usage is free for self-hosted runners and for public repositories'; storage table; 'Cache storage is a separate allowance of 10 GB per repository'"
+    },
+    {
+      "url": "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository",
+      "date": "2026-10-21",
+      "proved": "'For public repositories: you can change this retention period to anywhere between 1 day or 90 days'"
+    },
+    {
+      "url": "https://api.github.com/repos/cli/cli/actions/artifacts?per_page=3",
+      "date": "2026-10-21",
+      "proved": "probe: curl -D - -> 200, total_count 9646, expires_at present"
+    },
+    {
+      "url": "https://api.github.com/repos/cli/cli/actions/artifacts/12312575009/zip",
+      "date": "2026-10-21",
+      "proved": "probe: curl -o /dev/null -> 401 (token required, unlike release assets)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Plan table still lists artifact storage 500 MB (Free) / 1 GB (Pro) / 2 GB (Team) / 50 GB (Enterprise), and that pool is SHARED with GitHub Packages. Billing docs state Actions usage is free for public repositories. Artifact storage for public repos is not metered in practice, but the docs do not say 'unlimited' explicitly — flag as ambiguity.",
+  "extras": {},
+  "binding": "retention-clamped",
+  "binding_note": "a clock, not a quota: bytes leave whether or not the client is finished with them"
+}

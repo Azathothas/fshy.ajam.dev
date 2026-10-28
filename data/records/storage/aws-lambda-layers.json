@@ -1,0 +1,72 @@
+{
+  "topic": "storage",
+  "slug": "aws-lambda-layers",
+  "provider": "AWS Lambda layers (and function deployment packages)",
+  "url": "https://aws.amazon.com/lambda/",
+  "category": "iaas",
+  "free_tier": {
+    "stated": "Per-function/per-layer caps only, plus a regional aggregate. Verbatim: 'Deployment package (.zip file archive) size | 50 MB (zipped, when uploaded through the Lambda API or SDKs) ... 50 MB (when uploaded through the Lambda console) ... 250 MB The maximum size of the contents of a deployment package, including layers and custom runtimes. (unzipped)'. 'Function layers | 5 layers'. The one aggregate number is code storage: 'Storage for uploaded functions (.zip file archives) and layers using Lambda-managed storage ... 300 GB (unzipped) | Not increasable.'",
+    "unit": "MB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "until the instance is recycled; not persistent",
+    "source_url": "https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Not free and not public. Layer download is a signed S3 URL obtainable only via an authenticated `GetLayerVersion` call; there is no anonymous URL surface at all. Lambda invocations also bill per request and GB-second.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "AWS CLI `publish-layer-version` / `get-layer-version`; SDKs. Immutability is structural: a layer version is immutable once published, so every write is a new version. No rclone backend.",
+  "chaining": "300 GB unzipped per region across functions + layers, non-increasable, is the only aggregate — so the whole region is a 300 GB bucket with a private API in front. 250 MB per layer, 5 layers per function, 50 MB per uploaded zip means the 250 MB ceiling can only be reached via S3-referenced uploads. 300 GB is below the 500 GB filter and the fetchability is zero.",
+  "limits": [],
+  "limits_note": "50 MB zipped via API/console; 250 MB unzipped total including layers and custom runtimes; 5 layers per function; 512 MB to 10,240 MB /tmp (ephemeral, per execution environment, dies with the environment); 300 GB regional code storage. Layers are immutable and versioned.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: ve) size | 50 MB (zipped, when uploaded through the Lambda API or SDKs) ... 50 MB (when uploaded through the Lambda console) ... 250 MB The maximum size of the contents of a deployme",
+    "country": null
+  },
+  "reliability_note": "Very durable while the function exists; deleting a function version or layer version removes the code. No silent expiry, but no public read path either — the 300 GB is real and effectively unreachable without building your own proxy.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html",
+      "date": "2026-10-21",
+      "proved": "'50 MB (zipped, when uploaded through the Lambda API or SDKs)'; '250 MB The maximum size of the contents of a deployment package, including layers and custom runtimes. (unzipped)'; 'Function layers | 5 layers'; '300 GB (unzipped) | Not increasable'"
+    },
+    {
+      "url": "https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html",
+      "date": "2026-10-21",
+      "proved": "'/tmp directory storage | Between 512 MB and 10,240 MB, in 1-MB increments'"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Per-function/per-layer caps only, plus a regional aggregate. Verbatim: 'Deployment package (.zip file archive) size | 50 MB (zipped, when uploaded through the Lambda API or SDKs) ... 50 MB (when uploaded through the Lambda console) ... 250 MB The maximum size of the contents of a deployment package, including layers and custom runtimes. (unzipped)'. 'Function layers | 5 layers'. The one aggregate number is code storage: 'Storage for uploaded functions (.zip file archives) and layers using Lambda-managed storage ... 300 GB (unzipped) | Not increasable.'",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "Per-function/per-layer caps only, plus a regional aggregate. Verbatim: 'Deployment package (.zip file archive) size | 50 MB (zipped, when uploaded through the Lambda API or SDKs) ... 50 MB (when uploaded through the Lambda console) ... 250 MB The maximum size of the contents of a deployment package, including layers and custom runtimes. (unzipped)'. 'Function layers | 5 layers'. The one aggregate number is code storage: 'Storage for uploaded functions (.zip file archives) and layers using Lambda-managed storage ... 300 GB (unzipped) | Not increasable.'",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": "no constraint of a named kind was recorded; the verdict rests on the quota sentence rather than on a named limit"
+}

@@ -1,0 +1,95 @@
+{
+  "topic": "egress",
+  "slug": "getpublicip",
+  "provider": "GetPublicIP",
+  "url": "https://getpublicip.com/",
+  "category": "hosted public IP over WireGuard",
+  "tier": "per-ip",
+  "free_tier": {
+    "stated": "No free tier and no trial on the pages read: \"Only $8.99 USD / Month per IP\" and \"No contracts - Cancel anytime - Rapid activation\".",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://getpublicip.com/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://getpublicip.com/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://getpublicip.com/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "ingress: tcp+udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://getpublicip.com/"
+  },
+  "interface": [
+    "cli",
+    "rest"
+  ],
+  "interface_detail": "Configuration file plus a dashboard; the docs have a page titled \"Create API Key\", but the API itself was not read.",
+  "tooling": "wg-quick on Linux, the vendor's Windows client, a Docker image",
+  "chaining": "Put it on a free-tier VM and the VM gains a stable ingress address without an elastic IP; reverse DNS is included, so a mail listener is possible on port 25.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "no published figure",
+      "source": "https://getpublicip.com/legal/acceptable-use-policy"
+    }
+  ],
+  "limits_note": "",
+  "binding": "volume-quota",
+  "binding_note": "Nothing is documented, so the first wall at 1 TiB/month is an unpublished the provider judgement rather than a counter the client can watch. That is worse than a number: capacity cannot be planned against a clause.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "\"Your payment method will be charged without further action from you until you cancel\" (refund policy). The sign-up form was not read, so card-versus-other is inferred from a paid monthly subscription rather than observed.",
+    "country": "None"
+  },
+  "reliability_note": "The vendor recommends its own watchdog script because an ISP address change can hang the handshake; the address itself is static across ISP changes.",
+  "confidence": "documented",
+  "confidence_note": "Price, ports, protocol and the configuration file are read from first-party pages. Volume is the open field: a support reply or a pricing-page transfer figure would settle it.",
+  "evidence": [
+    {
+      "url": "https://getpublicip.com/",
+      "date": "2026-10-23",
+      "proved": "USD 8.99 per IP per month; dedicated IPv4 and IPv6; no bandwidth figure on the page"
+    },
+    {
+      "url": "https://getpublicip.com/docs/linux",
+      "date": "2026-10-23",
+      "proved": "the vendor issues pi0.conf, imported with wg-quick, then ports are opened on the server's own firewall"
+    },
+    {
+      "url": "https://getpublicip.com/cgnat-public-ip",
+      "date": "2026-10-23",
+      "proved": "\"All ports and protocols, with port ranges\"; \"All: TCP, UDP, ICMP\"; 32 locations; port mapping is done in the dashboard"
+    },
+    {
+      "url": "https://getpublicip.com/legal/acceptable-use-policy",
+      "date": "2026-10-23",
+      "proved": null
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 8.99 per month per IP",
+  "notes": "Port mapping is done in the dashboard as single ports or ranges (\"Map single ports or ranges in the dashboard, with optional source-IP rules\"), and the page does not state a maximum count, so treat the port count as unverified. A third-party table by competitor GetAStatic lists \"Any port you open\" at $8.99, which agrees on price and ports but adds nothing on volume.",
+  "extras": {
+    "wg_path": "native-conf",
+    "wg_detail": "\"Download the Linux configuration from your IP address. Copy the pi0.conf to /etc/wireguard/\" then \"systemctl start wg-quick@pi0\". The address is a whole IPv4 plus a public IPv6: \"Every IP includes both a public IPv4 and a public IPv6 address, routed through the same tunnel.\"",
+    "ingress": "tcp+udp",
+    "volume_tib_month": null,
+    "volume_stated": null,
+    "bytes_transit": "yes",
+    "transit_note": "The vendor carries the traffic through its own edge and, it says, does not inspect it: \"We never inspect or modify your packets\"."
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "topic": "debrid",
+  "tier": "free",
+  "limits_note": "",
+  "slug": "dailyuploads",
+  "provider": "DailyUploads",
+  "url": "https://dailyuploads.net/premium/",
+  "category": "premium file host (XFileSharing), retrieval target",
+  "free_tier": {
+    "stated": "no free tier is priced or quantified on the premium page; a 16.5 MB file downloaded anonymously with 4 usable connections and no server-side wait",
+    "unit": "mixed",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://dailyuploads.net/premium/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not stated on the premium page read; a 17,269,804 byte object served intact",
+    "bytes": null,
+    "source_url": "https://dailyuploads.net/premium/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not stated on the pages read; the object measured was uploaded 2024-07-07 and still served",
+    "days": null,
+    "source_url": "https://dailyuploads.net/premium/"
+  },
+  "egress": {
+    "terms": "free downloads are shaped and capped by connection count: 0.824 MiB/s and 1.117 MiB/s on one connection, 4 of 8 parallel requests served, and 32 parallel requests answered with HTTP 520",
+    "metered": true,
+    "free_allowance": "not published on the free path",
+    "price_per_tb": "USD 12.99 per 30 days on the cheapest plan, which is labelled 'Download speed Standard'",
+    "source_url": "https://dailyuploads.net/premium/"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "two-step XFileSharing form (op=download1 then op=download2) mints a cdn89.files-cdn.com token that streams and honours Range; the 60 s countdown on the page is client-side only",
+  "tooling": "JDownloader, aria2 and a scripted form post; no API",
+  "chaining": "a 4-connection free ceiling means 1 TiB is 12 days at 1 MiB/s or 4.6 days at the measured 2.6 MiB/s aggregate, so it is a mirror, not a source",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "0.824-1.117 MiB/s on one connection; 4 of 8 parallel ranged requests served",
+      "source": "probe:https://dailyuploads.net/38hab1frtnb8"
+    },
+    {
+      "kind": "request-rate",
+      "value": "concurrency above 4: the extra requests are answered with a 102,800-byte HTML page under HTTP 200, and at 32 with HTTP 520",
+      "source": "probe:https://dailyuploads.net/38hab1frtnb8"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "300 GB/day of premium bandwidth",
+      "source": "https://dailyuploads.net/?op=payments"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "4 GB per file free, 80 GB per file premium",
+      "source": "https://dailyuploads.net/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "free tier measured at 3.0 MB/s = 2.86 MiB/s",
+      "source": "https://filehostreviews.com/best-file-hosting-services/"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "The CDN refuses the 5th parallel request with an HTML body under a 200, so a client configured for 8 connections silently receives 102,800-byte error pages in place of data. That failure arrives before any byte quota does.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no account or cookie was needed: two POSTs to the public page produced a working CDN token, and the file downloaded twice",
+    "country": null
+  },
+  "reliability_note": "The 60 s countdown is decorative; the real limit is a 4-connection cap that returns HTTP 200 with an HTML body for the refused connections, and HTTP 520 above that.",
+  "confidence": "measured",
+  "confidence_note": "Full 16.47 MiB object downloaded and hashed twice with probe.py, then two ranged concurrency runs. What would settle the cap: a run at 5 and 6 connections to find the exact threshold.",
+  "evidence": [
+    {
+      "url": "probe:https://dailyuploads.net/38hab1frtnb8",
+      "date": "2026-10-23",
+      "proved": "17,269,804 bytes, sha256 62f24489d49b95bf3587f8a3ec9a325fd34098e9ec2bbb2853ce1bafe3559cb9 in 19,980.4 ms (0.824 MiB/s); a second download 15 min later 14,739.9 ms (1.117 MiB/s); 8 connections 3,273.3 ms with 4 of 8 ranges honoured; 32 connections HTTP 520 on all 32"
+    },
+    {
+      "url": "probe:https://dailyuploads.net/38hab1frtnb8?op=download2",
+      "date": "2026-10-23",
+      "proved": "the download2 form URL resolves to a CDN token that answers 206 with 'bytes 0-0/17269804' and content-disposition attachment"
+    },
+    {
+      "url": "https://dailyuploads.net/premium/",
+      "date": "2026-10-23",
+      "proved": "30 days USD 12.99 'Download speed Standard', 90 days USD 29.99 'Turbo', 365 days USD 89.99 'Max', one-time payments"
+    },
+    {
+      "url": "https://dailyuploads.net/?op=payments",
+      "date": "2026-10-23",
+      "proved": "30 days $12.99, 90 days $29.99, 180 days $49.99; '300 GB daily bandwidth'; 'Up to 80 GB / file'; 'Unlimited parallel downloads'"
+    },
+    {
+      "url": "https://dailyuploads.net/",
+      "date": "2026-10-23",
+      "proved": "'Upload up to 4 GB for free'"
+    },
+    {
+      "url": "https://filehostreviews.com/best-file-hosting-services/",
+      "date": "2026-10-23",
+      "proved": "JD2 34.0 MB/s, browser 12.6 MB/s, free 3.0 MB/s"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T03:31:02.558Z",
+  "price_per_tb_month": "USD 12.99 per 30 days (Standard)",
+  "notes": "Probe files: probes/dailyuploads-c1.json, dailyuploads-c1-second.json, dailyuploads-c8.json, dailyuploads-c32.json. The other lane's record for this host quotes a third-party 3.0 MB/s free figure; the measurement here is 0.824-1.117 MiB/s on one connection, and 4 connections reach about 2.5 MiB/s. Cheapest large allowance and the only free tier that clears 1 TiB/month on its own at a usable rate. Coverage is the reason it is not the default answer: the same 2026 test calls its file network much smaller than DDownload's or Katfile's.",
+  "extras": {
+    "measured_mib_s": {
+      "c1": 0.824,
+      "c1_second": 1.117,
+      "c8_data_only": 2.52,
+      "c8_probe_field": 2.636,
+      "c32": 0.873
+    },
+    "c8_note": "the probe's own aggregate is 2.636 MiB/s and it counts four 102,800-byte HTML refusals as bytes; data only is 4 x 2,158,725 bytes over 3,273.3 ms = 2.52 MiB/s",
+    "object_bytes": 17269804,
+    "object_sha256": "62f24489d49b95bf3587f8a3ec9a325fd34098e9ec2bbb2853ce1bafe3559cb9",
+    "connections": "1/8/32 connections",
+    "client_countdown_s": 60,
+    "server_wait_observed": "none",
+    "cdn": "cdn89.files-cdn.com",
+    "free_speed_mib_s": 2.861,
+    "free_daily_cap_gib": null,
+    "premium_parallel": "unlimited",
+    "max_file_free": "4 GB",
+    "max_file_premium": "80 GB",
+    "api": false,
+    "price_30d_usd": 12.99,
+    "price_ladder_reported": "USD 12.99 / 30 days; USD 29.99 / 90 days; USD 49.99 / 180 days; a 365-day plan is listed",
+    "volume_tib_month": 1.0
+  }
+}

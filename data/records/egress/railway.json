@@ -1,0 +1,85 @@
+{
+  "topic": "egress",
+  "slug": "railway",
+  "provider": "Railway",
+  "url": "https://railway.com/pricing",
+  "category": "paas l4 port",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free - $0/month with $1 of monthly usage credits. Up to 1 vCPU / 0.5 GB per service, 1 replica, and 3-day log history.",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://railway.com/pricing",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://railway.com/pricing",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://railway.com/pricing",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No byte allowance on the Free plan: $1/month of credit against egress at $0.05 per GB.; ingress: tcp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://railway.com/pricing"
+  },
+  "interface": [
+    "cli",
+    "rest"
+  ],
+  "interface_detail": "CLI, dashboard, and API; TCP proxy configurable per service instance.",
+  "tooling": "The railway CLI (railway tcp-proxy) and the dashboard.",
+  "chaining": "Railway TCP proxy carries an SSH tunnel to another free host; it cannot carry WireGuard.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "$1/month credit; egress $0.05/GB",
+      "source": "https://railway.com/pricing"
+    }
+  ],
+  "limits_note": "",
+  "binding": "volume-quota",
+  "binding_note": "$1 of credit at $0.05/GB is 20 GB, 0.018 TiB, and only if the service consumes no CPU or memory. 1 TiB of egress alone is $51.20/month, i.e. the Hobby plan and then some.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Free Trial is \"$5 in credits for 30 days ... No credit card required\"; the $0 Free plan needs an account.",
+    "country": "None"
+  },
+  "reliability_note": "Free plan keeps 3-day log history and 1 replica; a single replica means a restart drops TCP connections. No ban documented.",
+  "confidence": "documented",
+  "confidence_note": "UDP absence is established by the TCP proxy documentation naming TCP only; a UDP probe is impossible because no UDP endpoint can be created.",
+  "evidence": [
+    {
+      "url": "https://railway.com/pricing",
+      "date": "2026-10-23",
+      "proved": "Free plan $1/month credit, 1 vCPU/0.5 GB, 1 replica; egress $0.05 per GB"
+    },
+    {
+      "url": "https://docs.railway.com/cli/tcp-proxy",
+      "date": "2026-10-23",
+      "proved": "\"TCP proxies expose non-HTTP application ports ... Only one TCP proxy is allowed per service instance.\""
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The TCP proxy is a real L4 path for SSH or a database, and the address is stable, but there is no UDP and the free credit is $1. Both tests fail independently.",
+  "extras": {
+    "wg_path": "none",
+    "wg_detail": "TCP proxy only: \"TCP proxies expose non-HTTP application ports, such as database or game server ports, to the public internet. Only one TCP proxy is allowed per service instance.\" No UDP path.",
+    "ingress": "tcp",
+    "volume_tib_month": null,
+    "volume_stated": "No byte allowance on the Free plan: $1/month of credit against egress at $0.05 per GB.",
+    "bytes_transit": "yes",
+    "transit_note": "Railway's edge terminates the TCP proxy and forwards to the service."
+  }
+}

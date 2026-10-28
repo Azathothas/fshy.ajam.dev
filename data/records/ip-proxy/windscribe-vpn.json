@@ -1,0 +1,112 @@
+{
+  "topic": "ip-proxy",
+  "slug": "windscribe-vpn",
+  "provider": "Windscribe",
+  "url": "https://windscribe.com/upgrade",
+  "category": "VPN subscription (exit source)",
+  "tier": "paid",
+  "free_tier": {
+    "stated": "Free plan carries 2 to 10 GB per month and is reachable with no card. Paid plan is USD 9.00 per month list, or USD 39 per year on sale.",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://windscribe.com/upgrade",
+    "read_on": "2026-10-24",
+    "notes": "The facts state the free allowance as 2 to 10 GB per month without naming the direction, so metered_on is unstated here. dossier/egress/windscribe.json reads the same allowance as downloaded-bytes from the knowledge base"
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://windscribe.com/staticips",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: an address, not an object",
+    "days": null,
+    "source_url": "https://windscribe.com/staticips",
+    "notes": "The address is held for as long as the subscription that carries it; the facts give no term, so no number is recorded."
+  },
+  "egress": {
+    "terms": "Paid plans are sold by the month and the facts record no byte cap on them; the free plan is quota'd at 2 to 10 GB per month. The vendor's own words on the address: We do not offer dedicated IPs for privacy reasons ... we allocate a single IP address to a handful of customers, so your activity can still be lost in the crowd.",
+    "metered": false,
+    "free_allowance": "free plan: 2 to 10 GB per month; no byte cap published for the paid plan in the facts this record rests on",
+    "price_per_tb": null,
+    "source_url": "https://windscribe.com/staticips"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "The only programmatic surface the facts establish is the published server list, an HTTPS JSON document at https://assets.windscribe.com/serverlist/openvpn/1/1, whose path names the OpenVPN config family. The tunnel protocol and the client applications are recorded in extras rather than in the interface tokens, because scripts/dossier/schema.json enumerates a storage-shaped token set (s3, webdav, rclone and similar) that carries no wireguard, openvpn, socks5, http-proxy or web-ui member.",
+  "tooling": "A client would read the published server list and select exits from it itself, then hold a tunnel with the vendor's own client or a config generated from the account. No wrapper is named in the facts, and a missing wrapper is a tooling note rather than a rejection: the resource exists and the selection layer is the part the client would write.",
+  "chaining": "Sits in front of the Workers AI gateway as the exit for requests that must leave from a named network: a /24 drawn from the 58-ASN pool for breadth across carriers, or the residential static in one of three cities when a residential-looking address matters more than choice of network.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "free plan 2 to 10 GB per month, so a 45 GB/month workload cannot run on the free tier at all",
+      "source": "https://windscribe.com/upgrade"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "no dedicated IP is sold: we allocate a single IP address to a handful of customers, so a static IP is a shared address and any per-IP limit or reputation at the destination applies to the whole group",
+      "source": "https://windscribe.com/staticips"
+    }
+  ],
+  "limits_note": "Two constraints the vocabulary does not name. First, the residential static is sold in three cities only (Chicago, Dallas, Toronto), so the residential option is a location choice rather than a pool. Second, the 58 ASNs are unevenly weighted: AS212238 Datacamp holds 62 of the 239 /24s, 26% of the pool, so a selection that does not spread deliberately will over-sample one network. The 239 /24s count is primary IPs only, so secondary addresses on the same servers are not in it.",
+  "binding": "per-ip-shaping",
+  "binding_note": "The free byte quota is real but is resolved by paying USD 9.00 a month, so it is not what fails at 45 GB/month; what remains is that no customer can hold a private address, because the vendor allocates one IP to a handful of customers, so destination-side per-IP limits and reputation apply for a user and its neighbours together, and the 599,000 requests a month are what meet them.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Email registration. The free plan is reached with no card, and the paid plan and any static IP are bought against that account. The facts record no phone, no card at signup and no national identity.",
+    "country": null
+  },
+  "reliability_note": "No dedicated address by design: a static IP is one address allocated to a handful of customers, so a block or a challenge aimed at that address is shared with them, and the largest single ASN carries 26% of the pool so an undirected selection can land on one network repeatedly.",
+  "confidence": "documented",
+  "confidence_note": "The ASN diversity is measured, from the published server list on 2026-10-24, and is the strongest field here. The verdict also rests on the price and on email-only registration, both read from vendor pages, so documented is the weakest rung that decides it. Moving up would need a connection made from the pool and a request and byte count taken through it.",
+  "evidence": [
+    {
+      "url": "https://windscribe.com/upgrade",
+      "date": "2026-10-24",
+      "proved": "The prices this record is priced at: USD 9.00 per month list and USD 39 per year on sale, and the free plan's 2 to 10 GB per month reachable with no card."
+    },
+    {
+      "url": "https://windscribe.com/staticips",
+      "date": "2026-10-24",
+      "proved": "Static IP add-on prices, USD 24 per year for a data centre address and USD 96 per year for a residential address, sold in three cities, and the allocation rule quoted in egress.terms: no dedicated IPs, one IP shared by a handful of customers."
+    },
+    {
+      "url": "https://assets.windscribe.com/serverlist/openvpn/1/1",
+      "date": "2026-10-24",
+      "proved": "Measured exit diversity: 239 /24s on primary IPs only, spread across 58 distinct ASNs, largest AS212238 Datacamp at 62 /24s or 26%, with eyeball carriers AS45899 VNPT, AS9318 SK Broadband, AS3786 LG DACOM, AS3216 Vimpelcom, AS1257 Tele2 and AS6866 Cyta present."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-24T10:07:11.000Z",
+  "price_per_tb_month": "USD 9.00 per month list; USD 39 per year on sale; static IP USD 24 per year data centre and USD 96 per year residential",
+  "notes": "What was considered. Three candidates for why this vendor belongs in an exit-source record at all: (1) the ASN breadth is the product, and it is the measured one, 58 ASNs across 239 /24s on primary IPs only; (2) the residential static is the product, because it is a residential address sold at a published price; (3) the price is the product, because it is the cheapest per ASN. All three hold, and the caveat is the same for each: nothing here is exclusive. The decisive sentence settles what a buyer gets, and it is the vendor's own: we allocate a single IP address to a handful of customers. A static IP therefore buys stability of address, not privacy of address, and it does not buy an address nobody else uses. Ruled out as a reason to reject: that no wrapper exists for the server list, which is a tooling note, and that the residential static covers three cities, which is a scope limit recorded in limits_note rather than a defect. Both are now settled or contradicted. The static IP prices are USD 24 per year for a data centre address and USD 96 per year for a residential one, read from windscribe.com/staticips on 2026-10-24, so the egress record's unknown is answered and its cheapest-stable-address figure should read USD 24 per year plus the subscription. On the annual price the two records disagree and this one does not resolve it: the egress record read USD 69 per year, this record reads USD 39 per year on sale, and a sale price and a list annual price are both possible readings of a page that shows one number at a time. The disagreement is recorded here rather than smoothed, because the cheaper of the two is the one a reader would act on. What rests on one sample. The whole ASN figure is one fetch of one document on one day. It measures what the vendor publishes, not what answers on connect: a server listed in 58 ASNs can still route a given session through one of them, and the record cannot show that a client choosing an ASN actually lands in it. That gap is what a probe would close, and it is the reason the ASN claim is stated as a property of the published list everywhere it appears rather than as a property of a connection. The 239 /24s count is also primary IPs only, so it is a floor on the address count, not the count. The ASN-per-dollar comparison is the source facts' own sentence: 58 ASNs for USD 5.75 a month is the best ratio found. The per-month figure is not stated anywhere in this record's evidence and its basis is not given, so it is carried as a comparison attributed to the facts rather than as a number this record computed; the annual rates the evidence does carry are USD 39 on sale and USD 69 in the sibling record. The claim that the residential static at USD 96 per year is the only residential static exit sold at a published price is likewise the facts' claim about a search, not a finding of this record, and it can only be falsified by another vendor publishing one. The interface token mismatch is a defect in the repository, not in the provider. This record was asked for tokens api, cli, rest, socks5, http-proxy, wireguard, openvpn, web-ui or none; scripts/dossier/schema.json enumerates s3, s3-compatible, rest, graphql, webdav, sftp, ftp, ftps, scp, rsync, smb, nfs, ssh, graph, oci, git, rclone, cli, webdav-proxy, nntp, unknown, and validate.py enforces it, so the requested tokens would fail the schema check. The truthful member of the enumerated set is rest, for the published server list, and the protocol and client surface are in interface_detail and extras so nothing is lost. The token list wants a topic-shaped enum before the next ip-proxy record is written. The three evidence URLs arrived as a set. This record maps the plan prices to /upgrade, the static IP prices and the allocation sentence to /staticips, and the ASN counts to the server list. If a later session finds the allocation sentence on another page, the mapping moves and the claim does not.",
+  "extras": {
+    "rung": 4,
+    "rung_note": "The pool is characterised at the ASN rung, 239 /24s across 58 distinct ASNs measured from the published server list on 2026-10-24; registration class is rung 5 and is recorded as email, but it does not decide the verdict here because an email costs nothing.",
+    "rung_registration": 5,
+    "prefix_count": 239,
+    "prefix_scope": "primary IP only",
+    "asn_count": 58,
+    "largest_asn": "AS212238 Datacamp, 62 /24s, 26% of the pool",
+    "eyeball_asns_confirmed": [
+      "AS45899 VNPT",
+      "AS9318 SK Broadband",
+      "AS3786 LG DACOM",
+      "AS3216 Vimpelcom",
+      "AS1257 Tele2",
+      "AS6866 Cyta"
+    ],
+    "measured_on": "2026-10-24",
+    "measurement_source": "https://assets.windscribe.com/serverlist/openvpn/1/1",
+    "measurement_limit": "a property of the published server list, not of a connection made from it",
+    "static_ip_datacenter_usd_year": 24,
+    "static_ip_residential_usd_year": 96,
+    "static_ip_residential_cities": "Chicago, Dallas, Toronto",
+    "decisive_quote": "We do not offer dedicated IPs for privacy reasons ... we allocate a single IP address to a handful of customers, so your activity can still be lost in the crowd.",
+    "decisive_quote_source": "https://windscribe.com/staticips",
+    "asn_per_dollar": "58 ASNs for USD 5.75 a month is the best ASN-per-dollar ratio found; the basis of the per-month figure is not stated in this record's evidence",
+    "interface_enum_gap": "scripts/dossier/schema.json has no wireguard, openvpn, socks5, http-proxy, api, web-ui or none token; protocol and client surface are recorded here instead"
+  }
+}

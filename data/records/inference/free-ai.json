@@ -1,0 +1,172 @@
+{
+  "topic": "inference",
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "not applicable"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "any OpenAI-compatible client; curl against POST {base}/chat/completions",
+  "chaining": "pairs with a batch job that does not care which model runs; the single backend is the scarce link, and the prober puts it at 96 per cent of accepted calls",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "free account API key: 60 requests per minute and 1,000 requests per month; no keyless API limit is published",
+      "source": "https://free.ai/developer/, 2026-10-28"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "anonymous web use: 6,000 tokens per day, reset at midnight UTC; free account: 30,000 tokens per day",
+      "source": "https://free.ai/tokens/, 2026-10-28"
+    }
+  ],
+  "slug": "free-ai",
+  "provider": "free.ai",
+  "url": "https://api.free.ai/v1",
+  "category": "inference endpoint, keyless",
+  "free_tier": {
+    "stated": "513 model entries in /v1/models, 45 of them marked self_hosted true; every id probed answers from one backend, Qwen/Qwen3-30B-A3B-Instruct",
+    "unit": "tokens",
+    "metered_on": "request-count",
+    "source_url": "https://api.free.ai/v1/models",
+    "read_on": "2026-10-22",
+    "notes": "the catalogue carries prompt and completion prices of '0' per entry. The count 513 is the length of the models array, measured today"
+  },
+  "endpoint": "https://api.free.ai/v1/chat/completions",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no key required. The prober's per-endpoint track record reports 194 of 732 calls answered over 10 days, 27 per cent, and 194 of the 202 calls free.ai accepted for a model it serves, 96 per cent",
+    "country": null
+  },
+  "reliability_note": "no substitution was observed inside a single run, but the model served never matches the model requested for any id other than the backend's own name",
+  "confidence": "measured",
+  "confidence_note": "the substitution was measured three times in run 1 and twice in run 2, plus once with a different id. What remains unmeasured is whether any of the 45 self-hosted entries is served as named.",
+  "probe": {
+    "records": [
+      {
+        "probe_id": "freeai-qwen3-8b",
+        "requested_model": "qwen3-8b",
+        "http_run1": 200,
+        "http_run2": 200,
+        "answered_run1": "yes",
+        "answered_run2": "yes",
+        "model_echoed": "Qwen/Qwen3-30B-A3B-Instruct",
+        "echo_match": "SUBSTITUTED",
+        "latency_ms_run1": 2360,
+        "latency_ms_run2": 1517,
+        "ttft_ms_run1": 885,
+        "completion_tokens_run1": 9,
+        "tps_run1": "10.91",
+        "tps_run2": "13.87",
+        "tps_basis": null,
+        "needle_echoed_run1": "yes",
+        "body_bytes_run1": 824,
+        "body_sha256_16_run1": "9ef4f43fa87fd7a5",
+        "reasoning_only": "no",
+        "error_run1": "",
+        "error_run2": ""
+      },
+      {
+        "probe_id": "freeai-qwen-coder",
+        "requested_model": "qwen-coder",
+        "http_run1": 200,
+        "http_run2": 200,
+        "answered_run1": "yes",
+        "answered_run2": "yes",
+        "model_echoed": "Qwen/Qwen3-30B-A3B-Instruct",
+        "echo_match": "SUBSTITUTED",
+        "latency_ms_run1": 1370,
+        "latency_ms_run2": 1137,
+        "ttft_ms_run1": 819,
+        "completion_tokens_run1": 9,
+        "tps_run1": "10.03",
+        "tps_run2": "12.92",
+        "tps_basis": null,
+        "needle_echoed_run1": "yes",
+        "body_bytes_run1": 826,
+        "body_sha256_16_run1": "b49b6704165db51e",
+        "reasoning_only": "no",
+        "error_run1": "",
+        "error_run2": ""
+      },
+      {
+        "probe_id": "freeai-deepseek-r1",
+        "requested_model": "deepseek-r1",
+        "http_run1": 200,
+        "http_run2": 200,
+        "answered_run1": "yes",
+        "answered_run2": "no",
+        "model_echoed": "Qwen/Qwen3-30B-A3B-Instruct",
+        "echo_match": "SUBSTITUTED",
+        "latency_ms_run1": 9223,
+        "latency_ms_run2": 6547,
+        "ttft_ms_run1": 913,
+        "completion_tokens_run1": 225,
+        "tps_run1": "",
+        "tps_run2": "",
+        "tps_basis": null,
+        "needle_echoed_run1": "yes",
+        "body_bytes_run1": 1613,
+        "body_sha256_16_run1": "bf8d7e91e7bfc069",
+        "reasoning_only": "no",
+        "error_run1": "",
+        "error_run2": "empty content; reasoning field populated (901 chars); finish_reason=length"
+      }
+    ],
+    "runs": [
+      "probes-w.json",
+      "probes-w-run2.json"
+    ]
+  },
+  "evidence": [
+    {
+      "url": "probe:https://api.free.ai/v1/chat/completions",
+      "date": "2026-10-22",
+      "proved": "qwen3-8b, qwen-coder and deepseek-r1 all echoed Qwen/Qwen3-30B-A3B-Instruct in run 1; qwen3-8b and qwen-coder did so again in run 2"
+    },
+    {
+      "url": "https://api.free.ai/v1/models",
+      "date": "2026-10-22",
+      "proved": "513 entries with prompt and completion prices of '0'; 45 carry self_hosted true; the first entries name qwen7b as 'Qwen 3.6 35B' and qwen-coder as 'Qwen 3.6 35B'"
+    },
+    {
+      "url": "https://free.ai/developer/",
+      "date": "2026-10-28",
+      "proved": "the Free plan row of the API request tiers table: 1,000 requests per month and 60 per minute per key",
+      "capture": "sha256:d18521cbc1e2fca48572add51568e4ac8352cef3abef18a8c2f36d6d72374f60",
+      "quote": "| Free | $0 | 1,000 | 60 |"
+    },
+    {
+      "url": "https://free.ai/tokens/",
+      "date": "2026-10-28",
+      "proved": "anonymous users get 6,000 tokens per day; the same page lists 30,000 per day for a free account and a reset at midnight UTC",
+      "capture": "sha256:586ff28f499feccd507df08cd26ed66c8d899ffe1c1278cf9828d96617dcdba0",
+      "quote": "Anonymous users get 6,000 tokens per day."
+    },
+    {
+      "url": "https://free.ai/developer/",
+      "date": "2026-10-28",
+      "proved": "the documented API path needs an email-confirmed account and a Bearer key; the keyless call is not documented",
+      "capture": "sha256:d18521cbc1e2fca48572add51568e4ac8352cef3abef18a8c2f36d6d72374f60",
+      "quote": "Sign up free at /signup/ and confirm your email - that unlocks the 30,000-token daily free pool. Open /account/?tab=api and click Generate."
+    },
+    {
+      "url": "probe:https://api.free.ai/v1/chat/completions",
+      "date": "2026-10-28",
+      "proved": "one POST with no Authorization header for qwen7b answered 200 with content NEEDLE-9K2X and echoed model Qwen/Qwen3-30B-A3B-Instruct (not qwen7b); body free_ai_usage reports tokens_used 37, tokens_charged 37, source self_hosted; no rate-limit header was returned (headers: server nginx/1.18.0, content-length 822)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-28T05:28:44.329Z",
+  "notes": "The catalogue is 513 names for approximately one backend. Any capacity or quality claim about free.ai is a claim about Qwen3-30B-A3B, and a benchmark keyed on the requested id would be attributed to a model that never ran.",
+  "binding": "none",
+  "binding_note": "no quota binds above a user's  scale: every id probed answered 200 with no key, in both runs. The failure here is substitution and not a ceiling, and substitution is not one of the six constraint kinds, so it is recorded in limits_note rather than forced into a kind that would misdescribe it",
+  "limits_note": "the served model is the constraint: 513 catalogue names resolve to one backend, Qwen/Qwen3-30B-A3B-Instruct, so the model cannot be chosen and a capacity claim about free.ai is a claim about that one model. The prober's accepted-only rate for this endpoint is 194 of 202 calls, 96 per cent, so it answers reliably; what it does not do is serve what was asked for"
+}

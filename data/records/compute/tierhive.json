@@ -1,0 +1,171 @@
+{
+  "topic": "compute",
+  "slug": "tierhive",
+  "provider": "TierHive",
+  "url": "https://tierhive.com/",
+  "category": "cloud VM",
+  "free_tier": {
+    "stated": "Four preset plans inside one calculator, all NAT KVM VPS on hourly billing against a prepaid token balance. Micro: '$0.10/mo' and '0.000135/hr', 128 MB RAM, 1 GB NVMe, Economy CPU. Storage: '$5.44/mo' and '0.007561/hr', 512 MB RAM, 5 GB NVMe plus 1000 GB HDD, Economy CPU. Standard: '$1.69/mo' and '0.002343/hr', 2 GB RAM, 25 GB NVMe, Standard CPU. Maximum: '$3.37/mo' and '0.004686/hr', 4 GB RAM, 50 GB NVMe, Performance CPU. Each printed monthly price is exactly 720 hours at the printed hourly rate, rounded to two decimals (0.000135 x 720 = 0.09720, 0.007561 x 720 = 5.44392, 0.002343 x 720 = 1.68696, 0.004686 x 720 = 3.37392), so the monthly column is a 30-day projection and not a published cap; whether hour 721 of a 31-day month is billed or capped is stated on no page read. The four plans are points inside sliders that reach 8192 MB of RAM in 128 MB steps, 50 GB of fast storage, 4000 GB of HDD and 100 GB of backup, so the Maximum plan carries the largest NVMe the product sells and the Storage plan carries a quarter of the largest HDD. vCPU is not printed on the cards; the about page states 'We allow access to 1 vCPU for 2GB and under, anything over 2GB gets access to 2 vCPU', which gives Micro, Storage and Standard one vCPU and Maximum two. Billing is prepaid at '1 Token = $1 USD' with 'A $3 minimum top up is required after registration to use this service.', so the USD 0.10 Micro is bought against a USD 3 floor.",
+    "unit": "hours",
+    "metered_on": "wall-clock",
+    "source_url": "https://tierhive.com/",
+    "read_on": "2026-10-22",
+    "notes": "none"
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://tierhive.com/",
+    "notes": null
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://tierhive.com/",
+    "notes": null
+  },
+  "egress": {
+    "terms": "No byte allowance exists to state. The vendor refuses one in terms: 'We do not give any specific arbitrary GB or TB number, it is simply not practical with the TierHive model. Instead, we do performance tiers mixed with a FUP/QoS system.' What replaces it is a speed ratchet, 'if you use 100 Mbit/s for 1 hour on average, we will globally limit your speed to 90 Mbit/s. If you then use 90 Mbit/s for the following hour on average, we will limit you to 80 Mbit/s, and we repeat this until you are down to 10 Mbit/s. For each hour you are 10 Mbit/s under the current cap, we add 10 Mbit/s back, until you are back to 100 Mbit/s.' applied on top of a per-location cap of 50 to 225 Mbit/s with '2x the advertised speed for 10 seconds' of burst. The page also claims 'no hidden egress fees'. No overage charge, no post-allowance block and no per-byte price is stated on any page read.",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://tierhive.com/about.php"
+  },
+  "interface": [
+    "ssh",
+    "rest"
+  ],
+  "interface_detail": "inferred from the tooling the provider documents; not probed",
+  "tooling": "no provisioning API is documented on the pages read. The interface is the control panel at control.tierhive.com: plans deploy from a 'Deploy' button on each card, and the panel holds the subnet and port map at 'https://control.tierhive.com/subnet-config' and the instance list at 'https://control.tierhive.com/vps-instances'. The only machine-readable endpoint in the documentation is per-VPS network metadata, 'curl \"https://control.tierhive.com/simple/netinfo?token=$(cat /opt/th-simple-token)\" -o /tmp/ports', which returns local_ip, external_ip, tcp_1, tcp_2, udp_1 and udp_2; recipes call it after deployment. The vendor publishes its recipe scripts at github.com/matthewgall/tierhive. IPv6 is not automatic: 'You still need to manually assign the correct IPv6 via the control panel', with a recipe provided to write the address to ens3. None of that is a reason to reject the provider; it is a note on what a wrapper would have to drive.",
+  "chaining": "A 128 MB machine with 1 GB of NVMe, one spare TCP port, two UDP ports, up to 10 IPv6 addresses and ACME-terminated HTTPS bills about USD 0.097 a month at 720 hours, so an always-on endpoint costs pennies rather than an invoice; it suits a job that must stay up and do little: a WireGuard or Tailscale exit, a resolver on UDP 53, a crawler's egress node, or a cloudflared front door over another provider's storage. It is an endpoint rather than a host, so it combines with a real storage provider instead of competing with one. The Storage plan is the only disk of any size here, USD 5.44 for 1000 GB of HDD in Singapore, Sydney or the four US locations, and the slider stops at 4000 GB, which is 3.6 TiB, so even the largest configuration is roughly a third of the 10 TiB hot set and sits closer to archive staging than to the archive. The Storage plan's 3.2x price over the Standard plan, for a quarter of the RAM, is the price of that HDD and nothing else, so a reader buying RAM should not start from the plan that is labelled Popular.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "NAT here rations inbound rather than blocking it, and the vendor states it in one line: 'Private /24 subnet per customer with 2 dedicated TCP ports per VPS', expanded on the homepage as 'NAT architecture with full IPv4 connectivity' and on the ports page as 'Your nat VPS is provided with 2 open TCP ports and 2 UDP port. By design the 1st TCP port is mapped to your VPS port 22/TCP.' Those forwards are the whole of the IPv4 inbound surface, the first TCP port is spent on SSH, so one TCP port and two UDP ports remain for a service, and they do not land on an address the VPS owns: the same page prints 'external_ip=x.y.z.w #The Hypervisor public IP'. The private network is a 10.0.0.0/8 subnet per customer and reaches the internet only through those forwards; what the vendor describes as 'full port-range access between locations with each other' is inter-VPS traffic and not a route in from outside. Two documented escapes exist. What stops a sustained workload is speed shaping rather than a byte allowance, 'We do not give any specific arbitrary GB or TB number, it is simply not practical with the TierHive model. Instead, we do performance tiers mixed with a FUP/QoS system.' applied as 'if you use 100 Mbit/s for 1 hour on average, we will globally limit your speed to 90 Mbit/s. If you then use 90 Mbit/s for the following hour on average, we will limit you to 80 Mbit/s, and we repeat this until you are down to 10 Mbit/s. For each hour you are 10 Mbit/s under the current cap, we add 10 Mbit/s back, until you are back to 100 Mbit/s.' over per-location caps of 50 to 225 Mbit/s. Two numbers fix what that means in practice. The client's 500 GB a day serving rate averages 46.3 Mbit/s, so the 100, 150, 200 and 225 Mbit/s locations carry it at under half their cap and the ratchet never steps, because it steps only once the current cap is the rate being sustained; Singapore and Sydney at 75 Mbit/s leave 62% utilisation and Tokyo at 50 Mbit/s leaves 93%, with nothing spare. The port budget is the first wall for anything that wants several services on one address, the ratchet is the wall for anything that wants the whole cap, and 10 TiB of hot storage does not meet this product at any configuration, since the HDD slider stops at 4000 GB, which is 3.6 TiB.",
+      "source": "https://tierhive.com/"
+    }
+  ],
+  "limits_note": "NAT here rations inbound rather than blocking it, and the vendor states it in one line: 'Private /24 subnet per customer with 2 dedicated TCP ports per VPS', expanded on the homepage as 'NAT architecture with full IPv4 connectivity' and on the ports page as 'Your nat VPS is provided with 2 open TCP ports and 2 UDP port. By design the 1st TCP port is mapped to your VPS port 22/TCP.' Those forwards are the whole of the IPv4 inbound surface, the first TCP port is spent on SSH, so one TCP port and two UDP ports remain for a service, and they do not land on an address the VPS owns: the same page prints 'external_ip=x.y.z.w #The Hypervisor public IP'. The private network is a 10.0.0.0/8 subnet per customer and reaches the internet only through those forwards; what the vendor describes as 'full port-range access between locations with each other' is inter-VPS traffic and not a route in from outside. Two documented escapes exist. What stops a sustained workload is speed shaping rather than a byte allowance, 'We do not give any specific arbitrary GB or TB number, it is simply not practical with the TierHive model. Instead, we do performance tiers mixed with a FUP/QoS system.' applied as 'if you use 100 Mbit/s for 1 hour on average, we will globally limit your speed to 90 Mbit/s. If you then use 90 Mbit/s for the following hour on average, we will limit you to 80 Mbit/s, and we repeat this until you are down to 10 Mbit/s. For each hour you are 10 Mbit/s under the current cap, we add 10 Mbit/s back, until you are back to 100 Mbit/s.' over per-location caps of 50 to 225 Mbit/s. Two numbers fix what that means in practice. The client's 500 GB a day serving rate averages 46.3 Mbit/s, so the 100, 150, 200 and 225 Mbit/s locations carry it at under half their cap and the ratchet never steps, because it steps only once the current cap is the rate being sustained; Singapore and Sydney at 75 Mbit/s leave 62% utilisation and Tokyo at 50 Mbit/s leaves 93%, with nothing spare. The port budget is the first wall for anything that wants several services on one address, the ratchet is the wall for anything that wants the whole cap, and 10 TiB of hot storage does not meet this product at any configuration, since the HDD slider stops at 4000 GB, which is 3.6 TiB.",
+  "binding": "per-ip-shaping",
+  "binding_note": "NAT here rations inbound rather than blocking it, and the vendor states it in one line: 'Private /24 subnet per customer with 2 dedicated TCP ports per VPS', expanded on the homepage as 'NAT architecture with full IPv4 connectivity' and on the ports page as 'Your nat VPS is provided with 2 open TCP ports and 2 UDP port. By design the 1st TCP port is mapped to your VPS port 22/TCP.' Those forwards are the whole of the IPv4 inbound surface, the first TCP port is spent on SSH, so one TCP port and two UDP ports remain for a service, and they do not land on an address the VPS owns: the same page prints 'external_ip=x.y.z.w #The Hypervisor public IP'. The private network is a 10.0.0.0/8 subnet per customer and reaches the internet only through those forwards; what the vendor describes as 'full port-range access between locations with each other' is inter-VPS traffic and not a route in from outside. Two documented escapes exist. What stops a sustained workload is speed shaping rather than a byte allowance, 'We do not give any specific arbitrary GB or TB number, it is simply not practical with the TierHive model. Instead, we do performance tiers mixed with a FUP/QoS system.' applied as 'if you use 100 Mbit/s for 1 hour on average, we will globally limit your speed to 90 Mbit/s. If you then use 90 Mbit/s for the following hour on average, we will limit you to 80 Mbit/s, and we repeat this until you are down to 10 Mbit/s. For each hour you are 10 Mbit/s under the current cap, we add 10 Mbit/s back, until you are back to 100 Mbit/s.' over per-location caps of 50 to 225 Mbit/s. Two numbers fix what that means in practice. The client's 500 GB a day serving rate averages 46.3 Mbit/s, so the 100, 150, 200 and 225 Mbit/s locations carry it at under half their cap and the ratchet never steps, because it steps only once the current cap is the rate being sustained; Singapore and Sydney at 75 Mbit/s leave 62% utilisation and Tokyo at 50 Mbit/s leaves 93%, with nothing spare. The port budget is the first wall for anything that wants several services on one address, the ratchet is the wall for anything that wants the whole cap, and 10 TiB of hot storage does not meet this product at any configuration, since the HDD slider stops at 4000 GB, which is 3.6 TiB.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Read in a browser at 23:36 UTC on 2026-10-22; the form has no card field, no phone field, no name, no address, no country selector and no captcha widget. No account was created, so whether the address is verified by email before use is not established here. Nothing runs until the balance is funded: 'A $3 minimum top up is required after registration to use this service.' and '1 Token = $1 USD', while the same page's feature list says 'No credit card required'; those two hold together only if the top-up accepts a payment method other than a card, and no page read says which methods FastSpring offers here. The terms add two gates the form does not show, both verbatim: 'No Disposable Email Addresses: You may not use free or disposable email addresses to create or maintain an Account. We reserve the right to restrict access to our Services at any time and without warning if a disposable email address is detected.' and a country list, 'We are unable to provide our Services to customers in the following countries: China, Russia, Brazil, Vietnam, and Iran.' The about page then contradicts the mailbox rule in the vendor's own words: 'We have no objection to you using a free or disposable email, or a VPN, etc., but we also have to protect ourselves, and these can be used to exploit our goodwill.' So the identity cost is an email address with a USD 3 prepaid floor, and the policy that a free-provider mailbox may be cut off at any time sits against a page that says the opposite.",
+    "country": null
+  },
+  "reliability_note": "The vendor calls itself 'a no-SLA, budget service' and says 'It is not fast, and it is not the place to host things you demand uptime for'; on data loss, 'we will not recover it for you, you get a fresh, blank VPS'. Its status page showed 16 locations all operational on 2026-10-22 with 90-day uptime between 99.81% at Tokyo and 100%. Two stated suspension triggers matter to a user's  workloads: 'Automated scraping of external websites is not permitted. The terms rule cutting off a free or disposable mailbox 'without warning' is contradicted by the about page and is recorded here rather than resolved.",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://tierhive.com/",
+      "date": "2026-10-22",
+      "proved": "the four plan cards. Prices, quoted: '$0.10/mo' and '0.000135/hr' for Micro; '$5.44/mo' and '0.007561/hr' for Storage; '$1.69/mo' and '0.002343/hr' for Standard; '$3.37/mo' and '0.004686/hr' for Maximum. Spec rows as the text extractor renders them, quoted: 'RAM128 MB' and 'NVMe SSD1 GB' for Micro; 'RAM512 MB', 'NVMe SSD5 GB' and 'HDD1000 GB' for Storage. Each card also carries a data-specs attribute, quoted for Storage: '{\"ram_mb\":512,\"fast_disk_gb\":5,\"hdd_disk_gb\":1000,\"cpu_tier\":\"Economy\",\"iops_tier\":\"Economy\",\"network_tier\":\"Economy\"}' and for Maximum: '{\"ram_mb\":4096,\"fast_disk_gb\":50,\"hdd_disk_gb\":0,\"cpu_tier\":\"Performance\",\"iops_tier\":\"Performance\",\"network_tier\":\"Performance\"}' - so fast storage and HDD are separate programmatic fields and not one number, and the network tier is a property of the plan."
+    },
+    {
+      "url": "https://tierhive.com/",
+      "date": "2026-10-22",
+      "proved": "the NAT sentence, quoted from the feature list: 'Private /24 subnet per customer with 2 dedicated TCP ports per VPS' and 'NAT architecture with full IPv4 connectivity'; and from the architecture block: 'Each customer receives a full /24 subnet from 10.0.0.0/8 with inter-location connectivity via WireGuard mesh networking.' The same page states 'Global locations: USA, Germany, France, UK, Canada, Singapore' and 'IPv6 /64 per location.'"
+    },
+    {
+      "url": "https://tierhive.com/blog/tierhive-howto/tierhive-vps-ports",
+      "date": "2026-10-22",
+      "proved": "the port budget and the address it forwards from, quoted: 'Your nat VPS is provided with 2 open TCP ports and 2 UDP port. By design the 1st TCP port is mapped to your VPS port 22/TCP.' with 'external_ip=x.y.z.w #The Hypervisor public IP' and the sample map 'tcp_1=2154 #External TCP port 1, mapped to your 22/TCP', 'tcp_2=2155 #External TCP port 2'. The panel pages it names are 'https://control.tierhive.com/subnet-config' and 'https://control.tierhive.com/vps-instances' and the machine-readable form of the same data is 'curl \"https://control.tierhive.com/simple/netinfo?token=$(cat /opt/th-simple-token)\" -o /tmp/ports'"
+    },
+    {
+      "url": "https://tierhive.com/blog/technical_articles/configuring-ipv6",
+      "date": "2026-10-22",
+      "proved": "At the minute, you can't migrate those subnets.' The same page states the HAProxy front door is IPv4-only: 'As you can respond to ports 80 and 443, our haproxy solution is not managing IPv6 response.'"
+    },
+    {
+      "url": "https://tierhive.com/about.php",
+      "date": "2026-10-22",
+      "proved": "the transfer term and the ratchet, quoted: 'We do not give any specific arbitrary GB or TB number, it is simply not practical with the TierHive model. Instead, we do performance tiers mixed with a FUP/QoS system.' and 'if you use 100 Mbit/s for 1 hour on average, we will globally limit your speed to 90 Mbit/s. If you then use 90 Mbit/s for the following hour on average, we will limit you to 80 Mbit/s, and we repeat this until you are down to 10 Mbit/s. For each hour you are 10 Mbit/s under the current cap, we add 10 Mbit/s back, until you are back to 100 Mbit/s.' Burst is '2x the advertised speed for 10 seconds'"
+    },
+    {
+      "url": "https://tierhive.com/about.php",
+      "date": "2026-10-22",
+      "proved": "the per-plan compute rule and the local limits, quoted: 'We allow access to 1 vCPU for 2GB and under, anything over 2GB gets access to 2 vCPU'; 'We limit disk IOPS, CPU, and network.' the IOPS tiers are 'low = 100, medium = 250, and high = 500' with '5 seconds of meaningful burst at 2x or 4x the limit'; and the CPU watchdog is 'if you average 100% of a CPU core for more than 2 hours solid, you will be limited to 50% of a core on the backend'"
+    },
+    {
+      "url": "https://tierhive.com/",
+      "date": "2026-10-22",
+      "proved": "the per-location port caps and disk caps, read from the page's embedded network-map-data block stamped 'Updated 22 Oct 2026 23:30 UTC': Amsterdam and Paris 225 Mbps (450 burst); Frankfurt, Gravelines, Hillsboro, Kansas City, Roubaix and Vint Hill 200 (400); New York and Warsaw 150 (300); Beauharnois, London and Vancouver 100 (200); Singapore and Sydney 75 (150); Tokyo 50 (100). Kansas City carries 'Maximum Disk size 25 GB' and Tokyo 'Maximum Disk size 10 GB', so the Maximum plan's 50 GB NVMe cannot be provisioned in either."
+    },
+    {
+      "url": "https://tierhive.com/",
+      "date": "2026-10-22",
+      "proved": "the HDD is a separate resource with its own geography, quoted from the calculator: 'Fast Storage 20 GB' and 'HDD Storage Available in: 0 GB' with the flags for Singapore, Australia and the United States. The slider bounds, quoted: 'id=\"fast-disk-slider\" min=\"1\" max=\"50\"' and 'id=\"hdd-disk-slider\" min=\"0\" max=\"4000\"', with RAM 'min=\"128\" max=\"8192\" step=\"128\"'. The same page states '1 Token = $1 USD' and 'A $3 minimum top up is required after registration to use this service.' and 'no hidden egress fees'"
+    },
+    {
+      "url": "https://control.tierhive.com/register",
+      "date": "2026-10-22",
+      "proved": "the identity gate, observed in a browser: the form holds exactly three inputs - 'Username (36-Character Maximum)', 'Email address' and 'Password (min. No card, phone, name, address or country field is present. No account was created. These strings come from the browser session because every text route refused the page: the broker returned 'the page is behind a challenge, not empty' and the raw fetch looped for 50 redirects."
+    },
+    {
+      "url": "https://tierhive.com/terms.php",
+      "date": "2026-10-22",
+      "proved": "the account rules the form does not show, quoted: 'No Disposable Email Addresses: You may not use free or disposable email addresses to create or maintain an Account. We reserve the right to restrict access to our Services at any time and without warning if a disposable email address is detected.'; 'No Proxy or VPN Use: You may not use a proxy or VPN to sign up for an Account or as a primary mode of use to access our Services.'; and 'We are unable to provide our Services to customers in the following countries: China, Russia, Brazil, Vietnam, and Iran.' Payment is 'processed securely through our Merchant of Record, FastSpring'"
+    },
+    {
+      "url": "https://tierhive.com/about.php",
+      "date": "2026-10-22",
+      "proved": "the about page contradicts the terms on identity, quoted: 'We have no objection to you using a free or disposable email, or a VPN, etc., but we also have to protect ourselves, and these can be used to exploit our goodwill.' It also states the mesh rule 'full port-range access between locations with each other' and the mail rule 'We don't allow it, except through known mail relays on port 587.'"
+    },
+    {
+      "url": "https://tierhive.com/acceptable-use.php",
+      "date": "2026-10-22",
+      "proved": "suspension triggers, quoted: 'Automated scraping of external websites is not permitted. Some exceptions may be considered depending on the scale and intent of the activity.'; 'No bulk or transactional email of any kind is permitted, without exception, unless sent via one of our approved relay services'; and section 6, 'this is and always will be a shared resource environment' with 'Impose additional limits without prior notice'"
+    },
+    {
+      "url": "https://tierhive.com/blog/tierhive-howto/how-to-run-alpine-with-just-23mb-ram",
+      "date": "2026-10-22",
+      "proved": "what the smallest machine really does, quoted: at first boot 'Mem: 91 38 25 2 28 47' on a '953.0M' disk, with the note 'Fresh deploy, cloud-init has run, nothing changed yet, cant run apk, not enough free ram.' After the vendor's own minimisation, 'RAM down from 38MB to 23MB. Disk down from 164.4MB to 71.9MB.' The page then lists syslogd in circular-buffer mode, dropbear and two getty processes as the only userspace processes left."
+    },
+    {
+      "url": "https://tierhive.com/",
+      "date": "2026-10-22",
+      "proved": "the vendor's own recipes target the smallest plan by name, quoted: 'AmneziaWG XXS on smallest VPS on TierHive' with 'Starting with 256MB ram allows compilation in a reasonable time. Downsize to 128MB after compilation.'; 'Caddy on 128MB TierHive instance.'; 'MariaDB on smallest VPS on TierHive.'; 'Gotify - a simple server for sending and receiving messages. Running on 128MB Alpine Linux'; 'Navidrome music server and streamer on 128MB VPS. Installs Navidrome with Nginx for https proxy.'; 'Calibre Book Reader on 256MB of RAM.' Two recipes also instruct 'map the VPS AmneziaWG port to the external port using the TierHive Management Console', which presumes a UDP forward and is not what the ports page calls the spare TCP port."
+    },
+    {
+      "url": "https://tierhive.com/blog/general/haproxy",
+      "date": "2026-10-22",
+      "proved": "the free front door, quoted: 'TierHive includes free HAProxy load balancing and automatic SSL termination with every account.' in the flow 'TierHive automatically provisions SSL certificates via Let's Encrypt', 'Point your domain's DNS to TierHive's HAProxy endpoints', 'Configure backend servers (your TierHive VPS instances in your private subnet)'"
+    },
+    {
+      "url": "https://tierhive.com/blog/tierhive-howto/haproxy-to-keep-2-free-tcp-ports",
+      "date": "2026-10-22",
+      "proved": "how tight the port budget is in practice, quoted: a customer opened a ticket 'to ask how they could keep the two TCP ports they need for an application' and the article notes that 'only VPS1 has a second free port'"
+    },
+    {
+      "url": "https://tierhive.com/status",
+      "date": "2026-10-22",
+      "proved": "the live estate, quoted: 16 locations listed, from 'Amsterdam, NL Operational' to 'Warsaw, PL Operational', under 'All locations operational' with 90-day uptime of '99.81 %' at Tokyo, '99.97 %' at Singapore, '99.98 %' at Amsterdam and London, and '100 %' at the other twelve. The page lists 13 announcements between 18 Aug 2026 and 20 Oct 2026 whose titles the extraction did not carry."
+    },
+    {
+      "url": "https://tierhive.com/about.php",
+      "date": "2026-10-22",
+      "proved": "the vendor's own reliability claim, quoted: TierHive is 'probably the cheapest generally available KVM VPS that exists online right now' and 'a no-SLA, budget service'; 'It is not fast, and it is not the place to host things you demand uptime for'; and on data loss 'we will not recover it for you, you get a fresh, blank VPS'"
+    },
+    {
+      "url": "https://tierhive.com/pricing",
+      "date": "2026-10-22",
+      "proved": "there is no pricing page: a HEAD returned 'HTTP/1.1 404 Not Found', /faq, /locations, /docs and /features returned the same status, and the sitemap lists 22 URLs, none of them a pricing or locations page. Pricing lives on the homepage calculator and in the four plan cards."
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "New record; not in dossier/compute (searched: tierhive, no record) and not covered by any document read. The shape in this record is the Maximum plan, USD 3.37 with 2 vCPU, 4 GiB and 50 GiB, because it is the plan a workload would use and the largest the product sells; the range runs from Micro at 0.125 GiB of RAM and 1 GiB of disk on 1 vCPU. Three things a reader should not have to re-derive. First, the monthly column is 720 hours: all four prices are the hourly rate times 720 rounded to two decimals, so 'USD 5.44/month' and '0.007561/hour' are one number said twice and a 31-day month holds 24 hours of unstated billing. Second, the HDD is a separate storage line and not a quota on the NVMe: the card prints the NVMe size and the HDD size as two rows, the data-specs attributes carry distinct fast_disk_gb and hdd_disk_gb fields, and the calculator prices them as two sliders with the HDD restricted to Singapore, Australia and the United States. Whether it arrives inside the guest as a second block device is stated nowhere read; the platform does attach extra disks, since the backup chroot article mounts one with lsblk, and the disk-extend article only ever grows /dev/vda. Third, location caps delete advertised plans: the map data gives 'Maximum Disk size 25 GB' for Kansas City and 'Maximum Disk size 10 GB' for Tokyo, so the Maximum plan's 50 GB cannot be provisioned there, and the 1000 GB HDD cannot be provisioned in any of the ten locations outside Singapore, Sydney and the four US cities. The homepage's location line, 'Global locations: USA, Germany, France, UK, Canada, Singapore', also understates the estate: the status page lists 16 cities in ten countries, including Sydney, Tokyo and Warsaw, and the map says HDD is available in three of them. The RAM line on the same page adds 'Up to 8GB RAM per VPS (not all locations support 8GB)'. The port count is stated three ways: '2 dedicated TCP ports per VPS' on the homepage, '2 open TCP ports and 2 UDP port' with the first bound to 22/TCP on the ports page, and 'If you need more than 3 TCP ports, that remove the NAT limitation.' in the IPv6 article. The ports page is the operational one and agrees with the HAProxy workaround article, whose premise is a customer who opened a ticket 'to ask how they could keep the two TCP ports they need for an application'. Read as two TCP ports, one spent on SSH, plus two UDP. What 128 MB buys, concretely: a fresh Alpine at the smallest size cannot run apk for want of free RAM, and after the vendor's own minimisation it idles at 23 MB of RAM and 72 MB of disk, which leaves room for one small service. The recipe list says which ones: Gotify, Vaultwarden, Navidrome, Caddy and MariaDB are published for 128 MB, Flarum and Calibre for 256 MB. Compiling on 128 MB does not work and the vendor's own advice is to build at 256 MB and downsize. That is a working tunnel endpoint and not a web stack; a 2 GB Standard at USD 1.69 is 17 times the price for 16 times the RAM, and it is the plan would actually use. Reading route: https://tierhive.com/pricing does not exist and the sitemap names no pricing or locations page, so the homepage's embedded JSON and calculator are the price source. control.tierhive.com/register is behind a bot challenge that every text extractor the broker offers refused ('bot challenge', and the raw fetch path gave up after 50 redirects), so the identity facts come from one browser session and the rest of this record from pages that extract cleanly. would-settle: whether hour 721 of a 31-day month bills, by watching an instance across a month boundary; whether the HDD mounts as a second device, by deploying the Storage plan and reading lsblk; and whether the USD 3 top-up can be paid without a card, by reaching the FastSpring checkout. None was probed and none is asserted.",
+  "extras": {
+    "wave2": {
+      "class": null,
+      "free_tier_kind": "none",
+      "shape": {
+        "vcpu": 2,
+        "ram_gib": 4,
+        "disk_gib": 50,
+        "gpu_class": null,
+        "gpu_count": null
+      }
+    }
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "topic": "inference",
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "not applicable"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "any OpenAI-compatible client; curl against POST {base}/chat/completions",
+  "chaining": "no chain exists for a script: the free tier answers only inside the OpenCode client, so the client is the scarce link and it cannot be substituted",
+  "limits": [],
+  "slug": "opencode-zen-free",
+  "provider": "OpenCode Zen free models",
+  "url": "https://opencode.ai/zen/v1",
+  "category": "inference endpoint, access-gated",
+  "free_tier": {
+    "stated": "the Zen pricing table lists 14 model ids at Free for input, output and cached read, each marked Free or limited time",
+    "unit": "unlimited",
+    "metered_on": "request-count",
+    "source_url": "https://opencode.ai/docs/zen",
+    "read_on": "2026-10-22",
+    "notes": "'Free' in the price column is not 'reachable': the free tier is restricted to the OpenCode client"
+  },
+  "endpoint": "https://opencode.ai/zen/v1/chat/completions",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an OpenCode account, and the request must originate from the OpenCode client. The 403 body names the restriction: 'OpenCode's free tier can only be used from within OpenCode'",
+    "country": null
+  },
+  "reliability_note": "the restriction is enforced on the request path, not the account, so no header or key makes an external call succeed",
+  "confidence": "measured",
+  "confidence_note": "four calls across two sessions with two User-Agents. The 403 is a named policy gate and not an outage, and the body says so.",
+  "probe": {
+    "records": [
+      {
+        "probe_id": "opencode-spacebunny",
+        "requested_model": "space-bunny-free",
+        "http_run1": 403,
+        "http_run2": 400,
+        "answered_run1": "no",
+        "answered_run2": "no",
+        "model_echoed": "",
+        "echo_match": "yes",
+        "latency_ms_run1": 860,
+        "latency_ms_run2": 1066,
+        "ttft_ms_run1": "",
+        "completion_tokens_run1": 0,
+        "tps_run1": "",
+        "tps_run2": "",
+        "tps_basis": null,
+        "needle_echoed_run1": "no",
+        "body_bytes_run1": 701,
+        "body_sha256_16_run1": "f45bbd157c6d06d8",
+        "reasoning_only": "no",
+        "error_run1": "{\"type\":\"https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-1xxx-errors/error-1010/\",\"title\":\"Error 1010: Access denied\",\"status\":403,\"detail\":\"The site owner has b",
+        "error_run2": "{\"type\": \"server_error\", \"message\": \"Upstream request failed: Model is unavailable.\"}"
+      },
+      {
+        "probe_id": "opencode-longcat",
+        "requested_model": "longcat-2.5-preview-free",
+        "http_run1": 403,
+        "http_run2": 403,
+        "answered_run1": "no",
+        "answered_run2": "no",
+        "model_echoed": "",
+        "echo_match": "yes",
+        "latency_ms_run1": 799,
+        "latency_ms_run2": 811,
+        "ttft_ms_run1": "",
+        "completion_tokens_run1": 0,
+        "tps_run1": "",
+        "tps_run2": "",
+        "tps_basis": null,
+        "needle_echoed_run1": "no",
+        "body_bytes_run1": 701,
+        "body_sha256_16_run1": "615fa2152362733d",
+        "reasoning_only": "no",
+        "error_run1": "{\"type\":\"https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-1xxx-errors/error-1010/\",\"title\":\"Error 1010: Access denied\",\"status\":403,\"detail\":\"The site owner has b",
+        "error_run2": "{\"type\": \"FreeTierError\", \"message\": \"OpenCode's free tier can only be used from within OpenCode. Download it at https://opencode.ai and keep building.\"}"
+      }
+    ],
+    "runs": [
+      "probes-w.json",
+      "probes-w-run2.json"
+    ]
+  },
+  "evidence": [
+    {
+      "url": "probe:https://opencode.ai/zen/v1/chat/completions",
+      "date": "2026-10-22",
+      "proved": "longcat-2.5-preview-free returned 403 FreeTierError 'OpenCode's free tier can only be used from within OpenCode' in both runs, and with both a curl and a Python User-Agent"
+    },
+    {
+      "url": "probe:https://opencode.ai/zen/v1/chat/completions",
+      "date": "2026-10-22",
+      "proved": null
+    },
+    {
+      "url": "https://opencode.ai/docs/zen",
+      "date": "2026-10-22",
+      "proved": "14 model ids priced Free for input, output and cached read, including Big Pickle, GLM-5.3-Flash Free, DeepSeek V4.1 Flash Free and LongCat 2.5 Preview Free"
+    },
+    {
+      "url": "https://opencode.ai/docs/zen",
+      "date": "2026-10-28",
+      "proved": "the pricing source page is still the same URL and still says free-tier chat models require the OpenCode client",
+      "capture": "sha256:da634c9ea813aac8e7bad961c98ca4ce42c77f0a1bec32e9644ea50e0fc7d579",
+      "quote": "Free-tier chat models require OpenCode; use paid models or [Go](/console/go) from other clients."
+    }
+  ],
+  "verdict": "fails-identity",
+  "verified_at": "2026-10-28T09:47:52.031Z",
+  "notes": null,
+  "binding": "none",
+  "limits_note": "no rate or quota binds: the gate is access, not allowance"
+}

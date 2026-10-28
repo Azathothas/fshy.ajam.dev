@@ -1,0 +1,90 @@
+{
+  "topic": "storage",
+  "slug": "peertube-peertube-cif-su",
+  "provider": "PeerTube — peertube.cif.su (open registration, unlimited quota)",
+  "url": "https://peertube.cif.su",
+  "category": "media",
+  "free_tier": {
+    "stated": "Unlimited total quota (`user.videoQuota: -1`), 5 GiB per day (`videoQuotaDaily: 5368709120`). Registration open, no approval, no email verification.",
+    "unit": "GiB",
+    "metered_on": "unstated",
+    "source_url": "https://peertube.cif.su/api/v1/config",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://peertube.cif.su/api/v1/config",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://peertube.cif.su/api/v1/config",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free — instance serves HTTP + WebTorrent/HLS; no egress meter. Peers can also seed via BitTorrent, offloading the host.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "yt-dlp `PeerTube` extractor (verified present). Native REST API v1: `/api/v1/videos`, `/api/v1/users/me`, resumable upload via `X-Upload-Content-Length`. rclone has no native backend; a shell/curl wrapper is trivial.",
+  "chaining": "cif.su alone is 5 GiB/day = ~1.8 TiB/year per account with no total ceiling. Multiply across the ~15 open-signup instances in the index and across accounts. hittube.fr is a flat 50 GiB with unlimited daily; arkcast.mycreationhaven.com is 5 GiB with unlimited daily.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "5 GiB per day",
+      "source": "https://peertube.cif.su/api/v1/config"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "5 GiB/day",
+      "source": "https://peertube.cif.su/api/v1/config"
+    },
+    {
+      "kind": "write-gated",
+      "value": "approval, no email verification",
+      "source": "https://peertube.cif.su/api/v1/config"
+    },
+    {
+      "kind": "write-gated",
+      "value": "approval-gated and not open-signup",
+      "source": "https://peertube.cif.su/api/v1/config"
+    }
+  ],
+  "limits_note": "5 GiB/day at cif.su is the binding constraint (a two-year fill for 3 TiB). Per-file cap is the global `video.file` size limit, not separately published; accepted containers include mkv/mov/avi/flac, so arbitrary-ish binaries can be wrapped. Some instances (diode.zone) are unlimited but approval-gated and not open-signup.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: uotaDaily: 5368709120`). Registration open, no approval, no email verification. Volunteer-run instances disappear without notice — a single admin's disk decision deletes the archive.",
+    "country": null
+  },
+  "reliability_note": "Volunteer-run instances disappear without notice — a single admin's disk decision deletes the archive. `videoFile.update` is disabled on cif.su, so you cannot patch an upload in place.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET peertube.cif.su/api/v1/config -> {\"signup\":{\"allowed\":true,\"requiresApproval\":false,\"requiresEmailVerification\":false},\"user\":{\"videoQuota\":-1,\"videoQuotaDaily\":5368709120}}"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET instances.joinpeertube.org/api/v1/instances?count=100 -> 1,783 instances indexed; open-signup with quota: hittube.fr 53687091200, arkcast 5368709120, cif.su -1"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET peertube.cif.su/api/v1/videos/<uuid> -> files[] = {fileUrl: .../static/web-videos/<uuid>-0.mp4, size, resolution}, downloadEnabled: true"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Unlimited total quota (`user.videoQuota: -1`), 5 GiB per day (`videoQuotaDaily: 5368709120`). Registration open, no approval, no email verification.",
+  "extras": {},
+  "binding": "write-gated",
+  "binding_note": "the write is a queue with a person or a rule in it, so the upload rate is set by somebody else"
+}

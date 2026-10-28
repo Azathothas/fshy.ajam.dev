@@ -1,0 +1,112 @@
+{
+  "topic": "debrid",
+  "slug": "usenetserver",
+  "provider": "UsenetServer",
+  "url": "https://support.usenetserver.com/kb/article/193-i-received-a-423-no-such-article-or-a-430-no-such-article-error-when-downloading-what-is-the-problem/",
+  "category": "usenet provider (article spool, NNTP)",
+  "tier": "unlimited",
+  "free_tier": {
+    "stated": "No free tier; a paid usenet account.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://support.usenetserver.com/kb/article/193-i-received-a-423-no-such-article-or-a-430-no-such-article-error-when-downloading-what-is-the-problem/",
+    "read_on": "2026-10-23",
+    "notes": "No price is quoted because the pricing page was not read."
+  },
+  "per_object_cap": {
+    "stated": "Not published; the unit is the article.",
+    "bytes": null,
+    "source_url": "https://support.usenetserver.com/kb/article/193-i-received-a-423-no-such-article-or-a-430-no-such-article-error-when-downloading-what-is-the-problem/"
+  },
+  "retention": {
+    "stated": "'UsenetServer offers one of the highest article retention times available'; no day count on the page read.",
+    "days": null,
+    "source_url": "https://support.usenetserver.com/kb/article/193-i-received-a-423-no-such-article-or-a-430-no-such-article-error-when-downloading-what-is-the-problem/"
+  },
+  "egress": {
+    "terms": "Unmetered on an unlimited plan; article availability binds before bytes.",
+    "metered": false,
+    "free_allowance": "none",
+    "price_per_tb": null,
+    "source_url": "https://support.usenetserver.com/kb/article/193-i-received-a-423-no-such-article-or-a-430-no-such-article-error-when-downloading-what-is-the-problem/"
+  },
+  "interface": [
+    "nntp"
+  ],
+  "interface_detail": "NNTP reader, TLS; standard article commands.",
+  "tooling": "SABnzbd, NZBGet, zurg's nzb provider",
+  "chaining": "The clearest documented split between the two article codes: 423 means the group is there and the article is not, 430 means the article is unavailable while the group remains readable, which is what a script can branch on.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "articles past retention answer 423 or 430 per article id",
+      "source": "https://support.usenetserver.com/kb/article/193-i-received-a-423-no-such-article-or-a-430-no-such-article-error-when-downloading-what-is-the-problem/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "plan connection count is the ceiling; excess connections are refused at connect time",
+      "source": "https://notes.debridmediamanager.com/providers/usenet/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "50 SSL connections on the 12-month plan, 20 on the 1-month",
+      "source": "https://www.usenetserver.com/pricing/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "6642 days of complete article retention",
+      "source": "https://www.usenetserver.com/pricing/"
+    }
+  ],
+  "limits_note": "The vendor points at indexers as the amplifier: 'Many Indexers maintain references to articles long after they've been removed from Usenet servers', so the NZB can be valid and the articles still gone.",
+  "binding": "none",
+  "binding_note": "Unlimited bytes; the first failure is a per-article 430/423 whose frequency is set by the indexer's freshness and the spool's retention.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "Paid account with email and card. No identity document described.",
+    "country": null
+  },
+  "reliability_note": "An indexer can point at articles the spool no longer holds; each such article is a per-file failure and only PAR2 or a second provider recovers it.",
+  "confidence": "documented",
+  "confidence_note": "The 423/430 distinction and the indexer behaviour are the vendor's own. No removal-by-notice cause is named on this page, which differs from Newshosting's page in the same group.",
+  "evidence": [
+    {
+      "url": "https://support.usenetserver.com/kb/article/193-i-received-a-423-no-such-article-or-a-430-no-such-article-error-when-downloading-what-is-the-problem/",
+      "date": "2026-10-23",
+      "proved": "'423 No Such Article: The server acknowledges the group exists, but the article requested is not present. 430 No Such Article: The article is not available on the server, even though the newsgroup is accessible.' And 'Many Indexers maintain references to articles long after they've been removed from Usenet servers.'"
+    },
+    {
+      "url": "https://notes.debridmediamanager.com/providers/usenet/",
+      "date": "2026-10-23",
+      "proved": "Second server behaviour: a backup account is only asked after every primary has answered no such article; a second server turns a whole-release PAR2 read into one article fetch."
+    },
+    {
+      "url": "https://www.usenetserver.com/pricing/",
+      "date": "2026-10-23",
+      "proved": "$14.95 1 month 20 connections; $8.95 3 months; $7.95 12 months billed $95.40 with 50 connections and US+EU; 6642 days"
+    },
+    {
+      "url": "https://support.usenetserver.com/kb/article/176-how-much-does-the-service-cost/",
+      "date": "2026-10-23",
+      "proved": "The same vendor's KB quotes $16.95 1 month, $8.95 exclusive and $7.95 12-month, and 'up to 20 SSL-encrypted connections' - a stale page"
+    },
+    {
+      "url": "https://support.usenetserver.com/kb/article/183-are-there-any-limits-on-the-number-of-downloads/",
+      "date": "2026-10-23",
+      "proved": "'UsenetServer does not impose restrictions on the number of articles accessed by users.'"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T02:22:02.000Z",
+  "price_per_tb_month": null,
+  "notes": "Candidates for the first failure: retention, indexer staleness, or a connection ceiling. The vendor gives a number for none of them; the useful part of this page is the 423/430 split, which lets a client distinguish a missing group from a missing article. A vendor KB article says article access is unrestricted and uncapped that is the only statement about volume on the site.",
+  "extras": {
+    "failure_angle": "missing article",
+    "strongest_signal": "430 (article absent) vs 423 (article number absent in a known group)",
+    "account_states": "article-level states only on the page read",
+    "cache_miss": "not applicable",
+    "host_removal": "not applicable",
+    "backbone": "Omicron (Highwinds Media), AS33438",
+    "conflict": "support KB 176 vs /pricing/ on price and connections"
+  }
+}
