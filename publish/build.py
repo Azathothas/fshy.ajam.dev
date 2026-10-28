@@ -8,10 +8,16 @@ usage:
 
 The only input is data/. Every file in it is written by publish/export.py from the projection of the research
 corpus; nothing in data/ is edited by hand. The store is derived and never committed. Standard library only.
-Exit codes: 0 ok, 1 a check failed, 2 usage.
+
+The contract with the export: data/meta.json names the schema_version of the data, and data/tables/ holds one
+file per table of schema.sql with exactly its columns. This build reads SCHEMA_VERSION only. It refuses data of
+another version, an unknown table file and an unknown or missing column, because a load through the schema would
+drop or blank that value without a message.
+Exit codes: 0 ok, 1 a check failed, 2 usage, 3 data/ does not match this build (version, tables or columns).
 """
 import argparse
 import collections
+import datetime
 import hashlib
 import json
 import os
@@ -26,10 +32,14 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
 sys.path.insert(0, HERE)
 
-SCHEMA_VERSION = "1"
+SCHEMA_VERSION = "1"  # the version of data/ this build reads; publish/export.py writes the same one
+DERIVED = ("rno", "lid_min", "lid_max", "doc", "sha256", "path")  # record columns build() makes, never in data/
 TABLES = ("entity", "alias", "evidence", "limit_row", "claim", "fx", "unknown", "edge", "drift", "history",
           "history_link", "ledger", "capture", "vocab")
 FTS_COLUMNS = ("name", "offer", "limits", "egress", "identity", "access", "notes", "evidence", "extras")
+# Workers static assets: the largest file a version can hold. The build fails above it and warns above WARN_SHARE.
+ASSET_MAX_BYTES = 25 * 1024 * 1024
+WARN_SHARE = 0.7
 TIMES = collections.OrderedDict()
 _T = [time.perf_counter()]
 
@@ -104,6 +114,10 @@ def fts_columns(o, url, aliases, ent):
     return tuple(fts_text(" ".join(x for x in cols[c] if x)) for c in FTS_COLUMNS)
 
 
+class DataError(Exception):
+    """data/ is not what this build reads: another schema version, or another set of tables or columns."""
+
+
 def read_jsonl(path):
     if not os.path.exists(path):
         return []
@@ -111,22 +125,60 @@ def read_jsonl(path):
         return [json.loads(ln) for ln in f if ln.strip()]
 
 
+def read_meta(data):
+    """data/meta.json, after the version and the set of table files are checked."""
+    meta = json.load(open(os.path.join(data, "meta.json"), encoding="utf-8"))
+    v = meta.get("schema_version")
+    if v != SCHEMA_VERSION:
+        raise DataError("data/meta.json has schema_version %r, and this build reads schema_version %r only. The export "
+                        "and publish/ disagree: update publish/ (schema.sql, build.py) to the version of the data, or "
+                        "export again with this publish/." % (v, SCHEMA_VERSION))
+    tdir = os.path.join(data, "tables")
+    have = {f[:-len(".jsonl")] for f in os.listdir(tdir) if f.endswith(".jsonl")} if os.path.isdir(tdir) else set()
+    want = {"record"} | set(TABLES)
+    if have != want:
+        raise DataError("data/tables/ has the unknown table file(s) %s and lacks %s"
+                        % (sorted(have - want) or "none", sorted(want - have) or "none"))
+    return meta
+
+
+def table_rows(data, t, cols):
+    """The rows of data/tables/<t>.jsonl, refused when their keys are not exactly `cols`."""
+    rows = read_jsonl(os.path.join(data, "tables", t + ".jsonl"))
+    keys = set().union(*rows) if rows else set()
+    extra, lack = keys - set(cols), (set(cols) - keys) if rows else set()
+    if extra or lack:
+        raise DataError("data/tables/%s.jsonl has the column(s) %s that schema.sql does not have, and lacks %s"
+                        % (t, sorted(extra) or "none", sorted(lack) or "none"))
+    return rows
+
+
 def git_info():
+    """The commit of this checkout, and its commit time in UTC: a time zone names a place."""
     def run(*a):
         try:
             return subprocess.run(["git", "-C", ROOT] + list(a), capture_output=True, text=True, timeout=20).stdout.strip()
         except Exception:
             return ""
-    return os.environ.get("WORKERS_CI_COMMIT_SHA") or run("rev-parse", "HEAD"), run("log", "-1", "--format=%cI")
+    ts = run("log", "-1", "--format=%ct")
+    when = (datetime.datetime.fromtimestamp(int(ts), datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            if ts.isdigit() else "")
+    return os.environ.get("WORKERS_CI_COMMIT_SHA") or run("rev-parse", "HEAD"), when
 
 
 def build(data, out_db):
-    """data/ -> a public store at out_db. -> counts."""
-    meta_in = json.load(open(os.path.join(data, "meta.json"), encoding="utf-8"))
-    rows = sorted(read_jsonl(os.path.join(data, "tables", "record.jsonl")), key=lambda r: r["rid"])
-    ents = {e["eid"]: e for e in read_jsonl(os.path.join(data, "tables", "entity.jsonl"))}
+    """data/ -> a public store at out_db. -> counts. Raises DataError when data/ is not what this build reads."""
+    meta_in = read_meta(data)
+    schema = sqlite3.connect(":memory:")
+    schema.executescript(open(os.path.join(HERE, "schema.sql"), encoding="utf-8").read())
+    tcols = {t: [c[1] for c in schema.execute("PRAGMA table_info(%s)" % t)] for t in ("record",) + TABLES}
+    schema.close()
+    cols = tcols["record"]
+    tables = {t: table_rows(data, t, tcols[t]) for t in TABLES}
+    rows = sorted(table_rows(data, "record", [c for c in cols if c not in DERIVED]), key=lambda r: r["rid"])
+    ents = {e["eid"]: e for e in tables["entity"]}
     aliases = collections.defaultdict(set)
-    for a in read_jsonl(os.path.join(data, "tables", "alias.jsonl")):
+    for a in tables["alias"]:
         if a["kind"] == "alias":
             aliases[a["eid"]].add(a["alias"])
     lap("read")
@@ -138,7 +190,6 @@ def build(data, out_db):
     db.execute("PRAGMA journal_mode=OFF")
     db.execute("PRAGMA synchronous=OFF")
     db.executescript(open(os.path.join(HERE, "schema.sql"), encoding="utf-8").read())
-    cols = [c[1] for c in db.execute("PRAGMA table_info(record)")]
     lid, leaf_rows, fts, recs = 0, [], [], []
     for rno, row in enumerate(rows, 1):
         rel = os.path.join("records", row["rid"] + ".json")
@@ -166,10 +217,9 @@ def build(data, out_db):
     db.executemany("INSERT INTO leaf VALUES (?,?,?,?,?)", leaf_rows)
     counts = {"records": len(recs), "leaves": len(leaf_rows)}
     for t in TABLES:
-        tcols = [c[1] for c in db.execute("PRAGMA table_info(%s)" % t)]
-        trows = read_jsonl(os.path.join(data, "tables", t + ".jsonl"))
-        db.executemany("INSERT OR IGNORE INTO %s (%s) VALUES (%s)" % (t, ",".join(tcols), ",".join("?" * len(tcols))),
-                       [tuple(x.get(c) for c in tcols) for x in trows])
+        tc, trows = tcols[t], tables[t]
+        db.executemany("INSERT OR IGNORE INTO %s (%s) VALUES (%s)" % (t, ",".join(tc), ",".join("?" * len(tc))),
+                       [tuple(x.get(c) for c in tc) for x in trows])
         counts[t] = len(trows)
     db.executemany("INSERT INTO text_fts (docid, name, offer, limits, egress, identity, access, notes, evidence, extras)"
                    " VALUES (?,?,?,?,?,?,?,?,?,?)", fts)
@@ -221,14 +271,34 @@ def leak_scan(db_path=None, dist=None, data=None):
                 for v in row:
                     if isinstance(v, str):
                         hit(t, v)
+        # a public history entry is its date, status, title and linked records; the rest is process narrative
+        for (hid,) in db.execute("SELECT hid FROM history WHERE body IS NOT NULL OR supersedes IS NOT NULL "
+                                 "OR confidence IS NOT NULL"):
+            hits.append(("history " + hid, "a public history row carries a body, a supersedes line or a confidence"))
         db.close()
     for top in (d for d in (dist, data) if d):
         for root, _, files in os.walk(top):
             for fn in files:
-                if fn.endswith((".html", ".json", ".jsonl", ".txt", ".xml", ".md")):
-                    p = os.path.join(root, fn)
-                    hit(os.path.relpath(p, top), open(p, encoding="utf-8", errors="replace").read())
+                p = os.path.join(root, fn)
+                with open(p, "rb") as f:
+                    b = f.read()
+                if b"\0" not in b[:8192]:  # every text file, whatever its extension; a store or a gzip is binary
+                    hit(os.path.relpath(p, top), b.decode("utf-8", errors="replace"))
     return hits
+
+
+def asset_sizes(dist):
+    """Files of dist over the Workers static asset limit (fail), and over WARN_SHARE of it (warn)."""
+    over, near = [], []
+    for root, _, files in os.walk(dist):
+        for fn in files:
+            p = os.path.join(root, fn)
+            n = os.path.getsize(p)
+            if n > ASSET_MAX_BYTES:
+                over.append((os.path.relpath(p, dist), n))
+            elif n > WARN_SHARE * ASSET_MAX_BYTES:
+                near.append((os.path.relpath(p, dist), n))
+    return over, near
 
 
 def main(argv=None):
@@ -244,8 +314,13 @@ def main(argv=None):
     if not os.path.exists(os.path.join(a.data, "meta.json")):
         print("build: %s has no meta.json; publish/export.py writes it" % a.data, file=sys.stderr)
         return 1
-    report = {"store": build(a.data, a.db)}
+    try:
+        report = {"store": build(a.data, a.db)}
+    except DataError as e:
+        print("build: %s" % e, file=sys.stderr)
+        return 3
     hits = leak_scan(a.db, data=a.data)
+    over = []
     if a.site:
         import site_gen  # noqa: E402
         report["files"] = site_gen.generate(ROOT, a.db, os.path.abspath(a.site), TIMES, lap)
@@ -254,13 +329,19 @@ def main(argv=None):
         lap("site-llms")
         hits += leak_scan(dist=os.path.abspath(a.site))
         lap("leak-scan")
+        over, near = asset_sizes(os.path.abspath(a.site))
+        for rel, n in near:
+            print("build: warning: %s is %d bytes, over %d%% of the %d-byte asset limit"
+                  % (rel, n, WARN_SHARE * 100, ASSET_MAX_BYTES), file=sys.stderr)
+        for rel, n in over:
+            print("build: %s is %d bytes; a static asset holds at most %d" % (rel, n, ASSET_MAX_BYTES), file=sys.stderr)
     report["leaks"] = len(hits)
     report["times"] = TIMES
     for where, ctx in hits[:40]:
         print("LEAK %s: ...%s..." % (where, ctx.replace("\n", " ")), file=sys.stderr)
     if not a.quiet:
         print(json.dumps(report))
-    return 1 if hits else 0
+    return 1 if hits or over else 0
 
 
 if __name__ == "__main__":

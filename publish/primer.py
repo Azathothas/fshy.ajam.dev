@@ -4,8 +4,8 @@ text(db_path) -> str. Works on the local store, the public store and the Worker 
 every table, column and vocabulary line is read from the database it is given, so a
 table the store lacks is never described. Standard library only.
 
-EXAMPLES holds the worked queries; publish/test_build.py runs each one against the
-stores in .tmp/fshy/ so the primer never shows a query that fails.
+EXAMPLES holds the worked queries; publish/test_publish.py runs each one against the
+store in .tmp/fshy/ so the primer never shows a query that fails.
 """
 import json
 import os
@@ -135,7 +135,7 @@ def _text(db):
     if "record" in tables:
         n_doc = db.execute("SELECT count(*) FROM record WHERE doc IS NOT NULL").fetchone()[0]
         if not n_doc:
-            w("  In this copy record.doc, evidence.proved and history.body are NULL: use get for them.")
+            w("  In this copy record.doc and evidence.proved are NULL: use get for them.")
     w("All columns: SELECT name FROM pragma_table_info('record'). Meanings: SELECT * FROM vocab.")
     w("")
     w("VOCABULARIES")

@@ -1,12 +1,17 @@
 name: build
 
 # Builds the store, the wiki and the Worker copy from data/ alone, scans all of it for leaks, and runs the
-# Worker's tests. A pull request from a fork must not change data/: only publish/export.py writes it.
+# Worker's tests, once under node and once on workerd. A pull request from a fork must not change data/: only
+# publish/export.py writes it. Commit messages and the pull request must not credit a tool.
+# The actions are pinned by commit; the comment names the tag. The toolchain versions are in publish/README.md.
+# Every Monday at 06:00 UTC it also builds main, so a broken toolchain shows before a publish does.
 
 on:
   pull_request:
   push:
     branches: [main]
+  schedule:
+    - cron: "0 6 * * 1"
 
 permissions:
   contents: read
@@ -17,12 +22,20 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+    runs-on: ubuntu-26.04
+    timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
 
       - name: data/ changes only through a publish
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
@@ -31,6 +44,30 @@ jobs:
             echo "data/ is written by publish/export.py only; report a correction with an issue" >&2
             exit 1
           fi
+
+      - name: commit messages credit no tool, and each subject is under 101 characters
+        if: github.event_name != 'schedule'
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || github.event.before }}
+          HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if git cat-file -e "${BASE}^{commit}" 2>/dev/null; then range="$BASE..$HEAD_SHA"; else range="-1 $HEAD_SHA"; fi
+          fail=0
+          for c in $(git rev-list --no-merges $range); do
+            git log -1 --format=%B "$c" > "$RUNNER_TEMP/msg"
+            sh .githooks/commit-msg "$RUNNER_TEMP/msg" || { echo "in commit $c" >&2; fail=1; }
+          done
+          exit $fail
+
+      # a Dependabot body quotes the release notes and the commits of another project
+      - name: the pull request credits no tool
+        if: github.event_name == 'pull_request' && github.event.pull_request.user.login != 'dependabot[bot]'
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          printf '%s\n\n%s\n' "$TITLE" "$BODY" > "$RUNNER_TEMP/pr"
+          sh .githooks/commit-msg "$RUNNER_TEMP/pr"
 
       - name: build the store and the site, and scan for leaks
         if: hashFiles('data/meta.json') != ''
@@ -42,9 +79,16 @@ jobs:
           cd site && npm ci --no-audit --no-fund && cd ..
           node site/worker/test/run.mjs
 
+      - name: Worker on workerd (wrangler dev)
+        if: hashFiles('data/meta.json') != ''
+        run: node site/worker/test/smoke.mjs
+
       - name: files for agents
         if: hashFiles('data/meta.json') != ''
         run: python3 publish/test_llms.py --site site/dist
+
+      - name: publish tools
+        run: python3 publish/test_publish.py
 
       - name: no data yet
         if: hashFiles('data/meta.json') == ''

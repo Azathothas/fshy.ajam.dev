@@ -25,7 +25,11 @@ import sqlite3
 from urllib.request import pathname2url
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-BASE = "https://fshy.ajam.dev"
+# The site's origin and its source repository. A fork sets both in the environment of the build; every absolute
+# link of the wiki, the sitemap, the feed and these files comes from them.
+BASE = os.environ.get("FSHY_ORIGIN", "https://fshy.ajam.dev").rstrip("/")
+REPO = os.environ.get("FSHY_REPO", "https://github.com/Azathothas/fshy.ajam.dev").rstrip("/")
+LICENCE = "0BSD"
 
 # The most bytes one file holds: what an agent can read whole and still work. The corpus measures 3.7 bytes
 # per token (test_llms.py estimates it the way a cl100k or o200k tokenizer splits text), so 300,000 bytes is
@@ -306,8 +310,8 @@ def cut_note(cap):
 # ---------------------------------------------------------------------------------------------- shared text
 def summary_line(st):
     return ("> A catalogue of free, nearly free and cheapest-paid cloud capacity: storage, compute, GPU time, "
-            "inference, egress, proxies, crawling, debrid, netdisks, databases, email, DNS, CI runners and coding "
-            "subscriptions. %d records from %d providers; each states its quota, the constraint that binds it, the "
+            "inference, egress, proxies, crawling, debrid, netdisks, databases, email, DNS, CI runners, developer "
+            "services, data APIs and coding subscriptions. %d records from %d providers; each states its quota, the constraint that binds it, the "
             "identity it costs (email, phone, card, ID), its evidence and how fresh that evidence is. For research "
             "and education only: it is not legal advice, and it makes no statement about whether a use is permitted."
             % (len(st.cards), len(st.ents)))
@@ -447,10 +451,11 @@ def generate(pub_db, dist):
                  "the rejected and dead records, each with the evidence that rejected it; the usable, trial and "
                  "paid-only ones are on %s/t/%s.md" % (BASE, t))):
             def render(cap, title=title, groups=groups, other=other):
+                full = ("In full: %s/t/%s/llms-full.txt." % (BASE, t)) if rids else "No record is in this topic yet."
                 lines = ["# " + title, "", "> " + (desc or name), "",
                          "%d records: %s. This page lists %s. Each line: provider (its page in Markdown), record id, "
-                         "verdict, identity, card, evidence rung, parsed price, summary. In full: %s/t/%s/llms-full.txt."
-                         % (len(rids), ", ".join("%d %s" % (cnt[g], lbl.lower()) for g, lbl in GROUPS), other, BASE, t),
+                         "verdict, identity, card, evidence rung, parsed price, summary. %s"
+                         % (len(rids), ", ".join("%d %s" % (cnt[g], lbl.lower()) for g, lbl in GROUPS), other, full),
                          ""] + cut_note(cap)
                 if needs and groups == MAIN_GROUPS:
                     lines += ["Best per need: " + ", ".join("[%s](%s/need/%s.md)" % (x["title"], BASE, x["id"]) for x in needs), ""]
@@ -547,8 +552,15 @@ def generate(pub_db, dist):
              "Three rules hold in these files and in the API alike. Card, phone and ID requirements are yes, no or "
              "unknown (1, 0 or NULL), and unknown never means no. A record goes stale on its `stale on` date "
              "(`stale_on`); compare it with today. A price that did not parse is unknown (NULL), not free.", "",
+             "To report an error in a record or an offer that is missing, open an issue with the Correction form or "
+             "the New offer form: %s/issues/new/choose. A report is a lead: a research lane checks it against the "
+             "provider's own pages before a record changes. The code and the records are under the %s licence, "
+             "%s/blob/main/LICENSE; a quote from a provider's page stays with its owner." % (REPO, LICENCE, REPO), "",
              "## Topics", ""]
     for t, name, desc, rids, cnt in topic_rows:
+        if not rids:  # a topic of the schema with no record yet: no rejected page to name, no full text
+            lines.append("- [%s](%s/t/%s.md): %sNo record is in this topic yet." % (name, BASE, t, (desc + " ") if desc else ""))
+            continue
         lines.append("- [%s](%s/t/%s.md): %s%d records: %s. Rejected and dead: %s/t/%s/rejected.md; in full: %s/t/%s/llms-full.txt"
                      % (name, BASE, t, (desc + " ") if desc else "", len(rids),
                         ", ".join("%d %s" % (cnt[g], lbl.lower()) for g, lbl in GROUPS), BASE, t, BASE, t))

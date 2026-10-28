@@ -584,7 +584,7 @@ export async function help(store, env) {
   const m = store.manifest;
   const text = [
     `fshy: a read-only catalogue of free and cheap capability: storage, compute, GPU time, inference, crawling,`,
-    `egress, email, databases, DNS, CI runners, proxies. Built from commit ${String(m.commit || '').slice(0, 12)} (as of ${m.as_of}).`,
+    `egress, email, databases, DNS, CI runners, proxies, developer services, data APIs. Built from commit ${String(m.commit || '').slice(0, 12)} (as of ${m.as_of}).`,
     ``,
     `Records by topic: ${topics.join(', ')}.`,
     `rid = topic/slug (stable). grp: ${(vocab.grp || []).join(' | ')}. verdict in order (vorder 0..7, lower is better):`,
@@ -611,7 +611,7 @@ export async function help(store, env) {
     `Vocabularies: ${Object.entries(vocab).filter(([d]) => !['grp', 'verdict'].includes(d)).map(([d, t]) => `${d}: ${t.join(' ')}`).join('; ')}.`,
     ``,
     `Needs: ${nd.needs.map((n) => n.id).join(', ')}.`,
-    `Full record pages: https://fshy.ajam.dev/r/<topic>/<slug>; JSON: /api/v1/record/<topic>/<slug>.`,
+    `Full record pages: /r/<topic>/<slug> on this host; JSON: /api/v1/record/<topic>/<slug>.`,
   ].join('\n');
   store.cache.help = text;
   return text;
