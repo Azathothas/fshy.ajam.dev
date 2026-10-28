@@ -1,0 +1,76 @@
+{
+  "topic": "storage",
+  "slug": "payhip",
+  "provider": "Payhip",
+  "url": "https://payhip.com",
+  "category": "Digital-product fulfilment (sell any file)",
+  "free_tier": {
+    "stated": "Explicit, from their own page: 'No, we have no storage or bandwidth limits. We only have a 5GB per file limit.' Help centre repeats: 'Payhip supports a maximum file size of 5GB per digital product.'",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://payhip.com/features/sell-digital-downloads",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "5GB per file",
+    "bytes": 5000000000,
+    "source_url": "https://payhip.com/features/sell-digital-downloads",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://payhip.com/features/sell-digital-downloads",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "No bandwidth limit stated (their words: 'no storage or bandwidth limits'). Free plan is 'Free Forever' with a 5% transaction fee — no monthly fee, so an unpriced/cheap product costs ~nothing.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "Web upload. REST API + webhooks on paid plans; the digital-product upload itself is form-based.",
+  "tooling": "curl/browser; no first-class CLI.",
+  "chaining": "5 GB/file x unlimited files per product x unlimited products = unbounded account. Every listing is a shard with its own 5 GB ceiling — the cleanest 'shard into 5 GB pieces' target found.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "5GB per file",
+      "source": "https://payhip.com/features/sell-digital-downloads"
+    }
+  ],
+  "limits_note": "per-object-cap 5 GB — the only limit they publish. Extension blocklist is a hard gate on ingress: EXE, ISO, DMG, VBS, SCR refused unless inside a ZIP. No aggregate quota.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email",
+    "country": null
+  },
+  "reliability_note": "Serving path is fine; the operational risk is that a 'digital product' must be a listed product, and free products still sit behind a checkout page. Buyer link is emailed, not a stable public URL — so it is an archive/delivery tier, not a hot-link CDN.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://payhip.com/features/sell-digital-downloads",
+      "date": "2026-10-21",
+      "proved": null
+    },
+    {
+      "url": "https://help.payhip.com/article/375-cannot-upload-file-or-image",
+      "date": "2026-10-21",
+      "proved": "5GB per digital product; EXE/ISO/DMG/VBS/SCR blocked unless zipped"
+    },
+    {
+      "url": "https://payhip.com/pricing",
+      "date": "2026-10-21",
+      "proved": "'Free Forever' + 5% transaction fee, no monthly fee"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Explicit, from their own page: 'No, we have no storage or bandwidth limits. We only have a 5GB per file limit.' Help centre repeats: 'Payhip supports a maximum file size of 5GB per digital product.'",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

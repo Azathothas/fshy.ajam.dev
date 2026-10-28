@@ -1,0 +1,78 @@
+{
+  "topic": "storage",
+  "slug": "lemmy-pict-rs-per-instance-image-store-no-per-user-quota",
+  "provider": "Lemmy + pict-rs — per-instance image store, no per-user quota",
+  "url": "https://join-lemmy.org/docs/administration/configuration.html",
+  "category": "fediverse-lemmy",
+  "free_tier": {
+    "stated": "No per-user quota in Lemmy's own schema — the bound is pict-rs (the separate Rust image server) and the instance's disk. Upload is gated per-instance by the `image_upload` / `image_mode` local-site flag rather than by bytes.",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://join-lemmy.org/docs/administration/configuration.html",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap set by pict-rs (`max_file_size`, commonly 40 MB",
+    "bytes": 40000000,
+    "source_url": "https://join-lemmy.org/docs/administration/configuration.html",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://join-lemmy.org/docs/administration/configuration.html",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Lemmy API v3: POST /api/v3/pictrs/image (multipart) or /api/v3/upload; needs a JWT from POST /api/v3/user/login. pict-rs itself exposes POST /image on its own port (often 8080) — on instances that expose it, that is a cleaner upload path than the Lemmy API.",
+  "chaining": "Lemmy is the weakest of the family: most large instances now REQUIRE an application (lemmy.world registration_mode = 'RequireApplication'), and `image_mode` is frequently set to block uploads entirely or to proxy-only. Multiplier depends entirely on finding a permissive instance.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap set by pict-rs (`max_file_size`, commonly 40 MB",
+      "source": "https://join-lemmy.org/docs/administration/configuration.html"
+    }
+  ],
+  "limits_note": "per-object-cap set by pict-rs (`max_file_size`, commonly 40 MB); no per-user byte quota; per-instance disk.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: stration gated on the big instances. Also note Lemmy stores federated/remote images too, so operator disk fills from other people's content, which is why uploads get turned off. Lemmy is th",
+    "country": null
+  },
+  "reliability_note": "Registration gated on the big instances. Also note Lemmy stores federated/remote images too, so operator disk fills from other people's content, which is why uploads get turned off.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://lemmy.world/api/v3/site",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, local_site.registration_mode='RequireApplication', version 0.19.19-9-gc55dd1b1a; local_site carries NO image upload size field (only image_mode/enable_nsfw-style flags) — confirms the quota lives in pict-rs, not Lemmy"
+    },
+    {
+      "url": "https://join-lemmy.org/docs/administration/configuration.html",
+      "date": "2026-10-21",
+      "proved": "pict-rs is a separate service; 'Generate thumbnails for external post urls and store them persistently in pict-rs. This also increases storage usage.'"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No per-user quota in Lemmy's own schema — the bound is pict-rs (the separate Rust image server) and the instance's disk. Upload is gated per-instance by the `image_upload` / `image_mode` local-site flag rather than by bytes.",
+  "extras": {
+    "verdict_note": "PLAN.md §3.2 rules fails-quota by default, because no row in this set clears 500 GiB per unit for a user.",
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "No per-user quota in Lemmy's own schema — the bound is pict-rs (the separate Rust image server) and the instance's disk. Upload is gated per-instance by the `image_upload` / `image_mode` local-site flag rather than by bytes.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

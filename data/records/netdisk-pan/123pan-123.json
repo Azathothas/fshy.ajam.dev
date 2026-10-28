@@ -1,0 +1,110 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "123pan-123",
+  "provider": "123pan (123云盘)",
+  "url": "https://www.123pan.com",
+  "category": "consumer-pan",
+  "free_tier": {
+    "stated": "Free: 50 GB of 专业空间 (own uploads, no deduplication) plus 2 TB of 标准空间 (files saved from other people's shares, deduplicated) for accounts registered before 2026-09-24 14:30. New accounts get 50 GB plus 50 GB until real-name verification, then 2 TB standard",
+    "unit": "TiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://www.123pan.com/",
+    "read_on": "2026-10-21",
+    "notes": "the quota regime changed twice in twelve months, so the date qualifier is part of the fact"
+  },
+  "per_object_cap": {
+    "stated": "10 GB per file in 标准空间. Files over 10 GB, multi-volume archives, direct-link and image-host output are billed to the 50 GB 专业空间 instead",
+    "bytes": 10000000000,
+    "source_url": "https://xiaoyi.vc/123yunpan-storage-adjustment-professional-standard-space.html"
+  },
+  "retention": {
+    "stated": "Share links expire; live keys returned 5104 分享已过期. Account retention is not published",
+    "days": null,
+    "source_url": "https://www.123pan.com/"
+  },
+  "egress": {
+    "terms": "Uploads and downloads are stated as unlimited in speed (上传下载不限速) with CDN direct links, but a free account is capped at 10 GB of extraction traffic per month across all clients, quoted at CNY 0.05/GB beyond. Since 2025-11-26 every share download requires a login",
+    "metered": true,
+    "free_allowance": "10 GB per month",
+    "price_per_tb": "CNY 0.05/GB beyond the allowance",
+    "source_url": "https://www.ithome.com/0/900/421.htm"
+  },
+  "interface": [
+    "rest",
+    "webdav"
+  ],
+  "tooling": "an official Open Platform at open-api.123pan.com with client id and key and a refresh-token flow; the OpenList '123 Open' driver; WebDAV at webdav.123pan.cn/webdav with app passwords, up to ten per account; the Python client ChenyangGao/p123client",
+  "chaining": "The one interesting shape is the deduplicated 标准空间: saving an already-present blob costs no quota, so a shared corpus can be mirrored into many accounts at no storage cost",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "10 GB per file in 标准空间",
+      "source": "https://xiaoyi.vc/123yunpan-storage-adjustment-professional-standard-space.html"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "10 GB of extraction traffic per month on a free account, all clients",
+      "source": "https://www.ithome.com/0/900/421.htm"
+    },
+    {
+      "kind": "write-gated",
+      "value": "share downloads require a login since 2025-11-26",
+      "source": "https://www.laoliang.net/news/27693.html"
+    }
+  ],
+  "identity_cost": {
+    "kind": "country-phone",
+    "detail": "the login page offers app or WeChat QR login, or a phone-or-email password login, but the signup path terminates at +86 SMS. A 2026 guide states 'mainland +86 number only, email sign-up stops at phone binding'",
+    "country": "86"
+  },
+  "reliability_note": "Two independent failure modes seen on the same day: 5104 分享已过期 on most public keys, and 5112 分享方提取流量包不足 on live ones. The sharer's traffic pack is the binding constraint, so a valid share with an exhausted pack is unusable by anyone including a logged-in user. The quota regime changed in 2025-11 and again in 2026-09 and the operator blames bulk registration",
+  "confidence": "reported",
+  "evidence": [
+    {
+      "url": "https://www.ithome.com/1/007/104.htm",
+      "date": "2026-10-21",
+      "proved": "'老用户免费配额为专业空间 50GB 加标准空间 2TB' '大于 10GB 的超大文件、分卷压缩文件组，以及直链、图床、视频转码服务产生的文件，也计入专业空间'"
+    },
+    {
+      "url": "https://www.ithome.com/0/900/421.htm",
+      "date": "2026-10-21",
+      "proved": "free users '每月累计提取流量上限为合计 10GB', client downloads bill at half, overage CNY 0.05/GB"
+    },
+    {
+      "url": "https://www.laoliang.net/news/27693.html",
+      "date": "2026-10-21",
+      "proved": "'免登录下载100M内小文件的权益取消了，以后要想下载文件，必须登录'"
+    },
+    {
+      "url": "probe:https://1813769031.share.123pan.cn/b/api/share/get?shareKey=1oglVv-x3Z4",
+      "date": "2026-10-21",
+      "proved": "200, 539 B, code 0, FileName, Size 469732600 and Etag returned with no cookie and no token"
+    },
+    {
+      "url": "probe:POST https://1813769031.share.123pan.cn/b/api/share/download/info",
+      "date": "2026-10-21",
+      "proved": "200, 68 B, {\"code\":5112,\"message\":\"分享方提取流量包不足\"}, no URL issued"
+    },
+    {
+      "url": "probe:https://open-api.123pan.com/api/v1/user/info",
+      "date": "2026-10-21",
+      "proved": "200 {\"code\":401,\"message\":\"token is expired\"}, so the Open API is live"
+    },
+    {
+      "url": "probe:https://webdav.123pan.cn/webdav",
+      "date": "2026-10-21",
+      "proved": "401, so the WebDAV endpoint is live and auth-gated"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "binding": "per-ip-shaping",
+  "binding_note": "The capacity is real and large, so the quota is not what stops a plan.",
+  "notes": "Two seed records disagreed: one called this qualifies-with-caveat on capacity and another fails-egress on the read path. Both are true of different things and this record carries both, with the extraction cap named as binding. The site's own headline still advertises 免费用户高达2TB容量, VIP享20TB容量, SVIP享100TB容量, which is the offer before the 2026-09 split.",
+  "extras": {
+    "access_mode": "registration-gated",
+    "anonymous_read": "metadata anonymous, bytes refused",
+    "free_tier_regime_changed": "2025-11 traffic cut, 2026-09 space split",
+    "openapi_paid_addon": "a 开发者权益包 at CNY 20/month from 2026, reported on linux.do"
+  }
+}

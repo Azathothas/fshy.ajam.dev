@@ -1,0 +1,107 @@
+{
+  "topic": "ci-cd-runners",
+  "slug": "github-actions-public",
+  "provider": "GitHub Actions on a public repository",
+  "url": "https://docs.github.com/en/billing/concepts/product-billing/github-actions",
+  "category": "CI runner",
+  "free_tier": {
+    "stated": "standard GitHub-hosted runners are free with no minute cap on a public repository; 20 concurrent jobs on Free; 6 hours per job",
+    "unit": "unlimited",
+    "source_url": "https://docs.github.com/en/billing/concepts/product-billing/github-actions",
+    "read_on": "2026-10-22",
+    "metered_on": "wall-clock"
+  },
+  "per_object_cap": {
+    "stated": "6 hours of execution per job on a GitHub-hosted runner; 35 days per workflow run including waiting and approval; 256 jobs per matrix per run; a 500 KB workflow file",
+    "bytes": null,
+    "source_url": "https://docs.github.com/en/actions/reference/limits",
+    "notes": "a self-hosted job is capped at 5 days instead"
+  },
+  "retention": {
+    "stated": "artifacts and logs are kept 90 days by default and configurable per repository; the runner is destroyed at the end of the job",
+    "days": 90,
+    "source_url": "https://docs.github.com/en/actions/how-tos/manage-workflow-runs/remove-workflow-artifacts"
+  },
+  "egress": {
+    "terms": "no egress charge on the runner; artifact storage is capped at 500 MB on Free and shared with GitHub Packages",
+    "metered": true,
+    "free_allowance": "500 MB artifact and package storage",
+    "price_per_tb": null,
+    "source_url": "https://docs.github.com/en/billing/concepts/product-billing/github-packages"
+  },
+  "interface": [
+    "git",
+    "cli"
+  ],
+  "interface_detail": "a workflow YAML in .github/workflows, triggered by a push, a schedule, a pull request or a repository dispatch; the runner is a shell with a network",
+  "tooling": "the runner image is Ubuntu 24.04 with 4 vCPU, 16 GB RAM and 14 GB SSD; any package manager, any compiler, docker buildx",
+  "chaining": "free compute whose output has to leave immediately: artifacts are 500 MB, GHCR is 500 MB, and the cache evicts at 7 days. R2's 10 GB free tier is the join that makes the chain storable",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "6 hours per job; 35 days per workflow run; 256 jobs per matrix; a 500 KB workflow file",
+      "source": "https://docs.github.com/en/actions/reference/limits"
+    },
+    {
+      "kind": "request-rate",
+      "value": "20 concurrent jobs on GitHub Free (Pro 40, Team 60, Enterprise 500); 5 concurrent macOS",
+      "source": "https://docs.github.com/en/actions/reference/limits"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "cache entries not accessed in over 7 days are removed",
+      "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "artifacts and logs are kept 90 days by default and the window is configurable per repository",
+      "source": "https://docs.github.com/en/actions/how-tos/manage-workflow-runs/remove-workflow-artifacts"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "10 GB of cache per repository, evicted oldest-first beyond it",
+      "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching"
+    }
+  ],
+  "limits_note": "100 workflow runs may queue per concurrency group; cache uploads are 200 a minute and downloads 1,500 a minute per repository; in a public repository a scheduled workflow is automatically disabled when the repository has no activity for 60 days (docs.github.com/en/actions/how-tos/manage-workflow-runs/disable-and-enable-workflows)",
+  "binding": "per-object-cap",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a GitHub account; no card for a public repository",
+    "country": null
+  },
+  "reliability_note": "the repository, its workflows and its logs are public, which is a technical property of the free tier and not a policy question",
+  "confidence": "documented",
+  "confidence_note": "the billing and limits pages were read today and state both the unlimited public minutes and each cap.",
+  "evidence": [
+    {
+      "url": "https://docs.github.com/en/billing/concepts/product-billing/github-actions",
+      "date": "2026-10-22",
+      "proved": "'GitHub Actions usage is free for self-hosted runners and for public repositories that use standard GitHub-hosted runners'; 'Larger runners are always charged for, even when used by public repositories'"
+    },
+    {
+      "url": "https://docs.github.com/en/actions/reference/limits",
+      "date": "2026-10-22",
+      "proved": "Job execution time 6 hours on GitHub-hosted and 5 days self-hosted; 35 days per workflow run; 256 jobs per matrix per run; 500 KB workflow file; 20 concurrent jobs on Free and 5 macOS; 500 MB artifact storage, 2,000 minutes and 10 GB cache per repository on Free"
+    },
+    {
+      "url": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners",
+      "date": "2026-10-22",
+      "proved": "ubuntu-latest is 4 vCPU, 16 GB RAM, 14 GB SSD; ubuntu-slim is 1 vCPU and 5 GB"
+    },
+    {
+      "url": "https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching",
+      "date": "2026-10-22",
+      "proved": "10 GB per repository by default; any cache entry not accessed in over 7 days is removed; beyond the limit the oldest entries are evicted"
+    },
+    {
+      "url": "https://docs.github.com/en/actions/how-tos/manage-workflow-runs/remove-workflow-artifacts",
+      "date": "2026-10-22",
+      "proved": "'By default, GitHub stores build logs and artifacts for 90 days'"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-22T03:05:00.000Z",
+  "price_per_tb_month": null,
+  "notes": "Unlimited minutes is true and it is not the number that decides anything. The capacity is the 20-slot concurrency: 20 slots x 24 h is 480 runner-hours a day, which is the flow ceiling, and the 120 runner-hours the slots hold at one instant is a stock and not a rate. Minutes are not scarce; a single job that runs longer than six hours is impossible. A 256-job matrix at the six-hour ceiling is 1,536 runner-hours, or thirteen waves of 20 and 78 hours of wall clock."
+}

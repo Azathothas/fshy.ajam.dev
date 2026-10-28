@@ -1,0 +1,87 @@
+{
+  "topic": "storage",
+  "slug": "fileditch",
+  "provider": "FileDitch (new.fileditch.com)",
+  "url": "https://new.fileditch.com",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "No total storage quota stated; uploader accepts an unbounded number of files. Live uploader JS caps a single file at 155 GiB (constant MAXB = 155*1024*1024*1024, error string 'files over 150 GB are not allowed').",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://new.fileditch.com/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "150 GB per file",
+    "bytes": 150000000000,
+    "source_url": "https://new.fileditch.com/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Extension blocklist is broad (php, html, js, exe, dll, apk, sh, py, xml, svg, iso-adjacent script types) — .bin/.parquet/.npy/.zip/.7z are fine. Retention: indefinite while accessed; only 45+ day untouched files are reclaim candidates.",
+    "source_url": "https://new.fileditch.com/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered direct download links, no bandwidth product at all. No paid tier is sold, so there is no egress meter to trip.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "chunked.php REST protocol, fully scriptable and keyless: POST ?action=init&filename=&size= -> {id, chunk_size}, POST ?action=chunk&id=&i= with raw body, POST ?action=finish&id= -> {url}. 128 MiB chunks, PARALLEL=6 in the shipped client.",
+  "chaining": "Account-less upload breaks the per-account quota model entirely: every file is independent, so chain = unlimited files x 155 GiB. Only per-IP rate limits and the retention clock bind.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "150 GB per file",
+      "source": "https://new.fileditch.com/"
+    }
+  ],
+  "limits_note": "155 GiB / 150 GB per file (live JS constant). 128 MiB chunks, 6 parallel. Extension blocklist is broad (php, html, js, exe, dll, apk, sh, py, xml, svg, iso-adjacent script types) — .bin/.parquet/.npy/.zip/.7z are fine. Retention: indefinite while accessed; only 45+ day untouched files are reclaim candidates.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: essed; only 45+ day untouched files are reclaim candidates. anonymous-dump",
+    "country": null
+  },
+  "reliability_note": "Upload path works headlessly today; download path is Cloudflare-Turnstile gated (403 cf-mitigated: challenge on the itsfileditchfiles.st host even with Range + browser UA), so a non-browser client can write but not read.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://new.fileditch.com/",
+      "date": "2026-10-21",
+      "proved": "live JS: const MAXB = 155*1024*1024*1024 and errItem 'files over 150 GB are not allowed'"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: POST chunked.php?action=init&filename=probe.bin&size=1048576 -> 200 {\"success\":true,\"id\":\"a54f...\",\"chunk_size\":134217728,\"total_chunks\":1}"
+    },
+    {
+      "url": "https://itsfileditchfiles.st/charlie48/.../probe.bin",
+      "date": "2026-10-21",
+      "proved": "probe: chunk upload -> 200 {\"success\":true,\"i\":0}; finish -> 200 {\"url\":\"\",\"size\":1048576}"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET that URL -> 403 Cf-Mitigated: challenge (Cloudflare Turnstile), 5669 bytes of challenge HTML"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No total storage quota stated; uploader accepts an unbounded number of files. Live uploader JS caps a single file at 155 GiB (constant MAXB = 155*1024*1024*1024, error string 'files over 150 GB are not allowed').",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "No total storage quota stated; uploader accepts an unbounded number of files. Live uploader JS caps a single file at 155 GiB (constant MAXB = 155*1024*1024*1024, error string 'files over 150 GB are not allowed').",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

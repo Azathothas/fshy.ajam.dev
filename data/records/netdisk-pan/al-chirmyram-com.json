@@ -1,0 +1,99 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "al-chirmyram-com",
+  "provider": "OpenList",
+  "url": "https://al.chirmyram.com/",
+  "category": "public-instance",
+  "free_tier": {
+    "stated": "anonymous guest read of 9 root entries; no account and no payment",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://al.chirmyram.com/",
+    "read_on": "2026-10-22"
+  },
+  "per_object_cap": {
+    "stated": null,
+    "source_url": "https://al.chirmyram.com/"
+  },
+  "retention": {
+    "stated": null,
+    "days": null,
+    "source_url": "https://al.chirmyram.com/"
+  },
+  "egress": {
+    "terms": "served through cloudflare; the reader pays nothing",
+    "metered": false,
+    "source_url": "https://al.chirmyram.com/"
+  },
+  "interface": [
+    "rest",
+    "webdav"
+  ],
+  "interface_detail": "rest",
+  "tooling": null,
+  "chaining": "a fetch substrate: point a cache and two mirrors at it, never a write tier A read-only corpus, so there is no multiplication. Useful as a fetch mirror and as the reference implementation of publishing guest credentials and putting Cloudflare in front, which is the transferable part",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "no published rate; one operator and a CDN front absorb the read",
+      "source": "https://al.chirmyram.com/"
+    },
+    {
+      "kind": "write-gated",
+      "value": "PUT denied at the guest role",
+      "source": "probe:https://al.chirmyram.com/api/fs/put"
+    }
+  ],
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "The reference reader. A 7.43 TiB book and comic corpus, Cloudflare-fronted, and a 36,747,196-byte PDF read back at 206 with cf-cache-status HIT. The upstream is a SharePoint tenant, which is why single files reach tens of GiB.",
+  "confidence": "measured",
+  "evidence": [
+    {
+      "url": "probe:https://al.chirmyram.com/api/public/settings",
+      "date": "2026-10-22",
+      "proved": "HTTP 200, JSON carrying a code field, site_title 'OpenList'"
+    },
+    {
+      "url": "probe:https://al.chirmyram.com/api/fs/list",
+      "date": "2026-10-22",
+      "proved": "anonymous POST /api/fs/list on / returned code 200 with 9 root entries; write:true, write_content_bypass:False, provider:unknown"
+    },
+    {
+      "url": "probe:https://al.chirmyram.com/api/fs/put",
+      "date": "2026-10-22",
+      "proved": "the zero-byte oracle (PUT at an existing directory with Overwrite:false) returned code 403 with message 'permission denied' inside HTTP 200, so the write permission failed and nothing was written"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T03:37:00.574Z",
+  "binding": "per-ip-shaping",
+  "notes": "The reference reader. A 7.43 TiB book and comic corpus, Cloudflare-fronted, and a 36,747,196-byte PDF read back at 206 with cf-cache-status HIT. The upstream is a SharePoint tenant, which is why single files reach tens of GiB.",
+  "extras": {
+    "access_mode": "public-instance",
+    "read_capability": "full",
+    "write_capability": "permission-denied",
+    "upstream_provider": "unknown",
+    "fronting_cdn": "cloudflare",
+    "advertised_write_flag": true,
+    "write_content_bypass": false,
+    "permission_bitmask": "0",
+    "base_path": "/",
+    "listing_sha256": "aa7d8309",
+    "first_seen": "2024-01-20",
+    "last_verified_alive": "2026-10-22T03:37:00.574Z",
+    "last_verified_dead": null,
+    "consecutive_failures": 0,
+    "aliases": [
+      "七米蓝仓库 (al.chirmyram.com) — public AList instance, read-only, WebDAV + CF cache HIT"
+    ],
+    "largest_listed_directory_bytes": 4058674141521,
+    "cf_cache_hit": true,
+    "guest_credentials": [
+      "alist:alist"
+    ]
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "topic": "inference",
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "not applicable"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "slug": "mlvoca",
+  "provider": "mlvoca.com free LLM API",
+  "url": "https://mlvoca.com/api/generate",
+  "category": "inference endpoint, keyless, Ollama format (not OpenAI-compatible), not answering",
+  "free_tier": {
+    "stated": "documented as POST /api/generate on tinyllama and deepseek-r1:1.5b with no API key and no rate limit; when read, GET /api/generate answered 502 Bad Gateway from nginx",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://mlvoca.github.io/free-llm-api/",
+    "read_on": "2026-10-28"
+  },
+  "endpoint": "https://mlvoca.com/api/generate",
+  "tooling": "Ollama-format POST /api/generate with {\"model\", \"prompt\", \"stream\"}; not an OpenAI chat route",
+  "chaining": "no chain exists while the endpoint is not answering",
+  "limits": [],
+  "binding": "none",
+  "limits_note": "no rate or quota binds: the endpoint is not answering",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no API key and no rate limit per the project page when it was working",
+    "country": null
+  },
+  "reliability_note": "GET /api/generate answered 502 Bad Gateway from nginx on four reads over about 10 minutes, and GET / and /api/tags answered 403 Forbidden; a third-party prober recorded 0 of 336 chat calls answered in 14 days",
+  "confidence": "measured",
+  "confidence_note": "the 502 was read by GET; no POST was sent because probe.py issues GET and HEAD only, so a POST that answers while the GET fails cannot be excluded",
+  "probe": {
+    "records": [
+      {
+        "probe_id": "mlvoca-generate-get",
+        "method": "GET",
+        "url": "https://mlvoca.com/api/generate",
+        "http": 502,
+        "server": "nginx/1.22.1",
+        "probed_at": "2026-10-28T04:48:45.156Z"
+      },
+      {
+        "probe_id": "mlvoca-tags-get",
+        "method": "GET",
+        "url": "https://mlvoca.com/api/tags",
+        "http": 403,
+        "probed_at": "2026-10-28T04:45:32.339Z"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "url": "https://mlvoca.github.io/free-llm-api/",
+      "date": "2026-10-28",
+      "capture": "sha256:3af9f46cc6901d91489242212b23e0c5b801d851c4b35d165c7b06583eff69eb",
+      "quote": "- The endpoint of the free llm api currently works without any kind of rate limit or API key. Therefore, it can be used for free without token/call limits.",
+      "proved": "the project page states no rate limit and no API key"
+    },
+    {
+      "url": "https://mlvoca.com/api/generate",
+      "date": "2026-10-28",
+      "capture": "sha256:63e384c14fa5327de0db932d60f2ded2e889028eb50e74dcde35c721fe2ce0ee",
+      "quote": "<center><h1>502 Bad Gateway</h1></center>",
+      "proved": "GET /api/generate answered a 502 Bad Gateway page from nginx"
+    },
+    {
+      "url": "https://stillworks.supercapybara.com/free-llm-api-no-key",
+      "date": "2026-10-28",
+      "capture": "sha256:34aa29edf68cc49c49bdcf1119b702b0c338ae9d71d2a58db4b4586122b9a223",
+      "quote": "| [mlvoca.com](https://stillworks.supercapybara.com/llm/mlvoca) (Ollama-shaped, not OpenAI-compatible) | 0 of 0 models answering | 0 of 336 (0%) | — | no model answering |",
+      "proved": "a third-party prober got no answer from the endpoint in 14 days"
+    }
+  ],
+  "verdict": "dead",
+  "verified_at": "2026-10-28T04:36:18.974Z",
+  "notes": "dead cause: dead-service, not confirmed by a POST; revisit with a POST-capable probe"
+}

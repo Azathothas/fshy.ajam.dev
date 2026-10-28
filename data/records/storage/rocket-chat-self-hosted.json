@@ -1,0 +1,77 @@
+{
+  "topic": "storage",
+  "slug": "rocket-chat-self-hosted",
+  "provider": "Rocket.Chat self-hosted (Community / Starter)",
+  "url": "https://docs.rocket.chat/docs/our-plans",
+  "category": "messaging",
+  "free_tier": {
+    "stated": "No storage quota. Per-file ceiling is a single setting: 'Maximum File Upload Size (in bytes) ... Use -1 to remove the limit.'",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.rocket.chat/docs/file-upload",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.rocket.chat/docs/file-upload",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.rocket.chat/docs/file-upload",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Your own infrastructure. Cloud-hosted workspaces have a storage limit visible in the admin panel, but self-managed does not.",
+    "metered": false
+  },
+  "interface": [
+    "s3",
+    "rest",
+    "webdav"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Rocket.Chat REST API `POST /api/v1/rooms.media/{rid}` + `rooms.mediaConfirm`. Storage backends: GridFS (MongoDB, default), AmazonS3/MinIO, Google Cloud Storage, WebDAV, FileSystem — the WebDAV and S3 backends make it pluggable into anything.",
+  "chaining": "N workspaces x unlimited rooms. The WebDAV backend is the interesting bit: it turns Rocket.Chat into a front-end over any WebDAV store, so it chains rather than multiplies.",
+  "limits": [],
+  "limits_note": "Starter: up to 50 users, self-managed. Community: up to 100 concurrent users, self-hosted only, 10,000 push notifications/month. Per-file limit unlimited if set to -1.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Solid; the default GridFS backend stores blobs inside MongoDB, which is a poor choice at TB scale (the docs themselves recommend S3/MinIO). Files can be JWT-protected or public per workspace setting.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://docs.rocket.chat/docs/file-upload",
+      "date": "2026-10-21",
+      "proved": "'Maximum File Upload Size (in bytes) ... Use -1 to remove the limit.'"
+    },
+    {
+      "url": "https://docs.rocket.chat/docs/file-upload",
+      "date": "2026-10-21",
+      "proved": "'Storage Type ... GridFS ... AmazonS3 ... Google Cloud Storage ... WebDAV ... FileSystem. We recommend Amazon S3, Minio, or Google Cloud Storage.'"
+    },
+    {
+      "url": "https://docs.rocket.chat/docs/our-plans",
+      "date": "2026-10-21",
+      "proved": "'Starter | Up to 50 users | Self-managed and self-hosted'; 'Community | Up to 100 concurrent users | Self-hosted only'"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No storage quota. Per-file ceiling is a single setting: 'Maximum File Upload Size (in bytes) ... Use -1 to remove the limit.'",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "No storage quota. Per-file ceiling is a single setting: 'Maximum File Upload Size (in bytes) ... Use -1 to remove the limit.'",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": "no constraint of a named kind was recorded; the verdict rests on the quota sentence rather than on a named limit"
+}

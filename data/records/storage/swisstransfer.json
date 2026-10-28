@@ -1,0 +1,87 @@
+{
+  "topic": "storage",
+  "slug": "swisstransfer",
+  "provider": "SwissTransfer (Infomaniak)",
+  "url": "https://www.swisstransfer.com",
+  "category": "anon-dump",
+  "free_tier": {
+    "stated": "50 GB per transfer, all files combined, no account required. Hosted in Infomaniak's own Swiss datacentres. One notable global property: the source is open (Infomaniak android/iOS/multiplatform clients on GitHub) and there is a working CLI.",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://www.infomaniak.com/en/support/faq/2929/understanding-swisstransfer-data-limits",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: 50 GB",
+    "bytes": 50000000000,
+    "source_url": "https://www.infomaniak.com/en/support/faq/2929/understanding-swisstransfer-data-limits",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Retention: 15 days by default; 30 only if the SENDER accepts an extension email on day 12 (offer open 3 days)",
+    "days": 15,
+    "source_url": "https://www.infomaniak.com/en/support/faq/2929/understanding-swisstransfer-data-limits",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "unmetered, no egress pricing published; direct download links plus a 'Download All' ZIP (ZIP is capped — above 10 GB you must fetch files one by one).",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "swissfer (github.com/Blutsh/swissfer, 44 stars, pushed 2026-10-21) — Rust CLI, upload AND download, email-confirmed sender. First upload requires a 6-character code emailed to you, then cached. Upstream `send`-style clients do not work.",
+  "chaining": "Per-transfer 50 GB x unlimited transfers. With swissfer this is scriptable, so capacity is bounded by how many 50 GB transfers you are willing to mint, each living 15-30 days.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "Retention: 15 days",
+      "source": "https://www.infomaniak.com/en/support/faq/2929/understanding-swisstransfer-data-limits"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "deletes at 15 days",
+      "source": "https://www.infomaniak.com/en/support/faq/2929/understanding-swisstransfer-data-limits"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: 50 GB",
+      "source": "https://www.infomaniak.com/en/support/faq/2929/understanding-swisstransfer-data-limits"
+    }
+  ],
+  "limits_note": "per-object-cap: 50 GB per transfer (combined, not per file). Retention: 15 days by default; 30 only if the SENDER accepts an extension email on day 12 (offer open 3 days). After expiry Infomaniak states a link cannot be reactivated or extended. pull-count: download cap selectable at 1/20/100/250 — 'unlimited' requires a paid plan. Request-rate: the container-create endpoint enforces a reCAPTCHA field (see reliability note).",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: s a working CLI. The write path requires human verification at the API: POST /api/containers without a recaptcha field returns 400 'The recaptcha field is required. (and 1 more error)'. swis",
+    "country": null
+  },
+  "reliability_note": "The write path requires human verification at the API: POST /api/containers without a recaptcha field returns 400 'The recaptcha field is required. (and 1 more error)'. swissfer routes around this with an emailed 6-char confirmation, not with a token. The 30-day option is a trap — it silently deletes at 15 days unless the sender acts on day 12.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://www.infomaniak.com/en/support/faq/2929/understanding-swisstransfer-data-limits",
+      "date": "2026-10-21",
+      "proved": "'50 GB', retention table, download caps, 'cannot be reactivated or extended'"
+    },
+    {
+      "url": "https://www.swisstransfer.com/api/containers",
+      "date": "2026-10-21",
+      "proved": "probe: POST -> 400 {'message':'The recaptcha field is required. (and 1 more error)'}"
+    },
+    {
+      "url": "https://linkinseconds.com/blog/swisstransfer-limits",
+      "date": "2026-10-21",
+      "proved": "(Oct 2026) — independent confirmation of the day-12 extension mechanics"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "50 GB per transfer, all files combined, no account required. Hosted in Infomaniak's own Swiss datacentres. One notable global property: the source is open (Infomaniak android/iOS/multiplatform clients on GitHub) and there is a working CLI.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

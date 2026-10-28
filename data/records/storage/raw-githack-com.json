@@ -1,0 +1,85 @@
+{
+  "topic": "storage",
+  "slug": "raw-githack-com",
+  "provider": "raw.githack.com (CDN for GitHub/GitLab/Bitbucket raw files)",
+  "url": "https://raw.githack.com/",
+  "category": "cdn",
+  "free_tier": {
+    "stated": "No quota of its own; ceiling is GitHub's 100 MiB hard repo file block. Probed a 50,901,339-byte GitHub file: HTTP 200, full length, sha256 fd112e5b… . A 3,408,573-byte file came back with sha256 55fb913b… — byte-identical to jsDelivr's copy of the same file, which is the cleanest proof it does not re-encode.",
+    "unit": "unlimited",
+    "metered_on": "unstated",
+    "source_url": "https://raw.githack.com/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: GitHub's 100 MiB",
+    "bytes": 104857600,
+    "source_url": "https://raw.githack.com/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://raw.githack.com/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free, no account, no key. Cloudflare-fronted with permanent per-URL caching on the tag/commit form.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Two URL forms: raw.githack.com/<owner>/<repo>/<branch|tag>/<path> (development, minutes of cache) and rawcdn.githack.com/<owner>/<repo>/<tag|commit>/<path> (production, cached permanently). Plain GET.",
+  "chaining": "Serves GitHub files at 50 MB where jsDelivr's /gh/ stops at 20 MB — that is the single most useful number here, because it doubles the shard size on an otherwise identical origin. Use rawcdn.githack.com for immutable shards and jsDelivr /gh/ as a second mirror for the smaller ones.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "1 TiB/day",
+      "source": "https://raw.githack.com/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: GitHub's 100 MiB",
+      "source": "https://raw.githack.com/"
+    }
+  ],
+  "limits_note": "per-object-cap: GitHub's 100 MiB repo block is the real ceiling (50 MB proven). commit-ref must be used for permanence; branch refs are re-fetched within minutes. HTML is gated behind an interstitial confirmation page — irrelevant for blobs, fatal if you need to serve HTML.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email",
+    "country": null
+  },
+  "reliability_note": "A branch-ref URL 301s to raw.githubusercontent.com (i.e. it silently stops being a CDN and bills GitHub instead).",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://raw.githack.com/P3TERX/GeoLite.mmdb/download/GeoLite2-City.mmdb",
+      "date": "2026-10-21",
+      "proved": "HTTP 200, 50,901,339 bytes, sha256 fd112e5b… (probed)"
+    },
+    {
+      "url": "https://raw.githack.com/P3TERX/GeoLite.mmdb/download/GeoLite2-Country.mmdb",
+      "date": "2026-10-21",
+      "proved": "3,408,573 bytes, sha256 55fb913b… identical to the jsDelivr copy (probed)"
+    },
+    {
+      "url": "https://raw.githack.com/MetaCubeX/meta-rules-dat/release/geoip.dat",
+      "date": "2026-10-21",
+      "proved": "HTTP 301 → raw.githubusercontent.com (branch form degrades to a redirect, probed)"
+    },
+    {
+      "url": "https://raw.githack.com/",
+      "date": "2026-10-21",
+      "proved": "'Serving 479M+ requests and 46TB+ of traffic monthly'; 'Files are cached permanently based on the URL, query string is ignored'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No quota of its own; ceiling is GitHub's 100 MiB hard repo file block. Probed a 50,901,339-byte GitHub file: HTTP 200, full length, sha256 fd112e5b… . A 3,408,573-byte file came back with sha256 55fb913b… — byte-identical to jsDelivr's copy of the same file, which is the cleanest proof it does not re-encode.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

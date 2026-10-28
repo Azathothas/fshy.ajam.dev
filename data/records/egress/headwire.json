@@ -1,0 +1,84 @@
+{
+  "topic": "egress",
+  "slug": "headwire",
+  "provider": "Headwire",
+  "url": "https://github.com/brofranks/headwire",
+  "category": "wireguard mesh",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Headwire statically configures WireGuard peers with support for NAT traversal using DERP relays. It is experimental. No hosted service and no price are offered.",
+    "unit": "none",
+    "metered_on": "unstated",
+    "source_url": "https://github.com/brofranks/headwire",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://github.com/brofranks/headwire",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://github.com/brofranks/headwire",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No allowance: the relays are a user's own DERP servers or Tailscale's free rate-limited relays.; ingress: none",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://github.com/brofranks/headwire"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "headwire ping 100.64.0.2; config file with [DERPRegion] and [Interface].",
+  "tooling": "headwire CLI plus a macOS app; config file with DERPRegion and Interface sections.",
+  "chaining": "Gives a free VM a private WireGuard path to a laptop; to expose it publicly you still need a tunnel or a public relay.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "Tailscale's DERP relays are described as free rate-limited relays",
+      "source": "https://github.com/brofranks/headwire"
+    }
+  ],
+  "limits_note": "",
+  "binding": "per-ip-shaping",
+  "binding_note": "There is no ingress to meter. If the client borrows Tailscale's DERP relays, the rate limit on those relays is the first thing to bite, and it applies to the relay path only.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account: a user supplies its own DERP servers, or uses Tailscale's free rate-limited DERP relays for Tailcat.",
+    "country": "None"
+  },
+  "reliability_note": "Experimental and dependency-heavy: it reuses Tailscale data-plane libraries and needs a DERP server or Tailscale's rate-limited relays.",
+  "confidence": "documented",
+  "confidence_note": "A two-node test would show whether the mesh works end to end, but it cannot produce a public UDP port, which is the test runs.",
+  "evidence": [
+    {
+      "url": "https://github.com/brofranks/headwire",
+      "date": "2026-10-23",
+      "proved": "Statically configures WireGuard peers with DERP relay fallback, upgrades to a direct path; config uses a [DERPRegion] block and an [Interface] block; experimental."
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=49834349",
+      "date": "2026-09-24",
+      "proved": "Show HN launch date and description: WireGuard with NAT traversal via Tailscale's magicsock."
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Launched 2026-09-24. A one-person experimental project that composes WireGuard with Tailscale's open-source data plane. It is a way to reach your own machines, not to publish a port.",
+  "extras": {
+    "wg_path": "native-conf",
+    "wg_detail": "Configuration is a standard WireGuard-plus-DERP file: a [DERPRegion] block with ID and Nodes, then an [Interface] block. The tool writes peers directly rather than calling an API.",
+    "ingress": "none",
+    "volume_tib_month": null,
+    "volume_stated": "No allowance: the relays are a user's own DERP servers or Tailscale's free rate-limited relays.",
+    "bytes_transit": "overlay-only",
+    "transit_note": "Direct WireGuard where NAT allows, DERP relay otherwise."
+  }
+}

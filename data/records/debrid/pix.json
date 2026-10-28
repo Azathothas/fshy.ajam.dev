@@ -1,0 +1,84 @@
+{
+  "topic": "debrid",
+  "slug": "pix",
+  "provider": "Pix (Brazilian instant payment rail)",
+  "url": "https://www.bcb.gov.br/estabilidadefinanceira/pix",
+  "category": "payment rail (instant bank transfer, Brazil)",
+  "tier": "rail",
+  "free_tier": {
+    "stated": "Not a metered service and not a subscription. No fee is published on any page read the rail's own rulebook at bcb.gov.br is served by a client-rendered application that returned navigation and a cookie banner on two attempts.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://www.bcb.gov.br/estabilidadefinanceira/pix",
+    "read_on": "2026-10-23",
+    "notes": "The trial and fee rules for individuals are unverified. What is verified is the buyer-side behaviour at two checkouts, below."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: a payment, not an object.",
+    "bytes": null,
+    "source_url": "https://www.bcb.gov.br/estabilidadefinanceira/pix",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable. A Pix charge is presented as a code with an expiry; the checkout pages read here do not publish the lifetime.",
+    "days": null,
+    "source_url": "https://ajuda.kiwify.com.br/pt-br/article/como-funciona-o-pix-1bq7o7y/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not applicable.",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.bcb.gov.br/estabilidadefinanceira/pix"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "The buyer's surface is a payment code, described by Kiwify as 'um codigo unico de pagamento, podendo ser pago via ... Code ou pela opcao de Pix Copia e Cola'. Settlement is pull-based: the payer's bank app reads the code, so no card details cross the merchant.",
+  "tooling": "Any Brazilian bank app or a copy-and-paste code. There is no client the buyer must install and no credential to store, which is why Brazilian resellers prefer it.",
+  "chaining": "Pix is the rail that makes the R$ 24.90 reseller listings work: a buyer with no international card pays in seconds into a Brazilian storefront, which then buys the foreign subscription itself. The chain adds a person between the buyer and the service, and that person holds the account.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "a Brazilian bank account and a CPF are required. At a foreign IP the checkout hides the CPF field and disables Pix, boleto and installments",
+      "source": "https://ajuda.kiwify.com.br/pt-br/article/o-checkout-funciona-fora-do-brasil-1cdb1ri/"
+    }
+  ],
+  "limits_note": "Kiwify states the exclusion from the merchant side in plain Portuguese: 'Quando um comprador acessa o checkout de fora do Brasil, nos escondemos o campo de CPF e desabilitamos algumas funcionalidades como: Boleto bancario, Pix, Parcelamento'. Hotmart lists Pix under 'Metodos de pagamento exclusivos do Brasil'.",
+  "binding": "write-gated",
+  "binding_note": "Nothing about volume applies. A buyer without a Brazilian account cannot complete the payment at all, which is the gate that fails before any other consideration.",
+  "price_per_tb_month": null,
+  "identity_cost": {
+    "kind": "national-id",
+    "detail": "CPF plus an account at a Brazilian financial institution. The checkout hides the CPF field for foreign IPs and disables Pix, which is the operational proof that the rail is closed to a buyer outside Brazil.",
+    "country": "Brazil"
+  },
+  "reliability_note": "Instant settlement, so a mistaken transfer is not reversible through the rail; none of the checkout pages read here describe a dispute path. A payer travelling abroad can re-select Brazil in the checkout's country selector to get Pix back, per Kiwify, so the gate is residency rather than location.",
+  "confidence": "reported",
+  "confidence_note": "Two checkout vendors document the rail's buyer-side gate, and both agree. The rail's own rulebook was not readable: bcb.gov.br returned a cookie banner and navigation on two URLs, and the PDF path 404s. Reading the BCB rulebook would move the fee and limit statements from absent to documented.",
+  "evidence": [
+    {
+      "url": "https://ajuda.kiwify.com.br/pt-br/article/o-checkout-funciona-fora-do-brasil-1cdb1ri/",
+      "date": "2026-10-23",
+      "proved": "'Quando um comprador acessa o checkout de fora do Brasil, nos escondemos o campo de CPF e desabilitamos algumas funcionalidades como: Boleto bancario, Pix, Parcelamento' and 'os estrangeiros nao precisam de CPF e tambem nao podem pagar via boleto bancario, pix ou parcelado'"
+    },
+    {
+      "url": "https://ajuda.kiwify.com.br/pt-br/article/como-funciona-o-pix-1bq7o7y/",
+      "date": "2026-10-23",
+      "proved": "'O codigo gerado pelo checkout da Kiwify e um codigo unico de pagamento, podendo ser pago via ... Code ou pela opcao de Pix Copia e Cola' - the mechanics of the payment code"
+    },
+    {
+      "url": "https://suportehotmart.zendesk.com/hc/pt-br/articles/25648853025037-Quais-s%C3%A3o-os-m%C3%A9todos-de-pagamento-dispon%C3%ADveis-para-comprar-na-Hotmart",
+      "date": "2026-10-23",
+      "proved": "'Metodos de pagamento exclusivos do Brasil > Pix' - a second, independent checkout vendor classifying Pix as Brazil-only"
+    }
+  ],
+  "verdict": "fails-identity",
+  "verified_at": "2026-10-23T02:15:00.000Z",
+  "notes": "A payment rail is not a retrieval service, and this record exists because question cannot be answered without it: every R$ price is a Pix price, and Pix is the one part of the Brazilian stack a foreign buyer cannot join. The Chinese parallel is Alipay or WeChat Pay; the shape is the same, a domestic clearing rail that local storefronts build on.",
+  "extras": {
+    "buyer_gate": "CPF + Brazilian bank account",
+    "merchant_receipt": "Kiwify receives the Pix, not the seller: 'Quem recebe o Pix e a Kiwify e nao voce diretamente'"
+  }
+}

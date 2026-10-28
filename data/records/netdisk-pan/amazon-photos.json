@@ -1,0 +1,94 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "amazon-photos",
+  "provider": "Amazon Photos (Prime)",
+  "url": "https://www.amazon.com/gp/help/customer/display.html?nodeId=G6PT8TMLM9NVZCSL",
+  "category": "retail-ecosystem photo cloud",
+  "free_tier": {
+    "stated": "5 GB for every Amazon customer. Unlimited full-resolution photo storage plus 5 GB of video for Amazon Prime members",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://www.amazon.com/gp/help/customer/display.html?nodeId=G6PT8TMLM9NVZCSL",
+    "read_on": "2026-10-21"
+  },
+  "per_object_cap": {
+    "stated": "5 GB of video even on Prime; photos are unlimited. Paid plans exist above 5 GB",
+    "bytes": null,
+    "source_url": "https://www.amazon.com/gp/help/customer/display.html?nodeId=G6PT8TMLM9NVZCSL"
+  },
+  "retention": {
+    "stated": "While the account and the Prime membership persist; photos are removed from the unlimited tier if Prime lapses",
+    "days": null,
+    "source_url": "https://www.amazon.com/gp/help/customer/display.html?nodeId=G6PT8TMLM9NVZCSL"
+  },
+  "egress": {
+    "terms": "Downloads run through Amazon's CDN, effectively free and fast, but only for objects the account uploaded",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.amazon.com/gp/help/customer/display.html?nodeId=G6PT8TMLM9NVZCSL"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "tooling": "unofficial and cookie-authenticated only: trevorhobenshield/amazon_photos in Python, entourloop/amazon-photo-uploader in Rust, and an MCP server. There is no OAuth and no API key, and every wrapper says cookies expire and must be refreshed by hand. No rclone backend",
+  "chaining": "The classic unlimited-photos shape: if arbitrary image bytes are accepted, and they are because it is a photo service, then a photo-shaped payload is free across accounts. The 5 GB video cap is what stops it being a general drive, and the absence of an API stops it being a pipeline",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "5 GB of video total, even on Prime; photos are unlimited but must be photographs",
+      "source": "https://www.amazon.com/gp/help/customer/display.html?nodeId=G6PT8TMLM9NVZCSL"
+    },
+    {
+      "kind": "write-gated",
+      "value": "cookie authentication with no OAuth or key flow, so the credential is a browser session that expires",
+      "source": "https://github.com/vanessa/immich-amazon-sync"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an Amazon account and a Prime membership. Prime is the price of admission, so unlimited is bundled and not free",
+    "country": null
+  },
+  "reliability_note": "Cookie-authenticated wrappers break on any change to Amazon's login flow; the MCP wrapper's own README calls it an unofficial API that may break. Photo-only means ingest may re-encode or reject non-image payloads",
+  "confidence": "reported",
+  "evidence": [
+    {
+      "url": "https://www.amazon.com/gp/help/customer/display.html?nodeId=G6PT8TMLM9NVZCSL",
+      "date": "2026-10-21",
+      "proved": "'5 GB of free storage for all Amazon customers. Unlimited full-resolution photo storage, plus 5 GB of video storage, for Amazon Prime members'"
+    },
+    {
+      "url": "https://www.aws.amazon.com/blogs/storage/how-amazon-photos-uses-amazon-s3-intelligent-tiering",
+      "date": "2026-10-21",
+      "proved": "'unlimited photo storage and 5 GB of video storage to Amazon Prime members in eight marketplaces'"
+    },
+    {
+      "url": "https://github.com/trevorhobenshield/amazon_photos",
+      "date": "2026-10-21",
+      "proved": "a Python client with md5 deduplication that preserves directory structure on upload"
+    },
+    {
+      "url": "https://github.com/vanessa/immich-amazon-sync",
+      "date": "2026-10-21",
+      "proved": "'Amazon Photos has no OAuth or API key flow' 'Cookie auth is fragile'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "price_per_tb_month": "Bundled with Prime at about USD 139/yr; the unlimited photo tier has no standalone price",
+  "binding": "write-gated",
+  "binding_note": "The capacity is genuinely unlimited for photographs and the gate is the credential: a browser cookie with no OAuth flow, which expires and cannot be renewed programmatically. That makes it a manual-ingest target at any scale.",
+  "notes": "Both seed records are folded in here: one called it qualifies-with-caveat on the unlimited photo tier, another called it a dead end because Prime is paid and the video cap is 5 GB. Both are correct; the verdict is qualifies-with-caveat because the unlimited half is real and the caveat is the cookie auth plus the paid membership.",
+  "extras": {
+    "access_mode": "paid",
+    "free_tier_exists": true,
+    "api": "unofficial cookie auth only",
+    "aliases": [
+      "Amazon Photos (Prime)"
+    ],
+    "cross_topic_record": "dossier/storage/amazon-photos.json",
+    "cross_topic_note": "A record for this provider already exists under the storage topic; this one is scoped to its role as a pan, following the same split dossier/netdisk-pan/lanzou.json uses."
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "topic": "email",
+  "slug": "smtp2go",
+  "provider": "SMTP2GO",
+  "url": "https://www.smtp2go.com/pricing/",
+  "category": "transactional sender and SMTP relay",
+  "free_tier": {
+    "stated": "1,000 emails/month, 200/day, and 25/hour until a sender domain is verified",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://developers.smtp2go.com/docs/rate-limiting",
+    "read_on": "2026-10-22",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": "5 days of reporting on the free plan, against 30 on paid",
+    "days": null,
+    "notes": "",
+    "source_url": "https://www.smtp2go.com/pricing/"
+  },
+  "egress": {
+    "terms": "not applicable: an outbound sender",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.smtp2go.com/pricing/"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "tooling": "any SMTP client",
+  "chaining": "a 200/day relay with an hourly floor, so it composes with a sender that bursts rather than one that schedules.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "200 emails per day",
+      "source": "https://developers.smtp2go.com/docs/rate-limiting"
+    },
+    {
+      "kind": "request-rate",
+      "value": "25 per hour while no sender domain is verified",
+      "source": "https://developers.smtp2go.com/docs/rate-limiting"
+    },
+    {
+      "kind": "request-rate",
+      "value": "1,000 emails per month",
+      "source": "https://developers.smtp2go.com/docs/rate-limiting"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an account; no card for the free plan",
+    "country": null
+  },
+  "reliability_note": "new paid accounts are held at 1,000/day during a one-time review",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://developers.smtp2go.com/docs/rate-limiting",
+      "date": "2026-10-22",
+      "proved": "'The free plan allows 1,000 emails per month and has a limit of 200 emails per day (a 25-per-hour limitation also applies if no sender domains are verified)'"
+    },
+    {
+      "url": "https://www.smtp2go.com/pricing/",
+      "date": "2026-10-22",
+      "proved": "'Try SMTP2GO free for as long as you like' and 'over 1,000 emails/month' for paid"
+    },
+    {
+      "url": "probe:smtp://mail.smtp2go.com:2525",
+      "date": "2026-10-22",
+      "proved": "banner 250 on port 2525, EHLO advertises SIZE and 8BITMIME, STARTTLS completed, and AUTH LOGIN returned 334. The submission endpoint answers; no message was sent"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T03:20:00.000Z",
+  "notes": "Three stacked caps on one product, and the hourly one is on the developer page but not on the pricing table.",
+  "extras": {
+    "stale_after_days": 90
+  },
+  "binding": "request-rate",
+  "binding_note": "25/hour is 600/day if sustained and is the first ceiling a new signup meets, before the 200/day or the 1,000/month.",
+  "interface_detail": "SMTP and the SMTP2GO API",
+  "confidence_note": "no message was sent, so no delivery is proved. The submission path was probed: mail.smtp2go.com:2525 answered 250, STARTTLS completed, and AUTH LOGIN returned 334"
+}

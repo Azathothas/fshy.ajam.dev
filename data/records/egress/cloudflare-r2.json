@@ -1,0 +1,72 @@
+{
+  "topic": "egress",
+  "slug": "cloudflare-r2",
+  "provider": "Cloudflare R2",
+  "url": "https://developers.cloudflare.com/r2/pricing/",
+  "category": "object storage (zero-egress)",
+  "free_tier": {
+    "stated": "10 GB-month storage, 1M Class A and 10M Class B operations per month, egress free",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://developers.cloudflare.com/r2/pricing/",
+    "read_on": "2026-10-22",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: storage is metered by volume rather than per object",
+    "bytes": null,
+    "notes": "",
+    "source_url": "https://developers.cloudflare.com/r2/pricing/"
+  },
+  "retention": {
+    "stated": "not applicable: bytes persist while the account is in good standing",
+    "days": null,
+    "notes": "",
+    "source_url": "https://developers.cloudflare.com/r2/pricing/"
+  },
+  "egress": {
+    "terms": "free, unconditionally, on every plan",
+    "metered": false,
+    "free_allowance": "none for egress: egress to the internet is free on every plan",
+    "price_per_tb": null,
+    "source_url": "https://developers.cloudflare.com/r2/pricing/"
+  },
+  "interface": [
+    "s3"
+  ],
+  "tooling": "aws-cli, rclone (s3 backend)",
+  "chaining": "the origin that makes a free front free: R2 holds the bytes with zero egress and a Cloudflare front serves them, so the read path costs nothing at any volume and the 10 GB is the whole bill.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "1M Class A and 10M Class B operations per month",
+      "source": "https://developers.cloudflare.com/r2/pricing/"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a Cloudflare account",
+    "country": null
+  },
+  "reliability_note": "zero egress applies to the read path only",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://developers.cloudflare.com/r2/pricing/",
+      "date": "2026-10-22",
+      "proved": "10 GB-month storage, 1M Class A, 10M Class B, egress free; page last updated 2026-10-01"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T03:20:00.000Z",
+  "notes": "",
+  "extras": {
+    "stale_after_days": 180,
+    "bytes_transit": "yes",
+    "transit_note": "the object leaves Cloudflare's network on every read, and egress is free on every plan"
+  },
+  "binding": "none",
+  "binding_note": "nothing binds the egress: it is free unconditionally. The 10 GB-month storage volume caps what an origin can hold and no kind names a volume",
+  "interface_detail": "https://<account>.r2.cloudflarestorage.com",
+  "limits_note": "the 10 GB-month is a storage volume and not an object size, so no kind in the six-value vocabulary names it. It stays the binding term: 10 GB is 0.1% of the hot working set"
+}

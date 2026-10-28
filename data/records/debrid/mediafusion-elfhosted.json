@@ -1,0 +1,85 @@
+{
+  "topic": "debrid",
+  "slug": "mediafusion-elfhosted",
+  "provider": "MediaFusion (ElfHosted public instance)",
+  "url": "https://mediafusion.elfhosted.com/",
+  "category": "hosted Stremio addon, universal torrent/debrid scrapers with live-TV and catalog resources",
+  "tier": "public instance",
+  "free_tier": {
+    "stated": "Free and accountless, but the public instance answered an anonymous stream request with a single placeholder stream titled 'MediaFusion public rate-limit exceeded 🐢'. The manifest itself claims 'configurationRequired: false'.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://mediafusion.elfhosted.com/stream/movie/tt1254207.json",
+    "read_on": "2026-10-23",
+    "notes": "The rate limit is enforced per caller and silently replaces results with one link to a video explaining the limit (https://elfhosted.com/assets/public-rate-limit-exceeded.mp4)."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: stream descriptors, not objects",
+    "bytes": null,
+    "source_url": "https://mediafusion.elfhosted.com/manifest.json",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: the public instance stores nothing for the caller",
+    "days": null,
+    "source_url": "https://mediafusion.elfhosted.com/manifest.json",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Not metered; no bandwidth figure published. Playback is direct from the debrid provider or the source site, not proxied on the free instance.",
+    "metered": false,
+    "free_allowance": "not published",
+    "price_per_tb": null,
+    "source_url": "https://mediafusion.elfhosted.com/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "Stremio addon protocol: resources include catalog, stream (types movie, series, tv, events; idPrefixes tt, tmdb:, tvdb:, mal:, mf, dl) and meta. Contact address published as abuse@elfhosted.com.",
+  "tooling": "no install; add the manifest URL to Stremio. Requires a user's own debrid key for cached playback, and a MediaFlow proxy for household-wide sharing on the paid tier.",
+  "chaining": "The broadest scraper of the free hosted addons found - it carries catalogs and live events, not just streams - so it can stand alone as a Stremio front end without AIOStreams in front of it.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "per-caller public rate limit, enforced; the number is not published and the over-limit response is a single placeholder stream",
+      "source": "https://mediafusion.elfhosted.com/stream/movie/tt1254207.json"
+    }
+  ],
+  "limits_note": "Because the over-limit response is a well-formed 200 with one stream, a client cannot tell a throttled instance from an empty result except by reading the title text.",
+  "binding": "request-rate",
+  "binding_note": null,
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "Nothing to install the addon. A debrid account is required for cached playback.",
+    "country": "None"
+  },
+  "reliability_note": "Throttling is the normal state, not an error: the first anonymous call returned the rate-limit placeholder. The vendor sells a private instance as the fix.",
+  "confidence": "documented",
+  "confidence_note": "Manifest fetched (669 bytes, HTTP 200) and a stream call made and read. Not measured: a configured instance with a debrid key, and whether the public limit resets hourly or daily. Downgraded from measured: no probe record with status, bytes and digest exists.",
+  "evidence": [
+    {
+      "url": "https://mediafusion.elfhosted.com/manifest.json",
+      "date": "2026-10-23",
+      "proved": "HTTP 200, 669 bytes: id 'stremio.addons.mediafusion|elfhosted', name 'MediaFusion | ElfHosted', resources catalog/stream/meta/events, contactEmail abuse@elfhosted.com"
+    },
+    {
+      "url": "https://mediafusion.elfhosted.com/stream/movie/tt1254207.json",
+      "date": "2026-10-23",
+      "proved": "HTTP 200 with exactly one stream: name '[🐢] MediaFusion', title 'MediaFusion public rate-limit exceeded 🐢', url https://elfhosted.com/assets/public-rate-limit-exceeded.mp4"
+    },
+    {
+      "url": "https://store.elfhosted.com/product/mediafusion-mediaflowproxy/",
+      "date": "2026-10-23",
+      "proved": "the paid escape: 'Your own private MediaFusion addon for Stremio, bundled with a MediaFlow Proxy so the whole household can stream from one debrid account', USD 9.00 / month"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T02:28:11.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "This is the clearest evidence found that a free hosted endpoint can be alive and useless at the same time: HTTP 200, valid JSON, schema-correct streams, zero content. Any measurement that only checked status or manifest would have scored it as working.",
+  "extras": {
+    "endpoint": "https://mediafusion.elfhosted.com",
+    "rate_limit_video": "https://elfhosted.com/assets/public-rate-limit-exceeded.mp4",
+    "paid_upgrade": "https://store.elfhosted.com/product/mediafusion/ and /product/mediafusion-mediaflowproxy/, USD 9/month"
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "topic": "debrid",
+  "slug": "semantic-scholar",
+  "provider": "Semantic Scholar Academic Graph API",
+  "url": "https://www.semanticscholar.org/product/api",
+  "category": "scholarly metadata index (citation graph)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "'Most Semantic Scholar endpoints are available to the public without authentication, but they are rate-limited to 1000 requests per second shared among all unauthenticated users. Requests may also be further throttled during periods of heavy use.' An API key gives '1 RPS on all endpoints' as an introductory rate.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://www.semanticscholar.org/product/api",
+    "read_on": "2026-10-23",
+    "notes": "1,000 requests/second is a pool shared by every anonymous caller in the world, not a per-client allowance."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: JSON responses, paged with limit/offset or the batch endpoints",
+    "bytes": null,
+    "source_url": "https://api.semanticscholar.org/api-docs",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "a continuously rebuilt index; no retention clock is published for the graph",
+    "days": null,
+    "source_url": "https://www.semanticscholar.org/product/api",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Free. No card, no institution. The key is a higher-limit credential, not a payment.",
+    "metered": false,
+    "free_allowance": "1,000 requests/second shared across all anonymous users",
+    "price_per_tb": null,
+    "source_url": "https://www.semanticscholar.org/product/api"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "GET https://api.semanticscholar.org/graph/v1/paper/search?query=...&fields=...; x-api-key header when a key is used.",
+  "endpoint": "https://api.semanticscholar.org/graph/v1/",
+  "tooling": "curl/python-requests; the semanticscholar python client; batch endpoints for up to 500 IDs per call.",
+  "chaining": "The citation graph to join against Crossref and OpenAlex metadata; the shared anonymous pool makes it a best-effort enrichment step, not a bulk harvester.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "1,000 requests/second shared among all unauthenticated users, further throttled under load; 1 RPS with an API key",
+      "source": "https://www.semanticscholar.org/product/api"
+    }
+  ],
+  "limits_note": "",
+  "binding": "request-rate",
+  "binding_note": "The pool is shared with every anonymous caller, so a user's own rate is irrelevant: the first anonymous request was already refused with 429.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Anonymous use is allowed but throttled; the key that raises the ceiling is issued by email request. No card and no institution.",
+    "country": null
+  },
+  "reliability_note": "The anonymous pool is exhausted often enough that a single first request returned 429 with a 174-byte JSON error; a harvester must treat 429 as the normal case rather than an exception.",
+  "confidence": "documented",
+  "confidence_note": "The rate-limit sentence is the vendor's own, and a 429 was observed on the first anonymous request. The throughput at which 429s stop was not characterised.",
+  "evidence": [
+    {
+      "url": "https://www.semanticscholar.org/product/api",
+      "date": "2026-10-23",
+      "proved": "'rate-limited to 1000 requests per second shared among all unauthenticated users' and '1 RPS on all endpoints' for a key"
+    },
+    {
+      "url": "probe:https://api.semanticscholar.org/graph/v1/paper/search?query=cancer&limit=1&fields=title",
+      "date": "2026-10-23",
+      "proved": "429 with 174 bytes of JSON on the first anonymous request - the shared pool was already exhausted"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T03:24:34.450Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The caveat is availability, not price: a 1,000 rps global pool sounds large and behaves like a queue. A key trades the pool for a predictable 1 rps.",
+  "extras": {
+    "anonymous_pool_rps": 1000,
+    "key_rps": 1,
+    "observed_first_request": 429
+  }
+}

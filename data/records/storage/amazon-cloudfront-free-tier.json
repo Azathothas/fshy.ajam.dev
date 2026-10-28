@@ -1,0 +1,75 @@
+{
+  "topic": "storage",
+  "slug": "amazon-cloudfront-free-tier",
+  "provider": "Amazon CloudFront free tier (as the egress layer for any origin)",
+  "url": "https://aws.amazon.com/cloudfront/pricing/",
+  "category": "paas",
+  "free_tier": {
+    "stated": "1 TB/month data transfer out + 10,000,000 HTTP/HTTPS requests + 2,000,000 CloudFront Function invocations, free every month, explicitly 'no longer limited to the first 12 months after signup'.",
+    "unit": "TB",
+    "metered_on": "unstated",
+    "source_url": "https://aws.amazon.com/blogs/aws/aws-free-tier-data-transfer-expansion-100-gb-from-regions-and-1-tb-from-amazon-cloudfront-per-month/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://aws.amazon.com/blogs/aws/aws-free-tier-data-transfer-expansion-100-gb-from-regions-and-1-tb-from-amazon-cloudfront-per-month/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://aws.amazon.com/blogs/aws/aws-free-tier-data-transfer-expansion-100-gb-from-regions-and-1-tb-from-amazon-cloudfront-per-month/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "This IS the egress allowance: 1 TB/month free to the internet from 300+ PoPs, worldwide except China PoPs.",
+    "metered": true,
+    "free_allowance": "1 TB per month"
+  },
+  "interface": [
+    "s3",
+    "rest",
+    "oci",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "CloudFront distributions in front of any HTTP origin (S3, an OCI VM, a block-volume nginx); terraform/CLI; signed URLs and signed cookies for access control.",
+  "chaining": "1 TB/month free egress per AWS account. It stacks with Oracle's own 10 TB/month.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "500 GB/day",
+      "source": "https://aws.amazon.com/blogs/aws/aws-free-tier-data-transfer-expansion-100-gb-from-regions-and-1-tb-from-amazon-cloudfront-per-month/"
+    }
+  ],
+  "limits_note": "1 TB/month is 1/15th of a 500 GB/day workload (≈15 TB/month). Beyond that it is metered at standard CloudFront rates. Origin fetch traffic still hits the origin's own egress meter (so pairing it with Oracle means Oracle's 10 TB absorbs the cache misses).",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Mature CDN, no ban risk; the only issue is that 1 TB/month is a ceiling, not a service level.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://aws.amazon.com/blogs/aws/aws-free-tier-data-transfer-expansion-100-gb-from-regions-and-1-tb-from-amazon-cloudfront-per-month/",
+      "date": "2026-10-21",
+      "proved": "'Data Transfer from Amazon CloudFront is now free for up to 1 TB of data per month ... and is no longer limited to the first 12 months after signup'"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "1 TB/month data transfer out + 10,000,000 HTTP/HTTPS requests + 2,000,000 CloudFront Function invocations, free every month, explicitly 'no longer limited to the first 12 months after signup'.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "1 TB/month data transfer out + 10,000,000 HTTP/HTTPS requests + 2,000,000 CloudFront Function invocations, free every month, explicitly 'no longer limited to the first 12 months after signup'.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-ip-shaping",
+  "binding_note": "one stream is shaped, and a user's throughput is the shaped rate times the number of streams"
+}

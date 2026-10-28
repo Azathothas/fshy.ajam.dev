@@ -1,0 +1,129 @@
+{
+  "topic": "compute",
+  "slug": "datalix-xeon-2026-sale-starter",
+  "provider": "Datalix",
+  "url": "https://datalix.de/2026-sale",
+  "category": "VPS",
+  "tier": "Starter (Xeon KVM 2026 Sale)",
+  "free_tier": {
+    "stated": "no free tier; the sale's smallest rung is the Small at EUR 2.45 a month",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://datalix.de/2026-sale",
+    "read_on": "2026-10-24"
+  },
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "quoted: 'Unsere Prepaid-Produkte bieten volle Kostenkontrolle: Kein Vertrag, keine versteckten Kosten' (prepaid, no contract); the balance is not refundable"
+  },
+  "egress": {
+    "terms": "the sale page states '10 TB Traffic pro Monat'; the order page for the same SKU states '1 TB Traffic'. The two disagree by 10x",
+    "metered": true,
+    "free_allowance": "10 TB per the sale page, 1 TB per the order page",
+    "price_per_tb": "EUR 1.00 per additional TB, from the order page's own 'trafficPrice = 1.00'",
+    "source_url": "https://datalix.de/2026-sale"
+  },
+  "interface": [
+    "ssh"
+  ],
+  "interface_detail": "root SSH plus a self-written control panel with NoVNC console, ISO mount, snapshots and rDNS",
+  "tooling": "any SSH client; the Datalix control panel; a backend API is referenced in the order page's script",
+  "chaining": "8 GiB in Frankfurt on a prepaid balance with no contract, if the cart price can be reconciled with the page",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "1 TB a month per the order page, or 10 TB per the sale page",
+      "source": "https://datalix.de/cp/order/config/2/57d9ff3c-6e1c-4260-8c32-368705a8ddfe"
+    }
+  ],
+  "binding": "volume-quota",
+  "binding_note": "traffic is the only numeric ceiling and the two pages disagree on it by 10x, so the binding figure is unresolved rather than known.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "the order form asks for an account, a tax country and invoice details, and states 'Adressdaten werden fur Steuerzwecke gespeichert' (address data stored for tax). No ID document field. Payment is by a prepaid balance; crypto is 'nur uber Guthaben aufladen moglich' (only by topping up the balance). Card hold not stated: unverified rather than none.",
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "confidence_note": "both the sale page and the order page were read today and they disagree on price, traffic and memory type. The record carries the disagreement rather than picking a winner, because a buyer meets the cart.",
+  "evidence": [
+    {
+      "url": "https://datalix.de/2026-sale",
+      "date": "2026-10-24",
+      "proved": "quoted from the Starter card: 'Starter / 3.95 EUR / Monatlich / 2 Xeon Gold vCores / 8 GB DDR4 Arbeitsspeicher / 50 GB Raid1 NVMe Speicher / 10 TB Traffic pro Monat / 1x IPv4 | 1x /64 IPv6-Subnetz / Intel Xeon Gold 6150 / Deutschland, Frankfurt am Main / Equinix FR5'"
+    },
+    {
+      "url": "https://datalix.de/cp/order/config/2/57d9ff3c-6e1c-4260-8c32-368705a8ddfe",
+      "date": "2026-10-24",
+      "proved": "the order page titled 'Datalix - Starter - fur dauerhaft 3.95EUR' renders an order summary of '2 virtuelle Xeon-Gold-Kerne / 8 GB DDR4-Arbeitsspeicher / 50 GB RAID-1-NVMe-Speicher / 1 TB Traffic / MwSt. (19 %) 0,96 EUR / Verlangerungsbetrag (30 Tage) 5,99 EUR / Setup (Einmalig) 0,00 EUR / Heute fallig 5,99 EUR'"
+    },
+    {
+      "url": "https://datalix.de/cp/order/config/2/57d9ff3c-6e1c-4260-8c32-368705a8ddfe",
+      "date": "2026-10-24",
+      "proved": "the page's own script: 'var basePrice = 3.95; var serverAmount = 1; var trafficPrice = 1.00; var ipPrice = 1.49;' with the total computed as basePrice plus per-IP and per-TB extras"
+    },
+    {
+      "url": "https://datalix.de/cp/order/config/2/ef9a0243-d7d9-45dc-9ca4-42e3a7c130b1",
+      "date": "2026-10-24",
+      "proved": "the same pattern on a second SKU: the order page is titled 'Datalix - Small - fur dauerhaft 2.45EUR' while the summary states '6 GB DDR3 Arbeitsspeicher' where the sale page says DDR4"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-24T06:30:00.000Z",
+  "price_per_tb_month": null,
+  "notes": "UNRECONCILED, and that is the finding. The sale page prices Starter at EUR 3.95 a month with 10 TB and DDR4. The order page for the same SKU is titled 'fur dauerhaft 3.95EUR' (permanently 3.95) but its own order summary computes 'Verlangerungsbetrag (30 Tage) 5,99 EUR' and 'Heute fallig 5,99 EUR', lists '1 TB Traffic' rather than 10 TB, and on the neighbouring Small SKU prints 'DDR3' where the sale page prints 'DDR4'. The script's basePrice is 3.95, so the 5.99 is not a base price plus an add-on the buyer chose. This is the DediRock pattern with an extra twist: the page and the cart disagree while both claim the same price. EUR 3.95 = USD 4.42 and EUR 5.99 = USD 6.71 at the ECB rate, so which one is real decides whether this row is under the line. The only honest statement is that the cart charges EUR 5.99 today and the page advertises EUR 3.95, and a buyer meets the cart. VERDICT: 'paid-only' because the figure the cart charges, EUR 5.99 = USD 6.71, is over the line; if the page's EUR 3.95 = USD 4.42 is the real price the row would qualify, and reconciling the two is the open question. NOTE ON THE EXISTING RECORD: the corpus already carries a 'datalix' record for a different SKU (https://datalix.de/ryzen-kvm-server-mieten, the Ryzen ladder, USD 4.42). This record is the Xeon 2026-sale Starter, a different product on a different page, and it is filed under its own slug so the two do not overwrite each other.",
+  "extras": {
+    "shape": {
+      "vcpu": 2,
+      "ram_gib": 8,
+      "disk_gib": 50,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "billing_model": "prepaid, 30-day periods",
+    "term": "30 days ('Laufzeit 30 Tage')",
+    "m10h_usd": 6.71,
+    "m24h_usd": 6.71,
+    "price_arithmetic": "The cart's 'Heute fallig' and 'Verlangerungsbetrag (30 Tage)' are both EUR 5.99. x 1.1193 (ECB reference, 2026-10-23) = USD 6.71. The sale page advertises EUR 3.95, which is USD 4.42. Both are recorded; the cart figure is the one a buyer is charged. It is a VPS on a 30-day prepaid period, so no 730-hour multiplication.",
+    "out_of_pocket_usd": 6.71,
+    "signup_url": "https://datalix.de/cp/order/config/2/57d9ff3c-6e1c-4260-8c32-368705a8ddfe",
+    "cart_url": "https://datalix.de/cp/order/config/2/57d9ff3c-6e1c-4260-8c32-368705a8ddfe",
+    "renewal_usd": 6.71,
+    "renewal_note": "the cart's own 'Verlangerungsbetrag (30 Tage)' is EUR 5.99, and the page title calls that 'dauerhaft' (permanent). So the renewal is published as EUR 5.99 per 30 days = USD 6.71, which is over the line, while the headline EUR 3.95 is not what the cart charges.",
+    "promo": false,
+    "worst_case_exposure_x": 1.52,
+    "worst_case_note": "5.99 / 3.95 = 1.52x between the advertised and the charged figure in the same visit, before any renewal question.",
+    "page_price_eur": 3.95,
+    "cart_price_eur": 5.99,
+    "disagreement": "page EUR 3.95 / 10 TB / DDR4 versus cart EUR 5.99 / 1 TB / DDR4 (and DDR3 on the Small SKU)",
+    "fx": {
+      "pair": "EUR/USD",
+      "rate": 1.1193,
+      "date": "2026-10-23",
+      "source": "ECB reference via frankfurter.app"
+    },
+    "port_mbps": 1000,
+    "ipv4_included": true,
+    "ipv6": "/64",
+    "payment_methods": "prepaid balance; the order page states 'Zahlung per Kryptowahrung ist nur uber Guthaben aufladen moglich' (crypto only by topping up). Which card or bank rails fund the balance was not readable without registering: unverified",
+    "stock": "unknown: the sale page renders an order button for every rung and the cart resolves to a priced summary, so the SKU exists; no stock counter is published. Read at https://datalix.de/2026-sale",
+    "free_tier_kind": "none",
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": true,
+      "ports": "all",
+      "static_ip": true,
+      "ipv6": true,
+      "per_session_bytes": null
+    },
+    "session_cap": {
+      "wall_clock_min": null,
+      "idle_reap_s": null,
+      "restart_required": false,
+      "note": "none; it is a VPS on a 30-day prepaid period"
+    },
+    "vat": "the cart adds 'MwSt. (19 %) 0,96 EUR' for a German tax country; the page prices are net"
+  }
+}

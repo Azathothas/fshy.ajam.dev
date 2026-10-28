@@ -1,0 +1,92 @@
+{
+  "topic": "debrid",
+  "slug": "iproyal",
+  "provider": "IPRoyal",
+  "url": "https://iproyal.com/pricing/",
+  "category": "residential egress: static ISP, rotating residential, dedicated mobile",
+  "tier": "ISP proxy (static residential IP, per IP per month)",
+  "free_tier": {
+    "stated": "No free allowance read. The pricing index headlines the three products as 'from $1.75/GB' (residential), 'from $1.80/proxy' (ISP) and 'from $117/month' (mobile).",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://iproyal.com/pricing/",
+    "read_on": "2026-10-23",
+    "notes": "A trial may exist; it was not on the pages read."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: an address and a byte stream, not an object",
+    "bytes": null,
+    "source_url": "https://iproyal.com/pricing/isp-proxies/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: a live endpoint, not stored bytes",
+    "days": null,
+    "source_url": "https://iproyal.com/pricing/isp-proxies/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "The ISP product is sold per IP with no byte meter: the page's own description reads 'The fastest ISP proxy servers with unlimited bandwidth reserved just for you', and the feature list offers 'Zero session limits', 'Dedicated IP Pool' and 'No Limits'. The rotating residential product is metered at $1.75/GB; the dedicated mobile product starts at $117/month for 90 days with 'Zero bandwidth and session limits'.",
+    "metered": false,
+    "free_allowance": "none",
+    "price_per_tb": null,
+    "source_url": "https://iproyal.com/pricing/isp-proxies/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "HTTP(S) and SOCKS5 proxy endpoints with a dashboard API for sessions and rotation; the ISP product is a single fixed address.",
+  "endpoint": "https://dashboard.iproyal.com/",
+  "tooling": "any client that takes an HTTP or SOCKS5 proxy: curl, rclone --http-proxy, a browser, or a WireGuard-less transparent proxy. Nothing about the debrid client needs to change except where it egresses.",
+  "chaining": "One static ISP address at $1.80/month with no byte meter is the cheapest way to give a free VM a residential-class source address, which is the class a debrid service is least likely to refuse; the same vendor's metered residential pool at $1.75/GB is 1,000 times the price at a 1 TiB month.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "the ISP address is fixed for the billing period and shared by every process on the VM; no concurrency cap published",
+      "source": "https://iproyal.com/pricing/isp-proxies/"
+    }
+  ],
+  "limits_note": "The bandwidth claim sits in the page description rather than in the feature list, and the feature list says 'unlimited threads' rather than 'unlimited bandwidth'. The product is priced per IP, so a byte meter would have to be a fair-use clause, and none was read.",
+  "binding": "none",
+  "binding_note": "At 1 TiB a month the static ISP product has no byte counter to hit and no published concurrency cap",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "Account and card at the dashboard; crypto is also accepted per the pricing page's payment strip. No identity document was mentioned on the pages read.",
+    "country": null
+  },
+  "reliability_note": "A single fixed address is what the debrid services' sharing detectors want to see, and it is also a single point of failure: if that IP is sold to a busy pool or gets refused, the whole stack loses its egress class at once.",
+  "confidence": "documented",
+  "confidence_note": "Prices and product split are on the vendor's own pricing pages read today.",
+  "evidence": [
+    {
+      "url": "https://iproyal.com/pricing/",
+      "date": "2026-10-23",
+      "proved": "'from $1.75/GB' residential, 'from $1.80/proxy' ISP, 'from $117/month' mobile, all four product cards on one page"
+    },
+    {
+      "url": "https://iproyal.com/pricing/isp-proxies/",
+      "date": "2026-10-23",
+      "proved": "description 'The fastest ISP proxy servers with unlimited bandwidth reserved just for you'; features 'Zero session limits', 'Dedicated IP Pool', 'No Limits'; targeting in 'over 31 countries'"
+    },
+    {
+      "url": "https://iproyal.com/pricing/mobile-proxies/",
+      "date": "2026-10-23",
+      "proved": "rotating mobile $6.80/GB at 2 GB down to $5.20/GB at 100 GB; dedicated mobile 'Starting from $130/month' (30 days) and '$117/month' (90 days); 'Zero bandwidth and session limits'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T02:21:34.000Z",
+  "price_per_tb_month": "from USD 1.80 per static ISP IP per month; USD 1,792 per TiB at the metered residential rate; from USD 117/month dedicated mobile",
+  "notes": "Filed under debrid because the record exists to price 'debrid plus an IP class it will accept'. If it is promoted, the egress topic owns residential proxy pricing and dossier/egress/residential-proxy-trial.json already carries the $0.80/GB floor from Geonode; this record must not become a second geonode record. Three products, one record: the ISP tier is the one arithmetic turns on, and the other two are priced in evidence.",
+  "extras": {
+    "products": {
+      "residential_rotating": "from $1.75/GB",
+      "isp_static": "from $1.80/IP/month",
+      "mobile_rotating": "$6.80/GB (2 GB) to $5.20/GB (100 GB)",
+      "mobile_dedicated": "$130/month (30 days), $117/month (90 days)"
+    },
+    "residential_tib_cost": "USD 1792 per 1024 GB",
+    "class": "ISP proxies are advertised as 'genuine residential IPs' on residential ISP ASNs",
+    "volume_stated": "no byte meter on the ISP product"
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "topic": "debrid",
+  "slug": "pomf-lain-la",
+  "provider": "Pomf.lain.la",
+  "url": "https://pomf.lain.la/",
+  "category": "anonymous pomf clone (1 GiB per file)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Max upload size is 1 GiB, wow!",
+    "unit": "GiB",
+    "metered_on": "none",
+    "source_url": "https://pomf.lain.la/",
+    "read_on": "2026-10-23",
+    "notes": "No account, no email, no cap on the number of files stated."
+  },
+  "per_object_cap": {
+    "stated": "Max upload size is 1 GiB",
+    "bytes": 1073741824,
+    "source_url": "https://pomf.lain.la/",
+    "notes": "1 GiB is the largest anonymous per-file cap met that is both stated and on a host that answers."
+  },
+  "retention": {
+    "stated": "unverified: the homepage publishes no expiry and the FAQ was not readable as text (served gzip without a decoded body to the reader)",
+    "days": null,
+    "source_url": "https://pomf.lain.la/",
+    "notes": "The Terms & Privacy page is the place to settle it; it was not read."
+  },
+  "egress": {
+    "terms": "Downloads are served from pomf2.lain.la; no byte allowance and no download counter are published.",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://pomf.lain.la/"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "POST https://pomf.lain.la/upload.php multipart field 'files[]'. JSON reply with success, files[0].url, .hash (SHA-1), .size. The stored object is served from the pomf2 host.",
+  "endpoint": "https://pomf.lain.la/upload.php",
+  "tooling": "curl -F 'files[]=@file' https://pomf.lain.la/upload.php; an optional 'speedkey' field exists for a queue priority the site calls Speedkeys",
+  "chaining": "1 GiB per object with no account is the right shape for a single large media file or a dataset shard: two files cover a 2 GiB upload that most relays refuse, and the JSON reply carries SHA-1 so the store can be verified without a second download.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "1 GiB per file",
+      "source": "https://pomf.lain.la/"
+    }
+  ],
+  "limits_note": null,
+  "binding": "per-object-cap",
+  "binding_note": "At 1 TiB a month this is 1 024 objects of 1 GiB; the cap is what forces splitting, and no rate or byte counter was observed to bind first.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "Multipart POST with no account, no email and no cookie; a link came back.",
+    "country": null
+  },
+  "reliability_note": "Uploads were switched off during a PHP CVE and switched back on, per a comment left in the homepage HTML; treat availability as hobby-grade.",
+  "confidence": "measured",
+  "confidence_note": "Upload, read-back and SHA-256 match, at 1 MiB. The 1 GiB claim is the vendor's and was not pushed to.",
+  "evidence": [
+    {
+      "url": "probe:https://pomf.lain.la/upload.php",
+      "date": "2026-10-23",
+      "proved": "POST of 1 048 576 bytes -> HTTP 200, {'success':true,'files':[{'url':'https://pomf2.lain.la/f/nck8aluy.bin','size':1048576,'hash':'c96b568c...'}]}"
+    },
+    {
+      "url": "probe:https://pomf2.lain.la/f/nck8aluy.bin",
+      "date": "2026-10-23",
+      "proved": "read-back 1 048 576 bytes, sha256 da0099c231f1182a5d411c8ac5149dfb7a2e3578a3970928490cb78ba92aecc9, full-body hash matched"
+    },
+    {
+      "url": "https://pomf.lain.la/",
+      "date": "2026-10-23",
+      "proved": "'Max upload size is 1 GiB, wow!' and the comment that uploads had been disabled for a PHP CVE and are back"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T02:30:47.000Z",
+  "price_per_tb_month": "USD 0",
+  "probe": {
+    "record": "probes/raw/pomf.lain.la.json",
+    "upload_bytes": 1048576,
+    "download_bytes": 1048576,
+    "match": true,
+    "status": 200
+  },
+  "notes": "The caveat is retention, which nobody states: a 1 GiB cap is worth nothing if the file is gone in a week, and that is the one number still missing.",
+  "extras": {
+    "cap_stated_bytes": 1073741824,
+    "sha1_echoed": "c96b568c8726029947ffc0e752a2bb7463030153"
+  }
+}

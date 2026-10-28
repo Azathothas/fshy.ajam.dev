@@ -1,0 +1,95 @@
+{
+  "topic": "egress",
+  "slug": "azirevpn",
+  "provider": "AzireVPN",
+  "url": "https://blog.azirevpn.com/port-forwarding/",
+  "category": "vpn port forward",
+  "tier": "paid",
+  "free_tier": {
+    "stated": "No free tier. Pricing page 2026-10-23: 1 Month 5.00 EUR per month; 3 Months 4.00 EUR per month (12.00 EUR); 12 Months 3.75 EUR per month (45.00 EUR), with a 7-day money-back guarantee.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://www.azirevpn.com/pricing",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://blog.azirevpn.com/port-forwarding/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://blog.azirevpn.com/port-forwarding/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "unverified: no page read states an AzireVPN traffic allowance. The site describes 10G servers and unlimited browsing, not bytes.; ingress: tcp+udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://blog.azirevpn.com/port-forwarding/"
+  },
+  "interface": [
+    "cli",
+    "rest"
+  ],
+  "interface_detail": "Documented REST endpoints under api.azirevpn.com/v2/portforward for get, request, update, delete and check.",
+  "tooling": "API with a bearer token; wg-quick from the manager-generated config.",
+  "chaining": "The cleanest scripted path in the paid set: a cron job renews the lease and writes the current port into the service config.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "a granted port carries an expiry and can be extended: Done, you will see the port you have been granted and when the port will expire. The API takes expires_in, and PUT updates the port.",
+      "source": "https://blog.azirevpn.com/port-forwarding/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "the port is bound to the internal IPv4 of a connected device, so it is only valid while that device holds the address on that server",
+      "source": "https://blog.azirevpn.com/port-forwarding/"
+    }
+  ],
+  "limits_note": "",
+  "binding": "retention-clamped",
+  "binding_note": "No byte quota is stated, so the expiry is what fails first: the port is leased with an explicit expires_in and must be renewed by API call. Renewal is scriptable, which makes this the most controllable lease of the paid set, but it is still a lease.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Registration at manager.azirevpn.com with an account; card and PayPal are listed, and crypto is advertised on the pricing page description.",
+    "country": "None"
+  },
+  "reliability_note": "A server outage invalidates the port and forces a new random one; the mapping is tied to the device's internal IPv4.",
+  "confidence": "documented",
+  "confidence_note": "Measured would need a token, a generated port and a byte count. The API shape is quoted from the vendor blog, and an unauthenticated check endpoint exists at api.azirevpn.com/v2/portforward/check which would let a measured claim be made later.",
+  "evidence": [
+    {
+      "url": "https://blog.azirevpn.com/port-forwarding/",
+      "date": "2026-10-23",
+      "proved": "Port forwarding launches against the WireGuard configuration of a connected device; the port has an expiry; the API offers POST with expires_in, PUT to update and DELETE; a check endpoint returns port status."
+    },
+    {
+      "url": "https://www.azirevpn.com/pricing",
+      "date": "2026-10-23",
+      "proved": "Plans at 5.00, 4.00 and 3.75 EUR per month with a 7-day money-back guarantee; no free plan listed."
+    },
+    {
+      "url": "https://www.azirevpn.com/",
+      "date": "2026-10-23",
+      "proved": "Port forwarding is a listed feature, WireGuard is a listed protocol, and P2P traffic is allowed on all servers."
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "EUR 5.00 per month; EUR 4.00 per month on 3 months; EUR 3.75 per month on 12 months (45.00)",
+  "notes": "The blog also warns that a server outage costs the port: If the server goes down, your port becomes unretrievable and you will have to generate a new random port. That is the weakest link in an otherwise scriptable design: the lease is renewable but the number is not guaranteed across a server failure. AzireVPN is now part of Malwarebytes per its own homepage, which matters only as a continuity risk.",
+  "extras": {
+    "wg_path": "registration-api",
+    "wg_detail": "The port is obtained by HTTP against the vendor API with a bearer token: POST https://api.azirevpn.com/v2/portforward with internal_ipv4, expires_in and hidden, and PUT to update the same port. The configuration file is tied to the device on the WireGuard manager page: Press Port forwarding on the configuration file tied to the device that you are connected on.",
+    "ingress": "tcp+udp",
+    "volume_tib_month": null,
+    "volume_stated": "unverified: no page read states an AzireVPN traffic allowance. The site describes 10G servers and unlimited browsing, not bytes.",
+    "bytes_transit": "yes",
+    "transit_note": "Traffic crosses AzireVPN's own servers; the vendor states it owns 100 percent of its infrastructure."
+  }
+}

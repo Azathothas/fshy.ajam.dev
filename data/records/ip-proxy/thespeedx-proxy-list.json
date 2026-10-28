@@ -1,0 +1,118 @@
+{
+  "topic": "ip-proxy",
+  "slug": "thespeedx-proxy-list",
+  "provider": "TheSpeedX/PROXY-List",
+  "url": "https://api.github.com/repos/TheSpeedX/PROXY-List",
+  "category": "public proxy list",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free and keyless: 10,430 lines in total, 2,918 HTTP, 2,425 SOCKS4 and 5,087 SOCKS5, with no metadata at all.",
+    "unit": "objects",
+    "metered_on": "none",
+    "source_url": "https://api.github.com/repos/TheSpeedX/PROXY-List",
+    "read_on": "2026-10-24",
+    "notes": "The three counts sum to 10,430, so the split is exhaustive rather than overlapping. A line is an address and a port and nothing else: there is no country, ASN, uptime, latency or anonymity field to filter on before a line is dialled."
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://api.github.com/repos/TheSpeedX/PROXY-List",
+    "notes": "The nearest thing to a size is a line, and a line carries no field beyond ip:port. Nothing here can be filtered server-side; the whole list has to be pulled and triaged locally."
+  },
+  "retention": {
+    "stated": "not applicable: a live address, not stored bytes",
+    "days": null,
+    "source_url": "https://api.github.com/repos/TheSpeedX/PROXY-List",
+    "notes": "A line is durable only while the maintainer leaves it in the file, and 92 of 100 sampled lines were already dead when read, so the file's existence says nothing about whether its lines answer."
+  },
+  "egress": {
+    "terms": "No traffic position is published: the list is a text file with no terms, quota or meter attached to it, and every byte the client sends crosses the exit host of whichever line it dials, not the list.",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://api.github.com/repos/TheSpeedX/PROXY-List"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "One unauthenticated HTTPS GET per protocol file, http.txt, socks4.txt and socks5.txt, returned as plain text and read line by line. There is no resource model, no query parameter and no API, so rest is the nearest token in the closed set rather than an accurate description; the lines themselves speak HTTP CONNECT, SOCKS4 and SOCKS5, and the schema's interface enum has no token for any proxy protocol, so the three are named here instead of in the array.",
+  "tooling": "curl or wget pulls the three text files; no account, key, SDK or wrapper is involved. Dialling a line needs a client that speaks its protocol, which curl does for HTTP CONNECT and SOCKS5 and a small socket driver does for SOCKS4. The work is not access but triage: a health check that discards the 92 percent which do not answer, run often enough to keep the remainder current.",
+  "chaining": "A failover supply for the Workers AI gateway's egress: a request the Worker cannot make from its own address is retried through a line, with a short timeout and the next line on failure, so the value is the retry loop rather than any single address.",
+  "limits": [],
+  "limits_note": "No constraint was found that names a vocabulary kind, so the array is empty rather than padded. Three constraints were found that fit none of the seven: yield, since 8 of 100 sampled lines carried a payload and 92 were dead weight; the absence of metadata, since there is no field to filter on before a request is spent; and churn, since handshakes fell from 17 to 15 between two runs 23 minutes apart while payloads held at 8, and a later recheck of the 8 named lines returned 4.",
+  "binding": "none",
+  "binding_note": "Nothing in the vocabulary fails first at 45 GB a month across 599,000 requests, because the list imposes no quota, no request rate and no per-address shape to hit. What fails is the supply: 8 of 100 lines carried a payload, and yield has no vocabulary kind.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account, no key and no signup: the three text files are fetched over unauthenticated HTTPS. The hosts behind the lines belong to somebody else, and what each one requires of a caller is not published in the list at all.",
+    "country": null
+  },
+  "reliability_note": "The working exits sat in hosting-provider ASNs rather than residential ones, so reputation follows a datacenter block; and the working set churns, with handshakes falling from 17 to 15 between two runs 23 minutes apart while payloads held at 8, and a later recheck of the 8 named lines returning 4.",
+  "confidence": "measured",
+  "confidence_note": "Both hit rates and the whole error census were recomputed from the two result files and match the figures written here exactly, and the HTTP line count matches the capture at 2,918 lines with no final newline. Measured is the top rung, so the honest question is what would strengthen it rather than what would raise it: a larger sample than 100, and runs spread across a day so a diurnal effect can be told apart from a dead list.",
+  "evidence": [
+    {
+      "url": "https://api.github.com/repos/TheSpeedX/PROXY-List",
+      "date": "2026-10-24",
+      "proved": "The list holds 10,430 lines, split 2,918 HTTP, 2,425 SOCKS4 and 5,087 SOCKS5, and carries no metadata of any kind beyond the address and the protocol file it came from."
+    },
+    {
+      "url": "probe:sources/p/61/611eef6cd6bf1ec084fd694e5026d474d2a2b5a45fe707a77420a03b21c12bd9.json.gz",
+      "date": "2026-10-24",
+      "proved": "First run over 100 stratified random lines: 17 completed a handshake and 8 carried a payload, 8.0 percent, with the error census 58 TimeoutError, 19 OSError, 7 ConnectionRefusedError, 5 body-not-json and 3 ConnectionResetError."
+    },
+    {
+      "url": "probe:sources/p/6a/6a714afd3c286fee9eff61abe0d79bcaab17c477a9fa3d462501be9849724d74.json.gz",
+      "date": "2026-10-24",
+      "proved": "Second run 23 minutes later over a fresh 100 lines: 15 handshakes and 8 payloads, so the payload rate repeats at 8 percent while the handshake-positive set has already moved."
+    },
+    {
+      "url": "probe:sources/p/72/72b4954ce06cf6a8b5e636d20b752d9169fd0f4389506c86f3d8506cacee7b33.json.gz",
+      "date": "2026-10-24",
+      "proved": "The exit addresses resolve to hosting ASNs: OVH AS16276, Contabo AS51167, DigitalOcean AS14061, Microsoft AS8075, GoDaddy AS26496 and AS398101, Biznet AS17451."
+    },
+    {
+      "url": "probe:sources/p/cf/cfd094c157399a16d59cc3f842d674341a8ee02e2e658952f2283c5a28774a83.json.gz",
+      "date": "2026-10-24",
+      "proved": "A recheck of the 8 lines that had carried a payload returned 4 payload successes, with exit organisations BIZNET-PREPAID-BLOCK in ID, OVH SAS in FR, OVH Ltd in GB and GoDaddy.com, LLC in SG."
+    }
+  ],
+  "verdict": "dead",
+  "verified_at": "2026-10-24T10:07:11.000Z",
+  "price_per_tb_month": null,
+  "notes": "Three candidates for the 8 percent payload rate, tested rather than assumed. (1) The probe harness was at fault. Refuted for the payload measure: 8 of the same 100 lines carried a payload under the identical harness, and the failures split across five distinct error classes rather than one systematic failure, which is what per-host failure looks like and not what a broken client looks like. (2) The lines are stale, and the file is a large pool of long-dead addresses. Supported and not fully settled: 58 of 100 timed out and 19 failed at the socket, and the second run produced 15 handshakes against 17, so the population churns under the probe; but nothing here shows the file is unmaintained, only that most of its lines do not answer. (3) A vantage-point or diurnal effect on this machine. Not refuted, because two runs 23 minutes apart cannot separate it from a dead list, and only runs spread across a day could. The verdict rests on (2) with (3) open, and (3) does not change it: the payload rate would have to rise by an order of magnitude before the list became usable at a steady request volume. Weight: each rate is one sample of 100 lines drawn stratified across the three protocol files, taken twice, which is enough to show the yield is low and repeats and not enough to put an interval on it. A discrepancy between the assigned facts and the artefacts, recorded rather than smoothed. The facts give the working exits as OVH AS16276 twice, Contabo AS51167, DigitalOcean AS14061, Microsoft AS8075, GoDaddy AS26496 and AS398101, and Biznet AS17451. Re-deriving from the two named result files yields eight payload exits: OVH AS16276 twice, Biznet AS17451, Contabo AS51167, Microsoft AS8075 and GoDaddy AS26496, plus SCTS AS51004 and Liteserver AS60404, which are absent from the assigned list; DigitalOcean AS14061 and GoDaddy AS398101 appear in sources/p/72/72b4954ce06cf6a8b5e636d20b752d9169fd0f4389506c86f3d8506cacee7b33.json.gz against addresses that are not payload exits in either named file, so they belong to the wider lane-4 set rather than to this provider's eight. The datacenter conclusion survives the correction, since seven of the eight resolved to hosting ASNs and the eighth, SCTS, is a cable ISP; what changes is the roster, not the finding, and the verdict does not rest on it. On shape: the assignment names the interface tokens api, cli, rest, socks5, http-proxy, wireguard, openvpn, web-ui and none, but scripts/dossier/schema.json closes interface[] to its own enum, which has no proxy-protocol token, and scripts/dossier/validate.py enforces that enum; an in-memory test of socks5 and http-proxy against the schema returned two enum errors, so writing them would turn the gate red for the whole dossier tree. The array therefore carries rest, matching dossier/ip-proxy/proxyscrape-free-list.json, and the three protocols are stated in interface_detail. That gap is a defect worth naming: an ip-proxy topic cannot express what it is about until the enum gains socks5, http-proxy and a static-file token. Searched dossier/ and docs/ for an existing record naming TheSpeedX or PROXY-List to correct; the only hit is dossier/ip-proxy/proxyscrape-free-list.json and it is a substring match on free-proxy-list rather than a mention of this provider, so this record corrects nothing outside itself.",
+  "extras": {
+    "rung": 2,
+    "rung_note": "The product is a set of single addresses judged one at a time, so rung 2 is the furthest the measurement reaches; no subnet and no ASN was needed, and the datacenter composition of the survivors is the only wider observation it produced.",
+    "protocol_split": {
+      "http": 2918,
+      "socks4": 2425,
+      "socks5": 5087,
+      "total": 10430
+    },
+    "handshake_rate_run1": "17 of 100",
+    "payload_rate_run1": "8 of 100",
+    "handshake_rate_run2": "15 of 100",
+    "payload_rate_run2": "8 of 100",
+    "error_census_run1": {
+      "TimeoutError": 58,
+      "OSError": 19,
+      "ConnectionRefusedError": 7,
+      "body-not-json": 5,
+      "ConnectionResetError": 3
+    },
+    "dead_weight": "92 of 100 sampled lines",
+    "sample_size": "100 stratified random lines per run, two runs 23 minutes apart",
+    "metadata": "none",
+    "exit_asn": [
+      "AS16276 OVH, twice",
+      "AS51167 Contabo",
+      "AS14061 DigitalOcean",
+      "AS8075 Microsoft",
+      "AS26496 GoDaddy",
+      "AS398101 GoDaddy",
+      "AS17451 Biznet"
+    ],
+    "interface_enum_gap": "socks5, http-proxy and static-file access have no token in scripts/dossier/schema.json"
+  }
+}

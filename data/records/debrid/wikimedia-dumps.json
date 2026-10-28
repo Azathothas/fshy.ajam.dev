@@ -1,0 +1,104 @@
+{
+  "topic": "debrid",
+  "slug": "wikimedia-dumps",
+  "provider": "Wikimedia Downloads (dumps.wikimedia.org)",
+  "url": "https://dumps.wikimedia.org/",
+  "category": "encyclopaedia corpus (monthly XML dumps, HTTP mirrors)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Complete public wiki dumps, monthly, free and anonymous. 'Downloads are also rate limited and capped at 3 connections per-IP.' The English Wikipedia article dump measured here is 25,800,511,704 bytes.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://dumps.wikimedia.org/",
+    "read_on": "2026-10-23",
+    "notes": "The dumps are being reorganised: the XML dumps are 'deprecated and will be sunset in January 2027' in favour of MediaWiki Content File Exports."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: one compressed file per dump. enwiki-latest-pages-articles.xml.bz2 is 25,800,511,704 bytes; ranged reads are supported (accept-ranges: bytes).",
+    "bytes": null,
+    "source_url": "https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "monthly snapshots are kept; 'latest' is replaced each run and older dated directories persist for a period the dump index does not quantify",
+    "days": null,
+    "source_url": "https://dumps.wikimedia.org/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Free, but conditioned on the User-Agent policy: 'If you are reading this on Wikimedia servers, please note that we are now enforcing the Wikimedia Foundation User-Agent Policy for dumps downloads. Downloads are also rate limited and capped at 3 connections per-IP ... Clients that do not respect the user-agent policy or who try to evade these limits may be blocked.'",
+    "metered": false,
+    "free_allowance": "no byte allowance published",
+    "price_per_tb": null,
+    "source_url": "https://dumps.wikimedia.org/"
+  },
+  "interface": [
+    "rest",
+    "rsync",
+    "cli"
+  ],
+  "interface_detail": "HTTPS per file with Range support; rsync mirrors are listed on meta.wikimedia.org; the dump index at /backup-index.html gives every file with size and checksum.",
+  "endpoint": "https://dumps.wikimedia.org/enwiki/latest/",
+  "tooling": "curl/wget with a descriptive User-Agent, rsync against a mirror, and the checksum files that ship beside each dump.",
+  "chaining": "A fixed encyclopaedia corpus to join against Common Crawl's web text; the 24 GiB article dump is small enough to hold beside a dataset snapshot, and the mirror list is the escape hatch when the per-IP cap binds.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "capped at 3 connections per IP, and rate limited; measured here at 1.661-2.617 MiB/s over one connection (three runs) and 2.647-7.649 MiB/s total over eight connections (three runs), so parallelism helped up to 3.6x and the cap did not refuse the eighth connection",
+      "source": "https://dumps.wikimedia.org/"
+    }
+  ],
+  "limits_note": "The User-Agent policy is enforced: a client without a descriptive agent may be blocked, and evasion attempts are named as a blocking reason on the front page.",
+  "binding": "per-ip-shaping",
+  "binding_note": "The documented 3-connection cap is a connection count, not a byte rate: eight parallel range reads all returned 206 and the best of them reached 7.649 MiB/s, which is about 645 GiB/day.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account and no key; a descriptive User-Agent is the only requirement, and it is not a credential.",
+    "country": null
+  },
+  "reliability_note": "The dump format is changing: XML dumps sunset in January 2027, so a pipeline built on pages-articles.xml has a dated migration to the Content File Exports format.",
+  "confidence": "measured",
+  "confidence_note": "The file size came from a HEAD and the rate from a 64 MiB ranged read, three runs at each concurrency. All eight parallel requests returned 206, so the documented 3-connection cap did not refuse them at the transport level - whether it is enforced by rate, by UA or only at peak is not established.",
+  "evidence": [
+    {
+      "url": "https://dumps.wikimedia.org/",
+      "date": "2026-10-23",
+      "proved": "'Downloads are also rate limited and capped at 3 connections per-IP', User-Agent policy enforcement, and the January 2027 XML sunset notice"
+    },
+    {
+      "url": "probe:https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2 --head",
+      "date": "2026-10-23",
+      "proved": "200, content-length 25,800,511,704, accept-ranges: bytes, last-modified 2026-10-08"
+    },
+    {
+      "url": "probe:https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2 --range 0-67108863",
+      "date": "2026-10-23",
+      "proved": "64 MiB ranges at one connection: 2.617, 2.084 and 1.661 MiB/s across three runs, 206 with the range honoured; sha256 of the first range 3a74bf06ec319f7d702771523ec099593e7569f00b5bddfdbe3e76ddbc914ea7"
+    },
+    {
+      "url": "probe:https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2 --concurrency 8 --shard-bytes 67108864",
+      "date": "2026-10-23",
+      "proved": "eight parallel 206s totalling 2.647, 4.748 and 7.649 MiB/s against same-run one-connection baselines of 1.317, 2.918 and 2.337 MiB/s - parallelism helped, and no request was refused"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T03:24:34.450Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Caveat is the 2027 format change and the 3-connection rule. A single connection gives about 178 GiB/day at the mean, and the best eight-connection run reached 645 GiB/day - which the published cap says a client should not do. The whole English Wikipedia article dump is one day's single-connection allowance.",
+  "extras": {
+    "enwiki_articles_xml_bytes": 25800511704,
+    "one_conn_mib_s": [
+      2.617,
+      2.084,
+      1.661
+    ],
+    "eight_conn_mib_s": [
+      2.647,
+      4.748,
+      7.649
+    ],
+    "connection_cap": 3,
+    "range_sha256": "3a74bf06ec319f7d702771523ec099593e7569f00b5bddfdbe3e76ddbc914ea7",
+    "xml_sunset": "2027-01"
+  }
+}

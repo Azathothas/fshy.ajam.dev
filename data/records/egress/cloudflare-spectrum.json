@@ -1,0 +1,85 @@
+{
+  "topic": "egress",
+  "slug": "cloudflare-spectrum",
+  "provider": "Cloudflare Spectrum",
+  "url": "https://developers.cloudflare.com/spectrum/",
+  "category": "L4 anycast proxy (TCP/UDP)",
+  "tier": "enterprise",
+  "free_tier": {
+    "stated": "Custom TCP/UDP applications require an Enterprise plan with Spectrum as a paid add-on.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://developers.cloudflare.com/spectrum/protocols-per-plan/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://developers.cloudflare.com/spectrum/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://developers.cloudflare.com/spectrum/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No byte allowance is published. The plan table gives 'TCP' and 'UDP' as 'Paid add-on' on Enterprise and 'No' on Free, Pro and Business; Enterprise Spectrum is metered per GB at an unpublished rate.; ingress: tcp+udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://developers.cloudflare.com/spectrum/"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "configured through the Cloudflare dashboard or the API; Spectrum applications are created per protocol and port",
+  "tooling": "Cloudflare dashboard or API; no client-side daemon",
+  "chaining": "composes with any free VM as the origin: the VM keeps its own address private and the anycast address is the published one, which is what a WireGuard or game endpoint needs.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "custom TCP/UDP needs an Enterprise plan with Spectrum as a paid add-on",
+      "source": "https://developers.cloudflare.com/spectrum/"
+    }
+  ],
+  "limits_note": "",
+  "binding": "write-gated",
+  "binding_note": "No byte count fails at 1 TiB/month; the Enterprise contract is the gate. The only sub-Enterprise route is a Pro or Business plan, where Spectrum is limited to a single Minecraft app (UDP for Bedrock) and a single SSH app.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "An Enterprise contract with Cloudflare sales, plus a domain on Cloudflare. The Pro and Business plans carry Spectrum only for 'Minecraft (one app allowed)' and 'SSH (one app allowed)'.",
+    "country": "None"
+  },
+  "reliability_note": "none recorded",
+  "confidence": "documented",
+  "confidence_note": "The support matrix and the Enterprise requirement are on the pages read today. The per-GB rate and the Pro add-on price are not published, so the cost side stays unverified.",
+  "evidence": [
+    {
+      "url": "https://developers.cloudflare.com/spectrum/",
+      "date": "2026-10-23",
+      "proved": "Spectrum provides security and acceleration for any TCP or UDP based application, and custom TCP/UDP applications require an Enterprise plan with Spectrum as a paid add-on"
+    },
+    {
+      "url": "https://developers.cloudflare.com/spectrum/protocols-per-plan/",
+      "date": "2026-10-23",
+      "proved": "Availability: No on Free, Paid add-on on Enterprise; TCP and UDP are No on Pro and Business; Minecraft (one app allowed) and SSH (one app allowed) are Yes on Pro and Business"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "unpublished (Enterprise contract)",
+  "notes": "The benchmark. Cloudflare Magic Transit is the adjacent product and is not a substitute: it takes a /24 and BGP or GRE from the customer, where Spectrum takes an origin IP and a port. Two things stay open: the Enterprise per-GB rate, and whether the Pro-tier Minecraft slot is usable for a Bedrock (UDP) server rather than only Java (TCP) - the table names the game, not the protocol.",
+  "extras": {
+    "wg_path": "inside-udp",
+    "wg_detail": "Spectrum forwards arbitrary UDP to an origin port, so a WireGuard listener on the origin is reachable through the anycast address; no .conf is issued.",
+    "ingress": "tcp+udp",
+    "volume_tib_month": null,
+    "volume_stated": "No byte allowance is published. The plan table gives 'TCP' and 'UDP' as 'Paid add-on' on Enterprise and 'No' on Free, Pro and Business; Enterprise Spectrum is metered per GB at an unpublished rate.",
+    "bytes_transit": "yes",
+    "transit_note": "Cloudflare carries the bytes between its edge and the origin"
+  }
+}

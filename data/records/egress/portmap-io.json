@@ -1,0 +1,84 @@
+{
+  "topic": "egress",
+  "slug": "portmap-io",
+  "provider": "portmap.io",
+  "url": "https://portmap.io/",
+  "category": "udp port forward (OpenVPN-based, hosted)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free: One configuration setting, One forwarding rule, Random external port, Auto-generated domain name",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://portmap.io/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://portmap.io/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://portmap.io/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "'Unlimited bandwidth' is a core feature line on the product page; no rate or tolerance is published; ingress: tcp+udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://portmap.io/"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "OpenVPN config or SSH key plus a mapping rule created in the dashboard or by the API",
+  "tooling": "OpenVPN or SSH plus the portmap.io REST API and client",
+  "chaining": "one rule is one port, so it composes with exactly one WireGuard interface",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "unlimited bandwidth stated, no rate published",
+      "source": "https://portmap.io/"
+    }
+  ],
+  "limits_note": "",
+  "binding": "per-ip-shaping",
+  "binding_note": "The byte allowance is unlimited by statement, so the first real failure is that the free plan's external port is random and custom external ports are a Premium feature. That is a paywall on the one property a WireGuard endpoint needs, and it is not one of the seven vocabulary kinds.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an account that generates an OpenVPN configuration or SSH key: 'Create a configuration file for OpenVPN or SSH key using the Generate button'",
+    "country": "None"
+  },
+  "reliability_note": "the free rule's external port is allocated by the operator and can in principle be reassigned; the tunnel is an OpenVPN session that must stay up",
+  "confidence": "documented",
+  "confidence_note": "Whether the random port survives a reconnect is not stated anywhere on the site, which is the open question that decides the verdict. Raise by creating a free rule, noting the port, restarting the VPN, and reading the port again.",
+  "evidence": [
+    {
+      "url": "https://portmap.io/",
+      "date": "2026-10-23",
+      "proved": "free plan is one rule with a random external port; Premium USD 3.99/month adds custom external ports; 'Unlimited bandwidth'; TCP or UDP forwarding over OpenVPN"
+    },
+    {
+      "url": "https://portmap.io/support",
+      "date": "2026-10-23",
+      "proved": "'What ports can I forward on Premium plan? The port number must be in range [1024-65535] and not occupied by another user', and 'Basic plan which allows only one mapping rule is unlimited'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The free tier is generous on bytes and stingy on the one thing that matters here. Re-read 2026-10-23: the 1024-65535 port range rule applies to Premium custom ports, and the free rule stays a random port.",
+  "extras": {
+    "wg_path": "inside-udp",
+    "wg_detail": "the rule forwards UDP: 'You can forward HTTP traffic to your local web-server as well as any TCP or UDP traffic.' The public port is random on the free plan and chosen on Premium.",
+    "ingress": "tcp+udp",
+    "volume_tib_month": null,
+    "volume_stated": "'Unlimited bandwidth' is a core feature line on the product page; no rate or tolerance is published",
+    "bytes_transit": "yes",
+    "transit_note": "the portmap.io server terminates the VPN and forwards the rule's traffic"
+  }
+}

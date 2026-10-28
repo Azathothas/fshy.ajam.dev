@@ -1,0 +1,90 @@
+{
+  "topic": "storage",
+  "slug": "whatsapp-cloud-api-media",
+  "provider": "WhatsApp Cloud API — Media (upload / media_id)",
+  "url": "https://developers.facebook.com/docs/whatsapp/cloud-api/reference/media",
+  "category": "messaging",
+  "free_tier": {
+    "stated": "Per-file caps only, no storage quota: documents 100 MB, images 5 MB, video 16 MB, audio 16 MB, stickers 500 KB (as listed on the reference page). Files persist 30 days.",
+    "unit": "MB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://developers.facebook.com/docs/whatsapp/cloud-api/reference/media",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "Per-file caps only, no storage quota: documents 100 MB",
+    "bytes": 100000000,
+    "source_url": "https://developers.facebook.com/docs/whatsapp/cloud-api/reference/media",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "'All media files sent through this API are encrypted and persist for 30 days, unless they are deleted earlier.' Media IDs also expire at 30 days (7 days for IDs arriving in webhooks)",
+    "days": 30,
+    "source_url": "https://developers.facebook.com/docs/whatsapp/cloud-api/reference/media",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Download is free of per-GB charge but doubly gated: media URLs EXPIRE AFTER 5 MINUTES and must be re-fetched via the media ID using a Bearer token. There is no public URL at any point.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "graph",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Graph API; official SDKs (facebook-business, whatsapp-cloud-api wrappers). No rclone backend. Wrappers exist but cannot beat the 30-day deletion.",
+  "chaining": "Does not multiply — retention, not count, is the wall. Unlimited phone numbers x 30 days each is still a 30-day window, i.e. a cache, not storage.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "expire at 30 days",
+      "source": "https://developers.facebook.com/docs/whatsapp/cloud-api/reference/media"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "Per-file caps only, no storage quota: documents 100 MB",
+      "source": "https://developers.facebook.com/docs/whatsapp/cloud-api/reference/media"
+    }
+  ],
+  "limits_note": "HARD 30-DAY DELETION — the disqualifier. 'All media files sent through this API are encrypted and persist for 30 days, unless they are deleted earlier.' Media IDs also expire at 30 days (7 days for IDs arriving in webhooks). Media URLs live 5 minutes.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: ION — the disqualifier. 'All media files sent through this API are encrypted and persist for 30 days, unless they are deleted earlier.' Media IDs also expire at 30 days (7 days for I",
+    "country": null
+  },
+  "reliability_note": "Deterministic deletion, not a fair-use throttle: on day 31 the bytes are gone and only an error remains.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://developers.facebook.com/docs/whatsapp/cloud-api/reference/media",
+      "date": "2026-10-21",
+      "proved": "read live: 'All media files sent through this API are encrypted and persist for 30 days, unless they are deleted earlier.'; 'Media IDs returned by the API expire after 30 days. Media IDs in webhooks expire after 7 days.'; 'Media URLs expire after 5 minutes'"
+    },
+    {
+      "url": "https://developers.facebook.com/docs/whatsapp/cloud-api/reference/media",
+      "date": "2026-10-21",
+      "proved": "read live: size table 'Text .txt text/plain 100 MB', 'AAC .aac 16 MB', etc."
+    },
+    {
+      "url": "https://graph.facebook.com/v21.0/123456/media",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 400 (anonymous call refused; token mandatory)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Per-file caps only, no storage quota: documents 100 MB, images 5 MB, video 16 MB, audio 16 MB, stickers 500 KB (as listed on the reference page). Files persist 30 days.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "Per-file caps only, no storage quota: documents 100 MB, images 5 MB, video 16 MB, audio 16 MB, stickers 500 KB (as listed on the reference page). Files persist 30 days.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

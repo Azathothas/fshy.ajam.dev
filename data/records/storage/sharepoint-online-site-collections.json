@@ -1,0 +1,70 @@
+{
+  "topic": "storage",
+  "slug": "sharepoint-online-site-collections",
+  "provider": "SharePoint Online site collections (25 TB per site ceiling)",
+  "url": "https://learn.microsoft.com/en-us/sharepoint/sharepoint-limits",
+  "category": "cloud-drive",
+  "free_tier": {
+    "stated": "25 TB maximum storage per site collection; 2,000,000 site collections per organization; 500,000 site collections per education tenant; file upload limit 250 GB.",
+    "unit": "objects",
+    "metered_on": "stored-bytes",
+    "source_url": "https://learn.microsoft.com/en-us/sharepoint/sharepoint-limits",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://learn.microsoft.com/en-us/sharepoint/sharepoint-limits",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://learn.microsoft.com/en-us/sharepoint/sharepoint-limits",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered (same M365 subscription model - no per-GB egress meter).",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "graph",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Microsoft Graph (Sites.ReadWrite.All, Files.ReadWrite.All, app-only client-credentials flow); rclone 'onedrive' remote with drive_type=documentLibrary and a site/drive_id, or the SharePoint v2.0 endpoint override via tenant_url",
+  "chaining": "This is the structural ceiling inside the A1 tenant: the pool is 100 TB, a single library can address 25 TB, and there are up to 2M sites. In a paid E3/E5 tenant (1 TB + 10 GB/license) the same 25 TB-per-site ceiling applies, so a 100-license tenant has 2 TB pooled but 50 sites worth of address space. Per-site ceilings only bind once you have the pool to back them.",
+  "limits": [],
+  "limits_note": "Bounded by the tenant pool, not by the site: a 100 TB-pool tenant holds at most 4 sites at 25 TB each. Versioning (50,000 major versions) silently multiplies storage on overwrite. Team sites force versioning on; standalone Communication sites allow 'No versioning'.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Version bloat is the real data-loss-adjacent hazard: re-uploading a 20 GB file to a Team site library can consume hundreds of GB of pool in hidden versions.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://learn.microsoft.com/en-us/sharepoint/sharepoint-limits",
+      "date": "2026-10-21",
+      "proved": "'Max storage per site (site collection) 25 TB'; 'Sites (site collection) per organization 2 million'; '250 GB - File upload limit'; 'Versions 50,000 major versions and 511 minor versions'"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/office365/servicedescriptions/office-365-platform-service-description/office-365-education",
+      "date": "2026-10-21",
+      "proved": "'Storage for site collections: Up to 25 TB per site collection or group'; 'Site collections per tenant: 500,000'"
+    },
+    {
+      "url": "https://michifumi.de/blog/2026-09-21-bypass-e5-onedrive-10gb-limit-mount-sharepoint/",
+      "date": "2026-10-21",
+      "proved": "documents team-site vs communication-site versioning bloat and dual-mount rclone setup against a 300 GB E5 tenant"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "25 TB maximum storage per site collection; 2,000,000 site collections per organization; 500,000 site collections per education tenant; file upload limit 250 GB.",
+  "extras": {},
+  "binding": "none",
+  "binding_note": "no constraint in the record binds at this scale; the record carries no limit of a kind the vocabulary names"
+}

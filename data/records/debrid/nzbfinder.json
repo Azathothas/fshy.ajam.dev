@@ -1,0 +1,102 @@
+{
+  "slug": "nzbfinder",
+  "provider": "NZBFinder",
+  "url": "https://nzbfinder.ws/",
+  "category": "Usenet indexer (Newznab API, tiered membership)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free tier reported as 5 NZB downloads and 25 API hits per day, no XXX access; Basic EUR 10/year gives 5,000 API hits and unlimited downloads, Pro EUR 20/year 20,000, Elite EUR 35/year unlimited plus Spotweb. The vendor's own caps declares <limits max=\"100\" default=\"100\"/> and <registration available=\"yes\" open=\"yes\"/>.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://nzbfinder.ws/api?t=caps",
+    "read_on": "2026-10-23",
+    "notes": "Two 2026 third-party tables agree on 5 downloads / 25 API per day; a 2013 vendor forum post said 10 API and 5 downloads, and a March 2020 promotion raised it temporarily to 250 API and 100 downloads. The conservative 25 is kept."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: an NZB pointer file",
+    "bytes": null,
+    "source_url": "https://nzbfinder.ws/api?t=caps",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "'18+ years of posts in our DB' (login page strapline); a third-party listing claims 'over 3,600 days of binary content, 500,000+ NZBs indexed'.",
+    "days": null,
+    "source_url": "https://nzbfinder.ws/login",
+    "notes": "The vendor states a span in years, not a day count; the day figure is third-party."
+  },
+  "egress": {
+    "terms": "No byte metering; the API returns pointers.",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://nzbfinder.ws/api?t=caps"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "Newznab API on the same host at /api. caps advertises 100 results per request and open registration. The site lists Sonarr, Radarr, Prowlarr, NZBHydra 2, SickChill/SickGear, Chaptarr, Mylar, Lazylibrarian and Lidarr as compatible.",
+  "endpoint": "https://nzbfinder.ws/api?t=caps ; https://nzbfinder.ws/api?t=search&q=<query>&apikey=<key>",
+  "tooling": "Native Newznab, no wrapper: Prowlarr, NZBHydra2 and every arr app add it with URL plus key.",
+  "chaining": "An open-registration indexer with a real API key on the free tier, so it can carry an arr stack at 25 searches and 5 grabs a day before EUR 10/year lifts the ceiling.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "25 API hits per day and 5 NZB downloads per day on the free tier",
+      "source": "https://usenetreviewz.com/nzbfinder-review/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "100 results per request maximum",
+      "source": "https://nzbfinder.ws/api?t=caps"
+    }
+  ],
+  "limits_note": "Registration is declared open today, which is the one difference that matters against every other invite-only indexer.",
+  "binding": "request-rate",
+  "binding_note": "At a 1 TiB/month habit the daily counter is what stops a user: 25 API hits a day is roughly one search per hour, and the 5-grab cap allows about 50 GB a day at a 10 GB average NZB, which is 1.5 TB a month only if nothing retries.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Registration declares itself open in caps and /register serves an email field with the warning 'Temporary e-mail domains are banned', plus a verification link. Spam-blocking is the gate, not an invite.",
+    "country": null
+  },
+  "reliability_note": "Free accounts have been re-capped before without notice (the 2013 status post reverted a temporary lift), so a free allowance is a policy number that can change under a running stack.",
+  "confidence": "reported",
+  "confidence_note": "caps and the open-registration flag were measured today; the free allowance that decides the verdict is third-party. One free account would settle it and would move the record to documented.",
+  "evidence": [
+    {
+      "url": "probe:https://nzbfinder.ws/api?t=caps&x=1",
+      "date": "2026-10-23",
+      "proved": "caps returned 200 and 2,425 bytes: title NZBFinder, <limits max=\"100\" default=\"100\"/>, <registration available=\"yes\" open=\"yes\"/>"
+    },
+    {
+      "url": "probe:https://nzbfinder.ws/api?t=search&q=linux&x=1",
+      "date": "2026-10-23",
+      "proved": "an unkeyed search did not reach the API: the origin answered a Cloudflare page (4,553 bytes), so the key requirement is inferred from the Newznab contract and caps, not from an error element"
+    },
+    {
+      "url": "https://nzbfinder.ws/login",
+      "date": "2026-10-23",
+      "proved": "vendor strapline '18+ years of posts in our DB', 'Newznab-compatible API', and the client list"
+    },
+    {
+      "url": "https://usenetreviewz.com/nzbfinder-review/",
+      "date": "2026-10-23",
+      "proved": "third-party 2026 table: Free 5 NZBs / 25 APIs; Basic 10 EUR / 5,000; Pro 20 EUR / 20,000; Elite 35 EUR / unlimited + Spotweb"
+    },
+    {
+      "url": "https://www.toolsurf.com/nzbfinder-price-2026/",
+      "date": "2026-10-23",
+      "proved": "second third-party 2026 table with the same free row, and the note that 'Free' figures are daily"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "extras": {
+    "price": "EUR 10/year Basic (reported); FREE = 5 downloads + 25 API hits/day",
+    "nzb_is_newznab": true,
+    "caps_limits": 100,
+    "registration_open": true
+  },
+  "notes": "The open-registration flag in caps is the strongest single fact on this record, and it is what separates NZBFinder from DrunkenSlug, NZBPlanet, Tabula Rasa and NinjaCentral today.",
+  "verified_at": "2026-10-23T02:11:54.066Z",
+  "topic": "debrid",
+  "price_per_tb_month": null
+}

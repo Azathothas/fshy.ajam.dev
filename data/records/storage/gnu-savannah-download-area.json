@@ -1,0 +1,85 @@
+{
+  "topic": "storage",
+  "slug": "gnu-savannah-download-area",
+  "provider": "GNU Savannah download area (download.savannah.gnu.org / .nongnu.org)",
+  "url": "https://savannah.gnu.org",
+  "category": "paas",
+  "free_tier": {
+    "stated": "No published byte quota found on any Savannah page - the hosting-requirements doc speaks only in terms of purpose ('The space given to you on this server is given for the expressed purpose of advancing free software') and permanence ('Our intent is to provide a permanent home for all versions of your project'), never a number. Disk was moved to Ceph/NFS precisely to remove the old ceiling (savannah-hackers-public, 2019-04: 'This increases the disk space and moves onto the new cephs storage').",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://savannah.gnu.org/register/requirements.php",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://savannah.gnu.org/register/requirements.php",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "No published byte quota found on any Savannah page - the hosting-requirements doc speaks only in terms of purpose ('The space given to you on this server is given for the expressed purpose of advancing free software') and permanence ('Our intent is to provide a permanent home for all versions of your project'), never a number",
+    "source_url": "https://savannah.gnu.org/register/requirements.php",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and mirrored: `download.savannah.{gnu,nongnu}.org` redirect to a world-wide mirror ring. Verified live: a GET 302s to a national mirror (fosszone.csd.auth.gr) which serves 200 with real bytes. No metering, no billing.",
+    "metered": false
+  },
+  "interface": [
+    "scp",
+    "rsync",
+    "ssh"
+  ],
+  "interface_detail": "scp",
+  "tooling": "SSH public-key auth only. Upload with `scp -O <file> <file>.sig [address removed]:/releases/GROUP_NAME/` (the `-O` is mandatory - see limits) or `rsync -tv`. Removal via restricted SSH commands `ssh host rm <path>` / `rmdir`. Also the `gnupload` script from Gnulib's build-aux. Read side is plain anonymous HTTP from the mirror ring.",
+  "chaining": "One Savannah group per project, unlimited files per group, unlimited versions retained forever. Accounts are free; the gate is that a human evaluates the package ('Evaluate and approve non-gnu packages submitted for hosting'), so cardinality is bounded by reviewer throughput, not by quota. For GNU packages ftp.gnu.org/alpha.gnu.org is a second surface with an automated signed-upload path.",
+  "limits": [],
+  "limits_note": "per-object-cap: none published. Structural caps that matter more: (1) SFTP IS DISABLED - announced 2023-11, 'we've found a vulnerability in our SFTP setup, and couldn't fix it otherwise than completely disabling SFTP. This affects uploading files to the *download* host'. Because OpenSSH >= 9.0 makes scp use SFTP by default, `scp -O` is required or every upload fails. (2) GPG-signing is expected (the docs tell you to upload foo.tar.gz + foo.tar.gz.sig) though not enforced: 'unlike ftp.gnu.org, Savannah doesn't enforce using GPG signatures for releases'. (3) Write access requires a registered SSH key on the account.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Two real breakages. First, SFTP-off is a live trap for any modern client - a naive `scp` on OpenSSH 9+ silently fails. Second, the mirror ring is uneven: the same lzip tarball (123,850 bytes) took 4.6 s once and timed out at 21 s on the redirect target (ftp.cc.uoc.gr) another time, so per-mirror health varies and single-stream fetch is not trustworthy. Site pages also intermittently serve a Kant-quoting anti-scraper page instead of content - the register/ and requirements.php URLs both did this via the reader while the Wayback copy of the same page was clean.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://savannah.gnu.org/maintenance/DownloadArea/",
+      "date": "2026-10-21",
+      "proved": "(and the nongnu mirror) - `scp foo.tar.gz ... [address removed]:/releases/GROUP_NAME/`; 'As of 2025-01, SFTP is disabled on Savannah. Please add the -O option'; 'Savannah doesn't enforce using GPG signatures'"
+    },
+    {
+      "url": "https://lists.defectivebydesign.org/archive/html/savannah-announce/2023-11/msg00000.html",
+      "date": "2026-10-21",
+      "proved": "'[download] SFTP disabled ... completely disabling SFTP. This affects uploading files to the *download* host'"
+    },
+    {
+      "url": "https://web.archive.org/web/20251221133733/https://savannah.gnu.org/register/requirements.php",
+      "date": "2026-10-21",
+      "proved": "'Our intent is to provide a permanent home for all versions of your project'; hosting restricted to free-software purpose; project evaluation by Savannah hackers"
+    },
+    {
+      "url": "https://savannah.gnu.org/maintenance/HowToBecomeASavannahHacker/",
+      "date": "2026-10-21",
+      "proved": "'Evaluate and approve non-gnu packages submitted for hosting'"
+    },
+    {
+      "url": "https://download.savannah.nongnu.org/releases/lzip/lzip-1.24.tar.gz",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 302 to https://fosszone.csd.auth.gr/nongnu/lzip/lzip-1.24.tar.gz -> 200, Content-Length 123850"
+    },
+    {
+      "url": "https://lists.libreplanet.org/archive/html/savannah-hackers-public/2019-04/msg00000.html",
+      "date": "2026-10-21",
+      "proved": "backend moved to nfs1/ceph: 'This increases the disk space'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published byte quota found on any Savannah page - the hosting-requirements doc speaks only in terms of purpose ('The space given to you on this server is given for the expressed purpose of advancing free software') and permanence ('Our intent is to provide a permanent home for all versions of your project'), never a number. Disk was moved to Ceph/NFS precisely to remove the old ceiling (savannah-hackers-public, 2019-04: 'This increases the disk space and moves onto the new cephs storage').",
+  "extras": {},
+  "binding": "none",
+  "binding_note": "no constraint in the record binds at this scale; the record carries no limit of a kind the vocabulary names"
+}

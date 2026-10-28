@@ -1,0 +1,108 @@
+{
+  "topic": "storage",
+  "slug": "pikpak",
+  "provider": "PikPak",
+  "url": "https://mypikpak.com/",
+  "category": "private cloud drive",
+  "free_tier": {
+    "stated": "6 GB free. Premium includes 10 TB base storage (expandable for purchase). No free route to >=500 GB: the free tier is 6 GB flat.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://mypikpak.com/en-US/help-center/file_management/space/insufficient_cloud_storage_space",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://mypikpak.com/en-US/help-center/file_management/space/insufficient_cloud_storage_space",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://mypikpak.com/en-US/help-center/file_management/space/insufficient_cloud_storage_space",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Metered twice over. Free accounts have a daily downstream quota; every account, free or paid, has a monthly Basic Transfer Quota, and 'Connected Apps share 25% of this daily allowance — up to 5 GB per day for all Connected Apps combined'. Downstream counts playback and previews, not just downloads.",
+    "metered": true
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Tier 1 rclone backend since v1.62, read-only for uploads? No — backend supports read and write per rclone's table (ModTime R, hash md5). This is the crucial detail: rclone is classified as a 'Connected App', so it inherits the 5 GB/day cap.",
+  "chaining": "10 TB per paid account is the largest single-unit paid capacity found in this slot, and it is the only one where the transfer cap (5 GB/day via Connected Apps / 20 GB/day general downstream) is stricter than the storage cap. Sharding accounts multiplies storage but not the per-account daily egress.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "20 GB/day",
+      "source": "https://mypikpak.com/en-US/help-center/file_management/space/insufficient_cloud_storage_space"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "5 GB/day",
+      "source": "https://mypikpak.com/en-US/help-center/file_management/space/insufficient_cloud_storage_space"
+    },
+    {
+      "kind": "write-gated",
+      "value": "reviews and online playback burn downstream quota, so scrape-style read patterns drain",
+      "source": "https://mypikpak.com/en-US/help-center/file_management/space/insufficient_cloud_storage_space"
+    }
+  ],
+  "limits_note": "per-ip-shaping / pull-count hybrid: 20 GB/day downstream on free, 5 GB/day for all Connected Apps combined, monthly transfer quota on top. Free tier 6 GB storage. This provider is the cleanest illustration that quota and egress must be scored separately.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email",
+    "country": null
+  },
+  "reliability_note": "Transfer accounting is aggressive: previews and online playback burn downstream quota, so scrape-style read patterns drain it without any download. Price differs by region (US $4.99/mo Premium, Japan JPY 700, 'Global Premium' $9.99/mo).",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://mypikpak.com/en-US/help-center/file_management/space/insufficient_cloud_storage_space",
+      "date": "2026-10-21",
+      "proved": "'Free accounts include 6 GB of storage, and Premium includes 10 TB'"
+    },
+    {
+      "url": "https://mypikpak.com/en-US/help-center/premium/premium_features/space_expansion",
+      "date": "2026-10-21",
+      "proved": "'Premium includes 10 TB of base storage. You can purchase additional storage on PikPak Web'"
+    },
+    {
+      "url": "https://mypikpak.com/en-US/connect-apps-faq",
+      "date": "2026-10-21",
+      "proved": "'a daily downstream limit of 20 GB... Apps share 25% of this daily allowance — up to 5 GB per day for all Connected Apps combined'"
+    },
+    {
+      "url": "https://mypikpak.com/en-US/help-center/transfer_quota/transfer_quota_basics/why-limit",
+      "date": "2026-10-21",
+      "proved": "'Downstream quota covers all data delivered from PikPak to your device or Connected Apps, including online playback, previews, and file downloads'; separate 'Monthly Basic Transfer Quota'"
+    },
+    {
+      "url": "https://rclone.org/pikpak/",
+      "date": "2026-10-21",
+      "proved": "native backend, added v1.62, Tier 1"
+    },
+    {
+      "url": "https://apppricelens.com/app/pikpak-cloud-storage-saver-1616861537",
+      "date": "2026-10-21",
+      "proved": "Premium monthly USD 4.99 US; Global Premium USD 9.99 per apppriceatlas.com"
+    },
+    {
+      "url": "https://pikpak.jp/en/blog-free-trial.html",
+      "date": "2026-10-21",
+      "proved": "'started for free with 6GB of storage... An email address for registration and verification... No credit card'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "price_per_tb_month": "$0.50/TB/mo on US Premium ($4.99/mo for 10 TB); $1.00/TB/mo on Global Premium ($9.99/mo) — but capped at 5 GB/day of egress through rclone, which dominates the economics",
+  "notes": "6 GB free. Premium includes 10 TB base storage (expandable for purchase). No free route to >=500 GB: the free tier is 6 GB flat.",
+  "extras": {
+    "price_verbatim": "$0.50/TB/mo on US Premium ($4.99/mo for 10 TB); $1.00/TB/mo on Global Premium ($9.99/mo) — but capped at 5 GB/day of egress through rclone, which dominates the economics"
+  },
+  "binding": "write-gated",
+  "binding_note": "the write is a queue with a person or a rule in it, so the upload rate is set by somebody else"
+}

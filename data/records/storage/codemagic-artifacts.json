@@ -1,0 +1,80 @@
+{
+  "topic": "storage",
+  "slug": "codemagic-artifacts",
+  "provider": "Codemagic artifacts",
+  "url": "https://codemagic.io",
+  "category": "paas",
+  "free_tier": {
+    "stated": "500 free build minutes/month on macOS M2 (individuals). No free storage allowance advertised. Artifact retention is per-team policy; Enterprise default is 1 year.",
+    "unit": "none",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.codemagic.io/billing/pricing/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.codemagic.io/billing/pricing/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.codemagic.io/billing/pricing/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free via api.codemagic.io artifact URLs; 'No expiration' download links are a documented option.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "POST /artifacts/:secureFilename/public-url with expiresAt, returning a public URL; GET /artifacts/:secureFilename. API token required (`x-auth-token`).",
+  "chaining": "Unlimited accounts x 500 free minutes; artifact volume is bounded by what you can build in 500 min/month. 'No expiration' links mean the URL outlives nothing — the artifact is still deleted by team retention policy.",
+  "limits": [],
+  "limits_note": "500 min/month free. 'No expiration' applies to the LINK, not the artifact — retention policy still deletes the file (explicit in their KB). Build dashboards give only 24-hour artifact links.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "'No expiration' is a misleading label: the link persists but the artifact is removed by retention policy, so links rot. 500 min/month is a hard build ceiling.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://help.codemagic.io/articles/1948706793-how-does-the-no-expiration-artifact-download-link-option-work",
+      "date": "2026-10-21",
+      "proved": "'the artifact itself is still subject to your team's artifact retention policy ... Enterprise plan users have a default artifact retention period of 1 year'"
+    },
+    {
+      "url": "https://docs.codemagic.io/rest-api/artifacts/",
+      "date": "2026-10-21",
+      "proved": "public-url creation API"
+    },
+    {
+      "url": "https://docs.codemagic.io/billing/pricing/",
+      "date": "2026-10-21",
+      "proved": "'500 free minutes per month on macOS M2'"
+    },
+    {
+      "url": "https://api.codemagic.io/artifacts/",
+      "date": "2026-10-21",
+      "proved": "probe: curl -> 404; random artifact path -> 401 (no anonymous enumeration)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "500 free build minutes/month on macOS M2 (individuals). No free storage allowance advertised. Artifact retention is per-team policy; Enterprise default is 1 year.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "retention",
+      "why": "500 free build minutes/month on macOS M2 (individuals). No free storage allowance advertised. Artifact retention is per-team policy; Enterprise default is 1 year.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": "no constraint of a named kind was recorded; the verdict rests on the quota sentence rather than on a named limit"
+}

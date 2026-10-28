@@ -1,0 +1,80 @@
+{
+  "topic": "debrid",
+  "slug": "apibay",
+  "provider": "APIBay (The Pirate Bay JSON API)",
+  "url": "https://apibay.org/",
+  "category": "torrent index API (The Pirate Bay, JSON, no key)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "No key and no account: GET /q.php?q=ubuntu&cat=0 returned 27,772 bytes of JSON with id, name, info_hash, seeders, leechers, size and category for every hit.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://apibay.org/q.php?q=ubuntu&cat=0",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: index results",
+    "bytes": null,
+    "source_url": "https://apibay.org/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "the index keeps the row after the swarm dies; seeders and leechers are the only liveness signal in the record",
+    "days": null,
+    "source_url": "https://apibay.org/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "no byte allowance: JSON only; the transfer is between a user and the swarm",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://apibay.org/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "GET /q.php?q=<query>&cat=<n> returns a JSON array; every row carries info_hash so a magnet is one string concatenation away. Responses are front-cached (Cache-Control max-age=7200).",
+  "endpoint": "https://apibay.org/q.php?q=ubuntu&cat=0",
+  "tooling": "One GET and a json parse; the whole site is a thin client over this API, so a scraper of the HTML is pointless.",
+  "chaining": "Search by title, build the magnet from info_hash, then ask a debrid service for a cache hit before pulling anything.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "none published; 10 status-checked requests plus 10 more over 55 s all returned 200, with no 429 and no Retry-After",
+      "source": "probe:apibay.org/q.php"
+    }
+  ],
+  "limits_note": "robots.txt on apibay.org carries only Cloudflare content signals and no crawl delay. The 7,200-second cache means repeated identical queries cost the origin nothing.",
+  "binding": "request-rate",
+  "binding_note": "No byte quota exists on an index; the only constraint is the rate at which the client enumerates titles, and it tolerated about 0.2 req/s with no throttle.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No key, no account, no captcha. The site's own 'robot check' overlays are ad furniture, not an API gate.",
+    "country": null
+  },
+  "reliability_note": "The API is served through Cloudflare with a two-hour cache, so a query can answer from cache after the swarm has gone; single-file rows report num_files 1 and a size in bytes, which is enough to filter but not to confirm the file still exists.",
+  "confidence": "documented",
+  "confidence_note": "A live query was executed and its JSON read on 2026-10-23. A recorded probe over an hour would raise the rate row to measured.",
+  "evidence": [
+    {
+      "url": "https://apibay.org/q.php?q=ubuntu&cat=0",
+      "date": "2026-10-23",
+      "proved": "HTTP 200 application/json, 27,772 bytes, rows with info_hash, seeders, leechers, size in bytes and category id"
+    },
+    {
+      "url": "https://apibay.org/robots.txt",
+      "date": "2026-10-23",
+      "proved": "content-signal text only, with no crawl delay and no rate limit stated"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-23T01:52:28.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The cleanest no-account JSON torrent feed found: a single GET, a fixed schema, and an info hash in every row. Its political fragility is the risk, not its quota: the domain is one seizure away from gone.",
+  "extras": {
+    "cache_max_age_s": 7200,
+    "fields": "id,name,info_hash,leechers,seeders,size,num_files,username,added,status,category,imdb"
+  }
+}

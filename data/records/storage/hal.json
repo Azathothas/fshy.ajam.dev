@@ -1,0 +1,94 @@
+{
+  "topic": "storage",
+  "slug": "hal",
+  "provider": "HAL (Hyper Articles en Ligne, CCSD / CNRS)",
+  "url": "https://hal.science",
+  "category": "academic",
+  "free_tier": {
+    "stated": "200 MB maximum per file in the deposit UI, plus a 5 GB per-account FTP staging space that is provisional only: 'pour une durée provisoire pouvant aller jusqu'à 31 jours maximum'. No aggregate storage quota is published.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://doc.hal.science/en/faq/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "200 MB maximum per file",
+    "bytes": 200000000,
+    "source_url": "https://doc.hal.science/en/faq/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "| Very stable national infrastructure (CCSD/CNRS) with permanent URLs, but the per-file 200 MB cap and the bibliographic-record model make it useless for bulk blobs; the 5 GB FTP space decays in 31 days.",
+    "days": 31,
+    "source_url": "https://doc.hal.science/en/faq/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free public PDF/fulltext download, no metering; metadata is harvested by OpenAIRE, BASE, Google Scholar.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "ftp"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Deposit API + SWORD for programmatic submission (api.archives-ouvertes.fr/docs), FTP staging at ftp.ccsd.cnrs.fr with explicit TLS (FileZilla), OAI-PMH, and a TripleStore. This is a genuinely automatable write path.",
+  "chaining": "Unlimited deposits x 200 MB/file — 2,500 files for 500 GB, but each deposit is a bibliographic notice, so the multiplier is records not blobs. 5 GB FTP staging expires in 31 days.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "transfer is limited to 3 MB/file and 10 MB total",
+      "source": "https://doc.hal.science/en/faq/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "3 MB/file",
+      "source": "https://doc.hal.science/en/faq/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "200 MB cap",
+      "source": "https://doc.hal.science/en/faq/"
+    }
+  ],
+  "limits_note": "Per-object-cap 200 MB (soft, varies with traffic); FTP staging 5 GB / 31 days; the deposit must be a scholarly document with a document type, so raw data blobs are out of scope. arXiv transfer is limited to 3 MB/file and 10 MB total.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "inferred from the category 'academic'; the source record states no identity cost, so this is a class assumption, not evidence",
+    "country": null
+  },
+  "reliability_note": "Very stable national infrastructure (CCSD/CNRS) with permanent URLs, but the per-file 200 MB cap and the bibliographic-record model make it useless for bulk blobs; the 5 GB FTP space decays in 31 days.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://doc.hal.science/en/faq/",
+      "date": "2026-10-21",
+      "proved": "'La taille maximum d'un fichier est de 200Mo'; mentions the FTP staging space as the alternative route for larger sets"
+    },
+    {
+      "url": "https://doc.hal.science/en/gerer-ses-depots/espace-de-stockage-ftp/",
+      "date": "2026-10-21",
+      "proved": "'Chaque compte utilisateur dispose d'un espace de 5 Go sur le serveur FTP du CCSD... pour une durée provisoire pouvant aller jusqu'à 31 jours maximum'"
+    },
+    {
+      "url": "https://doc.hal.science/en/faq/",
+      "date": "2026-10-21",
+      "proved": "arXiv transfer capped at 3 MB per file / 10 MB total"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "200 MB maximum per file in the deposit UI, plus a 5 GB per-account FTP staging space that is provisional only: 'pour une durée provisoire pouvant aller jusqu'à 31 jours maximum'. No aggregate storage quota is published.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "200 MB maximum per file in the deposit UI, plus a 5 GB per-account FTP staging space that is provisional only: 'pour une durée provisoire pouvant aller jusqu'à 31 jours maximum'. No aggregate storage quota is published.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

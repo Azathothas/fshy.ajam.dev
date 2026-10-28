@@ -1,0 +1,88 @@
+{
+  "topic": "debrid",
+  "slug": "nasa-earthdata",
+  "provider": "NASA Earthdata (Earthdata Login + CMR Search)",
+  "url": "https://www.earthdata.nasa.gov/data/earthdata-login",
+  "category": "Earth science data archive (login-gated DAAC downloads, open search API)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Data are free but gated: 'You will need to use Earthdata Login anytime you want to download Earth science data from any of the DAACs. Access to DAAC and other EOSDIS web information (e.g. about data, missions, instruments) does not require a login.' The CMR search API answers anonymously.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://www.earthdata.nasa.gov/data/earthdata-login",
+    "read_on": "2026-10-23",
+    "notes": "Registration is at urs.earthdata.nasa.gov; no fee is mentioned."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: a granule is the object and its size is collection-specific. The search response measured here was 4,238 bytes.",
+    "bytes": null,
+    "source_url": "https://cmr.earthdata.nasa.gov/search/collections.json",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "per collection; DAACs publish their own retention, and CMR itself is a catalogue that reflects current holdings",
+    "days": null,
+    "source_url": "https://www.earthdata.nasa.gov/data/earthdata-login",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Free. The login is identity and metrics, not payment: the registration page describes it as a user registration and profile system.",
+    "metered": false,
+    "free_allowance": "no byte allowance published",
+    "price_per_tb": null,
+    "source_url": "https://www.earthdata.nasa.gov/data/earthdata-login"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "CMR search at https://cmr.earthdata.nasa.gov/search/ (JSON), granule download from the DAAC with an EDL bearer token or a .netrc entry; earthaccess and the EDL client wrap the token flow.",
+  "endpoint": "https://cmr.earthdata.nasa.gov/search/",
+  "tooling": "earthaccess (python) handles login and download; curl needs the Authorization: Bearer header; the CMR API also takes a token query parameter but marks it for deprecation.",
+  "chaining": "The climate and remote-sensing counterpart to Copernicus: two login-gated archives that between them cover reanalysis and satellite products, both needing the same kind of free account.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "CMR deploys throttling rules that return 429 with a retry-after header; a hard 180-second limit applies to any request, and paging stops at the 1,000,000th item",
+      "source": "https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html"
+    }
+  ],
+  "limits_note": "The CMR page names the throttle mechanism and the 180 s ceiling but publishes no numeric rate. The download path itself was not exercised because no EDL account exists here.",
+  "binding": "request-rate",
+  "binding_note": "For a caller holding an account, CMR's throttling and the 180-second request ceiling bound a catalogue walk. For a caller without one, the EDL gate fails first - recorded in identity_cost, because the seven-kind vocabulary has no identity kind.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Earthdata Login registration (free, at urs.earthdata.nasa.gov) is mandatory for any DAAC download; the catalogue search needs nothing.",
+    "country": null
+  },
+  "reliability_note": "CMR paging cannot pass the millionth item and granule queries without a collection stop at 10,000; a whole-archive crawl has to be sliced by collection or by time.",
+  "confidence": "documented",
+  "confidence_note": "The search API was exercised anonymously and the login requirement is the vendor's own sentence; no granule was downloaded, so the download path is documented and not measured.",
+  "evidence": [
+    {
+      "url": "https://www.earthdata.nasa.gov/data/earthdata-login",
+      "date": "2026-10-23",
+      "proved": "Earthdata Login is the registration system for DAAC data; 'registration is quick and easy' at urs.earthdata.nasa.gov"
+    },
+    {
+      "url": "https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html",
+      "date": "2026-10-23",
+      "proved": "429 with retry-after throttling rules, the 180-second hard request limit, and the 1,000,000-item paging ceiling"
+    },
+    {
+      "url": "probe:https://cmr.earthdata.nasa.gov/search/collections.json?page_size=1",
+      "date": "2026-10-23",
+      "proved": "200, 4,238 bytes of JSON to an anonymous client - the catalogue is open even though the granules are not"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T03:24:34.450Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Caveat is identity: the bytes are free and the account is mandatory. This is the pattern is meant to separate from the anonymous sources - NASA is not a no-account source, even though nothing is charged.",
+  "extras": {
+    "login_required_for": "any DAAC download",
+    "cmr_anonymous": true,
+    "cmr_hard_timeout_s": 180,
+    "cmr_paging_ceiling": 1000000
+  }
+}

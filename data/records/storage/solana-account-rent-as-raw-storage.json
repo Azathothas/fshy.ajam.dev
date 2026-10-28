@@ -1,0 +1,76 @@
+{
+  "topic": "storage",
+  "slug": "solana-account-rent-as-raw-storage",
+  "provider": "Solana account rent as raw storage",
+  "url": "https://solana.com/docs/core/accounts",
+  "category": "blockchain",
+  "free_tier": {
+    "stated": "No free tier — storage is a refundable rent-exempt deposit: 10 MiB account costs 53,268,311,040 lamports (~53.27 SOL) to create, reclaimed only on close.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://solana.com/docs/core/accounts/account-structure",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://solana.com/docs/core/accounts/account-structure",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://solana.com/docs/core/accounts/account-structure",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free reads via RPC while the account exists; all RPC providers rate-limit or block bulk account-data reads.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Solana JSON-RPC (getMinimumBalanceForRentExemption, getAccountInfo), solana-sdk, Anchor. Wrapper examples exist but nothing production-grade for bulk file storage.",
+  "chaining": "Cost scales linearly with bytes at ~5 SOL/MiB; 1 TiB would need ~5.3 million SOL of locked capital. Sharding across wallets does not reduce the deposit.",
+  "limits": [],
+  "limits_note": "Rent-exempt deposit per byte; per-transaction size cap means large accounts are written in many transactions; account data is public and account creation is rate-limited/expensive.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": null,
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: POST solana-rpc.publicnode.com getMinimumBalanceForRentExemption([10485760]) -> result 53268311040 lamports for a 10 MiB account"
+    },
+    {
+      "url": "https://solana.com/docs/core/accounts/account-structure",
+      "date": "2026-10-21",
+      "proved": "'Accounts must hold a minimum lamport balance proportional to their data size to stay onchain'"
+    },
+    {
+      "url": "https://solana.com/developers/cookbook/accounts/calculate-rent",
+      "date": "2026-10-21",
+      "proved": "rent is reclaimable in full when the account is closed"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No free tier — storage is a refundable rent-exempt deposit: 10 MiB account costs 53,268,311,040 lamports (~53.27 SOL) to create, reclaimed only on close.",
+  "extras": {
+    "unit_note": "free_tier.unit is 'mixed' because the headline is denominated in MiB or KiB, which the schema enum does not carry; the verbatim free_tier.stated keeps the true unit. See the storage-dossier handover.",
+    "dead_end": {
+      "failure_class": "paid",
+      "why": "No free tier — storage is a refundable rent-exempt deposit: 10 MiB account costs 53,268,311,040 lamports (~53.27 SOL) to create, reclaimed only on close.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": "no constraint of a named kind was recorded; the verdict rests on the quota sentence rather than on a named limit"
+}

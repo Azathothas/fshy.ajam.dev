@@ -1,0 +1,80 @@
+{
+  "topic": "storage",
+  "slug": "steam-cloud",
+  "provider": "Steam Cloud (developer-set per-app quota)",
+  "url": "https://partner.steamgames.com/doc/features/cloud",
+  "category": "cloud-drive",
+  "free_tier": {
+    "stated": "Quota is set by each game's developer as 'Byte quota per user' and 'Number of files allowed per user', 'enforced on each Cloud-enabled game, on a per-user-per-game basis'. No Valve-imposed total. Community-observed ceilings: 93 GB per game, ~10,000 files. Defaults are frequently tiny (a few MB to 1 GB).",
+    "unit": "objects",
+    "metered_on": "unstated",
+    "source_url": "https://partner.steamgames.com/doc/features/cloud",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "100 MB per File",
+    "bytes": 100000000,
+    "source_url": "https://partner.steamgames.com/doc/features/cloud",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "per-object-cap: 100 MB per FileWrite call (256 MB 'may result in a non-optimal storage endpoint'); per-object-cap: ~10,000 files per cloud save; the game must be launchable/owned for the user, and impersonating it blocks normal play during sync. Retention: indefinite — no expiry documented, but a developer can change quota or delist and the data can be evicted.",
+    "source_url": "https://partner.steamgames.com/doc/features/cloud",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered and anonymous on the download path via the Steam client / Steamworks SDK. No published per-GB charge.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Steamworks SDK `ISteamRemoteStorage` (FileWrite, FileWriteStreamWriteChunk, FileReadAsync). Working wrapper exists: github.com/Fldicoahkiin/SteamCloudFileManager — 237 stars, Rust, Windows/macOS/Linux, '支持任意文件的上传、下载与删除' (arbitrary file upload/download/delete against any owned game's cloud). Design writeup: krutonium.ca/posts/using-steam-as-cloud-storage/.",
+  "chaining": "One Steam account x every owned Cloud-enabled game with a large quota. At 93 GB/game, 12 games = ~1.1 TB; 100 games = ~9 TB. Multiply again by accounts. The lever is picking titles whose developers set 93 GB, not buying storage.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "100 MB per File",
+      "source": "https://partner.steamgames.com/doc/features/cloud"
+    }
+  ],
+  "limits_note": "per-object-cap: 100 MB per FileWrite call (256 MB 'may result in a non-optimal storage endpoint'); per-object-cap: ~10,000 files per cloud save; the game must be launchable/owned for the user, and impersonating it blocks normal play during sync. Retention: indefinite — no expiry documented, but a developer can change quota or delist and the data can be evicted.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Entirely undocumented by Valve; a developer lowering their quota can strand data, and files are re-downloaded into the local save folder on game launch. No public bans recorded.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://partner.steamgames.com/doc/features/cloud",
+      "date": "2026-10-21",
+      "proved": "'you must set the Byte quota per user and Number of files allowed per user options ... This quota is enforced on each Cloud-enabled game, on a per-user-per-game basis'; file-size table '100MB Maximum size for a call to ISteamRemoteStorage::FileWrite'"
+    },
+    {
+      "url": "https://krutonium.ca/posts/using-steam-as-cloud-storage/",
+      "date": "2026-10-21",
+      "proved": "(published 2026-05-09) — '93GB Cloud Save Storage per Game, Maximum'; '100MB per File is an Ideal Limit, but above 250MB the back end for the API will start to hate you'; 'Possible Limit of 10,000 Files per Cloud Save'"
+    },
+    {
+      "url": "https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/",
+      "date": "2026-10-21",
+      "proved": "probe: GET (POST, no key) -> 200, returns file_size 4997533 for item 450814997 — Steam's public storage APIs answer anonymously"
+    },
+    {
+      "url": "https://forums.factorio.com/viewtopic.php?t=130969",
+      "date": "2026-10-21",
+      "proved": "(Sep 2025) — 'poly bridge 3 has 93GB available', user reports 23GB used in Factorio"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Quota is set by each game's developer as 'Byte quota per user' and 'Number of files allowed per user', 'enforced on each Cloud-enabled game, on a per-user-per-game basis'. No Valve-imposed total. Community-observed ceilings: 93 GB per game, ~10,000 files. Defaults are frequently tiny (a few MB to 1 GB).",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

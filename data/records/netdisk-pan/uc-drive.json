@@ -1,0 +1,102 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "uc-drive",
+  "provider": "UC Drive (UC网盘)",
+  "url": "https://drive.uc.cn",
+  "category": "consumer-pan",
+  "free_tier": {
+    "stated": "1 TB permanent handed out as claimable promo codes that are repeatable and stackable: '加上之前的活动，有 2t 了' and '都是永久'. A separate 1 TB plus 10 GB baseline per a 2026 comparison post",
+    "unit": "TiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://linux.do/t/topic/269012",
+    "read_on": "2026-10-21"
+  },
+  "per_object_cap": {
+    "stated": "1 GB per file on a free account: 'UC网盘2t,但单文件就1G，相当难用'",
+    "bytes": 1000000000,
+    "source_url": "https://linux.do/t/topic/1426604"
+  },
+  "retention": {
+    "stated": "Promo capacity is permanent once claimed. No retention clock on stored files is published",
+    "days": null,
+    "source_url": "https://linux.do/t/topic/269012"
+  },
+  "egress": {
+    "terms": "Free downloads are throttled hard, with reports of 300 to 400 KB/s for video: 'UC网盘之前宣称不限速，现在下载视频三四百k'. The paid tier advertises 上传下载不限速 as an SVIP benefit",
+    "metered": true,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://linux.do/t/topic/623279"
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "no public API. The Alibaba-internal web API is what the OpenList UC driver uses, cookie-based and the same backend family as Quark. No official S3 or WebDAV",
+  "chaining": "Codes are batch-minted, a hundred a month per one poster, and shared in threads, so one account can stack several to 2 TB. Each account is a +86 identity, and the 1 GB per-file ceiling makes the capacity useless as a dataset store",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "1 GB per file on a free account",
+      "source": "https://linux.do/t/topic/1426604"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "free downloads reported at 300 to 400 KB/s",
+      "source": "https://linux.do/t/topic/623279"
+    },
+    {
+      "kind": "write-gated",
+      "value": "the OpenList driver is cookie-based, and the netdisk-fast-download auth table requires a logged-in cookie for UC",
+      "source": "https://github.com/qaiu/netdisk-fast-download"
+    }
+  ],
+  "identity_cost": {
+    "kind": "country-phone",
+    "detail": "an Alibaba account, which is +86-bound in practice, and the SVIP tier needs a Chinese identity document",
+    "country": "86"
+  },
+  "reliability_note": "Promo capacity is permanent once claimed, but the 1 GB per-file ceiling makes it a media-hoarding pan and not a dataset store. Download tickets are IP-bound on the shared Quark backend, so a harvested cookie dies on the first replay",
+  "confidence": "reported",
+  "evidence": [
+    {
+      "url": "https://linux.do/t/topic/269012",
+      "date": "2026-10-21",
+      "proved": "'UC网盘1TB永久容量领取...公益~还剩20个', and a reply '加上之前的活动，有 2t 了...都是永久'"
+    },
+    {
+      "url": "https://linux.do/t/topic/1426604",
+      "date": "2026-10-21",
+      "proved": "'UC网盘2t,但单文件就1G，相当难用'"
+    },
+    {
+      "url": "https://linux.do/t/topic/623279",
+      "date": "2026-10-21",
+      "proved": "'uc网盘之前宣称不限速，现在下载视频三四百k'"
+    },
+    {
+      "url": "https://drive.uc.cn/",
+      "date": "2026-10-21",
+      "proved": "'开通UC网盘SVIP畅享6TB存储空间', '上传下载不限速...开通UC网盘SVIP畅享专属极速通道'"
+    },
+    {
+      "url": "https://github.com/qaiu/netdisk-fast-download",
+      "date": "2026-10-21",
+      "proved": "the auth table states 'UC网盘(UC) 必须', meaning a cookie is mandatory"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "binding": "per-object-cap",
+  "binding_note": "The per-file cap is what closes it, not the quota or the identity.",
+  "notes": "Both UC spellings are folded in here: the A-A5 record covers the SVIP tier and the F-F8 record covers the promo-code tier. The two together are the finding: the capacity is real, permanent and pointless because of a 1 GB ceiling.",
+  "extras": {
+    "access_mode": "registration-gated",
+    "aliases": [
+      "UC Drive / UC网盘",
+      "UC网盘 (UC Browser drive, Alibaba)",
+      "UC Browser drive"
+    ],
+    "per_file_cap_bytes_derived": 1000000000,
+    "shared_backend_with_quark": true
+  }
+}

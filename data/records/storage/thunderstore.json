@@ -1,0 +1,85 @@
+{
+  "topic": "storage",
+  "slug": "thunderstore",
+  "provider": "Thunderstore",
+  "url": "https://thunderstore.io",
+  "category": "registry",
+  "free_tier": {
+    "stated": "5,242,880,000 bytes (~5 GB) per package zip — documented as a soft limit that staff will raise on request; server default in source is REPOSITORY_MAX_PACKAGE_SIZE_MB=500. No per-team total quota; the only total cap is a global server-wide REPOSITORY_MAX_PACKAGE_TOTAL_SIZE_GB=1000.",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://wiki.thunderstore.io/mods/creating-a-package",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://wiki.thunderstore.io/mods/creating-a-package",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://wiki.thunderstore.io/mods/creating-a-package",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and CDN-fronted: download URLs 302 to ccdn.thunderstore.io with `Cache-Control: max-age=2678400`, `Server: cloudflare`, no auth.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Package upload via multipart POST to /api/experimental/submission/upload/ (thunderstore-cli, tcli); metadata read via /api/experimental/package/. No rclone backend, CLI wrapper exists: github.com/thunderstore-io/thunderstore-cli.",
+  "chaining": "Unlimited packages x 5 GB each. Team is the ownership unit, one user can create many teams; nothing in the source caps packages per team. 20 packages = 100 GB, 200 = 1 TB, all on a free account.",
+  "limits": [],
+  "limits_note": "5 GB/zip soft cap; package must be a valid zip with manifest.json + icon.png 256x256 + README.md at root; per-game community listing required; uploads land in a moderation queue; source shows a global 1000 GB server cap shared by the whole platform (not per-user) which would reject new uploads if ever hit.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Packages surviving as 'mods' for a real game community; orphaned/garbage packages are routinely delisted, which deletes files.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://wiki.thunderstore.io/mods/creating-a-package",
+      "date": "2026-10-21",
+      "proved": "'Currently there's a maximum package size limit of 5 242 880 000 bytes (or roughly 5 GB), but this is a soft-limit and can be increased if needed'"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/thunderstore-io/Thunderstore/master/django/thunderstore/core/settings.py",
+      "date": "2026-10-21",
+      "proved": "REPOSITORY_MAX_PACKAGE_SIZE_MB=(int, 500), REPOSITORY_MAX_PACKAGE_TOTAL_SIZE_GB=(int, 1000)"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/thunderstore-io/Thunderstore/master/django/thunderstore/repository/package_upload.py",
+      "date": "2026-10-21",
+      "proved": "MAX_PACKAGE_SIZE / MAX_TOTAL_SIZE enforcement"
+    },
+    {
+      "url": "https://thunderstore.dev/package/create/",
+      "date": "2026-10-21",
+      "proved": "upload form states '10GB max'"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET thunderstore.io/package/download/BepInEx/BepInExPack/5.4.2305/ -> 302 to ccdn.thunderstore.io/...zip"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET ccdn.thunderstore.io/...zip Range 0-10 -> 206, Content-Range bytes 0-10/669238, Cache-Control max-age=2678400"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "5,242,880,000 bytes (~5 GB) per package zip — documented as a soft limit that staff will raise on request; server default in source is REPOSITORY_MAX_PACKAGE_SIZE_MB=500. No per-team total quota; the only total cap is a global server-wide REPOSITORY_MAX_PACKAGE_TOTAL_SIZE_GB=1000.",
+  "extras": {},
+  "binding": "none",
+  "binding_note": "no constraint in the record binds at this scale; the record carries no limit of a kind the vocabulary names"
+}

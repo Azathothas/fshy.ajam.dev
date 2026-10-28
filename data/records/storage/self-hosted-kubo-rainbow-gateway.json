@@ -1,0 +1,78 @@
+{
+  "topic": "storage",
+  "slug": "self-hosted-kubo-rainbow-gateway",
+  "provider": "Self-hosted Kubo/Rainbow gateway (own VPS)",
+  "url": "https://docs.ipfs.tech/how-to/replace-public-gateways-with-self-hosted-ipfs/",
+  "category": "p2p",
+  "free_tier": {
+    "stated": "Storage and egress are whatever your VPS/host allows. No provider quota exists — the cost moves to the host's bandwidth allowance.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.ipfs.tech/how-to/replace-public-gateways-with-self-hosted-ipfs/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.ipfs.tech/how-to/replace-public-gateways-with-self-hosted-ipfs/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.ipfs.tech/how-to/replace-public-gateways-with-self-hosted-ipfs/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "You pay the host. IPFS docs recommend putting a CDN like Cloudflare in front of the gateway and setting Cache-Control/ETag/X-Ipfs-Roots for cacheability — which is the one genuinely correct architectural move in this slot, but it is Cloudflare's free egress you are relying on, not IPFS's.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "webdav",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Kubo (go-ipfs), Rainbow (github.com/ipfs/rainbow), Someguy for delegated routing, Helia in-browser; rclone can talk to the Kubo RPC API via a webdav/MFS shim but there is no first-class rclone backend.",
+  "chaining": "Does not multiply free storage — it only re-serves content you already paid to pin. Combined with a free pinning service it can turn 5 GB of free pinning into unmetered-looking reads, but only for 5 GB of content.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "1 TiB/day",
+      "source": "https://docs.ipfs.tech/how-to/replace-public-gateways-with-self-hosted-ipfs/"
+    }
+  ],
+  "limits_note": "Bandwidth of the VPS; DHT lookup latency on cold CIDs; no excess-use protection by default ('Unlike ipfs.io, a self-hosted gateway has no abuse protection by default').",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "This is the honest answer to 'does self-hosting change the economics?': it changes *who* meters you, not *whether* you are metered. it just moves the bill to the VPS or CDN.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://docs.ipfs.tech/how-to/replace-public-gateways-with-self-hosted-ipfs/",
+      "date": "2026-10-21",
+      "proved": "'Put a CDN like Cloudflare in front of the IPFS gateway'; 'a self-hosted gateway has no abuse protection by default' (the vendor means it applies no excess-use protection)"
+    },
+    {
+      "url": "https://docs.ipfs.tech/how-to/gateway-best-practices/",
+      "date": "2026-10-21",
+      "proved": "'Ensure that you are correctly returning HTTP cache headers... Consider leveraging the list of CIDs in X-Ipfs-Roots'"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Storage and egress are whatever your VPS/host allows. No provider quota exists — the cost moves to the host's bandwidth allowance.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "egress",
+      "why": "Storage and egress are whatever your VPS/host allows. No provider quota exists — the cost moves to the host's bandwidth allowance.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-ip-shaping",
+  "binding_note": "one stream is shaped, and a user's throughput is the shaped rate times the number of streams"
+}

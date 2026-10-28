@@ -1,0 +1,89 @@
+{
+  "topic": "storage",
+  "slug": "feijipan",
+  "provider": "小飞机网盘 FeijiPan (feijipan.com)",
+  "url": "https://www.feijipan.com",
+  "category": "cloud-drive",
+  "free_tier": {
+    "stated": "Homepage: '上传下载永不限速，该权益开放给所有用户，无需开通会员即刻享有极速下载' + '签约领1024G — 为支持站长、自媒体主分享资源，小飞机网盘推出「开发者计划」活动，参与活动签约成功即可领取1TB网盘空间'. Baseline free space is small; the 1 TB comes from the developer-signing programme. Their own blog: '免费用户🉑️通过完成活动获取2T空间（非永久）'; VIP 10T / SVIP 15T.",
+    "unit": "TB",
+    "metered_on": "unstated",
+    "source_url": "https://www.feijipan.com/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "10 GB per file",
+    "bytes": 10000000000,
+    "source_url": "https://www.feijipan.com/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://www.feijipan.com/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered and unshaped for everyone, including free: '下载不限速，百兆宽带，下载速度在75~80MB/S。无需开通会员即可享受不限速的下载。会员与非会员享同样的不限速'. Sharing links download without login.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "webdav",
+    "webdav-proxy"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Parsed by both qaiu/netdisk-fast-download (`fj`, 3.4k stars, returns a 302 direct link via /parser) and ByLsPro/JxPan (Cloudflare Worker). No OpenList driver, no WebDAV — so it is a *download* target rather than a mountable drive.",
+  "chaining": "1 TB per signed developer account; 2 TB per account via the activity path (time-limited). Accounts are email/phone based, so N accounts x 1 TB. Per-file 10 GB x unlimited files.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "10 GB per file",
+      "source": "https://www.feijipan.com/"
+    },
+    {
+      "kind": "write-gated",
+      "value": "review, not signup",
+      "source": "https://www.feijipan.com/"
+    }
+  ],
+  "limits_note": "per-object-cap: 10 GB per file for free users ('单文件上传最大支持10G，会员目前最大也是不超过10G'). request-rate: upload throttling exists but is undocumented — the netdisk-fast-download README warns '小飞机近期封号频繁' and that parser use from datacenter IPs is blocked. Free batch upload capped at 30 files.",
+  "identity_cost": {
+    "kind": "any-phone",
+    "detail": "any-phone (PRC number for the 2 TB activity; the 1 TB needs a signed developer agreement).",
+    "country": null
+  },
+  "reliability_note": "Actively bans: the most-used parser project warns of frequent account bans and IP-blocks for server-side use. 1 TB is conditional on a '签约' (signing) review, not signup.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://www.feijipan.com/",
+      "date": "2026-10-21",
+      "proved": "'上传下载永不限速，该权益开放给所有用户'; '参与活动签约成功即可领取1TB网盘空间'"
+    },
+    {
+      "url": "https://blog.feijipan.com/share-download-store/",
+      "date": "2026-10-21",
+      "proved": "'单文件上传最大支持10G'; '免费用户可通过完成活动获取2T空间（非永久）'"
+    },
+    {
+      "url": "https://github.com/qaiu/netdisk-fast-download",
+      "date": "2026-10-21",
+      "proved": "`fj` parser with 302 direct-link output; README warns of frequent bans"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Homepage: '上传下载永不限速，该权益开放给所有用户，无需开通会员即刻享有极速下载' + '签约领1024G — 为支持站长、自媒体主分享资源，小飞机网盘推出「开发者计划」活动，参与活动签约成功即可领取1TB网盘空间'. Baseline free space is small; the 1 TB comes from the developer-signing programme. Their own blog: '免费用户🉑️通过完成活动获取2T空间（非永久）'; VIP 10T / SVIP 15T.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "Homepage: '上传下载永不限速，该权益开放给所有用户，无需开通会员即刻享有极速下载' + '签约领1024G — 为支持站长、自媒体主分享资源，小飞机网盘推出「开发者计划」活动，参与活动签约成功即可领取1TB网盘空间'. Baseline free space is small; the 1 TB comes from the developer-signing programme. Their own blog: '免费用户🉑️通过完成活动获取2T空间（非永久）'; VIP 10T / SVIP 15T.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

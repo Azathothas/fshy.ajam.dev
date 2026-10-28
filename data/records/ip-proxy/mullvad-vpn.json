@@ -1,0 +1,164 @@
+{
+  "topic": "ip-proxy",
+  "slug": "mullvad-vpn",
+  "provider": "Mullvad VPN",
+  "url": "https://mullvad.net/en/pricing",
+  "category": "VPN subscription (exit source)",
+  "tier": "flat: one plan, EUR 5 per month at every term",
+  "free_tier": {
+    "stated": "No free tier. The pricing page read 2026-10-24 lists one plan at one rate: '1 month EUR 5 per month', '1 year EUR 5 per month', '1 decade EUR 5 per month', with the heading 'A fair pricing model' and the qualifier 'Including VAT.'. The same page offers a '14-day money back guarantee (except for cash payments due to anti-money laundering regulations)' and answers 'Do you ever have any sales?' with 'Nope.'",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://mullvad.net/en/pricing",
+    "read_on": "2026-10-24",
+    "notes": "All three terms carry the same monthly rate, so the length of the commitment buys no discount and the only difference between them is how many months are paid at once. The page renders the currency as a euro sign; EUR is written here instead of the glyph."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: an exit address, not an object",
+    "bytes": null,
+    "source_url": "https://api.mullvad.net/www/relays/all/",
+    "notes": "The pool is 566 named relays over 258 distinct /24s in 27 ASNs, measured 2026-10-24; none of those numbers is an object size."
+  },
+  "retention": {
+    "stated": "not applicable: a live tunnel and a rented exit address, not stored bytes",
+    "days": null,
+    "source_url": "https://mullvad.net/en/pricing",
+    "notes": "An exit address lasts for the life of a connection and nothing of a user's is stored at the exit, so there is no byte that could expire."
+  },
+  "egress": {
+    "terms": "No traffic sentence is published to quote: the pricing page read 2026-10-24 states one flat 'EUR 5 per month' at every term, 'Including VAT.', and carries no byte allowance, no traffic cap and no per-GB price. metered is false on that absence rather than on a measured byte count, and no byte was counted through a tunnel.",
+    "metered": false,
+    "free_allowance": "none published: the page prices a month, not a volume",
+    "price_per_tb": null,
+    "source_url": "https://mullvad.net/en/pricing"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "The public relay list at https://api.mullvad.net/www/relays/all/ is an unauthenticated HTTPS JSON document: HTTP 200, 294,015 bytes, 566 records, each carrying hostname, fqdn, ipv4_addr_in, ipv6_addr_in, socks_name, socks_port, multihop_port, pubkey, provider, owned, active and type. 553 records are type wireguard and publish a SOCKS5 name with socks_port 1080; 13 are type bridge and publish no socks_name. The topic vocabulary's api, socks5, http-proxy, wireguard, openvpn and web-ui tokens are not in the interface enum of scripts/dossier/schema.json, so the protocols are named in this sentence rather than as interface values.",
+  "endpoint": "https://api.mullvad.net/www/relays/all/ - no key, no session, no header; HTTP 200, 294,015 bytes on 2026-10-24.",
+  "tooling": "An HTTP client is the whole of it for the relay list, and the list names each relay's fqdn and its SOCKS5 name, so a client pins a hostname rather than a country. Reaching an exit needs an account registered to a device and a dialler a user runs itself; a Cloudflare Worker cannot open a WireGuard tunnel, so that dialler is a user's to write. No wrapper for relay selection exists and that is a tooling note, not a reason to reject the provider.",
+  "chaining": "A Worker or a free compute node dials one named relay and the request leaves at that relay's address, so the target sees a hosting ASN instead of Cloudflare's, and because 27 ASNs are reachable through one account the rotation is across relays rather than across subscriptions. The 5-device cap bounds how many of those relays can be held open at once, so the rotation is sequential on five slots, not parallel over 566 hosts.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "5 devices per account: 'You can use a Mullvad VPN account on up to 5 devices.'",
+      "source": "https://mullvad.net/en/pricing"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "none published: the pricing page read 2026-10-24 lists no byte allowance, no traffic cap and no per-GB price, and no byte count through a tunnel was run, so a cap has not been ruled out either way",
+      "source": "https://mullvad.net/en/pricing"
+    }
+  ],
+  "limits_note": "Two constraints found that name no vocabulary kind. (1) Address concentration: the 566 relays resolve to 258 /24s in 27 ASNs, and the two largest hold 61 /24s each, AS9009 M247 at 23.6% and AS11878 tzulo at 23.6%, so the top three networks cover 65.1% of the /24s and the number of distinct networks a rotation can reach is 27, not 566.",
+  "binding": "request-rate",
+  "binding_note": "The 5-device cap fails first: at about 45 GB a month across about 599,000 requests no byte quota exists to hit and no rate was observed to be shaped, so what bounds a user is how many devices one account may register - five exits held at once, and a sixth means a second EUR 5 account. The facts for this unit name request-rate; the nearest alternative in the vocabulary is per-ip-shaping, which the sibling dossier/ip-proxy/nordvpn-exits.json uses for its 8-connection ceiling, and the two labels describe the same shape, a ceiling on how many sessions one account may hold rather than a ceiling on bytes or on requests per second.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No email is asked for at signup: the pricing page says 'Start with one click to generate an account. You'll immediately get an account number and be able to choose a payment option.' Payment runs from cash by post to card - 'We accept cash, Bitcoin, Bitcoin Cash, Monero, bank wire, credit card, PayPal, Swish, Eps transfer, Bancontact, iDEAL | Wero, and Przelewy24' - and 'Our accepted cryptocurrencies are discounted at 10% due to lower fees and less administration.' A card is one option among many, not a gate, and the anonymous paths cost nothing extra; the crypto paths cost 10% less.",
+    "country": null
+  },
+  "reliability_note": "124 of the 566 relays are vendor-owned and the other 442 sit in third-party hosting, so a block met through a shared exit is a hosting-class block.",
+  "confidence": "documented",
+  "confidence_note": "The ASN diversity is measured: the vendor's relay list was fetched and every distinct /24 resolved through RIPEstat prefix-overview, 258 of 258 with no error. The price, the 5-device cap, the payment list, the 10% crypto discount and the port-forwarding removal are vendor-page reads, so the weakest rung among the fields the verdict rests on is documented. Measured throughout would need an account, one tunnel up on a named relay, and a byte count at both ends of a 45 GB month.",
+  "evidence": [
+    {
+      "url": "https://mullvad.net/en/pricing",
+      "date": "2026-10-24",
+      "proved": "One flat rate at every term - '1 month EUR 5 per month', '1 year EUR 5 per month', '1 decade EUR 5 per month', 'Including VAT.' - plus 'You can use a Mullvad VPN account on up to 5 devices.', 'Start with one click to generate an account. You'll immediately get an account number', 'Do you support port forwarding? No.', the payment list naming cash and Monero, 'Our accepted cryptocurrencies are discounted at 10%', and the 14-day money-back guarantee that excludes cash."
+    },
+    {
+      "url": "https://api.mullvad.net/www/relays/all/",
+      "date": "2026-10-24",
+      "proved": "The relay list returns 566 records over 50 country codes, 91 city codes and 14 providers, 124 marked owned and 542 marked active; 553 are type wireguard with a socks_name and socks_port 1080, 13 are type bridge with no socks_name; the document carries no ASN field, so the ASN figure in this record came from resolving its addresses, not from reading them off it."
+    },
+    {
+      "url": "probe:mullvad-asn-diversity-2026-10-24",
+      "date": "2026-10-24",
+      "proved": "The 258 distinct /24s in the relay list resolved through RIPEstat prefix-overview to 27 distinct ASNs, 258 of 258 prefixes answered with 0 errors: AS9009 M247 Europe SRL 61 /24s (23.6%), AS11878 tzulo, inc. 61 (23.6%), AS212238 CDNEXT Datacamp Limited 46 (17.8%), AS203020 HostRoyale 21, AS39351 ESAB 20, AS21859 Zenlayer 8, AS43357 Owl 7, AS136557 Host Universal 6."
+    },
+    {
+      "url": "https://stat.ripe.net/data/prefix-overview/data.json?resource=45.142.26.0/24",
+      "date": "2026-10-24",
+      "proved": "One worked example of the method: the /24 holding relay al-tia-wg-001 is announced by AS39351, holder ESAB-AS 31173 Services AB, which is how each of the 258 prefixes was classified."
+    },
+    {
+      "url": "https://mullvad.net/en/blog/removing-the-support-for-forwarded-ports",
+      "date": "2026-10-24",
+      "proved": "'Today we announce that we no longer support port forwarding. New port forwards will no longer be supported, and existing ports will be removed 2023-07-01.' Posted May 29, 2023, so the provider has no inbound path and the record can only be about exit."
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-24T10:07:11.000Z",
+  "price_per_tb_month": "EUR 5 per month flat at 1 month, 1 year and 1 decade, including VAT; a subscription price, not a per-TB price",
+  "notes": "Three candidates for why this is the best address-level ASN control in the survey, tested rather than asserted. (1) Breadth: 27 ASNs, which is more than NordVPN's 25 on 7,193 servers and fewer than Windscribe's 58 on 1,074. Refuted as the reason, because breadth alone ranks Mullvad third. (2) Per-relay addressability: every one of the 566 records carries a hostname, an fqdn and a SOCKS5 name, so a client names the host it wants and gets that address instead of drawing from a country pool. Supported, and it is the deciding property, because a named host is what turns an ASN into a choice rather than a lottery. What makes it work here and not elsewhere is the pair of numbers beside it: the list needs no account, and 2.19 relays per /24 means a hostname is nearly an address, so naming a host names a network. NordVPN's list is also public and also gives hostnames, but at 9.3 relays per /24 a hostname there is a pick inside a network and not a pick of one; Proton's equivalent listing refuses unauthenticated reads, which is what dossier/ip-proxy/protonvpn-exits.json records from its own probe of /vpn/logicals. (3) Relay count close to address count: 566 relays over 258 /24s is 2.19 relays per /24, against NordVPN's 9.3, so reading the headline count overstates the reachable networks by a factor of two rather than by 288. Also supported, and recorded because it is the trap this topic exists to name. The page read today returns the figure: EUR 5 per month at 1 month, 1 year and 1 decade, including VAT, and it also answers the device cap, the payment list, the 10% crypto discount and the port-forwarding question, so four of that record's gaps are closed by one page. A discrepancy between the assigned facts and the artefacts, recorded rather than smoothed. The facts give the largest ASN as AS9009 M247 at 61 /24s and 24%. Re-resolving all 258 prefixes found M247 at 61 and AS11878 tzulo, inc. at 61 as well, with CDNEXT third at 46. The share is right - 61 of 258 is 23.6%, which rounds to 24% - and the ranking is not a single leader. Both are carried, and the tie is the reason limits_note says 'the two largest' rather than 'the largest'. A second number that the facts do not carry: the same document flags 542 of the 566 records active and 24 inactive. 566 is the count of named relays, which is what a reader sees on the page and what the facts give; 542 is the count a client could dial on the day. Neither is wrong and they answer different questions, so both are in extras. Cross-record, and it matters for a user's stack. AS212238 CDNEXT Datacamp holds 46 of Mullvad's 258 /24s, 17.8%, and it is the same ASN measured for the Proton exit in dossier/ip-proxy/protonvpn-exits.json and holding 45% of the NordVPN pool in dossier/ip-proxy/nordvpn-exits.json; AS9009 M247 is also the largest network in AirVPN's pool per note behind this unit. So four subscriptions do not buy four independent top networks, and a rotation built from Mullvad alone is concentrated in two networks that together hold 47.2% of its /24s. Why rung 4 and not 5. Every ASN measured here is a hosting network by holder name, M247, tzulo, Datacamp, HostRoyale, ESAB, so the exit is a datacenter address and the registration-class question is answered no, which is a property of the pool and not of a single exit. What rests on one sample. One fetch of the relay list on one day, one resolution pass over its 258 prefixes, and one read of the pricing page; the pool as handed out at connect time was never observed, so every address claim here is a claim about the published list and not about a connection. The 5-device cap was read, not tested, and the absence of a traffic cap is an absence in one page rather than a measurement. The one-sentence vendor claim that this is an exit source rather than an ingress one was checked against the vendor's own announcement rather than carried from the facts.",
+  "extras": {
+    "rung": 4,
+    "rung_note": "Every distinct /24 in the vendor's relay list was resolved to an announcing ASN through RIPEstat, so the record knows which networks the exits sit in; it stops at rung 4 because no relay was connected to and no holder was checked against a hosting flag.",
+    "asn_diversity": {
+      "measured_on": "2026-10-24",
+      "relays": 566,
+      "relays_active": 542,
+      "countries": 50,
+      "cities": 91,
+      "providers": 14,
+      "relays_owned_by_vendor": 124,
+      "subnets_24": 258,
+      "asns": 27,
+      "largest_asn": "AS9009 M247 Europe SRL",
+      "largest_asn_subnets_24": 61,
+      "largest_asn_share": "23.6%",
+      "tied_largest_asn": "AS11878 tzulo, inc.",
+      "tied_largest_subnets_24": 61,
+      "top3_share": "65.1%",
+      "relays_per_subnet_24": "2.19",
+      "prefixes_resolved": "258 of 258, 0 errors"
+    },
+    "top_asns": [
+      {
+        "asn": "AS9009",
+        "holder": "M247 Europe SRL",
+        "subnets_24": 61,
+        "share": "23.6%"
+      },
+      {
+        "asn": "AS11878",
+        "holder": "tzulo, inc.",
+        "subnets_24": 61,
+        "share": "23.6%"
+      },
+      {
+        "asn": "AS212238",
+        "holder": "CDNEXT Datacamp Limited",
+        "subnets_24": 46,
+        "share": "17.8%"
+      },
+      {
+        "asn": "AS203020",
+        "holder": "HostRoyale Technologies Pvt Ltd",
+        "subnets_24": 21,
+        "share": "8.1%"
+      },
+      {
+        "asn": "AS39351",
+        "holder": "ESAB-AS 31173 Services AB",
+        "subnets_24": 20,
+        "share": "7.8%"
+      },
+      {
+        "asn": "AS21859",
+        "holder": "ZEN-ECN Zenlayer Inc",
+        "subnets_24": 8,
+        "share": "3.1%"
+      }
+    ],
+    "shared_asn_with": "AS212238 CDNEXT Datacamp is the ASN measured for the Proton exit in dossier/ip-proxy/protonvpn-exits.json and holds 45% of the NordVPN pool in dossier/ip-proxy/nordvpn-exits.json; AS9009 M247 is also the largest network in AirVPN's pool.",
+    "addressable_by_name": "Each of the 566 records carries a hostname, an fqdn and a socks_name, so an exit is pinned by name rather than drawn from a country pool.",
+    "device_cap": 5,
+    "price": "EUR 5 per month flat at 1 month, 1 year and 1 decade, including VAT",
+    "payment": "cash by post, Bitcoin, Bitcoin Cash, Monero, bank wire, credit card, PayPal, Swish, Eps transfer, Bancontact, iDEAL | Wero, Przelewy24; cryptocurrencies discounted 10%",
+    "ingress": "none: port forwarding withdrawn 2023-07-01",
+    "relay_types": "553 wireguard, 13 bridge"
+  }
+}

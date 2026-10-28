@@ -1,0 +1,99 @@
+{
+  "topic": "egress",
+  "slug": "microsoft-dev-tunnels",
+  "provider": "Microsoft Dev Tunnels",
+  "url": "https://learn.microsoft.com/en-us/azure/developer/dev-tunnels/overview",
+  "category": "hosted tcp and http tunnel (developer service)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free with an account; the Dev tunnels limits table sets 5 GB of bandwidth per user, reset monthly.",
+    "unit": "GB",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/azure-subscription-service-limits",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://learn.microsoft.com/en-us/azure/developer/dev-tunnels/overview",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://learn.microsoft.com/en-us/azure/developer/dev-tunnels/overview",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "5 GB per user per month, stated in the Dev tunnels limits table; the same table caps a tunnel at 20 MB/s, 10 tunnels per user and 1500 HTTP requests per minute per port.; ingress: tcp",
+    "metered": true,
+    "free_allowance": "5 GB per user per month, stated in the Dev tunnels limits table; the same table caps a tunnel at 20 MB/s, 10 tunnels per user and 1500 HTTP requests per minute per port.",
+    "price_per_tb": null,
+    "source_url": "https://learn.microsoft.com/en-us/azure/developer/dev-tunnels/overview"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "devtunnel CLI.",
+  "tooling": "devtunnel CLI, VS Code and Visual Studio integration.",
+  "chaining": "Free TCP ingress for a free VM, with no card and no published cap.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "5 GB of bandwidth per user, reset monthly",
+      "source": "https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/azure-subscription-service-limits"
+    },
+    {
+      "kind": "request-rate",
+      "value": "1500 HTTP requests per minute per port",
+      "source": "https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/azure-subscription-service-limits"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "data transfer rate up to 20 MB/s per tunnel",
+      "source": "https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/azure-subscription-service-limits"
+    }
+  ],
+  "limits_note": "",
+  "binding": "volume-quota",
+  "binding_note": "5 GB is 0.0045 TiB, so the byte allowance fails about 220 times before 1 TiB/month. Ports are TCP, with UDP hedged as 'may also be supported', so a WireGuard peer has no reliable path.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "'All creation of dev tunnels requires either a Microsoft Entra ID, Microsoft, or GitHub account.'",
+    "country": "None"
+  },
+  "reliability_note": "Designed for development traffic; the aggregator records that visitors see warnings on the URLs.",
+  "confidence": "documented",
+  "confidence_note": "The allowance, the rate and the tunnel count are stated in one table. What is not stated is whether the 5 GB covers raw TCP forwarding as well as HTTP; the table names no protocol.",
+  "evidence": [
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/developer/dev-tunnels/overview",
+      "date": "2026-10-23",
+      "proved": "'Tunnel port - An IP port number (1-65535) that is allowed through a dev tunnel'; 'most often linked to TCP connections on either side, but UDP-based protocols may also be supported'"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/developer/dev-tunnels/faq",
+      "date": "2026-10-23",
+      "proved": "creating a tunnel requires an Entra ID, Microsoft or GitHub account; anonymous users cannot create tunnels"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/azure-subscription-service-limits",
+      "date": "2026-10-23",
+      "proved": "'## Dev tunnels limits'; 'Bandwidth | 5 GB per user'; 'Tunnels | 10 per user'; 'Data transfer rate | Up to 20 MB/s per tunnel'; 'The limits reset monthly'"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Corrected in the sweep's last pass: the overview and the FAQ state no quota, and the limits table does. 5 GB/month makes this a development endpoint, not an ingress path. The 20 MB/s ceiling is per tunnel and would allow 1 TiB in about 15 hours, so the monthly byte quota is what binds.",
+  "extras": {
+    "wg_path": "none",
+    "wg_detail": "",
+    "ingress": "tcp",
+    "volume_tib_month": 0.0045,
+    "volume_stated": "5 GB per user per month, stated in the Dev tunnels limits table; the same table caps a tunnel at 20 MB/s, 10 tunnels per user and 1500 HTTP requests per minute per port.",
+    "bytes_transit": "yes",
+    "transit_note": ""
+  }
+}

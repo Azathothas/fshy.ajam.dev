@@ -1,0 +1,84 @@
+{
+  "topic": "storage",
+  "slug": "docker-hub",
+  "provider": "Docker Hub (free Personal plan, public repositories)",
+  "url": "https://hub.docker.com",
+  "category": "registry",
+  "free_tier": {
+    "stated": "Unlimited public repositories on the free Personal plan; NO documented storage cap on public repositories. Docker's own limits table lists only pull-rate and repository counts, with no storage row. Docker's Feb 2025 policy post says storage-based billing is 'indefinitely delayed' with a promised six-month notice.",
+    "unit": "unlimited",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.docker.com/docker-hub/usage/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.docker.com/docker-hub/usage/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Pull count 100/6h anonymous or 200/6h authenticated per IP — that is the binding constraint for a 500GB-1TiB/day fetch workload (needs few, large blobs rather than many small ones)",
+    "source_url": "https://docs.docker.com/docker-hub/usage/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and unmetered per-GB; the gate is a pull COUNT, not bytes: 'Unauthenticated users: 100 per IPv4 address or IPv6 /64 subnet' and 'Personal (authenticated): 200' per 6 hours. Blobs are served by 307 redirect to a CDN, so one pull can be a multi-GB blob.",
+    "metered": false
+  },
+  "interface": [
+    "oci"
+  ],
+  "interface_detail": "oci",
+  "tooling": "oras push / docker push; purpose-built wrapper: github.com/Androsh7/layerstash (chunks >5GB files into ~5GB layers, uploads to Docker Hub or GHCR; author reports 1.8TB personally stored), github.com/xausky/DockerRegisterCloud (654 stars, registry-as-netdisk client with Flutter GUI + direct-download server).",
+  "chaining": "Unlimited public repos per account, and the free account count itself is unlimited. Layer count per repo is not capped, so a single repo holds arbitrarily many blobs; layerstash's <base-tag>-<chunk_n> scheme makes one repo a striped volume of unlimited size.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "1TiB/day",
+      "source": "https://docs.docker.com/docker-hub/usage/"
+    }
+  ],
+  "limits_note": "Pull count 100/6h anonymous or 200/6h authenticated per IP — that is the binding constraint for a 500GB-1TiB/day fetch workload (needs few, large blobs rather than many small ones). No published per-layer size cap, but the Docker distribution S3 driver historically broke above 10GB per layer (distribution/distribution#2814), so shard at ~5GB. The excess-use rate limit returns plain 429 in the order of thousands of req/min per IP.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: repo a striped volume of unlimited size. Pull count 100/6h anonymous or 200/6h authenticated per IP — that is the binding constraint for a 500GB-1TiB/day fetch workload (needs few, large b",
+    "country": null
+  },
+  "reliability_note": "Storage is unpriced today but Docker reserves the right to add charges and has flip-flopped before (announced Mar 2025, cancelled Apr 2025); the 100-pull/6h IP limit will throttle any fetch fan-out from one host.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://docs.docker.com/docker-hub/usage/",
+      "date": "2026-10-21",
+      "proved": "read live: table has columns Pull rate limit / public repos / private repos only; Personal = Unlimited public repos, 200 pulls/6h; no storage row anywhere on the page"
+    },
+    {
+      "url": "https://www.docker.com/blog/revisiting-docker-hub-policies-prioritizing-developer-experience/",
+      "date": "2026-10-21",
+      "proved": "read live: 'Storage Charges Delayed Indefinitely ... we have decided to indefinitely delay any storage charges', and 'We did not enforce the Docker Hub rate limit changes previously scheduled for April 1, 2025'"
+    },
+    {
+      "url": "https://auth.docker.io/token?service=registry.docker.io&scope=repository:library/alpine:pull",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200 (2698-char token); then GET registry-1.docker.io/v2/library/alpine/manifests/latest -> 200, 9218 bytes, anonymous, no account"
+    },
+    {
+      "url": "https://registry-1.docker.io/v2/library/alpine/blobs/uploads/",
+      "date": "2026-10-21",
+      "proved": "probe: POST -> 401 (anonymous push correctly refused; write requires an account, read does not)"
+    },
+    {
+      "url": "https://github.com/Androsh7/layerstash",
+      "date": "2026-10-21",
+      "proved": "read live: 'I have stored a total of 1.8TB in a public repository on Docker Hub androsh7/archive'"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Unlimited public repositories on the free Personal plan; NO documented storage cap on public repositories. Docker's own limits table lists only pull-rate and repository counts, with no storage row. Docker's Feb 2025 policy post says storage-based billing is 'indefinitely delayed' with a promised six-month notice.",
+  "extras": {},
+  "binding": "per-ip-shaping",
+  "binding_note": "one stream is shaped, and a user's throughput is the shaped rate times the number of streams"
+}

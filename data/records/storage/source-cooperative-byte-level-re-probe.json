@@ -1,0 +1,90 @@
+{
+  "topic": "storage",
+  "slug": "source-cooperative-byte-level-re-probe",
+  "provider": "Source Cooperative (source.coop / data.source.coop) — byte-level re-probe",
+  "url": "https://source.coop",
+  "category": "dataset-hosting",
+  "free_tier": {
+    "stated": "No published byte quota; the org states it 'hosts over 5 petabytes of data' across 330+ products from 130+ organisations and serves ~700 TB/month, and positions itself as 'data publishing at any scale'. this slot adds the probe and the pricing status.",
+    "unit": "TB",
+    "metered_on": "unstated",
+    "source_url": "https://docs.source.coop/what-is-source",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.source.coop/what-is-source",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.source.coop/what-is-source",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and unmetered in practice for the reader: anonymous GET with no credentials, Cloudflare in front, R2/Turbo-adjacent CDN headers. No egress meter appears anywhere in the docs.",
+    "metered": false
+  },
+  "interface": [
+    "s3",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "s3",
+  "tooling": "Genuine S3 proxy. Endpoint https://data.source.coop, --no-sign-request for reads. Upload credentials are Source-issued but in AWS format and valid only at the proxy; path is s3://<account-id>/<product-id>/ and you cannot write outside your own prefix. Accepts aws cli, boto3, rclone with a custom endpoint, plus a Source CLI and service accounts for CI.",
+  "chaining": "Multiplier is data products per account/org, and orgs can hold team members. Because reads are anonymous and S3-native, this is the cleanest 'someone else's S3 on a real CDN' shape in the whole D area — it can be mounted by AList/rclone and fronted by Cloudflare exactly per §2.1.",
+  "limits": [],
+  "limits_note": "Flat pricing 'will be announced soon' — i.e. free today, unpriced tomorrow, which is a real durability risk for capacity planning. Data products are public by default and there is no private mode.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email",
+    "country": null
+  },
+  "reliability_note": "Beta + announced-but-unpublished pricing means the free window has an unknown end date. Store only data that has a second home.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://data.source.coop/kerner-lab/fields-of-the-world/README.md",
+      "date": "2026-10-21",
+      "proved": "PROBED (this is the new evidence): curl -qsS -D - -> HTTP 200, Content-Length: 16187, Accept-Ranges: bytes, ETag, Last-Modified, Server: cloudflare, CF-Cache-Status: DYNAMIC. Downloaded twice and SHA-256 compared: cdd18d37e1af2320c2eaa763a6b70a8258a1ee2e5dc78e558ea0922e981e56d6 on both copies, and 16,187 bytes on disk matches the declared Content-Length — a true roundtrip, not a 200-with-empty-body."
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "PROBED: curl -H 'Range: bytes=0-99' on the same object -> HTTP 206 Partial Content, Content-Range: bytes 0-99/16187, 100 bytes body. Range requests work, so resumable/parallel fetches are viable."
+    },
+    {
+      "url": "https://data.source.coop/kerner-lab?list-type=2&max-keys=5",
+      "date": "2026-10-21",
+      "proved": "PROBED: curl '' -> real <ListBucketResult> with CommonPrefixes (fields-of-the-world-austria/, -belgium/, -brazil/, …), KeyCount 5, IsTruncated true. Anonymous bucket listing works — the catalogue is enumerable without credentials."
+    },
+    {
+      "url": "https://data.source.coop/?list-type=2&delimiter=/&max-keys=5",
+      "date": "2026-10-21",
+      "proved": "PROBED: curl '' -> body is literally 'Source Cooperative Data Proxy v2.5.1', not an S3 error. Root listing is disabled but the service identifies itself; useful as a liveness probe."
+    },
+    {
+      "url": "https://docs.source.coop/what-is-source",
+      "date": "2026-10-21",
+      "proved": "opened: 'Hosts over 5 petabytes … Serves approximately 700 terabytes of data transfer per month … Supports over 330 data products from 130+ organizations'; 'Source is currently in beta … publishing data requires applying to be a beta tester.'"
+    },
+    {
+      "url": "https://source.coop/",
+      "date": "2026-10-21",
+      "proved": "opened: 'Flat pricing … Pricing plans based on data volume and usage will be announced soon.' Confirms unpriced."
+    },
+    {
+      "url": "https://docs.source.coop/data-proxy",
+      "date": "2026-10-21",
+      "proved": "opened: 'The Source Data Proxy provides S3-compatible access to all data hosted on Source Cooperative. You can access data through the proxy without authentication.'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published byte quota; the org states it 'hosts over 5 petabytes of data' across 330+ products from 130+ organisations and serves ~700 TB/month, and positions itself as 'data publishing at any scale'. this slot adds the probe and the pricing status.",
+  "extras": {},
+  "binding": "none",
+  "binding_note": "no constraint in the record binds at this scale; the record carries no limit of a kind the vocabulary names"
+}

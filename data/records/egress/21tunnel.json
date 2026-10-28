@@ -1,0 +1,105 @@
+{
+  "topic": "egress",
+  "slug": "21tunnel",
+  "provider": "21tunnel",
+  "url": "https://21tunnel.com/pricing/",
+  "category": "udp port forward plus relay WireGuard (hosted)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Everything, $0 forever: Unlimited concurrent tunnels, Unlimited bandwidth and requests, Private VPN over WireGuard, No card, no trial, no expiry",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://21tunnel.com/pricing/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://21tunnel.com/pricing/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://21tunnel.com/pricing/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Unlimited bandwidth and requests, with 'Bandwidth is fair-use guidance, not a meter - we don't throttle or bill per-GB.'; ingress: udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://21tunnel.com/pricing/"
+  },
+  "interface": [
+    "cli",
+    "rest"
+  ],
+  "interface_detail": "mytunnel udp 51820 --public-port 31099, mytunnel wg up, and a REST API at login.21tunnel.com/api",
+  "tooling": "mytunnel CLI, systemd unit, REST API",
+  "chaining": "would have been answer: a free WireGuard endpoint with a reserved UDP port, composed with any free VM",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "fair-use guidance only, no meter and no number",
+      "source": "https://21tunnel.com/pricing/"
+    }
+  ],
+  "limits_note": "",
+  "binding": "per-ip-shaping",
+  "binding_note": "On the published terms nothing binds: unlimited bandwidth, 60-second per-source idle window that matches WireGuard keepalive. That is the terms as written. The service is not reachable, which is a stronger failure than any constraint.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "'mytunnel login' opens a browser and saves a 90-day token; signup is at login.21tunnel.com, which does not resolve (see notes)",
+    "country": "None"
+  },
+  "reliability_note": "the documented relay and dashboard hostnames do not exist in DNS as of 2026-10-23; the marketing site is a static Cloudflare page",
+  "confidence": "measured",
+  "confidence_note": "The death is measured, not inferred: agent.21tunnel.com and login.21tunnel.com both return DNS status 3 (NXDOMAIN) for A and AAAA from Cloudflare DNS-over-HTTPS, an independent resolver, while 21tunnel.com resolves to Cloudflare addresses on the same zone. What would reopen it: the two hostnames resolving again and a login flow completing.",
+  "evidence": [
+    {
+      "url": "https://21tunnel.com/pricing/",
+      "date": "2026-10-23",
+      "proved": "'It's free. All of it.' - unlimited tunnels, unlimited bandwidth and requests, Private VPN over WireGuard, no card, no trial, no expiry"
+    },
+    {
+      "url": "https://21tunnel.com/docs/private-vpn/",
+      "date": "2026-10-23",
+      "proved": "reserved public UDP port, generated wg0.conf with Endpoint agent.21tunnel.com:31099, 'Free on all plans'"
+    },
+    {
+      "url": "https://21tunnel.com/docs/tunnels/",
+      "date": "2026-10-23",
+      "proved": "'WireGuard endpoint behind NAT' with 'mytunnel udp 51820 --public-port 31820' and a 60-second idle window'"
+    },
+    {
+      "url": "probe:https://cloudflare-dns.com/dns-query?name=agent.21tunnel.com&type=A",
+      "date": "2026-10-23",
+      "proved": "DNS status 3, NXDOMAIN, no answer record; the same query for 21tunnel.com returns status 0 with 172.67.170.252 and 104.21.87.222"
+    },
+    {
+      "url": "probe:https://cloudflare-dns.com/dns-query?name=login.21tunnel.com&type=A",
+      "date": "2026-10-23",
+      "proved": "DNS status 3, NXDOMAIN, for A and AAAA; a direct HTTPS request to login.21tunnel.com from this host returns no status code and no remote IP"
+    },
+    {
+      "url": "https://21tunnel.com/vs/ngrok/",
+      "date": "2026-10-23",
+      "proved": "'We're newer, and we're up-front about it - MVP-stage', which is consistent with docs published ahead of deployment"
+    }
+  ],
+  "verdict": "dead",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The best-designed free WireGuard ingress and the only provider that ships the .conf, the reserved UDP port and a WireGuard recipe together. It is not running. Candidates considered for the NXDOMAIN, all tested on 2026-10-23: (1) never deployed, docs ahead of code - supported, both the relay host and the dashboard host are absent from an authoritative zone that otherwise works; (2) hostnames moved - refuted, the live marketing site's own signup and install links point at login.21tunnel.com, which is the host that does not resolve; (3) this network's resolver is stale or filtered - refuted, the Cloudflare DoH answer is authoritative and 21tunnel.com resolves on the same zone; (4) a WAF answering non-browser clients - impossible, a WAF cannot return NXDOMAIN. The wildcard caveat that applies to playit (a bare subdomain legitimately NXDOMAIN while a wildcard serves) does not apply here because login.21tunnel.com is a named host, not a wildcard member.",
+  "extras": {
+    "wg_path": "registration-api",
+    "wg_detail": "the vendor documents the full path: '21tunnel reserves a public UDP endpoint and relays datagrams to it', clients get a .conf with 'Endpoint = agent.21tunnel.com:31099', and 'mytunnel udp 51820 --public-port 31099' is the exact relay command; 'Free on all plans.' https://21tunnel.com/docs/private-vpn/",
+    "ingress": "udp",
+    "volume_tib_month": null,
+    "volume_stated": "Unlimited bandwidth and requests, with 'Bandwidth is fair-use guidance, not a meter - we don't throttle or bill per-GB.'",
+    "bytes_transit": "yes",
+    "transit_note": "the relay would carry the datagrams; as of this reading there is no relay to carry them"
+  }
+}

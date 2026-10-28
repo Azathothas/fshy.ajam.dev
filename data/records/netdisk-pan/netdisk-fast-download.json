@@ -1,0 +1,104 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "netdisk-fast-download",
+  "provider": "netdisk-fast-download (lz.qaiu.top / 189.qaiu.top)",
+  "url": "https://github.com/qaiu/netdisk-fast-download",
+  "category": "direct-link-resolver",
+  "free_tier": {
+    "stated": "the public lz.qaiu.top endpoint parses share links for the drivers it lists at no charge and with no key",
+    "unit": "unlimited",
+    "metered_on": "request-count",
+    "source_url": "https://github.com/qaiu/netdisk-fast-download",
+    "read_on": "2026-10-22",
+    "notes": "the free endpoint is explicitly not to be depended on; the README asks users to self-host"
+  },
+  "per_object_cap": {
+    "stated": "the resolved file's own size; the resolver imposes none, and the driver's limit applies (100 MiB on classic Lanzou, 100 GB on 123pan above which a login is needed)",
+    "source_url": "https://nfd-parser.github.io/"
+  },
+  "retention": {
+    "stated": "the resolved URL is short-lived and must be re-minted per request",
+    "days": null,
+    "source_url": "https://nfd-parser.github.io/"
+  },
+  "egress": {
+    "terms": "the resolver returns a 302 to the pan's own CDN, so the bytes come from the pan and not from the resolver",
+    "metered": false,
+    "source_url": "https://github.com/qaiu/netdisk-fast-download"
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "GET /parser?url=...&pwd=... returns a 302 to the direct link; the short form /<driver>/<shareKey>@<pwd> does the same; the project is Java and self-hostable",
+  "chaining": "the read path for pans that have no WebDAV and no mountable API: resolve the share link to a direct URL, then fetch it with a plain ranged GET",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "no published limit on lz.qaiu.top, and the README warns that heavy use gets the server restricted by the pan vendors",
+      "source": "https://github.com/qaiu/netdisk-fast-download"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "123pan files above 100 MiB now require a login; classic Lanzou is capped at 100 MiB",
+      "source": "https://nfd-parser.github.io/"
+    }
+  ],
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "the free endpoint needs no key; the Professional endpoint requires an X-API-Key header or a token parameter",
+    "country": null
+  },
+  "reliability_note": "The README warns that lz.qaiu.top should not be depended on, that heavy request volume gets the server restricted by the pan vendors, and that FeijiPan blocks most mainland datacentre IPs and bans accounts frequently.",
+  "confidence": "measured",
+  "evidence": [
+    {
+      "url": "probe:https://lz.qaiu.top/parser?url=https%3A%2F%2Fwww.123pan.com%2Fs%2Fabc",
+      "date": "2026-10-22",
+      "proved": "HTTP 500 with a JSON body naming the driver and the failure: '123网盘-ye: ... ShareKey格式异常'. The endpoint answers without a key and reports the driver's own error, so the free path is live and keyless"
+    },
+    {
+      "url": "probe:https://189.qaiu.top/parser?url=https%3A%2F%2Fpan.baidu.com%2Fs%2Fabc",
+      "date": "2026-10-22",
+      "proved": "HTTP 401 with {\"code\":401,\"msg\":\"未提供API Key（请在请求头X-API-Key或URL参数token中提供）\"}, which is the paywall between the free and Professional tiers"
+    },
+    {
+      "url": "https://nfd-parser.github.io/",
+      "date": "2026-10-22",
+      "proved": "the driver table lists 19 pans with a free-download column and a per-file limit column: Lanzou 100M, 123pan 100G with a login above 100M, WenShuShu 5GB, WPS 10M free, and Quark and UC marked as not downloadable without a login"
+    },
+    {
+      "url": "https://github.com/qaiu/netdisk-fast-download",
+      "date": "2026-10-22",
+      "proved": "the README states the free endpoint, the Professional endpoint at 189.qaiu.top, the driver identifiers, and three warnings about depending on the public server"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T03:37:00.574Z",
+  "binding": "per-object-cap",
+  "notes": "The free tier and the Professional tier split exactly along the pans that are hard: Lanzou, iLanzou, Ctfile, FeijiPan, ecpan, Fangcloud and 123pan resolve without a key, while Baidu, Xunlei, Quark, UC, 139 and 189 sit behind the key and return 401. That split is the map of which pans still resist programmatic access.",
+  "extras": {
+    "access_mode": "registration-gated",
+    "free_drivers": [
+      "lz",
+      "iz",
+      "ec",
+      "fj",
+      "fc",
+      "ye",
+      "ws",
+      "le",
+      "qqw",
+      "ct",
+      "ce"
+    ],
+    "keyed_drivers": [
+      "qk",
+      "uc",
+      "p139",
+      "pwo",
+      "p189"
+    ],
+    "professional_endpoint": "https://189.qaiu.top"
+  },
+  "binding_note": "The resolver itself is unlimited and free; what limits it is the driver table, where the pans worth resolving have the smallest per-file caps or now demand a login."
+}

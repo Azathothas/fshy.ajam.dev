@@ -1,0 +1,74 @@
+{
+  "topic": "storage",
+  "slug": "arweave-via-ar-io-turbo",
+  "provider": "Arweave via ar.io / Turbo (ario-deploy free tier)",
+  "url": "https://docs.ar.io/sdks/ario-deploy/free-tier/",
+  "category": "p2p",
+  "free_tier": {
+    "stated": "Turbo free tier: 105 KiB per data item, 10 MiB over the lifetime of a wallet AND 10 MiB over the lifetime of an IP range. Larger files are billed.",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://docs.ar.io/sdks/ario-deploy/free-tier/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "105 KiB/file",
+    "bytes": 107520,
+    "source_url": "https://docs.ar.io/sdks/ario-deploy/free-tier/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.ar.io/sdks/ario-deploy/free-tier/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Arweave reads are effectively unmetered through gateways (arweave.net, ar.io gateways) — genuinely free egress, which is why this would otherwise be interesting. But there is nothing to serve.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "ario-deploy CLI, Turbo SDK (@ardriveapp/turbo-sdk), ar.io SDK; arbundles/Irys for direct bundling.",
+  "chaining": "Actively defeated by design: the IP-range meter means the entire free allowance for a datacenter is shared. 'ario-deploy can check the wallet's allowance... It cannot check the IP range, so a deploy can pass the credit check and still be refused at upload time with HTTP 402 when other people on the same network have used the range's allowance.'",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "105 KiB/file",
+      "source": "https://docs.ar.io/sdks/ario-deploy/free-tier/"
+    }
+  ],
+  "limits_note": "105 KiB/file; 10 MiB/wallet lifetime; 10 MiB/IP-range lifetime; HTTP 402 past that.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "The IP-range metering is the anti-farming mechanism, and it works: this is the one design in the class that explicitly anticipates the 'unlimited wallets' move. Confirms the prior agent's finding, with the mechanism spelled out (dual metering, wallet + range, 402 on the range).",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://docs.ar.io/sdks/ario-deploy/free-tier/",
+      "date": "2026-10-21",
+      "proved": "'105 KiB per file (per data item)'; '10 MiB over the lifetime of a wallet, and 10 MiB over the lifetime of an IP range. Turbo meters both'"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Turbo free tier: 105 KiB per data item, 10 MiB over the lifetime of a wallet AND 10 MiB over the lifetime of an IP range. Larger files are billed.",
+  "extras": {
+    "unit_note": "free_tier.unit is 'mixed' because the headline is denominated in MiB or KiB, which the schema enum does not carry; the verbatim free_tier.stated keeps the true unit. See the storage-dossier handover.",
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "Turbo free tier: 105 KiB per data item, 10 MiB over the lifetime of a wallet AND 10 MiB over the lifetime of an IP range. Larger files are billed.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

@@ -1,0 +1,80 @@
+{
+  "topic": "storage",
+  "slug": "ipfs-foundation-public-gateways",
+  "provider": "IPFS Foundation public gateways (ipfs.io / dweb.link / trustless-gateway.link)",
+  "url": "https://docs.ipfs.tech/concepts/public-utilities/",
+  "category": "p2p",
+  "free_tier": {
+    "stated": "No storage at all — gateway only. And the gateway itself is being retired: ipfs.io/dweb.link return HTTP 429 with 'Retry-After: 900' and 'Sunset: Mon, 21 Sep 2026', and redirect browsers to inbrowser.link.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://gatewaychanges.ipfs.io/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://gatewaychanges.ipfs.io/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://gatewaychanges.ipfs.io/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Rate-limited to the point of unusability from a datacenter IP: 10/10 requests returned 429 on a cold burst, and a single request after a 5 s pause also returned 429. Published posture: 'Rate limiting has begun on ipfs.io and dweb.link for hotlinked and backend traffic, and will be increasing.' Docs: 'no SLA, no support, and shared rate limits that can throttle or block your traffic at any time, without notice.'",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "curl/any HTTP client; path gateway at ipfs.io, subdomain at dweb.link; trustless subset at trustless-gateway.link.",
+  "chaining": "none. The three hostnames are one backend: 'They are not three separate services... sharing the same cache, the same connections to the IPFS network, and the same rate limits.' Rotating hostnames burns the same budget.",
+  "limits": [],
+  "limits_note": "429 + Retry-After 900 observed on the first request; Range requests capped at 5 GiB (Cloudflare CDN limit); Sunset header 2026-09-21.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "This is the single most important measurement in the slot: the 'free IPFS CDN' that every tutorial assumes is (a) gone as of 2026-09-21 and (b) already 429-ing datacenter IPs before that date. Any architecture that depends on ipfs.io/dweb.link for serving is dead on arrival.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://ipfs.io/ipfs/bafybei...5u4",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> HTTP/1.1 429, Retry-After: 900, Link: rel=\"sunset\", Sunset: Mon, 21 Sep 2026; 10/10 subsequent requests 429"
+    },
+    {
+      "url": "https://dweb.link/ipfs/bafybei...5u4",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 429, Retry-After: 900 (identical body, 188 bytes)"
+    },
+    {
+      "url": "https://blog.ipfs.tech/2026-08-beyond-sponsored-gateways/",
+      "date": "2026-10-21",
+      "proved": "(2026-08-25) — 'Rate limiting has begun on ipfs.io and dweb.link for hotlinked and backend traffic, and will be increasing.'"
+    },
+    {
+      "url": "https://gatewaychanges.ipfs.io/",
+      "date": "2026-10-21",
+      "proved": "'these pauses keep growing until it retires for good on September 21 (UTC)'"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No storage at all — gateway only. And the gateway itself is being retired: ipfs.io/dweb.link return HTTP 429 with 'Retry-After: 900' and 'Sunset: Mon, 21 Sep 2026', and redirect browsers to inbrowser.link.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "dead-service",
+      "why": "No storage at all — gateway only. And the gateway itself is being retired: ipfs.io/dweb.link return HTTP 429 with 'Retry-After: 900' and 'Sunset: Mon, 21 Sep 2026', and redirect browsers to inbrowser.link.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": "no constraint of a named kind was recorded; the verdict rests on the quota sentence rather than on a named limit"
+}

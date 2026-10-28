@@ -1,0 +1,84 @@
+{
+  "topic": "storage",
+  "slug": "maven-central",
+  "provider": "Maven Central (Sonatype Central Portal / Central Publisher)",
+  "url": "https://central.sonatype.com",
+  "category": "registry",
+  "free_tier": {
+    "stated": "No total storage quota, but as of 2026 a *monthly publishing quota per organization* on three metrics, with thresholds set at the ~90th percentile: 1,167 files / 78 MB release size / 7 releases per month at p90, rising to 17,724 / 1,808 MB / 50 at p99. The 1 GB archive upload limit is the per-request cap. Commercial-nature artefacts require the paid Publisher Pro tier from Oct 1 2026 regardless of volume.",
+    "unit": "objects",
+    "metered_on": "stored-bytes",
+    "source_url": "https://central.sonatype.org/publish/maven-central-publishing-limits/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "1 GB per upload",
+    "bytes": 1000000000,
+    "source_url": "https://central.sonatype.org/publish/maven-central-publishing-limits/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "30-day grace period on breach, then new releases refused",
+    "days": 30,
+    "source_url": "https://central.sonatype.org/publish/maven-central-publishing-limits/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and unmetered, Cloudflare-fronted. Probe: repo1.maven.org jar GET -> 200, Server: cloudflare, CF-RAY present, no auth.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Upload via Central Portal archive upload (zip/tar.gz up to 1 GB following Maven repo layout) or the maven-deploy-plugin; download via plain GET on repo1.maven.org/maven2/<group>/<artifact>/<version>/<file>. Every Java build tool is a client. No rclone backend.",
+  "chaining": "Weakest chain in the field because the new quota is per *organization* per *month*: 78 MB/month at the p90 threshold means a new org yields ~78 MB/month of headroom. Unlimited free orgs would multiply it, but each org requires a verified namespace and a GPG-signed artefact chain, so the setup cost per GB is the worst here.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "1 GB per upload",
+      "source": "https://central.sonatype.org/publish/maven-central-publishing-limits/"
+    }
+  ],
+  "limits_note": "1 GB per upload archive. Monthly per-org: file count, total release size, release count (see table). 30-day grace period on breach, then new releases refused. Signed artefacts only; namespace ownership must be proven. Published artefacts remain downloadable forever ('Already-published artifacts are never affected').",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Data never vanishes (already-published artefacts are explicitly exempt from any enforcement). The failure mode is *publishing* stopping after the grace period — a bulk writer will hit the release-size threshold in the first month and be blocked. This quota regime is new (2026) and the page says thresholds 'may be adjusted as we learn'.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://central.sonatype.org/publish/maven-central-publishing-limits/",
+      "date": "2026-10-21",
+      "proved": "monthly thresholds table ('90th | 1,167 | 78 | 7' ... '99th | 17,724 | 1,808 | 50'); 'These limits are evaluated as hard thresholds against an organization's usage during the current calendar month'; 'Commercial-nature artifacts require Maven Central Publisher Pro from October 1, 2026'"
+    },
+    {
+      "url": "https://central.sonatype.org/publish/publish-portal-upload/",
+      "date": "2026-10-21",
+      "proved": "'You can upload an archive up to 1GB in size'"
+    },
+    {
+      "url": "https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.14.0/commons-lang3-3.14.0.jar",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, Content-Length: 657952, Server: cloudflare"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No total storage quota, but as of 2026 a *monthly publishing quota per organization* on three metrics, with thresholds set at the ~90th percentile: 1,167 files / 78 MB release size / 7 releases per month at p90, rising to 17,724 / 1,808 MB / 50 at p99. The 1 GB archive upload limit is the per-request cap. Commercial-nature artefacts require the paid Publisher Pro tier from Oct 1 2026 regardless of volume.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "No total storage quota, but as of 2026 a *monthly publishing quota per organization* on three metrics, with thresholds set at the ~90th percentile: 1,167 files / 78 MB release size / 7 releases per month at p90, rising to 17,724 / 1,808 MB / 50 at p99. The 1 GB archive upload limit is the per-request cap. Commercial-nature artefacts require the paid Publisher Pro tier from Oct 1 2026 regardless of volume.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

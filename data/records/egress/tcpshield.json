@@ -1,0 +1,109 @@
+{
+  "topic": "egress",
+  "slug": "tcpshield",
+  "provider": "TCPShield (Sentry Tunnel)",
+  "url": "https://tcpshield.com/plans",
+  "category": "game L4 reverse proxy (VXLAN, any TCP/UDP)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free $0/mo, Base TCPShield plan, ideal for small 20-30 player servers: 1.0 TB monthly bandwidth, 1 network, 3 domains",
+    "unit": "TB",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://tcpshield.com/plans",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://tcpshield.com/plans",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://tcpshield.com/plans",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "1.0 TB monthly bandwidth on Free; 5.0 TB on Pro at USD 25/mo; Unlimited bandwidth on Premium at USD 100/mo; ingress: udp",
+    "metered": true,
+    "free_allowance": "1.0 TB monthly bandwidth on Free; 5.0 TB on Pro at USD 25/mo; Unlimited bandwidth on Premium at USD 100/mo",
+    "price_per_tb": null,
+    "source_url": "https://tcpshield.com/plans"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "Self-serve panel: create a tunnel, copy the generated setup script, run it as root.",
+  "tooling": "the panel generates a shell script that creates a vxlan interface (ip link add ... type vxlan, dstport, nolearning)",
+  "chaining": "A free Linux VM becomes the origin; the tunnel gives it a public IP with UDP on any port and no domain, so it replaces the CNAME-plus-plugin step that the Minecraft path needs.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "1.0 TB per month on Free; at 90% the vendor emails every few hours, at 100% it overwrites the server MOTD, at 200% or five days after 100% the domains are disabled",
+      "source": "https://docs.tcpshield.com/billing"
+    },
+    {
+      "kind": "write-gated",
+      "value": "creating the VXLAN interface needs root or full sudo on a Linux origin",
+      "source": "https://docs.tcpshield.com/vxlan/sentry-tunnel-general-setup"
+    }
+  ],
+  "limits_note": "",
+  "binding": "volume-quota",
+  "binding_note": "At 1 TiB/month the 1.0 TB monthly allowance is met first, and the consequence is now documented rather than unstated: an email at 90%, a MOTD overwrite at 100%, and the domains disabled at 200% or five days after 100%, whichever comes first. Bandwidth is counted as ingress from the server and the players. A 1 TiB month equals 110% of a 1.0 TB allowance if TB means 10^12 bytes, so the first two stages would fire but the domain would not be disabled before the month ended.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "A self-serve panel account at panel.tcpshield.com. The register form was not opened, so the fields it requires are unread. No card is named for the Free plan.",
+    "country": "None"
+  },
+  "reliability_note": "The overage rule is now known: email at 90%, MOTD overwritten at 100%, domains disabled at 200% or five days after 100%. Bandwidth is counted from inception, so a spike is charged against the month. One backend IPv4 per tunnel.",
+  "confidence": "inferred",
+  "confidence_note": "The allowance, the enforcement ladder and the metering direction are all on vendor pages read on 2026-10-23, so the volume fields are documented. The record stays at inferred only because the identity field was read from the panel's name and not from the register form, which was never opened.",
+  "evidence": [
+    {
+      "url": "https://tcpshield.com/plans",
+      "date": "2026-10-23",
+      "proved": "Free tier carries 1.0 TB monthly bandwidth, 1 network and 3 domains; Pro USD 25/mo carries 5.0 TB; Premium USD 100/mo carries Unlimited bandwidth"
+    },
+    {
+      "url": "https://docs.tcpshield.com/vxlan/sentry-tunnel-features",
+      "date": "2026-10-23",
+      "proved": "Sentry Tunnel forwards any TCP or UDP traffic, is VXLAN over UDP, and is port-agnostic across a whole backend IP"
+    },
+    {
+      "url": "https://docs.tcpshield.com/vxlan/sentry-tunnel-general-setup",
+      "date": "2026-10-23",
+      "proved": "Root access or full sudo on a Linux server is required; the overview shows a Public IP the users connect to and an assigned VXLAN port in 32768-60999"
+    },
+    {
+      "url": "https://docs.tcpshield.com/vxlan/sentry-tunnel-for-bedrock-geyser-pocketmine-voicechat",
+      "date": "2026-10-23",
+      "proved": "A UDP game port keeps its own number behind the tunnel: 19132 stays 19132 on the tunnel public IP"
+    },
+    {
+      "url": "https://docs.tcpshield.com/faq",
+      "date": "2026-10-23",
+      "proved": "The vendor says it supports ALL APPLICATIONS AND GAMES via Sentry Tunnel, and in the same paragraph gates only Bedrock on the Premium plan, naming no gate for Sentry Tunnel"
+    },
+    {
+      "url": "https://docs.tcpshield.com/billing",
+      "date": "2026-10-23",
+      "proved": "Payment methods and activation only; no overage rule for the monthly bandwidth allowance"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "1.0 TB is read as 10^12 bytes, which is 0.909 TiB; the page says TB and never TiB, so if the vendor means TiB the allowance is 1.0 TiB. The strongest candidate. Two paths exist and only one carries UDP: the Minecraft CNAME path (Bedrock is Premium-only, per the FAQ) and the Sentry Tunnel path (protocol-agnostic, dedicated public IP, no domain needed). The free-plan gate on Tunnels is the open question; candidates and tests are in lane.md. A tunnel needs one backend IPv4 and root, so it pairs with a free Linux VM rather than a managed game panel. The billing doc does, in one paragraph, and the enforcement is a three-stage escalation ending in the domain being disabled at 200% of the allowance. The record called the consequence unstated. It is stated, and the 200% ceiling changes the arithmetic: a 1 TiB month is 110% of the allowance, which lands between the MOTD stage and the disable stage. Replaces 'no overage rule is published', which the billing page contradicts.",
+  "extras": {
+    "wg_path": "inside-udp",
+    "wg_detail": "No .conf and no registration API. The tunnel forwards any TCP or UDP port to one backend IPv4, so a WireGuard listener on the origin is reachable on the tunnel's public IP; wg-quick runs on the origin, not at the edge.",
+    "ingress": "udp",
+    "volume_tib_month": 0.909,
+    "volume_stated": "1.0 TB monthly bandwidth on Free; 5.0 TB on Pro at USD 25/mo; Unlimited bandwidth on Premium at USD 100/mo",
+    "bytes_transit": "yes",
+    "transit_note": "TCPShield's anycast edge carries the encapsulated traffic to the origin over VXLAN/UDP"
+  }
+}

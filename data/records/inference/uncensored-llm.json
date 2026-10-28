@@ -1,0 +1,101 @@
+{
+  "topic": "inference",
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "not applicable"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "any OpenAI-compatible client; curl against POST {base}/chat/completions",
+  "chaining": "pairs with nothing that needs a correct answer; the scarce link is content quality, because the endpoint returns filler inside a valid 200",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "unpublished. One call was refused with Cloudflare Error 1010 on a Python User-Agent, and the rest returned filler rather than an answer",
+      "source": "probe:https://uncensored-llm.sbs/v1/chat/completions, 2026-10-22"
+    }
+  ],
+  "slug": "uncensored-llm",
+  "provider": "uncensored-llm.sbs",
+  "url": "https://uncensored-llm.sbs/v1",
+  "category": "inference endpoint, keyless",
+  "free_tier": {
+    "stated": "3 model ids, no key; no quota is published",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://uncensored-llm.sbs/v1/models",
+    "read_on": "2026-10-22"
+  },
+  "endpoint": "https://uncensored-llm.sbs/v1/chat/completions",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no key required",
+    "country": null
+  },
+  "reliability_note": "returns a well-formed completion whose content is filler rather than an answer, with finish_reason stop and no usage object",
+  "confidence": "measured",
+  "confidence_note": "five calls across three sessions. Two answered with content that did not contain the needle; one was refused by Cloudflare Error 1010 with the wrong User-Agent.",
+  "probe": {
+    "records": [
+      {
+        "probe_id": "uncensored-llm-70b",
+        "requested_model": "uncensored-llm-70b",
+        "http_run1": 403,
+        "http_run2": 200,
+        "answered_run1": "no",
+        "answered_run2": "yes",
+        "model_echoed": "uncensored-llm-70b",
+        "echo_match": "yes",
+        "latency_ms_run1": 203,
+        "latency_ms_run2": 861,
+        "ttft_ms_run1": "",
+        "completion_tokens_run1": 0,
+        "tps_run1": "",
+        "tps_run2": "",
+        "tps_basis": null,
+        "needle_echoed_run1": "no",
+        "body_bytes_run1": 708,
+        "body_sha256_16_run1": "3334d60915892d60",
+        "reasoning_only": "no",
+        "error_run1": "{\"type\":\"https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-1xxx-errors/error-1010/\",\"title\":\"Error 1010: Access denied\",\"status\":403,\"detail\":\"The site owner has b",
+        "error_run2": ""
+      }
+    ],
+    "runs": [
+      "probes-w.json",
+      "probes-w-run2.json"
+    ]
+  },
+  "evidence": [
+    {
+      "url": "probe:https://uncensored-llm.sbs/v1/chat/completions",
+      "date": "2026-10-22",
+      "proved": "a POST asking for the single token NEEDLE-9K2X returned 200 with a 278-byte body, finish_reason 'stop', model 'uncensored-llm-70b' echoed, and content \"I can help with that. Could you provide more details about what you're looking for?\" The needle is absent from the answer, so the endpoint answers with filler rather than with a completion"
+    },
+    {
+      "url": "https://uncensored-llm.sbs/",
+      "date": "2026-10-28",
+      "proved": "the vendor publishes no rate number, only that heavy sustained use may be throttled; the same page states no signup and no credit card",
+      "capture": "sha256:3312cbbf0207b5f0daa3a5ab46e8eaf7b944bc3a01439de81c1044e832c1020a",
+      "quote": "The free tier is intentionally generous. Heavy sustained use may be throttled to keep the endpoint fast for everyone."
+    },
+    {
+      "url": "probe:https://uncensored-llm.sbs/v1/chat/completions",
+      "date": "2026-10-28",
+      "proved": "one POST with no Authorization header for uncensored-llm-70b answered 200 with a 270-byte body, model uncensored-llm-70b echoed, finish_reason stop, no usage object, and content that does not contain the requested token NEEDLE-9K2X; no rate-limit header (headers: server cloudflare, cf-cache-status DYNAMIC)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-28T05:28:44.471Z",
+  "notes": "A 200, valid JSON, non-empty content and finish_reason stop, which is not an answer. The needle test declared it a failure and a does-content-exist test would have declared it a success.",
+  "binding": "request-rate",
+  "binding_note": "the returned content binds before any rate does: the endpoint answers 200 with valid JSON and filler, so a caller meets a quality failure before a quota",
+  "limits_note": "unpublished. One call was refused with Cloudflare Error 1010 on a Python User-Agent, and the rest returned filler rather than an answer; the filler reproduces on 2026-10-22T04:51:05Z with a 278-byte body"
+}

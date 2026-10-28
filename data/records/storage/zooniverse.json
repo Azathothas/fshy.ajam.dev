@@ -1,0 +1,86 @@
+{
+  "topic": "storage",
+  "slug": "zooniverse",
+  "provider": "Zooniverse (Panoptes)",
+  "url": "https://www.zooniverse.org",
+  "category": "citizen-science classification platform",
+  "free_tier": {
+    "stated": "Stores contributor *classifications*, not contributor *uploads* — and the upload side is capped at 10,000 subjects per user. Zooniverse Help, Lab Policies, verbatim: 'there is a limit of 10,000 subject uploads per user. Please contact us if you'd like to upload more.'",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://help.zooniverse.org/getting-started/lab-policies/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://help.zooniverse.org/getting-started/lab-policies/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://help.zooniverse.org/getting-started/lab-policies/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "free read, but only per-subject image URLs — no bulk export endpoint without project-owner credentials",
+    "metered": false
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "Panoptes API (api.zooniverse.org); project builder; subject sets",
+  "tooling": "panoptes-client (Ruby/JS); subject uploader UI; no bulk CLI",
+  "chaining": "None. Each project's subjects live in a project-scoped S3 bucket; the data exports are CSV manifests, not a filesystem.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "review and a one-week beta before launch",
+      "source": "https://help.zooniverse.org/getting-started/lab-policies/"
+    }
+  ],
+  "limits_note": "10,000 subjects/user; every project passes a two-stage review and a one-week beta before launch; media must be licensed and rights-clear",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email for a volunteer account ('Only your name and email are captured'), but publishing a project is `write-gated` — internal review + beta test + launch scheduling, typically weeks.",
+    "country": null
+  },
+  "reliability_note": "Dead as a storage target for a user. It is a volunteer-compute platform: the storage is incidental to the classification task and cannot be addressed as a bucket.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://help.zooniverse.org/getting-started/lab-policies/",
+      "date": "2026-10-21",
+      "proved": "'there is a limit of 10,000 subject uploads per user'; two-stage review before launch"
+    },
+    {
+      "url": "https://zooniverse.freshdesk.com/support/solutions/articles/44001770575",
+      "date": "2026-10-21",
+      "proved": "'Only your name and email are captured'"
+    },
+    {
+      "url": "https://developer.zooniverse.org/en/latest/science/subject_uploads.html",
+      "date": "2026-10-21",
+      "proved": "external subjects count against 'the upload limit for that [project]' (host DNS now dead: 530/dns-failure)"
+    },
+    {
+      "url": "https://www.zooniverse.org/about/faq",
+      "date": "2026-10-21",
+      "proved": "'Your classifications are stored in the Zooniverse's secure online database'"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Stores contributor *classifications*, not contributor *uploads* — and the upload side is capped at 10,000 subjects per user. Zooniverse Help, Lab Policies, verbatim: 'there is a limit of 10,000 subject uploads per user. Please contact us if you'd like to upload more.'",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "Stores contributor *classifications*, not contributor *uploads* — and the upload side is capped at 10,000 subjects per user. Zooniverse Help, Lab Policies, verbatim: 'there is a limit of 10,000 subject uploads per user. Please contact us if you'd like to upload more.'",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "write-gated",
+  "binding_note": "the write is a queue with a person or a rule in it, so the upload rate is set by somebody else"
+}

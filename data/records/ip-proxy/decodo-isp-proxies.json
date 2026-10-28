@@ -1,0 +1,155 @@
+{
+  "topic": "ip-proxy",
+  "slug": "decodo-isp-proxies",
+  "provider": "Decodo (formerly Smartproxy)",
+  "url": "https://decodo.com/proxies/isp-proxies",
+  "category": "per-address ISP proxy",
+  "tier": "isp-proxies (dedicated per IP, shared per GB, shared per IP)",
+  "free_tier": {
+    "stated": "3-day free trial with 100 MB included to test performance before committing; 14-day money-back option on paid plans.",
+    "unit": "MB",
+    "metered_on": "unstated",
+    "source_url": "https://decodo.com/proxies/isp-proxies",
+    "read_on": "2026-10-24",
+    "notes": "The page states 100 MB without saying whether it counts bytes in, bytes out, or both, so the direction is unstated rather than assumed."
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://decodo.com/proxies/isp-proxies",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: a live address, not stored bytes",
+    "days": null,
+    "source_url": "https://decodo.com/proxies/isp-proxies",
+    "notes": "The page's 'unlimited-duration sessions' is a proxy session lifetime, not a retention term for stored bytes; the two are not the same claim and are not merged here."
+  },
+  "egress": {
+    "terms": "Dedicated ISP is sold per address and the page states no bandwidth line for it: 'High bandwidth & concurrency support', priced '+ VAT billed monthly'. Shared ISP is metered: 'From $1.30/GB' and 'From $0.27/IP'. Dedicated carries the vendor's own headline 'From $2/IP'.",
+    "metered": true,
+    "free_allowance": "100 MB on the 3-day trial",
+    "price_per_tb": "USD 1.30 per GB on shared ISP, the vendor's own unit; the page publishes no per-TB price",
+    "source_url": "https://decodo.com/proxies/isp-proxies"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "Protocols: SOCKS5 & HTTP(S). Authenticate with username and password against endpoint isp.decodo.com:10000; the dashboard at dashboard.decodo.com/isp/pricing is where plan, locations and sub-users are managed. The page's own setup example is a cURL call.",
+  "endpoint": "isp.decodo.com:10000",
+  "tooling": "Any client that accepts a SOCKS5 or HTTP proxy: cURL with -U user:pass and -x, Python requests, Playwright, Puppeteer, or a multilogin tool. The vendor's own example is cURL, so no wrapper is needed and no tooling gap applies.",
+  "chaining": "The outbound leg of the Workers AI gateway: the gateway builds and retries the request, one dedicated ISP address carries it so the far end sees a stable identity across the gateway's 599,000 monthly requests, and the shared per-GB pool covers the volume where identity does not need to persist.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "100 MB over 3 days on the free trial",
+      "source": "https://decodo.com/proxies/isp-proxies"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "shared ISP is billed per gigabyte from USD 1.30/GB with no cap published: cost, not a ceiling, is what stops it",
+      "source": "https://decodo.com/proxies/isp-proxies"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "dedicated ISP is billed per address from USD 2/IP as the vendor's headline, with the self-serve ladder running USD 3.33/IP at 3 IPs down to USD 2.50/IP at 200 IPs",
+      "source": "https://decodo.com/proxies/isp-proxies"
+    }
+  ],
+  "limits_note": "The capture found no published request-rate limit, no concurrency ceiling and no per-address bandwidth cap; the page's only statement on the subject is 'High bandwidth & concurrency support', which carries no number. One constraint has no vocabulary kind: a dedicated address is one identity, so N concurrent identities cost N addresses at the per-IP rate, and the 500-IP tier links to #contact-sales with no published price.",
+  "binding": "none",
+  "binding_note": "Nothing in the vocabulary fails at about 45 GB a month across about 599,000 requests, which averages about 0.23 requests a second: the vendor publishes no rate, concurrency or byte ceiling, and both products are priced per address or per gigabyte rather than capped. What decides the fit is money and the registration caveat in reliability_note, not a limit.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "A card is the purchase route: every price is quoted '+ VAT billed monthly', and no anonymous or email-only path to a paid ISP address was recorded. The sibling record dossier/debrid/decodo.json carries the same vendor's payment note from 2026-10-23, 'You can also pay with cryptocurrency for all products except ISP proxies and datacenter proxies', which reads as card-only for this product; Whether the 3-day trial itself takes a card was not established.",
+    "country": null
+  },
+  "reliability_note": "Of the two addresses the vendor publishes as its own samples, 37.120.211.30 is registered to M247-LTD-Warsaw in AS9009 M247 Europe SRL with the RDAP remark 'M247 LTD Warsaw Infrastructure', a hosting network, so a target that checks registration class sees hosting and not an ISP; the other, 90.135.104.218, is Tele2 Sverige AB (AS1257, LT-TELE2-GPRS, LT) and passes.",
+  "confidence": "documented",
+  "confidence_note": "Documented is the weakest rung the verdict rests on: every price is read from the vendor's own product page on 2026-10-24. The registration check is measured from RIPEstat prefix-overview and RIPE RDAP, but it covers the two addresses the vendor chose to publish, not the pool a buyer receives. Measured for the whole verdict would need a purchased dedicated address, the same two lookups run on it, and a traffic run to confirm the address is static across reconnects.",
+  "evidence": [
+    {
+      "url": "https://decodo.com/proxies/isp-proxies",
+      "date": "2026-10-24",
+      "proved": "Three ISP plans (dedicated, pay per GB, pay per IP) with the vendor's own headlines 'From $2/IP', 'From $1.30/GB' and 'From $0.27/IP'; the self-serve dedicated ladder at 3.33, 2.90, 2.80, 2.70, 2.60 and 2.50 USD/IP for 3, 10, 20, 50, 100 and 200 IPs; the 500-IP tier routed to #contact-sales; 'Protocols SOCKS5 & HTTP(S)'; endpoint isp.decodo.com:10000 with username and password; '3-day free trial' with '100MB included'; '14-day money-back option'; 'Premium ASNs' naming AT&T, Verizon, Orange and Tele2."
+    },
+    {
+      "url": "https://decodo.com/proxies/isp-proxies",
+      "date": "2026-10-24",
+      "proved": "The hero image's alt text is the only machine-readable copy of the two sample addresses: 'Authentication method panel listing isp_01 37.120.211.30 and isp_02 90.135.104.218, Endpoint generator UI and cURL example'. The addresses are pixels in a webp otherwise, which is why they needed an outside registration check."
+    },
+    {
+      "url": "probe:stat.ripe.net/data/prefix-overview/data.json?resource=37.120.211.30",
+      "date": "2026-10-24",
+      "proved": "37.120.211.30 is not announced on its own and aligns to 37.120.211.0/24, announced by AS9009 M247 Europe SRL. A hosting ASN, so sample isp_01 fails the vendor's own ISP claim."
+    },
+    {
+      "url": "probe:rdap.db.ripe.net/ip/37.120.211.0",
+      "date": "2026-10-24",
+      "proved": "RDAP for 37.120.211.0/24: name M247-LTD-Warsaw, country PL, type ASSIGNED PA, remark 'M247 LTD Warsaw Infrastructure', maintained by M247 entities. Confirms the registration is a hosting operator's Warsaw infrastructure."
+    },
+    {
+      "url": "probe:stat.ripe.net/data/prefix-overview/data.json?resource=90.135.104.218",
+      "date": "2026-10-24",
+      "proved": "90.135.104.218 aligns to 90.135.0.0/16, announced by AS1257 SWIPNET Tele2 Sverige AB. An ISP ASN, so sample isp_02 agrees with the vendor's claim, and the vendor's 'Premium ASNs' line names Tele2 by name."
+    },
+    {
+      "url": "probe:rdap.db.ripe.net/ip/90.135.104.218",
+      "date": "2026-10-24",
+      "proved": "RDAP for 90.135.0.0/16: name LT-TELE2-GPRS, country LT, type ASSIGNED PA, remark 'Mobile Services Lithuania'. Passes as an ISP registration, with the sub-registration described as mobile services rather than fixed line."
+    },
+    {
+      "url": "https://decodo.com/pricing",
+      "date": "2026-10-24",
+      "proved": "This URL serves residential pricing only, from USD 3.75/GB at 3 GB to USD 2.75/GB at 100 GB plus USD 4/GB pay-as-you-go; it carries no ISP price. The ISP figures in this record therefore come from the product page and its dashboard link, not from this URL."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-24T10:07:11.000Z",
+  "price_per_tb_month": "USD 2.00 per dedicated address at the vendor's headline, USD 2.50 per address at the largest self-serve tier, USD 0.27 per shared address, USD 1.30 per GB of shared traffic. The unit sold is an address or a gigabyte, so no per-TB or per-month price exists to quote.",
+  "notes": "The caveat is the registration class, not the price, and it was checked rather than assumed. Three candidates were put up for why sample isp_01 would be a hosting address. (1) The vendor resells M247 hosting space as ISP capacity: confirmed for that address, since RIPEstat and RDAP both return M247-LTD-Warsaw in AS9009 with the remark 'M247 LTD Warsaw Infrastructure'. (2) The address has since been reassigned away from M247: refuted, because today's RDAP still answers M247 for the /24. (3) The sample artwork is decorative and not drawn from the pool a buyer receives: plausible and not settleable from outside, because the image carries no date and no pool export exists. Candidate (4), that the whole check is a misread of prefix alignment, is refuted by the RDAP object itself, which names the Warsaw infrastructure directly. One more pass over what the check cannot see: both addresses resolved only to their covering prefix, 37.120.211.0/24 and 90.135.0.0/16, so neither sample is individually announced, and the second lookup stops at a /16 with no more-specific object. The check covers exactly two addresses the vendor chose to publish. One address per verdict is not a distribution: it establishes that the published claim is not uniformly true, and says nothing about the share of the pool that would pass. What would settle the rest: buy one dedicated address, run these same two lookups on it, repeat across several addresses and locations, and ask the vendor for the ASN list behind 'Premium ASNs'. The second sample's RDAP remark reads 'Mobile Services Lithuania', so even the address that passes is registered as a mobile block inside an ISP ASN; a target that separates fixed from mobile may still see a difference, and that distinction was not tested. On price: the 'From $2/IP' headline is a call-to-action label on the product page, while the self-serve ladder bottoms at USD 2.50/IP at 200 IPs and the 500-IP tier routes to sales with no published price, so the USD 2 floor is not reachable in the published ladder and should not be quoted as a self-serve price. The pay-per-GB tiers are behind dashboard.decodo.com/isp/pricing, which needs an account, so only the 'From $1.30/GB' headline is recorded here. No record in another topic is corrected by this one: dossier/debrid/decodo.json is the residential metered product at a different rung and its numbers stand. The interface tokens socks5, http-proxy and web-ui are not in scripts/dossier/schema.json's interface enum, which still carries the storage vocabulary; the schema needs those tokens added or the gate will flag this record on structure alone, not on content.",
+  "extras": {
+    "rung": 5,
+    "rung_note": "The verdict turns on what the address is registered as rather than what it costs: the price is a published number, and the caveat exists because one of two published samples resolves to a hosting ASN, which is a registration-class fact.",
+    "sample_check": {
+      "isp_01": {
+        "address": "37.120.211.30",
+        "covering_prefix": "37.120.211.0/24",
+        "asn": "AS9009",
+        "asn_holder": "M247 Europe SRL",
+        "rdap_name": "M247-LTD-Warsaw",
+        "rdap_country": "PL",
+        "rdap_remark": "M247 LTD Warsaw Infrastructure",
+        "class": "hosting",
+        "result": "fails"
+      },
+      "isp_02": {
+        "address": "90.135.104.218",
+        "covering_prefix": "90.135.0.0/16",
+        "asn": "AS1257",
+        "asn_holder": "SWIPNET Tele2 Sverige AB",
+        "rdap_name": "LT-TELE2-GPRS",
+        "rdap_country": "LT",
+        "rdap_remark": "Mobile Services Lithuania",
+        "class": "isp",
+        "result": "passes"
+      },
+      "passed": "1 of 2",
+      "why_it_matters": "This is the only vendor in the survey that publishes checkable sample addresses in its own artwork, so the registration class could be measured instead of taken on trust."
+    },
+    "dedicated_ladder_usd_per_ip": "3.33 at 3 IPs, 2.90 at 10, 2.80 at 20, 2.70 at 50, 2.60 at 100, 2.50 at 200; 500 IPs on request",
+    "headline_ctas": [
+      "From $2/IP (dedicated)",
+      "From $1.30/GB (shared pay per GB)",
+      "From $0.27/IP (shared pay per IP)"
+    ],
+    "protocols": "SOCKS5 & HTTP(S)",
+    "auth": "username and password",
+    "trial": "3-day free trial, 100 MB included",
+    "money_back": "14-day money-back option",
+    "locations_stated": "North and South Americas: US, CA, BR, CO; Europe: UK, DE, FR, NL, IT, BE, PL, SE, ES, RO, IE, CZ, AT; APAC: AU, HK, JP, KR, SG",
+    "uptime_claim": "99.99% uptime and <0.2s response time, both vendor-stated and unverified here",
+    "interface_enum_note": "The schema's interface enum has no token for a proxy endpoint or a tunnel, so this record follows the convention the egress records use: a proxy client or tunnel is 'cli', a vendor API is 'rest'. Previous value: ['socks5', 'http-proxy', 'web-ui']"
+  }
+}

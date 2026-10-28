@@ -1,0 +1,90 @@
+{
+  "topic": "debrid",
+  "slug": "eurostat-api",
+  "provider": "Eurostat web services (SDMX 2.1 and Statistics API)",
+  "url": "https://ec.europa.eu/eurostat/web/main/data/web-services",
+  "category": "official statistics API",
+  "tier": "free",
+  "free_tier": {
+    "stated": "The whole Eurostat database is reachable through 'SDMX 2.1 web services' and the 'Eurostat statistics web services'; datasets are updated twice a day at 11:00 and 23:00 CET.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://ec.europa.eu/eurostat/web/main/data/web-services",
+    "read_on": "2026-10-23",
+    "notes": "No key, account or allowance is mentioned on the web-services page."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: JSON-stat, SDMX-ML or TSV per query. A single-series query measured 2,949 bytes; a whole dataset is a larger query, not a larger object.",
+    "bytes": null,
+    "source_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nama_10_gdp",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "'The Eurostat database always contains the latest version of the datasets, meaning that there is no versioning or documentation of past versions of the data.' A revision overwrites.",
+    "days": null,
+    "source_url": "https://ec.europa.eu/eurostat/web/main/data/web-services",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Free and unmetered; no authentication at the transport level.",
+    "metered": false,
+    "free_allowance": "no byte allowance published",
+    "price_per_tb": null,
+    "source_url": "https://ec.europa.eu/eurostat/web/main/data/web-services"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "GET https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/<dataset>?format=JSON&lang=EN&<dimension>=<value>, and the SDMX 2.1 endpoint /api/dissemination/sdmx/2.1/data/<dataset>.",
+  "endpoint": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/",
+  "tooling": "curl/python-requests; eurostat and pandasdmx python packages; the query builder on the site generates the URL.",
+  "chaining": "The EU-level counterpart to World Bank indicators; the two overlap on national accounts and trade, so a reconciliation step needs both rather than either.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "none published; two anonymous queries returned 200 here with no throttling headers",
+      "source": "probe:https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nama_10_gdp"
+    }
+  ],
+  "limits_note": "The legacy bulk download listing is gone: https://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?file=data/nama_10_gdp.tsv.gz returned 404 on 2026-10-23, so the only verified path is the per-query API.",
+  "binding": "request-rate",
+  "binding_note": "Each query returns kilobytes, so 1 TiB is millions of calls; with no published limit and no bulk file verified, the call rate decides the day's bytes.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No key and no account: both queries returned 200 to an anonymous client.",
+    "country": null
+  },
+  "reliability_note": "No versioning: a revision replaces the number in place, so a client that re-runs a query a month later can silently get different data for the same period.",
+  "confidence": "documented",
+  "confidence_note": "Two API responses were measured with byte counts and the web-services page was read. The bulk path is a documented dead end here, not a measured success.",
+  "evidence": [
+    {
+      "url": "https://ec.europa.eu/eurostat/web/main/data/web-services",
+      "date": "2026-10-23",
+      "proved": "SDMX 2.1 and Statistics web services; 'no versioning or documentation of past versions'; twice-daily update at 11:00 and 23:00 CET"
+    },
+    {
+      "url": "probe:https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nama_10_gdp?format=JSON&lang=EN&geo=DE&na_item=B1GQ&unit=CP_MEUR&time=2023",
+      "date": "2026-10-23",
+      "proved": "200, 2,971 bytes of application/json, anonymous"
+    },
+    {
+      "url": "probe:https://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?file=data/nama_10_gdp.tsv.gz",
+      "date": "2026-10-23",
+      "proved": "404 - the legacy bulk TSV listing did not answer"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T03:24:34.450Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Caveat is bulk: the service is unlimited and free but ships data in small JSON-stat responses, and the old bulk file endpoint is dead. A full Eurostat mirror is millions of queries, which is slow rather than blocked.",
+  "extras": {
+    "single_series_bytes": 2971,
+    "bulk_listing_status": 404,
+    "update_times_cet": [
+      "11:00",
+      "23:00"
+    ]
+  }
+}

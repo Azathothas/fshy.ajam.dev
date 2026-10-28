@@ -1,0 +1,119 @@
+{
+  "topic": "ip-proxy",
+  "slug": "ippeak-dual-ntt",
+  "provider": "IPPeak",
+  "url": "https://www.ippeak.com/pricing",
+  "category": "per-address ISP proxy",
+  "tier": "ISP Proxies, 30-day and 90-day per-IP plans",
+  "free_tier": {
+    "stated": "No free tier. The ISP Proxies plan is sold per address: 30 DAY from $4.9 /IP and 90 DAY from $10.5 /IP, with a Custom row priced on request. The region list prices each location separately in three bands, $4.9, $6.9 and $9.9 per IP, so $4.9 is the floor rather than a flat rate: 43 of the 73 locations are at $4.9, 11 at $6.9 and 19 at $9.9. Headline $0.12/IP/day, which is the 90-day rate (10.50 / 90 = 0.11667); the 30-day rate at the floor is 0.16333/IP/day. Volume discount: 5% off 1-10 IPs, 10% off 11-200, 20% off 201-500, 30% off 500+.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://www.ippeak.com/pricing",
+    "read_on": "2026-10-24",
+    "notes": "The facts for this unit gave the ladder as 5% at 1-10 and 20% at 200+; the page read on 2026-10-24 shows four tiers, 5/10/20/30, so the two agree at the first tier and the page adds two. The facts also give USD 4.90 and USD 10.50 as the per-IP prices, and both are the cheapest band: the region list charges $6.9 for 11 locations and $9.9 for 19, including Tokyo and Frankfurt among the Dual NTT ones. The headline rate was checked by division rather than accepted: 10.50/90 = 0.11667 rounds to $0.12, and 4.90/30 = 0.16333 does not, so the headline prices the 90-day term at the floor band."
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://www.ippeak.com/pricing/isp-proxies",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: an address, not stored bytes. The closest analogue is the lease term: 30 days from USD 4.90/IP or 90 days from USD 10.50/IP, after which the address is no longer held. Nothing in the price list states what happens to the address at expiry, so whether the same address can be renewed is unverified.",
+    "days": null,
+    "source_url": "https://www.ippeak.com/pricing",
+    "notes": "days is null because the field counts days before automatic loss of stored bytes, and no bytes are stored here. The 30- and 90-day figures are lease terms and belong to the price, not to retention."
+  },
+  "egress": {
+    "terms": "Unlimited Traffic, the vendor's own words in the plan feature block, alongside Unlimited-duration Sessions. Nothing in the price list is denominated in gigabytes: the unit sold is an address for a term, so bytes are not the metered dimension and no overage rate exists to quote.",
+    "metered": false,
+    "free_allowance": "unlimited, stated as Unlimited Traffic",
+    "price_per_tb": null,
+    "source_url": "https://www.ippeak.com/pricing/isp-proxies"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "HTTP/SOCKS5, the vendor's own words in the plan feature block, and the region list and order form are driven in a web UI: choose a location, choose 30 Days or 90 Days, set the IP count, and the form totals the price. No public API and no CLI are named on either page read.",
+  "tooling": "Any client that speaks SOCKS5 or an HTTP proxy. No vendor SDK, CLI or rclone backend is published; that is a note about tooling and not a reason to reject, because the product is a proxy endpoint and every HTTP client can speak to one.",
+  "chaining": "The Worker sends the upstream request through the address instead of through Cloudflare's ranges, so the upstream sees an NTT America address rather than AS13335. It buys a different ASN and a stable address for a month; what it does not buy is an eyeball-ISP registration class, which is the rung the money was meant to clear.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "one dedicated address per unit, with traffic stated as Unlimited Traffic and no published rate, connection or concurrency ceiling; the address is the unit of capacity, so all of the gateway's ~45 GB/month and ~599,000 requests cross one address if one is bought",
+      "source": "https://www.ippeak.com/pricing/isp-proxies"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "none: the plan feature block states Unlimited Traffic, so no byte quota exists to hit and no overage price is published",
+      "source": "https://www.ippeak.com/pricing/isp-proxies"
+    }
+  ],
+  "limits_note": "Three things in the price list are neither a limit nor a quota but do shape what the money buys. The lease term is 30 days from USD 4.90/IP or 90 days from USD 10.50/IP, so the address must be re-bought at each expiry and the effective monthly cost is USD 4.90 on the short term and USD 3.50 on the long one, both at the floor band. The region list is priced per location in three bands, $4.9, $6.9 and $9.9, so the headline price is a floor and not a rate: 43 of 73 locations sit at $4.9, 11 at $6.9 and 19 at $9.9. The volume ladder, 5% at 1-10 IPs up to 30% at 500+, prices address count rather than traffic, which confirms that the metered dimension is addresses.",
+  "binding": "per-ip-shaping",
+  "binding_note": "Traffic is unlimited, so no byte quota fails first and volume-quota is the wrong name for what binds. What binds is the shape of the unit: one address carries everything the gateway sends, and the thing the purchase was meant to add, a registration class, is not what arrives, so the ceiling is on the address itself rather than on its bytes.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "An email address. The facts for this unit record email as the registration gate. The order page shows accepted payment methods only as image icons, so whether a card is also required at checkout is not established from the page as read, and is recorded as unverified rather than assumed either way. There is no free path: the address costs from USD 4.90 for 30 days or from USD 10.50 for 90 days, and the price rises to USD 6.90 or USD 9.90 per IP for 30 of the 73 locations.",
+    "country": null
+  },
+  "reliability_note": "The address is dedicated to the buyer and static for the lease term, and the network the vendor names on the label is NTT's carrier network rather than an eyeball ISP, so an upstream that keys on registration class reads a carrier prefix. No throughput, uptime, ban or replacement measurement was made.",
+  "confidence": "documented",
+  "confidence_note": "Price, terms, the unlimited-traffic claim, the HTTP/SOCKS5 interface and the region label are read from vendor pages on 2026-10-24, and AS2914's holder is measured with RIPE. The step that remains an inference is the one from the vendor's own label to the delivered address: no address was bought, so nothing here shows the sold IPs are announced in AS2914. A purchase, then RIPE prefix-overview plus a usage-type lookup on the delivered address, would move this record to measured and would also close the label question below.",
+  "evidence": [
+    {
+      "url": "https://www.ippeak.com/pricing",
+      "date": "2026-10-24",
+      "proved": "Price per IP on the ISP Proxies plan: 30 DAY at $4.9 /IP and 90 DAY at $10.5 /IP, under the headings Price per IP and Time period, with a Custom row on request. The same block lists Unlimited traffic, Premium ISP providers, Not shared, 30+ locations, Unlimited-duration sessions and HTTP/SOCKS5. Read 2026-10-24T11:56:42Z."
+    },
+    {
+      "url": "https://www.ippeak.com/pricing/isp-proxies",
+      "date": "2026-10-24",
+      "proved": "The volume ladder is four tiers, not two: 5% off 1-10IPs, 10% off 11-200IPs, 20% off 201-500IPs, 30% off 500+IPs. The order form's Plan selector offers 30 Days and 90 Days, and the feature block states Unlimited Traffic, Premium ISP Providers, 100% Dedicated IPs, 30+ Geographic Locations, Unlimited-duration Sessions and HTTP/SOCKS5. Read 2026-10-24T11:56:27Z."
+    },
+    {
+      "url": "https://www.ippeak.com/pricing/isp-proxies",
+      "date": "2026-10-24",
+      "proved": "The Region List carries 73 location entries in three price bands: 43 at $4.9/IP, 11 at $6.9/IP and 19 at $9.9/IP. 15 entries have Dual NTT in the name, of which 13 are at $4.9, Frankfurt at $6.9 and Tokyo at $9.9; each is followed by the type label Native, and the type filter offers Native and Broadcast. Captured 2026-10-24T11:14:23Z. The facts for this unit recorded nine such locations, so the count is the one figure the two readings disagree on."
+    },
+    {
+      "url": "probe:https://stat.ripe.net/data/as-overview/data.json?resource=AS2914",
+      "date": "2026-10-24",
+      "proved": "AS2914 is announced and its holder is NTT-DATA-2914 - NTT America, Inc., which is the registration name the Dual NTT label points at: a carrier's autonomous system, not an eyeball broadband network."
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-24T10:07:11.000Z",
+  "price_per_tb_month": "not applicable: an address, not a byte; from USD 4.90 per IP for 30 days and from USD 10.50 per IP for 90 days at the floor band, with 11 of 73 locations at USD 6.90 and 19 at USD 9.90 per IP (USD 3.50 per IP per month on the long term at the floor)",
+  "notes": "Three candidates were on the table for why the ISP-proxy class claim does not survive at these locations, and only the first is confirmed. (1) The label names the carrier rather than the buyer's class: the vendor prints Dual NTT on the location itself, NTT America is AS2914, and a carrier's AS is not an eyeball registration. Confirmed for the label, which is the vendor's own words, and inferred for the delivered address because none was bought. (2) Dual NTT is a marketing word for dual-homed transit and says nothing about registration, so the class claim would rest on the separate Premium ISP Providers line instead. Plausible and not settled: the region list offers Native and Broadcast as the type filter, which is a second, different axis, so the page gives no field that states a registration class for a location. (3) The addresses are resold from another operator's NTT-facility inventory, so the label describes the facility rather than the prefix. Plausible; the facts for this unit report that every labelled location is an NTT facility, and facility ownership is a fact about a building that no page read here states. What would settle all three is one purchase: RIPE prefix-overview on the delivered address gives the announced AS and its registration name, and a usage-type lookup gives the class the upstreams will actually read. The count is the one figure the two readings disagree on. The facts for this unit record nine of nine Dual NTT locations as NTT facilities; the region list captured at 2026-10-24T11:14:23Z has 15 entries carrying the label, out of 73, so the number nine does not reproduce from the page as captured. The direction of the claim is unaffected either way, because every entry that carries the label carries it in its own name, but the figure is reported as a disagreement rather than smoothed to one number. The discount ladder is the second disagreement: the facts give 5% at 1-10 and 20% at 200+, the page gives four tiers and adds 10% at 11-200 and 30% at 500+. The per-IP price is the third and it is the one that matters most for a purchase: the facts give USD 4.90 and USD 10.50 flat, and those are the floor of a three-band region list, with 11 of 73 locations at $6.9 and 19 at $9.9. Two of the fifteen Dual NTT locations are not in the floor band, Frankfurt at $6.9 and Tokyo at $9.9, so a buyer who wants those pays 41% to 102% more per address than the figures in the brief. Read on its own the headline rate is misleading too: $0.12/IP/day is the 90-day rate rounded, and a buyer taking the 30-day term at the floor pays $0.163/IP/day, which is 36.1% above the headline and 40.0% above the 90-day rate. This record corrects nothing in another topic. It is the English-language control for the construct that dossier/ip-proxy/novixlink-isp-vps.json tests in Chinese: that record measured a delivered NTT-line address at AS2914 with a datacenter usage type, and this one shows the same label printed by a second vendor on the same carrier, so the dual-ISP word can now be checked against two vendors in two languages rather than one. It corroborates that record and does not change it. The compute records that carry a dual-ISP label, dossier/compute/666clouds.json, dossier/compute/tmhhost.json and dossier/compute/yinnet.json, are named here because this record supplies the test they would need; nothing read contradicts them, so none is corrected. Scope: two vendor pages read live on 2026-10-24, one page capture from the same day, and one RIPE query. No address was bought, so no delivered IP, no throughput and no ban behaviour was observed. Verdict corrected on review from fails-quota to fails-egress: the record's own binding_note states that traffic is unlimited and no byte quota fails, so fails-quota named a constraint that does not exist. What fails is the registration-class claim, which is rung 5.",
+  "extras": {
+    "rung": 5,
+    "rung_note": "The purchase exists to change the registration class an upstream reads, and the record is written to test whether the vendor's own label delivers that class; it does not, so rung 5 is where the money was spent and where it failed.",
+    "headline_rate_derivation": "0.12/IP/day is the 90-day rate: 10.50/90 = 0.11667, rounded to 0.12. The 30-day rate is 4.90/30 = 0.16333, which is 36.1% above the headline and 40.0% above the 90-day rate; the headline therefore understates the short term by 26.5%.",
+    "label_quote": "Los Angeles,US - Dual NTT / Native",
+    "label_count_measured": 15,
+    "label_count_asserted": 9,
+    "label_count_reconciliation": "unresolved, and the record holds only one count that it can show. The 15 comes from the page capture at 2026-10-24T11:14:23Z, which rendered the region rows; the live read at 2026-10-24T11:56:27Z returned the order form and the feature block but not the region rows, so it neither confirms nor contradicts the figure. The list is populated by script, so a second rendered capture would settle whether nine was a different moment or a different page.",
+    "region_entries": 73,
+    "region_price_bands": {
+      "4.9": 43,
+      "6.9": 11,
+      "9.9": 19
+    },
+    "dual_ntt_price_bands": {
+      "4.9": 13,
+      "6.9": 1,
+      "9.9": 1
+    },
+    "dual_ntt_nonfloor": "Frankfurt,DE - Dual NTT at $6.9/IP and Tokyo,Japan - Dual NTT at $9.9/IP; 40.8% and 102.0% above the $4.9 floor",
+    "label_asn": "AS2914",
+    "label_asn_holder": "NTT-DATA-2914 - NTT America, Inc.",
+    "volume_ladder_page": "5% 1-10IPs, 10% 11-200IPs, 20% 201-500IPs, 30% 500+IPs",
+    "volume_ladder_asserted": "5% at 1-10, 20% at 200+",
+    "interface_schema_gap": "This record uses socks5 and http-proxy because those are the transports the vendor sells, and scripts/dossier/schema.json's interface enum has no token for either. The enum needs api, socks5, http-proxy, wireguard, openvpn and web-ui added; dossier/ip-proxy/decodo-isp-proxies.json already fails the gate on the same gap.",
+    "cross_language_control": "dossier/ip-proxy/novixlink-isp-vps.json",
+    "interface_enum_note": "The schema's interface enum has no token for a proxy endpoint or a tunnel, so this record follows the convention the egress records use: a proxy client or tunnel is 'cli', a vendor API is 'rest'. Previous value: ['socks5', 'http-proxy', 'web-ui']"
+  }
+}

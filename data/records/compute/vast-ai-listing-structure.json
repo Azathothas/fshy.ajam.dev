@@ -1,0 +1,110 @@
+{
+  "topic": "compute",
+  "slug": "vast-ai-listing-structure",
+  "provider": "Vast.ai listing structure",
+  "url": "https://console.vast.ai/api/v0/bundles/",
+  "category": "GPU cloud",
+  "free_tier": {
+    "stated": "The public offer endpoint answers without authentication and returns a 64-offer page of 176,798 bytes as application/json on 2026-10-22, so the marketplace prices can be read without an account. What that page contains is not what it appears to be: only 3 of the 64 offers carry rentable true, none is an interruptible bid, and several prices are for a fraction of a card. The cheapest listing is an RTX 3090 at USD 0.0881 an hour at a GPU fraction of 0.5, which is USD 0.175 for a whole card, and the cheapest RTX 4090 is listed at USD 0.1215 at a fraction of 0.125, which is USD 0.972 for a whole card. Whole-card equivalents from this page: RTX 5070 Ti USD 0.101, RTX 4080S USD 0.109, RTX 3090 USD 0.175, RTX 5090 USD 0.213, A100 PCIe USD 0.536, RTX 4090 USD 0.802.",
+    "unit": "GiB",
+    "metered_on": "wall-clock",
+    "source_url": "https://console.vast.ai/api/v0/bundles/",
+    "read_on": "2026-10-22",
+    "notes": "none"
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://console.vast.ai/api/v0/bundles/",
+    "notes": null
+  },
+  "retention": {
+    "stated": "The existing record's fact holds and is what binds: interruptible instances may be reclaimed at any time, and that is the discount rather than a defect.",
+    "days": null,
+    "source_url": "https://console.vast.ai/api/v0/bundles/",
+    "notes": null
+  },
+  "egress": {
+    "terms": "not stated",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://console.vast.ai/api/v0/bundles/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "inferred from the tooling the provider documents; not probed",
+  "tooling": "not stated",
+  "chaining": "Because the endpoint needs no key, a nightly script can record the whole-card floor for a card class over time and detect when a rate moves, which is the only price history that does not depend on a third-party tracker.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "The existing record's fact holds and is what binds: interruptible instances may be reclaimed at any time, and that is the discount rather than a defect.",
+      "source": "https://console.vast.ai/api/v0/bundles/"
+    }
+  ],
+  "limits_note": "The existing record's fact holds and is what binds: interruptible instances may be reclaimed at any time, and that is the discount rather than a defect.",
+  "binding": "retention-clamped",
+  "binding_note": "The existing record's fact holds and is what binds: interruptible instances may be reclaimed at any time, and that is the discount rather than a defect.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "Unchanged from the existing record: a card and a USD 5 minimum deposit.",
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "confidence": "measured",
+  "evidence": [
+    {
+      "url": "https://console.vast.ai/api/v0/bundles/",
+      "date": "2026-10-22",
+      "proved": "probe.py record: HTTP 200, 176798 bytes, sha256 5b76c6ed15fd5854ccbeb98b0637827464cbe90016c1f14fed517e278672ca89, content-type application/json, full body, no challenge, no false 200"
+    },
+    {
+      "url": "https://console.vast.ai/api/v0/bundles/",
+      "date": "2026-10-22",
+      "proved": "64 offers across 16 GPU models, of which 3 carry rentable true and 0 carry is_bid true; the response sets truncated false"
+    },
+    {
+      "url": "https://console.vast.ai/api/v0/bundles/",
+      "date": "2026-10-22",
+      "proved": "cheapest row is gpu_name RTX 3090 at dph_total 0.0881 with gpu_frac 0.5, and the cheapest RTX 4090 row is dph_total 0.1215 with gpu_frac 0.125, so both listed prices buy a slice rather than a card"
+    },
+    {
+      "url": "https://console.vast.ai/api/v0/bundles/?q=%7B%22rentable%22%3Atrue%2C%22gpu_frac%22%3A%7B%22eq%22%3A1.0%7D%2C%22limit%22%3A64%7D",
+      "date": "2026-10-22",
+      "proved": "a query string asking for rentable whole-GPU offers returned 0 offers, which establishes either that the query syntax is wrong or that no such offer is on the default page; the two cannot be separated from this evidence"
+    },
+    {
+      "url": "https://cloud.vast.ai/api/v0/bundles/?q=%7B%22limit%22%3A500%2C%22order%22%3A%5B%5B%22dph_total%22%2C%22asc%22%5D%5D%7D",
+      "date": "2026-10-22",
+      "proved": "GET returned 64 offers; the three cheapest 8 GB-VRAM rows were RTX 3060 Ti at dph_total 0.0287 (reliability 0.811), 0.0289 (reliability 0.999) and Tesla P100 16 GB at 0.0296"
+    },
+    {
+      "url": "https://cloud.vast.ai/api/v0/bundles/?q=%7B%22limit%22%3A500%2C%22order%22%3A%5B%5B%22dph_total%22%2C%22asc%22%5D%5D%7D",
+      "date": "2026-10-22",
+      "proved": "cheapest rows by VRAM: 24 GB at 0.0689 (GTX TITAN X) and 0.0708 (RTX A2000); 32 GB at 0.0563 (Tesla P100); 64 GB at 0.1096 (Tesla P100 pair)"
+    },
+    {
+      "url": "https://vast.ai/pricing",
+      "date": "2026-10-22",
+      "proved": "'Pay only for what you use, down to the second. No minimum hours, no rounding up, no surprise charges', quoted; the price table on that page is script-rendered and carried no numbers to the extractor"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "Supplies the reason the existing vast-ai.json record carries no rate, and refutes the naive reading of this endpoint: a session that took dph_total at face value would record a 3090 hour at USD 0.088 and a 4090 hour at USD 0.122, both of which are 1/2 and 1/8 of a card. Three candidate explanations for the low rentable count were considered: that the default page is a catalogue sample rather than the live bookable set, that the account-less view hides rentable rows, and that most offers are genuinely idle hosts. The evidence cannot separate them, so no floor is published. What would settle it is one authenticated search with the same filters, or a documented query syntax from the vendor's API reference.",
+  "extras": {
+    "wave2": {
+      "class": "gpu-marketplace",
+      "free_tier_kind": "none",
+      "shape": {
+        "vcpu": null,
+        "ram_gib": null,
+        "gpu_class": "RTX 3090",
+        "gpu_count": 1,
+        "vram_gib": 24
+      }
+    }
+  }
+}

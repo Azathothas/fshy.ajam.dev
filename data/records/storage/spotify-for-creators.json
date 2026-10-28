@@ -1,0 +1,78 @@
+{
+  "topic": "storage",
+  "slug": "spotify-for-creators",
+  "provider": "Spotify for Creators (formerly Anchor)",
+  "url": "https://creators.spotify.com",
+  "category": "media",
+  "free_tier": {
+    "stated": "Free hosting with no stated numeric cap. Spotify's own episode-publishing doc: 'We don't have a file size limit'. The video doc repeats it: 'Spotify for Creators doesn't have a file size limit'. No episode count, storage or bandwidth cap is published anywhere — free, no paid tier, ad-revenue share is upside not a paywall.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://support.spotify.com/us/creators/article/publishing-audio-episodes/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://support.spotify.com/us/creators/article/publishing-audio-episodes/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Second caveat: anchor.fm enclosures are 402/302 chains through anchor.fm/s/<id>/podcast/play/<n>/<urlencoded origin>, so the enclosure URL is a redirector with the object path embedded — permanent, but the served object is always the transcode.",
+    "source_url": "https://support.spotify.com/us/creators/article/publishing-audio-episodes/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and unmetered via Spotify's own CDN (d3ctxlq1ktw2nl.cloudfront.net). No egress meter, no per-download charge, no plan upgrade that changes it.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "No documented public upload API (the old Anchor API is gone; community projects like mahendranv/anchor-rss only scrape the public RSS). Upload is web/mobile UI only.",
+  "chaining": "Unlimited shows per Spotify account (the UI has 'Add a new show' with no published cap) x unlimited episodes x no file-size limit. Also accepts video (MP4/MOV/MPG) on the same free tier, so the payload need not be audio at all.",
+  "limits": [],
+  "limits_note": "Format allowlist is narrow: audio must be MP3, M4A or WAV, mono or stereo; video MOV/MPG/MP4. Uploads are single-shot HTTP from the browser, so a dropped connection mid-upload fails the episode ('higher chance of failing if your internet connection is interrupted') — there is no resumable/chunked API, which is the real ceiling on file size in practice.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: onnection is interrupted') — there is no resumable/chunked API, which is the real ceiling on file size in practice. media",
+    "country": null
+  },
+  "reliability_note": "RE-ENCODES everything to 128 kbps stereo. Verified live: enclosure for an episode with itunes:duration 00:52:22 declared length=50272965; the staging object at d3ctxlq1ktw2nl.cloudfront.net/staging/2026-9-21/434650861-44100-2-6d67ddd17af0f.mp3 returns 206, Content-Range 0-1023/50272965, and its first 1 KB is a bare MPEG frame with no ID3 header at all. 50,272,965 x 8 / 3142 s = 128,003 bps — exactly 128 kbps CBR. The '-44100-2-' in the filename is the ingest normaliser's fingerprint (44.1 kHz, 2 channels). Your WAV or 320k MP3 does not survive. Second caveat: anchor.fm enclosures are 402/302 chains through anchor.fm/s/<id>/podcast/play/<n>/<urlencoded origin>, so the enclosure URL is a redirector with the object path embedded — permanent, but the served object is always the transcode.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://support.spotify.com/us/creators/article/publishing-audio-episodes/",
+      "date": "2026-10-21",
+      "proved": "'We don't have a file size limit'; 'We support MP3, M4A, and WAV file types. Files will need to be either in mono or stereo'"
+    },
+    {
+      "url": "https://support.spotify.com/us/creators/article/publishing-videos/",
+      "date": "2026-10-21",
+      "proved": "'Spotify for Creators doesn't have a file size limit'; supports MOV, MPG, MP4"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET anchor.fm/s/7d083a4/podcast/rss -> 200, 5,215,282 bytes, enclosures redirect through anchor.fm/.../play/... to d3ctxlq1ktw2nl.cloudfront.net/staging/"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET d3ctxlq1ktw2nl.cloudfront.net/staging/2026-9-21/434650861-44100-2-6d67ddd17af0f.mp3 -r 0-1023 -> 206, Content-Range 0-1023/50272965, first frame 0xFFFB9000 = MPEG1 L3 128 kbps 44.1 kHz stereo, no ID3v2 tag"
+    },
+    {
+      "url": "https://toolradar.com/guides/best-free-podcast-hosting",
+      "date": "2026-10-21",
+      "proved": "Oct 2026, 'its own page offers free hosting with \"unlimited hosting\" ... it states no upload or episode cap'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Free hosting with no stated numeric cap. Spotify's own episode-publishing doc: 'We don't have a file size limit'. The video doc repeats it: 'Spotify for Creators doesn't have a file size limit'. No episode count, storage or bandwidth cap is published anywhere — free, no paid tier, ad-revenue share is upside not a paywall.",
+  "extras": {},
+  "binding": "none",
+  "binding_note": "no constraint in the record binds at this scale; the record carries no limit of a kind the vocabulary names"
+}

@@ -1,0 +1,91 @@
+{
+  "topic": "ci-cd-runners",
+  "slug": "ghcr",
+  "provider": "GitHub Container Registry",
+  "url": "https://docs.github.com/en/billing/concepts/product-billing/github-packages",
+  "category": "container registry",
+  "free_tier": {
+    "stated": "public packages free; private packages 500 MB of storage and 1 GB of transfer a month on GitHub Free, shared with GitHub Packages and Actions artifacts",
+    "unit": "MB",
+    "source_url": "https://docs.github.com/en/billing/concepts/product-billing/github-packages",
+    "read_on": "2026-10-22",
+    "metered_on": "stored-bytes"
+  },
+  "per_object_cap": {
+    "stated": "500 MB total private storage on Free, shared with Packages and Actions artifacts; no per-layer cap is published",
+    "bytes": null,
+    "source_url": "https://docs.github.com/en/billing/concepts/product-billing/github-packages"
+  },
+  "retention": {
+    "stated": "a package persists until deleted; it shares the storage pool with artifacts, which expire at 90 days",
+    "days": 90,
+    "source_url": "https://docs.github.com/en/billing/concepts/product-billing/github-packages"
+  },
+  "egress": {
+    "terms": "1 GB of data transfer a month for private packages on Free; a download by Actions using GITHUB_TOKEN does not count",
+    "metered": true,
+    "free_allowance": "1 GB per month for private packages",
+    "price_per_tb": null,
+    "source_url": "https://docs.github.com/en/billing/concepts/product-billing/github-packages"
+  },
+  "interface": [
+    "oci",
+    "rest"
+  ],
+  "interface_detail": "the OCI distribution API at ghcr.io; docker login with a personal access token or GITHUB_TOKEN",
+  "tooling": "docker, podman, skopeo, oras, crane",
+  "chaining": "the artifact store for a GitHub Actions build, and the link that fails first: 500 MB is one modest image",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "500 MB of private storage shared with Packages and Actions artifacts",
+      "source": "https://docs.github.com/en/billing/concepts/product-billing/github-packages"
+    },
+    {
+      "kind": "request-rate",
+      "value": "1 GB of private-package transfer a month",
+      "source": "https://docs.github.com/en/billing/concepts/product-billing/github-packages"
+    }
+  ],
+  "limits_note": "'your total storage across Packages and Actions artifacts cannot exceed the included amount for your plan'; a download by Actions with GITHUB_TOKEN does not consume the transfer allowance",
+  "binding": "per-object-cap",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a GitHub account; a personal access token with packages scope for a push",
+    "country": null
+  },
+  "reliability_note": "a public package pulls anonymously, as Docker Hub does; a token request for a repository that does not exist returns 403 DENIED, which states nothing about private ones",
+  "confidence": "documented",
+  "confidence_note": "the storage and transfer figures are a first-party page, and they are the fields the verdict rests on. The anonymous token and manifest probes prove the read path, which does not raise a documented quota.",
+  "evidence": [
+    {
+      "url": "probe:https://ghcr.io/token?scope=repository:catthehacker/ubuntu:pull&service=ghcr.io",
+      "date": "2026-10-22",
+      "proved": "200 with 69 bytes of token JSON, {\"token\":\"djE6Y2F0dGhlaGFja2VyL3VidW50dToxNzkyNjQxMjI2Njg2NzQ2MTE3\"}, sha256 e26b35c1dc64bf51b6e02f5a20f7d7fbf436a944d445155e8fc313a42ec3a808; GHCR issues an anonymous pull token for a public package"
+    },
+    {
+      "url": "probe:https://ghcr.io/v2/catthehacker/ubuntu/manifests/act-latest",
+      "date": "2026-10-22",
+      "proved": "200 with 754 bytes, schemaVersion 2, mediaType application/vnd.oci.image.index.v1+json, sha256 62d572b92f9f32d3427b6d220ad1f9dca9c7b6ffad37d295425037dbff78abaf; the anonymous token fetches a manifest"
+    },
+    {
+      "url": "probe:https://ghcr.io/token?scope=repository:library/hello-world:pull&service=ghcr.io",
+      "date": "2026-10-22",
+      "proved": "403 with 86 bytes, DENIED. This is the negative control: library/ is Docker Hub's namespace and does not exist on ghcr.io, so the 403 answers the path, not the anonymity policy"
+    },
+    {
+      "url": "probe:https://auth.docker.io/token?service=registry.docker.io&scope=repository:library/alpine:pull",
+      "date": "2026-10-22",
+      "proved": "200 with 5,489 bytes of token JSON, so Docker Hub does issue anonymous pull tokens and a public base image is free"
+    },
+    {
+      "url": "https://docs.github.com/en/billing/concepts/product-billing/github-packages",
+      "date": "2026-10-22",
+      "proved": "storage is shared with Actions artifacts and cannot exceed the plan amount; a 500 MB package in a private repository consumes 500 MB of storage and a download consumes 500 MB of transfer; an Actions download with GITHUB_TOKEN does not count"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T03:05:00.000Z",
+  "price_per_tb_month": null,
+  "notes": "500 MB is smaller than one CUDA image. The shared pool with artifacts is the part that surprises: a build that keeps artifacts and pushes an image is spending one budget twice. The earlier 'no anonymous pull token' claim came from requesting library/hello-world, which is Docker Hub's namespace; three real public packages return 200 plus a fetchable manifest."
+}

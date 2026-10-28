@@ -1,0 +1,78 @@
+{
+  "topic": "storage",
+  "slug": "cnb",
+  "provider": "CNB 云原生构建 (cnb.cool, Tencent Cloud Native Build, community edition)",
+  "url": "https://cnb.cool",
+  "category": "paas",
+  "free_tier": {
+    "stated": "Per top-level org, free tier per month: '仓库存储 100 GiB' + '对象存储 100 GiB' (object storage covers '制品、LFS 对象、图片及附件'), plus 160 build-CPU core-hours and 1600 dev-CPU core-hours. Over-quota is metered at ¥1/GiB/month, and storage is billed on daily average minus the free allowance — so staying under 100+100 GiB per org is genuinely free.",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.cnb.cool/zh/pricing.html",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "256 MB per file",
+    "bytes": 256000000,
+    "source_url": "https://docs.cnb.cool/zh/pricing.html",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.cnb.cool/zh/pricing.html",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Not metered separately in the pricing table — the only storage line items are 仓库存储 and 对象存储, both by GiB-month; there is no egress/流量 row. Public release-attachment downloads run on the cnb.cool CDN. Treat as unmetered-until-proven",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "webdav",
+    "webdav-proxy",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "OpenList ships a first-class `cnb_releases` driver (github.com/OpenListTeam/OpenList, drivers/cnb_releases — fields: repo, token, use_tag_name, default_branch), i.e. a maintained WebDAV/HTTP front end over CNB release attachments. Also the official `cnbcool/attachments` plugin ('支持 commit 和 release 上传或下载附件，目前暂支持 64GB 以内的文件上传') and a Rust CLI (`cnb release download/--share`).",
+  "chaining": "Free allowance is per *top-level org*, and '每个顶级组织独立计费' — so N orgs = N x 200 GiB. Two independent multipliers: (a) unlimited repos inside one org, each with unlimited releases, each attachment up to 64 GB; (b) unlimited orgs at 200 GiB each. Per-file ceiling (64 GB) is 32x GitHub Releases' 2 GiB.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "256 MB per file",
+      "source": "https://docs.cnb.cool/zh/pricing.html"
+    }
+  ],
+  "limits_note": "per-object-cap: 64 GB per release/commit attachment (provider's own plugin README: '目前暂支持 64GB 以内的文件上传'). repo-blob cap: 256 MB per file in the git tree, with the maintainers explicitly steering large files to release attachments ('此256M之限制...当以附件方式为之'). request-rate: none documented. Billing: over the free 100 GiB the org is charged ¥1/GiB/month at month start — silent overage, not a hard stop.",
+  "identity_cost": {
+    "kind": "national-id",
+    "detail": "national-id (WeChat login / 腾讯云 account; the docs' usage-management flow binds a Tencent Cloud budget). Not anonymous.",
+    "country": null
+  },
+  "reliability_note": "Community edition launched public beta 2025-08; beta-free extras expired 2025-08-31, so the 100+100 GiB figures are the steady state. No ban/wipe reports found; overage is billed rather than blocked, which is the real hazard.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://docs.cnb.cool/zh/pricing.html",
+      "date": "2026-10-21",
+      "proved": "'仓库存储 | 100 GiB | ¥1/GiB/月 | Git 对象' and '对象存储 | 100 GiB | ¥1/GiB/月 | 制品、LFS 对象等'; '每个顶级组织独立结算'"
+    },
+    {
+      "url": "https://cnb.cool/wmde/attachments",
+      "date": "2026-10-21",
+      "proved": "'支持 commit 和 release 上传或下载附件，目前暂支持 64GB 以内的文件上传'"
+    },
+    {
+      "url": "https://github.com/OpenListTeam/OpenList/tree/main/drivers/cnb_releases",
+      "date": "2026-10-21",
+      "proved": "maintained driver with release-attachment upload/download, proving a working non-web client"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Per top-level org, free tier per month: '仓库存储 100 GiB' + '对象存储 100 GiB' (object storage covers '制品、LFS 对象、图片及附件'), plus 160 build-CPU core-hours and 1600 dev-CPU core-hours. Over-quota is metered at ¥1/GiB/month, and storage is billed on daily average minus the free allowance — so staying under 100+100 GiB per org is genuinely free.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

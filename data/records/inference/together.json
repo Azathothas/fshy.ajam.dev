@@ -1,0 +1,89 @@
+{
+  "topic": "inference",
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "not applicable"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "any OpenAI-compatible client",
+  "chaining": "no free lane: the platform requires a minimum USD 15 purchase, so there is no trial credit to pair with an agent",
+  "limits": [],
+  "slug": "together",
+  "provider": "Together AI",
+  "url": "https://docs.together.ai/docs/billing",
+  "category": "inference endpoint",
+  "free_tier": {
+    "stated": "No free trial: 'Together AI does not currently offer free trials. Access to the Together platform requires a minimum $15 credit purchase.'",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://docs.together.ai/docs/billing",
+    "read_on": "2026-10-23"
+  },
+  "limits_note": "no numeric rate limit is published: serverless performance is best-effort, a 429 or 503 response may be returned when demand is high, and Together may apply custom rate limits to a model in high demand; Enterprise and Scale contracts carry purchased rate limits",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "an account, then a credit purchase of at least USD 15 with a default payment method (a credit or debit card, or a US bank account via ACH); the platform is fully prepaid and API access is suspended at a zero balance",
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded; no key was available",
+  "confidence": "documented",
+  "confidence_note": "the billing documentation was read on 2026-10-23 and states that Together offers no free trial and requires a USD 15 minimum purchase. The unauthenticated 401 probe from 2026-10-22 establishes only that the endpoint exists and gates on a key",
+  "evidence": [
+    {
+      "url": "probe:https://api.together.xyz/v1/chat/completions",
+      "date": "2026-10-22",
+      "proved": "an unauthenticated POST returned 401 with a 372-byte body, {\"error\":{\"message\":\"Missing API key...\"}}. The endpoint exists and gates on a key; no key existed here, so no quota was read"
+    },
+    {
+      "url": "https://docs.together.ai/docs/rate-limits",
+      "date": "2026-10-22",
+      "proved": "the rate-limits page returned 200 with 388051 bytes and describes dynamic per-model limits and throughput guarantees; no free-tier allowance was found in the served text"
+    },
+    {
+      "url": "https://docs.together.ai/docs/billing",
+      "date": "2026-10-23",
+      "proved": "'Together AI does not currently offer free trials. Access to the Together platform requires a minimum $15 credit purchase.', quoted"
+    },
+    {
+      "url": "https://docs.together.ai/docs/rate-limits",
+      "date": "2026-10-28",
+      "proved": "the rate-limits page publishes no numeric limit and says serverless inference is usually used without encountering rate limits",
+      "capture": "sha256:57afde9c3b47356f54f3ebcc80dfce32d4b7d9d54d7d525b76bc4dc17fbe9586",
+      "quote": "In most cases, you can use Together AI [serverless inference](https://docs.together.ai/docs/serverless/overview.md) without encountering rate limits. Rate limiting may occasionally occur with high request volumes or large bursts of traffic."
+    },
+    {
+      "url": "https://docs.together.ai/docs/rate-limits",
+      "date": "2026-10-28",
+      "proved": "no numeric limit is published; demand-based limiting returns 429 or 503",
+      "capture": "sha256:57afde9c3b47356f54f3ebcc80dfce32d4b7d9d54d7d525b76bc4dc17fbe9586",
+      "quote": "When demand is high, Together may limit requests to maintain these performance goals. You may receive a `429 Too Many Requests` or `503 Service Unavailable` response."
+    },
+    {
+      "url": "https://docs.together.ai/docs/billing",
+      "date": "2026-10-28",
+      "proved": "the platform is fully prepaid and a positive balance is needed before API calls",
+      "capture": "sha256:142dd66fe6b27a1f44b33ac810b94bd4a8de55101eac54c618b5d911b65f65fb",
+      "quote": "Together AI is **fully prepaid**. You need a positive credit balance to use the platform. Add credits from your [billing settings](https://api.together.ai/settings/organization/~current/billing) before making API calls."
+    },
+    {
+      "url": "https://docs.together.ai/docs/billing",
+      "date": "2026-10-28",
+      "proved": "no free trial; access needs a minimum USD 15 credit purchase",
+      "capture": "sha256:142dd66fe6b27a1f44b33ac810b94bd4a8de55101eac54c618b5d911b65f65fb",
+      "quote": "Together AI does not currently offer free trials. Access to the Together platform requires a minimum \\$15 credit purchase."
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-28T09:47:54.947Z",
+  "binding": "none",
+  "notes": "The compute topic also carries this provider under separate slugs. The vendor denies a free trial in its own billing documentation, so the record is paid-only.",
+  "binding_note": "no numeric rate limit or quota is published for serverless inference; rate limiting may occasionally occur with high request volumes or large bursts of traffic"
+}

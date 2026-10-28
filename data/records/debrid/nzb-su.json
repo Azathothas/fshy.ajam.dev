@@ -1,0 +1,81 @@
+{
+  "slug": "nzb-su",
+  "provider": "NZB.su",
+  "url": "https://nzb.su/",
+  "category": "Usenet indexer (retired API endpoint)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "None: the API endpoint answers <error code=\"101\" description=\"This API endpoint has been retired. Update your indexer URL from nzb.su to nzb.life.\"/> The name still resolves, the indexer behind it has moved.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://nzb.su/api?t=caps",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://nzb.su/api?t=caps",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable under this name; the successor publishes its own caps",
+    "days": null,
+    "source_url": "https://nzb.su/api?t=caps",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "none: the endpoint returns a 157-byte error document",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://nzb.su/api?t=caps"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "The /api path is alive and answers XML, but only with error 101. This is the cleanest death signal: a machine-readable redirect to the successor, not a timeout.",
+  "endpoint": "https://nzb.su/api (retired)",
+  "tooling": "A Prowlarr or NZBHydra2 entry pointed at nzb.su keeps the URL and receives error 101 on every search; the fix is to change the host to nzb.life, not to re-add the indexer.",
+  "chaining": "Retired in favour of nzb.life, which carries the live limits.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "the indexer URL is retired; every API call returns error 101",
+      "source": "probe:https://nzb.su/api?t=caps"
+    }
+  ],
+  "limits_note": "",
+  "binding": "write-gated",
+  "binding_note": "The name is the constraint: no query reaches an index. The successor record carries the live limits.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Accounts and registration were carried to nzb.life; the old host no longer offers a path.",
+    "country": null
+  },
+  "reliability_note": "A retired API with a live DNS record: a stale client gets a well-formed XML error, which most clients log as an empty result set rather than as a configuration problem.",
+  "confidence": "measured",
+  "confidence_note": "The error document was fetched today with its exact wording, so the retirement is measured. The successor's limits are on the nzb-life record.",
+  "evidence": [
+    {
+      "url": "probe:https://nzb.su/api?t=caps&x=1",
+      "date": "2026-10-23",
+      "proved": "returned 157 bytes: <error code=\"101\" description=\"This API endpoint has been retired. Update your indexer URL from nzb.su to nzb.life.\"/> (sha256 867011a3...)"
+    },
+    {
+      "url": "https://www.nzb.life/",
+      "date": "2026-10-23",
+      "proved": "the successor states the mapping in its own meta description: 'NZB.su and nzbsu users should use NZB.life.'"
+    }
+  ],
+  "verdict": "dead",
+  "extras": {
+    "price": "retired",
+    "successor": "nzb-life",
+    "error_code": 101
+  },
+  "notes": "Do not delete: the old host is still in circulating lists and in old client configs, and the error message is the only thing that tells a reader where the index went.",
+  "verified_at": "2026-10-23T02:11:54.066Z",
+  "topic": "debrid",
+  "price_per_tb_month": null
+}

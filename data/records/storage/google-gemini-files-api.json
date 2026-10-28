@@ -1,0 +1,93 @@
+{
+  "topic": "storage",
+  "slug": "google-gemini-files-api",
+  "provider": "Google Gemini Files API (AI Studio)",
+  "url": "https://ai.google.dev/gemini-api/docs/files",
+  "category": "LLM provider /v1/files",
+  "free_tier": {
+    "stated": "20 GB per project; 2 GB per file; 48-hour retention",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://ai.google.dev/gemini-api/docs/files",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "2 GB per file",
+    "bytes": 2000000000,
+    "source_url": "https://ai.google.dev/gemini-api/docs/files",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "20 GB per project; 2 GB per file; 48-hour retention",
+    "days": 2,
+    "source_url": "https://ai.google.dev/gemini-api/docs/files",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free — 'The Files API is available at no cost in all regions where the Gemini API is available.'",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "REST via google-genai SDK `client.files.upload`; generativelanguage.googleapis.com/v1beta",
+  "tooling": "pip install google-genai; curl multipart to /upload/v1beta/files",
+  "chaining": "20 GB/project, and Google Cloud projects are the multiplicative axis. But 48-hour retention means capacity, not storage.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "2 GB per file",
+      "source": "https://ai.google.dev/gemini-api/docs/files"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "Retention-clamped hard at 48 hours",
+      "source": "https://ai.google.dev/gemini-api/docs/files"
+    }
+  ],
+  "limits_note": "per-object-cap 2 GB. Retention-clamped hard at 48 hours — you cannot request longer. PDFs additionally capped at 50 MB / 1,000 pages for processing. Inline path is 100 MB total request.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email",
+    "country": null
+  },
+  "reliability_note": "Double fail, and the docs say it in one sentence: 'Files are stored for 48 hours. During that time, you can use the API to get metadata about the files. However, **you can't download user-uploaded files**.' This is the brief's `retention-clamped` class plus a read gate. Only model-generated files (video) are downloadable.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://ai.google.dev/gemini-api/docs/files",
+      "date": "2026-10-21",
+      "proved": "'The Files API lets you store up to 20 GB of files per project, with a per-file maximum size of 2 GB. Files are stored for 48 hours.'; 'you can't download user-uploaded files'"
+    },
+    {
+      "url": "https://ai.google.dev/gemini-api/docs/files",
+      "date": "2026-10-21",
+      "proved": "'Files are automatically deleted after 48 hours'"
+    },
+    {
+      "url": "https://github.com/google-gemini/cookbook/blob/main/quickstarts/File_API.ipynb",
+      "date": "2026-10-21",
+      "proved": "'The File API accepts files under 2GB in size and can store up to 20GB of files per project. Files last for 2 days and cannot be downloaded from the API.'"
+    },
+    {
+      "url": "https://discuss.ai.google.dev/t/uploaded-files-missing-after-a-few-days/50428",
+      "date": "2026-10-21",
+      "proved": "'The Files API storage has an expiration time of 48 hrs and is restricted to 20GB total storage'"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "20 GB per project; 2 GB per file; 48-hour retention",
+  "extras": {
+    "dead_end": {
+      "failure_class": "retention",
+      "why": "20 GB per project; 2 GB per file; 48-hour retention",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

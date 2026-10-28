@@ -1,0 +1,128 @@
+{
+  "topic": "debrid",
+  "slug": "debridmaster",
+  "provider": "DebridMaster",
+  "url": "https://debridmaster.com/status",
+  "category": "multi-hoster download service (debrid), pay-as-you-go",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free: '$0 / forever', '2 files a day, up to 512 MB each', 'Standard hosts only'.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://debridmaster.com/pricing",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "512 MB per file on the free tier; no per-link cap is published for a paid plan",
+    "bytes": 512000000,
+    "source_url": "https://debridmaster.com/pricing"
+  },
+  "retention": {
+    "stated": "not applicable: links are generated on demand",
+    "days": null,
+    "source_url": "https://debridmaster.com/pricing"
+  },
+  "egress": {
+    "terms": "Billed per byte: '$0.50 per GB on standard hosts', plus hosts count x3. Plans carry a monthly quota - Pro 15 GB/month, Premium 40 GB/month - with overage at $0.40 and $0.30/GB. A per-host daily bandwidth is also published for five hosts.",
+    "metered": true,
+    "free_allowance": "Pro 15 GB/month, Premium 40 GB/month; pay-as-you-go credits from $2",
+    "price_per_tb": "USD 500/TB (0.50/GB standard; Plus hosts at 3x)",
+    "source_url": "https://debridmaster.com/pricing"
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "No public API documentation was found: /api answers 404. The service is a web flow, and the per-host table is published as an HTML status page.",
+  "endpoint": "https://debridmaster.com/status",
+  "tooling": "No documented API, no rclone backend; automation would need a browser session. That is a note about tooling, not a verdict.",
+  "chaining": "The only service here that prices egress per byte, so it can absorb a one-off overflow when a capped host blocks elsewhere on a flat-rate plan.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "Pro 15 GB/month, Premium 40 GB/month, overage USD 0.40-0.30/GB",
+      "source": "https://debridmaster.com/pricing"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "512 MB per file on the free tier",
+      "source": "https://debridmaster.com/pricing"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "per host per day: NitroFlare 100 GB, FileBoom 50 GB, Keep2Share 50 GB, Upstore 20 GB, FileJoker 15 GB",
+      "source": "https://debridmaster.com/status"
+    }
+  ],
+  "limits_note": "The status table has a Daily bandwidth column for 61 hosts and only 5 carry a number; the rest print an em dash, which the vendor leaves undefined.",
+  "binding": "volume-quota",
+  "binding_note": "40 GB/month on Premium is 1.3 GB/day, or 3.6% of the 36.7 GB/day a 1 TiB month needs; the plan quota binds about 27x before any host cap does.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Not read: no signup form was opened. Free plan needs no payment; credits are bought with a card.",
+    "country": null
+  },
+  "reliability_note": "Five hosts are marked 'Partner network' rather than 'Own account', and two Plus hosts (FileJoker, Upstore) have 'never' in the last-checked column, so the published cap is a policy figure rather than an observed one for those.",
+  "confidence": "documented",
+  "confidence_note": "Both tables are the vendor's own pages read today. The 5 published caps are policy statements; a paid download would be needed to confirm enforcement.",
+  "evidence": [
+    {
+      "url": "probe:https://debridmaster.com/status",
+      "date": "2026-10-23",
+      "proved": "61-row table with Host, Availability, Served by, Status, 7-day success, Class, Daily bandwidth; 5 numeric caps, the rest em dash"
+    },
+    {
+      "url": "https://debridmaster.com/pricing",
+      "date": "2026-10-23",
+      "proved": "'2 files a day, up to 512 MB each' free, '$0.50 per GB', Pro '$4.99 per month 15 GB', Premium '$9.99 40 GB'"
+    },
+    {
+      "url": "probe:https://debridmaster.com/api",
+      "date": "2026-10-23",
+      "proved": "no public API page: HTTP 404"
+    },
+    {
+      "url": "https://debridmaster.com/guides/keep2share-filejoker-daily-download-limits",
+      "date": "2026-10-23",
+      "proved": "'every host has its own published daily bandwidth per user, reset at 00:00 UTC'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T03:37:00.000Z",
+  "price_per_tb_month": "USD 500/TB pay-as-you-go; USD 4.99/mo for 15 GB",
+  "notes": "The site is new enough that its own comparison guides are the clearest statement of the cap policy; the status table is the machine-readable version.",
+  "extras": {
+    "host_matrix": {
+      "published_daily_caps": true,
+      "source": "https://debridmaster.com/status",
+      "hosts_listed": 61,
+      "rows": [
+        {
+          "host": "filejoker.net",
+          "daily_gb": 15.0
+        },
+        {
+          "host": "upstore.net",
+          "daily_gb": 20.0
+        },
+        {
+          "host": "fileboom.me",
+          "daily_gb": 50.0
+        },
+        {
+          "host": "keep2share.cc",
+          "daily_gb": 50.0
+        },
+        {
+          "host": "nitroflare.com",
+          "daily_gb": 100.0
+        }
+      ]
+    },
+    "matrix_ref": "matrix.md",
+    "classes": {
+      "standard": 60,
+      "plus_x3": 2
+    }
+  }
+}

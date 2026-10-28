@@ -1,0 +1,92 @@
+{
+  "topic": "storage",
+  "slug": "gitlab-com-generic-package-registry",
+  "provider": "GitLab.com generic package registry",
+  "url": "https://gitlab.com",
+  "category": "registry",
+  "free_tier": {
+    "stated": "5 GB maximum per uploaded file (Generic). No per-project or per-namespace package storage cap is documented; the package registry is explicitly excluded from the 10 GiB project storage limit.",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "5 GB maximum per upload",
+    "bytes": 5000000000,
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Artifacts expire in 30 days, packages do not.",
+    "days": 30,
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and Cloudflare-fronted. GitLab.com is behind Cloudflare and blobs are served from Google Cloud Storage / the GitLab CDN (cdn.registry.gitlab-static.net). No egress billing for public projects.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "GitLab REST API v4 (`PUT /projects/:id/packages/generic/:package_name/:version/:file_name`, `GET .../package_files/:id/download`), glab CLI, python-gitlab (has generic package support, merged), goreleaser pushes generic packages natively (PR #2745 merged). Works with plain curl — no special client needed.",
+  "chaining": "Unlimited projects per namespace (no project-count cap is documented on GitLab.com; the only new limits are 3 top-level *groups* for accounts created after 2026-01-27, and the personal namespace does not count). Each project is its own unbounded package bucket at 5 GB/file. N projects x unlimited package versions x 5 GB. Multiply again by additional free namespaces (3 groups + personal) and by unlimited free accounts.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "5 GB per file",
+      "source": "https://docs.gitlab.com/user/storage_usage_quotas/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "expire in 30 days",
+      "source": "https://docs.gitlab.com/user/storage_usage_quotas/"
+    }
+  ],
+  "limits_note": "5 GB per file (Generic / Maven / npm / NuGet / PyPI / Conan); 10 GB for ML models (upload capped at 5 GB); 1 GB for Terraform state; Helm only 5 MB. Anonymous read of public project packages; writes need a token. Repository/LFS Git push limited to 5 GiB per request, irrelevant to packages.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: accounts. 5 GB per file (Generic / Maven / npm / NuGet / PyPI / Conan); 10 GB for ML models (upload capped at 5 GB); 1 GB for Terraform state; Helm only 5 MB. Anonymous read of publ",
+    "country": null
+  },
+  "reliability_note": "Snippets, packages and job artifacts count toward *namespace* storage as a display/billing figure but are not enforced as a cap — enforcement is per-project on repo+LFS only. GitLab could start enforcing namespace storage at any time; it has never done so for packages. Artifacts expire in 30 days, packages do not.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+      "date": "2026-10-21",
+      "proved": "'Only the project's repository and LFS are included in the storage limit. The container registry, package registry, and build artifacts are not included in the limit.' and 'Each project in a Free tier namespace on GitLab.com has 10 GiB of free storage.'"
+    },
+    {
+      "url": "https://docs.gitlab.com/user/gitlab_com/",
+      "date": "2026-10-21",
+      "proved": "package registry max file size table: 'Generic | 5 GB'; also 'GitLab.com is fronted by Cloudflare'"
+    },
+    {
+      "url": "https://docs.gitlab.com/user/free_user_limit/",
+      "date": "2026-10-21",
+      "proved": "top-level group limit of 3 applies only to accounts created after January 27, 2026, and 'Your personal namespace does not count toward this limit'"
+    },
+    {
+      "url": "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/27524971/package_files/139350290/download",
+      "date": "2026-10-21",
+      "proved": "probe: GET with Range: bytes=0-1023 -> 206 Partial Content, Content-Range: bytes 0-1023/9035444, Server: cloudflare, x-goog-stored-content-length 9035444 (anonymous public-package download, Cloudflare-served, range-capable) — no token sent"
+    },
+    {
+      "url": "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages?per_page=5&package_type=generic",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, glab 1.44.1 last_downloaded_at 2026-10-21 (packages API anonymously listable)"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "5 GB maximum per uploaded file (Generic). No per-project or per-namespace package storage cap is documented; the package registry is explicitly excluded from the 10 GiB project storage limit.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

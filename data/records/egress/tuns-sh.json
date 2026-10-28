@@ -1,0 +1,84 @@
+{
+  "topic": "egress",
+  "slug": "tuns-sh",
+  "provider": "tuns.sh",
+  "url": "https://tuns.sh/pricing",
+  "category": "ssh tunnel with a udp port forward, behind a paid membership",
+  "tier": "paid",
+  "free_tier": {
+    "stated": "tuns.sh is a pico+ service ... [TIER: PICO+] $2 / month billed yearly ($24/yr)",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://tuns.sh/pricing",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://tuns.sh/pricing",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://tuns.sh/pricing",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No transfer allowance is published. pico+ is sold with a 5GB storage quota 'across all services', which is disk, not bandwidth.; ingress: tcp+udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://tuns.sh/pricing"
+  },
+  "interface": [
+    "ssh"
+  ],
+  "interface_detail": "'ssh tuns.sh help lists every command'.",
+  "tooling": "system ssh plus iproute2; no vendor binary.",
+  "chaining": "With a rented or free VM that allows tun, this is a WireGuard ingress for USD 2/month.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "no transfer quota published; pico+ storage is 5GB across all services",
+      "source": "https://pico.sh/plus"
+    }
+  ],
+  "limits_note": "",
+  "binding": "none",
+  "binding_note": "Nothing countable is published, so no quota can be shown to fail first; the constraint that does bind is the subscription, because tuns appears only in the pico+ column. At 1 TiB/month the open question is an unpublished tolerance, not a number.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a pico account with pico+ membership at USD 2/month billed yearly; the free Starter tier does not include tuns.",
+    "country": "None"
+  },
+  "reliability_note": "The udp-forward needs a tun interface and root on a user; an unprivileged container cannot create it.",
+  "confidence": "documented",
+  "confidence_note": "A free tuns allocation would make this the best UDP ingress in the corpus. The pico+ page lists tuns under 'EVERYTHING IN STARTER, PLUS:' with no free mention.",
+  "evidence": [
+    {
+      "url": "https://tuns.sh/pricing",
+      "date": "2026-10-23",
+      "proved": "# UDP Tunneling section: 'ssh -w 0:0 tuns.sh udp-forward=10000:local-ip-of-machines-main-interface:5553' and 'nc -u tuns.sh 10000'; 'tuns.sh is a pico+ service'"
+    },
+    {
+      "url": "https://pico.sh/plus",
+      "date": "2026-10-23",
+      "proved": "Starter is $0 free forever (prose, pages, pipe, pastes); tuns is listed only under pico+ at $2/month billed yearly"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 2/month billed yearly",
+  "notes": "The only entry that documents a raw public UDP port without WireGuard tooling, and it is behind USD 2/month. Two caveats from the same page: the client side needs root ('This needs to be done as root', 'sudo ssh -w 0:0'), and the hard mode uses a tap interface the vendor says it does not process ARP for.",
+  "extras": {
+    "wg_path": "inside-udp",
+    "wg_detail": "A public UDP port is mapped to a local UDP port over an SSH tun interface: 'sudo ssh -w 0:0 tuns.sh udp-forward=10000:local-ip:5553' then 'nc -u tuns.sh 10000'. A WireGuard listener on the local port is reachable at tuns.sh:10000, so this is a udp port forward rather than an overlay.",
+    "ingress": "tcp+udp",
+    "volume_tib_month": null,
+    "volume_stated": "No transfer allowance is published. pico+ is sold with a 5GB storage quota 'across all services', which is disk, not bandwidth.",
+    "bytes_transit": "yes",
+    "transit_note": ""
+  }
+}

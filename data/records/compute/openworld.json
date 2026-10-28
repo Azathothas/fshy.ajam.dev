@@ -1,0 +1,178 @@
+{
+  "topic": "compute",
+  "slug": "openworld",
+  "provider": "Openworld",
+  "url": "https://openworld.eu.org/faq",
+  "category": "cloud VM",
+  "free_tier": {
+    "stated": "A free container VPS: 'Every plan includes NAT IPv4, and the free plan includes a dedicated public IPv6 address.' No price is stated for the free plan; the home page says 'For developers & students, no card required just Discord.' The vendor publishes no shape, but a user's benchmark posted in the vendor's own LowEndTalk thread on 2026-08-24 reports 1 vCPU at 3092 MHz, 512 MiB RAM, 512 MiB swap and 4.8 GiB disk on Ubuntu 26.04 under LXC.",
+    "unit": "none",
+    "metered_on": "wall-clock",
+    "source_url": "https://openworld.eu.org/faq",
+    "read_on": "2026-10-24",
+    "notes": "the vendor publishes no CPU, RAM or disk figure"
+  },
+  "per_object_cap": {
+    "stated": "not applicable: the unit is a container, not an object"
+  },
+  "retention": {
+    "stated": "Quoted: 'Free VPS periods last 7 days. Renewal is free and can be done once every 24 hours to reset the countdown — an unrenewed VPS gets auto-suspended, so just keep renewing to keep it alive.'",
+    "days": 7,
+    "source_url": "https://openworld.eu.org/faq",
+    "notes": "suspension, not deletion, is what the FAQ names for an unrenewed box; whether a suspended container's disk is deleted, and after how long, is not stated"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false,
+    "free_allowance": "unstated",
+    "source_url": "https://openworld.eu.org/faq"
+  },
+  "interface": [
+    "ssh"
+  ],
+  "interface_detail": "inferred from the tooling the provider documents; not probed",
+  "tooling": "Root SSH with password or key at creation, systemd inside the container, Docker allowed, panel reinstall. Login through Discord OAuth.",
+  "chaining": "A throwaway IPv6 container with a dedicated public address is the cheapest way to test an inbound service or hold a trickle of state for a week. It composes badly with anything long-running: the 7-day clock and the 35% CPU throttle rule out indexing and builds.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "the free period is 7 days and must be renewed by hand at most once every 24 hours; an unrenewed VPS is auto-suspended",
+      "source": "https://openworld.eu.org/faq"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "one free container per account is implied by the FAQ's singular 'your VPS' but is not stated as a number anywhere read",
+      "source": "https://openworld.eu.org/faq"
+    }
+  ],
+  "limits_note": "The lifetime is seven days and renewal is a manual click that can be done once every 24 hours, so an unattended container is suspended within a week",
+  "binding": "retention-clamped",
+  "binding_note": "a 7-day clock that resets only when a human renews is the first thing that fails: any outage of a user's own attention past 7 days suspends the machine",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "No card and no hold: the home page says 'no card required just Discord', and the FAQ says 'no trial, no card required'. Sign-in is through Clerk (clerk.openworld.eu.org) on the /login page, whose form is a single 'Sign in' button and carries no card, phone or document field; the page footer credits 'Dxomg'. Whether the Clerk instance offers an email-only sign-up or requires a social account was not established: the button is rendered disabled until the Clerk JavaScript loads, so the flow could not be read from the markup.",
+    "country": null
+  },
+  "reliability_note": "one transient outage reported in the vendor's own LowEndTalk thread on 2026-08-24, when a user wrote 'looks like the server is dead beyond repair' and the operator replied 'There was a little downtime on the i7-4510U, but should be back'; the vendor publishes a HetrixTools status page whose 7-day table rendered with no values on the day read",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://openworld.eu.org/",
+      "date": "2026-10-22",
+      "proved": "the counter block reads 'Nodes: 3 / VPS: 145 / IPs: 2,220 / Users: 3,747'; probe 200, 19342 bytes, sha256 91731a8d688d96d797b1a2163b06f1d6a8b263d562172351ef250256bacf3ff8"
+    },
+    {
+      "url": "https://openworld.eu.org/faq",
+      "date": "2026-10-22",
+      "proved": "'Yes. The free tier is permanent as long as you renew it - no trial, no card required' and 'Free VPS periods last 7 days. Renewal is free and can be done once every 24 hours to reset the countdown - an unrenewed VPS gets auto-suspended', quoted"
+    },
+    {
+      "url": "https://openworld.eu.org/faq",
+      "date": "2026-10-22",
+      "proved": "'Do I get an IPv4 address? Yes. Every plan includes NAT IPv4, and the free plan includes a dedicated public IPv6 address.' and 'How long does provisioning take? Under a second.', quoted"
+    },
+    {
+      "url": "https://lowendtalk.com/discussion/220420/free-openworld-eu-org-free-ipv6-vps",
+      "date": "2026-10-22",
+      "proved": null
+    },
+    {
+      "url": "https://lowendtalk.com/discussion/220420/free-openworld-eu-org-free-ipv6-vps",
+      "date": "2026-10-22",
+      "proved": "CPU is throttled by policy: 'if there's a consistent 35%+ for 5minutes usage of the cpu it will get throttled automatically to 10%', quoted"
+    },
+    {
+      "url": "https://github.com/weikkadd/openworlvps",
+      "date": "2026-10-22",
+      "proved": "third-party renewal automation exists for this provider, a Playwright script that logs in through Discord OAuth, solves the GIF captcha by frame voting and renews before expiry, which is evidence both that the 7-day cycle is real and that people find it onerous"
+    },
+    {
+      "url": "https://openworld.eu.org/faq",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Free VPS periods last 7 days. Renewal is free and can be done once every 24 hours to reset the countdown — an unrenewed VPS gets auto-suspended'"
+    },
+    {
+      "url": "https://openworld.eu.org/faq",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Yes. Every plan includes NAT IPv4, and the free plan includes a dedicated public IPv6 address.' and 'You log in as root over SSH, with the password (or key) you set during creation.'"
+    },
+    {
+      "url": "https://openworld.eu.org/faq",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Yes. The free tier is permanent as long as you renew it — no trial, no card required.'"
+    },
+    {
+      "url": "https://openworld.eu.org/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Free IPv6 VPS', 'For developers & students, no card required just Discord.', and the counters 'Nodes: 3', 'VPS: 145', 'IPs: 2,220', 'Users: 3,908'"
+    },
+    {
+      "url": "https://openworld.eu.org/login",
+      "date": "2026-10-24",
+      "proved": "the served markup: a Clerk sign-in button, seven theme forms, and no card, phone or identity input; footer 'Openworld, made with love by Dxomg'"
+    },
+    {
+      "url": "https://lowendtalk.com/discussion/220420/free-openworld-eu-org-free-ipv6-vps",
+      "date": "2026-10-24",
+      "proved": "a user's YABS benchmark posted 2026-08-24: 'CPU cores : 1 @ 3092.814 MHz', 'RAM : 512.0 MiB', 'Swap : 512.0 MiB', 'Disk : 4.8 GiB', 'VM Type : LXC', 'IPv4/IPv6 : Online / Online', 'ASN : AS212895 Johannes Ernst', 'Location : Ashburn, Virginia'; and the operator replying as @dxomg"
+    },
+    {
+      "url": "https://lowendtalk.com/discussion/220420/free-openworld-eu-org-free-ipv6-vps",
+      "date": "2026-10-24",
+      "proved": "quoted from the thread: a user wrote 'looks like the server is dead beyond repair' and the operator @dxomg replied 'There was a little downtime on the i7-4510U, but should be back' — a transient outage, acknowledged and answered by the operator"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-24T06:05:00.000Z",
+  "notes": "Not in dossier/compute before this record. The vendor publishes no shape at all; What could not be established: the traffic allowance, whether a suspended container's data is deleted, and whether Clerk registration needs anything beyond an email. What would settle them: the deploy page behind the panel, which requires an account. The 7-day renewal is the reason this is a caveat rather than a clean qualify.",
+  "extras": {
+    "wave2": {
+      "class": "perpetual-vps",
+      "free_tier_kind": "perpetual-7-day-renewable",
+      "shape": {
+        "vcpu": 1,
+        "ram_gib": 0.5,
+        "disk_gib": 5,
+        "gpu_class": null,
+        "gpu_count": 0
+      }
+    },
+    "shape": {
+      "vcpu": 1,
+      "ram_gib": 0.5,
+      "disk_gib": 4.8,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "billing_model": "free",
+    "term": "7-day renewal",
+    "m10h_usd": 0.0,
+    "m24h_usd": 0.0,
+    "price_arithmetic": "no price: the free plan costs nothing and no payment method is collected",
+    "free_tier_kind": "renewable-free",
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": true,
+      "ports": "dedicated public IPv6 plus NAT IPv4; the forwarded-port count is not stated",
+      "static_ip": true,
+      "ipv6": true,
+      "per_session_bytes": null
+    },
+    "session_cap": {
+      "wall_clock_min": 10080,
+      "idle_reap_s": null,
+      "restart_required": false,
+      "note": "7-day free period; renewal resets it and is allowed once per 24 hours"
+    },
+    "fleet_counters": {
+      "nodes": 3,
+      "vps": 145,
+      "ips": 2220,
+      "users": 3908,
+      "as_read": "2026-10-24, self-reported by the vendor"
+    },
+    "shape_source": "reported: a user's YABS run in the vendor's LowEndTalk thread, 2026-08-24, 'CPU cores : 1 @ 3092.814 MHz', 'RAM : 512.0 MiB', 'Swap : 512.0 MiB', 'Disk : 4.8 GiB', 'VM Type : LXC'; the vendor itself publishes no shape"
+  },
+  "tier": "free plan",
+  "confidence_note": "retention, network, root SSH and the no-card statement are quoted from first-party pages read today, and those are the fields the verdict rests on. it does not move the verdict, so the record's rung is documented. No account was created and nothing was measured."
+}

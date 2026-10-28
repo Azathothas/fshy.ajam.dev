@@ -1,0 +1,166 @@
+{
+  "topic": "ip-proxy",
+  "slug": "proxyseller-isp-proxy",
+  "provider": "Proxy-Seller",
+  "url": "https://proxy-seller.com/isp/",
+  "category": "per-address ISP proxy",
+  "tier": "isp",
+  "free_tier": {
+    "stated": "No free tier: 'A standard free trial is not available'. The only figure the anonymous page states is its title, 'Buy ISP Proxy - Static Residential Proxies from $0.98/IP', repeated in the meta description; the order form is rendered client-side and the served HTML carries 'Price for 1 IP : $0' and 'Total cost : $0'. Minimum order 1 IP, term 1 week to 12 months.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://proxy-seller.com/isp/",
+    "read_on": "2026-10-24",
+    "notes": "The price is a page title, not a price. Three figures exist and none is a checkout price: $0.98/IP in the title and in the /price/ JSON-LD offer, $3/IP as the page's own structured-data 'Minimum Price', and $0 in the unhydrated form. The ladder between them is drawn by JavaScript from the selected country, quantity and period."
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://proxy-seller.com/isp/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: an address, not an object",
+    "days": null,
+    "source_url": "https://proxy-seller.com/isp/",
+    "notes": "What is retained is the address itself, for the rental term: 'a persistent IP that remains unchanged throughout long-running workflows', and 'Static, non-rotating IP addresses'. The address does not rotate per request or per interval, which is the opposite of the residential product the same vendor sells."
+  },
+  "egress": {
+    "terms": "'Traffic is uncapped at any volume, so web scraping jobs and data collection pipelines scale without hitting a ceiling.' The Fair the provider answer qualifies it: 'each IP comes with 100 concurrent threads and 100 GB of traffic by default', and 'To scale your capacity, add more ISP proxies: each new IP brings its own threads and traffic allowance.' No per-GB price is published and no traffic can be bought separately from an IP.",
+    "metered": true,
+    "free_allowance": "no free allowance and no free trial; 100 GB of traffic per IP by default under the Fair the provider, with the counting period unstated on the page",
+    "price_per_tb": null,
+    "source_url": "https://proxy-seller.com/isp/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "HTTP, HTTPS and SOCKS5 forward proxy: 'Any HTTP, HTTPS, or SOCKS5 connects natively, secured by credentials or IP allowlisting.' Authentication is 'username/password or IP allowlist for each order'. A JSON API is documented through five official SDKs (PHP, Node.js, Python, Java, GoLang) reached with an account API key; its base URL and auth header were not read here. A web dashboard handles order, authentication and address listing.",
+  "tooling": "Any client that speaks an HTTP or SOCKS5 proxy with credentials or an allowlisted source address: curl -x, python requests, rclone --socks5 or --http-proxy, or a host-side hop for a runtime that cannot dial a proxy itself. The vendor's official Python SDK exposes balance(), referenceList(type='isp'), orderCalcIsp(countryId, periodId, quantity) and proxyList(type='isp'), so both the ISP price ladder and the delivered addresses are readable from an account without a browser.",
+  "chaining": "The Worker calls the host, the host calls the ISP endpoint, and the upstream sees an AT&T, Windstream or Frontier eyeball address instead of AS13335.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "100 concurrent connections (threads) per ISP proxy IP; a 429 means that IP has hit its connection limit, and only that IP is affected",
+      "source": "https://proxy-seller.com/isp/"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "100 GB of traffic per IP by default under the Fair the provider; capacity scales by adding IPs, not by buying bytes",
+      "source": "https://proxy-seller.com/isp/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "up to 1 Gbps channel bandwidth per IP, stated elsewhere on the same page as varying by peer",
+      "source": "https://proxy-seller.com/isp/"
+    }
+  ],
+  "limits_note": "Unclassified prose that names no vocabulary kind: minimum order 1 IP for 1 week; quantity steps 1, 25, 50, 100, 250, 500; period steps 1w, 2w, 1mo, 2mo, 3mo, 6mo, 9mo, 12mo; geo-targeting is country at checkout, with city or region by arrangement; 'No monthly lock-ins'; the calculator carries a Customer/Enterprise and a Per IP/Per GB toggle, and the Per GB mode is marked 'Soon', so a byte-priced ISP product is announced but not on sale. Limits are stated to fire 'only by abnormally high load, so most customers never reach them'.",
+  "binding": "none",
+  "binding_note": "The first limit that would arrive is a growth limit rather than a scale limit, and the answer to it is a second IP, not a different provider.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "Payment is by card: 'pick a location, enter the required number of IPs, choose a rental term in the calculator, and pay by card, PayPal, or crypto'. Wire is by arrangement rather than at checkout: 'Contact support for wire transfers.' No free trial: 'A standard free trial is not available'. An account is also what unlocks the API key, and the API is the only anonymous-free route to the price ladder.",
+    "country": null
+  },
+  "reliability_note": "Orders are processed automatically and 'The IP address selection process may take a few minutes', with support to be contacted if the proxies have not arrived within 30 minutes; the location is fixed at purchase and a change needs support. The vendor publishes 99.7% uptime, a 99.5% success rate and about 0.35s response time, all unverified here, and states no address-replacement policy on the ISP page.",
+  "confidence": "documented",
+  "confidence_note": "Every field the verdict rests on is read from the vendor's own pages, and the three upstream ASN holders were checked against RIPE, which is the measured part. The claim the verdict cannot carry is the one the vendor makes loudest: that the delivered addresses sit in those eyeball networks across 200+ Class B and 600+ Class C subnets. No sample address is published, so that stays the vendor's sentence.",
+  "evidence": [
+    {
+      "url": "https://proxy-seller.com/isp/",
+      "date": "2026-10-24",
+      "proved": "The price exists only as the title and meta description 'from $0.98/IP'; the served order form carries 'Price for 1 IP : $0' and 'Total cost : $0'; quantity options are 1, 25, 50, 100, 250, 500 IP and period options 1w, 2w, 1mo, 2mo, 3mo, 6mo, 9mo, 12mo, so the minimum order is 1 IP for 1 week."
+    },
+    {
+      "url": "https://proxy-seller.com/isp/",
+      "date": "2026-10-24",
+      "proved": "The decisive sentence verbatim: 'IPs are distributed across 200+ Class B and 600+ Class C subnets, preventing IP clustering in a single range.' The same page names the upstream carriers as 'Real ASN IPs from AT&T, Windstream, and Frontier' without publishing an AS number or a sample address."
+    },
+    {
+      "url": "https://proxy-seller.com/isp/",
+      "date": "2026-10-24",
+      "proved": "Fair the provider: 'each IP comes with 100 concurrent threads and 100 GB of traffic by default'; a 429 affects only that IP; 'each new IP brings its own threads and traffic allowance'. This is the sentence that qualifies the 'Traffic is uncapped at any volume' card."
+    },
+    {
+      "url": "https://proxy-seller.com/isp/",
+      "date": "2026-10-24",
+      "proved": "Access and payment: 'Any HTTP, HTTPS, or SOCKS5 connects natively, secured by credentials or IP allowlisting'; 'pay by card, PayPal, or crypto'; 'Contact support for wire transfers'; 'A standard free trial is not available'."
+    },
+    {
+      "url": "https://proxy-seller.com/isp/",
+      "date": "2026-10-24",
+      "proved": "The page's own structured data states a 'Minimum Price' of '$3/IP' beside 'Minimum Order Size' '1 IP' and 'Minimum Order Period' '1 week' and 'Traffic' 'Unlimited' — a third price signal, $2.02 above the $0.98 in the title, which is why neither figure can be read as a checkout price."
+    },
+    {
+      "url": "https://proxy-seller.com/price/",
+      "date": "2026-10-24",
+      "proved": "The price index lists 'ISP proxies Starts from $0.98' and its JSON-LD carries an Offer of 0.98 USD with referenceQuantity 1 IP; the table rendered in the served HTML is the Residential per-GB ladder, so the ISP per-IP ladder is drawn client-side and is absent from the HTML."
+    },
+    {
+      "url": "probe:https://stat.ripe.net/data/as-overview/data.json?resource=AS7018",
+      "date": "2026-10-24",
+      "proved": "Holder 'ATT-INTERNET4 - AT&T Enterprises, LLC', announced true, ARIN-assigned. Confirms the vendor's AT&T naming resolves to a genuine eyeball carrier."
+    },
+    {
+      "url": "probe:https://stat.ripe.net/data/as-overview/data.json?resource=AS7029",
+      "date": "2026-10-24",
+      "proved": "Holder 'WINDSTREAM - Windstream Communications LLC', announced true, ARIN-assigned. Confirms the vendor's Windstream naming resolves to a genuine eyeball carrier."
+    },
+    {
+      "url": "probe:https://stat.ripe.net/data/as-overview/data.json?resource=AS5650",
+      "date": "2026-10-24",
+      "proved": "Holder 'FRONTIER-FRTR - Frontier Communications of America, Inc.', announced true, ARIN-assigned. Confirms the vendor's Frontier naming resolves to a genuine eyeball carrier."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/proxy-seller/user-api-python/v2/proxy_seller_user_api/__init__.py",
+      "date": "2026-10-24",
+      "proved": "The vendor's official SDK defines orderCalcIsp(countryId, periodId, quantity, authorization, coupon, customTargetName), referenceList(type='isp') returning country[] and period[], and proxyList(type='isp'), so the ISP ladder and the delivered addresses are both reachable from an account with an API key."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-24T10:07:11.000Z",
+  "price_per_tb_month": "not a per-byte product: priced per IP per term. $0.98/IP in the page title and in the /price/ JSON-LD offer, $3/IP as the ISP page's structured-data minimum price, $0 in the served form.",
+  "notes": "Candidates for why the page yields no readable price, tested rather than assumed. (1) The form is rendered client-side: confirmed, the served HTML carries 'Price for 1 IP : $0' and the select elements hold ObjectId values, so the number is computed after hydration. (2) The $0.98 is a marketing floor reachable only at volume: consistent with the same page's 'Get a better per-IP rate with larger volumes or longer terms' and with its structured-data 'Minimum Price' of $3/IP, so the entry price at 1 IP is probably $3 and the $0.98 is a large-quantity rate — plausible, not established. (3) A WAF or geo-block was suppressing the price: refuted, the page returned 200 with the full article, the FAQ and the JSON-LD. Reading the ladder from https://proxy-seller.com/price/ was tried and ruled out: that page's ISP tab is drawn client-side and the table in the served HTML is the Residential per-GB ladder. What would settle the price: an account plus an API key, then orderCalcIsp across the 1w to 12mo periods at quantity 1, or simply the checkout for 1 IP for 1 week; the SDK makes this a scripted read rather than a browser session. The vendor names carriers (AT&T, Windstream, Frontier) and the survey names the AS numbers; The Fair the provider contradicts the marketing card and both are quoted rather than reconciled: 'Traffic is uncapped at any volume' against '100 GB of traffic by default' per IP, with no period stated and no way to buy traffic without buying an IP, which is why egress.metered is true while binding stays none at 45 GB a month. 'paid-only' was considered and rejected: the corpus's target includes cheapest-paid capacity, the minimum purchase is a single IP for a week, and the caveat belongs to the unverified price and the untested registration class rather than to the absence of a free tier. The schema's interface enum carries no proxy token, so interface holds 'rest' for the documented JSON API and the proxy protocols are in interface_detail, the shape dossier/storage/proxyrack-unlimited-residential.json already uses for a SOCKS5 product; the topic's own token list (socks5, http-proxy, api, web-ui) is not in schema.json and would fail the gate.",
+  "extras": {
+    "rung": 5,
+    "rung_note": "The product is an address in an ISP-registered network, which is the rung-5 defence exactly; the vendor's 200+ Class B and 600+ Class C subnet claim would also reach rung 3, but it is unverified and no sample address is published, so only rung 5 is claimed.",
+    "price_signals": {
+      "title_and_price_index": "$0.98/IP (page title, meta description, /price/ JSON-LD Offer with referenceQuantity 1 IP)",
+      "structured_data_minimum": "$3/IP (ISP page JSON-LD specification, name 'Minimum Price')",
+      "served_order_form": "$0 for 1 IP and $0 total, before hydration",
+      "ladder_readable_anonymously": false
+    },
+    "upstream_asns": [
+      {
+        "asn": "AS7018",
+        "holder": "ATT-INTERNET4 - AT&T Enterprises, LLC",
+        "announced": true,
+        "checked": "2026-10-24"
+      },
+      {
+        "asn": "AS7029",
+        "holder": "WINDSTREAM - Windstream Communications LLC",
+        "announced": true,
+        "checked": "2026-10-24"
+      },
+      {
+        "asn": "AS5650",
+        "holder": "FRONTIER-FRTR - Frontier Communications of America, Inc.",
+        "announced": true,
+        "checked": "2026-10-24"
+      }
+    ],
+    "subnet_claim": "200+ Class B and 600+ Class C subnets, vendor's sentence, unverified",
+    "sample_address_published": false,
+    "protocols": "HTTP/HTTPS/SOCKS5, credentials or IP allowlisting",
+    "address_behaviour": "static and non-rotating for the rental term",
+    "quantity_steps": "1, 25, 50, 100, 250, 500",
+    "period_steps": "1w, 2w, 1mo, 2mo, 3mo, 6mo, 9mo, 12mo",
+    "fair_usage": "100 concurrent threads and 100 GB of traffic per IP by default; 429 on the offending IP only",
+    "geo_targeting": "country at checkout; city or region by arrangement",
+    "per_gb_mode": "announced as 'Soon' in the calculator, not on sale",
+    "api_methods": "orderCalcIsp, referenceList(type='isp'), proxyList(type='isp'), balance",
+    "client_scale_fit": "45 GB/month and about 599,000 requests/month fit one IP's 100 GB and 100-thread allowance"
+  }
+}

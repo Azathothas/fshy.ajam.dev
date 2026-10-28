@@ -1,0 +1,78 @@
+{
+  "topic": "storage",
+  "slug": "cloud-storage-for-firebase",
+  "provider": "Cloud Storage for Firebase (Spark/Blaze)",
+  "url": "https://firebase.google.com/pricing",
+  "category": "paas",
+  "free_tier": {
+    "stated": "5 GB stored free, but only on the Blaze pay-as-you-go plan; Spark project buckets return 402/403.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://firebase.google.com/pricing",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://firebase.google.com/pricing",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://firebase.google.com/pricing",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "1 GB/day free for legacy *.appspot.com buckets, then $0.12/GB; 100 GB/month for *.firebasestorage.app buckets. Metered beyond that.",
+    "metered": true,
+    "free_allowance": "100 GB per month"
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Firebase Storage SDK / GCS JSON+XML API (rclone 'gs'/'gcs'); buckets are ordinary GCS buckets so rclone works.",
+  "chaining": "5 GB x N Firebase projects — each project needs a billing account on Blaze, which defeats the purpose since Blaze is a metered surface.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "1 GB/day",
+      "source": "https://firebase.google.com/pricing"
+    }
+  ],
+  "limits_note": "5 GB stored; 20K upload ops/day (appspot) / 5K/month (firebasestorage.app); 1 GB/day or 100 GB/month egress; bucket creation post-Sept-2024 uses PROJECT_ID.firebasestorage.app naming.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: ark project buckets return 402/403. Requires attaching a credit card (Blaze). No free path at all since the Sept 2024 change — this is the clearest 'free that is not free' in the Google st",
+    "country": null
+  },
+  "reliability_note": "Requires attaching a credit card (Blaze). No free path at all since the Sept 2024 change — this is the clearest 'free that is not free' in the Google stack.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://firebase.google.com/pricing",
+      "date": "2026-10-21",
+      "proved": "'Storage | * Not applicable * | No-cost up to 5 GB Then $0.10/GB'; 'GB downloaded | No-cost up to 1 GB/day Then $0.12/GB'"
+    },
+    {
+      "url": "https://firebase.google.com/docs/storage/faqs-storage-changes-announced-sept-2024",
+      "date": "2026-10-21",
+      "proved": "'If your Firebase project is on the Spark pricing plan, you won't have access to any Cloud Storage buckets … your API calls to buckets will return 402 or 403 errors'"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "5 GB stored free, but only on the Blaze pay-as-you-go plan; Spark project buckets return 402/403.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "5 GB stored free, but only on the Blaze pay-as-you-go plan; Spark project buckets return 402/403.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-ip-shaping",
+  "binding_note": "one stream is shaped, and a user's throughput is the shaped rate times the number of streams"
+}

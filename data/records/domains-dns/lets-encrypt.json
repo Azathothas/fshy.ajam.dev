@@ -1,0 +1,103 @@
+{
+  "topic": "domains-dns",
+  "slug": "lets-encrypt",
+  "provider": "Let's Encrypt",
+  "url": "https://letsencrypt.org/docs/rate-limits/",
+  "category": "certificate authority",
+  "free_tier": {
+    "stated": "free 90-day certificates including wildcards over DNS-01, with automated issuance and renewal",
+    "unit": "unlimited",
+    "source_url": "https://letsencrypt.org/docs/faq/",
+    "read_on": "2026-10-22",
+    "metered_on": "request-count"
+  },
+  "per_object_cap": {
+    "stated": "no certificate size cap; the binding limits are rate limits and not object caps",
+    "bytes": null
+  },
+  "retention": {
+    "stated": "a certificate is valid 90 days and must be renewed; ARI lets a client renew early",
+    "days": 90,
+    "source_url": "https://letsencrypt.org/docs/faq/"
+  },
+  "egress": {
+    "terms": "no charge",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://letsencrypt.org/docs/rate-limits/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "the ACME v2 protocol at acme-v02.api.letsencrypt.org, with a staging endpoint for testing",
+  "tooling": "certbot, acme.sh, lego, Caddy, Traefik, any ACME client",
+  "chaining": "free TLS on any name you control, including a wildcard, which is what makes the free-DNS plus free-tunnel chain terminate in a valid certificate",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "50 certificates per registered domain per 7 days, global across all accounts, refilling at 1 per 202 minutes",
+      "source": "https://letsencrypt.org/docs/rate-limits/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "5 certificates per exact set of identifiers per 7 days",
+      "source": "https://letsencrypt.org/docs/rate-limits/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "300 new orders per account per 3 hours",
+      "source": "https://letsencrypt.org/docs/rate-limits/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "10 new accounts per IP per 3 hours",
+      "source": "https://letsencrypt.org/docs/rate-limits/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "5 failed authorizations per identifier per account per hour; 1,152 consecutive failures then the identifier pauses",
+      "source": "https://letsencrypt.org/docs/rate-limits/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "a certificate is valid 90 days; renewal is a user's job and there is no automatic extension",
+      "source": "https://letsencrypt.org/docs/faq/"
+    }
+  ],
+  "binding": "request-rate",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no account is required to obtain a certificate; an ACME account key is generated locally and is not a registration",
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "confidence": "measured",
+  "confidence_note": "the production and staging directories were fetched today and answered 200 with the profile list; the rate limits are a first-party page. The 90-day validity is on the FAQ page, not on the rate-limits page it was attributed to.",
+  "evidence": [
+    {
+      "url": "probe:https://acme-v02.api.letsencrypt.org/directory",
+      "date": "2026-10-22",
+      "proved": "200, 961 bytes, sha256 ee1bfe324dcd5aff6e67ba25ea98397494d5b6ebf6c7f16e98348254636190e0, listing keyChange, the classic, shortlived and tlsserver profiles, and the current subscriber agreement URL"
+    },
+    {
+      "url": "probe:https://acme-staging-v02.api.letsencrypt.org/directory",
+      "date": "2026-10-22",
+      "proved": "200, 1,035 bytes; the staging endpoint is live, so an issuance test costs nothing against the production limits"
+    },
+    {
+      "url": "https://letsencrypt.org/docs/rate-limits/",
+      "date": "2026-10-22",
+      "proved": "50 certificates per registered domain per 7 days; 5 per exact set of identifiers per 7 days; 300 new orders per account per 3 hours; 10 accounts per IP per 3 hours; 5 failed authorizations per identifier per hour; 1,152 consecutive failures; ARI renewals are exempt from the order and per-domain limits"
+    },
+    {
+      "url": "https://letsencrypt.org/docs/faq/",
+      "date": "2026-10-22",
+      "proved": "'Our default certificates are valid for 90 days'; the same FAQ points at the published rationale"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-22T03:05:00.000Z",
+  "price_per_tb_month": null,
+  "notes": "The per-registered-domain limit is the one that binds a multi-tenant scheme: 50 certificates a week for every name under one registered domain, whoever requests them. The exact-identifier limit is the one that binds a retry loop, and 5 an hour is reachable in a bad afternoon."
+}

@@ -1,0 +1,139 @@
+{
+  "topic": "inference",
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "not applicable"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "any OpenAI-compatible client; curl against POST {base}/chat/completions",
+  "chaining": "pairs with a lightweight interactive caller; the one-reply-per-30-seconds-per-IP floor is the scarce link and it is shared with every other caller on the address",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "1 reply every 30 seconds per IP on the anonymous tier",
+      "source": "402 body: 'Free limit reached: 1 reply every 30 seconds per IP'"
+    }
+  ],
+  "slug": "pollinations",
+  "provider": "Pollinations",
+  "url": "https://text.pollinations.ai/openai",
+  "category": "inference endpoint, keyless",
+  "free_tier": {
+    "stated": "the Classic API lists one model, openai-fast, described as 'GPT-OSS 20B Reasoning LLM (OVH)', with aliases openai, gpt-oss, gpt-oss-20b and ovh-reasoning",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://text.pollinations.ai/models",
+    "read_on": "2026-10-22",
+    "notes": "the served model is OVH-hosted gpt-oss-20b, so this endpoint is a relay of the OVH public tier rather than a separate allocation"
+  },
+  "endpoint": "https://text.pollinations.ai/openai/chat/completions",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no key required, but the allowance is metered per IP and shared with everything else on that address",
+    "country": null
+  },
+  "reliability_note": "the same model on the same base URL returned 402 and 404 an hour apart, and 404 and 402 in reverse order's two runs",
+  "confidence": "measured",
+  "confidence_note": "the per-IP 402 was observed. The advertised id openai-fast is listed by GET /models with the aliases openai, gpt-oss, gpt-oss-20b and ovh-reasoning, and a completion for openai-fast reports the served model as gpt-oss-20b, so the served model is the advertised one under one of its aliases.",
+  "probe": {
+    "records": [
+      {
+        "probe_id": "pollinations-fast",
+        "requested_model": "openai-fast",
+        "http_run1": 200,
+        "http_run2": 200,
+        "answered_run1": "yes",
+        "answered_run2": "yes",
+        "model_echoed": "gpt-oss-20b",
+        "echo_match": "SUBSTITUTED",
+        "latency_ms_run1": 3501,
+        "latency_ms_run2": 997,
+        "ttft_ms_run1": 2532,
+        "completion_tokens_run1": 51,
+        "tps_run1": "",
+        "tps_run2": "",
+        "tps_basis": "streamed chars/4 / (time_total - time_starttransfer) on a second, streaming call, run 1 only",
+        "needle_echoed_run1": "yes",
+        "body_bytes_run1": 475,
+        "body_sha256_16_run1": "c904d7fb4b2362a8",
+        "reasoning_only": "no",
+        "error_run1": "",
+        "error_run2": ""
+      },
+      {
+        "probe_id": "pollinations-gpt5",
+        "requested_model": "gpt-5-nano",
+        "http_run1": 402,
+        "http_run2": 404,
+        "answered_run1": "no",
+        "answered_run2": "no",
+        "model_echoed": "",
+        "echo_match": "yes",
+        "latency_ms_run1": 595,
+        "latency_ms_run2": 490,
+        "ttft_ms_run1": "",
+        "completion_tokens_run1": 0,
+        "tps_run1": "",
+        "tps_run2": "",
+        "tps_basis": null,
+        "needle_echoed_run1": "no",
+        "body_bytes_run1": 324,
+        "body_sha256_16_run1": "9af5216aca23af3a",
+        "reasoning_only": "no",
+        "error_run1": "{\"code\": \"FREE_LIMIT\", \"message\": \"Free limit reached: 1 reply every 30 seconds per IP. Retry after 28s, or get unlimited replies with a pollen key at https://enter.pollinations.ai/?ref=classic\", \"tim",
+        "error_run2": "{\"code\": \"NOT_FOUND\", \"message\": \"Model \\\"gpt-5-nano\\\" isn't on the Classic API. Free models: https://text.pollinations.ai/models. Every model we offer is on https://enter.pollinations.ai/?ref=classic"
+      }
+    ],
+    "runs": [
+      "probes-w.json",
+      "probes-w-run2.json"
+    ],
+    "timing_note": "latency_ms and ttft_ms on a row came from two different requests in the original instrument, which is how five rows ended up with ttft_ms > latency_ms. They are corrected here from a re-probe on 2026-10-22T04:38:22Z with probe3.py, which takes both fields from one streaming request: 475 ms total and 475 ms to first byte. The earlier run-1 figures (3501 ms latency, 2532 ms ttft) are kept because both came from one request pair that was internally consistent."
+  },
+  "evidence": [
+    {
+      "url": "probe:https://text.pollinations.ai/openai/chat/completions",
+      "date": "2026-10-22",
+      "proved": "requesting openai-fast returned 200 with model gpt-oss-20b echoed, a substitution; 51 completion tokens in the written run, and re-probed at 2026-10-22T04:38:22Z at 475 ms total with 475 ms to first byte on one streaming request. The recon run's 289 ms figure is withdrawn: its ttft_ms on the same row was 499 ms, so the two fields describe two different calls and neither can be quoted as a latency"
+    },
+    {
+      "url": "probe:https://text.pollinations.ai/openai/chat/completions",
+      "date": "2026-10-22",
+      "proved": "requesting gpt-5-nano returned 402 'Free limit reached: 1 reply every 30 seconds per IP' in run 1 and 404 'isn't on the Classic API' in run 2, eight minutes apart"
+    },
+    {
+      "url": "https://text.pollinations.ai/models",
+      "date": "2026-10-22",
+      "proved": "the Classic API lists exactly one model, openai-fast, with alias gpt-oss-20b and the description 'GPT-OSS 20B Reasoning LLM (OVH)'"
+    },
+    {
+      "url": "https://github.com/pollinations/pollinations/blob/master/APIDOCS.md",
+      "date": "2026-10-28",
+      "proved": "text requests are limited to one at a time, at least 30 seconds apart, per IP address",
+      "capture": "sha256:2f2ef50b3871573b61ad7b1eb7485560eb6bbfe3af4a368f7d2f6dc7851a3d46",
+      "quote": "| Text | One at a time, at least 30 seconds apart. A stream waits for the next slot |"
+    },
+    {
+      "url": "probe:https://text.pollinations.ai/openai/chat/completions",
+      "date": "2026-10-28",
+      "proved": "one POST with no Authorization header for openai-fast answered 200 with content NEEDLE-9K2X; body model gpt-oss-20b and user_tier anonymous; headers x-model-used: gpt-oss-20b, x-usage-prompt-text-tokens: 324, x-usage-completion-text-tokens: 51, x-usage-total-tokens: 375; no rate-limit header (Retry-After is exposed only on a refusal)"
+    },
+    {
+      "url": "probe:https://text.pollinations.ai/models",
+      "date": "2026-10-28",
+      "proved": "GET /models lists one model, openai-fast, described as GPT-OSS 20B Reasoning LLM (OVH), tier anonymous, with aliases openai, gpt-oss, gpt-oss-20b and ovh-reasoning"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-28T05:28:44.384Z",
+  "notes": "openai-fast is an alias for gpt-oss-20b served from OVH, so this endpoint duplicates docs/inference/free's OVH row under a different name and a tighter limit. The 402 is the finding: a keyless endpoint exhausted by per-IP budget with no account in existence.",
+  "binding": "request-rate"
+}

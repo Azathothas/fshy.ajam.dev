@@ -1,0 +1,90 @@
+{
+  "topic": "storage",
+  "slug": "uploadcare",
+  "provider": "Uploadcare (free plan)",
+  "url": "https://uploadcare.com",
+  "category": "media",
+  "free_tier": {
+    "stated": "1 GB storage, 1,000 operations/month, 5 GB/month traffic. Their pricing page lists operations and file-size caps rather than a storage number; 1 GB is the documented free storage allowance.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://uploadcare.com/pricing/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "max file size on free (1 GB",
+    "bytes": 1000000000,
+    "source_url": "https://uploadcare.com/pricing/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "CRITICAL: 'Unless the file is stored, it will be deleted after 24 hours' — API uploads are transient until explicitly stored, which costs operations.",
+    "days": 1,
+    "source_url": "https://uploadcare.com/pricing/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "5 GB/month traffic on free, then metered. Fails free-egress.",
+    "metered": true,
+    "free_allowance": "5 GB per month"
+  },
+  "interface": [
+    "s3-compatible",
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Strong: Upload API (signed uploads), REST API, webhooks, uploading widget, File Uploader element, S3-compatible storage connect on higher tiers.",
+  "chaining": "Unlimited free projects x 1 GB — trivially repeatable but each is tiny.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "deleted after 24 hours",
+      "source": "https://uploadcare.com/pricing/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "max file size on free (1 GB",
+      "source": "https://uploadcare.com/pricing/"
+    }
+  ],
+  "limits_note": "500 MB max file size on free (1 GB Pro, 10 GB Business, 5 TB Enterprise). CRITICAL: 'Unless the file is stored, it will be deleted after 24 hours' — API uploads are transient until explicitly stored, which costs operations.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: s the file is stored, it will be deleted after 24 hours' — API uploads are transient until explicitly stored, which costs operations. media",
+    "country": null
+  },
+  "reliability_note": "24-hour auto-deletion of unstored files is a data-loss trap for bulk workloads; storing each file consumes operations from a 1,000/mo pool.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://uploadcare.com/pricing/",
+      "date": "2026-10-21",
+      "proved": "Free: '1,000 operations per month', '500 MB max file size', 'Personal use only'"
+    },
+    {
+      "url": "https://uploadcare.com/docs/uploads/storage.md",
+      "date": "2026-10-21",
+      "proved": "'Unless the file is stored, it will be deleted after 24 hours'"
+    },
+    {
+      "url": "https://docs.aeroftp.app/providers/uploadcare.html",
+      "date": "2026-10-21",
+      "proved": "'Free plan includes 1 GB storage' (third-party restatement)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "1 GB storage, 1,000 operations/month, 5 GB/month traffic. Their pricing page lists operations and file-size caps rather than a storage number; 1 GB is the documented free storage allowance.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "1 GB storage, 1,000 operations/month, 5 GB/month traffic. Their pricing page lists operations and file-size caps rather than a storage number; 1 GB is the documented free storage allowance.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

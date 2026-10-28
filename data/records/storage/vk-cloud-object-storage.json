@@ -1,0 +1,83 @@
+{
+  "topic": "storage",
+  "slug": "vk-cloud-object-storage",
+  "provider": "VK Cloud Object Storage",
+  "url": "https://cloud.vk.ru/storage/",
+  "category": "iaas",
+  "free_tier": {
+    "stated": "no perpetual free volume — pay-as-you-go per GB, per storage class (Hotbox/Icebox/Backup)",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://cloud.vk.ru/docs/en/storage/s3/tariffication",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://cloud.vk.ru/docs/en/storage/s3/tariffication",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "bonus expires in 60 days and unused balance is revoked; bonus cannot be spent on CDN, licences or marketplace",
+    "days": 60,
+    "source_url": "https://cloud.vk.ru/docs/en/storage/s3/tariffication",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "metered: 'Outgoing traffic is any downloading of information from the bucket ... In both cases, the bucket is accessed using an external IP address' — charged per GB on Hotbox and Icebox; only incoming traffic and API calls are free",
+    "metered": true
+  },
+  "interface": [
+    "s3-compatible",
+    "rclone"
+  ],
+  "interface_detail": "s3",
+  "tooling": "S3-compatible API, rclone via S3 backend; the only free axis is the 5 000 RUB (individual) / 12 000 RUB (legal entity) welcome bonus, 60 days",
+  "chaining": "welcome bonus only: 5 000 RUB per individual, one-time, 60-day expiry, requires a corporate-domain email and an RF IP; = N identities x ~60 days of storage, not perpetual",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "expires in 60 days",
+      "source": "https://cloud.vk.ru/docs/en/storage/s3/tariffication"
+    }
+  ],
+  "limits_note": "bonus expires in 60 days and unused balance is revoked; bonus cannot be spent on CDN, licences or marketplace",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: idual, one-time, 60-day expiry, requires a corporate-domain email and an RF IP; = N identities x ~60 days of storage, not perpetual bonus expires in 60 days and unused balance is revoke",
+    "country": null
+  },
+  "reliability_note": "Bonus-grant model means the storage disappears at day 60 unless paid; per-GB egress makes any serving workload a bill.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://cloud.vk.ru/docs/en/storage/s3/tariffication",
+      "date": "2026-10-21",
+      "proved": "'Outgoing traffic is any downloading of information from the bucket ... you pay for: Volume of stored data (per GB). Outgoing traffic (per GB)'"
+    },
+    {
+      "url": "https://cloud.vk.ru/bonus/",
+      "date": "2026-10-21",
+      "proved": "'5000 бонусных рублей для физических лиц и 12 000 — для юридических лиц', 'Бонус выдается на срок 60 дней'"
+    },
+    {
+      "url": "https://hb.ru-msk.vkcloud-storage.ru/",
+      "date": "2026-10-21",
+      "proved": null
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "no perpetual free volume — pay-as-you-go per GB, per storage class (Hotbox/Icebox/Backup)",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "no perpetual free volume — pay-as-you-go per GB, per storage class (Hotbox/Icebox/Backup)",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "retention-clamped",
+  "binding_note": "a clock, not a quota: bytes leave whether or not a user is finished with them"
+}

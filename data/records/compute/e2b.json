@@ -1,0 +1,203 @@
+{
+  "topic": "compute",
+  "per_object_cap": {
+    "stated": "Sandboxes can be configured with 1 to 8 vCPUs and 1 to 8 GiB of RAM; the default sandbox has 2 vCPUs and 4 GiB. Storage is 10 GiB on Hobby.",
+    "bytes": null,
+    "source_url": "https://e2b.dev/pricing",
+    "notes": "The hard cap here is time, not shape: 1 hour of continuous runtime per session on Hobby. The billing docs' own cost advice gives the default as '2 vCPU, 512 MiB RAM', which contradicts the pricing page's 4 GiB."
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "SDK (Python, JavaScript) over a REST API; Sandbox.create() plus pause and resume",
+  "tooling": "e2b Python and Node SDKs; templates; sandbox pause and resume",
+  "chaining": "pause keeps memory, so a long agent run resumes mid-process rather than replaying its setup",
+  "limits_note": "The 1-hour continuous runtime is the headline difference between Hobby and the USD 150 a month Pro plan, so the time cap is a plan gate rather than a technical ceiling. It resets on pause and resume.",
+  "reliability_note": "A sandbox that hits the one-hour limit is destroyed and its in-memory state is lost unless it was paused or snapshotted first; the default timeout when none is set is 5 minutes.",
+  "confidence": "documented",
+  "verified_at": "2026-10-24T04:05:00.000Z",
+  "price_per_tb_month": null,
+  "slug": "e2b",
+  "provider": "E2B",
+  "url": "https://e2b.dev/pricing",
+  "category": "container and VM sandbox",
+  "free_tier": {
+    "stated": "Hobby is USD 0 a month with 'One-time $100 in usage credits', 'Up to 20 concurrently running sandboxes', 'Up to 1 hour per sandbox session', '10 GiB of sandbox storage, included' and 'No credit card required to start.'",
+    "unit": "mixed",
+    "metered_on": "wall-clock",
+    "source_url": "https://e2b.dev/pricing",
+    "read_on": "2026-10-24",
+    "notes": "The credit is one time and does not reset. Running sandboxes are billed per second on provisioned CPU and RAM."
+  },
+  "retention": {
+    "stated": "Sandbox storage is included with every plan at no extra cost; a paused sandbox keeps its filesystem and its memory. 'Paused sandbox retention: Unlimited' on every plan.",
+    "days": null,
+    "source_url": "https://docs.e2b.dev/billing",
+    "notes": "a paused sandbox is kept indefinitely with no time-to-live and no automatic deletion; it is removed only when killed"
+  },
+  "egress": {
+    "terms": "No egress charge or allowance is stated on the pricing page; sandbox storage is stated free and the page prices CPU and RAM only. Outbound traffic leaves from ephemeral rotating IPs with no published CIDR list.",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://e2b.dev/pricing"
+  },
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "USD 100 one-time usage credit",
+      "source": "https://e2b.dev/pricing"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "1 hour maximum continuous runtime per sandbox on Hobby",
+      "source": "https://e2b.dev/pricing"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "20 concurrent sandboxes on Hobby",
+      "source": "https://e2b.dev/pricing"
+    },
+    {
+      "kind": "write-gated",
+      "value": "with no payment method on file, 'every project in your workspace is blocked shortly afterwards' once credits run out",
+      "source": "https://docs.e2b.dev/billing"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The console signup at console.e2b.dev/registration renders 'Sign up with a social provider or your email.' with 'Continue with GitHub', 'Continue with Google', or fields for 'E-Mail', 'Name' and 'Password'. No phone field and no card field. The pricing page states 'No credit card required to start.' No hold exists because no payment method is taken at signup.",
+    "country": null
+  },
+  "evidence": [
+    {
+      "url": "https://e2b.dev/pricing",
+      "date": "2026-10-23",
+      "proved": "quoted: 'One-time $100 in usage credits', 'No credit card required to start', 'The default sandbox has 2 vCPUs and 4 GiB of RAM'"
+    },
+    {
+      "url": "https://e2b.dev/pricing",
+      "date": "2026-10-23",
+      "proved": "quoted per-second rates: vCPU $0.000014 per vCPU-second, RAM $0.0000045 per GiB-second"
+    },
+    {
+      "url": "https://e2b.dev/pricing",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Hobby includes a one-time $100 in usage credits, 20 concurrent sandboxes, and up to 1 hour of continuous runtime per sandbox. Pro ($150 a month plus usage) raises this to 100 concurrent sandboxes and 24 hours of continuous runtime.'; 'vCPU $0.000014 per vCPU-second'; 'RAM $0.0000045 per GiB-second'; 'Storage Free'; 'No credit card required to start.'; 'Sandboxes can be configured with 1 to 8 vCPUs and 1 to 8 GiB of RAM.'"
+    },
+    {
+      "url": "https://e2b.dev/pricing",
+      "date": "2026-10-24",
+      "proved": "quoted: 'One-time $100 in usage credits', 'Up to 1 hour per sandbox session', 'No credit card required to start', with rates '$0.000014 per vCPU-second' and '$0.0000045 per GiB-second'"
+    },
+    {
+      "url": "https://e2b.dev/pricing",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Hobby includes a one-time $100 in usage credits, 20 concurrent sandboxes, and up to 1 hour of continuous runtime per sandbox. Pro ($150 a month plus usage) raises this to 100 concurrent sandboxes and 24 hours of continuous runtime.'; 'No credit card required to start.'; 'Sandboxes can be configured with 1 to 8 vCPUs and 1 to 8 GiB of RAM. The default sandbox has 2 vCPUs and 4 GiB of RAM.'; 'Sandboxes are CPU-only; E2B does not offer GPU sandboxes.'"
+    },
+    {
+      "url": "https://e2b.dev/pricing",
+      "date": "2026-10-24",
+      "proved": "quoted rate table: 'vCPU | $0.000014 per vCPU-second', 'RAM | $0.0000045 per GiB-second', 'Storage | Free'"
+    },
+    {
+      "url": "https://console.e2b.dev/registration",
+      "date": "2026-10-24",
+      "proved": "the signup form, read in a browser without submitting it, renders: 'Sign up' / 'Sign up with a social provider or your email.' / 'Continue with GitHub Continue with Google' / 'or' / 'E-Mail' / 'Name' / 'Password' / 'Sign up'. No phone field, no card field."
+    },
+    {
+      "url": "https://docs.e2b.dev/billing",
+      "date": "2026-10-24",
+      "proved": "quoted: 'If you have no payment method, every project in your workspace is blocked shortly afterwards. Add a payment method to continue using E2B.'; 'Free credits | $100 (one-time)'; 'Max continuous runtime (Time a sandbox can run without being paused.) | 1 hour'; 'Paused sandbox retention | Unlimited'"
+    },
+    {
+      "url": "https://docs.e2b.dev/faq/sandbox-lifetime.md",
+      "date": "2026-10-24",
+      "proved": "quoted: 'This is the time a sandbox can run without being paused. Pausing and resuming resets it, so a sandbox that pauses and resumes can be kept alive and reused for as long as you want.' and 'Every sandbox has a timeout, and it defaults to 5 minutes if you do not set one.'"
+    },
+    {
+      "url": "https://docs.e2b.dev/network/public-url.md",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Every sandbox can be reached by a public URL, which lets you expose and connect to services running inside it.' and 'By default, a sandbox's public URLs are reachable by anyone who knows them.'"
+    },
+    {
+      "url": "https://docs.e2b.dev/faq/index.md",
+      "date": "2026-10-24",
+      "proved": "quoted: 'No. E2B sandboxes are CPU-only, sized by vCPU and RAM only, with no GPU option in the SDKs, CLI, API, or a template definition.'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "notes": "Arithmetic, recomputed today: 2 vCPU x USD 0.0504 + 4 GiB x USD 0.0162 + 0 storage = USD 0.1656 an hour. USD 100 / 0.1656 = 603.9 h = 25.2 days at 24/7, and a 730-hour month would cost USD 120.89. But those 604 hours cannot be taken as a continuous machine: Hobby caps continuous runtime at 1 hour, so they are 604 sessions of one hour or less, and the credit is the smaller constraint only in the sense that it runs out second. At the maximum shape, 8 vCPU / 8 GiB, the hour is USD 0.5328 and USD 100 buys 187.7 h = 7.8 days, still in one-hour slices. GPU trap: not applicable, because E2B states it sells no GPU at all, so there is no advertised product the credit fails to cover. The real catch is the card AFTER the credit, not before: 'If you have no payment method, every project in your workspace is blocked shortly afterwards. Add a payment method to continue using E2B.' That is a hard stop at the end of the USD 100 with no free path onward. Pausing is unlimited and free, so a paused sandbox can sit indefinitely, but it is not running. One conflict to note: the billing docs' cost advice says the default is '2 vCPU, 512 MiB RAM' while the pricing page says 4 GiB; if 512 MiB is right the hour is USD 0.1089 and the credit buys 918 h, so the shape should be checked in the console before trusting either figure.",
+  "extras": {
+    "shape": {
+      "vcpu": 2,
+      "ram_gib": 4,
+      "disk_gib": 10,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "billing_model": "per-second",
+    "granularity": {
+      "min_billed_s": 1,
+      "rounding_s": 1
+    },
+    "session_cap": {
+      "wall_clock_min": 60,
+      "idle_reap_s": null,
+      "restart_required": true,
+      "note": "1 hour of continuous runtime per session on Hobby; 24 hours on Pro; resets on pause and resume; the default timeout when none is set is 5 minutes"
+    },
+    "keep_rate": {
+      "value": 0.0,
+      "basis": "a paused sandbox is not billed; the pricing page bills running sandboxes per second",
+      "source": "https://docs.e2b.dev/billing"
+    },
+    "persistent_storage": {
+      "included_gib": 10,
+      "price_gib_month": "free",
+      "durability": "pause keeps filesystem and memory",
+      "survives_stop": true,
+      "survives_destroy": false,
+      "max_retention": "indefinite while paused"
+    },
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": true,
+      "ports": "any sandbox port via a public HTTPS URL",
+      "static_ip": false,
+      "ipv6": null,
+      "per_session_bytes": null
+    },
+    "free_tier_kind": "one-time-credit",
+    "m10h_usd": 49.68,
+    "m24h_usd": 120.89,
+    "price_arithmetic": "2 x 0.000014 x 3600 = 0.1008; 4 x 0.0000045 x 3600 = 0.0648; storage 0; total 0.1656/h; 100 / 0.1656 = 603.9 h = 25.2 days in 1-hour sessions; x 730 = 120.89. Max shape: 8 x 0.0504 + 8 x 0.0162 = 0.5328/h; 100 / 0.5328 = 187.7 h = 7.8 days",
+    "price_note": "2 vCPU and 4 GiB at the published per-second rates, which is USD 0.1656 an hour.",
+    "price_basis": "10 h/day x 30 = 300 h; 24/7 x 30 = 730 h",
+    "burst_x": 1.0,
+    "crosscheck": {
+      "boat_compare_2026-09-26": "USD 0.331/h at 4 vCPU / 8 GB"
+    },
+    "shape_max": {
+      "vcpu": 8,
+      "ram_gib": 8,
+      "disk_gib": 10
+    },
+    "term": "one-time credit",
+    "credit_usd": 100,
+    "credit_months_at_shape": 0.83,
+    "credit_hours_at_shape": 603.9,
+    "credit_expiry": "not stated",
+    "credit_hours_at_max_shape": 187.7,
+    "credit_gpu_eligible": null,
+    "credit_sessions_at_cap": 604,
+    "signup_url": "https://console.e2b.dev/sign-up",
+    "signup_form": "email + name + password, or Continue with GitHub, or Continue with Google; no phone, no card",
+    "post_credit_block": "with no payment method on file, every project is blocked shortly after the credit runs out"
+  },
+  "binding": "retention-clamped",
+  "binding_note": "One hour of continuous runtime per session is the constraint that decides the row: no arrangement of the credit produces a machine that is up for a month, only 604 one-hour sessions.",
+  "confidence_note": "Credit, rates, shape range, concurrency, the one-hour cap, the signup form and the no-payment-method block were each read on a first-party page today and quoted. The one conflict is the default sandbox RAM, 4 GiB on the pricing page against 512 MiB in the billing docs' cost advice; the 4 GiB figure is used because it is the one the pricing page states as the default shape.",
+  "tier": "Hobby"
+}

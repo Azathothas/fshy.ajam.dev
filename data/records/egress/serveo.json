@@ -1,0 +1,100 @@
+{
+  "topic": "egress",
+  "slug": "serveo",
+  "provider": "serveo",
+  "url": "https://serveo.net/",
+  "category": "tunnel (hosted, SSH)",
+  "free_tier": {
+    "stated": "3 active tunnels and custom subdomains, no account",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://serveo.net/",
+    "read_on": "2026-10-22",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: a stream",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": "the assigned hostname is unusable, so nothing is served for any period",
+    "days": null,
+    "notes": "",
+    "source_url": "https://serveo.net/"
+  },
+  "egress": {
+    "terms": "not published; the assigned hostname resolves to 0.0.0.0 and ::, so no byte is reachable",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://serveo.net/"
+  },
+  "interface": [
+    "ssh"
+  ],
+  "tooling": "OpenSSH",
+  "chaining": "composes with nothing: the SSH leg succeeds and the HTTP leg has no DNS record.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "the tunnel hostname has no usable A or AAAA record, so the data path does not exist",
+      "source": "probe"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "anonymous raw TCP: one random port for 10 minutes, two connections, 256 KiB/s cap; with a key: 30 minutes, five connections, 1 MiB/s",
+      "source": "https://serveo.net/docs"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "public TCP and UDP forwarding are paid-only",
+      "source": "https://serveo.net/docs/wireguard"
+    }
+  ],
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "the ssh target needs no account; a key is optional for reserved names",
+    "country": null
+  },
+  "reliability_note": "the SSH banner printed a tunnel URL that has no usable DNS record, on two separate sessions",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://serveo.net/",
+      "date": "2026-10-22",
+      "proved": "3 active tunnels and custom subdomains on the free plan"
+    },
+    {
+      "url": "probe:https://8c67940209469eab-103-129-134-194.serveousercontent.com/",
+      "date": "2026-10-22",
+      "proved": "the hostname from the SSH banner resolves to 0.0.0.0 and :: from 8.8.8.8; two sessions, two dead names, curl exits 6"
+    },
+    {
+      "url": "https://serveo.net/docs/wireguard",
+      "date": "2026-10-23",
+      "proved": "'wg.serveo.net:51820 is the public UDP endpoint used to connect to Serveo.' and 'Paid accounts can forward a raw TCP or UDP port through a WireGuard peer.'"
+    },
+    {
+      "url": "https://serveo.net/docs",
+      "date": "2026-10-23",
+      "proved": "'Public UDP forwarding remains a paid WireGuard feature.' and the anonymous raw TCP cap"
+    },
+    {
+      "url": "https://serveo.net/",
+      "date": "2026-10-23",
+      "proved": "'Get 3 active tunnels and custom subdomains for $0/month' and Pro at $60/yr"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "notes": "Re-read 2026-10-23: the product now has a free WireGuard peer generator at wg.serveo.net:51820 and a paid Pro plan at $60/yr. Free tiers get an HTTP hostname over WireGuard or SSH only; raw public TCP and UDP are paid. See findings for the quotes.",
+  "extras": {
+    "stale_after_days": 180,
+    "bytes_transit": "no",
+    "transit_note": "the control plane answers and the data path does not exist: the assigned hostname resolves to 0.0.0.0 and ::"
+  },
+  "binding": "per-ip-shaping",
+  "binding_note": "with no resolvable address there is no meter and no capacity; the control plane is the whole product that works.",
+  "interface_detail": "ssh -R 80:localhost:3000 serveo.net"
+}

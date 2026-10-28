@@ -1,0 +1,89 @@
+{
+  "topic": "egress",
+  "slug": "tunnl-gg",
+  "provider": "tunnl.gg",
+  "url": "https://tunnl.gg/",
+  "category": "http tunnel",
+  "tier": "free",
+  "free_tier": {
+    "stated": "A free localhost tunnel with a stable HTTPS URL. No signup, no client install. Stable URLs are tied to your SSH key; the server is open source (MIT).",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://tunnl.gg/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://tunnl.gg/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://tunnl.gg/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No byte allowance. Limits are per request and per connection: 128 MB per request and response body, 1 GB per direction per WebSocket connection, 3 tunnels per IP.; ingress: http-only",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://tunnl.gg/"
+  },
+  "interface": [
+    "ssh"
+  ],
+  "interface_detail": "ssh -t -R 80:localhost:3000 [address removed].",
+  "tooling": "OpenSSH only: ssh -t -R 80:localhost:3000 proxy.tunnl.gg.",
+  "chaining": "A zero-install webhook or demo endpoint; no path to UDP.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "50 requests/s per tunnel, 25/s per visitor IP, 10 new SSH connections per minute per IP",
+      "source": "https://tunnl.gg/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "128 MB request and response body; 1 GB per direction per WebSocket",
+      "source": "https://tunnl.gg/"
+    }
+  ],
+  "limits_note": "",
+  "binding": "request-rate",
+  "binding_note": "1 TiB/month is 3.24 Mbit/s sustained, which the byte path could carry, but the 50 requests/s per tunnel and 128 MB body caps define what the service is for. Only port 80 is forwarded, so a UDP datagram has no path at all.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "Any SSH key works; there is no account, sign-up or key registration. The subdomain is derived from the public key with HMAC-SHA256.",
+    "country": "None"
+  },
+  "reliability_note": "TLS terminates at the edge, so it is not end-to-end encrypted; a phishing interstitial appears for first-time visitors; the server is MIT and self-hostable.",
+  "confidence": "documented",
+  "confidence_note": "A measured run would show the real throughput ceiling; the protocol limitation is already decisive for UDP.",
+  "evidence": [
+    {
+      "url": "https://tunnl.gg/",
+      "date": "2026-10-23",
+      "proved": "SSH reverse tunnel on port 80 with a stable HTTPS URL per SSH key; limits table with 3 tunnels per IP, 50 requests/s per tunnel, 128 MB bodies, 1 GB per WebSocket direction."
+    },
+    {
+      "url": "https://www.producthunt.com/products/tunnl-gg",
+      "date": "2026-10-08",
+      "proved": "Launch date and pitch: stable localhost URLs over SSH with no installs, free to use, open-source MIT server."
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Launched 2026-10-08, two weeks before this read. The SSH-key-derived stable hostname is the novel part and needs no account at all, which is the lowest identity cost.",
+  "extras": {
+    "wg_path": "none",
+    "wg_detail": "Only port 80 is forwarded over SSH and served as HTTPS: ssh -t -R 80:localhost:3000 proxy.tunnl.gg. There is no UDP or raw TCP listener.",
+    "ingress": "http-only",
+    "volume_tib_month": null,
+    "volume_stated": "No byte allowance. Limits are per request and per connection: 128 MB per request and response body, 1 GB per direction per WebSocket connection, 3 tunnels per IP.",
+    "bytes_transit": "yes",
+    "transit_note": "The tunnl.gg edge terminates TLS and forwards down the SSH connection."
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "topic": "storage",
+  "slug": "panoramax-osm-fr-instance",
+  "provider": "Panoramax — OSM-FR instance (panoramax.openstreetmap.fr) ⭐",
+  "url": "https://panoramax.openstreetmap.fr",
+  "category": "federated crowdsourced street-level imagery (open-source, self-hostable)",
+  "free_tier": {
+    "stated": "NO QUOTA ANYWHERE IN THE SERVER. There is no quota code, no quota column in the DB migrations, and no quota endpoint — because the feature does not exist. A contributor filed Feature Request #334 '(Feature Request) Disable uploads when less than X GB of storage is available', still Open 5 months later, precisely because an admin cannot cap anything. Storage is whatever the instance's disks hold: OSM-FR alone reports 22.7M pictures = 48.5 TB of originals + 22.5 TB of derivates.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://gitlab.com/panoramax/server/api/-/work_items/334",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://gitlab.com/panoramax/server/api/-/work_items/334",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://gitlab.com/panoramax/server/api/-/work_items/334",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered and CDN-friendly: no auth on any GET, plain nginx serving, Accept-Ranges honored. Verified 206 Partial Content with Content-Range: bytes 0-1023/3336348 on a live HD original.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "REST + OGC API Features + STAC 1.0 + STAC item-search. POST /api/upload_sets → POST /api/upload_sets/{id}/files → POST /api/upload_sets/{id}/complete. Bearer token from POST /api/auth/tokens/generate.",
+  "tooling": "panoramax_cli (v1.4.1, Windows/Linux binaries + Python lib) with `upload`, `download`, `transfer`, `migration` subcommands; Docker `panoramax/api`; JOSM/iD plugins; the CLI can also *transfer* sequences between instances, so one file can be replicated across the whole federation.",
+  "chaining": "Upload once → replicate to N instances with `panoramax_cli transfer` → each instance serves its own /images/<2/2/2/2>/<uuid>.jpg path → front the whole federation with Cloudflare. Since every picture is addressed by a stable UUID and every asset URL is in the STAC item's `assets.hd.href`, a proxy can rewrite to whichever instance is alive.",
+  "limits": [],
+  "limits_note": "two-object model, must be JP(E)G (HEIC unsupported — issue #186), EXIF GPS + timestamp mandatory, images deduplicated by distance/rotation within an upload set. Approx 18 MB per 96 MP photo. Nothing enforces a byte ceiling.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email — but indirectly. `/api/configuration` on OSM-FR literally returns `\"registration_is_open\": true` and `/api/auth/login` 302s to openstreetmap.org/oauth2/authorize; the OSM signup form (/user/new) accepts `user[email]` + `user[display_name]` + password, no affiliation, no .edu, no review, email-confirm only. IGN instance uses its own Keycloak (`panoramax.ign.fr/oauth/realms/geovisio`). Eithe…",
+    "country": null
+  },
+  "reliability_note": "Volunteer hardware with ZFS RAIDZ2 + daily remote snapshots; no SLA and no capacity guard, so an instance can silently fill and start 500ing on upload — that is the whole reason #334 exists.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://panoramax.openstreetmap.fr/api/configuration",
+      "date": "2026-10-21",
+      "proved": "literal: {\"auth\":{\"enabled\":true,\"registration_is_open\":true,...},\"geovisio_version\":\"2.15.1-22-gf754cc9\"}"
+    },
+    {
+      "url": "https://panoramax.openstreetmap.fr/api",
+      "date": "2026-10-21",
+      "proved": "live STAC catalog, 2.15.1, links to /api/upload_sets, /api/users/, CC-BY-SA-4.0"
+    },
+    {
+      "url": "https://panoramax.openstreetmap.fr/images/20/1f/c2/ac/ddad-4381-b3eb-111519d2c7bb.jpg",
+      "date": "2026-10-21",
+      "proved": "200, Content-Length: 3336348, image/jpeg, no auth"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "same URL with Range: bytes=0-1023 — HTTP/1.1 206 Partial Content, Content-Range: bytes 0-1023/3336348"
+    },
+    {
+      "url": "https://gitlab.com/panoramax/server/api/-/work_items/334",
+      "date": "2026-10-21",
+      "proved": "open feature request to *add* a storage floor; proves no quota mechanism exists"
+    },
+    {
+      "url": "https://forum.geocommuns.fr/t/storage-needs-for-a-panoramax-instance/3205",
+      "date": "2026-10-21",
+      "proved": "100M pictures across 10 instances, 1M 72MP pictures ≈ 9 TB originals, 360° tiling doubles it"
+    },
+    {
+      "url": "https://docs.panoramax.fr/backend/install/settings/",
+      "date": "2026-10-21",
+      "proved": "FS_PERMANENT_URL = 'definitive storage of original, high-definition ... pictures'; derivates are only thumb/sd/tiles, i.e. the hd asset IS the original"
+    },
+    {
+      "url": "https://docs.panoramax.fr/cli/COMMANDS/",
+      "date": "2026-10-21",
+      "proved": "`upload`, `download`, `transfer`, `migration` subcommands"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "NO QUOTA ANYWHERE IN THE SERVER. There is no quota code, no quota column in the DB migrations, and no quota endpoint — because the feature does not exist. A contributor filed Feature Request #334 '(Feature Request) Disable uploads when less than X GB of storage is available', still Open 5 months later, precisely because an admin cannot cap anything. Storage is whatever the instance's disks hold: OSM-FR alone reports 22.7M pictures = 48.5 TB of originals + 22.5 TB of derivates.",
+  "extras": {},
+  "binding": "none",
+  "binding_note": "no constraint in the record binds at this scale; the record carries no limit of a kind the vocabulary names"
+}

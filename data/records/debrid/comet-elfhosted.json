@@ -1,0 +1,85 @@
+{
+  "topic": "debrid",
+  "slug": "comet-elfhosted",
+  "provider": "Comet (ElfHosted public instance)",
+  "url": "https://comet.elfhosted.com/configure",
+  "category": "hosted Stremio addon, torrent and debrid search with key passthrough",
+  "tier": "public instance",
+  "free_tier": {
+    "stated": "Free, no account, no install: the manifest at /manifest.json is served with 'configurationRequired: false' and describes the instance as 'Stremio's fastest torrent/debrid search add-on' (Comet | ElfHosted). 'This is the public instance of Comet, sponsored by ElfHosted ... Reasonable rate limits apply so it stays fast for everyone.'",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://comet.elfhosted.com/configure",
+    "read_on": "2026-10-23",
+    "notes": "The rate limit is not published as a number; the page says only 'reasonable'. The paid instance is sold as the fix, at 10x."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: results are stream descriptors, not stored objects",
+    "bytes": null,
+    "source_url": "https://comet.elfhosted.com/manifest.json",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: nothing is stored for a user on the public instance",
+    "days": null,
+    "source_url": "https://comet.elfhosted.com/manifest.json",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Not metered for a user: the instance returns links and, if proxying is enabled, streams through ElfHosted's IP. The public instance publishes no bandwidth figure and sells none.",
+    "metered": false,
+    "free_allowance": "not published",
+    "price_per_tb": null,
+    "source_url": "https://comet.elfhosted.com/configure"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "Stremio addon protocol over HTTPS: GET /manifest.json, GET /{config}/stream/{type}/{id}.json. Configure page renders quality filters, 'Add Debrid Service', 'Show Cached Only', 'Scrape Debrid Account Torrents' and an Install button that pushes the addon into Stremio.",
+  "tooling": "works from Stremio Web or any Stremio client with no local server; no addon-side install and no key needed to browse, a debrid key needed to resolve cached streams.",
+  "chaining": "Sits between Stremio (or AIOStreams as an aggregator) and a user's debrid account; pairs with a bundled ElfHosted proxy to hide the client's IP from the debrid provider.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "unpublished 'reasonable rate limits' on the shared public instance",
+      "source": "https://comet.elfhosted.com/configure"
+    }
+  ],
+  "limits_note": "A debrid key is optional for the addon but load-bearing for the result: without one Comet returns torrents that must be streamed peer-to-peer, which Stremio Web cannot do without a local Stremio Service.",
+  "binding": "request-rate",
+  "binding_note": "No byte counter exists on the public instance; the only cap the vendor names is the shared rate limit, and the paid tier is sold as 10x that.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "Nothing to register to install the addon. A debrid account (email plus card at Real-Debrid, TorBox or similar) is required only for cached playback.",
+    "country": "None"
+  },
+  "reliability_note": "Shared instance: rate limits, and the vendor states 'Shared instances can't stream Usenet'. A 403 was returned for an unconfigured /stream/ call, so the bare default path is not usable without building a config first.",
+  "confidence": "documented",
+  "confidence_note": "The manifest was fetched and an unconfigured stream call was made and returned 403; the configure page was read. What was not measured is a full configured stream with a real debrid key, which needs a paid account. Downgraded from measured: no probe record with status, bytes and digest exists.",
+  "evidence": [
+    {
+      "url": "https://comet.elfhosted.com/manifest.json",
+      "date": "2026-10-23",
+      "proved": "HTTP 200, 549 bytes of JSON: id comet.elfhosted.com, version 2.0.0, 'Stremio's fastest torrent/debrid search add-on', behaviorHints.configurationRequired=false"
+    },
+    {
+      "url": "https://comet.elfhosted.com/stream/movie/tt1254207.json",
+      "date": "2026-10-23",
+      "proved": null
+    },
+    {
+      "url": "https://comet.elfhosted.com/configure",
+      "date": "2026-10-23",
+      "proved": "'This is the public instance of Comet, sponsored by ElfHosted ... Reasonable rate limits apply', the debrid field, and 'Try it for $1, 7 days, cancel anytime. ($9/mo after.)'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T02:28:11.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Comet is the strongest free front-door found that is still alive: manifest served, configure page live, no account. Its two failures are the 403 on the unconfigured path and the absence of any way to stream peer-to-peer from a browser, which pushes a user back to a debrid key.",
+  "extras": {
+    "endpoint": "https://comet.elfhosted.com",
+    "paid_upgrade": "https://store.elfhosted.com/product/comet/ - USD 9/month, 7-day trial at USD 1",
+    "proxy": "paid variants bundle MediaFlow-Proxy on the vendor IP"
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "topic": "debrid",
+  "slug": "pyload",
+  "provider": "pyLoad",
+  "url": "https://github.com/pyload/pyload",
+  "category": "open-source download manager with a web UI, JSON API and Thrift backend",
+  "tier": "free",
+  "free_tier": {
+    "stated": "'pyLoad is a lightweight, pure-Python download manager with a modern web UI and rich plugin ecosystem. It automates downloads from one-click hosters, cloud drives, and many other sources; supports premium accounts, captcha-solving services, and link decryption; and can run headless on servers, NAS devices, or desktops.' Free software, no vendor service and no hosted tier.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://github.com/pyload/pyload",
+    "read_on": "2026-10-23",
+    "notes": "Installed with 'pip install --pre pyload-ng[all]' and started with 'pyload'; the web UI listens on localhost:8000."
+  },
+  "per_object_cap": {
+    "stated": "not applicable to the software: the cap is the target host's. Downloads are written to ~/Downloads/pyLoad by default.",
+    "bytes": null,
+    "source_url": "https://github.com/pyload/pyload"
+  },
+  "retention": {
+    "stated": "not applicable: local files in the pyload storage directory until the operator deletes them.",
+    "days": null,
+    "source_url": "https://github.com/pyload/pyload"
+  },
+  "egress": {
+    "terms": "No service egress: the instance downloads from the host to the machine it runs on.",
+    "metered": false,
+    "free_allowance": "none: no service-side bytes",
+    "price_per_tb": null,
+    "source_url": "https://github.com/pyload/pyload"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "Web UI plus a JSON-over-HTTP API: POST username and password to /api/login returns a session id, then /api/<methodName> for every method in the Api docs. A Thrift RPC backend listens on port 7227. Click'n'Load is supported through a plugin that needs node.js or a JS engine.",
+  "endpoint": "http://<instance>:8000/api/login",
+  "tooling": "pyload-ng on PyPI; LinuxServer.io and QuickBox container images; third-party Android clients over the JSON API. A public instance is reachable with any HTTP client, so the wrapper is trivial once credentials exist.",
+  "chaining": "The instance is the downloader and the storage at once, so it only helps a client that can rent a machine to run it. Paired with a free VM it turns a link list into files on that VM's disk.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "every API call needs a session from /api/login; the shipped default is user 'pyload' and password 'pyload' and the project says to change it",
+      "source": "https://github.com/pyload/pyload"
+    },
+    {
+      "kind": "request-rate",
+      "value": "no published rate limit; a public instance applies its own captcha and per-user limits",
+      "source": "https://pyload.dnshome.eu/login"
+    }
+  ],
+  "limits_note": "The wiki still documents the pre-2.0 API ('python pyLoadCore.py', Thrift 7227); the README documents pyload-ng (Python 3.9+). The two describe different generations of the same project.",
+  "binding": "write-gated",
+  "binding_note": "The first thing that fails is authentication: there is no anonymous add-link path. The API doc opens with 'First you need to authenticate', and the public instance found today serves a login form with a captcha before any package can be added.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "The software itself needs no identity. A public instance needs whatever its operator issued: the default is pyload/pyload, and the project tells operators to change it. No public instance that accepts anonymous links was found.",
+    "country": null
+  },
+  "reliability_note": "Public instances are single-operator hobby servers: the one probed today (pyload.dnshome.eu) was live but login-walled with a captcha, so a wrapper cannot add a link without credentials. The legacy pyload.net site still documents Python 2.5-2.7, which is not what the current 2.x code runs.",
+  "confidence": "documented",
+  "confidence_note": "README, API wiki and a live public instance were read.",
+  "evidence": [
+    {
+      "url": "https://github.com/pyload/pyload",
+      "date": "2026-10-23",
+      "proved": "'Default username: pyload.' and 'Default password: pyload.'; web UI at localhost:8000; pip install pyload-ng; Python 3.9+"
+    },
+    {
+      "url": "https://github.com/pyload/pyload/wiki/How-to-access-the-API",
+      "date": "2026-10-23",
+      "proved": "authentication is mandatory: POST username/password to /api/login, then call /api/<methodName>; Thrift backend on port 7227"
+    },
+    {
+      "url": "https://pyload.net/",
+      "date": "2026-10-23",
+      "proved": "the legacy project home still says 'You need at least Python 2.5 or at most Python 2.7', i.e. it describes the abandoned branch"
+    },
+    {
+      "url": "probe:https://pyload.dnshome.eu/login",
+      "date": "2026-10-23",
+      "proved": "a public pyLoad instance is live but gated: HTTP 200, 14235 bytes, challenge login-wall:login. Two requests returned the same byte count with different digests (beb894a20f68df43... at 01:47, c5e8da325f5d00ae... at 02:02), so the digest is per-response; the saved body contains 'Captcha waiting', 'Username' and 'Password'."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T01:52:41.420Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Answers the brief's pyLoad question: the default login is pyload/pyload; an anonymous user cannot add a link, because both the JSON API and the web UI require a session; and the instance's own quota is not readable without an account - the login page publishes no limit, and the limit is whatever its operator configured. The public instance probed was not logged into.",
+  "extras": {
+    "default_login": "pyload / pyload",
+    "anonymous_add": "no",
+    "public_instances_found": "pyload.dnshome.eu (live, login + captcha); the LinuxServer/QuickBox docs describe the same default credentials on private installs",
+    "probe_record": null,
+    "probe_records": [
+      null
+    ],
+    "saved_body": null
+  }
+}

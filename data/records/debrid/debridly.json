@@ -1,0 +1,154 @@
+{
+  "topic": "debrid",
+  "slug": "debridly",
+  "provider": "Debridly",
+  "url": "https://debridly.com/premium",
+  "category": "multi-hoster (premium link generator)",
+  "tier": "premium",
+  "free_tier": {
+    "stated": "Create a free account to start generating direct premium download links from Rapidgator, Nitroflare, 1Fichier, Mega, and dozens of other file hosts.",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://debridly.com/",
+    "read_on": "2026-10-23",
+    "notes": "A free account exists but no free allowance is published anywhere on the pages read. The step list says 'Your account status, email verification, host availability, and daily bandwidth limits are checked before a premium link is delivered', so a free account has some daily limit; the number is not stated. Premium is what the per-host caps on the hosts page belong to ('Debridly Premium includes up to 200 GB of 1Fichier downloads per 24 hours')."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: a URL is unlocked and a direct link returned; nothing is stored by Debridly",
+    "bytes": null,
+    "source_url": "https://debridly.com/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "Direct links are valid for 24 hours on Premium ('24h link validity').",
+    "days": 1,
+    "source_url": "https://debridly.com/premium",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Direct CDN links from the host's own servers with 'no throttling added by Debridly'. Counted per host per 24 hours, reset at 00:00 UTC.",
+    "metered": true,
+    "free_allowance": "unpublished free allowance; Premium caps per host, e.g. 200 GB/24h on 1Fichier",
+    "price_per_tb": null,
+    "source_url": "https://debridly.com/premium-link-generator/1fichier"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "Web generator that returns a direct URL; the page lists file name, size, host and expiry. No public API documented on the pages read.",
+  "tooling": "Any HTTP client on the returned direct URL; the site says 'No browser extensions or software required', which is also a note that no CLI exists.",
+  "chaining": null,
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "per-host daily cap, e.g. 200 GB per 24 h on 1Fichier, 100 GB on 4Share and FileBlade, 50 GB on Alfafile/DepositFiles/FileFactory, 20 GB on Ddownload/ClickUpload, 5 GB on Emload/FileAxa, 3 GB on DaoFile, 2 GB on FileDot",
+      "source": "https://debridly.com/hosts"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "generated links live 24 hours",
+      "source": "https://debridly.com/premium"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "no published concurrency number; the generator checks 'email verification, host availability, and daily bandwidth limits' before delivering a link",
+      "source": "https://debridly.com/"
+    },
+    {
+      "kind": "pull-count",
+      "value": "generated links expire after 24 hours",
+      "source": "https://debridly.com/premium"
+    }
+  ],
+  "limits_note": "Some hosts are marked Offline in the list (daofile.com 'Offline Daily cap 3 GB' on the read date). The premium page warns that hosts such as Rapidgator and Tezfiles sell a separate premium package for 'exclusive' content that Debridly cannot unlock.",
+  "binding": "volume-quota",
+  "binding_note": "At 1 TiB/month the per-host daily cap is the constraint that binds: 200 GB/day on 1Fichier is 6 TB/month, but a month spread over the 2-5 GB hosts (FileDot, Emload, DaoFile) hits their caps at tens of GB, so host mix decides whether 100 GiB is reachable at all.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "A free account needs only an email, and the generator checks 'email verification' before issuing a link. Premium is a one-time Stripe-style purchase; no card is needed for the free account.",
+    "country": null
+  },
+  "reliability_note": "Per-host caps are enforced at generation time and nothing is deducted when a link fails with LINK_D0WN; hosts listed Offline return nothing; premium cannot unlock hosts' own 'exclusive' tiers.",
+  "confidence": "documented",
+  "confidence_note": "Prices and the per-host caps are quoted from the vendor's own pages. The free tier's allowance is unstated, so the free half of the record is unverified.",
+  "evidence": [
+    {
+      "url": "https://debridly.com/premium",
+      "date": "2026-10-23",
+      "proved": "USD 1.89 / 2 days, USD 3.99 / 7 days, USD 7.99 / 30 days, USD 18.99 / 90 days, USD 49.99 / 365 days, each 'All 70+ supported hosts', 'Maximum daily caps per host', '24h link validity'"
+    },
+    {
+      "url": "https://debridly.com/hosts",
+      "date": "2026-10-23",
+      "proved": "per-host daily caps: '1Fichier 1fichier.com Online Daily cap 200 GB', '4Share 4share.vn Online Daily cap 100 GB', 'DDownload ddownload.com Online Daily cap 20 GB', 'Emload emload.com Online Daily cap 5 GB', 'FileDot filedot.xyz Online Daily cap 2 GB', 'DaoFile daofile.com Offline Daily cap 3 GB'"
+    },
+    {
+      "url": "https://debridly.com/premium-link-generator/1fichier",
+      "date": "2026-10-23",
+      "proved": "'Debridly Premium includes up to 200 GB of 1Fichier downloads per 24 hours. The counter resets at 00:00 UTC' and that a failed link deducts nothing"
+    },
+    {
+      "url": "https://debridly.com/",
+      "date": "2026-10-23",
+      "proved": "90+ hosts claimed, free account offered, and the pre-generation check of 'account status, email verification, host availability, and daily bandwidth limits'"
+    },
+    {
+      "url": "https://debridly.com/premium",
+      "date": "2026-10-23",
+      "proved": "2/7/30/90/365 days at USD 1.89/3.99/7.99/18.99/49.99, 'All 70+ supported hosts', 'Maximum daily caps per host', '24h link validity'"
+    },
+    {
+      "url": "https://web.archive.org/cdx/search/cdx?url=debridly.com&output=json&fl=timestamp&limit=3",
+      "date": "2026-10-23",
+      "proved": "the archive holds no capture of this domain, so no earlier price can be established"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T01:39:03.000Z",
+  "price_per_tb_month": "USD 49.99/year (USD 4.17/month) or USD 7.99/30 days",
+  "notes": "The only provider that publishes a numeric per-host daily cap instead of an 'unlimited' adjective. The annual term is sub-USD-5 per month; the 30-day term is not. Free tier exists but its allowance is unpublished, which is why the record is priced at the premium tier. The hosts page count differs between the page text ('90+ hosts') and the premium page ('70+ supported hosts'), so the true count is between the two. The newest service in the set and the only one with no archive footprint whatsoever, so it is a price with no history rather than a stable price. Its 365-day term at USD 49.99 is the second-cheapest annual in the set after OffCloud's EUR 40.",
+  "extras": {
+    "host_caps_sampled": {
+      "1fichier": "200 GB/24h",
+      "4share.vn": "100 GB/24h",
+      "fileblade": "100 GB/24h",
+      "filecat": "100 GB/24h",
+      "alfafile": "50 GB/24h",
+      "ddownload": "20 GB/24h",
+      "emload": "5 GB/24h",
+      "filedot": "2 GB/24h"
+    },
+    "hosts_claimed": "70+ on the premium page, 90+ on the home page",
+    "price_history": [
+      {
+        "date": "2026-10-23",
+        "price": "USD 1.89 / 2 days",
+        "plan": "2 Days",
+        "source_url": "https://debridly.com/premium"
+      },
+      {
+        "date": "2026-10-23",
+        "price": "USD 7.99 / 30 days",
+        "plan": "30 Days",
+        "source_url": "https://debridly.com/premium"
+      },
+      {
+        "date": "2026-10-23",
+        "price": "USD 18.99 / 90 days",
+        "plan": "90 Days",
+        "source_url": "https://debridly.com/premium"
+      },
+      {
+        "date": "2026-10-23",
+        "price": "USD 49.99 / 365 days",
+        "plan": "365 Days",
+        "source_url": "https://debridly.com/premium"
+      }
+    ],
+    "price_history_status": "unread",
+    "price_history_note": "No capture of the domain exists at any date.",
+    "change_36m": "unknown",
+    "currency": "USD",
+    "usenet": false
+  }
+}

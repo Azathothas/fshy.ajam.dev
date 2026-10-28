@@ -1,0 +1,118 @@
+{
+  "slug": "nzbgeek",
+  "provider": "NZBGeek",
+  "url": "https://nzbgeek.info/",
+  "category": "Usenet indexer (Newznab API, paid membership)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "No usable free API, and the free tier itself is in dispute. Three third-party readings: 'you need a paid membership to search and download' (usenet.com, 2026); '3-day trial, 15 NZBs total' (datahoarder.io); '5 NZB downloads per day, around 5 API calls per day' (bigwritehook.co.uk). What is measured: /api?t=search without a key returns <error code=\"102\" description=\"Empty API Key\"/>, and caps declares <registration available=\"no\" open=\"no\"/>. A membership is USD 12/year.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://api.nzbgeek.info/api?t=caps",
+    "read_on": "2026-10-23",
+    "notes": "The conservative reading is the one the vendor's own API supports: an unkeyed call is refused, and no reading of the free tier describes an API allowance enough to drive an arr stack. The 5-calls-a-day figure is not refuted, only unsourced."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: an NZB pointer file",
+    "bytes": null,
+    "source_url": "https://api.nzbgeek.info/api?t=caps",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not stated on the API surface. A third-party listing claims 'NZBs from 8 years ago available, 500,000+ indexed NZBs' (nzbhydra.com, 2026-10-23).",
+    "days": null,
+    "source_url": "https://nzbhydra.com/indexers/",
+    "notes": "reported"
+  },
+  "egress": {
+    "terms": "No byte metering: the API returns XML pointers. The payload is served by whichever news provider a user pays.",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://api.nzbgeek.info/api?t=caps"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "Newznab API on a separate host, api.nzbgeek.info/api, not nzbgeek.info/api (the apex returns HTML). caps declares <limits max=\"100\" default=\"100\"/> and <registration available=\"no\" open=\"no\"/>. An unkeyed search returns error code 102.",
+  "endpoint": "https://api.nzbgeek.info/api?t=caps ; https://api.nzbgeek.info/api?t=search&q=<query>&apikey=<key>",
+  "tooling": "Native Newznab: Prowlarr, NZBHydra2, Sonarr, Radarr, Lidarr and Mylar all add it with URL plus key. No wrapper needed. The API host is different from the site host, which is the first mistake a hand-rolled config makes.",
+  "chaining": "A broad, well-populated index that a paid arr stack reaches with no wrapper; on the free tier it contributes nothing to automation, because no reading of the free tier gives an API allowance that could drive a stack.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "no free API allowance that a stack can use; paid membership USD 12/year",
+      "source": "https://nzbhydra.com/indexers/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "100 results per request maximum (caps <limits max=\"100\"/>)",
+      "source": "https://api.nzbgeek.info/api?t=caps"
+    }
+  ],
+  "limits_note": "The 100 is a per-request result ceiling and applies to every tier; it is not the paid allowance.",
+  "binding": "request-rate",
+  "binding_note": "The API call allowance is what fails first: without a key the first automated search is refused outright (error 102), and the readings of the free tier that describe an allowance put it at 5 calls a day, which is one search every five hours.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Registration is contradictory at the vendor: the login page links 'register account?' and register.php serves a Registration Agreement with an agree step, while /api?t=caps declares <registration available=\"no\" open=\"no\"/>. No account was created, so the fields a signup actually demands were not observed.",
+    "country": null
+  },
+  "reliability_note": "The membership is what keeps the index alive; a lapsed membership drops the account back to the capped tier and automation stops with no partial service.",
+  "confidence": "reported",
+  "confidence_note": "The caps and the unkeyed error were measured. The free allowance that decides the verdict is third-party, because no account was created. Creating one free account and reading its API page would move this to documented.",
+  "evidence": [
+    {
+      "url": "probe:https://api.nzbgeek.info/api?t=caps&x=1",
+      "date": "2026-10-23",
+      "proved": "caps returned 200 and 3,927 bytes: NZBgeek, <limits max=\"100\" default=\"100\"/>, <registration available=\"no\" open=\"no\"/>"
+    },
+    {
+      "url": "probe:https://api.nzbgeek.info/api?t=search&q=linux&x=1",
+      "date": "2026-10-23",
+      "proved": "unkeyed search returned 200 with 47 bytes: <error code=\"102\" description=\"Empty API Key\"/>, so the API is closed to a free, unauthenticated caller"
+    },
+    {
+      "url": "probe:https://nzbgeek.info/api?t=caps",
+      "date": "2026-10-23",
+      "proved": "the apex host serves HTML for /api, 91,943 bytes; the API lives only on api.nzbgeek.info"
+    },
+    {
+      "url": "probe:https://nzbgeek.info/register.php",
+      "date": "2026-10-23",
+      "proved": "an anonymous GET receives the Registration Agreement plus an 'agree' submit, which contradicts the caps registration flag; no POST was made"
+    },
+    {
+      "url": "https://nzbhydra.com/indexers/",
+      "date": "2026-10-23",
+      "proved": "third-party: NZBGeek 'USD 12/year VIP', free tier '0 calls'"
+    },
+    {
+      "url": "https://datahoarder.io/nzbgeek-review/",
+      "date": "2026-10-23",
+      "proved": "third-party: the paid tier 'removes download caps and unlocks full API integration'"
+    },
+    {
+      "url": "https://www.usenet.com/free-nzb-sites/",
+      "date": "2026-10-23",
+      "proved": "third-party: 'NZBgeek used to have a free level, but now you need a paid membership to search and download.'"
+    },
+    {
+      "url": "https://datahoarder.io/drunkenslug-vs-nzbgeek/",
+      "date": "2026-10-23",
+      "proved": "third-party table: NZBGeek free tier '3-day trial, 15 NZBs total', API 'unlimited on paid plans'"
+    }
+  ],
+  "verdict": "fails-quota",
+  "extras": {
+    "price": "USD 12/year (reported)",
+    "nzb_is_newznab": true,
+    "caps_limits": 100,
+    "api_host": "api.nzbgeek.info",
+    "unkeyed_error": "102 Empty API Key"
+  },
+  "notes": "Two vendor signals contradict each other on registration: a served agreement form says open, caps says available=no. The conservative reading is recorded on the record and not resolved, because resolving it needs an account. The verdict rests on the API allowance, which is independent of that question.",
+  "verified_at": "2026-10-23T02:11:54.066Z",
+  "topic": "debrid",
+  "price_per_tb_month": null
+}

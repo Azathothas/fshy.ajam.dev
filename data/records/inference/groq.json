@@ -1,0 +1,110 @@
+{
+  "topic": "inference",
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "not applicable"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "any OpenAI-compatible client; curl against POST {base}/chat/completions",
+  "chaining": "pairs with a free-standing agent as the email-gated fallback when a keyless endpoint's ceiling binds; the 200,000-token daily cap is the scarce link, not the request rate",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "30 / 1K / 8K / 200K on the Free plan for openai/gpt-oss-120b and openai/gpt-oss-20b, in the page's own units: 30 requests a minute, 1K requests a day, 8K tokens a minute and 200K tokens a day",
+      "source": "https://console.groq.com/docs/rate-limits, read 2026-10-22"
+    },
+    {
+      "kind": "request-rate",
+      "value": "RPM, RPD, TPM, TPD, ASH, ASD, ITPM and OTPM, applied at organisation level and not per user; every dimension is evaluated and the first threshold reached binds. Cached tokens count toward none of them",
+      "source": "https://console.groq.com/docs/rate-limits, read 2026-10-22"
+    },
+    {
+      "kind": "request-rate",
+      "value": "Free plan, per model id, in the page's own units where K is thousands: whisper-large-v3 and whisper-large-v3-turbo 20 RPM, 2K RPD, 7.2K ASH and 28.8K ASD; canopylabs/orpheus-arabic-saudi and canopylabs/orpheus-v1-english 10 RPM, 100 RPD, 1.2K TPM and 3.6K TPD; meta-llama/llama-prompt-guard-2-22m and meta-llama/llama-prompt-guard-2-86m 30 RPM, 14.4K RPD, 15K TPM and 500K TPD",
+      "source": "https://console.groq.com/docs/rate-limits, read 2026-10-28"
+    }
+  ],
+  "slug": "groq",
+  "provider": "Groq",
+  "url": "https://console.groq.com/docs/rate-limits",
+  "category": "inference endpoint, keyed free tier",
+  "free_tier": {
+    "stated": "a Free Plan per model, printed as RPM / RPD / TPM / TPD in the page's own units: openai/gpt-oss-120b and openai/gpt-oss-20b at 30 / 1K / 8K / 200K, qwen/qwen3.8-27b the same, and openai/gpt-oss-safeguard-20b at 3 / 1K / 2K / 200K. The page writes requests-per-day and tokens-per-day in thousands, so 1K is 1,000 and 200K is 200,000",
+    "unit": "tokens",
+    "metered_on": "request-count",
+    "source_url": "https://console.groq.com/docs/rate-limits",
+    "read_on": "2026-10-22",
+    "notes": "the Free Plan Limits tab lists 10 model rows, each printed per model id as RPM, RPD, TPM, TPD, ASH and ASD; K means thousands, so 1K is 1,000 and 200K is 200,000. The Developer Plan Limits tab is a separate table"
+  },
+  "endpoint": "https://api.groq.com/openai/v1/chat/completions",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an account and an API key; a payment method (credit card, US bank account or SEPA debit account) is required to upgrade from the Free tier to the Developer tier. unverified: the sign-in methods and any phone requirement are not stated on the docs pages",
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded; no key was available",
+  "confidence": "documented",
+  "confidence_note": "the dimensions, the organisation scope and the seven-row free-plan table are all quoted from the served page read today. No key was available, so the enforcement of any of the numbers is not measured verified_at is the instant its evidence URLs were fetched on 2026-10-22, read from the fetch log, not typed.",
+  "evidence": [
+    {
+      "url": "https://console.groq.com/docs/rate-limits",
+      "date": "2026-10-22",
+      "proved": "limits are RPM, RPD, TPM, TPD, ITPM and OTPM, applied at organisation level, evaluated against every dimension with the first reached binding; cached tokens do not count; the Free Plan Limits tab carries seven model rows, of which openai/gpt-oss-120b and openai/gpt-oss-20b are 30 rpm, 1K rpd, 8K tpm and 200K tpd The Free Plan Limits tab prints the cells as 30 / 1K / 8K / 200K, and the page's K suffix means thousands"
+    },
+    {
+      "url": "https://console.groq.com/docs/rate-limits",
+      "date": "2026-10-28",
+      "proved": "the Free Plan Limits table gives openai/gpt-oss-120b and openai/gpt-oss-20b 30 RPM, 1K RPD, 8K TPM and 200K TPD",
+      "capture": "sha256:76a455bc91d97dec99ddbbeef8e004ff77555860472a6a72491278686ceecbb4",
+      "quote": "| openai/gpt-oss-120b | 30 | 1K | 8K | 200K | - | - | | openai/gpt-oss-20b | 30 | 1K | 8K | 200K | - | - |"
+    },
+    {
+      "url": "https://console.groq.com/docs/rate-limits",
+      "date": "2026-10-28",
+      "proved": "the Free Plan Limits table gives openai/gpt-oss-safeguard-20b 3 / 1K / 2K / 200K and qwen/qwen3.8-27b 30 / 1K / 8K / 200K",
+      "capture": "sha256:76a455bc91d97dec99ddbbeef8e004ff77555860472a6a72491278686ceecbb4",
+      "quote": "| openai/gpt-oss-safeguard-20b | 3 | 1K | 2K | 200K | - | - | ... | qwen/qwen3.8-27b | 30 | 1K | 8K | 200K | - | - |"
+    },
+    {
+      "url": "https://console.groq.com/docs/rate-limits",
+      "date": "2026-10-28",
+      "proved": "the page lists RPM, RPD, TPM, TPD, ASH, ASD, ITPM and OTPM, applies limits at organization level, binds on the first threshold reached, and excludes cached tokens",
+      "capture": "sha256:0ed538b5ae8eb25c29baac2e8fa726d75ebd0a9bbb7ae405247f47053093fb00",
+      "quote": "ASH: Audio seconds per hour ... ASD: Audio seconds per day ... do not count towards your rate limits. Rate limits apply at the organization level, not individual users. You can hit any limit type depending on which threshold you reach first."
+    },
+    {
+      "url": "https://console.groq.com/docs/rate-limits",
+      "date": "2026-10-28",
+      "proved": "the Free Plan Limits table lists whisper, orpheus and llama-prompt-guard rows with these RPM, RPD, TPM, TPD, ASH and ASD cells",
+      "capture": "sha256:76a455bc91d97dec99ddbbeef8e004ff77555860472a6a72491278686ceecbb4",
+      "quote": "| whisper-large-v3 | 20 | 2K | - | - | 7.2K | 28.8K | ... | canopylabs/orpheus-v1-english | 10 | 100 | 1.2K | 3.6K | - | - | ... | meta-llama/llama-prompt-guard-2-22m | 30 | 14.4K | 15K | 500K | - | - |"
+    },
+    {
+      "url": "https://console.groq.com/docs/rate-limits",
+      "date": "2026-10-28",
+      "proved": "the Free Plan Limits tab table prints the cells with a K suffix and one row per model id",
+      "capture": "sha256:76a455bc91d97dec99ddbbeef8e004ff77555860472a6a72491278686ceecbb4",
+      "quote": "| openai/gpt-oss-120b | 30 | 1K | 8K | 200K | - | - |"
+    },
+    {
+      "url": "https://console.groq.com/docs/billing-faqs",
+      "date": "2026-10-28",
+      "proved": "a payment method is asked for only at the upgrade from the Free tier, so the Free tier itself needs none",
+      "capture": "sha256:5a86f7cdf25eebd2b90d0dd4b7c2f280e287afbca704314de363888f7d62d109",
+      "quote": "To upgrade from the Free tier to the Developer tier, you'll need to provide a valid payment method (credit card, US bank account, or SEPA debit account)."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-28T05:28:29.160Z",
+  "notes": "Groq names six limit dimensions where most vendors name one, and it prints the free values where this topic's other keyed tiers do not. A pipeline sized on RPM alone meets TPD first: 200,000 tokens a day is 6.0M a month against a 52.5M-token target.",
+  "binding": "request-rate",
+  "binding_note": "The 30 rpm and 8,000 tpm figures are both workable for an interactive session"
+}

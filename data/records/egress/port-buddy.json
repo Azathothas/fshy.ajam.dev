@@ -1,0 +1,85 @@
+{
+  "topic": "egress",
+  "slug": "port-buddy",
+  "provider": "Port Buddy",
+  "url": "https://portbuddy.dev/",
+  "category": "udp tunnel",
+  "tier": "free",
+  "free_tier": {
+    "stated": "HTTP and UDP tunnels are free. No credit card. TCP tunnels from $5/month. Transfer is unmetered on every plan: no bandwidth caps, no overage charges.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://portbuddy.dev/install",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://portbuddy.dev/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://portbuddy.dev/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Transfer is unmetered on every plan: no bandwidth caps, no overage charges. HTTP and UDP tunnels are free; TCP tunnels start at USD 5/month.",
+    "metered": false,
+    "free_allowance": "unmetered, per the vendor's own sentence; no number because no cap is claimed",
+    "price_per_tb": null,
+    "source_url": "https://portbuddy.dev/install"
+  },
+  "interface": [
+    "cli",
+    "rest"
+  ],
+  "interface_detail": "CLI install and a web dashboard; \"Install the CLI\".",
+  "tooling": "The vendor CLI: \"$portbuddy tcp 5432\"; a udp subcommand is advertised.",
+  "chaining": "Port Buddy UDP plus a local wg-quick listener gives an endpoint with no VM, at the cost of a vendor-controlled hostname.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "no number: transfer is described as unmetered with no caps and no overage charges",
+      "source": "https://portbuddy.dev/install"
+    }
+  ],
+  "limits_note": "",
+  "binding": "none",
+  "binding_note": "The vendor claims no byte cap on any plan, so nothing in the vocabulary binds at 1 TiB/month. The unestablished part is not volume but performance and stability: no live tunnel was run, and the free endpoint is a vendor-assigned hostname that would break a stable WireGuard address if it changes per session.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "\"Start for free\" and \"No credit card\"; the free tier requires an account, no card.",
+    "country": "None"
+  },
+  "reliability_note": "Tunnel hostname is vendor-assigned; free tunnels are usually re-created per session, which would break a stable WG endpoint. Not verified.",
+  "confidence": "documented",
+  "confidence_note": "The free UDP offer and the no-cap sentence are quoted from the vendor with a date. What stays unverified is the transport: no tunnel was run, so throughput, session lifetime and hostname churn on the free tier are unmeasured, and a measured push would raise the rung.",
+  "evidence": [
+    {
+      "url": "https://portbuddy.dev/",
+      "date": "2026-10-23",
+      "proved": "\"HTTP and UDP tunnels are free. No credit card.\" and \"UDP is free; tcp tunnels from $5/month\""
+    },
+    {
+      "url": "https://portbuddy.dev/docs/udp-tunnels",
+      "date": "2026-10-23",
+      "proved": "'You get back a public host and port, such as net-proxy-2.portbuddy.dev:41207, and datagrams sent there are forwarded to your local socket. Unlike TCP tunnels, UDP is available on every plan.'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Not a PaaS: a tunnel in front of a client process, so it belongs with ngrok, pinggy and zrok rather than with the platforms. Recorded here because a free UDP tunnel is the same test as a free UDP port. Free tier is advertised as one HTTP or UDP tunnel. The record's egress field said 'none published' and the plan carries an explicit unmetered sentence that was not found on the page first read. Turns 'none published' into a documented absence with the vendor's own words, which is the strongest form a no-number finding can take. Replaces a volume-quota entry that read 'no published byte allowance' with the vendor's affirmative no-cap statement, which is a different claim. No byte constraint is claimed by the vendor, so volume-quota is the wrong kind; what a reader plans against is a vendor-controlled hostname and an unmetered but unstated relay capacity. The record's note reasoned that a free tier is 'normally shaped below 1 TiB', which the vendor's own page now contradicts. The offer and the absence of a cap are both on a vendor page with a URL and a date, which is the documented rung. The record was unverified because the first page read carried no volume sentence. Names what remains unproven now that the offer itself is documented.",
+  "extras": {
+    "wg_path": "inside-udp",
+    "wg_detail": "The free tier exposes a public UDP endpoint that forwards datagrams to a local UDP socket, so a WireGuard handshake can be carried inside it.",
+    "ingress": "udp",
+    "volume_tib_month": null,
+    "volume_stated": "The vendor publishes no monthly byte allowance for the free UDP tunnel; the only stated limits are tunnel count and TCP being paid.",
+    "bytes_transit": "yes",
+    "transit_note": "Port Buddy relays the datagrams; the client's local process terminates them."
+  }
+}

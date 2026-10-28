@@ -1,0 +1,81 @@
+{
+  "topic": "debrid",
+  "slug": "torrents-csv",
+  "provider": "Torrents-CSV",
+  "url": "https://torrents-csv.com/",
+  "category": "torrent index with a JSON service endpoint (bulk dataset plus search)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "No key: /service/search?q=debian&size=2 returned JSON with infohash, name, size_bytes, seeders, leechers and completed. The HTML homepage is behind an Anubis proof-of-work challenge.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://torrents-csv.com/service/search?q=debian&size=2",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: index rows",
+    "bytes": null,
+    "source_url": "https://torrents-csv.com/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "rows carry a scraped_date and are kept after the swarm dies; seeders is the liveness signal",
+    "days": null,
+    "source_url": "https://torrents-csv.com/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "no byte allowance: JSON only; whether the project also publishes a bulk dump was not checked on the pages read",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://torrents-csv.com/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "/service/search?q=<query>&size=<n> returns JSON. The web front end is served behind Anubis v1.28.1, a proof-of-work challenge, which the API endpoint did not present to us.",
+  "endpoint": "https://torrents-csv.com/service/search?q=debian&size=2",
+  "tooling": "One GET against /service/search. A bulk mirror would remove the query loop entirely, but the dump's existence and size were not verified today.",
+  "chaining": "Search by title for a quick check, or take the bulk dump and filter locally; either way the infohash is what feeds a debrid cache check.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "none published; the front end answers a client without JavaScript with an Anubis proof-of-work challenge rather than a 429",
+      "source": "https://torrents-csv.com/"
+    }
+  ],
+  "limits_note": "Anubis is a bot-defence layer, so the wall is computational rather than a quota: a browser solves it in seconds, a plain HTTP client does not.",
+  "binding": "request-rate",
+  "binding_note": "The HTML surface is the thing that breaks first, and it breaks on the challenge rather than on a rate; the JSON endpoint stayed open.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account for either surface. The HTML surface costs a proof-of-work computation, not an identity.",
+    "country": null
+  },
+  "reliability_note": "Anubis rejects clients that disable JavaScript features (the page names JShelter), and the front end and the service endpoint have different gates, so a pipeline tested on one can fail on the other.",
+  "confidence": "documented",
+  "confidence_note": "Both surfaces were fetched on 2026-10-23: the JSON answered, the HTML returned the Anubis interstitial. A recorded run against the bulk dump would settle the dataset size.",
+  "evidence": [
+    {
+      "url": "https://torrents-csv.com/service/search?q=debian&size=2",
+      "date": "2026-10-23",
+      "proved": "HTTP 200 application/json with infohash, name, size_bytes, seeders, leechers, completed and scraped_date"
+    },
+    {
+      "url": "https://torrents-csv.com/",
+      "date": "2026-10-23",
+      "proved": "'Making sure you're not a bot!', Anubis version v1.28.1, proof-of-work challenge instead of the index"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T01:52:28.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Useful because the search endpoint is one GET with a stable schema, and the caveat is that the same host gates its HTML behind a proof of work, so an unannounced change would break a scraper without warning. The bulk-dump path that TorrentClaw's docs imply was not verified here.",
+  "extras": {
+    "anubis_version": "v1.28.1",
+    "bulk_dump": "unverified",
+    "api_open": true
+  }
+}

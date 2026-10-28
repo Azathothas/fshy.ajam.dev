@@ -1,0 +1,79 @@
+{
+  "topic": "storage",
+  "slug": "rubygems-org",
+  "provider": "RubyGems.org",
+  "url": "https://rubygems.org",
+  "category": "registry",
+  "free_tier": {
+    "stated": "Per-gem size is exposed per version via the API; large gems (e.g. binaries) do get 413'd in practice.",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://guides.rubygems.org/rubygems-org-rate-limits/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://guides.rubygems.org/rubygems-org-rate-limits/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Version strings and gem names are permanent.",
+    "source_url": "https://guides.rubygems.org/rubygems-org-rate-limits/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and unmetered, Cloudflare-fronted. Probe: GET https://rubygems.org/downloads/rails-7.0.0.gem -> 200, Server: cloudflare, Cache-Control: max-age=31536000, Access-Control-Allow-Origin: *, Accept-Ranges: bytes.",
+    "metered": false,
+    "source_url": "https://rubygems.org/downloads/rails-7.0.0.gem"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "POST /api/v1/gems with the .gem body (gem push); GET /downloads/<name>-<ver>.gem or /gems/<name>-<ver>.gem. First-class clients (gem push, bundler). Rate-limit config is public in the repo (rack_attack.rb: PUSH_LIMIT = 400 per 60 minutes).",
+  "chaining": "400 pushes/hour is the most generous publish rate in the entire niche — 9,600 gems/day, i.e. ~2-9 TB/day if each gem were at a hypothetical 250 MB. If the undocumented size limit is anywhere near npm's, RubyGems becomes the highest-throughput package-registry store found. Confirm the size cap before relying on it.",
+  "limits": [],
+  "limits_note": "400 push requests/hour/IP; 300/5min and 600/25h on *failed* pushes; 10 yanks/10min. Version strings and gem names are permanent.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: a byte limit. Per-gem size is exposed per version via the API; large gems (e.g. binaries) do get 413'd in practice. The unknown size cap is the risk — the one public 413 report (",
+    "country": null
+  },
+  "reliability_note": "The unknown size cap is the risk — the one public 413 report (qtbindings) shows a hard limit exists and is enforced at the proxy, and it is not documented anywhere, so you discover it by probing. Rate limits are the best in class and clearly documented.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://guides.rubygems.org/rubygems-org-rate-limits/",
+      "date": "2026-10-21",
+      "proved": "'POST /api/v1/gems has following two rate limits: 400 requests/1 hour; 300 requests/5 minutes and 600 requests/25 hours on failed requests'"
+    },
+    {
+      "url": "https://rubygems.org/policies/acceptable-use",
+      "date": "2026-10-21",
+      "proved": "full policy page contains no storage quota or per-gem size limit"
+    },
+    {
+      "url": "https://github.com/rubygems/rubygems.org/blob/master/config/initializers/rack_attack.rb",
+      "date": "2026-10-21",
+      "proved": "PUSH_LIMIT = 400, PUSH_LIMIT_PERIOD = 60.minutes (live source)"
+    },
+    {
+      "url": "https://rubygems.org/downloads/rails-7.0.0.gem",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, Content-Length: 6656, Server: cloudflare, Cache-Control: max-age=31536000"
+    },
+    {
+      "url": "https://www.mail-archive.com/rubygems-developers@rubyforge.org/msg05277.html",
+      "date": "2026-10-21",
+      "proved": "'Can't push new qtbindings release (413 error)' (confirms an undocumented size ceiling exists)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Per-gem size is exposed per version via the API; large gems (e.g. binaries) do get 413'd in practice.",
+  "extras": {},
+  "binding": "none",
+  "binding_note": "no constraint in the record binds at this scale; the record carries no limit of a kind the vocabulary names"
+}

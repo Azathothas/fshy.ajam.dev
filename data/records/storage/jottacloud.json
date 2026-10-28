@@ -1,0 +1,99 @@
+{
+  "topic": "storage",
+  "slug": "jottacloud",
+  "provider": "Jottacloud (Norway)",
+  "url": "https://jottacloud.com/en/pricing",
+  "category": "consumer backup / drive",
+  "free_tier": {
+    "stated": "5 GB free. 'Unlimited*' Personal at USD 12.99/mo or USD 129.90/yr, with the asterisk being 'upload speed gradually reduced after 5 TB'. Home 1 TB NOK 79/mo, Pro up to 50 TB.",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://jottacloud.com/en/pricing",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://jottacloud.com/en/pricing",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://jottacloud.com/en/pricing",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "No egress charge — 'No bandwidth limitation' is listed on Home 1 TB, and the Unlimited plan's only stated constraint is upload throttling, not download metering.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Tier 2 rclone backend (md5, ModTime R/W, case-insensitive, metadata RWU) — one of the few Tier-2 providers that is also a real commercial backup service. Duplicati lists Jottacloud as a natively supported provider. Official CLI plus rclone+restic documented by HN commenters.",
+  "chaining": "The only candidate here whose free-tier ceiling is 'unlimited' at a flat price, so it is the single account that can absorb a whole 20 TB archive without sharding — at the cost of upload speed past 5 TB. Pairs naturally as the durable tier under rclone crypt.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "speed throttled above 5 TB, described by HN as a 'harsh inflection' around",
+      "source": "https://jottacloud.com/en/pricing"
+    }
+  ],
+  "limits_note": "per-ip-shaping: upload speed throttled above 5 TB, described by HN as a 'harsh inflection' around 16 TB. Quotas are quoted in decimal TB, not TiB — rclone about reports 9.095 TiB for a 10 TB plan (forum.rclone.org/t/45928), so the real capacity is ~9% smaller than the marketing number.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email",
+    "country": null
+  },
+  "reliability_note": "Long-running, well-documented provider; the throttle is policy, not breakage. The TB-vs-TiB reporting gap is measured, not speculative.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://jottacloud.com/en/pricing",
+      "date": "2026-10-21",
+      "proved": "'5 GB Free', 'Unlimited* NOK 129 / month ... *Upload speed gradually reduced after 5 TB', 'Home 1 TB NOK 79 / month ... No bandwidth limitation'"
+    },
+    {
+      "url": "https://jottacloud.com/en/why-jottacloud",
+      "date": "2026-10-21",
+      "proved": "'You get maximum speed up to 5 TB, after which the speed is gradually reduced'"
+    },
+    {
+      "url": "https://www.itechfaqs.com/tools/jottacloud/pricing/",
+      "date": "2026-10-21",
+      "proved": "USD 129.90/yr Unlimited, USD 79.90/yr Home 1 TB"
+    },
+    {
+      "url": "https://rclone.org/jottacloud/",
+      "date": "2026-10-21",
+      "proved": "native backend, OAuth refresh-token family handling, quota visible via rclone about"
+    },
+    {
+      "url": "https://forum.rclone.org/t/jottacloud-report-plans-and-space-on-web-as-terabytes-instead-of-tebibytes/45928",
+      "date": "2026-10-21",
+      "proved": "10 TB plan reports 9.095 TiB"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=30580044",
+      "date": "2026-10-21",
+      "proved": "'unlimited (in reality after 5TB they start slowing your upload speed)... up to about 16TB, where you hit a harsh inflection'"
+    },
+    {
+      "url": "https://github.com/Duplicati/Duplicati",
+      "date": "2026-10-21",
+      "proved": "Jottacloud listed among natively supported destinations"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "price_per_tb_month": "$1.30/TB/mo at 10 TB, $0.65/TB/mo at 20 TB, $0.43/TB/mo at 30 TB (flat $12.99/mo 'Unlimited', throttled above 5 TB)",
+  "notes": "5 GB free. 'Unlimited*' Personal at USD 12.99/mo or USD 129.90/yr, with the asterisk being 'upload speed gradually reduced after 5 TB'. Home 1 TB NOK 79/mo, Pro up to 50 TB.",
+  "extras": {
+    "price_verbatim": "$1.30/TB/mo at 10 TB, $0.65/TB/mo at 20 TB, $0.43/TB/mo at 30 TB (flat $12.99/mo 'Unlimited', throttled above 5 TB)"
+  },
+  "binding": "per-ip-shaping",
+  "binding_note": "one stream is shaped, and a user's throughput is the shaped rate times the number of streams"
+}

@@ -1,0 +1,214 @@
+{
+  "topic": "compute",
+  "slug": "shellter-me",
+  "provider": "shellter.me",
+  "url": "https://shellter.me/rules",
+  "category": "cloud VM",
+  "free_tier": {
+    "stated": "Quoted: 'A free bash account on a shared FreeBSD host. 150 MB of ZFS home, three dedicated IPv6 addresses with reverse DNS you control, a 50-port TCP slot on the host IPv4 for inbound services.' And: 'There is no paid tier, no SLA, no uptime guarantee.'",
+    "unit": "MB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://shellter.me/rules",
+    "read_on": "2026-10-24",
+    "notes": "the vendor writes 150 MB; kept as stated. The LowEndTalk announcement thread of 2026-05-21 states 60 MB, so the figure was raised between the announcement and the rules page, whose footer reads 'Last updated: 2026-05-24'"
+  },
+  "per_object_cap": {
+    "stated": "not applicable: the unit is a ZFS home dataset, not an object"
+  },
+  "retention": {
+    "stated": "Quoted: 'We'll mail you a warning at 75 days of no SSH or dashboard login. At 90 days, the account is archived (home dataset snapshotted to /var/archive/users, account locked). ... we keep archives at least a year before pruning.'",
+    "days": 90,
+    "source_url": "https://shellter.me/rules",
+    "notes": "archival, not deletion, at 90 days, with the dataset snapshotted and kept at least a year; the data is recoverable by asking, which is unusually generous for a free shell"
+  },
+  "egress": {
+    "terms": "not stated as a volume: the rules page sets 'no SMTP egress, no scanning, no abuse' and a default-deny pf egress with HTTP/HTTPS pass-through, and the fair-use section says 'Free, not infinite'. No traffic figure is published.",
+    "metered": false,
+    "free_allowance": "unstated",
+    "source_url": "https://shellter.me/rules"
+  },
+  "interface": [
+    "ssh"
+  ],
+  "interface_detail": "inferred from the tooling the provider documents; not probed",
+  "tooling": "not stated",
+  "chaining": "A shell with three IPv6 addresses and self-service reverse DNS composes with a free IPv6-to-IPv4 proxy, and it holds a long-running session in tmux across disconnects, which is what a shell buys over a job.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "150 MB ZFS dataset with lz4 compression and refquota enforced",
+      "source": "https://shellter.me/rules"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "warning at 75 days without an SSH or dashboard login; archive and lock at 90 days",
+      "source": "https://shellter.me/rules"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "inbound IPv4 is a 50-port slot, 30000-30049, shared on the host address; IPv6 is 'any port' on three dedicated addresses",
+      "source": "https://shellter.me/"
+    },
+    {
+      "kind": "write-gated",
+      "value": "an admin reads the request on IRC and types '!accept'; there is no autoaccept bot",
+      "source": "https://shellter.me/signup"
+    }
+  ],
+  "limits_note": "An automated anti-abuse flag suspends the account and kills live sessions with no warning and no published threshold, and the appeal route is a conversation on IRCnet, so an unattended background process is the fastest way to lose the account.",
+  "binding": "volume-quota",
+  "binding_note": "150 MB is the first thing that fails: it holds dotfiles, configs and small logs, and the operator says so plainly, so no workload that stores data fits here at all",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "No card and no hold: the site states 'No card, no autoaccept bot.' Signup asks for a username, an optional SSH public key, and email confirmation, or a GitHub sign-in. Then a human admin on IRCnet types '!accept'. No phone and no document.",
+    "country": null
+  },
+  "reliability_note": "a disclosed incident on 2026-05-21: shelluser email addresses were exposed in the world-readable FreeBSD GECOS field, fixed the same day and disclosed in the vendor's own LowEndTalk thread; the operator also records that no SLA and no uptime guarantee exist",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://shellter.me/rules",
+      "date": "2026-05-24",
+      "proved": "quoted: 'We can suspend or terminate any account at any time, with or without notice, with or without prior warning'; instant suspension with no warning for 'deliberate attacks on the host or other users, signup-evasion after a previous suspension'"
+    },
+    {
+      "url": "https://lowendtalk.com/discussion/217500/free-shellter-me-freebsd-pubnix-bash-60mb-zfs-3-ipv6-self-service-revdns/p3",
+      "date": "2026-05-24",
+      "proved": "a user's account suspended with sessions terminated and logins blocked, then attributed by the operator to 'our automatic anti abuse system'"
+    },
+    {
+      "url": "https://shellter.me/rules",
+      "date": "2026-05-24",
+      "proved": "quoted inactivity terms: warning at 75 days without login, archive and lock at 90 days, archives kept at least a year"
+    },
+    {
+      "url": "https://shellter.me/about",
+      "date": "2026-10-22",
+      "proved": "quoted: 'Two people, no company ... There is no paid tier, no upsell, no affiliate link, no investor.'"
+    },
+    {
+      "url": "https://shellter.me/",
+      "date": "2026-10-22",
+      "proved": "'A bash account, 150 MB of ZFS, and three dedicated IPv6 addresses - each with reverse DNS you set yourself' and 'ssh on port 2222', quoted; probe 200, 55393 bytes, sha256 bef1adbbd013121bcc5713aae206a1b5af410e7b24ed4e06362744eb8f74aa5e"
+    },
+    {
+      "url": "https://shellter.me/rules",
+      "date": "2026-10-22",
+      "proved": "'150 MB of ZFS home, three dedicated IPv6 addresses with reverse DNS you control, a 50-port TCP slot on the host IPv4 for inbound services... There is no paid tier, no SLA, no uptime guarantee', quoted; page last updated 2026-05-24"
+    },
+    {
+      "url": "https://shellter.me/rules",
+      "date": "2026-10-22",
+      "proved": "the reaper is published: 'We'll mail you a warning at 75 days of no SSH or dashboard login. At 90 days, the account is archived (home dataset snapshotted to /var/archive/users, account locked)... we keep archives at least a year before pruning', quoted"
+    },
+    {
+      "url": "https://shellter.me/signup",
+      "date": "2026-10-22",
+      "proved": "'Pick a username + drop an SSH key (optional). Confirm your email or sign in with GitHub. An admin reviews on IRC - once accepted, we mail you the shell password', quoted"
+    },
+    {
+      "url": "https://shellter.me/about",
+      "date": "2026-10-22",
+      "proved": "'shellter.me is a free, non-commercial pubnix shell host run by two people in their spare time... There is no paid tier, no upsell, no affiliate link, no investor', quoted"
+    },
+    {
+      "url": "https://shellter.me/",
+      "date": "2026-10-22",
+      "proved": "'Free by design. A bash account, 150 MB of ZFS, and three dedicated IPv6 addresses'; 'FreeBSD ssh on port 2222'; 'No card, no autoaccept bot'; signup is 'Pick a username and confirm your email - or sign in with GitHub. Your request lands on IRC, an admin reads it and runs !accept', quoted"
+    },
+    {
+      "url": "https://shellter.me/rules",
+      "date": "2026-10-22",
+      "proved": "'a free bash account on a shared FreeBSD host. 150 MB of ZFS home, three dedicated IPv6 addresses with reverse DNS you control, a 50-port TCP slot on the host IPv4 for inbound services'; 'There is no paid tier, no SLA, no uptime guarantee'; 'No commercial use', quoted"
+    },
+    {
+      "url": "https://shellter.me/rules",
+      "date": "2026-10-24",
+      "proved": "quoted: '150 MB of ZFS home, three dedicated IPv6 addresses with reverse DNS you control, a 50-port TCP slot on the host IPv4 for inbound services'"
+    },
+    {
+      "url": "https://shellter.me/rules",
+      "date": "2026-10-24",
+      "proved": "quoted: 'We'll mail you a warning at 75 days of no SSH or dashboard login. At 90 days, the account is archived (home dataset snapshotted to /var/archive/users, account locked).'"
+    },
+    {
+      "url": "https://shellter.me/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Your inbound TCP+UDP/v4 slot: 193.200.238.186 ports 30000-30049', 'Your IPv6 addresses (any port — bind to one of these): 2a03:94e0:257e:1::1 / ::2 / ::3', 'Quota: 150M', 'ssh on port 2222'"
+    },
+    {
+      "url": "https://shellter.me/signup",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Pick a username + drop an SSH key (optional). Confirm your email or sign in with GitHub. An admin reviews on IRC — once accepted, we mail you the shell password.'"
+    },
+    {
+      "url": "https://shellter.me/about",
+      "date": "2026-10-24",
+      "proved": "quoted: 'shellter.me is a free, non-commercial pubnix shell host run by two people in their spare time' and the named operators 'Jerzy Dąbrowski' (kofany on IRCnet, elusiVeRPG on LET) and 'Dominik Juźwikowski' (yooz on IRCnet); 'One small FreeBSD VPS leased from Gigahost in Norway'"
+    },
+    {
+      "url": "https://lowendtalk.com/discussion/217500/free-shellter-me-freebsd-pubnix-bash-60mb-zfs-3-ipv6-self-service-revdns",
+      "date": "2026-10-24",
+      "proved": "the vendor's own announcement, 2026-05-21: '60 MB ZFS dataset (lz4 compressed, refquota enforced)' and 'Inbound TCP/v4 slot (50 ports per user)'; the thread also carries the operator's disclosure that registration emails had been written into the world-readable GECOS field, 'Fixed as of today'"
+    },
+    {
+      "url": "https://lowendtalk.com/discussion/217500/free-shellter-me-freebsd-pubnix-bash-60mb-zfs-3-ipv6-self-service-revdns/p2",
+      "date": "2026-10-24",
+      "proved": "the operator @elusiVeRPG answering on 2026-05-22: 'Yes, ssh jumphost is a legit use — for now we only allow it over IPv6. I will consider later on if it will be available also for ipv4, for now is blocked by pf rule.'"
+    },
+    {
+      "url": "https://lowendtalk.com/discussion/217500/free-shellter-me-freebsd-pubnix-bash-60mb-zfs-3-ipv6-self-service-revdns/p2",
+      "date": "2026-10-24",
+      "proved": "a user reporting after signup, 2026-05: 'I played with the shell just a little and everything is very fast and cool' — evidence the IRC admin gate does clear and the shell is usable, from a third party"
+    },
+    {
+      "url": "https://lowendtalk.com/discussion/217500/free-shellter-me-freebsd-pubnix-bash-60mb-zfs-3-ipv6-self-service-revdns/p2",
+      "date": "2026-10-24",
+      "proved": "the operator on enforcement: 'We have suspended first and purged 6 accounts today. Those were poking around host infrastructure, penetration tryouts, proxy endpoint for big proxy relays, hiveproxy ... and website pretending to be EB Games waiting page' — the host does purge accounts it judges abusive"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-24T06:07:00.000Z",
+  "notes": "Not in dossier/compute before this record. The announcement thread and the live site disagree on storage: 60 MB in the 2026-05-21 LET post, 150 MB on the rules page last updated 2026-05-24. The live page is the one a new applicant is provisioned from, so the record uses 150 MB and writes the disagreement down. What could not be established: the traffic allowance, and whether the IRC admin gate is answered promptly (the thread shows signups accepted the day after the announcement, so the gate does clear). The 90-day clock resets on a dashboard login as well as SSH, which makes it cheaper to hold than serv00's SSH-only clock.",
+  "extras": {
+    "wave2": {
+      "class": "enforcement",
+      "free_tier_kind": "perpetual-hobby",
+      "shape": {
+        "disk_mib": 150
+      }
+    },
+    "shape": {
+      "vcpu": null,
+      "ram_gib": null,
+      "disk_gib": null,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "billing_model": "free",
+    "term": "perpetual",
+    "m10h_usd": 0.0,
+    "m24h_usd": 0.0,
+    "price_arithmetic": "no price: no paid tier exists and no payment method is collected",
+    "free_tier_kind": "perpetual",
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": true,
+      "ports": "30000-30049 TCP+UDP on 193.200.238.186, plus any port on three dedicated IPv6 addresses",
+      "static_ip": true,
+      "ipv6": true,
+      "per_session_bytes": null
+    },
+    "session_cap": {
+      "wall_clock_min": null,
+      "idle_reap_s": null,
+      "restart_required": false,
+      "note": "none; tmux, screen and mosh are provided and 'sessions outlive the wifi'"
+    },
+    "storage_discrepancy": "60 MB in the 2026-05-21 announcement, 150 MB on the live rules page updated 2026-05-24",
+    "disclosed_incident": "2026-05-21: registration emails were readable in the FreeBSD GECOS field; wiped the same day, pipeline fixed, disclosure published by the operator in its own thread",
+    "inbound_slot_note": "the operator answered a question about using the account as an SSH jumpbox: 'Yes, ssh jumphost is a legit use — for now we only allow it over IPv6. I will consider later on if it will be available also for ipv4, for now is blocked by pf rule.' That is about outbound jump-hosting; the 50-port inbound slot on 193.200.238.186 is a separate, stated feature."
+  },
+  "tier": "free pubnix account",
+  "confidence_note": "quota, port slot, IPv6 allocation, retention clock and the signup gate are all quoted from first-party pages read today; nothing was measured and no account was created"
+}

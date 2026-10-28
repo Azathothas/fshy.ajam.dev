@@ -1,0 +1,119 @@
+{
+  "topic": "debrid",
+  "slug": "hugging-face-hub",
+  "provider": "Hugging Face Hub",
+  "url": "https://huggingface.co/docs/hub/rate-limits",
+  "category": "model and dataset registry with a CDN (anonymous read)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Anonymous download of any public model or dataset file, no token. The published per-5-minute windows are API 500, Resolvers 3,000, Pages 100 for an anonymous caller, and 1,000 / 5,000 / 200 for a free account; 'All quotas are calculated over 5-minute fixed windows.'",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://huggingface.co/docs/hub/rate-limits",
+    "read_on": "2026-10-23",
+    "notes": "Bytes are not metered at all; only request counts are."
+  },
+  "per_object_cap": {
+    "stated": "not applicable per file; a repository may hold very large files. The file measured here is 548,118,077 bytes (openai-community/gpt2 pytorch_model.bin).",
+    "bytes": null,
+    "source_url": "https://huggingface.co/docs/hub/rate-limits",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "until the repository owner deletes or revises the revision; anonymous readers can pin a commit hash to keep a fixed object",
+    "days": null,
+    "source_url": "https://huggingface.co/docs/hub/rate-limits",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Free and unmetered. /resolve/ redirects to a CDN host (us.aws.cdn.hf.co through the xet bridge) with a short-lived signed URL; the signature is issued to the anonymous caller and no token is involved.",
+    "metered": false,
+    "free_allowance": "no byte allowance published",
+    "price_per_tb": null,
+    "source_url": "https://huggingface.co/docs/hub/rate-limits"
+  },
+  "interface": [
+    "rest",
+    "cli",
+    "git"
+  ],
+  "interface_detail": "GET https://huggingface.co/<repo>/resolve/<rev>/<path> for a file; the API at /api/models and /api/datasets; the dataset viewer at datasets-server.huggingface.co (rows, parquet, size); hf CLI and git for repo-level sync.",
+  "endpoint": "https://huggingface.co/api/models",
+  "tooling": "hf CLI, huggingface_hub python, git-lfs, plain curl on /resolve/. rclone reads it through the HTTP remote. The dataset viewer's /parquet endpoint hands back per-file parquet URLs that a client can fetch directly.",
+  "chaining": "The fastest measured pipe and the only one whose content is current ML data rather than a fixed corpus: pull a dataset's parquet parts for training, and mirror the same files to storage with rclone. Common Crawl now mirrors selected crawls into an HF Storage Bucket, so both paths can share one client.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "anonymous: 500 API, 3,000 Resolvers, 100 Pages per 5-minute window; free account doubles all three",
+      "source": "https://huggingface.co/docs/hub/rate-limits"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "measured here: one connection sustained 34.8-36.6 MiB/s on a 256 MiB range and 39.98 MiB/s on a 548 MB file, while eight parallel range requests totalled only 17.1-21.3 MiB/s",
+      "source": "probe:https://huggingface.co/openai-community/gpt2/resolve/main/pytorch_model.bin"
+    }
+  ],
+  "limits_note": "Whether the 8-connection drop is Hugging Face's CDN, the ISP shaping parallel flows, or the line itself was not established: the Cloudflare speed test endpoint refused a user with 403, so there is no independent line-ceiling measurement.",
+  "binding": "per-ip-shaping",
+  "binding_note": "Request counts never bind at this scale - 3,000 resolver calls per 5 minutes is 864,000 a day, far more files than a TiB holds. What limits a day is the ~36-40 MiB/s ceiling, and adding connections lowers it rather than raising it.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No token: https://huggingface.co/api/whoami-v2 returned 401 for an anonymous client, and the same client downloaded 548,118,077 bytes from /resolve/ successfully. A free account doubles the request windows; it buys no bytes.",
+    "country": null
+  },
+  "reliability_note": "The /resolve/ URL redirects to a signed CDN URL that expires; a client must follow the redirect per request rather than cache the final URL. Anonymous windows are explicitly 'subject to change over time depending on platform health'.",
+  "confidence": "measured",
+  "confidence_note": "A complete 548 MB file was downloaded and hashed, and three 256 MiB runs at each concurrency were recorded. The extrapolation to bytes/day is arithmetic on those numbers, not a 24-hour run.",
+  "evidence": [
+    {
+      "url": "https://huggingface.co/docs/hub/rate-limits",
+      "date": "2026-10-23",
+      "proved": "the per-5-minute windows: anonymous 500 API / 3,000 Resolvers / 100 Pages; free account 1,000 / 5,000 / 200"
+    },
+    {
+      "url": "probe:https://huggingface.co/openai-community/gpt2/resolve/main/pytorch_model.bin",
+      "date": "2026-10-23",
+      "proved": "full file: 200, 548,118,077 bytes, sha256 7c5d3f4b8b76583b422fcb9189ad6c89d5d97a094541ce8932dce3ecabde1421, 13,072.6 ms = 39.98 MiB/s over one connection"
+    },
+    {
+      "url": "probe:https://huggingface.co/openai-community/gpt2/resolve/main/pytorch_model.bin --range 0-268435455",
+      "date": "2026-10-23",
+      "proved": "256 MiB at one connection: 36.593, 34.818, 36.610 MiB/s across three runs"
+    },
+    {
+      "url": "probe:https://huggingface.co/openai-community/gpt2/resolve/main/pytorch_model.bin --concurrency 8 --shard-bytes 268435456",
+      "date": "2026-10-23",
+      "proved": "256 MiB over eight connections: 17.058, 21.332, 20.440 MiB/s total, each below its own one-connection baseline - parallelism loses"
+    },
+    {
+      "url": "probe:https://huggingface.co/api/whoami-v2",
+      "date": "2026-10-23",
+      "proved": "401 with www-authenticate: Bearer - there was no token in the client that downloaded the 548 MB file"
+    },
+    {
+      "url": "probe:https://datasets-server.huggingface.co/rows?dataset=openai/gsm8k&config=main&split=train&offset=0&length=100",
+      "date": "2026-10-23",
+      "proved": "200, 61,691 bytes for 100 rows, anonymous - the dataset viewer is readable without a token"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-23T03:24:34.450Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Answer sits here: about 40 MiB/s over one connection with no account, which is 3.3 TiB/day if the rate held for a day. The eight-connection run is the trap - it is half the speed, so a client that opens eight streams to go faster gets there slower.",
+  "extras": {
+    "full_file_sha256": "7c5d3f4b8b76583b422fcb9189ad6c89d5d97a094541ce8932dce3ecabde1421",
+    "full_file_bytes": 548118077,
+    "one_conn_mib_s": [
+      36.593,
+      34.818,
+      36.61
+    ],
+    "eight_conn_mib_s": [
+      17.058,
+      21.332,
+      20.44
+    ],
+    "full_file_mib_s": 39.98,
+    "arithmetic_tib_per_day_at_40_mib_s": 3.29
+  }
+}

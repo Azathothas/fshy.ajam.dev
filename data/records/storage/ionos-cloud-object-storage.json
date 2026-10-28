@@ -1,0 +1,74 @@
+{
+  "topic": "storage",
+  "slug": "ionos-cloud-object-storage",
+  "provider": "IONOS CLOUD Object Storage",
+  "url": "https://cloud.ionos.com/storage/object-storage",
+  "category": "S3-compatible object storage",
+  "free_tier": {
+    "stated": "Per-GB-month; \"Just 4.99 Dollar per TB for 30 days\"; multi-region redundant",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://cloud.ionos.com/storage/object-storage",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://cloud.ionos.com/storage/object-storage",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://cloud.ionos.com/storage/object-storage",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "NOT free, and this is the trap. Verbatim from the price list: \"Outgoing public traffic | For the first 2 TB (<= 2 TB) | Free / The next 8 TB (> 2 TB <= 10 TB) | $0.036/GB / The next 40 TB (> 10 TB <= 50 TB) | $0.030/GB\". All reads, writes (\"Data Storage (write)\") and requests are free — only egress is metered. Outgoing traffic from user-owned buckets is always charged as regular public traffic.",
+    "metered": true
+  },
+  "interface": [
+    "s3-compatible",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "S3 API",
+  "tooling": "AWS CLI, rclone, S3 SDKs",
+  "chaining": "Only viable behind Cloudflare, which converts the $36/TB egress into CF's free egress.",
+  "limits": [],
+  "limits_note": "`per-object`/class limits not the issue — the tiered egress ladder is. Above 150 TB it drops to $0.018/GB but never reaches zero.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "card",
+    "country": null
+  },
+  "reliability_note": "Solid multi-region EU/US infrastructure; the pricing model simply assumes you do not read your data.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://cloud.ionos.com/storage/object-storage",
+      "date": "2026-10-21",
+      "proved": "\"Unbeatable price-performance ratio at $4.99/TB\"; \"Data Storage (write) | Free\", \"Data Retrieval (read) | Free\", \"PUT / COPY / POST / LIST | Free\", \"GET | Free\"; \"Data transmission costs are not included and will be added according to the current pricing\""
+    },
+    {
+      "url": "https://cloud.ionos.com/prices",
+      "date": "2026-10-21",
+      "proved": "\"Outgoing public traffic: first 2 TB Free; next 8 TB $0.036/GB; next 40 TB $0.030/GB; next 100 TB $0.024/GB; over 150 TB $0.018/GB\"; \"Outgoing Object Storage traffic from user-owned buckets is always charged as regular public traffic\""
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "price_per_tb_month": "$4.99/TB at 5 TB and 20 TB for storage — but serving 20 TB/month costs $648 in egress alone (2 TB free + 18 TB x $36/TB), i.e. effective $32/TB+.",
+  "notes": "Per-GB-month; \"Just 4.99 Dollar per TB for 30 days\"; multi-region redundant",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "Per-GB-month; \"Just 4.99 Dollar per TB for 30 days\"; multi-region redundant",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    },
+    "price_verbatim": "$4.99/TB at 5 TB and 20 TB for storage — but serving 20 TB/month costs $648 in egress alone (2 TB free + 18 TB x $36/TB), i.e. effective $32/TB+."
+  },
+  "binding": "none",
+  "binding_note": "no constraint of a named kind was recorded; the verdict rests on the quota sentence rather than on a named limit"
+}

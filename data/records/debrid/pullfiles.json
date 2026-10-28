@@ -1,0 +1,83 @@
+{
+  "topic": "debrid",
+  "slug": "pullfiles",
+  "provider": "PullFiles",
+  "url": "https://pullfiles.net/",
+  "category": "URL-to-browser relay (server fetches a direct link, user downloads the stream)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "'Grab any file from a link or URL instantly with our fast and easy online downloader. Max. File size: 1 GB.' The page advertises 'Unlimited Downloads - No restrictions on download frequency or usage' and requires no account in the visible flow.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://pullfiles.net/",
+    "read_on": "2026-10-23",
+    "notes": "The client sends a URL, their server pulls it, and the browser receives the stream. Nothing is stored for later re-download."
+  },
+  "per_object_cap": {
+    "stated": "1 GB per file ('Max. File size: 1 GB').",
+    "bytes": 1073741824,
+    "source_url": "https://pullfiles.net/"
+  },
+  "retention": {
+    "stated": "not applicable in the storage sense: there is a progress screen ('Preparing download... Downloading Secure Server') and no library. Nothing was found that says a fetched file persists.",
+    "days": 0,
+    "source_url": "https://pullfiles.net/"
+  },
+  "egress": {
+    "terms": "'Unlimited Downloads - No restrictions on download frequency or usage'; no byte allowance stated.",
+    "metered": false,
+    "free_allowance": "no published allowance monthly; 1 GB per file",
+    "price_per_tb": null,
+    "source_url": "https://pullfiles.net/"
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "One web form: paste a direct file URL, press start, watch a progress panel. No API documentation.",
+  "tooling": "Browser only. A wrapper would need a headless browser because the transfer is streamed through the page.",
+  "chaining": "It solves the case where a user's own connection cannot reach a host but the relay can: the relay fetches and re-serves over HTTPS. It is a proxy, not storage, so it must be followed immediately by a real download.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "1 GB per file",
+      "source": "https://pullfiles.net/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "claimed unlimited ('No restrictions on download frequency or usage'); untested",
+      "source": "https://pullfiles.net/"
+    }
+  ],
+  "limits_note": "The page also says '100% Secure' and 'End-to-end encryption', which cannot be true of a relay that terminates TLS on both sides; treat the security text as marketing.",
+  "binding": "per-object-cap",
+  "binding_note": "The 1 GB per-file ceiling is the only hard number: 1 TiB/month is 1024 such files, so frequency is not the wall, the single-file size is.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No login or account appears anywhere in the pasted-URL flow.",
+    "country": null
+  },
+  "reliability_note": "A relay is a single point of failure and a single point of visibility: the operator sees every URL and every byte, and the stream dies if the operator's egress is slow. Nothing on the page states uptime or operator identity.",
+  "confidence": "unverified",
+  "confidence_note": "The page and its numbers are read, but no URL was actually pulled through it, so neither the 1 GB ceiling nor the unlimited claim is measured. A single fetch of a small public file would settle both.",
+  "evidence": [
+    {
+      "url": "https://pullfiles.net/",
+      "date": "2026-10-23",
+      "proved": "'Max. File size: 1 GB', 'Unlimited Downloads - No restrictions on download frequency or usage', the progress UI ('Preparing download...') and no account requirement"
+    },
+    {
+      "url": "probe:https://pullfiles.net/",
+      "date": "2026-10-23",
+      "proved": "HTTP 200, 65612 bytes, sha256 0f299b37f44aadf7..., no challenge"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T01:52:41.420Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Answers a narrower question than asked: it will not resolve a Rapidgator page into a direct link, but it will fetch a direct link a user cannot reach. Worth keeping as the last hop.",
+  "extras": {
+    "max_file_bytes": 1073741824,
+    "account": "none",
+    "api": "none"
+  }
+}

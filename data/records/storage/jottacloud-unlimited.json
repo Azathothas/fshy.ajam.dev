@@ -1,0 +1,93 @@
+{
+  "topic": "storage",
+  "slug": "jottacloud-unlimited",
+  "provider": "Jottacloud Unlimited (Personal)",
+  "url": "https://jottacloud.com/en/pricing/",
+  "category": "Nordic cloud drive, subscription, storage-VPS economics in disguise",
+  "free_tier": {
+    "stated": "Unlimited storage; 1 user. Free 5 GB tier exists.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://jottacloud.com/en/pricing/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://jottacloud.com/en/pricing/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://jottacloud.com/en/pricing/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "No egress fee and no download throttle. Vendor text: 'Reduced upload speed means that uploading files from your device to Jottacloud might take a little longer. Download speed and other use of the service is not changed, and you can still store as much data as you need in your account.' Upload is throttled once >5 TB stored: 'If you store more than 5 TB of data on Jottacloud, your upload speed is automatically reduced. The reduction in upload speed is greater the more data you store in your account.'",
+    "metered": false
+  },
+  "interface": [
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "Web + desktop + rclone (native `jottacloud` backend, documented on rclone.org)",
+  "tooling": "rclone native backend, supports --fast-list; CLI documented",
+  "chaining": "rclone -> local -> any S3/WebDAV target; can front with Cloudflare only by proxying your own origin, not directly",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "1.85 MB/s",
+      "source": "https://jottacloud.com/en/pricing/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "250 KB/s",
+      "source": "https://jottacloud.com/en/pricing/"
+    }
+  ],
+  "limits_note": "Constraint type: per-ip-shaping, upload side only. Reported throttle at 6 TB is ~1.85 MB/s per transfer; at 44 TB one Duplicati user measured 250 KB/s. Download path unaffected. Non-commercial licensing on the Personal tier.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email",
+    "country": null
+  },
+  "reliability_note": "No documented mass data-loss event. Throttle policy was changed retroactively in 2021/2022 and the Norwegian Consumer Council flagged it; users were offered refunds. Operational risk is policy drift, not deletion.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://jottacloud.com/en/pricing/",
+      "date": "2026-10-21",
+      "proved": "'Unlimited* NOK 129 / month NOK 1290 / year ... Unlimited storage ... * Upload speed gradually reduced after 5 TB'"
+    },
+    {
+      "url": "https://docs.jottacloud.com/en/articles/3271114-reduced-upload-speed",
+      "date": "2026-10-21",
+      "proved": "'Download speed and other use of the service is not changed'"
+    },
+    {
+      "url": "https://rclone.org/jottacloud/",
+      "date": "2026-10-21",
+      "proved": "native backend, --fast-list supported"
+    },
+    {
+      "url": "https://forum.duplicati.com/t/jottacloud-difference-in-upload-speeds-rclone-duplicati/19225",
+      "date": "2026-10-21",
+      "proved": "44 TB account throttled to 250 KB/s upload, download fine"
+    },
+    {
+      "url": "https://www.jottacloud.com/en/pricing/",
+      "date": "2026-10-21",
+      "proved": "payment: 'We support VISA and MasterCard' via Stripe; no PayPal, no crypto"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "price_per_tb_month": "$2.76/TB at 5 TB; $0.69/TB at 20 TB (NOK 129/mo = $13.79 flat, so marginal cost per added TB is $0)",
+  "notes": "Unlimited storage; 1 user. Free 5 GB tier exists.",
+  "extras": {
+    "price_verbatim": "$2.76/TB at 5 TB; $0.69/TB at 20 TB (NOK 129/mo = $13.79 flat, so marginal cost per added TB is $0)"
+  },
+  "binding": "per-ip-shaping",
+  "binding_note": "one stream is shaped, and a user's throughput is the shaped rate times the number of streams"
+}

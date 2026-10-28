@@ -1,0 +1,88 @@
+{
+  "topic": "storage",
+  "slug": "packagecloud-io-free-plan",
+  "provider": "Packagecloud.io — Free plan",
+  "url": "https://packagecloud.io/pricing/",
+  "category": "registry",
+  "free_tier": {
+    "stated": "2 GB storage + 10 GB bandwidth per month, unlimited repositories and unlimited CI/CD minutes. Private repositories are no longer usable on the free plan (restricted since 7 Sep 2023), so the free tier is effectively public-repo only.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://packagecloud.io/pricing/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://packagecloud.io/pricing/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://packagecloud.io/pricing/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "10 GB/month of download bandwidth; overage is $1.50/GB on paid plans and the account is disabled at the 'maximum overage amount' setting — so on Free it is a hard wall.",
+    "metered": true,
+    "free_allowance": "10 GB per month"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "rest (packagecloud API), native apt/yum/ruby/pypi/npm clients via packagecloud.io/install/repositories/...",
+  "tooling": "packagecloud CLI (`packagecloud push`), `curl -X POST` to the API, setup scripts for apt/yum; public repos pull anonymously.",
+  "chaining": "Unlimited repositories per account, but storage and bandwidth are account-level watermarks ('high watermark for any given billing period'), so N repos do not multiply the 2 GB. Only N accounts would.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "bandwidth per month, unlimited repositories and unlimited CI/CD minutes",
+      "source": "https://packagecloud.io/pricing/"
+    }
+  ],
+  "limits_note": "2 GB storage (high-water mark, so delete-then-reupload does not refund within a period); 10 GB/month bandwidth; private repos gated; packages over 2.6 GB are a paid-plan feature; bandwidth metered from request logs, HEAD/conditional GETs excluded.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Stable hosted service; the 2023 change that cut private repos off the free plan shows the free tier is a moving target.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://packagecloud.io/pricing/",
+      "date": "2026-10-21",
+      "proved": "read live (firecrawl render): 'Free ... 10 GB bandwidth ... 2 GB storage ... Unlimited CI/CD Minutes'; comparison table shows 'Unlimited repositories', 'Public repositories' ticked, 'Private repositories' and 'Package sizes > 2.6 GB' as paid"
+    },
+    {
+      "url": "https://packagecloud.io/pricing/faq/",
+      "date": "2026-10-21",
+      "proved": "read live: 'if you upload 100GB of packages, and delete 90GB of them, you'll still have used 100GB for that billing period' (high-water mark)"
+    },
+    {
+      "url": "https://blog.packagecloud.io/packagecloud-private-repositories-on-the-free-plan/",
+      "date": "2026-10-21",
+      "proved": "read live: free-plan private repos got 402s from 7 Sep 2023"
+    },
+    {
+      "url": "https://packagecloud.io/install/repositories/github/git-lfs/config_file.list?os=ubuntu&dist=xenial",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200 (anonymous public-repo read)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "2 GB storage + 10 GB bandwidth per month, unlimited repositories and unlimited CI/CD minutes. Private repositories are no longer usable on the free plan (restricted since 7 Sep 2023), so the free tier is effectively public-repo only.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "egress",
+      "why": "2 GB storage + 10 GB bandwidth per month, unlimited repositories and unlimited CI/CD minutes. Private repositories are no longer usable on the free plan (restricted since 7 Sep 2023), so the free tier is effectively public-repo only.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-ip-shaping",
+  "binding_note": "one stream is shaped, and a user's throughput is the shaped rate times the number of streams"
+}

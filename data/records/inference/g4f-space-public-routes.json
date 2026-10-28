@@ -1,0 +1,119 @@
+{
+  "topic": "inference",
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "not applicable"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "slug": "g4f-space-public-routes",
+  "provider": "g4f.space public provider routes (GPT4Free hosted)",
+  "url": "https://g4f.space/api",
+  "category": "inference gateway, anonymous, proof-of-work credits",
+  "free_tier": {
+    "stated": "Five routes (/api/groq, /api/ollama, /api/pollinations, /api/nvidia, /api/gemini) are listed as none required for an API key, but a chat call answered 402 insufficient_credits asking for proof-of-work credits to earn anonymous usage",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://g4f.dev/docs/ready_to_use.html",
+    "read_on": "2026-10-28",
+    "notes": "the credit amount per call is not published; /v1 on the same host is listed as requiring a key from g4f.dev/api_key.html, though GET /v1/models answers 200 with no key"
+  },
+  "endpoint": "https://g4f.space/api/groq/chat/completions",
+  "tooling": "any OpenAI-compatible client with base URL https://g4f.space/api/<provider>; the doc says to pass a placeholder key for SDKs that require one",
+  "chaining": "pairs with nothing until the credit scheme is understood: an anonymous call with no credit is refused",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "a credit balance earned by proof-of-work: an anonymous chat call with none answers 402 insufficient_credits; the credits per call are unpublished",
+      "source": "https://stillworks.supercapybara.com/free-llm-api-no-key"
+    }
+  ],
+  "binding": "volume-quota",
+  "binding_note": "the proof-of-work credit balance gates every anonymous completion",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no key for the /api/<provider> routes per the g4f.dev table (none required); the price is proof-of-work credits rather than an identity",
+    "country": null
+  },
+  "reliability_note": "GET /api/pollinations/models returns entries whose message is Error 404 DEPLOYMENT_NOT_FOUND on Vercel, and /api/auto/models returns 404; the groq, ollama, nvidia and gemini listings answer 200",
+  "confidence": "reported",
+  "confidence_note": "the listings were read by GET; the 402 on a chat call comes from a third-party hourly prober that sends chat calls with no Authorization header. No completion was sent, because probe.py issues GET and HEAD only",
+  "probe": {
+    "records": [
+      {
+        "probe_id": "g4fspace-groq-models-get",
+        "method": "GET",
+        "url": "https://g4f.space/api/groq/models",
+        "http": 200,
+        "authorization_sent": false,
+        "x_provider": "groq.com",
+        "probed_at": "2026-10-28T04:45:03.814Z",
+        "chat_completion_tested": false
+      },
+      {
+        "probe_id": "g4fspace-ollama-models-get",
+        "method": "GET",
+        "url": "https://g4f.space/api/ollama/models",
+        "http": 200,
+        "x_provider": "ollama.com",
+        "probed_at": "2026-10-28T04:45:07.696Z"
+      },
+      {
+        "probe_id": "g4fspace-nvidia-models-get",
+        "method": "GET",
+        "url": "https://g4f.space/api/nvidia/models",
+        "http": 200,
+        "x_provider": "nvidia.com",
+        "probed_at": "2026-10-28T04:45:14.311Z"
+      },
+      {
+        "probe_id": "g4fspace-gemini-models-get",
+        "method": "GET",
+        "url": "https://g4f.space/api/gemini/models",
+        "http": 200,
+        "x_provider": "gemini-v1beta",
+        "probed_at": "2026-10-28T04:45:15.622Z"
+      },
+      {
+        "probe_id": "g4fspace-auto-models-get",
+        "method": "GET",
+        "url": "https://g4f.space/api/auto/models",
+        "http": 404,
+        "probed_at": "2026-10-28T04:45:16.863Z"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "url": "https://g4f.dev/docs/ready_to_use.html",
+      "date": "2026-10-28",
+      "capture": "sha256:5d01eb3a56123e72a4d95acab02e0aabbbd05272284ed7bbf266ddfe118192ba",
+      "quote": "| [https://g4f.space/api/groq](https://g4f.space/api/groq/models) | none required | Use Groq provider |",
+      "proved": "the g4f.dev table lists the groq route as needing no API key"
+    },
+    {
+      "url": "https://stillworks.supercapybara.com/free-llm-api-no-key",
+      "date": "2026-10-28",
+      "capture": "sha256:34aa29edf68cc49c49bdcf1119b702b0c338ae9d71d2a58db4b4586122b9a223",
+      "quote": "402 insufficient_credits: \"No cake credits. Bake proof-of-work cakes ... to earn anonymous usage.\" Anonymous, but not free of charge -- the price is compute rather than a key.",
+      "proved": "a third-party prober got 402 insufficient_credits on a keyless chat call to the g4f.space routes"
+    },
+    {
+      "url": "https://g4f.space/api/groq/models",
+      "date": "2026-10-28",
+      "capture": "sha256:e521739b851214e0f8fbcfa8555ed3384b53c8d6a6bccc054d305953295043a7",
+      "quote": "x-provider: groq.com",
+      "proved": "the keyless GET /api/groq/models answered 200 and proxied the groq.com listing"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-28T04:36:18.974Z",
+  "notes": "the five routes front other providers (groq.com, ollama.com, pollinations.ai, nvidia.com, a hosted Gemini provider) and the listings carry per-model request counters; the routes differ in availability"
+}

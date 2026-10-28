@@ -1,0 +1,85 @@
+{
+  "topic": "egress",
+  "slug": "azure-front-door",
+  "provider": "Azure Front Door",
+  "url": "https://learn.microsoft.com/en-us/azure/frontdoor/front-door-overview",
+  "category": "HTTP CDN and application delivery",
+  "tier": "payg",
+  "free_tier": {
+    "stated": "No free tier for the L4 question: Front Door terminates SSL at the edge and only supports HTTP/1.1 from the edge to the origin.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://learn.microsoft.com/en-us/azure/frontdoor/front-door-faq",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://learn.microsoft.com/en-us/azure/frontdoor/front-door-overview",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://learn.microsoft.com/en-us/azure/frontdoor/front-door-overview",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No UDP allowance exists. The product is billed per request and per GB of HTTP(S) delivery, with no L4 forwarding at any price.; ingress: http-only",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://learn.microsoft.com/en-us/azure/frontdoor/front-door-overview"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "profiles, endpoints, routes and origin groups over HTTP and HTTPS",
+  "tooling": "Azure portal, CLI or ARM/Bicep",
+  "chaining": "chains with HTTP origins only; it cannot expose a WireGuard or game UDP endpoint",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "the origin leg is HTTP/1.1 only; there is no protocol field that accepts UDP",
+      "source": "https://learn.microsoft.com/en-us/azure/frontdoor/front-door-faq"
+    }
+  ],
+  "limits_note": "",
+  "binding": "write-gated",
+  "binding_note": "Volume never becomes the question: the service cannot forward UDP at any tier, so 1 TiB/month of UDP has no path through it.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "An Azure subscription with billing enabled.",
+    "country": "None"
+  },
+  "reliability_note": "none recorded",
+  "confidence": "inferred",
+  "confidence_note": "No Front Door page read today states a UDP forwarding feature, and the origin leg is documented as HTTP/1.1 only. Confirming the negative needs the Front Door 'supported protocols' reference, which was not read.",
+  "evidence": [
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/frontdoor/front-door-faq",
+      "date": "2026-10-23",
+      "proved": "Currently, Azure Front Door only supports HTTP/1.1 from the edge to the origin."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/frontdoor/front-door-overview",
+      "date": "2026-10-23",
+      "proved": "Accelerate application performance using the Azure Front Door unicast network and split TCP connections; terminate SSL offload at the edge and natively support the HTTP/2 protocol"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "unverified (base and data rates not read)",
+  "notes": "Included because the brief names it. Every capability on the overview page is HTTP: caching, SSL offload, HTTP/2, rules engine. No L4 listener exists in the model.",
+  "extras": {
+    "wg_path": "none",
+    "wg_detail": "There is no UDP forwarding to configure, so no WireGuard datagram can be carried.",
+    "ingress": "http-only",
+    "volume_tib_month": null,
+    "volume_stated": "No UDP allowance exists. The product is billed per request and per GB of HTTP(S) delivery, with no L4 forwarding at any price.",
+    "bytes_transit": "yes",
+    "transit_note": "HTTP bytes only; UDP is not carried"
+  }
+}

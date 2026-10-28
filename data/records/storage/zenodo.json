@@ -1,0 +1,87 @@
+{
+  "topic": "storage",
+  "slug": "zenodo",
+  "provider": "Zenodo (CERN)",
+  "url": "https://zenodo.org/",
+  "category": "academic data repository",
+  "tier": "free",
+  "free_tier": {
+    "stated": "50 GB per record with no cap on the number of records, in a shared 150 GB per-account pool that CERN states may change",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://help.zenodo.org/docs/deposit/manage-files/",
+    "read_on": "2026-10-21",
+    "notes": "CERN funds the service, so the quota is a policy that can move; it is not a purchased allowance with a contract behind it."
+  },
+  "per_object_cap": {
+    "stated": "50 GB per record",
+    "bytes": 50000000000,
+    "source_url": "https://help.zenodo.org/docs/deposit/manage-files/",
+    "notes": "A record is the upload unit, not a file: many files may sit in one record up to the record limit."
+  },
+  "retention": {
+    "stated": "permanent by policy; a DOI is minted per record and the record is citable forever",
+    "days": null,
+    "source_url": "https://about.zenodo.org/policies/",
+    "notes": "Permanence is the whole point of a DOI, and it is also why this is an archive rather than a working set."
+  },
+  "egress": {
+    "terms": "free, no metered allowance; per-connection throttled rather than byte-capped",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://help.zenodo.org/docs/deposit/manage-files/"
+  },
+  "interface": [
+    "rest",
+    "s3-compatible"
+  ],
+  "interface_detail": "REST deposit API with a token, plus an S3-compatible endpoint for large files. Not a WebDAV or rclone-native backend.",
+  "endpoint": "https://zenodo.org/api",
+  "tooling": "requests or curl against the deposit API; the S3 endpoint needs a generated key pair",
+  "chaining": "The useful chain is write-once archive plus a parallel ranged reader: Zenodo holds the durable copy and a Worker or a ranged client serves it, because a single stream is slow but many streams are not.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "50 GB per record, and 150 GB total per account",
+      "source": "https://help.zenodo.org/docs/deposit/manage-files/"
+    },
+    {
+      "kind": "write-gated",
+      "value": "a DOI is minted on publish and the record is then immutable except for metadata; files may only be added in a 30-day window",
+      "source": "https://help.zenodo.org/docs/deposit/publish/"
+    }
+  ],
+  "limits_note": "Two constraints bind and they bind in different places: the cap sets the record size, and the write gate means the corpus cannot be edited after publication. A second record is the alternative route and it costs a second DOI.",
+  "binding": "write-gated",
+  "binding_note": "The cap is generous for a user's shard sizes; the gate is what decides the workflow, because a mistake after publication cannot be corrected in place, only superseded by a new version.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "An email address and a password. No institution, no affiliation check, no card. ORCID and GitHub logins are offered and neither is required.",
+    "country": null
+  },
+  "reliability_note": "CERN-operated and long-lived; the failure mode is policy change rather than downtime. Records are immutable after publication, so a quota reduction would affect new deposits and not existing ones. The binding limit on reading is the per-connection throttle, which parallel ranged GETs defeat; see zenodo-anonymous-download-throughput.",
+  "confidence": "documented",
+  "confidence_note": "The quota and the write gate are read from CERN's own help pages on 2026-10-21; the throughput is measured separately in zenodo-anonymous-download-throughput.",
+  "evidence": [
+    {
+      "url": "https://help.zenodo.org/docs/deposit/manage-files/",
+      "date": "2026-10-21",
+      "proved": "50 GB per record and a 150 GB per-account pool, stated as a shared allowance rather than a per-record guarantee"
+    },
+    {
+      "url": "https://help.zenodo.org/docs/deposit/publish/",
+      "date": "2026-10-21",
+      "proved": "publication mints a DOI and files become immutable, with a 30-day window for additions"
+    },
+    {
+      "url": "https://about.zenodo.org/policies/",
+      "date": "2026-10-21",
+      "proved": "the retention policy: records are retained permanently and citable by DOI"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "price_per_tb_month": null,
+  "notes": "Split across three sub-finding records that each answer one question: anonymous download throughput, DOI batching, and restricted-access records as working storage. This record is the provider itself, so that a document citing Zenodo has one canonical target."
+}
