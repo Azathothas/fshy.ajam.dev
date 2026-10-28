@@ -52,9 +52,23 @@ function stop() {
   if (process.platform === 'win32') spawnSync('taskkill', ['/PID', String(child.pid), '/T', '/F'], { stdio: 'ignore' });
   else try { process.kill(-child.pid, 'SIGTERM'); } catch { /* already gone */ }
   console.log(`# stopped PID ${child.pid}`);
-  try { rmSync(STATE, { recursive: true, force: true }); } catch { /* workerd can hold a file for a moment */ }
 }
 process.on('exit', stop);
+
+/** Stop wrangler, then remove the state directory. workerd releases its files a moment after it stops. */
+async function finish(code) {
+  stop();
+  for (let i = 0; i < 40; i++) {
+    try {
+      rmSync(STATE, { recursive: true, force: true });
+      break;
+    } catch {
+      if (i === 39) console.log('# could not remove ' + STATE);
+      await new Promise((r) => setTimeout(r, 250));
+    }
+  }
+  process.exit(code);
+}
 
 async function ready(ms) {
   const end = Date.now() + ms;
@@ -76,8 +90,7 @@ function check(name, cond, detail = '') {
 
 if (!(await ready(120000))) {
   console.error('wrangler dev did not answer on ' + ORIGIN + '\n' + log.slice(-3000));
-  stop();
-  process.exit(2);
+  await finish(2);
 }
 const page = await fetch(ORIGIN + '/');
 check('GET / is a static page', page.status === 200);
@@ -104,7 +117,6 @@ check('POST /mcp tools/call search answers 200', call.status === 200 && cj && cj
 const perm = await fetch(ORIGIN + '/r/storage/hetzner-storage-box', { redirect: 'manual' });
 check('GET /r/<topic>/<slug> redirects', perm.status === 301, perm.status);
 
-stop();
 if (/rate limiter \S+ failed/.test(log)) console.log('# note: the local rate limiter threw, and the Worker allowed the request');
 console.log(`${fails.length ? 'FAIL' : 'PASS'}: ${fails.length} failed`);
-process.exit(fails.length ? 1 : 0);
+await finish(fails.length ? 1 : 0);
