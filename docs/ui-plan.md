@@ -4,7 +4,9 @@ This plan improves the fshy wiki for humans and for agents. It comes from a stud
 wikis, and from a measurement of our own build. A future agent can follow it without any other context.
 
 The study date is 2026-10-28. Every figure about our site comes from `python publish/build.py --site site/dist`
-at commit `f0babcd`. Every figure about another site comes from a fetch on the same day. The site is not
+on the data of the first publish, whose `data/meta.json` names `source_commit` `4eabfce`. The commit of this
+repository that held it was rewritten later; an export of that source commit gives the same data. Every figure
+about another site comes from a fetch on the same day. The site is not
 deployed yet, so no figure comes from a live fshy URL.
 
 ## 0. How to use this plan

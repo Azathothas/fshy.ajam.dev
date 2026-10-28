@@ -22,6 +22,9 @@ npm ci --no-audit --no-fund
 npx wrangler dev --port 8787
 ```
 
+With npm 12, `npm ci` reports that the install scripts of `esbuild` and `workerd` are blocked. The build, the tests
+and `wrangler dev` do not need them, so the message is safe to ignore.
+
 The preview needs no Cloudflare account. It serves the pages, the API and the MCP endpoint on
 `http://127.0.0.1:8787`. ⚠ The local rate limiting binding of `wrangler dev` can throw. The Worker then logs the
 error once and allows the request, so the preview does not limit requests. In production the same rule applies:
@@ -137,4 +140,5 @@ public store without record JSON, leaves and evidence quotes, which are served a
 3. The rate limits: 30 SQL requests a minute for each address, and `limits.cpu_ms`.
 
 **Headers.** `static/_headers` sets a Content-Security-Policy on every page: scripts, styles, images and requests
-come from the site itself only. `smoke.mjs` checks that `wrangler dev` sends it.
+come from the site itself only. `smoke.mjs` checks that `wrangler dev` sends it. A response of the Worker, for
+example of the API, carries `nosniff` and `no-referrer` too.

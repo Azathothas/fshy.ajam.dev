@@ -1,5 +1,5 @@
 -- fshy store schema. One schema for the local store, the public download and the Worker copy.
--- Built by publish/build.py from dossier/, history/, registry/ and sources/MANIFEST.tsv.
+-- publish/build.py loads it from data/: the record files and the table files that publish/export.py writes.
 -- Never edited by hand and never committed: it is rebuilt from the JSON in seconds.
 -- Full text is FTS4 (not FTS5) because the Worker runs sql.js, which has FTS3/FTS4 only.
 
