@@ -12,6 +12,7 @@ Exit codes: 0 ok, 1 a check failed, 2 usage.
 """
 import argparse
 import collections
+import datetime
 import hashlib
 import json
 import os
@@ -30,6 +31,9 @@ SCHEMA_VERSION = "1"
 TABLES = ("entity", "alias", "evidence", "limit_row", "claim", "fx", "unknown", "edge", "drift", "history",
           "history_link", "ledger", "capture", "vocab")
 FTS_COLUMNS = ("name", "offer", "limits", "egress", "identity", "access", "notes", "evidence", "extras")
+# Workers static assets: the largest file a version can hold. The build fails above it and warns above WARN_SHARE.
+ASSET_MAX_BYTES = 25 * 1024 * 1024
+WARN_SHARE = 0.7
 TIMES = collections.OrderedDict()
 _T = [time.perf_counter()]
 
@@ -112,12 +116,16 @@ def read_jsonl(path):
 
 
 def git_info():
+    """The commit of this checkout, and its commit time in UTC: a time zone names a place."""
     def run(*a):
         try:
             return subprocess.run(["git", "-C", ROOT] + list(a), capture_output=True, text=True, timeout=20).stdout.strip()
         except Exception:
             return ""
-    return os.environ.get("WORKERS_CI_COMMIT_SHA") or run("rev-parse", "HEAD"), run("log", "-1", "--format=%cI")
+    ts = run("log", "-1", "--format=%ct")
+    when = (datetime.datetime.fromtimestamp(int(ts), datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            if ts.isdigit() else "")
+    return os.environ.get("WORKERS_CI_COMMIT_SHA") or run("rev-parse", "HEAD"), when
 
 
 def build(data, out_db):
@@ -221,14 +229,34 @@ def leak_scan(db_path=None, dist=None, data=None):
                 for v in row:
                     if isinstance(v, str):
                         hit(t, v)
+        # a public history entry is its date, status, title and linked records; the rest is process narrative
+        for (hid,) in db.execute("SELECT hid FROM history WHERE body IS NOT NULL OR supersedes IS NOT NULL "
+                                 "OR confidence IS NOT NULL"):
+            hits.append(("history " + hid, "a public history row carries a body, a supersedes line or a confidence"))
         db.close()
     for top in (d for d in (dist, data) if d):
         for root, _, files in os.walk(top):
             for fn in files:
-                if fn.endswith((".html", ".json", ".jsonl", ".txt", ".xml", ".md")):
-                    p = os.path.join(root, fn)
-                    hit(os.path.relpath(p, top), open(p, encoding="utf-8", errors="replace").read())
+                p = os.path.join(root, fn)
+                with open(p, "rb") as f:
+                    b = f.read()
+                if b"\0" not in b[:8192]:  # every text file, whatever its extension; a store or a gzip is binary
+                    hit(os.path.relpath(p, top), b.decode("utf-8", errors="replace"))
     return hits
+
+
+def asset_sizes(dist):
+    """Files of dist over the Workers static asset limit (fail), and over WARN_SHARE of it (warn)."""
+    over, near = [], []
+    for root, _, files in os.walk(dist):
+        for fn in files:
+            p = os.path.join(root, fn)
+            n = os.path.getsize(p)
+            if n > ASSET_MAX_BYTES:
+                over.append((os.path.relpath(p, dist), n))
+            elif n > WARN_SHARE * ASSET_MAX_BYTES:
+                near.append((os.path.relpath(p, dist), n))
+    return over, near
 
 
 def main(argv=None):
@@ -246,6 +274,7 @@ def main(argv=None):
         return 1
     report = {"store": build(a.data, a.db)}
     hits = leak_scan(a.db, data=a.data)
+    over = []
     if a.site:
         import site_gen  # noqa: E402
         report["files"] = site_gen.generate(ROOT, a.db, os.path.abspath(a.site), TIMES, lap)
@@ -254,13 +283,19 @@ def main(argv=None):
         lap("site-llms")
         hits += leak_scan(dist=os.path.abspath(a.site))
         lap("leak-scan")
+        over, near = asset_sizes(os.path.abspath(a.site))
+        for rel, n in near:
+            print("build: warning: %s is %d bytes, over %d%% of the %d-byte asset limit"
+                  % (rel, n, WARN_SHARE * 100, ASSET_MAX_BYTES), file=sys.stderr)
+        for rel, n in over:
+            print("build: %s is %d bytes; a static asset holds at most %d" % (rel, n, ASSET_MAX_BYTES), file=sys.stderr)
     report["leaks"] = len(hits)
     report["times"] = TIMES
     for where, ctx in hits[:40]:
         print("LEAK %s: ...%s..." % (where, ctx.replace("\n", " ")), file=sys.stderr)
     if not a.quiet:
         print(json.dumps(report))
-    return 1 if hits else 0
+    return 1 if hits or over else 0
 
 
 if __name__ == "__main__":

@@ -19,9 +19,12 @@ request. A merge session reviews that pull request, merges it, and exports the p
 3. ⛔ **Every document is written in ASD-STE100 Simplified Technical English.** The working rules are in
    [`docs/conventions.md`](docs/conventions.md). They bind commit messages, issue comments and pull requests too.
 4. ⛔ **No personal or operator detail.** No name of a person, email address, home address, IP address, device
-   name, local path or private host, in any file, commit, issue comment or pull request. The leak scan
-   ([`publish/rules/leak.json`](publish/rules/leak.json)) fails the build on the generic shapes. A specific
-   value never goes into that file, because that file is public.
+   name, local path or private host, in any file, commit, issue comment or pull request. ⚠ The leak scan
+   ([`publish/rules/leak.json`](publish/rules/leak.json)) catches only a short list of generic shapes. They are
+   keys and tokens, Windows and macOS home paths, scratch paths, a tailnet address, an email address at a
+   free-mail domain, and terms text. It does not catch a name, an address, a host name or a sentence about a
+   person, and it does not read commit metadata. The projection in the research repository removes those, and a
+   reviewer reads the diff. A specific value never goes into the leak rules, because that file is public.
 5. ⛔ **The published corpus is technical.** No legal advice, no statement that a use is permitted or
    forbidden, and no terms text. The one notice about research and education is in [`README.md`](README.md),
    on the wiki's about page and footer, and in `llms.txt`. Records do not repeat it.
