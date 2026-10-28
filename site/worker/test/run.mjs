@@ -48,7 +48,7 @@ function assetResponse(path) {
   if (CHUNKS[path]) return new Response(CHUNKS[path]);
   const f = join(DIST, ...path.split('/'));
   if (existsSync(f) && statSync(f).isFile()) return new Response(readFileSync(f));
-  if (path === 'api/v1/needs.json') return new Response(readFileSync(join(REPO, 'scripts', 'fshy', 'rules', 'needs.json')));
+  if (path === 'api/v1/needs.json') return new Response(readFileSync(join(REPO, 'publish', 'rules', 'needs.json')));
   return new Response('<!doctype html><title>404</title>', { status: 404, headers: { 'content-type': 'text/html' } });
 }
 
@@ -62,6 +62,7 @@ const ASSETS = {
 };
 const denyAll = { limit: async () => ({ success: false }) };
 const allowAll = { limit: async () => ({ success: true }) };
+const throws = { limit: async () => { throw new Error('binding unavailable'); } };
 const env = { ASSETS, RL_API: allowAll, RL_SQL: allowAll };
 
 const { guard, strip, GuardError } = await import('../guard.js');
@@ -375,6 +376,16 @@ test('MCP: initialize, list, call, errors', async () => {
   assert.equal(lim.res.status, 429);
   const pre = await call('/mcp', { method: 'OPTIONS' });
   assert.equal(pre.res.status, 204);
+});
+
+test('a rate limiter that throws fails open', async () => {
+  const broken = { ...env, RL_API: throws, RL_SQL: throws };
+  const s = await call('/api/v1/search?q=hetzner&limit=1', {}, broken);
+  assert.equal(s.res.status, 200, s.body);
+  const q = await call('/api/v1/sql?q=SELECT%201', {}, broken);
+  assert.equal(q.res.status, 200, q.body);
+  const m = await call('/mcp', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }) }, broken);
+  assert.equal(m.res.status, 200, m.body);
 });
 
 test('report', () => {
