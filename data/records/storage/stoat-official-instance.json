@@ -1,0 +1,80 @@
+{
+  "topic": "storage",
+  "slug": "stoat-official-instance",
+  "provider": "Stoat (formerly Revolt) — official instance",
+  "url": "https://stoat.chat",
+  "category": "messaging",
+  "free_tier": {
+    "stated": "20,000,000 bytes (20 MB) per attachment as the server-enforced default, no paid tier to raise it, and no documented total storage cap.",
+    "unit": "MB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://api.stoat.chat/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "20 MB per file",
+    "bytes": 20000000,
+    "source_url": "https://api.stoat.chat/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "| Critically different from Discord: attachment URLs are UNSIGNED and permanent",
+    "source_url": "https://api.stoat.chat/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and unmetered from cdn.stoatusercontent.com (Cloudflare). The CDN responses carried `Cache-Control: public, max-age=2073600` — 24 days of edge caching — which is good for the 500 GB/day serving workload.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Autumn file service: `POST {autumn}/attachments` with multipart `file` and `X-Bot-Token`/`X-Session-Token`. Documented at stoatchat/stoatchat `docs/docs/developers/api/uploading-files.md`. Bots are first-class; 5 bots per account.",
+  "chaining": "100 servers per account x 200 channels per server (from the live `/` limits object) = 20,000 channels, each with unlimited messages. Servers are capped at 100 for existing accounts / 50 for new ones.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "20 MB per file",
+      "source": "https://api.stoat.chat/"
+    }
+  ],
+  "limits_note": "20 MB per file; 5 attachments per message; body_limit_size 20,000,000 bytes globally. Live limits object also gives: emojis 500 KB, icons 2.5 MB, banners/backgrounds 6 MB, avatars 4 MB — those are separate, smaller buckets.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Critically different from Discord: attachment URLs are UNSIGNED and permanent. The platform renamed Revolt->Stoat in Oct 2025 and moved the CDN (autumn.revolt.chat -> cdn.revoltusercontent.com) in May 2025 with 301s still in place; old IDs from the pre-refactor Autumn do 404.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://api.stoat.chat/",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> features.limits.default.file_upload_size_limits.attachments = 20000000 (20 MB), server_channels = 200, servers = 100, message_attachments = 5"
+    },
+    {
+      "url": "https://cdn.stoatusercontent.com/attachments/f749zVPTYPo_id3VY9IwZYMY83hgm9WV61MqWUV54D/image.png",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200 OK, Content-Length 10886, Cache-Control: public, max-age=2073600 — no ex/is/hm, no expiry"
+    },
+    {
+      "url": "https://cdn.stoatusercontent.com/attachments",
+      "date": "2026-10-21",
+      "proved": "probe: POST with no auth -> 401 (upload requires a token; read does not)"
+    },
+    {
+      "url": "https://stoat.chat/",
+      "date": "2026-10-21",
+      "proved": "'Custom emojis, a 20MB file upload limit and a server-specific profile picture with no subscription required.'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "20,000,000 bytes (20 MB) per attachment as the server-enforced default, no paid tier to raise it, and no documented total storage cap.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

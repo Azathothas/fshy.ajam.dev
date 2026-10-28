@@ -1,0 +1,80 @@
+{
+  "topic": "storage",
+  "slug": "nostr-download",
+  "provider": "nostr.download (route96 Blossom server)",
+  "url": "https://nostr.download/",
+  "category": "p2p-blob-storage",
+  "free_tier": {
+    "stated": "10.00 GB per file (hard cap, read off the server's own the provider). No published per-user total. 'Inactive file deletion: No limit'. 'Delete never-downloaded files: After 1 days'.",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://nostr.download/tos",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "10.00 GB per file",
+    "bytes": 10000000000,
+    "source_url": "https://nostr.download/tos",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Retention is download-triggered, not time-based: a file nobody fetches within 24 h is deleted",
+    "source_url": "https://nostr.download/tos",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "unmetered — files served by GET /<sha256>, Content-addressed. Served through the server's own CDN; no egress counter is exposed anywhere.",
+    "metered": false
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "Blossom (BUD-01/02/04/06) + NIP-96. Plain HTTP PUT /upload, GET /<sha256>, HEAD /upload for preflight. Pinned by NIP-94 kind 1063 events.",
+  "tooling": "any HTTP client. Auth is a signed nostr event (kind 24242), so a locally generated keypair is the only credential. route96 (v0l), lotus, or hzrd149/blossom clients all speak it.",
+  "chaining": "content-addressed by SHA-256, so a chunk-per-object scheme (BRIEF 2.1) maps onto it natively with no index server — the hash IS the locator.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "10.00 GB per file",
+      "source": "https://nostr.download/tos"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "Delete never-downloaded files: After 1 days",
+      "source": "https://nostr.download/tos"
+    }
+  ],
+  "limits_note": "per-object-cap 10 GB. Retention is download-triggered, not time-based: a file nobody fetches within 24 h is deleted. Anything in the hot working set survives indefinitely.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "anonymous",
+    "country": null
+  },
+  "reliability_note": "single volunteer operator, no SLA, no durability warranty ('Do not use this service as your only backup'). Purges never-downloaded objects after 24 h, so a write-only cold archive decays to zero.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://nostr.download/",
+      "date": "2026-10-21",
+      "proved": "'Max upload size 10240 MB', 'Whitelist Open'"
+    },
+    {
+      "url": "https://nostr.download/tos",
+      "date": "2026-10-21",
+      "proved": "'Maximum file size 10.00 GB', 'Inactive file deletion: ? No limit', 'Delete never-downloaded files ? After 1 days'"
+    },
+    {
+      "url": "https://nostr.download/upload",
+      "date": "2026-10-21",
+      "proved": "PUT with no auth returns HTTP 401 / x-reason 'Auth header not found', i.e. the endpoint is live and the only gate is the signature, not an account"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "10.00 GB per file (hard cap, read off the server's own the provider). No published per-user total. 'Inactive file deletion: No limit'. 'Delete never-downloaded files: After 1 days'.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

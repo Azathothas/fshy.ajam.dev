@@ -1,0 +1,89 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "public-alist-fronting-139yun",
+  "provider": "晴天网盘 (alist.jiejingfan.vip)",
+  "url": "https://alist.jiejingfan.vip",
+  "category": "public instance, not storage",
+  "free_tier": {
+    "stated": "No stated quota. The backend reports provider 139Yun, so this is a publicly readable AList whose storage is a real Chinese carrier netdisk, meaning somebody else's verified account resold as public read access",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://alist.jiejingfan.vip/api/public/settings",
+    "read_on": "2026-10-22"
+  },
+  "per_object_cap": {
+    "stated": "Not applicable",
+    "bytes": null,
+    "source_url": "https://alist.jiejingfan.vip"
+  },
+  "retention": {
+    "stated": "No guarantee. This host refused on one sweep run and listed on another, so it flaps",
+    "days": null,
+    "source_url": "https://alist.jiejingfan.vip"
+  },
+  "egress": {
+    "terms": "Unmetered direct links. No CDN cache was observed",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://alist.jiejingfan.vip"
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "the AList 3.45.1 REST API anonymously. No working WebDAV was observed. Mounts cover iOS sideloading content: 自签, Trollstore, IPCC, shortcuts, jailbreak tools, signing tools and shared enterprise certificates",
+  "chaining": "Read-only. The structural point is the important one: a 139Yun-backed public AList proves that a non-Chinese reader can reach Chinese carrier pan bytes through a proxy layer with no account. The access problem is solved by the proxy and only the write problem remains",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "write=false in the listing",
+      "source": "probe:https://alist.jiejingfan.vip/api/fs/list"
+    },
+    {
+      "kind": "request-rate",
+      "value": "deep subdirectory listings frequently return 500 because parent directories are stubs",
+      "source": "probe:https://alist.jiejingfan.vip/api/fs/list"
+    }
+  ],
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "the API answers a guest session",
+    "country": null
+  },
+  "reliability_note": "Volunteer-run and small. Reads return real files and the tree is half broken: file-level get works where the path resolves and directory walks fail against stub parents",
+  "confidence": "measured",
+  "evidence": [
+    {
+      "url": "probe:https://alist.jiejingfan.vip/api/fs/list",
+      "date": "2026-10-22",
+      "proved": "code 200 with provider 139Yun, write false and 8 directories"
+    },
+    {
+      "url": "probe:https://alist.jiejingfan.vip/api/fs/list (Windows)",
+      "date": "2026-10-22",
+      "proved": "listed entries including a 4,398,583-byte archive, so real files are reachable"
+    },
+    {
+      "url": "probe:https://alist.jiejingfan.vip/api/fs/get",
+      "date": "2026-10-22",
+      "proved": "a path returned code 500 'failed get dir: object not found', confirming stub directories"
+    },
+    {
+      "url": null,
+      "date": "2026-10-22",
+      "proved": "sweep row: api_kind alist, http 200, anon_settings yes, permission 0, 8 root entries, 4/1 mounts, provider 139Yun, 0 mounts with the write flag, fronting nginx, verdict read-only. A second run recorded this same host as no-api, which is the documented flake"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T04:06:37.166Z",
+  "binding": "write-gated",
+  "binding_note": "The read path reaches a Chinese carrier pan and that is the finding. What binds is the write gate plus a tree that is half stubs, so it is a fetch source at best.",
+  "notes": "The only host in the population whose upstream is a genuine Chinese carrier netdisk, which makes it the existence proof for the bridge pattern: a proxy layer converts an unreachable quota into a reachable read path without transferring an account.",
+  "extras": {
+    "access_mode": "public-instance",
+    "upstream_provider": "139Yun",
+    "fronting_cdn": "nginx",
+    "advertised_write_flag": false,
+    "flaps": true
+  }
+}

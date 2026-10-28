@@ -1,0 +1,108 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "guangyapan",
+  "provider": "光鸭云盘 / GuangYaPan (Xunlei subsidiary)",
+  "url": "https://www.guangyapan.com/",
+  "category": "consumer-pan, TV-first media drive, launched 2026-04-20",
+  "free_tier": {
+    "stated": "2 TB free at registration: '注册即享 2T 空间，会员畅享 500T 空间'. 100 GB per file free and 1 TB for members",
+    "unit": "TiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://www.guangyapan.com/",
+    "read_on": "2026-10-21"
+  },
+  "per_object_cap": {
+    "stated": "100 GB per file on the free tier, 1 TB for members, with a 1,000,000-file batch transfer",
+    "bytes": 100000000000,
+    "source_url": "https://app.guangyapan.com/pan"
+  },
+  "retention": {
+    "stated": "No stated expiry for stored files; a 30-day recycle bin",
+    "days": null,
+    "source_url": "https://app.guangyapan.com/pan"
+  },
+  "egress": {
+    "terms": "2 GB a day of high-speed traffic on the free tier, then throttled to an undisclosed low speed. Members get 1 TB a month down and 1 TB a month up, and self-download, online playback and third-party mount all count against the same terabyte, with no overage package",
+    "metered": true,
+    "free_allowance": "2 GB per day at high speed",
+    "price_per_tb": null,
+    "source_url": "https://post.smzdm.com/p/a82plxq0/"
+  },
+  "interface": [
+    "rest",
+    "webdav"
+  ],
+  "tooling": "a merged OpenList driver, guangyapan, which gives WebDAV and 302 direct links once mounted; two-stage SMS login needing a client id, an X-Captcha-Token and an X-Device-Sign; CloudDrive2 v1.0.11 or later reads it",
+  "chaining": "Closest thing in the survey to the target shape: 2 TB free per account, a merged OpenList driver, WebDAV out, and a TV client that streams originals. As a serving layer the 2 GB a day cap ends it; as a cold archive the cap never binds because uploads happen once",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "2 GB a day of high-speed traffic on the free tier, then throttled",
+      "source": "https://www.freeaday.com/2026/04/guangyapan/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "100 GB per file on the free tier",
+      "source": "https://docs.oplist.org/guide/drivers/guangyapan"
+    },
+    {
+      "kind": "request-rate",
+      "value": "3 free offline or magnet cloud-adds a day",
+      "source": "https://www.freeaday.com/2026/04/guangyapan/"
+    }
+  ],
+  "identity_cost": {
+    "kind": "any-phone",
+    "detail": "SMS only. POST /v1/auth/verification returns 400 'Email or phone_number must be set' when empty, and every email-shaped path returns 404, and the driver's own code only ever sends phone_number. So there is no email-only path",
+    "country": null
+  },
+  "reliability_note": "Auth is SMS-only, so the brief's email-only client cannot register. Xunlei's two previous netdisks both died, and the price rose from CNY 108 to 188 within months of launch",
+  "confidence": "reported",
+  "evidence": [
+    {
+      "url": "https://www.guangyapan.com/",
+      "date": "2026-10-21",
+      "proved": "'注册即享 2T 空间，会员畅享 500T 空间', '不限速极速上传下载', and a client list ending '下载电脑端下载移动端下载电视端'"
+    },
+    {
+      "url": "https://post.smzdm.com/p/a82plxq0/",
+      "date": "2026-10-21",
+      "proved": "a six-month reality check: free 2 GB a day high speed, member 1 TB a month down and up, 'online playback and third-party mount all count toward the 1 TB', no overage package, 4K billed at full file size"
+    },
+    {
+      "url": "https://docs.oplist.org/guide/drivers/guangyapan",
+      "date": "2026-10-21",
+      "proved": "the maintained driver, '100GB 单文件上传', and the closure warning for hosting workloads"
+    },
+    {
+      "url": "https://www.ithome.com/0/941/203.htm",
+      "date": "2026-10-21",
+      "proved": "launch coverage: '永久免费 2TB', '100GB 单文件上传及 100 万文件批量转存'"
+    },
+    {
+      "url": "probe:POST https://account.guangyapan.com/v1/auth/verification",
+      "date": "2026-10-21",
+      "proved": "400 with {\"error\":\"invalid_argument\",\"error_description\":\"Email or phone_number must be set\"} the email variant returned 404 not_found; /v1/auth/email/register returned 404"
+    },
+    {
+      "url": "probe:GET https://api.guangyapan.com/v1/user/info",
+      "date": "2026-10-21",
+      "proved": "HTTP 410 with {\"code\":128,\"msg\":\"路径不允许访问\"}, so the old path is closed and it says so"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "price_per_tb_month": "CNY 108/yr promotional and CNY 480/yr list for 500 TB of capacity, but the 1 TB a month member egress makes a per-terabyte price meaningless",
+  "binding": "per-ip-shaping",
+  "binding_note": "2 TB of capacity is the largest free allocation in this survey after Ctfile, and 2 GB a day at high speed is 0.4% of the serving target. The traffic cap is what decides the plan, and as a cold archive it never binds.",
+  "notes": "A 100 GB per-file cap on a free consumer pan is the best in the survey, better than anything except 123pan's paid tier. The two numbers the marketing merges are capacity and traffic, and they are ten thousand times apart in practical effect. The SMS-only registration is what closes it for a user.",
+  "extras": {
+    "access_mode": "registration-gated",
+    "launched": "2026-04-20",
+    "per_file_cap_bytes_derived": 100000000000,
+    "aliases": [
+      "光鸭云盘 / GuangYaPan (Xunlei subsidiary 深圳市光闪云科技有限公司)"
+    ],
+    "ban_warning": "OpenList docs: sharing, image hosting, software hosting and video links cause the provider to close accounts"
+  }
+}

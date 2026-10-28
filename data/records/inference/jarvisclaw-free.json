@@ -1,0 +1,111 @@
+{
+  "topic": "inference",
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "not applicable"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "slug": "jarvisclaw-free",
+  "provider": "JarvisClaw free route (auto/free)",
+  "url": "https://api.jarvisclaw.ai/v1",
+  "category": "inference gateway, keyless free route, x402 pay-per-call for other models",
+  "free_tier": {
+    "stated": "Requests with model auto/free and no credential are not billed and are rate limited per IP address in gateway calls per minute; no number is published",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://jarvisclaw.ai/en/free-llm-api",
+    "read_on": "2026-10-28",
+    "notes": "auto/free routes to an open-weight model from a shared free pool, so the served model is chosen by the gateway; any other model answers HTTP 402 with a price quote in USDC"
+  },
+  "endpoint": "https://api.jarvisclaw.ai/v1/chat/completions",
+  "tooling": "plain HTTP POST with no Authorization header; an OpenAI SDK always sends a key header, which the free route rejects with 401. CORS is allowed for browser use",
+  "chaining": "pairs with prototypes that need a model to answer rather than a particular model; the paid route is an x402 wallet payment on Base or Solana",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "unpublished: the page says the free route is rate limited per IP address, measured in gateway calls per minute, and gives no number",
+      "source": "https://jarvisclaw.ai/en/free-llm-api"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "the per-IP gateway-call ceiling is the only stated limit and its value is not published",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "none for the free route: send no Authorization header at all; a placeholder key is rejected with 401, and no account or wallet is needed",
+    "country": null
+  },
+  "reliability_note": "the free models are served from a shared pool, so latency varies; GET /v1/models without a credential answers 401, so the catalogue is not open",
+  "confidence": "documented",
+  "confidence_note": "the free route was not exercised: probe.py issues GET and HEAD only. A GET to /v1/models with no credential answered 401 Invalid token, and a GET to /v1/chat/completions answered 402 with a payment quote, so neither GET shows a completion",
+  "probe": {
+    "records": [
+      {
+        "probe_id": "jarvisclaw-v1-models-get",
+        "method": "GET",
+        "url": "https://api.jarvisclaw.ai/v1/models",
+        "http": 401,
+        "authorization_sent": false,
+        "error_message": "Invalid token",
+        "probed_at": "2026-10-28T04:43:11.573Z"
+      },
+      {
+        "probe_id": "jarvisclaw-chat-get",
+        "method": "GET",
+        "url": "https://api.jarvisclaw.ai/v1/chat/completions",
+        "http": 402,
+        "authorization_sent": false,
+        "body_kind": "x402 payment quote",
+        "probed_at": "2026-10-28T04:43:14.580Z",
+        "chat_completion_tested": false
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "url": "https://jarvisclaw.ai/en/free-llm-api",
+      "date": "2026-10-28",
+      "capture": "sha256:a452ebefb70b6cf08fc28c0c02acd9fecfb92008d7afb1a72288633b4b45a1d1",
+      "quote": "Call a free LLM with one curl command: no API key, no account and no wallet. OpenAI-compatible, rate limited per IP, with paid models one 402 quote away.",
+      "proved": "the free route needs no key, account or wallet and is rate limited per IP"
+    },
+    {
+      "url": "https://jarvisclaw.ai/en/free-llm-api",
+      "date": "2026-10-28",
+      "capture": "sha256:a452ebefb70b6cf08fc28c0c02acd9fecfb92008d7afb1a72288633b4b45a1d1",
+      "quote": "Send no Authorization header at all. The free tier admits only requests that carry no credential, and a placeholder key is rejected with 401.",
+      "proved": "the free route admits only requests with no credential at all"
+    },
+    {
+      "url": "https://jarvisclaw.ai/en/free-llm-api",
+      "date": "2026-10-28",
+      "capture": "sha256:a452ebefb70b6cf08fc28c0c02acd9fecfb92008d7afb1a72288633b4b45a1d1",
+      "quote": "Rate limited per IP address, measured in gateway calls per minute.",
+      "proved": "the only published limit is per IP address per minute, with no number"
+    },
+    {
+      "url": "https://jarvisclaw.ai/en/free-llm-api",
+      "date": "2026-10-28",
+      "capture": "sha256:a452ebefb70b6cf08fc28c0c02acd9fecfb92008d7afb1a72288633b4b45a1d1",
+      "quote": "auto/free routes to an open-weight model from the free pool. The response names the model that answered, so you can see which one you got.",
+      "proved": "the model is chosen by the gateway and named in the response, so the requested id is not honoured as such"
+    },
+    {
+      "url": "https://api.jarvisclaw.ai/v1/models",
+      "date": "2026-10-28",
+      "capture": "sha256:506207c36780a5866b669a33243a2b30261845bd331ba6be4c574fc98d32389f",
+      "quote": "Invalid token",
+      "proved": "a keyless GET to /v1/models answered 401 Invalid token"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-28T04:36:18.974Z",
+  "notes": "the echoed model on a completion was not observed; the page states the response names the model that answered"
+}

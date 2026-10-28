@@ -1,0 +1,190 @@
+{
+  "topic": "ip-proxy",
+  "slug": "rarecoud-and-vpckr",
+  "provider": "RareCloud (Constanta residential) and VPC.KR (Korea native)",
+  "url": "https://rarecloud.io/datacenters/constanta-ro/",
+  "category": "ISP-registered VPS",
+  "tier": "RareCloud Residential VPS (Constanta / Navodari) and VPC.KR Korea VPS - Mini",
+  "free_tier": {
+    "stated": "No free tier on either. RareCloud sells a Residential VPS available only in Constanta (Navodari): 'Residential VPS - Starting from EUR 11.50/month', 'VPS with genuine residential IP addresses', 'Fully customizable CPU, RAM, storage, and bandwidth', 'Pay only for what you use', and the store listing for that product group answered 'Out of Stock ... orders for it have been suspended until more stock is available' on 2026-10-24, with the row itself rendered as '0 Available'. VPC.KR Korea VPS - Mini is $5.80/month: 1 vCPU, 512 MB RAM, 10G NVMe SSD, '5Mbps Dedicated Bandwidth'.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://rarecloud.io/clients/index.php?rp=/store/kvm-servers/residential-vps",
+    "read_on": "2026-10-24",
+    "notes": "Two vendors in one record because the survey produced them together and neither is usable alone: one supplies the Constanta registration and is out of stock, the other supplies a buyable Korean address. The EUR 11.50 figure is quoted from the vendor's own offer post; the store page itself returned the out-of-stock notice instead of a plan table, and the '0 Available' / 'Starting from EUR 11.50 Monthly' strings were seen in a search index's rendering of that same store, because the plan rows render client-side and a raw fetch returned a 68,431-byte shell with no product text."
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://rarecloud.io/datacenters/constanta-ro/",
+    "notes": "The ceiling that matters on this product is stock, not size: the Residential VPS group answered Out of Stock on 2026-10-24."
+  },
+  "retention": {
+    "stated": "not applicable: a rented machine and its address, not stored bytes",
+    "days": null,
+    "source_url": "https://rarecloud.io/datacenters/constanta-ro/",
+    "notes": "Nothing here is a retention window on stored objects. What is lost at non-payment is the machine and the address with it, which is a property of the rental and was not read on a terms page."
+  },
+  "egress": {
+    "terms": "Neither product publishes a byte allowance. VPC.KR Korea VPS - Mini states '5Mbps Dedicated Bandwidth' and no overage price; the vendor's own blog table reads 'Korea VPS - Mini | KT | 5 Mbps | $5.80'. RareCloud's residential offer says bandwidth is a configuration line the buyer sets: 'Fully customizable CPU, RAM, storage, and bandwidth' and 'Pay only for what you use', with no allowance or overage price stated on the pages read. metered is recorded true because traffic out is a priced configuration line on one product and a hard port rate on the other; no per-byte price is published for either.",
+    "metered": true,
+    "free_allowance": "none published on either product",
+    "price_per_tb": null,
+    "source_url": "https://vpc.kr/pricing"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "A machine, reached over SSH on its fixed IPv4; that shell is the cli token. Orders, renewals and extra addresses go through a web console (rarecloud.io/clients and console.rarecloud.io for RareCloud, vpc.kr/order and console.vpc.kr for VPC.KR). Neither vendor sells a proxy endpoint: SOCKS5, an HTTP proxy or WireGuard is software a user installs on the box. RareCloud's own offer post says the Linux option lets the buyer 'Configure your own VPNs or create a residential proxy pool'; VPC.KR publishes a WireGuard and SOCKS5 setup guide for its Korean VPS.",
+  "tooling": "An SSH client and whatever proxy daemon a user runs on the machine. Neither vendor publishes a proxy endpoint, a public API or a wrapper. That is a note about tooling and not a reason to reject either one: the address is the product, and the machine is only how it is held.",
+  "chaining": "The Worker opens an outbound connection to the VPS's fixed IPv4 and the VPS makes the upstream request, so the upstream sees an address in AS39347 or AS4766 instead of AS13335. At 45 GB a month across about 599,000 requests the volume is roughly 17 KB/s average, which neither product's published rate comes close to bounding.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "5 Mbps dedicated bandwidth on Korea VPS - Mini, the $5.80 tier; the vendor's blog table repeats 'Korea VPS - Mini | KT | 5 Mbps | $5.80'",
+      "source": "https://vpc.kr/pricing"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "none published on the RareCloud Residential VPS: bandwidth is a per-order configuration line ('Fully customizable CPU, RAM, storage, and bandwidth') with no stated allowance and no overage price, so this is a documented absence and not a claim of unmetered traffic",
+      "source": "https://lowendtalk.com/discussion/209657/autumn-sale-75-off-vps-in-7-datacenters-us-eu-coverage-new-services"
+    }
+  ],
+  "limits_note": "Four constraints the seven-value vocabulary cannot name. (1) Stock: the RareCloud Residential VPS group answered 'Out of Stock ... orders for it have been suspended until more stock is available' on 2026-10-24, and the row rendered as '0 Available', so the product that passed the registration check could not be bought that day. (2) No IPv6 at Constanta: the host rep answered 'Nope. Not yet! We will let you know when it's ready.' to a direct question about IPv6 on RO Constanta, while the datacenter page advertises '14 IPv6 prefixes' and the KVM plan rows list a /112 IPv6 subnet, so the IPv6 in the product table is not IPv6 at this site. (3) One address per machine: the residential offer sells 'as many additional IPs as you need' as a paid option, so a second address is a second purchase, not a rotation. (4) The registration class belongs to the prefix, not to the vendor: the Constanta addresses are announced by AS39347 while the residential test IP's inetnum registrant is 07Internet and the datacenter test IP's is Urban Network Solutions SRL.",
+  "binding": "none",
+  "binding_note": "45 GB a month is about 17 KB/s average, and VPC.KR's 5 Mbps port is about 625 KB/s, so the rate ceiling is roughly 36 times the demand; neither vendor publishes a byte quota, a request rate or an object cap. What actually decides this pair is stock (0 Available) and the registration class of the prefix, and the vocabulary has no value for either.",
+  "identity_cost": {
+    "kind": "any-phone",
+    "detail": "An email address is the login and a phone number is also collected at signup. The console sign-up form at console.rarecloud.io/register marks these fields required in the served HTML: email, password, phone (type tel, placeholder '[number removed]'), address, city, postcode, with country and billing-currency selects beside them, and the page states 'Get started with RareCloud 30-second signup. No credit card required to browse.' VPC.KR's register form asks for name, email, password and password confirmation and nothing else. No card and no identity document are required at either. The commissioning facts give identity as email; the record takes the stricter of the two observed forms, and a phone of any country is what that means here.",
+    "country": null
+  },
+  "reliability_note": "One fixed address per machine, so reputation is that address's and cannot be rotated inside a plan; the Constanta site has no IPv6 today per the host rep, while the datacenter page advertises 14 IPv6 prefixes; a forum member read the residential test IP 89.33.93.50 as DCH (Data Center/Web Hosting/Transit) in IP2Location and the host rep's reply was that 'ip2location it's not reliable enough', with no corrected reading published in the pages read.",
+  "confidence": "documented",
+  "confidence_note": "The registration class of both test addresses is measured here, with RIPE RDAP, RIPE stat and APNIC RDAP. The prices are documented from vendor pages and from the vendors' own offer posts. The identity rung is documented from the two sign-up forms as served. The stock line is documented from the store page's own out-of-stock notice. So documented is the weakest of the fields the verdict rests on. What would move it up: buying the cheapest plan at each vendor, repeating the registry check on the delivered IPv4 rather than on a published test address, and counting bytes through the machine for a month. What keeps the caveat: the usage-class reading of 89.33.93.50 rests on one forum member's one database lookup on one day.",
+  "evidence": [
+    {
+      "url": "probe:89.33.93.50",
+      "date": "2026-10-24",
+      "proved": "RIPE RDAP: inetnum 89.33.92.0 - 89.33.95.255, netname SELL-07INTERNET-RO-2, type ASSIGNED PA, country RO, maintainers ro-07internet-mnt and SELL-MNT, admin and tech SELL-RIPE, abuse role '0 7 I N T E R N E T . R O - NOC', remarks 'Orasul Navodari PNV' and 'www.07internet.ro'. RIPE stat network-info and prefix-overview: the covering announced prefix is 89.33.88.0/21 and its origin is AS39347. This is the address the vendor publishes as its residential test IP, and its registrant is a local ISP rather than a hosting company."
+    },
+    {
+      "url": "probe:https://rdap.db.ripe.net/autnum/39347",
+      "date": "2026-10-24",
+      "proved": "AS39347 handle SELL-AS, registrant entity ORG-SBAS3-RIPE with fn 'STYLISH BY A&L SRL' and adr 'str culturii, nr 16, 905700, navodari, ROMANIA'; maintainer ro-07internet-1-mnt also appears as a registrant entity. A RIPE search for ORG-SBAS3-RIPE returns org-type LIR, country RO, and its LIR contact address is on the 07internet.ro domain, which ties the announcing AS to the ISP that holds the block."
+    },
+    {
+      "url": "probe:85.122.120.20",
+      "date": "2026-10-24",
+      "proved": "The second address the vendor publishes, on its datacenter page, is a different registered object from the residential one: RIPE RDAP returns inetnum 85.122.120.0 - 85.122.123.255, netname URBAN-NETWORK-SOLUTIOS, type ASSIGNED PA, country RO, remarks 'Urban Network Solutions SRL, Bd. Mamaia Nord ... Navodari, Constanta', while RIPE stat prefix-overview reports the covering prefix announced by AS39347. Registration and announcing AS are two facts and they do not have to name the same company."
+    },
+    {
+      "url": "probe:112.169.175.10",
+      "date": "2026-10-24",
+      "proved": "APNIC RDAP: inetnum 112.160.0.0 - 112.191.255.255, netname KORNET, type ALLOCATED PORTABLE, country KR, description 'Korea Telecom', admin and tech IM667-AP, abuse IRT-KRNIC-KR. RIPE stat network-info: AS4766, covering prefix 112.168.0.0/13; prefix-overview names the holder 'KIXS-AS-KR-KR - Korea Telecom' and warns that the queried address is not itself announced, having been aligned to the covering /13. ALLOCATED PORTABLE is the strongest form of the claim: the block was allocated directly to the carrier, not sub-assigned from an upstream."
+    },
+    {
+      "url": "https://vpc.kr/pricing",
+      "date": "2026-10-24",
+      "proved": "Korea VPS - Mini: 'Korean Native VPS', $5.80 /mo, 1 vCPU / 512MB RAM, 10G NVMe SSD, '5Mbps Dedicated Bandwidth', feature line 'Korea Local IP'. The $18.99 Native SK tier carries 'Korea Native IP' and '10Gbps Uplink'; the $33 AI Agent tier is the one marked 'Out of Stock' on this render."
+    },
+    {
+      "url": "https://vpc.kr/blog/why-korean-native-server-for-ai-agents",
+      "date": "2026-10-24",
+      "proved": "The vendor's own plan table: 'Korea VPS - Mini | KT | 5 Mbps | $5.80', 'Korea VPS - Native SK | SK Broadband | 500 Mbps | $18.99', 'Korea VPS - AI Agent | SK Broadband | 500 Mbps | $33.00', with 'All plans include KVM virtualization, NVMe SSD storage, and IPs allocated from primary Korean ISP blocks' and 'Korean native IPs, sourced from local ISPs such as SK Broadband and KT'."
+    },
+    {
+      "url": "https://lowendtalk.com/discussion/219927/looking-for-a-vps-provider-with-fixed-line-isp-ip-addresses",
+      "date": "2026-10-24",
+      "proved": "Where 112.169.175.10 comes from: a member publishes it as VPC.KR's test IP with an IP2Location reading of 'ISP - Fixed Line ISP, ISP: KT Corporation, ASN: AS4766 Korea Telecom, Net Speed: DSL, Data Center: No', and adds that KRNIC whois may show the allocation as commercial, which he says is not contradictory because his criterion is the address's usage classification rather than the block's registrant. So the address is a customer's sample, not one the vendor publishes on its own site."
+    },
+    {
+      "url": "https://lowendtalk.com/discussion/208940/summer-sale-ending-residential-vps-new-dc-flash-sales-75-off-vps-from-0-76-mo",
+      "date": "2026-10-24",
+      "proved": "Host-rep offer post: 'We've launched our brand-new Residential VPS, available only in Constanta', 'Fully customizable - CPU, RAM, storage, and IPs', 'Residential Test IP (Constanta, Navodari): 89.33.93.50 <- check it yourself - it's 100% residential', and separately 'Constanta Test IP (Navodari): 85.122.120.20'. Page 2 of the same thread carries the disagreement: a member reports that 89.33.93.50 reads 'Usage Type: (DCH) Data Center/Web Hosting/Transit' in IP2Location, and the host rep replies 'We have tested in a lot of places, and with more tools. ip2location it's not reliable enough. I will get back to you with more details after I talk with my colleague responsible with this product.'"
+    },
+    {
+      "url": "https://lowendtalk.com/discussion/209657/autumn-sale-75-off-vps-in-7-datacenters-us-eu-coverage-new-services",
+      "date": "2026-10-24",
+      "proved": "The vendor's own price and terms for the residential product: 'Residential VPS - Starting from EUR 11.50/month', 'VPS with genuine residential IP addresses', 'Fully customizable CPU, RAM, storage, and bandwidth', 'Pay only for what you use'."
+    },
+    {
+      "url": "https://lowendtalk.com/discussion/207513/summer-just-got-hotter-new-vps-location-bonuses-upgrades-up-to-75-off-vps-on-summer-sale/p5",
+      "date": "2026-10-24",
+      "proved": "The host rep's answer to 'and is IPv6 operational on RO Constanta (Navodari)?': 'Nope. Not yet! We will let you know when it's ready.' That is the source of the no-IPv6 caveat at this site."
+    },
+    {
+      "url": "https://rarecloud.io/datacenters/constanta-ro/",
+      "date": "2026-10-24",
+      "proved": "The Constanta page labels the location 'AS39347', publishes 'Test IP 85.122.120.20', describes 'RareCloud-operated facility partnered with local residential ISP 07Internet', says the network is 'classified as Eyeball on PeeringDB', and states '14-15 IPv4 prefixes (11,520 IPv4 addresses). 14 IPv6 prefixes'. The IPv6 line is the one the host rep contradicts for this site, and the AS39347 label is the vendor's own claim, which the RDAP check above confirms as the announcing AS."
+    },
+    {
+      "url": "https://rarecloud.io/clients/index.php?rp=/store/kvm-servers/residential-vps",
+      "date": "2026-10-24",
+      "proved": "The store page for the residential product group answers 'Oops, there's a problem... Out of Stock. We are currently out of stock on this item so orders for it have been suspended until more stock is available. For further information, please contact us.' A raw fetch of the same path returns a 68,431-byte shell with no product rows, because the plan table renders client-side, so the '0 Available' and 'Starting from EUR 11.50 Monthly' strings were read from a search index's rendering of the same store rather than from the fetch."
+    },
+    {
+      "url": "probe:https://console.rarecloud.io/register",
+      "date": "2026-10-24",
+      "proved": "The sign-up form as served marks these fields required: email, password, phone (type tel, placeholder '[number removed]'), address, city, postcode, with country and billing-currency selects. The page states 'Get started with RareCloud 30-second signup. No credit card required to browse.' No identity document field exists in the form."
+    },
+    {
+      "url": "probe:https://console.vpc.kr/index.php/register",
+      "date": "2026-10-24",
+      "proved": "The sign-up form carries exactly four inputs: name, email, password, password_confirmation. No phone, no card and no document field appears in the served HTML, which is what makes VPC.KR's identity cost an email."
+    },
+    {
+      "url": "https://rarecloud.io/residential-proxy/",
+      "date": "2026-10-24",
+      "proved": null
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-24T10:07:11.000Z",
+  "price_per_tb_month": null,
+  "notes": "Three candidates for what would sink this pair, and the registry check split them. (1) The residential claim is marketing over a hosting network: refuted for RareCloud, because the address the vendor publishes as its residential test IP, 89.33.93.50, sits in inetnum 89.33.92.0 - 89.33.95.255 whose netname is SELL-07INTERNET-RO-2, whose registrant maintainer is ro-07internet-mnt, whose abuse role is '0 7 I N T E R N E T . R O - NOC' and whose remarks read 'Orasul Navodari PNV / www.07internet.ro'; and the announcing AS39347 is held by STYLISH BY A&L SRL, a RIPE LIR in Navodari whose LIR contact is on the 07internet.ro domain. (2) The label is a database artefact rather than a registration: partly confirmed, and it is the caveat, because registry class and usage class are two facts and they disagree here - a forum member read the same address as DCH in IP2Location and the host rep's answer was that the database is not reliable enough, with no corrected reading published. (3) The address is a broker block wearing an ISP name: refuted, since neither Constanta block is leased from Cogent, GTT, Korbank or IPXO; both are held by the operating ISP. The same three candidates resolve the other way for VPC.KR: 112.169.175.10 sits in APNIC inetnum 112.160.0.0 - 112.191.255.255, netname KORNET, type ALLOCATED PORTABLE, description 'Korea Telecom', announced by AS4766, so the block was allocated straight to the carrier rather than sub-assigned, and the address is covered by KT's own /13 with no more-specific of its own. THE SURVEY CONTEXT, which is the reason the record exists: of the vendors selling an explicit residential or ISP claim, four fail the registry check and two pass. NovixLink resolves to Cogent AS174; CStoneCloud to Cogent and GTT, AS174 and AS3257; K.PL to KorbankDC AS35179; DeluxHost Amsterdam to IPXO AS834; RareCloud to AS39347 and VPC.KR to AS4766. The commissioning facts call the pool five while naming four failures and two passes; the named list is six and the record carries the list rather than the count. ONE SAMPLE EACH: the class claim rests on the vendors' published test IPs, one address per vendor, not on an address a buyer was delivered, so it is evidence about those prefixes and about the ASN, not proof that every address handed out reads the same. What would settle it: buy the cheapest plan at each, repeat RIPE and APNIC on the delivered IPv4, and read the same address in two IP-intelligence databases to see whether registry class and usage class agree. IDENTITY DEVIATION, stated here so it is not buried: the commissioning facts give identity as email, and that holds for VPC.KR, whose register form has four inputs and no phone. RareCloud's console sign-up form marks a phone required, so the pair's structured identity is any-phone and a reader who plans on an email address alone will meet a phone field. Both forms were read on 2026-10-24 and the field lists are in evidence. CROSS-TOPIC CHECK: dossier/compute/rarecloud.json prices the KVM line (EUR 19.50 a year for the Micro KVM) and not the residential product (from EUR 11.50 a month), so it needs no correction; its 'IPv4 plus IPv6' row describes the US Micro KVM plan and does not claim IPv6 at Constanta, so the host rep's answer here does not contradict it. That file leaves identity_cost.detail at 'not read: the signup page was not fetched' A second RareCloud product exists on the same site and is not this record: US static residential proxies from EUR 7.00 a month, whose ISP list includes Cogent, CenturyLink, Sprint, Comcast, RCN and NTT, which is a different registration question at a different site. INTERFACE TOKEN: the interface enum in scripts/dossier/schema.json carries none of api, socks5, http-proxy, wireguard, openvpn, web-ui or none, so this record uses 'cli', the one token that is in both that enum and the topic's intended vocabulary, and keeps the transport in interface_detail. Three sibling records in this topic already fail the gate on exactly that gap (decodo-isp-proxies, ippeak-dual-ntt, openproxylist-xyz), so the enum is the thing to extend, not the records.",
+  "extras": {
+    "rung": 5,
+    "rung_note": "The question is what the address is registered as and nothing else: the measurement tested the registrant of each published test IP and the origin AS of its covering prefix, which is rung 5, and it stops short of rung 6 because no account was created and short of rung 7 because no client fingerprint was presented.",
+    "registry_survey": {
+      "question": "Of the vendors selling an explicit residential or ISP claim, whose test IP is registered to an ISP rather than to a hosting company or an address broker?",
+      "pass": [
+        {
+          "vendor": "RareCloud (Constanta residential)",
+          "asn": "AS39347",
+          "registrant": "07Internet via ro-07internet-mnt; AS holder STYLISH BY A&L SRL, org-type LIR",
+          "rung": 5
+        },
+        {
+          "vendor": "VPC.KR (Korea native)",
+          "asn": "AS4766",
+          "registrant": "Korea Telecom, APNIC ALLOCATED PORTABLE 112.160.0.0/12 KORNET",
+          "rung": 5
+        }
+      ],
+      "fail": [
+        {
+          "vendor": "NovixLink",
+          "asn": "AS174",
+          "registrant": "Cogent"
+        },
+        {
+          "vendor": "CStoneCloud",
+          "asn": "AS174 / AS3257",
+          "registrant": "Cogent / GTT"
+        },
+        {
+          "vendor": "K.PL",
+          "asn": "AS35179",
+          "registrant": "KorbankDC"
+        },
+        {
+          "vendor": "DeluxHost Amsterdam",
+          "asn": "AS834",
+          "registrant": "IPXO"
+        }
+      ],
+      "rate": "2 of 6",
+      "note": "The four failures are carried here as the survey recorded them and were not re-measured only the two passes were checked here, with RIPE RDAP, RIPE stat and APNIC RDAP on 2026-10-24."
+    }
+  }
+}

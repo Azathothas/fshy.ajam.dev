@@ -1,0 +1,89 @@
+{
+  "topic": "egress",
+  "slug": "holesail",
+  "provider": "Holesail",
+  "url": "https://holesail.io/",
+  "category": "p2p tunnel",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Holesail is the world's first truly peer-to-peer proxy for TCP and UDP ports. No port forwarding, servers or configuration required.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://github.com/holesail/holesail",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://holesail.io/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://holesail.io/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No allowance exists: the bytes travel between the two peers, and the public DHT only coordinates the holepunch.; ingress: tcp+udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://holesail.io/"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "npm i holesail -g; holesail --live 3000 prints an hs:// connection string.",
+  "tooling": "npm i holesail -g; holesail --live <port> then holesail <connection-string>.",
+  "chaining": "Carries a WireGuard handshake between a free VM and a laptop without opening a port on either, at the cost of installing a client on both ends.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "no quota; throughput is whatever the two peers' paths allow",
+      "source": "https://github.com/holesail/holesail"
+    }
+  ],
+  "limits_note": "",
+  "binding": "none",
+  "binding_note": "Nothing meters the bytes, so at 1 TiB/month the limit is the peer's uplink and NAT behaviour, not a vendor counter.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account, email or card: the connection string is a public key derived from a keypair the client generates.",
+    "country": "None"
+  },
+  "reliability_note": "Depends on public HyperDHT bootstrap nodes; symmetric NAT defeats the holepunch and falls back to TCP, which breaks UDP-only protocols.",
+  "confidence": "documented",
+  "confidence_note": "A measured transfer between two peers behind different NATs would show the real throughput and whether the DHT path holds; that is the missing rung.",
+  "evidence": [
+    {
+      "url": "https://github.com/holesail/holesail",
+      "date": "2026-10-23",
+      "proved": "Peer-to-peer proxy for TCP and UDP; npm install; connection string replaces a public address."
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=46131627",
+      "date": "2025-12-03",
+      "proved": "Launch post: no port forwarding, no VPNs, no servers in the middle, supports both UDP and TCP."
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=46172495",
+      "date": "2026-10-23",
+      "proved": "Mechanism: peers announce to HyperDHT, DHT nodes coordinate a UDP holepunch, then UDX carries the data; TCP fallback exists."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Not a hosted ingress: a third party cannot connect unless they run holesail with the connection string. It qualifies as free UDP capacity between two machines a user controls, which covers a WireGuard endpoint only if the far side also runs it.",
+  "extras": {
+    "wg_path": "inside-udp",
+    "wg_detail": "The transport after holepunching is UDX, a custom UDP protocol, with a TCP fallback. A WireGuard datagram can ride that path between two peers running holesail.",
+    "ingress": "tcp+udp",
+    "volume_tib_month": null,
+    "volume_stated": "No allowance exists: the bytes travel between the two peers, and the public DHT only coordinates the holepunch.",
+    "bytes_transit": "overlay-only",
+    "transit_note": "Bytes go peer to peer after holepunching; only coordination metadata crosses the public DHT."
+  }
+}

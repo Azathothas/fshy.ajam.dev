@@ -1,0 +1,82 @@
+{
+  "topic": "storage",
+  "slug": "databricks-free-edition",
+  "provider": "Databricks Free Edition (default storage / Unity Catalog volumes)",
+  "url": "https://docs.databricks.com/aws/en/getting-started/free-edition",
+  "category": "paas",
+  "free_tier": {
+    "stated": "No published byte quota. Free Edition ships 'serverless compute and default storage, so you can immediately start exploring and building' — default storage is 'a fully managed object storage platform' and in serverless workspaces you can 'create additional catalogs in either default storage or in your own cloud object storage'. Quotas are documented for compute, jobs, pipelines, model serving and apps — never for bytes.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.databricks.com/aws/en/getting-started/free-edition-limitations",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.databricks.com/aws/en/getting-started/free-edition-limitations",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.databricks.com/aws/en/getting-started/free-edition-limitations",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Not addressed in the Free Edition docs. Outbound internet is 'restricted to a limited set of trusted domains', which throttles external egress to non-approved hosts.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Unity Catalog volumes via SQL (`CREATE CATALOG ...`) or the Databricks CLI / REST API; no rclone backend. File access requires serverless, Unity-Catalog-enabled compute — 'All interactions with default storage require serverless, Unity Catalog-enabled compute'.",
+  "chaining": "One workspace per signup; the docs do not cap workspaces. Storage is uncapped in the docs but *only reachable through compute*, so the real multiplier is compute quota resets ('your workspace's compute resources will be shut down and unavailable for the rest of the day' on quota exhaustion; data is retained).",
+  "limits": [],
+  "limits_note": "per-object-cap: not documented for default storage — unverified. request-rate: per-account serverless quotas ('Max of 5 concurrent job tasks per account', one SQL warehouse capped at 2X-Small) — this is the binding constraint and it is compute, not storage. retention: 'While your compute will be unavailable, your data and settings will not be deleted'; deleting a managed table/volume keeps files 'to allow for a 7-day recovery window' then purges within 48 hours.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: thout a documented quota but also without a storage-native API — you cannot `PUT` arbitrary bytes without spinning compute, and compute is throttled to 'the rest of the day'. Custom",
+    "country": null
+  },
+  "reliability_note": "Storage without a documented quota but also without a storage-native API — you cannot `PUT` arbitrary bytes without spinning compute, and compute is throttled to 'the rest of the day'. Custom workspace storage locations are unsupported. Realistically a place to park tabular artefacts, not a 20 TiB blob archive.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://docs.databricks.com/aws/en/getting-started/free-edition",
+      "date": "2026-10-21",
+      "proved": "'Your new workspace includes serverless compute and default storage'"
+    },
+    {
+      "url": "https://docs.databricks.com/aws/en/storage/default-storage",
+      "date": "2026-10-21",
+      "proved": "'Default storage is a fully managed object storage platform'; 'All interactions with default storage require serverless, Unity Catalog-enabled compute'"
+    },
+    {
+      "url": "https://docs.databricks.com/aws/en/getting-started/free-edition-limitations",
+      "date": "2026-10-21",
+      "proved": "(last updated 2026-10-18) — quota table covers compute/jobs/pipelines/serving only; 'Custom workspace storage locations' unsupported"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET docs.databricks.com/aws/en/getting-started/free-edition-limitations -> 200 (read live 2026-10-21)"
+    }
+  ],
+  "verdict": "trial-only",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published byte quota. Free Edition ships 'serverless compute and default storage, so you can immediately start exploring and building' — default storage is 'a fully managed object storage platform' and in serverless workspaces you can 'create additional catalogs in either default storage or in your own cloud object storage'. Quotas are documented for compute, jobs, pipelines, model serving and apps — never for bytes.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "not-storage",
+      "why": "No published byte quota. Free Edition ships 'serverless compute and default storage, so you can immediately start exploring and building' — default storage is 'a fully managed object storage platform' and in serverless workspaces you can 'create additional catalogs in either default storage or in your own cloud object storage'. Quotas are documented for compute, jobs, pipelines, model serving and apps — never for bytes.",
+      "retry_when": "never; it is not storage",
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": "no constraint of a named kind was recorded; the verdict rests on the quota sentence rather than on a named limit"
+}

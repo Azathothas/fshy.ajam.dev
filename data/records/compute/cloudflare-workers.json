@@ -1,0 +1,131 @@
+{
+  "topic": "compute",
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "notes": null
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "a JavaScript or WASM module; fetch handler, cron triggers, queue consumers",
+  "tooling": "Wrangler; the runtime API; ctx.waitUntil for work after the response",
+  "chaining": "the only free tier here that answers 100,000 HTTP requests a day and can hold a WebSocket",
+  "limits_note": "there is no duration limit for an HTTP-triggered Worker while a user stays connected; cron and queue handlers are capped at 15 minutes",
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "price_per_tb_month": null,
+  "slug": "cloudflare-workers",
+  "provider": "Cloudflare Workers",
+  "url": "https://developers.cloudflare.com/workers/platform/limits/",
+  "category": "serverless runtime",
+  "free_tier": {
+    "stated": "Workers Free: 100,000 requests a day, 10 ms of CPU time per request, 128 MB memory, 50 subrequests per request",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://developers.cloudflare.com/workers/platform/limits/",
+    "read_on": "2026-10-22",
+    "notes": "no request-per-second cap; the free wall is CPU time and the daily request count"
+  },
+  "retention": {
+    "stated": "a Worker holds no disk; state lives in KV, D1, R2 or a Durable Object",
+    "days": 0
+  },
+  "egress": {
+    "terms": "response bodies are served from the edge with no per-byte charge stated on the limits page",
+    "metered": false,
+    "free_allowance": "no byte cap stated",
+    "price_per_tb": null,
+    "source_url": "https://developers.cloudflare.com/workers/platform/limits/"
+  },
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "100,000 requests a day on Free",
+      "source": "https://developers.cloudflare.com/workers/platform/limits/"
+    },
+    {
+      "kind": "pull-count",
+      "value": "50 subrequests per request on Free, 1,000 on Paid",
+      "source": "https://developers.cloudflare.com/workers/platform/limits/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "6 simultaneous outgoing connections per request on both plans",
+      "source": "https://developers.cloudflare.com/workers/platform/limits/"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a Cloudflare account; no card for the Free plan",
+    "country": null
+  },
+  "evidence": [
+    {
+      "url": "https://developers.cloudflare.com/workers/platform/limits/",
+      "date": "2026-10-22",
+      "proved": "Free: 100,000 requests a day, 10 ms CPU, 128 MB memory, 50 subrequests, 6 simultaneous outgoing connections"
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/platform/limits/",
+      "date": "2026-10-22",
+      "proved": "there is no hard duration limit for HTTP-triggered Workers; cron triggers and queue consumers are capped at 15 minutes"
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/platform/limits/",
+      "date": "2026-10-22",
+      "proved": "Paid raises CPU time to 5 minutes and subrequests to 1,000 per request"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "notes": "10 ms of CPU is the wall, not the 100,000 requests. A Worker can hold a connection open for hours and stream a response, which is why this is the only free runtime here that can serve. It cannot run a shell.",
+  "extras": {
+    "shape": {
+      "vcpu": null,
+      "ram_gib": null,
+      "disk_gib": null,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "billing_model": "per-request",
+    "granularity": {
+      "min_billed_s": null,
+      "rounding_s": null
+    },
+    "session_cap": {
+      "wall_clock_min": null,
+      "idle_reap_s": null,
+      "restart_required": false,
+      "note": "no duration limit while a user is connected; 10 ms of CPU per request on Free"
+    },
+    "keep_rate": {
+      "value": 0.0,
+      "basis": "an isolate is not billed between requests",
+      "source": "https://developers.cloudflare.com/workers/platform/limits/"
+    },
+    "persistent_storage": {
+      "included_gib": 0,
+      "price_gib_month": "R2 and D1 are separate products",
+      "durability": "isolate has no disk",
+      "survives_stop": false,
+      "survives_destroy": false,
+      "max_retention": "none"
+    },
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": true,
+      "ports": "HTTP and WebSocket through the edge",
+      "static_ip": false,
+      "ipv6": true,
+      "per_session_bytes": null
+    },
+    "free_tier_kind": "allowance",
+    "m10h_usd": 0.0,
+    "m24h_usd": 0.0,
+    "price_arithmetic": "free at 100,000 requests a day; Paid is USD 5 a month with no request cap"
+  },
+  "binding": "request-rate",
+  "binding_note": "10 ms of CPU per request is the wall: the 100,000-request allowance is generous and a JSON parse meets the CPU limit in the first request"
+}

@@ -1,0 +1,90 @@
+{
+  "topic": "egress",
+  "slug": "zerops",
+  "provider": "Zerops",
+  "url": "https://docs.zerops.io/guides/public-access",
+  "category": "paas l4 port",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Lightweight Core - Free. Included resources: Build Time: 15 hours per month, Backup Storage: 5 GB, Egress Traffic: 100 GB per month.",
+    "unit": "GB",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://docs.zerops.io/company/pricing",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://docs.zerops.io/guides/public-access",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://docs.zerops.io/guides/public-access",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Lightweight Core - Free: Egress Traffic: 100 GB per month.; ingress: tcp+udp",
+    "metered": true,
+    "free_allowance": "Lightweight Core - Free: Egress Traffic: 100 GB per month.",
+    "price_per_tb": null,
+    "source_url": "https://docs.zerops.io/guides/public-access"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "GUI, import YAML, and a REST API; \"Direct Port Access ... Protocols: TCP, UDP\".",
+  "tooling": "wg-quick on the service; the port is configured in the Zerops GUI or import YAML.",
+  "chaining": "Zerops direct UDP port plus a wg-quick peer gives a tunnel endpoint; the 100 GB/month cap means it carries control traffic and fallback, not bulk transfer.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "100 GB per month on the Lightweight Core",
+      "source": "https://docs.zerops.io/company/pricing"
+    }
+  ],
+  "limits_note": "",
+  "binding": "volume-quota",
+  "binding_note": "At 1 TiB/month the free core's 100 GB/month egress is exceeded 11 times over; extra egress is $0.02/GB. The port itself costs nothing.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Sign up at app.zerops.io; \"You get $15 in promo credits on signup, no credit card needed.\" Verifying with a $10 payment is optional and adds $50.",
+    "country": "None"
+  },
+  "reliability_note": "Firewall rules are per port, blacklist or whitelist. No ban or throttle documented for direct ports.",
+  "confidence": "documented",
+  "confidence_note": "A live UDP probe of a Zerops direct port, sending a WireGuard handshake and reading the reply, would raise this to measured.",
+  "evidence": [
+    {
+      "url": "https://docs.zerops.io/guides/public-access",
+      "date": "2026-10-23",
+      "proved": "Direct Port Access: port range 10-65435, protocols TCP and UDP, IPv6 first or Unique IPv4 add-on"
+    },
+    {
+      "url": "https://docs.zerops.io/company/pricing",
+      "date": "2026-10-23",
+      "proved": "Lightweight Core - Free includes 100 GB per month egress; Dedicated IPv4 $3.00 per month; extra egress $0.02 per GB"
+    },
+    {
+      "url": "https://docs.zerops.io/quickstart.md",
+      "date": "2026-10-23",
+      "proved": "$15 in promo credits on signup, no credit card needed"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The only named provider whose free tier carries raw UDP to a public address. Caveats: IPv4 needs the $3/month add-on, so the free path is IPv6-only, and the container must be running (a WG endpoint is always-on, so it consumes the free core continuously).",
+  "extras": {
+    "wg_path": "inside-udp",
+    "wg_detail": "Direct Port Access: any port 10-65435, Protocols: TCP, UDP, mapped to an internal service port. wg-quick listens on that external port. IPv6 works without an add-on; a Unique IPv4 address is a $3.00/month add-on.",
+    "ingress": "tcp+udp",
+    "volume_tib_month": 0.0909,
+    "volume_stated": "Lightweight Core - Free: Egress Traffic: 100 GB per month.",
+    "bytes_transit": "yes",
+    "transit_note": "Zerops public ingress carries the datagrams to the runtime container."
+  }
+}

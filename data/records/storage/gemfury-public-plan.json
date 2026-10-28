@@ -1,0 +1,92 @@
+{
+  "topic": "storage",
+  "slug": "gemfury-public-plan",
+  "provider": "Gemfury — Public (free) plan",
+  "url": "https://fury.co",
+  "category": "registry",
+  "free_tier": {
+    "stated": "Public plan is $0/mo with UNLIMITED public packages, unlimited versions and unlimited collaborators, and NO private packages. No storage figure appears anywhere on the pricing table — the plan matrix lists only collaborators / private packages / public packages. The only published numbers are per-file caps.",
+    "unit": "unlimited",
+    "metered_on": "stored-bytes",
+    "source_url": "https://fury.co/pricing/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "300 MB per file",
+    "bytes": 300000000,
+    "source_url": "https://fury.co/pricing/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Small independent operator (fury.co, the same shop as the old gemfury.com); the 20 MB repository-endpoint cap silently breaks pushes that work through the API, and cancelled accounts have packages deleted after ~1 month.",
+    "days": 30,
+    "source_url": "https://fury.co/pricing/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "No published bandwidth allowance or per-GB rate for the Public plan; public repos are served from the fury.io edge to anonymous clients (probe below). Nothing meters delivery in the documented plan matrix.",
+    "metered": true
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "rest (push.fury.io upload API), per-ecosystem endpoints (gem/npm/pypi/nuget/apt/yum/maven/php/go), Gemfury CLI",
+  "tooling": "`fury push` CLI and `curl` upload; documented at gemfury.com/help/upload-packages; public repo is consumed by stock pip/gem/npm/apt/yum with the account URL.",
+  "chaining": "Unlimited packages × unlimited versions per account, and unlimited free accounts. Since there is no aggregate storage line item, the effective ceiling is (unlimited public packages) × (per-file cap) — the 'per-record unlimited' pattern rather than a bucket cap.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "300 MB per file",
+      "source": "https://fury.co/pricing/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "20 MB per file",
+      "source": "https://fury.co/pricing/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "deleted after ~1 month",
+      "source": "https://fury.co/pricing/"
+    }
+  ],
+  "limits_note": "HARD per-file ceiling: 300 MB per file via push.fury.io/Dashboard/git builds, and only 20 MB per file through a repository endpoint (gem.fury.io etc.). Git-backed packages: 500 MB per repo, 20 MB per file. Public/private is a per-package toggle; everything uploads private first and must be flipped public. No private packages at all on the free plan.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: -endpoint cap silently breaks pushes that work through the API, and cancelled accounts have packages deleted after ~1 month. Unlimited packages × unlimited versions per account, and",
+    "country": null
+  },
+  "reliability_note": "Small independent operator (fury.co, the same shop as the old gemfury.com); the 20 MB repository-endpoint cap silently breaks pushes that work through the API, and cancelled accounts have packages deleted after ~1 month.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://fury.co/pricing/",
+      "date": "2026-08-28",
+      "proved": "read live (also archived 2026-08-28): 'Public free $0/mo'; table row 'Free | ∞ collaborators | - private | ∞ public | $0/mo'; no storage or bandwidth line anywhere on the page"
+    },
+    {
+      "url": "https://gemfury.com/help/limits/",
+      "date": "2026-10-21",
+      "proved": "read live: 'Package files have an absolute limit of 300MB per file uploaded ... packages uploaded to a repository endpoint (e.g. gem.fury.io) are limited to 20MB'; 'Git repositories have a 500MB size limit, with a 20MB limit for individual files'"
+    },
+    {
+      "url": "https://gemfury.com/help/public-packages/",
+      "date": "2026-10-21",
+      "proved": "read live: 'Gemfury supports distribution of public packages without the need to distribute credentials ... Anyone can plug it into one of the supported package managers'"
+    },
+    {
+      "url": "https://pypi.fury.io/arrow-nightlies/",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, returns a live 'Simple Index' listing pyarrow and nanoarrow anonymously; GET https://pypi.fury.io/arrow-nightlies/pyarrow/ -> 200. GET https://gem.fury.io/arrow-nightlies/ -> 404 and https://gem.fury.io/solmaz/ -> 401 (private endpoints gated, public index open)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Public plan is $0/mo with UNLIMITED public packages, unlimited versions and unlimited collaborators, and NO private packages. No storage figure appears anywhere on the pricing table — the plan matrix lists only collaborators / private packages / public packages. The only published numbers are per-file caps.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

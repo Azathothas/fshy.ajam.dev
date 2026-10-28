@@ -1,0 +1,106 @@
+{
+  "topic": "debrid",
+  "slug": "qu-ax",
+  "provider": "qu.ax",
+  "url": "https://qu.ax/",
+  "category": "anonymous temporary file host (pomf-style POST API)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Max upload size is 256MB. Expiry is chosen per upload from 1 day, 7 days or 30 days; no account and no email are asked for.",
+    "unit": "bytes",
+    "metered_on": "none",
+    "source_url": "https://qu.ax/",
+    "read_on": "2026-10-23",
+    "notes": "The offer is a per-object cap and a retention choice, not a byte allowance."
+  },
+  "per_object_cap": {
+    "stated": "Max upload size is 256MB",
+    "bytes": 256000000,
+    "source_url": "https://qu.ax/",
+    "notes": "The page writes 256MB; the measured rejection point was not pushed to, so 256e6 is the page's decimal reading, not a measured byte boundary."
+  },
+  "retention": {
+    "stated": "1 day / 7 days / 30 days selected at upload. The default (no expiry field sent) produced expires=1795313693, which is 2026-11-22T02:14:53Z, exactly 30 days after the upload.",
+    "days": 30,
+    "source_url": "https://qu.ax/",
+    "notes": "Measured from the epoch the API returned, not from the page."
+  },
+  "egress": {
+    "terms": "Downloads are served from qu.ax itself; no byte allowance, no account and no published download counter. Nothing on the page meters traffic out.",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://qu.ax/"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "POST https://qu.ax/upload.php as multipart/form-data, field name 'files[]'. The reply is JSON: files[0].url, .size, .hash (SHA-1), .expires (epoch seconds).",
+  "endpoint": "https://qu.ax/upload.php",
+  "tooling": "curl -F 'files[]=@file' https://qu.ax/upload.php; a ShareX .sxcu is published at /static/quax.sxcu",
+  "chaining": "A 30-day, 256 MB anonymous mirror is the cheap middle tier of an archive: big enough for a single dataset shard, long enough to outlive a scrape job, and reachable by one curl line, so it composes with a scheduler and no credential store.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "256 MB per file",
+      "source": "https://qu.ax/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "30 days maximum; the expiry is fixed at upload and cannot be extended",
+      "source": "measured: expires=1795313693 in the upload reply"
+    }
+  ],
+  "limits_note": "A file type allow-list runs before the size check: the same 1 MiB payload sent as payload-1mib.bin was refused with HTTP 400 {\"message\":\"file type is not allowed\",\"success\":false}, and accepted once renamed to .txt. The download side is referer-gated: GET /x/leM7o.txt without a Referer answers 200 with an 8 254-byte HTML page, and the same request with Referer: https://qu.ax/leM7o answers 200 with the 1 048 576 bytes.",
+  "binding": "retention-clamped",
+  "binding_note": "At 1 TiB a month the 256 MB cap only means 4 000 uploads, which a loop handles; the hard stop is that nothing on the service extends a file past 30 days, so a re-fetch after a month needs the original bytes, which a user no longer has if this was the only copy.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account, no email, no cookie was sent; the upload was one POST from a bare HTTP client and a URL came back.",
+    "country": null
+  },
+  "reliability_note": "Two gates before the bytes: an extension allow-list refuses .bin outright, and the raw path /x/<id>.<ext> serves a 200 HTML landing page unless the request carries a Referer header from the file page. Both produce HTTP 200, so a client that trusts status alone reads an error page as a download.",
+  "confidence": "measured",
+  "confidence_note": "Upload, read-back and digest all happened: 1 048 576 bytes posted, 1 048 576 bytes fetched from /x/leM7o.txt with the Referer header, SHA-256 matched. A push against the 256 MB edge would raise the cap from documented to measured.",
+  "evidence": [
+    {
+      "url": "probe:https://qu.ax/",
+      "date": "2026-10-23",
+      "proved": "POST of 1 048 576 bytes as payload-1mib.bin -> HTTP 400 {'message':'file type is not allowed','success':false}; the same bytes as .txt -> HTTP 200 with files[0].url=https://qu.ax/leM7o and expires=1795313693 (2026-11-22T02:14:53Z)"
+    },
+    {
+      "url": "probe:https://qu.ax/leM7o",
+      "date": "2026-10-23",
+      "proved": "the URL the API returned serves HTTP 200 with 8 254 bytes of text/html - the file page, not the file; its only download href is /x/leM7o.txt, which 302s back to the page when a Referer is absent"
+    },
+    {
+      "url": "probe:https://qu.ax/x/leM7o.txt",
+      "date": "2026-10-23",
+      "proved": "with 'Referer: https://qu.ax/leM7o' the same path returns 1 048 576 bytes of text/plain, sha256 da0099c231f1182a5d411c8ac5149dfb7a2e3578a3970928490cb78ba92aecc9, full-body hash matched the uploaded file"
+    },
+    {
+      "url": "https://qu.ax/",
+      "date": "2026-10-23",
+      "proved": "'Max upload size is 256MB' and the 1 day / 7 days / 30 days expiry choices"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T02:30:47.000Z",
+  "price_per_tb_month": "USD 0",
+  "probe": {
+    "record": "probes/raw/qu.ax-txt.json + probes/20261023T023-*-qu.ax-*.json + probes/raw/qu.ax.json",
+    "upload_bytes": 1048576,
+    "download_bytes": 1048576,
+    "sha256_expected": "da0099c231f1182a5d411c8ac5149dfb7a2e3578a3970928490cb78ba92aecc9",
+    "sha256_observed": "da0099c231f1182a5d411c8ac5149dfb7a2e3578a3970928490cb78ba92aecc9",
+    "match": true,
+    "status": 200,
+    "download_requirements": "Referer header; the API URL itself is a landing page"
+  },
+  "notes": "The caveat is the extension allow-list, the 30-day ceiling and the referer-gated download.",
+  "extras": {
+    "api_reply_fields": "files[0].url, .file_name, .hash (sha1), .size, .expires",
+    "largest_upload_tested_bytes": 1048576
+  }
+}

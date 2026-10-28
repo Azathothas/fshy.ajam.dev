@@ -1,0 +1,87 @@
+{
+  "topic": "storage",
+  "slug": "fedora-copr",
+  "provider": "Fedora COPR (copr.fedorainfracloud.org)",
+  "url": "https://copr.fedorainfracloud.org",
+  "category": "paas",
+  "free_tier": {
+    "stated": "No published byte quota. Official docs FAQ: 'We keep one build for each package in one project indefinitely. All other builds (old packages, failed builds) are deleted after 14 days.' Unlimited projects and builds for Fedora Account holders. Storage is therefore effectively 'one build per package per project, forever', multiplied by packages and projects.",
+    "unit": "unlimited",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.copr.fedorainfracloud.org/user_documentation/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.copr.fedorainfracloud.org/user_documentation/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "All other builds (old packages, failed builds) are deleted after 14 days.' Unlimited projects and builds for Fedora Account holders",
+    "days": 14,
+    "source_url": "https://docs.copr.fedorainfracloud.org/user_documentation/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free. Results are served from copr-be.cloud.fedoraproject.org and the Fedora CDN; there is no billing or bandwidth meter anywhere in COPR.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "`copr-cli` (create/build/upload), `copr` Python API v3 with Swagger at /api_3/docs/, and plain HTTPS dnf repo access. `copr-cli buildscm`, `copr-cli add-package-*`. No rclone backend.",
+  "chaining": "unlimited COPR projects x unlimited packages per project x (one retained build each, indefinitely). Because retention is per *RPM Name* within a *repository*, the documented route is: 'Create a separate Copr project for each version' - and the pruner explicitly only groups by RPM Name, so distinct Name: values (golang1.24 / golang1.25 / golang1.26 are named as the alternative route) each keep their own build forever. That is an unlimited-cardinality, indefinite-retention store, and each further Fedora account carries the same allowance again.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "deleted after 14 days",
+      "source": "https://docs.copr.fedorainfracloud.org/user_documentation/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "retention: 14 days",
+      "source": "https://docs.copr.fedorainfracloud.org/user_documentation/"
+    }
+  ],
+  "limits_note": "retention: 14 days for all but the newest build of each package (Pulp backend exception: count-based - keeps the 5 most recent successful builds per package, and 'the 14-day preservation period is not guaranteed'). per-object-cap: src.rpm upload is the write path; no published byte limit found. request-rate: not documented. Build timeout default 5 h, max 50 h. Projects that opted into manual repository creation are exempt from the old package removal.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "The 14-day pruner is the whole story: anything but the newest build of a package evaporates, and on the Pulp backend it is even stricter (keeps only 5, time-based guarantee dropped). Copr is a *build* service - content must arrive as a buildable src.rpm, so arbitrary files require wrapping in a spec with %install/%files. Already covered in round 1 B-B5 as 'no published storage quota'; the retention mechanics above are the new detail.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://raw.githubusercontent.com/fedora-copr/copr/main/doc/user_documentation.rst",
+      "date": "2026-10-21",
+      "proved": "lines 1026-1027 - 'We keep one build for each package in one project indefinitely. All other builds (old packages, failed builds) are deleted after 14 days.'"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "same file lines 1067-1069 - Pulp backend: 'retention is count-based: Copr keeps the 5 most recent successful builds ... the 14-day preservation period is not guaranteed'"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "same file lines 1057-1063 - 'Create a separate Copr project for each version' (the multiplication path)"
+    },
+    {
+      "url": "https://copr-be.cloud.fedoraproject.org/results/@copr/PyPI/fedora-40-x86_64/repodata/repomd.xml",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 301 (CDN redirect, repo live)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published byte quota. Official docs FAQ: 'We keep one build for each package in one project indefinitely. All other builds (old packages, failed builds) are deleted after 14 days.' Unlimited projects and builds for Fedora Account holders. Storage is therefore effectively 'one build per package per project, forever', multiplied by packages and projects.",
+  "extras": {},
+  "binding": "retention-clamped",
+  "binding_note": "a clock, not a quota: bytes leave whether or not a user is finished with them"
+}

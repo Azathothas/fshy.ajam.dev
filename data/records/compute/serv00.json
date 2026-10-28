@@ -1,0 +1,179 @@
+{
+  "topic": "compute",
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "SSH on port 22, plus web hosting",
+  "tooling": "SSH, cron, a FreeBSD userspace, a web panel",
+  "chaining": "3 GB of disk with a shell and cron, behind a non-profit gate",
+  "limits_note": "resource limits beyond the 3 GB disk are not published on the pricing page",
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "verified_at": "2026-10-24T01:56:00.000Z",
+  "price_per_tb_month": null,
+  "slug": "serv00",
+  "provider": "serv00",
+  "url": "https://www.serv00.com/",
+  "category": "shared shell",
+  "free_tier": {
+    "stated": "3 GB of SSD storage, unlimited data transfer, support for up to 100 websites and 16 databases; registration is free and reviewed by hand",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://www.serv00.com/",
+    "read_on": "2026-10-24",
+    "notes": "the vendor writes 3 GB, a decimal unit; the figure is kept as stated and not converted to GiB"
+  },
+  "retention": {
+    "stated": "A user account that has not been properly logged in by the DevilWEB or SSH panel for a period of 90 days will be automatically removed from the system without the possibility of recovering the data collected on that account.",
+    "days": 90,
+    "source_url": "https://www.serv00.com/terms-of-service",
+    "notes": "the 90-day clock is reset by a DevilWEB panel login as well as by SSH"
+  },
+  "egress": {
+    "terms": "unlimited data transfer; the home page states 'unlimited data transfer' with no volume, no shaping tier and no price beyond the allowance",
+    "metered": false,
+    "free_allowance": "unlimited",
+    "price_per_tb": null,
+    "source_url": "https://www.serv00.com/"
+  },
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "3 GB of SSD storage per account (vendor's decimal GB)",
+      "source": "https://www.serv00.com/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "account deleted after 90 days without a DevilWEB or SSH login",
+      "source": "https://www.serv00.com/terms-of-service"
+    },
+    {
+      "kind": "request-rate",
+      "value": "a concurrent system-process limit exists; the number is not published, and exceeding it returns 'Server refused to start a shell/command'",
+      "source": "https://forum.serv00.com/d/1754-ssh-cant-loginhelp"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "a port can be reserved from 1024 to 64000, TCP or UDP, with `devil port add`; the number of reservations per account is not published",
+      "source": "https://docs.serv00.com/Port_reservation/"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email address, first name, last name, one anti-bot question and a reCAPTCHA; the form carries no card field and no phone field. The application is then reviewed by hand: 'Your application has been successfully submitted and is now awaiting manual review. This process usually takes anywhere from a few hours up to 72 hours.' No card, no phone, no document.",
+    "country": null
+  },
+  "evidence": [
+    {
+      "url": "probe:serv00.com:22",
+      "date": "2026-10-22",
+      "proved": "TCP connect succeeded in 0.51 s to 128.204.218.63 and read banner SSH-2.0-OpenSSH_9.9 FreeBSD-20250219"
+    },
+    {
+      "url": "https://serv00.com/pricing",
+      "date": "2026-10-22",
+      "proved": "'3 GB for free, no adverts, no hooks'"
+    },
+    {
+      "url": "https://www.serv00.com/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'offering 3 GB of SSD disk space, unlimited data transfer, and support for up to 100 websites and 16 databases'; and 'total accounts created on the servers 167472 / 170000'"
+    },
+    {
+      "url": "https://www.serv00.com/register-account/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Your application has been successfully submitted and is now awaiting manual review. This process usually takes anywhere from a few hours up to 72 hours.' The fetched form has fields for first name, last name, username, email and one question, and no card or phone input."
+    },
+    {
+      "url": "https://www.serv00.com/terms-of-service",
+      "date": "2026-10-24",
+      "proved": "quoted: 'A user account that has not been properly logged in by the DevilWEB or SSH panel for a period of 90 days will be automatically removed'"
+    },
+    {
+      "url": "https://docs.serv00.com/Port_reservation/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'select the port number (from 1024 to 64000), its type'; and 'devil port add PORT TYPE'"
+    },
+    {
+      "url": "https://docs.serv00.com/Binexec/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Binexec allows you to manage the ability to run your own software on the serv00.com server.'"
+    },
+    {
+      "url": "https://forum.serv00.com/d/1754-ssh-cant-loginhelp",
+      "date": "2026-10-24",
+      "proved": "admin reply quoted: 'The message \"Server refused to start a shell/command\" usually indicates that you have exceeded the limit of concurrently running system processes.'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "notes": "Two caveats that decide the row. First, the account is not instant: the form says a few hours up to 72 hours of manual review, so it cannot be relied on tonight. Second, the home page counter read 167,472 of 170,000 accounts, which is 2,528 slots, so registration may close without notice. RAM and vCPU are not published; do not fill them in from a forum. What would settle them: a probe on an approved account reading `ulimit -a`, `sysctl hw.physmem` and the process ceiling from `procstat`.",
+  "extras": {
+    "shape": {
+      "vcpu": null,
+      "ram_gib": null,
+      "disk_gib": 3,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "billing_model": "free",
+    "granularity": {
+      "min_billed_s": null,
+      "rounding_s": null
+    },
+    "session_cap": {
+      "wall_clock_min": null,
+      "idle_reap_s": null,
+      "restart_required": false,
+      "note": "no session cap is published; the published reap is 90 days without a login, and a concurrent-process ceiling can refuse a shell"
+    },
+    "keep_rate": {
+      "value": 0.0,
+      "basis": "a free account costs nothing",
+      "source": "https://serv00.com/"
+    },
+    "persistent_storage": {
+      "included_gib": 3,
+      "price_gib_month": "not offered",
+      "durability": "home directory",
+      "survives_stop": true,
+      "survives_destroy": false,
+      "max_retention": "while active"
+    },
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": true,
+      "ports": "one reserved port in 1024-64000 per reservation, TCP or UDP",
+      "static_ip": null,
+      "ipv6": null,
+      "per_session_bytes": null
+    },
+    "free_tier_kind": "always-free",
+    "m10h_usd": 0.0,
+    "m24h_usd": 0.0,
+    "census_rows": [
+      "serv00"
+    ],
+    "shape_note": "vendor states 3 GB (decimal) of SSD; kept as stated, not converted. No RAM or vCPU figure is published on any page read.",
+    "term": "indefinite while the account logs in at least once per 90 days",
+    "price_arithmetic": "no charge; the offer is free"
+  },
+  "confidence_note": "disk, traffic, account count and the review sentence from the vendor's own pages read today; the port range from the docs. RAM and vCPU are not published anywhere read, so they are null rather than guessed.",
+  "probe": {
+    "file": "sources/2026-10-22/compute/tcp-probe-20261022T035515.270Z.json",
+    "probed_at": "2026-10-22T03:55:15.270Z",
+    "host": "serv00.com",
+    "port": 22,
+    "ms": 509,
+    "ok": true,
+    "banner": "SSH-2.0-OpenSSH_9.9 FreeBSD-20250219",
+    "peer": "128.204.218.63",
+    "note": "the saved run this record cites, kept in sources/ so it survives a clean tree; re-run it with scripts/probe/tcpprobe.py"
+  },
+  "binding": "volume-quota",
+  "binding_note": "3 GB of disk and an unpublished concurrent-process ceiling are hit long before the unlimited traffic term matters; the process ceiling blocks SSH itself, not just the workload.",
+  "tier": "Free account"
+}

@@ -1,0 +1,248 @@
+{
+  "topic": "compute",
+  "per_object_cap": {
+    "stated": "One sandbox is capped at 4 vCPU, 8 GiB RAM and 10 GiB disk on every tier: 'Organizations get a maximum sandbox resource limit of 4 vCPUs, 8GB RAM, and 10GB disk'. The default VM snapshot daytona-vm-large is exactly that shape.",
+    "bytes": null,
+    "source_url": "https://www.daytona.io/docs/en/sandboxes/",
+    "notes": "the tier pool (10 vCPU at Tier 1) is larger than one sandbox, so the per-sandbox cap binds, not the pool"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "Python, TypeScript, Ruby, Go and Java SDKs over a REST API; SSH access to a sandbox",
+  "tooling": "Daytona SDKs, the CLI, SSH; snapshots and a toolbox API",
+  "chaining": "sub-90 ms sandbox creation makes it the cheapest option per short run, and the 15-minute idle stop is what caps it",
+  "limits_note": "24/7 needs auto_stop_interval=0 and no ttl_minutes; a non-ephemeral VM class defaults to a 60-minute auto-pause when auto-stop is disabled, and auto-pause and auto-stop cannot both be non-zero. The published maximum lifetime of a sandbox is absent.",
+  "reliability_note": "The dashboard bundle carries an 'EMAIL_ACCESS_DENIED' path whose screen reads 'Daytona accounts need a validated work email', so a personal-domain address may be refused at sign-in.",
+  "confidence": "documented",
+  "verified_at": "2026-10-24T04:05:00.000Z",
+  "price_per_tb_month": null,
+  "slug": "daytona",
+  "provider": "Daytona",
+  "url": "https://www.daytona.io/pricing",
+  "category": "dev environment",
+  "free_tier": {
+    "stated": "USD 200 in free compute included, one time. The signup flow states 'Sign up for a free trial - no credit card required'. Free credits are 'not available for GPU sandboxes'. Tier 1 needs a verified email and gives 10 vCPU / 30 GiB storage; Tier 2 needs a linked credit card and a USD 25 top-up.",
+    "unit": "mixed",
+    "metered_on": "wall-clock",
+    "source_url": "https://www.daytona.io/pricing",
+    "read_on": "2026-10-24",
+    "notes": "one-time trial credit, not a monthly allowance. No page read states an expiry; the wallet has a 'See breakdown and expiration' control, so an expiry exists but its duration is undocumented."
+  },
+  "retention": {
+    "stated": "Container sandboxes keep their filesystem on the runner while stopped and occupy disk quota until archived; VM sandboxes offload filesystem state to storage on stop and free the quota. Nothing is deleted on a timer that the docs publish.",
+    "days": null,
+    "source_url": "https://www.daytona.io/docs/en/limits/",
+    "notes": "auto-archive defaults to 7 days of continuous stopped state for container sandboxes, maximum 30 days. VM sandboxes are excluded from auto-archive."
+  },
+  "egress": {
+    "terms": "Network limits are applied by tier and are not a metered egress charge. Tier 1 and Tier 2: 'Network access is restricted and cannot be overridden at the sandbox level ... Essential services remain reachable.' Full internet access starts at Tier 3.",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.daytona.io/docs/en/network-limits/"
+  },
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "USD 200 one-time free compute; no expiry stated on any page read",
+      "source": "https://www.daytona.io/pricing"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "4 vCPU, 8 GiB RAM, 10 GiB disk per sandbox",
+      "source": "https://www.daytona.io/docs/en/sandboxes/"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "Tier 1 pool 10 vCPU / 30 GiB storage (Limits table gives 20 GiB memory, Tiers table 10 GiB)",
+      "source": "https://www.daytona.io/docs/en/limits/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "15-minute idle auto-stop by default; internal processes do not reset it",
+      "source": "https://www.daytona.io/docs/en/sandboxes/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "Tier 1 and Tier 2 outbound is restricted to an unpublished essential-services policy and cannot be overridden per sandbox",
+      "source": "https://www.daytona.io/docs/en/network-limits/"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The signup form at auth.daytona.io/sign-up asks for an email address plus 'Continue', or 'Continue with Google', or 'Continue with GitHub'. No phone field and no card field. The pricing page states 'Sign up for a free trial - no credit card required', so no hold exists. Two contrary signals are recorded in notes: the dashboard bundle carries a suspension reason 'Payment method required' that renders the non-dismissible banner 'Add a payment method to start creating sandboxes.', and a preview build of the billing docs says 'Personal organizations receive a one-time grant of free credits when the first card is connected.' The trigger for either is not established.",
+    "country": null
+  },
+  "evidence": [
+    {
+      "url": "https://www.daytona.io/docs/en/limits/",
+      "date": "2026-10-23",
+      "proved": "quoted: '$200 in free compute included'"
+    },
+    {
+      "url": "https://www.daytona.io/pricing",
+      "date": "2026-10-23",
+      "proved": "quoted: 'Compute, vCPU, $0.0504/h, Memory, GiB, $0.0162/h, Storage, GiB, $0.000108/h' and 'All billing is calculated per second.'"
+    },
+    {
+      "url": "https://www.daytona.io/docs/en/sandboxes",
+      "date": "2026-10-23",
+      "proved": "quoted: '0: disables the auto-stop functionality, allowing the sandbox to run indefinitely' and 'Disabling auto-stop does not disable wall-clock TTL'"
+    },
+    {
+      "url": "https://www.daytona.io/pricing",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Compute, vCPU, $0.0504/h, Memory, GiB, $0.0162/h, Storage, GiB, $0.000108/h' with '*Price per GiB after first 5 free'; 'Use what you need, when you need it. $200 in free compute included.'; 'Sign up for a free trial - no credit card required'; 'All billing is calculated per second.'"
+    },
+    {
+      "url": "https://www.daytona.io/docs/en/limits/",
+      "date": "2026-10-24",
+      "proved": "quoted Tier table: 'Tier 1 | 10 / 10GiB / 30GiB | Email verified' and 'Tier 2 | 100 / 200GiB / 300GiB | Credit card linked, $25 top-up'; the Limits table on the same page gives Tier 1 as '10 | 20 | 30'; the page states 'Free credit balance: the amount of free credits; not available for GPU sandboxes' indirectly via billing."
+    },
+    {
+      "url": "https://www.daytona.io/docs/en/sandboxes",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Organizations get a maximum sandbox resource limit of 4 vCPUs, 8GB RAM, and 10GB disk'; '0: disables the auto-stop functionality, allowing the sandbox to run indefinitely'; 'if neither auto-pause nor auto-stop is set, non-ephemeral sandbox classes that support pausing default to an auto-pause interval of 60 minutes with auto-stop disabled'; 'VM sandboxes can currently only be created from existing VM snapshots'."
+    },
+    {
+      "url": "https://www.daytona.io/docs/en/snapshots/",
+      "date": "2026-10-24",
+      "proved": "quoted default snapshot table: 'daytona-vm-small | 1 | 1GiB | 3GiB | | Linux VM', 'daytona-vm-medium | 2 | 4GiB | 8GiB | | Linux VM', 'daytona-vm-large | 4 | 8GiB | 10GiB | | Linux VM'. A VM shape therefore needs no build."
+    },
+    {
+      "url": "https://www.daytona.io/docs/en/billing/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Sandboxes are billed for the resources reserved: vCPU, RAM, and disk'; 'Free credit balance: the amount of free credits; not available for GPU sandboxes'; the only mention of expiry is an instruction to 'Click See breakdown and expiration', with no duration anywhere in the docs."
+    },
+    {
+      "url": "https://www.daytona.io/docs/en/network-limits/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Tier 1 & Tier 2: Network access is restricted and cannot be overridden at the sandbox level. Organization-level network restrictions take precedence over sandbox-level settings ... Essential services remain reachable.'"
+    },
+    {
+      "url": "https://www.daytona.io/pricing",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Compute, vCPU, $0.0504/h, Memory, GiB, $0.0162/h, Storage, GiB, $0.000108/h' with '*Price per GiB after first 5 free'; 'Use what you need, when you need it. $200 in free compute included.'; 'Sign up for a free trial - no credit card required'; 'All billing is calculated per second.'; 'OS, Windows, $0.0858/vCPU/h'"
+    },
+    {
+      "url": "https://auth.daytona.io/sign-up",
+      "date": "2026-10-24",
+      "proved": "No phone field, no card field."
+    },
+    {
+      "url": "https://www.daytona.io/docs/en/billing/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Free credit balance: the amount of free credits; not available for GPU sandboxes'; 'Sandboxes are billed for the resources reserved: vCPU, RAM, and disk'; the only mention of expiry is 'Click See breakdown and expiration', with no duration anywhere in the docs"
+    },
+    {
+      "url": "https://www.daytona.io/docs/en/limits/",
+      "date": "2026-10-24",
+      "proved": "quoted Tier table: 'Tier 1 | 10 / 10GiB / 30GiB | Email verified' and 'Tier 2 | 100 / 200GiB / 300GiB | Credit card linked, $25 top-up'; the Limits table on the same page gives Tier 1 memory as 20"
+    },
+    {
+      "url": "https://www.daytona.io/docs/en/sandboxes/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Organizations get a maximum sandbox resource limit of 4 vCPUs, 8GB RAM, and 10GB disk'; '0: disables the auto-stop functionality, allowing the sandbox to run indefinitely'; 'if neither auto-pause nor auto-stop is set, non-ephemeral sandbox classes that support pausing default to an auto-pause interval of 60 minutes with auto-stop disabled'; 'VM sandboxes can currently only be created from existing VM snapshots.'; snapshot table 'daytona-vm-large | 4 | 8GiB | 10GiB | | Linux VM'"
+    },
+    {
+      "url": "https://www.daytona.io/docs/en/ssh-access/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Daytona provides SSH access to your sandboxes using token-based authentication' and 'daytona ssh <sandbox> --expires 60'"
+    },
+    {
+      "url": "https://www.daytona.io/docs/en/preview/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Any process listening for HTTP traffic on ports 1 - 65535 can be previewed through a generated URL.'"
+    },
+    {
+      "url": "https://www.daytona.io/docs/en/network-limits/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Tier 1 & Tier 2: Network access is restricted and cannot be overridden at the sandbox level ... Essential services remain reachable.'"
+    },
+    {
+      "url": "https://daytona-website-website-prod.daytona.workers.dev/docs/en/billing",
+      "date": "2026-10-24",
+      "proved": "a preview build of the same billing page states: 'Personal organizations receive a one-time grant of free credits when the first card is connected.' The live www.daytona.io page does not carry this sentence."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "notes": "Arithmetic, recomputed today: 4 vCPU x USD 0.0504 + 4 GiB x USD 0.0162 + 5 billed GiB x USD 0.000108 = USD 0.26694 an hour. USD 200 / 0.26694 = 749.2 h = 31.2 days of a 4 vCPU / 4 GiB / 10 GiB VM at 24/7, and a 730-hour month costs USD 194.87, so the credit covers a full month with USD 5.13 to spare. At the maximum shape, 4 vCPU / 8 GiB / 10 GiB, the hour is USD 0.33174 and a 730-hour month is USD 242.17, which the credit does NOT cover: 602.9 h or 25.1 days. The operator's claim is therefore true at 4 GiB of RAM and false at 8 GiB. GPU trap confirmed for this class: the billing page states the free credit balance is 'not available for GPU sandboxes', so the USD 200 buys no GPU minute at any price on the pricing page (H100 USD 2.27/h, RTX 5090 USD 0.74/h). Windows is priced separately at USD 0.0858/vCPU/h and is not excluded by any sentence read. Not published anywhere: the credit's expiry, the sandbox's maximum lifetime, and the contents of the Tier 1 destination allowlist. Both could describe an additional card-connected grant rather than a gate on the USD 200, and neither trigger is provable without an account. Also unresolved: the bundle's 'Daytona accounts need a validated work email' screen, which would refuse a personal-domain address. What would settle both: one signup with a personal email, then a create call. Two tables on the limits page still disagree on Tier 1 memory, 10 GiB against 20 GiB; plan for 10.",
+  "extras": {
+    "shape": {
+      "vcpu": 4,
+      "ram_gib": 4,
+      "disk_gib": 10,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "billing_model": "per-second on reserved resources",
+    "granularity": {
+      "min_billed_s": 1,
+      "rounding_s": 1
+    },
+    "session_cap": {
+      "wall_clock_min": null,
+      "idle_reap_s": 900,
+      "restart_required": false,
+      "note": "15-minute auto-stop default, 0 disables it; a VM sandbox also defaults to a 60-minute auto-pause unless auto-pause is set to 0; auto-pause and auto-stop cannot both be non-zero; a wall-clock TTL applies only if ttl_minutes is set"
+    },
+    "keep_rate": {
+      "value": 0.0,
+      "basis": "a stopped sandbox frees reserved CPU and memory; container disk quota persists until archived",
+      "source": "https://www.daytona.io/docs/en/limits/"
+    },
+    "persistent_storage": {
+      "included_gib": 5,
+      "price_gib_month": "USD 0.000108 per GiB-hour",
+      "durability": "container disk; VM state offloaded on stop",
+      "survives_stop": true,
+      "survives_destroy": false,
+      "max_retention": "until archived or deleted"
+    },
+    "network_out": {
+      "allow_outbound": "restricted at Tier 1",
+      "allow_inbound_listen": true,
+      "ports": "1-65535 via preview URLs, plus SSH",
+      "static_ip": null,
+      "ipv6": null,
+      "per_session_bytes": null
+    },
+    "free_tier_kind": "one-time-credit",
+    "m10h_usd": 80.08,
+    "m24h_usd": 194.87,
+    "price_arithmetic": "4 x 0.0504 + 4 x 0.0162 + 5 x 0.000108 = 0.26694/h; 200 / 0.26694 = 749.2 h = 31.2 days; x 730 = 194.87. Max shape: 4 x 0.0504 + 8 x 0.0162 + 5 x 0.000108 = 0.33174/h; 200 / 0.33174 = 602.9 h = 25.1 days; x 730 = 242.17",
+    "dispute": "talaria USD 2,000 against nemo USD 50.17. The USD 200 is a top-up and not a minimum bill, so nemo is right.",
+    "price_note": "2 vCPU and 4 GiB. USD 50.17 was a different base. The live page is per-second metered with no plan fee.",
+    "price_basis": "10 h/day x 30 = 300 h; 24/7 x 30 = 730 h",
+    "burst_x": 1.0,
+    "crosscheck": {
+      "boat_compare_2026-09-26": "USD 0.331/h at 4 vCPU / 8 GB"
+    },
+    "unit_hourly_usd": {
+      "vcpu": 0.0504,
+      "gib": 0.0162,
+      "gib_storage": 0.000108
+    },
+    "shape_max": {
+      "vcpu": 4,
+      "ram_gib": 8,
+      "disk_gib": 10
+    },
+    "term": "one-time credit",
+    "credit_usd": 200,
+    "credit_months_at_shape": 1.03,
+    "credit_hours_at_shape": 749.2,
+    "credit_hours_at_max_shape": 602.9,
+    "credit_expiry": "not published; the wallet has a 'See breakdown and expiration' control, so an expiry exists but its duration is undocumented",
+    "credit_gpu_eligible": false,
+    "windows_hourly_usd_per_vcpu": 0.0858,
+    "signup_url": "https://auth.daytona.io/sign-up",
+    "signup_form": "email + Continue, or Continue with Google, or Continue with GitHub; no phone, no card"
+  },
+  "binding": "retention-clamped",
+  "binding_note": "The 15-minute idle auto-stop binds first: it fires while processes run, only an external interaction resets it, and it must be set to 0 at create time to keep a machine up.",
+  "tier": "free credit, Tier 1 (email verified)",
+  "confidence_note": "Rates, credit, tier table, per-sandbox cap, default VM snapshots, SSH and the Tier 1 network policy were each read on a first-party page today and quoted. The pricing page says no; the app bundle and a preview docs build imply a payment-method gate. Only an account would settle it, and creating one was out of scope."
+}

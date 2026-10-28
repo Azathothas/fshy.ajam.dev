@@ -1,0 +1,82 @@
+{
+  "topic": "storage",
+  "slug": "codeberg-git-lfs",
+  "provider": "Codeberg (Forgejo) Git LFS",
+  "url": "https://codeberg.org",
+  "category": "registry",
+  "free_tier": {
+    "stated": "750 MiB git repository storage + 'Additional 1.5 GiB' for 'LFS, Packages, Releases, Attachments' per user or organization. Non-promoted/personal content is capped at 100 MiB. Enforced since 2025-05-16.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://blog.codeberg.org/new-storage-limits-on-codeberg-what-you-need-to-know.html",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://blog.codeberg.org/new-storage-limits-on-codeberg-what-you-need-to-know.html",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://blog.codeberg.org/new-storage-limits-on-codeberg-what-you-need-to-know.html",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free, no metered bandwidth published — but Codeberg explicitly calls out CDN-style excess use as the reason for the quota, so heavy serving is the thing they police.",
+    "metered": false
+  },
+  "interface": [
+    "git"
+  ],
+  "interface_detail": "git",
+  "tooling": "git-lfs; Forgejo API. Codeberg Pages exists but 'Git LFS cannot be used with GitHub Pages sites' equivalent caveats apply.",
+  "chaining": "1.5 GiB per user/org; unlimited orgs is theoretically possible but Codeberg automates exception-granting by heuristics ('age of the user account, contributions to well-known projects, membership') which specifically blocks the several-accounts pattern. 334 accounts for 500 GB — not practical.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "reviewed via a request form that Codeberg itself calls 'hardly scalable'",
+      "source": "https://blog.codeberg.org/new-storage-limits-on-codeberg-what-you-need-to-know.html"
+    }
+  ],
+  "limits_note": "Quota is per user OR per org and the total (repo + LFS) is what's checked. Exceptions are human-reviewed via a request form that Codeberg itself calls 'hardly scalable'. Anubis-style bot protection on some sibling instances.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Fresh accounts are the ones most likely to be limited. Data is not silently vanished, but quota can be applied retroactively.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://blog.codeberg.org/new-storage-limits-on-codeberg-what-you-need-to-know.html",
+      "date": "2026-10-21",
+      "proved": "'Git repository storage: 750 MiB / LFS, Packages, Releases, Attachments: Additional 1.5 GiB / ... should not exceed 100 MiB'; restrictions starting 'Friday May 16, 2025'"
+    },
+    {
+      "url": "https://docs.codeberg.org/git/using-lfs/",
+      "date": "2026-10-21",
+      "proved": "LFS is standard git-lfs workflow against Codeberg's server"
+    },
+    {
+      "url": "https://codeberg.org/forgejo/forgejo.git/info/lfs/objects/batch",
+      "date": "2026-10-21",
+      "proved": "probe: POST -> HTTP 200"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "750 MiB git repository storage + 'Additional 1.5 GiB' for 'LFS, Packages, Releases, Attachments' per user or organization. Non-promoted/personal content is capped at 100 MiB. Enforced since 2025-05-16.",
+  "extras": {
+    "unit_note": "free_tier.unit is 'mixed' because the headline is denominated in MiB or KiB, which the schema enum does not carry; the verbatim free_tier.stated keeps the true unit. See the storage-dossier handover.",
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "750 MiB git repository storage + 'Additional 1.5 GiB' for 'LFS, Packages, Releases, Attachments' per user or organization. Non-promoted/personal content is capped at 100 MiB. Enforced since 2025-05-16.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "write-gated",
+  "binding_note": "the write is a queue with a person or a rule in it, so the upload rate is set by somebody else"
+}

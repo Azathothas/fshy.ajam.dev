@@ -1,0 +1,90 @@
+{
+  "topic": "storage",
+  "slug": "academic-torrents",
+  "provider": "Academic Torrents (tracker + index, with optional donor mirroring)",
+  "url": "https://academictorrents.com",
+  "category": "academic",
+  "free_tier": {
+    "stated": "NO BYTE QUOTA ON THE INDEX, because the index is all they host: 'It's important to note that we don't directly host your data. However, we manage a network of donated servers. When you upload a torrent file to our site, hosting nodes (seeds) register with the tracker to provide download locations for the data.' The catalogue is 419.44 TB across the network but that is other people's disk. The only hard number is on the torrent *file* itself: a 10 MB per-torrent limit, stated by the maintainer ('each of them is beneath the 10MB size limit') and defended against a request to raise it.",
+    "unit": "TB",
+    "metered_on": "unstated",
+    "source_url": "https://academictorrents.com/docs/uploading.html",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: 10 MB",
+    "bytes": 10000000,
+    "source_url": "https://academictorrents.com/docs/uploading.html",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "per-object-cap: 10 MB for the .torrent file only; no cap on the dataset it describes. retention: entries are permanent in practice; the PDF describes a network designed for durability across node failure",
+    "source_url": "https://academictorrents.com/docs/uploading.html",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free, and structurally so - it is BitTorrent, so egress is other peers' bandwidth. Also offers an HTTP fallback: 'Backup URLs (also called WebSeeds)' are injected into the .torrent so the swarm can be skipped entirely. Their own docs note most free hosts (Google Drive, Dropbox) do NOT work as webseeds because they lack RANGE support, while archive.org and Zenodo (single-file only) do.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "REST v2 at https://academictorrents.com/apiv2/ - POST /apiv2/entry with `file` as a base64-encoded .torrent and `urllist` as the webseed URLs; API key required. Also POST /apiv2/collection. A first-party uploader exists (github.com/academictorrents/academictorrents_uploader) and a `mirroring.md` doc for running a Smart Node that seeds selected collections from an RSS feed. Standard BitTorrent clients (transmission-daemon recommended) do the actual transfer.",
+  "chaining": "This is a *discovery and swarm-coordination* layer, not storage. What it multiplies is availability: one .torrent entry (10 MB) makes an arbitrarily large dataset reachable through unlimited peers, and the webseed lists let you point at storage you already have elsewhere (archive.org items, Zenodo records, your own HTTP server). Chain shape: bytes live on IA/Zenodo/your server -> webseed URL -> AT entry -> swarm plus HTTP fallback. Verified that the mechanism is real: a fetched .torrent carries `url-list` with https://files.inria.fr/ and the AT announce URL.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: 10 MB",
+      "source": "https://academictorrents.com/docs/uploading.html"
+    }
+  ],
+  "limits_note": "per-object-cap: 10 MB for the .torrent file only; no cap on the dataset it describes. retention: entries are permanent in practice; the PDF describes a network designed for durability across node failure. request-rate: not documented on the API page. There is no seed guarantee - 'as long as at least one person can become a seed for that data' - so durability is a function of who else mirrors it.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: y across node failure. request-rate: not documented on the API page. There is no seed guarantee - 'as long as at least one person can become a seed for that data' - so durability is",
+    "country": null
+  },
+  "reliability_note": "The fatal caveat: without a donor node or a webseed, an entry is a pointer to nothing. Their model is explicitly 'the burden of hosting data' distributed to volunteers, so AT gives zero storage guarantee. It is also not a place to *put* bytes - upload.php returned 409 and there is no bulk endpoint. Treat it as a distribution amplifier for data that already has a home, never as a home.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://academictorrents.com/docs/uploading.html",
+      "date": "2026-10-21",
+      "proved": "'we don't directly host your data. However, we manage a network of donated servers... Alternatively, you can use a Backup URL... where the data will be mirrored.'; WebSeeds section; RANGE queries section"
+    },
+    {
+      "url": "https://academictorrents.com/",
+      "date": "2026-10-21",
+      "proved": "'Making over 419.44TB of research data available!'"
+    },
+    {
+      "url": "https://github.com/academictorrents/academictorrents-docs/issues/46",
+      "date": "2026-10-21",
+      "proved": "maintainer ieee8023: 'I'm against raising the per file limit because that's a lot of space to take up for just a torrent file'; reporter confirms 'each of them is beneath the 10MB size limit'"
+    },
+    {
+      "url": "https://academictorrents.com/download/cf445f6073540af0803ee345f46294f088e7bba5.torrent",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, application/x-bittorrent, 100,785 bytes; bencoded body contains 'url-list' with https://files.inria.fr/ and announce https://academictorrents.com/announce.php"
+    },
+    {
+      "url": "https://academictorrents.com/docs/api.html",
+      "date": "2026-10-21",
+      "proved": "POST /apiv2/entry with base64 torrent + urllist, API key required"
+    },
+    {
+      "url": "https://academictorrents.com/upload.php",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 409 (no anonymous bulk write path)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "NO BYTE QUOTA ON THE INDEX, because the index is all they host: 'It's important to note that we don't directly host your data. However, we manage a network of donated servers. When you upload a torrent file to our site, hosting nodes (seeds) register with the tracker to provide download locations for the data.' The catalogue is 419.44 TB across the network but that is other people's disk. The only hard number is on the torrent *file* itself: a 10 MB per-torrent limit, stated by the maintainer ('each of them is beneath the 10MB size limit') and defended against a request to raise it.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

@@ -1,0 +1,110 @@
+{
+  "topic": "egress",
+  "slug": "oracle-always-free",
+  "provider": "Oracle Cloud Always Free",
+  "url": "https://www.oracle.com/cloud/free/",
+  "category": "origin VM (free tier)",
+  "free_tier": {
+    "stated": "As part of your Always Free resources, you get 10 TB per month of outbound data.",
+    "unit": "TB",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://www.oracle.com/cloud/networking/pricing/",
+    "read_on": "2026-10-22",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: a VM rather than an object store",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": "idle instances are reclaimed after 7 days of low CPU, network and memory",
+    "days": null,
+    "notes": "",
+    "source_url": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm"
+  },
+  "egress": {
+    "terms": "10 TB/month free outbound per region, then metered",
+    "metered": true,
+    "free_allowance": "10 TB/month outbound per region",
+    "price_per_tb": null,
+    "source_url": "https://www.oracle.com/cloud/networking/pricing/"
+  },
+  "interface": [
+    "ssh"
+  ],
+  "tooling": "OpenSSH",
+  "chaining": null,
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "idle reclamation after 7 days of low utilisation",
+      "source": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "up to 50 Mbps from the internet on the single free VNIC, and up to 480 Mbps to private and in-region endpoints",
+      "source": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm"
+    }
+  ],
+  "identity_cost": {
+    "kind": "card",
+    "detail": "We use your contact information and credit/debit card information for account setup and identity verification. Oracle may periodically check the validity of your card, resulting in a temporary authorization hold. ... We do not accept debit cards with a PIN or virtual, single-use, or prepaid cards.",
+    "country": null
+  },
+  "reliability_note": "free shapes are reclaimed when idle for 7 days, and an account left idle for 30 days or more may be deemed abandoned and become eligible for suspension; the memory part of the idle rule applies to A1 shapes only",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://www.oracle.com/cloud/networking/pricing/",
+      "date": "2026-10-22",
+      "proved": "'Outbound Data Transfer - Originating in North America, Europe, and UK - First 10 TB / Month  Free'"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yggdrasil-network/public-peers/master/north-america/united-states.md",
+      "date": "2026-10-22",
+      "proved": "a Yggdrasil operator labels an Oracle Always Free Ashburn node '480Mbps, Metered', so the same 10 TB quota sits behind it"
+    },
+    {
+      "url": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm",
+      "date": "2026-10-22",
+      "proved": "the Always Free networking line reads 'Includes one VNIC with one public IP address and up to 50 Mbps network bandwidth via the internet. Traffic to private IPs ... is up to 480 Mbps', so 50 Mbit/s is the documented internet rate for the free shape"
+    },
+    {
+      "url": "https://www.oracle.com/cloud/free/",
+      "date": "2026-10-23",
+      "proved": "'a Free Trial with US$300 of free credit ... for up to 30 days' and 'until your US$300 of free credits are consumed or the 30 days has expired, whichever comes first'; 'We do not accept debit cards with a PIN or virtual, single-use, or prepaid cards'"
+    },
+    {
+      "url": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm",
+      "date": "2026-10-23",
+      "proved": "'As part of your Always Free resources, you get 10 TB per month of outbound data.'"
+    },
+    {
+      "url": "https://www.oracle.com/cloud/networking/pricing/",
+      "date": "2026-10-23",
+      "proved": "'Outbound Data Transfer - Originating in North America, Europe, and UK - First 10 TB / Month | Free' with the same first-10-TB line for APAC/Japan/South America and for Middle East/Africa, and 'Inbound Data Transfer | Free'"
+    },
+    {
+      "url": "https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/securityrules.htm",
+      "date": "2026-10-23",
+      "proved": "a security rule carries an IP protocol and, 'For TCP or UDP, you can specify ... a single destination port number, or a range', so udp:51820 is expressible; 'Without security rules, no traffic is allowed in and out of VNICs in the VCN', so the rule is required rather than optional"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "notes": "The census wrote that the 50 Mbps free-shape rate makes the quota reachable only if traffic is shaped. 50 Mbit/s sustained is 540 GB/day, so the quota binds first and the rate never has to be shaped against. Two regions double both numbers, which still leaves the quota binding. Trial credit, read 2026-10-23: the Free Trial carries 'US$300 of free credit ... for up to 30 days' and 'until your US$300 of free credits are consumed or the 30 days has expired, whichever comes first', but at 1 TiB a month nothing is charged against it because the Always Free 10 TB a month outbound allowance is already ten times that figure, so the 30-day expiry costs nothing and the credit is the least relevant number in the offer. Sources: https://www.oracle.com/cloud/free/ (credit and expiry, and 'We do not accept debit cards with a PIN or virtual, single-use, or prepaid cards').",
+  "extras": {
+    "stale_after_days": 180,
+    "bytes_transit": "yes",
+    "transit_note": "the VM's outbound traffic crosses Oracle's network, which is what the 10 TB monthly allowance counts",
+    "ingress": "udp",
+    "wg_path": "native-conf",
+    "wg_detail": "a free AMD micro instance is an ordinary Linux VM with 'one VNIC with one public IP address', and the VCN's security rules take an IP protocol and a UDP destination port, so udp:51820 is one ingress rule and wg-quick runs natively"
+  },
+  "binding": "volume-quota",
+  "binding_note": "the monthly byte allowance in egress.free_allowance is what runs out, and no kind in the six-value vocabulary names a byte volume over a period counted per account. per-ip-shaping is the closest, because it is the only kind that bounds a volume, and its subject here is the account rather than the caller's address",
+  "interface_detail": "the instance's public IP",
+  "limits_note": "the allowance is a byte volume over a period, which none of the six kinds names; the number is in egress.free_allowance and binding names per-ip-shaping as the nearest kind",
+  "confidence_note": "The 10 TB/month and the 50 Mbps are documented on Oracle's own pages and the read path is unmeasured"
+}

@@ -1,0 +1,75 @@
+{
+  "topic": "storage",
+  "slug": "paste-rs",
+  "provider": "paste.rs",
+  "url": "https://paste.rs",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "393,216 bytes per paste (measured). 373,336 chars -> 201 Created; 426,668 chars -> 206 Partial Content with 393,216 bytes stored.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://paste.rs/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://paste.rs/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://paste.rs/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "free direct GET, plain text, no metering.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "curl --data-binary @file https://paste.rs/ returns the URL on stdout; DELETE /<id> works; documented shell function for .bashrc. No wrapper ecosystem needed.",
+  "chaining": "unlimited pastes x 384 KiB. 1 TiB = ~2.7M pastes. Only useful if an encoder pipeline is allowed to fan out aggressively; otherwise a control-plane store.",
+  "limits": [],
+  "limits_note": "393,216 bytes hard; 'Pasting is heavily rate limited' (explicit in docs, no numeric limit published); no expiry documented; DELETE requires only the URL.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: ished); no expiry documented; DELETE requires only the URL. anonymous-dump",
+    "country": null
+  },
+  "reliability_note": "Silent truncation: it returns 206 Partial Content rather than an error, so a naive client will believe the full object was stored. Docs also state pasting is heavily rate limited.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://paste.rs/",
+      "date": "2026-10-21",
+      "proved": "'If the response is 206 (PARTIAL), then the paste exceeded the server's maximum upload size ... Pasting is heavily rate limited'"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: POST 373,336 bytes -> 201; POST 426,668 bytes -> 206; GET the 206 result -> 393,216 bytes stored"
+    },
+    {
+      "url": "https://paste.rs/<id>",
+      "date": "2026-10-21",
+      "proved": "probe: POST 5,000-byte payload -> 201 (round trip confirmed with matching body)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "393,216 bytes per paste (measured). 373,336 chars -> 201 Created; 426,668 chars -> 206 Partial Content with 393,216 bytes stored.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "393,216 bytes per paste (measured). 373,336 chars -> 201 Created; 426,668 chars -> 206 Partial Content with 393,216 bytes stored.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": "no constraint of a named kind was recorded; the verdict rests on the quota sentence rather than on a named limit"
+}

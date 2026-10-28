@@ -1,0 +1,75 @@
+{
+  "topic": "storage",
+  "slug": "ovhcloud-cold-archive",
+  "provider": "OVHcloud Cold Archive",
+  "url": "https://us.ovhcloud.com/public-cloud/object-storage/",
+  "category": "S3-compatible tape archive class",
+  "free_tier": {
+    "stated": "Virtually unlimited; billed per GB-month, Paris (eu-west-par) only",
+    "unit": "unlimited",
+    "metered_on": "unstated",
+    "source_url": "https://s3providers.com/providers/ovhcloud-object-storage",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://s3providers.com/providers/ovhcloud-object-storage",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "`retention-clamped`: 180-day minimum storage billed per object, verified on OVH's own page",
+    "days": 180,
+    "source_url": "https://s3providers.com/providers/ovhcloud-object-storage",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free. OVH product page verbatim: \"No more egress fees on OVHcloud Object Storage as of 1/1/26\". Retrieval is charged separately at EUR 0.005/GB (= EUR 5/TB) at restore time.",
+    "metered": false,
+    "price_per_tb": "EUR 5/TB"
+  },
+  "interface": [
+    "s3-compatible",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "S3 API",
+  "tooling": "AWS CLI, rclone, any S3 SDK; lifecycle rules supported",
+  "chaining": "Perfect archive leg of the chunk-and-replicate design: write-once 20 TiB, restore-on-demand to Standard, serve through Cloudflare.",
+  "limits": [],
+  "limits_note": "`retention-clamped`: 180-day minimum storage billed per object, verified on OVH's own page. Tape-backed (11 nines durability, 99.9% SLA); restore of hundreds of TB can take up to 48 hours; retrieval fee EUR 5/TB; restoring also re-incurs Standard-class storage cost while the object is accessible.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "card",
+    "country": null
+  },
+  "reliability_note": "Tape robot restores are minutes-to-hours for TB-scale and up to 48 h at hundreds of TB — unusable as a serving origin, correct as cold archive.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://us.ovhcloud.com/public-cloud/object-storage/",
+      "date": "2026-10-21",
+      "proved": "\"No more egress fees on OVHcloud Object Storage as of 1/1/26\"; storage classes incl. One-Zone, Local Zone"
+    },
+    {
+      "url": "https://www.ovhcloud.com/en/public-cloud/cold-archive/",
+      "date": "2026-10-21",
+      "proved": "\"Minimum storage billed: 180 days; Retrieval fee: Yes; Magnetic tapes; Durability: 11 nines; SLA 99.9%\" and restore-time FAQ (max 48 h at hundreds of TB)"
+    },
+    {
+      "url": "https://s3providers.com/providers/ovhcloud-object-storage",
+      "date": "2026-10-20",
+      "proved": "Cold Archive EUR 0.00128/GB/month (derived from api.ovh.com catalog addon coldarchive.archive.hour.consumption x 730 h), retrieval EUR 0.005/GB, Paris only, verified 2026-10-20"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "price_per_tb_month": "$1.44/TB at 20 TB (EUR 25.60 = $28.76). Same rate at 5 TB ($1.44/TB). Lowest storage rate in the entire survey — but archive-class, with a EUR 5/TB restore fee.",
+  "notes": "Virtually unlimited; billed per GB-month, Paris (eu-west-par) only",
+  "extras": {
+    "price_verbatim": "$1.44/TB at 20 TB (EUR 25.60 = $28.76). Same rate at 5 TB ($1.44/TB). Lowest storage rate in the entire survey — but archive-class, with a EUR 5/TB restore fee."
+  },
+  "binding": "none",
+  "binding_note": "no constraint in the record binds at this scale; the record carries no limit of a kind the vocabulary names"
+}

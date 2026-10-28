@@ -1,0 +1,101 @@
+{
+  "topic": "storage",
+  "slug": "bigfile-net",
+  "provider": "BigFile.net",
+  "url": "https://www.bigfile.net",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "No account and no published total quota — storage is per-object and unbounded in count. 'Up to 256 GB per single file. No limit on batch uploads as long as each file is under 256 GB.'",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://www.bigfile.net/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "256 GB per single file",
+    "bytes": 256000000000,
+    "source_url": "https://www.bigfile.net/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Retention: 'Uploaded files are kept for at least 365 days",
+    "days": 365,
+    "source_url": "https://www.bigfile.net/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered. 'No speed limits. Speeds depend solely on your network bandwidth. We don't impose any artificial throttling.' Downloads served from Cloudflare with `Cache-Control: public, max-age=3600`.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Undocumented but fully functional chunked HTTP API, reverse-engineered from the site's own uploader JS: `POST https://u1.bigfile.net/v1/upload` with header `Content-Range: start-end`, header `Hash: <sha256 of whole file encoded base62, left-padded to 43 chars>`, raw body = the chunk response `{\"status\":true,\"uri\":\"/d/<base62hash>\"}`. Read path: `GET https://www.bigfile.net/d/<base62hash>` (direct octet-stream), plus `GET /d/<hash>/list.json` for multi-file shares. Uploader parallelises across `u1..uN.bigfile.net`. No rclone backend.",
+  "chaining": "Account-less, so unlimited uploads per IP x 256 GB per object. Chain = N objects x 256 GB with 365-day sliding retention; keep every hash and the corpus is addressable forever by re-downloading before the 365-day idle window lapses, or re-POSTing the same bytes (content-addressed, so a re-upload of an existing hash is cheap).",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "256 GB per single file",
+      "source": "https://www.bigfile.net/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "Retention: 'Uploaded files are kept for at least 365 days",
+      "source": "https://www.bigfile.net/"
+    }
+  ],
+  "limits_note": "per-object-cap 256 GB. Retention: 'Uploaded files are kept for at least 365 days. Files that have not been downloaded for more than 365 days will be automatically deleted' — a sliding window, not a hard expiry, so a monthly GET sweep keeps everything alive indefinitely. No auth, no rate limit observed: 4 concurrent ranged GETs all returned 200 in 1.7-3.3 s.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: No account and no published total quota — storage is per-object and unbounded in count. 'Up to 256 GB per single file. No limit on",
+    "country": null
+  },
+  "reliability_note": "Genuinely good for a no-account host: upload and read both verified by SHA-256, and the site advertises a 'zero-database architecture' meaning no inventory to lose. The risk is the opposite of the usual one — there is no account, so nobody can enumerate or restore your corpus if you lose the hashes.",
+  "confidence": "documented",
+  "confidence_note": "The page states the number in the record; the claim is documented, not measured.",
+  "evidence": [
+    {
+      "url": "https://www.bigfile.net/",
+      "date": "2026-10-22",
+      "proved": "the host answers at all. Re-read https://www.bigfile.net/: HTTP 200, 1419 bytes, sha256 f960ea350c861ede. Quoted: --- title: \"Send Large Files Online Fast, Free & Secure\" author: \"BigFile.net\" language: \"en_US\" description: \"Upload and share your large files quickly and securely with BigFile.net – Free, high-speed bandwidth, anywhere online. No registration required.\" word"
+    },
+    {
+      "url": "https://u1.bigfile.net/v1/upload",
+      "date": "2026-10-21",
+      "proved": "probe: POST (102400 B, Content-Range 0-102399, Hash=9MHqkCQPcrV15ACXrzfQN9bIeE5hYm5PGk0hy6qXO2C) -> 200 {\"status\":true,\"uri\":\"/d/9MHqkCQPcrV15ACXrzfQN9bIeE5hYm5PGk0hy6qXO2C\"}; GET that URI -> 200, Content-Length 102400, sha256 matches upload exactly"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: second round with 3145728 B random payload -> upload 200, download 200, sha256 521fa7603ab4955cd275eac71d5419f09d8951a6a08a777f8997ccd1554afbf4 identical on both sides"
+    },
+    {
+      "url": "https://www.bigfile.net/",
+      "date": "2026-10-21",
+      "proved": "'Up to 256 GB per single file. No limit on batch uploads', 'kept for at least 365 days', 'No registration required. No email, phone, or personal info needed'"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "No account and no published total quota — storage is per-object and unbounded in count. 'Up to 256 GB per single file. No limit on batch uploads as long as each file is under 256 GB.'",
+  "extras": {
+    "verified_in_pass": [
+      {
+        "url": "https://www.bigfile.net/",
+        "date": "2026-10-22",
+        "via": null,
+        "http_status": 200,
+        "bytes": 1419,
+        "sha256": "f960ea350c861edea0c897303ec4cc0c8591c2ff94eacc3789c5ec2dd75fecbe",
+        "pattern_found": true,
+        "what_changed": "no change: the page still states the claim",
+        "capture": "captures\\bigfile-net-www-bigfile-net-.txt"
+      }
+    ]
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

@@ -1,0 +1,144 @@
+{
+  "topic": "inference",
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "not applicable"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "slug": "api-airforce",
+  "provider": "Api.Airforce",
+  "url": "https://api.airforce/v1",
+  "category": "inference gateway, free plan behind a username-and-password account",
+  "free_tier": {
+    "stated": "Free plan, $0.00/month: 1 request per minute, 1 000 requests per day, free models only",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://api.airforce/pricing/",
+    "read_on": "2026-10-28",
+    "notes": "GET /v1/models lists 783 ids; 29 carry tier free (6 operational, 1 degraded, 22 major_outage when read) and 754 carry tier paid"
+  },
+  "endpoint": "https://api.airforce/v1/chat/completions",
+  "tooling": "any OpenAI-compatible client; POST {base}/chat/completions. A GET to the route answers 405 with Allow: POST",
+  "chaining": "pairs with an agent as a catalogue with a per-id status field; the Free plan rate of 1 request per minute is the scarce link",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "1 request per minute on the Free plan (a paid Starter plan is 20 per minute)",
+      "source": "https://api.airforce/pricing/"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "1 000 requests per day on the Free plan, free models only",
+      "source": "https://api.airforce/pricing/"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "1 request per minute binds long before 1 000 requests per day",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "a free account with a username and a password: no email or credit card required to start, and the API key is generated in the dashboard. The g4f.dev provider page states the free tier is available without an API key and its JavaScript example sends no Authorization header; a keyless completion was not exercised",
+    "country": null
+  },
+  "reliability_note": "the listing carries a status per id: 22 of the 29 ids with tier free read major_outage when the listing was fetched, so most free ids were not serving",
+  "confidence": "documented",
+  "confidence_note": "the plan limits and the signup are first-party; the keyless claim is on the g4f.dev provider page and in a third-party router that lists the service as a keyless upstream. No completion was sent because probe.py issues GET and HEAD only",
+  "probe": {
+    "records": [
+      {
+        "probe_id": "airforce-v1-models-get",
+        "method": "GET",
+        "url": "https://api.airforce/v1/models",
+        "http": 200,
+        "authorization_sent": false,
+        "model_count": 783,
+        "tier_free": 29,
+        "tier_free_status": {
+          "operational": 6,
+          "degraded": 1,
+          "major_outage": 22
+        },
+        "tier_paid": 754,
+        "body_sha256": "87ca644739712fc0ad8107f67db7e38c7d42e49332fa021ca3d7510576f7d710",
+        "probed_at": "2026-10-28T04:49:23.618Z",
+        "chat_completion_tested": false
+      },
+      {
+        "probe_id": "airforce-chat-get",
+        "method": "GET",
+        "url": "https://api.airforce/v1/chat/completions",
+        "http": 405,
+        "allow": "POST",
+        "probed_at": "2026-10-28T04:45:34.991Z"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "url": "https://api.airforce/pricing/",
+      "date": "2026-10-28",
+      "capture": "sha256:b41ad83508d8ee9c814393c13ae4a20fa8bc5440faa6b679ccb5fd45741c35a5",
+      "quote": "- 1 request per minute",
+      "proved": "the Free plan allows 1 request per minute"
+    },
+    {
+      "url": "https://api.airforce/pricing/",
+      "date": "2026-10-28",
+      "capture": "sha256:b41ad83508d8ee9c814393c13ae4a20fa8bc5440faa6b679ccb5fd45741c35a5",
+      "quote": "- 1 000 requests per day",
+      "proved": "the Free plan allows 1 000 requests per day"
+    },
+    {
+      "url": "https://api.airforce/pricing/",
+      "date": "2026-10-28",
+      "capture": "sha256:b41ad83508d8ee9c814393c13ae4a20fa8bc5440faa6b679ccb5fd45741c35a5",
+      "quote": "| Model access | Free models | All models | All models | All models | All models | All models |",
+      "proved": "the Free plan is limited to free models"
+    },
+    {
+      "url": "https://api.airforce/docs/authentication/",
+      "date": "2026-10-28",
+      "capture": "sha256:0f7b56cfdd37f7343a59c14473dc187e2c238ed2ffa6991ece0b082f39d40a24",
+      "quote": "Visit the signup page and create a free account with a username and password. No email or credit card required to start.",
+      "proved": "signup needs a username and a password, no email and no card"
+    },
+    {
+      "url": "https://api.airforce/docs/authentication/",
+      "date": "2026-10-28",
+      "capture": "sha256:0f7b56cfdd37f7343a59c14473dc187e2c238ed2ffa6991ece0b082f39d40a24",
+      "quote": "Use your API key in the Authorization header to authenticate requests to any endpoint.",
+      "proved": "the first-party docs authenticate with an API key in the Authorization header"
+    },
+    {
+      "url": "https://g4f.dev/docs/providers/api-airforce.md",
+      "date": "2026-10-28",
+      "capture": "sha256:607b04ec9e37a44ee2db10b601177a981850a6e51e21ccf6bfb1437ad5f17f4b",
+      "quote": "- 🆓 **Free Tier**: Available without API key",
+      "proved": "the g4f.dev provider page states the free tier is available without an API key"
+    },
+    {
+      "url": "https://api.airforce/v1/models",
+      "date": "2026-10-28",
+      "capture": "sha256:3d347562d999c332751901f0b9758892358928ca93bb35f68e0e6557e52d358b",
+      "quote": "models=783; tier=free: 29 (status operational 6, degraded 1, major_outage 22); tier=paid: 754.",
+      "proved": "a keyless GET /v1/models answered 200 with 783 ids, 29 of them tier free"
+    },
+    {
+      "url": "https://www.npmjs.com/package/keylessai",
+      "date": "2026-10-28",
+      "capture": "sha256:a8751dbcdbd0b350e87244c4bcdedc348fdc9370de65674a9e9ec26960e0977d",
+      "quote": "multi-provider aggregation (Pollinations + [ApiAirforce](https://api.airforce/) today, more as they appear)",
+      "proved": "a third-party keyless router lists Api.Airforce as a keyless upstream"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-28T04:36:18.974Z",
+  "notes": "whether a completion answers with no Authorization header is unverified; the account route is the documented one"
+}

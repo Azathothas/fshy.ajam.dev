@@ -1,0 +1,65 @@
+{
+  "topic": "egress",
+  "slug": "cloudflare-turn",
+  "provider": "Cloudflare Realtime TURN",
+  "url": "https://developers.cloudflare.com/realtime/turn/",
+  "category": "relay (metered, WebRTC)",
+  "free_tier": {
+    "stated": "1,000 GB/month of Realtime egress shared with the SFU, then USD 0.05/GB",
+    "unit": "GB",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://developers.cloudflare.com/realtime/sfu/platform/pricing/",
+    "read_on": "2026-10-22",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: a monthly allowance",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: a monthly allowance",
+    "days": null,
+    "notes": "",
+    "source_url": "https://developers.cloudflare.com/realtime/sfu/platform/pricing/"
+  },
+  "egress": {
+    "terms": "metered at 1,000 GB/month, which is 33.3 GB/day or 3.1% of one day's workload",
+    "metered": true,
+    "free_allowance": "1,000 GB/month shared between TURN and the SFU",
+    "price_per_tb": "USD 0.05/GB",
+    "source_url": "https://developers.cloudflare.com/realtime/sfu/platform/pricing/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "any WebRTC stack's TURN client",
+  "chaining": "a NAT-traversal fallback for a WebRTC-shaped workload and nothing else. It cannot be wrapped into more because a byte quota relayed does not compound.",
+  "limits": [],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a Cloudflare account and a TURN key",
+    "country": null
+  },
+  "reliability_note": "TURN and the SFU draw on one allowance, so an SFU workload spends the TURN budget",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://developers.cloudflare.com/realtime/sfu/platform/pricing/",
+      "date": "2026-10-22",
+      "proved": "'The first 1,000 GB each month is free. SFU and TURN share this allowance', page last updated 2026-09-22"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-22T03:20:00.000Z",
+  "notes": "Reaching 1 TiB/day would need about 30 accounts at the free allowance, which is not a plan. Quoted in decimal GB because the page states decimal GB.",
+  "extras": {
+    "stale_after_days": 180,
+    "bytes_transit": "yes",
+    "transit_note": "TURN relays the media stream when a direct path fails, which is what its byte quota counts"
+  },
+  "binding": "volume-quota",
+  "interface_detail": "TURN over UDP, TCP or TLS with a short-lived credential",
+  "binding_note": "the monthly byte allowance in egress.free_allowance is what runs out, and no kind in the six-value vocabulary names a byte volume over a period counted per account. per-ip-shaping is the closest, because it is the only kind that bounds a volume, and its subject here is the account rather than the caller's address",
+  "limits_note": "the allowance is a byte volume over a period, which none of the six kinds names; the number is in egress.free_allowance and binding names per-ip-shaping as the nearest kind"
+}

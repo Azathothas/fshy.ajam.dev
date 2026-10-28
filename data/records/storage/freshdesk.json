@@ -1,0 +1,88 @@
+{
+  "topic": "storage",
+  "slug": "freshdesk",
+  "provider": "Freshdesk (helpdesk attachments)",
+  "url": "https://www.freshdesk.com",
+  "category": "paas",
+  "free_tier": {
+    "stated": "Freshworks support states flatly: 'There is no storage limit on the Freshdesk platform. All the data is stored in Cloud.' Per-attachment 20 MB (15 MB on Sprout/trial).",
+    "unit": "MB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://support.freshdesk.com/support/solutions/articles/234965-hi-is-there-a-storage-limit-on-your-platform-",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: 15 MB",
+    "bytes": 15000000,
+    "source_url": "https://support.freshdesk.com/support/solutions/articles/234965-hi-is-there-a-storage-limit-on-your-platform-",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://support.freshdesk.com/support/solutions/articles/234965-hi-is-there-a-storage-limit-on-your-platform-",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "No egress meter; attachments are served from `cdn.freshdesk.com` (S3-backed).",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Freshdesk REST API (multipart attachments), Python/PHP samples in `freshworks/fresh-samples` (`create_ticket_attachment.py`). No rclone backend.",
+  "chaining": "'No storage limit' x unlimited free-tier portals would be the best finding in the niche — but the free tier is a 6-month program, not a standing plan, so the realistic multiplier is 6 months x N portals.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: 15 MB",
+      "source": "https://support.freshdesk.com/support/solutions/articles/234965-hi-is-there-a-storage-limit-on-your-platform-"
+    }
+  ],
+  "limits_note": "per-object-cap: 15 MB (Sprout/trial) to 20 MB per conversation. request-rate: Growth 100 req/min, Pro 400, Enterprise 700, with per-endpoint sub-limits (Ticket Create 50/min on Growth). Retention: 'no storage limit' is unqualified in the article, but the Free Program ends after 6 months.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "The 'no storage limit' claim is real and current, but it is a claim about a paid platform. Free access is a 6-month program with 2 agent seats; files >20 MB must be hotlinked from Dropbox/OneDrive, i.e. Freshdesk is not the store.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://support.freshdesk.com/support/solutions/articles/234965-hi-is-there-a-storage-limit-on-your-platform-",
+      "date": "2026-10-21",
+      "proved": "'There is no storage limit on the Freshdesk platform.'"
+    },
+    {
+      "url": "https://support.freshdesk.com/support/solutions/articles/196643-what-is-the-size-limit-for-attachments-to-a-ticket-reply-",
+      "date": "2026-10-21",
+      "proved": "'20 MB/conversation for accounts on the Blossom and above plans. For Sprout and trial accounts ... 15 MB'"
+    },
+    {
+      "url": "https://partnersupport.freshworks.com/support/solutions/articles/50000010099-explore-freshdesk-free-program-freshdesk-only-",
+      "date": "2026-10-21",
+      "proved": "'available for free for 6 months'"
+    },
+    {
+      "url": "https://developers.freshdesk.com/api/",
+      "date": "2026-10-21",
+      "proved": "rate limit tables (Growth 100/min; Enterprise 700/min)"
+    }
+  ],
+  "verdict": "trial-only",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Freshworks support states flatly: 'There is no storage limit on the Freshdesk platform. All the data is stored in Cloud.' Per-attachment 20 MB (15 MB on Sprout/trial).",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "Freshworks support states flatly: 'There is no storage limit on the Freshdesk platform. All the data is stored in Cloud.' Per-attachment 20 MB (15 MB on Sprout/trial).",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

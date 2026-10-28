@@ -1,0 +1,107 @@
+{
+  "slug": "usenet-crawler",
+  "provider": "Usenet Crawler",
+  "url": "https://www.usenet-crawler.com/",
+  "category": "Usenet indexer (Newznab API, open registration)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free tier reported at 10,000 API calls and 1,000 NZB downloads per user per day, with a USD 20 lifetime VIP; caps declares <registration available=\"yes\" open=\"yes\"/> and <limits max=\"100\" default=\"100\"/>.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://www.usenet-crawler.com/api?t=caps",
+    "read_on": "2026-10-23",
+    "notes": "The 10,000 figure appears in two independent third-party sources but neither is dated on the page, so it is kept as reported and flagged as the number to check first with an account."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: an NZB pointer file",
+    "bytes": null,
+    "source_url": "https://www.usenet-crawler.com/api?t=caps",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "Free tier 2,700 days across 500+ indexed newsgroups; VIP 3,900 days (nzbhydra.com, 2026-10-23).",
+    "days": null,
+    "source_url": "https://nzbhydra.com/indexers/",
+    "notes": "reported"
+  },
+  "egress": {
+    "terms": "No byte metering; the API returns pointers.",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.usenet-crawler.com/api?t=caps"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "Newznab API at /api. /api with no parameters returns <error code=\"200\" description=\"Missing parameter\"/>, which is the Newznab key check, so the endpoint is live and keyed.",
+  "endpoint": "https://www.usenet-crawler.com/api?t=caps ; https://www.usenet-crawler.com/api?t=search&q=<query>&apikey=<key>",
+  "tooling": "Native Newznab, listed as integrating with NZBVortex and SabNZBD, so Prowlarr and NZBHydra2 add it with URL plus key.",
+  "chaining": "The only open-registration indexer claiming a five-figure daily API allowance, which is what an arr stack actually needs the caveat is that the claim is third-party and undated.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "10,000 API calls per day free (reported)",
+      "source": "https://nzbhydra.com/indexers/"
+    },
+    {
+      "kind": "pull-count",
+      "value": "1,000 NZB downloads per day free (reported)",
+      "source": "https://www.newsgroupreviews.com/usenet-crawler-review.html"
+    },
+    {
+      "kind": "request-rate",
+      "value": "100 results per request maximum",
+      "source": "https://www.usenet-crawler.com/api?t=caps"
+    }
+  ],
+  "limits_note": "At 10,000 calls a day the request rate stops being the constraint and the 100-result page becomes it: a client that wants a whole season must paginate.",
+  "binding": "request-rate",
+  "binding_note": "If the reported allowance holds, nothing in the vocabulary binds at 1 TiB/month; the record still names request-rate because that is the only counter the vendor is documented to run, and it is the one to verify first.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The register form asks for username, email, password and an invitecode field, and caps declares registration open=yes. Whether an invite is mandatory was not tested: submitting the form creates an account, which a read-only pass does not do.",
+    "country": null
+  },
+  "reliability_note": "The public pages of the domain now sell Usenet block accounts and advertise 'Pay Only ONCE', so the indexer and a news provider share one brand; a report of a database outage and fake releases in September 2026 exists in a third-party status tracker.",
+  "confidence": "reported",
+  "confidence_note": "caps, the keyed error and the registration form were observed today; the allowance that decides the verdict is third-party. One free account moves this to documented.",
+  "evidence": [
+    {
+      "url": "probe:https://www.usenet-crawler.com/api?t=caps&x=1",
+      "date": "2026-10-23",
+      "proved": "caps returned 200 and 40,803 bytes: title usenet-crawler, <limits max=\"100\" default=\"100\"/>, <registration available=\"yes\" open=\"yes\"/>"
+    },
+    {
+      "url": "probe:https://www.usenet-crawler.com/api?t=search&q=linux&x=1",
+      "date": "2026-10-23",
+      "proved": "unkeyed search returned <error code=\"200\" description=\"Missing parameter\"/>, 91 bytes"
+    },
+    {
+      "url": "probe:https://www.usenet-crawler.com/register",
+      "date": "2026-10-23",
+      "proved": "the register form carries username, password, confirmpassword, email and an empty invitecode field"
+    },
+    {
+      "url": "https://nzbhydra.com/indexers/",
+      "date": "2026-10-23",
+      "proved": "third-party: 'Open registration', 'USD 20 lifetime membership VIP', '10,000 calls/day', free tier 2,700 days"
+    },
+    {
+      "url": "https://www.newsgroupreviews.com/usenet-crawler-review.html",
+      "date": "2026-10-23",
+      "proved": "third-party: 'the limits are set to 10k API and 1k NZB downloads per user per day'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "extras": {
+    "price": "USD 20 lifetime VIP (reported)",
+    "nzb_is_newznab": true,
+    "caps_limits": 100,
+    "registration_open": true
+  },
+  "notes": "Registering would settle both open questions at once (is the invite mandatory, what is the real daily counter) and is the single highest-value follow-up.",
+  "verified_at": "2026-10-23T02:11:54.066Z",
+  "topic": "debrid",
+  "price_per_tb_month": null
+}

@@ -1,0 +1,90 @@
+{
+  "topic": "storage",
+  "slug": "neoneko-git",
+  "provider": "NeoNeko Git (Forgejo, open registration)",
+  "url": "https://git.neoneko.org",
+  "category": "registry",
+  "free_tier": {
+    "stated": "No published storage quota. Site advertises 'no seat limits, no repository caps'; Forgejo ships quota disabled by default (quota.ENABLED=false, quota.default.TOTAL=-1 = unlimited), and this instance exposes no quota documentation.",
+    "unit": "unlimited",
+    "metered_on": "stored-bytes",
+    "source_url": "https://git.neoneko.org/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "No per-file cap documented",
+    "source_url": "https://git.neoneko.org/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://git.neoneko.org/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "No metered download policy published; Cloudflare-fronted. Not contradicted anywhere on the instance.",
+    "metered": true
+  },
+  "interface": [
+    "rest",
+    "oci"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Full Forgejo API v1 with Swagger at /api/swagger; OCI registry at /v2/; generic package registry; LFS; Actions on an owner-run runner.",
+  "chaining": "Unknown per-account cap x unlimited free accounts. If the default holds (TOTAL=-1), each account is effectively unbounded — this is the 'unlimited free identity x no quota' case, strictly better than CodeFloe but with zero published guarantee.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "No per-file cap documented",
+      "source": "https://git.neoneko.org/"
+    }
+  ],
+  "limits_note": "Unstated. No per-file cap documented. Small instance (29 public repos observed via API search), self-hosted runner, Patreon-funded. Accounts left unactivated are auto-removed.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: p documented. Small instance (29 public repos observed via API search), self-hosted runner, Patreon-funded. Accounts left unactivated are auto-removed. registry",
+    "country": null
+  },
+  "reliability_note": "Hobby instance run by one admin; tiny disk budget implied by the funding model. Unpublished quota means an admin can introduce one at any moment with no notice. Data-loss risk is materially higher than a commercial forge.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://git.neoneko.org/",
+      "date": "2026-10-21",
+      "proved": "'Public and private repositories, no seat limits, no repository caps'; 'Full API access ... documented with Swagger'"
+    },
+    {
+      "url": "https://git.neoneko.org/api/v1/version",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> {\"version\":\"16.0.5+gitea-1.22.0\"} (live Forgejo 16.0.5)"
+    },
+    {
+      "url": "https://git.neoneko.org/v2/",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 401 with Bearer realm https://git.neoneko.org/v2/token (registry enabled, not a stub)"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: anonymous /v2/token -> 200 (anonymous pull path exists)"
+    },
+    {
+      "url": "https://git.neoneko.org/api/v1/repos/search?limit=50",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 29 repos (small instance, quota never exercised at scale)"
+    },
+    {
+      "url": "https://forgejo.org/docs/latest/admin/config-cheat-sheet/",
+      "date": "2026-10-21",
+      "proved": "quota.ENABLED defaults false, quota.default.TOTAL defaults -1"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published storage quota. Site advertises 'no seat limits, no repository caps'; Forgejo ships quota disabled by default (quota.ENABLED=false, quota.default.TOTAL=-1 = unlimited), and this instance exposes no quota documentation.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

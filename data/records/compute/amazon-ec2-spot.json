@@ -1,0 +1,129 @@
+{
+  "topic": "compute",
+  "slug": "amazon-ec2-spot",
+  "provider": "Amazon EC2 Spot",
+  "url": "https://aws.amazon.com/free/",
+  "category": "GPU cloud",
+  "free_tier": {
+    "stated": "The AWS Free Tier is now a plan with an instance-type allowlist. New accounts from 15 July 2025 get 'USD 100 in credits immediately' plus 'up to USD 100 more', valid 6 months, and on the Free plan the account 'closes on its own 6 months after you open it or when your credits run out'. Reporting of the console restriction is consistent: 'This instance type is not eligible under the Free Plan. Upgrade your account plan to access this instance type', and the eligible list is T3.micro, T3.small, T4g.micro, T4g.small, C7i-flex.large and M7i-flex.large. No GPU family is on it.",
+    "unit": "none",
+    "metered_on": "wall-clock",
+    "source_url": "https://aws.amazon.com/free/",
+    "read_on": "2026-10-22",
+    "notes": "one-time-credit"
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://aws.amazon.com/free/",
+    "notes": null
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://aws.amazon.com/free/",
+    "notes": null
+  },
+  "egress": {
+    "terms": "not stated",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://aws.amazon.com/free/"
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "inferred from the tooling the provider documents; not probed",
+  "tooling": "not stated",
+  "chaining": "The USD 100 to 200 credit is real money, but it buys CPU Spot at standard prices rather than GPU time, so it does not multiply a training run.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "GPU Spot quota defaults to 0 vCPU and the Free plan blocks the request, so the two gates must both be opened, and opening either one requires an upgraded paid plan.",
+      "source": "https://aws.amazon.com/free/"
+    }
+  ],
+  "limits_note": "GPU Spot quota defaults to 0 vCPU and the Free plan blocks the request, so the two gates must both be opened, and opening either one requires an upgraded paid plan.",
+  "binding": "volume-quota",
+  "binding_note": "GPU Spot quota defaults to 0 vCPU and the Free plan blocks the request, so the two gates must both be opened, and opening either one requires an upgraded paid plan.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://aws.amazon.com/free/",
+      "date": "2026-10-22",
+      "proved": "new Free Tier accounts get 'USD 100 in credits immediately' and 'up to USD 100 more', for 6 months, and the account closes 6 months after opening, quoted"
+    },
+    {
+      "url": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-spot-limits.html",
+      "date": "2026-10-22",
+      "proved": "All G and VT Spot Instance Requests default to 0 vCPU, so GPU Spot is closed before the credit is spent"
+    },
+    {
+      "url": "https://www.reddit.com/r/aws/comments/1m8t9rb/why_is_t2micro_not_freetier_eligible_on_my_aws/",
+      "date": "2026-10-22",
+      "proved": "a user quotes the console refusal 'This instance type is not eligible under the Free Plan. Upgrade your account plan to access this instance type', and the eligible list is T3.micro, T3.small, T4g.micro, T4g.small, C7i-flex.large and M7i-flex.large"
+    },
+    {
+      "url": "https://website.spot.ec2.aws.a2z.com/spot.js",
+      "date": "2026-10-22",
+      "proved": "probe.py record shows status 200, 7625200 bytes, sha256 3624b033d08f7c2ff9460d6c389713ba640178ed452fa9e4881089a629d3dfeb, header last-modified Mon, 13 May 2024, and the parsed config contains no g6e, p5e or g7e size"
+    },
+    {
+      "url": "https://www.devzero.io/instances/aws/g6.xlarge",
+      "date": "2026-10-22",
+      "proved": "a live tracker reports g6.xlarge spot in us-east-1 at USD 0.476 and in us-east-2 at USD 0.411, against the feed's 0.1050"
+    },
+    {
+      "url": "https://www.doit.com/compute/spot/us-east-2/g6.xlarge",
+      "date": "2026-10-22",
+      "proved": "the page states 'The lowest spot price for AWS EC2 g6.xlarge in us-east-2 is $0.2238 per hour', a third value that also contradicts the feed"
+    },
+    {
+      "url": "https://www.devzero.io/instances/aws/g6.xlarge",
+      "date": "2026-10-22",
+      "proved": "a per-region table for g6.xlarge gives spot USD 0.476 in us-east-1, 0.411 in us-east-2, 0.408 in us-west-2, 0.176 in eu-north-1, 0.136 in ap-south-2 and 0.566 in ap-northeast-1, against on-demand USD 0.805 in us-east-1"
+    },
+    {
+      "url": "https://www.doit.com/compute/spot/us-east-2/g6.xlarge",
+      "date": "2026-10-22",
+      "proved": "an independent tracker states 'The lowest spot price for AWS EC2 g6.xlarge in us-east-2 is $0.2238 per hour', which disagrees with the other tracker's 0.411 for the same region, so even a single region has no agreed spot number"
+    },
+    {
+      "url": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-spot-limits.html",
+      "date": "2026-10-22",
+      "proved": "the Spot quota table lists All G and VT Spot Instance Requests at a default of 0 and All Standard at 5, quoted"
+    },
+    {
+      "url": "https://aws.amazon.com/ec2/spot/instance-advisor/",
+      "date": "2026-10-22",
+      "proved": "AWS states Spot Instances save 'up to 90% compared to On-Demand pricing' and that the average interruption frequency across all Regions and instance types has historically been '<5%', quoted"
+    },
+    {
+      "url": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-instance-termination-notices.html",
+      "date": "2026-10-22",
+      "proved": "the interruption notice is issued two minutes before stop or terminate, delivered via EventBridge and IMDSv2 spot/instance-action, and is best effort, quoted"
+    },
+    {
+      "url": "https://aws.amazon.com/ec2/spot/instance-advisor/",
+      "date": "2026-10-22",
+      "proved": "the page states 'save up to 90% compared to On-Demand pricing' and 'the average frequency of interruption across all Regions and instance types has historically been <5%', but the per-pool table did not appear in the extracted text, so the read is marked low confidence"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "Two separate walls, and the credit is behind both: the plan allowlist blocks the instance type, and the Spot quota blocks the family. A user who upgrades to the paid plan keeps the remaining credit for 12 months, so the credit is not lost by upgrading, which makes upgrading the cheapest way to convert the trial into GPU time. qualifies-with-caveat via a05-spot; qualifies-with-caveat via a05-spot; qualifies-with-caveat via a05-spot; qualifies-with-caveat via a05-spot. The one recorded is the better-evidenced. Verdict corrected 2026-10-22: the gate is a service quota, not an identity check. Spot is a paid product and the rates in this record are purchasable; what blocks a new account is a GPU Spot vCPU quota that defaults to zero, which needs a quota-increase request. `fails-quota` names that; `fails-identity` named a gate that is reachable.",
+  "extras": {
+    "wave2": {
+      "class": "spot-arbitrage",
+      "free_tier_kind": "one-time-credit",
+      "shape": null
+    }
+  }
+}

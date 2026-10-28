@@ -1,0 +1,71 @@
+{
+  "topic": "storage",
+  "slug": "turso",
+  "provider": "Turso",
+  "url": "https://turso.tech",
+  "category": "paas",
+  "free_tier": {
+    "stated": "5 GB total storage, 100 databases on Free",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://turso.tech/pricing",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://turso.tech/pricing",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://turso.tech/pricing",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Not separately metered on Free; the binding meters are 500M rows read / 10M rows written per month, plus 3 GB embedded syncs. Serving files out of SQLite blobs burns rows-read, not bytes.",
+    "metered": true
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Turso CLI + HTTP API (`/v2/pipeline`), libSQL clients (JS/Python/Rust/Go), `turso db shell`, embedded replicas",
+  "chaining": "100 databases is a unit multiplier for ORGANIZATION, but the 5 GB storage is an ACCOUNT-level pot, not per database — 100 DBs x 50 MB each rather than 100 x 5 GB. Second axis: each org/account. Multiply accounts (GitHub OAuth is one click) — N accounts x 5 GB.",
+  "limits": [],
+  "limits_note": "5 GB is a hard total across all 100 DBs — this is the key trap: the big number is database COUNT, not storage. Exceeding rows-read returns `BLOCKED`. 3 GB sync cap for embedded replicas.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Exceeding quota returns BLOCKED errors on queries rather than data loss; DBs stay warm (no cold starts since Mar 2025).",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://turso.tech/pricing",
+      "date": "2026-10-21",
+      "proved": "'Free $0/month | 100 | 5GB | 500 Million | 10 Million | 3GB'"
+    },
+    {
+      "url": "https://turso.tech/blog/turso-cloud-debuts-the-new-developer-plan",
+      "date": "2026-10-21",
+      "proved": "'500 million rows read per month, 10 million rows written per month, and 5GB of storage'; Developer plan allows 1,000 databases"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "5 GB total storage, 100 databases on Free",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "5 GB total storage, 100 databases on Free",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": "no constraint of a named kind was recorded; the verdict rests on the quota sentence rather than on a named limit"
+}

@@ -1,0 +1,88 @@
+{
+  "topic": "storage",
+  "slug": "cran",
+  "provider": "CRAN (Comprehensive R Archive Network)",
+  "url": "https://cran.r-project.org",
+  "category": "registry",
+  "free_tier": {
+    "stated": "Deliberately tiny, by policy. CRAN policy: 'As a general rule, neither data nor documentation should exceed 5MB ... Source package tarballs should if possible not exceed 10MB.' Larger tarballs need a individually-granted exception ('a modestly increased limit can be requested at submission').",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://cran.r-project.org/web/packages/policies.html",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: 10 MB",
+    "bytes": 10000000,
+    "source_url": "https://cran.r-project.org/web/packages/policies.html",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "per-object-cap: 10 MB source tarball (soft, 5 MB for data/doc). retention: indefinite per version, old versions archived",
+    "source_url": "https://cran.r-project.org/web/packages/policies.html",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and globally mirrored (hundreds of CRAN mirrors). No metering.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "`R CMD build` + `devtools::submit_cran`, `rhub`; mirrored tarballs at /src/contrib/. No rclone backend.",
+  "chaining": "unlimited packages x unlimited versions x 10 MB. CRAN is explicitly hostile to bulk data: 'A CRAN package is not an appropriate way to distribute course notes'. Human review on every submission.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "reviewed",
+      "source": "https://cran.r-project.org/web/packages/policies.html"
+    },
+    {
+      "kind": "write-gated",
+      "value": "review make this unusable for bulk",
+      "source": "https://cran.r-project.org/web/packages/policies.html"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: 10 MB",
+      "source": "https://cran.r-project.org/web/packages/policies.html"
+    }
+  ],
+  "limits_note": "per-object-cap: 10 MB source tarball (soft, 5 MB for data/doc). retention: indefinite per version, old versions archived. request-rate: submission is manual/email-reviewed.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: , old versions archived. request-rate: submission is manual/email-reviewed. registry",
+    "country": null
+  },
+  "reliability_note": "10 MB per version and human review make this unusable for bulk; recorded so nobody re-checks it. Round 1 did not cover CRAN specifically.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://cran.r-project.org/web/packages/policies.html",
+      "date": "2026-10-21",
+      "proved": "'As a general rule, neither data nor documentation should exceed 5MB ... Source package tarballs should if possible not exceed 10MB.'"
+    },
+    {
+      "url": "https://cran.r-project.org/src/contrib/Matrix_1.7-6.tar.gz",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, 2,527,103 bytes; ranged GET bytes 0-999 -> 206 (ranges honoured)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Deliberately tiny, by policy. CRAN policy: 'As a general rule, neither data nor documentation should exceed 5MB ... Source package tarballs should if possible not exceed 10MB.' Larger tarballs need a individually-granted exception ('a modestly increased limit can be requested at submission').",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "Deliberately tiny, by policy. CRAN policy: 'As a general rule, neither data nor documentation should exceed 5MB ... Source package tarballs should if possible not exceed 10MB.' Larger tarballs need a individually-granted exception ('a modestly increased limit can be requested at submission').",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

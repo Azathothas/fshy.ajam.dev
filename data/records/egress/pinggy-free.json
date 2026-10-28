@@ -1,0 +1,101 @@
+{
+  "topic": "egress",
+  "slug": "pinggy-free",
+  "provider": "Pinggy",
+  "url": "https://pinggy.io/help/",
+  "category": "tunnel (hosted, SSH)",
+  "free_tier": {
+    "stated": "one 60-minute tunnel at unlimited data, no account",
+    "unit": "unlimited",
+    "metered_on": "wall-clock",
+    "source_url": "https://pinggy.io/help/",
+    "read_on": "2026-10-22",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: a stream rather than an object store",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": null,
+    "days": null,
+    "notes": "",
+    "source_url": "https://pinggy.io/help/"
+  },
+  "egress": {
+    "terms": "no byte quota; measured 26.9 KiB/s on a 10 MiB object, which is 2.2 GiB/day at best",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://pinggy.io/help/"
+  },
+  "interface": [
+    "ssh"
+  ],
+  "tooling": "OpenSSH",
+  "chaining": "the free outbound-only ingress for a host that cannot open a port, which is the sealed-sandbox shape. It composes with anything that speaks TCP and composes with nothing that needs throughput.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "60 minutes per tunnel, stated in the SSH banner and on the help page",
+      "source": "https://pinggy.io/help/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "measured 4,847,616 of 10,485,760 bytes in 180 s, about 26.9 KiB/s, which caps a full month at about 69.8 GB (0.063 TiB)",
+      "source": "probe"
+    }
+  ],
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no account for the 60-minute tier; the SSH session is unauthenticated",
+    "country": null
+  },
+  "reliability_note": "the free hostname is a random subdomain that changes every session",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "probe:https://phqpq-103-139-152-1.run.pinggy-free.link/blob10m.bin",
+      "date": "2026-10-22",
+      "proved": "200 with 4,847,616 of 10,485,760 bytes in 180 s, then the client timeout"
+    },
+    {
+      "url": "probe:https://phqpq-103-139-152-1.run.pinggy-free.link/small.txt",
+      "date": "2026-10-22",
+      "proved": "200, 3 bytes in 1.1 s: the control path works, so the 10 MiB result is shaping"
+    },
+    {
+      "url": "https://pinggy.io/help/",
+      "date": "2026-10-22",
+      "proved": "'Your tunnel will expire in 60 minutes' and the -R0 form"
+    },
+    {
+      "url": "https://pinggy.io/docs/guides/wireguard/",
+      "date": "2026-10-23",
+      "proved": "'Pinggy's UDP tunnels solve this by relaying UDP datagrams from a public endpoint to your local WireGuard server, so peers anywhere in the world can complete the handshake'; the free form is '[address removed]'"
+    },
+    {
+      "url": "https://pinggy.io/docs/udp_tunnels/",
+      "date": "2026-10-23",
+      "proved": "'UDP tunnels cannot be created using SSH command'; 'Port allocation changes per connection. However, Pro users can reserve a persistent port'"
+    },
+    {
+      "url": "https://pinggy.io/help/",
+      "date": "2026-10-23",
+      "proved": "'Pinggy's free plan has a tunnel timeout of 60 minutes'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "notes": "2026-10-23: the free tier carries UDP, not only SSH TCP. Pinggy documents 'ssh -p 443 -R0:localhost:51820 [address removed]' as the way to expose a self-hosted WireGuard server, and the free host form returns a public UDP port such as udp://rndnj-103-170-183-11.a.free.pinggy.online:43210, so wg_path is inside-udp. The volume still binds: the only rate this corpus has measured on the free tier is 26.9 KiB/s, from the HTTP tier, which is 2.2 GiB/day and 66 GiB/month.",
+  "extras": {
+    "stale_after_days": 180,
+    "bytes_transit": "yes",
+    "transit_note": "the SSH tunnel relays the origin's bytes at a measured 26.9 KiB/s",
+    "wg_path": "inside-udp"
+  },
+  "binding": "per-ip-shaping",
+  "binding_note": "The 60-minute cap bounds each session and the measured 26.9 KiB/s bounds everything those sessions can carry: at that rate a whole month is about 69.8 GB, 0.063 TiB, so the rate is what fails and it fails by a factor of 16 rather than at a quota.",
+  "interface_detail": "ssh -p 443 -R0:127.0.0.1:PORT [address removed]"
+}

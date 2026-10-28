@@ -1,0 +1,137 @@
+{
+  "topic": "compute",
+  "slug": "red-hat-developer-sandbox",
+  "provider": "Red Hat Developer Sandbox",
+  "url": "https://developers.redhat.com/developer-sandbox",
+  "category": "kubernetes",
+  "tier": "Developer Sandbox",
+  "free_tier": {
+    "stated": "Quoted: 'The Developer Sandbox provides you with a 30-day trial experience to a selection of Red Hat products.' and 'It is free. There is no credit card required. All you need is a Red Hat account.' One private OpenShift project on a shared multi-tenant cluster.",
+    "unit": "hours",
+    "metered_on": "wall-clock",
+    "source_url": "https://developers.redhat.com/developer-sandbox/FAQ",
+    "read_on": "2026-10-24"
+  },
+  "per_object_cap": {
+    "stated": "one project per sandbox, on a pre-configured resource quota that 'cannot be changed'"
+  },
+  "retention": {
+    "stated": "Quoted: 'Your Developer Sandbox is active for 30 days'. Work can be exported before the trial ends and imported into a fresh 30-day trial: 'you can export your work before one trial ends, and import it when you've started your next 30 day trial'."
+  },
+  "egress": {
+    "terms": "not published: neither the overview, the FAQ nor the try-it page states a traffic allowance for the sandbox. Routes and services are exposed through the shared cluster's router, which is normal OpenShift ingress.",
+    "metered": false,
+    "free_allowance": null,
+    "source_url": "https://developers.redhat.com/developer-sandbox/FAQ"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "`oc` CLI over the cluster API with a login token, plus the OpenShift web console and OpenShift Dev Spaces (a browser VS Code). Pods are ordinary OpenShift workloads; Linux VMs are available through OpenShift Virtualization.",
+  "tooling": "the `oc` or `kubectl` CLI, or the web console; Dev Spaces needs only a browser",
+  "chaining": "A real Kubernetes namespace with 14 GB of RAM to schedule against for 30 days, no card, which is the cheapest place to run a long-lived container or a small VM without owning a host.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "the sandbox is deleted 30 days after it starts",
+      "source": "https://developers.redhat.com/developer-sandbox/FAQ"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "pods are deleted after 12 consecutive hours of running; Linux VMs are shut down after 1 hour of continuous operation",
+      "source": "https://developers.redhat.com/developer-sandbox/FAQ"
+    },
+    {
+      "kind": "write-gated",
+      "value": "phone-number validation at signup",
+      "source": "https://developers.redhat.com/developer-sandbox/FAQ"
+    }
+  ],
+  "binding": "retention-clamped",
+  "binding_note": "Thirty days is a hard stop with no renewal in place, and the 1-hour VM shutdown means a VM cannot be a WireGuard node or an always-on monitor even inside that window.",
+  "identity_cost": {
+    "kind": "any-phone",
+    "detail": "no card, no payment data, no national ID. A Red Hat account plus a validated phone number: 'We require a valid phone number to reduce the creation of fraudulent accounts'. The FAQ does not say which countries' numbers are accepted, and no country list is published on the page read today.",
+    "country": null
+  },
+  "reliability_note": "No reliability event observed. Shared multi-tenant cluster, so a neighbour's load is a plausible cause of a slow pod; the vendor publishes no status page for the sandbox on the pages read.",
+  "confidence": "documented",
+  "confidence_note": "The 30-day term, the no-card statement, the phone requirement and the 12-hour/1-hour workload reaps are quoted from Red Hat's own FAQ read today. The 14 GB RAM and 40 GB storage quota is from podman-desktop.io, a Red Hat-adjacent documentation site, not from a page on developers.redhat.com, so it is reported rather than documented.",
+  "evidence": [
+    {
+      "url": "https://developers.redhat.com/developer-sandbox/FAQ",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Q: What is my cost for the Developer Sandbox? A: It is free. There is no credit card required. All you need is a Red Hat account.'"
+    },
+    {
+      "url": "https://developers.redhat.com/developer-sandbox/FAQ",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Your Developer Sandbox is active for 30 days and has specific built-in functionality.'"
+    },
+    {
+      "url": "https://developers.redhat.com/developer-sandbox/FAQ",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Pods are automatically deleted after running for 12 consecutive hours. However, this does not affect the availability of your applications; you simply need to start a new pod. Note that Linux virtual machines (VMs) will be shutdown after one hour of continuous operation.'"
+    },
+    {
+      "url": "https://developers.redhat.com/developer-sandbox/FAQ",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Why do I have to validate my phone number to access the Developer Sandbox? We require a valid phone number to reduce the creation of fraudulent accounts on the Developer Sandbox.'"
+    },
+    {
+      "url": "https://developers.redhat.com/developer-sandbox",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Get instant access to an environment for evaluation and experimentation', with 'Red Hat OpenShift', 'Red Hat OpenShift AI', 'Red Hat OpenShift Virtualization' and 'Red Hat OpenShift Dev Spaces' listed in the cluster"
+    },
+    {
+      "url": "https://podman-desktop.io/docs/openshift/developer-sandbox",
+      "date": "2026-10-24",
+      "proved": "quoted: 'The Developer Sandbox is a free, private OpenShift environment including one project and a resource quota of 14 GB RAM, and 40 GB storage. It lasts 30 days.' Reported, not first-party"
+    },
+    {
+      "url": "https://developers.redhat.com/developer-sandbox/ide",
+      "date": "2026-10-24",
+      "proved": "quoted: 'OpenShift Dev Spaces namespace and storage strategy, CPU and memory quotas, and other properties of the workspace server, are pre-configured and cannot be changed.'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-24T06:04:10.000Z",
+  "price_per_tb_month": null,
+  "notes": "The largest no-card machine quota found: 14 GB of RAM against a real Kubernetes API for 30 days. Three caveats. First, the phone requirement is the identity cost and the FAQ gives no country list, so whether a non-Chinese, non-institutional number passes is unverified. Second, the 14 GB figure comes from podman-desktop.io rather than developers.redhat.com; the exact quota is readable only inside a live namespace with `oc describe quota`. Third, the 1-hour VM shutdown makes OpenShift Virtualization useless for an always-on node even though it is advertised. A separate OpenShift Dedicated trial exists on the same page at 60 days, but it provisions into a Google Cloud account the applicant owns, which brings its own card question and was not pursued.",
+  "extras": {
+    "shape": {
+      "vcpu": null,
+      "ram_gib": 14,
+      "disk_gib": 40,
+      "gpu_class": null,
+      "gpu_count": null,
+      "note": "the quota is cluster-wide across all pods in the namespace, not a per-machine shape; vCPU is not published"
+    },
+    "billing_model": "free",
+    "term": "30 days from sandbox start",
+    "m10h_usd": 0,
+    "m24h_usd": 0,
+    "price_arithmetic": "no charge and no payment field; the cost is 30 days of clock, not money",
+    "free_tier_kind": "trial",
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": true,
+      "ports": "through the cluster router via a Route or Service; no raw node port",
+      "static_ip": false,
+      "ipv6": null,
+      "per_session_bytes": null
+    },
+    "session_cap": {
+      "wall_clock_min": 43200,
+      "idle_reap_s": null,
+      "restart_required": false,
+      "note": "30 days for the sandbox; 12 h per pod; 1 h per Linux VM"
+    },
+    "signup_url": "https://developers.redhat.com/developer-sandbox",
+    "credit_usd": null,
+    "credit_hours_at_shape": null,
+    "card_hold_usd": null,
+    "payment_methods": "none; no payment field on the sandbox signup"
+  }
+}

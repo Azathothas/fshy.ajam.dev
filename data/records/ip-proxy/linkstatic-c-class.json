@@ -1,0 +1,99 @@
+{
+  "topic": "ip-proxy",
+  "slug": "linkstatic-c-class",
+  "provider": "LinkStatic",
+  "url": "https://linkstatic.com/pricing/isp-subnet/m",
+  "category": "contiguous prefix lease",
+  "tier": "/24 block",
+  "free_tier": {
+    "stated": "No free tier. A /24 block is USD 500/mo for the United States at 100 Mbps; Japan USD 750; Hong Kong USD 850; Taiwan USD 950; Singapore USD 1,100. That is USD 1.95 per address per month. The single-IP tier on the sibling page is USD 2.80/IP for 30 days.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://linkstatic.com/pricing/isp-subnet/m",
+    "read_on": "2026-10-24",
+    "notes": "Prices are per block per month, not per byte: nothing on the page is a free allowance. The block size is a /24, i.e. 256 addresses, which is what makes USD 500/mo and USD 1.95 per address per month the same number."
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://linkstatic.com/pricing/isp-subnet/m",
+    "notes": "An address block carries no stored object and therefore no per-object ceiling. The nearest structural cap is the block size itself: one /24, not a larger prefix."
+  },
+  "retention": {
+    "stated": "not applicable: a leased address block, not stored bytes",
+    "days": null,
+    "source_url": "https://linkstatic.com/pricing/isp-subnet/m",
+    "notes": "The only period on the pages is the billing term of the single-IP tier, 30 days. No minimum lease, renewal or reclaim term is stated for the block."
+  },
+  "egress": {
+    "terms": "完整 IP 网段独立交付，优化跨境传输体验，无并发流量上限 (a complete IP prefix delivered independently; cross-border transport optimised; no concurrent-traffic cap). The block is shaped per address at 100 Mbps and carries no byte cap.",
+    "metered": false,
+    "free_allowance": "not applicable: no byte allowance is metered, the block is shaped per address at 100 Mbps",
+    "price_per_tb": null,
+    "source_url": "https://linkstatic.com/pricing/isp-subnet/m"
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "The captured facts state the delivery, not the access protocol: 完整 IP 网段独立交付, the whole prefix handed over, at 100 Mbps per address. No protocol token (SOCKS5, HTTP CONNECT, tunnel) appears in the facts, and no test IP is published, so how a client binds an address out of the block is unknown.",
+  "tooling": "Nothing is published for the block product beyond delivery of the prefix. A user would need whatever credential the vendor issues plus a proxy or tunnel client that can bind one address out of the block, and there is no published test IP to check the announcing AS before paying. A missing wrapper is not a rejection of this provider: what is missing here is the protocol, not the wrapper.",
+  "chaining": "The block is an egress-address supply for the Workers gateway, and it supplies 256 addresses from one prefix: it can spread the gateway's request stream across distinct source addresses, but every one of them shares one announcing AS, one registration class and one lease, so it adds address count without adding failure domains.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "100 Mbps per address, applied per address of the block rather than to the block as a whole",
+      "source": "https://linkstatic.com/pricing/isp-subnet/m"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "none: 无并发流量上限 (no concurrent-traffic cap) and no byte cap stated at any price tier",
+      "source": "https://linkstatic.com/pricing/isp-subnet/m"
+    }
+  ],
+  "limits_note": "The block is sold whole. There is no stated option to buy a smaller contiguous prefix than a /24, and no stated per-address count limit on concurrent connections beyond the 100 Mbps shaping.",
+  "binding": "per-ip-shaping",
+  "binding_note": "The named ceiling is the 100 Mbps shaped per address, and it is the only throughput control on the product since no byte quota exists",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Email address, password and a verification code. The capture records no phone number and no identity document at signup; the payment method is not recorded.",
+    "country": null
+  },
+  "reliability_note": "Shaping is per address at 100 Mbps with no byte cap; no test IP is published for the block product, so the announcing AS and registration class cannot be checked before paying, and because the 256 addresses are one prefix, a block-level blocklist entry or suspension removes all of them together.",
+  "confidence": "documented",
+  "confidence_note": "Documented: every number the verdict rests on (the five block prices, the 100 Mbps per-address shaping, the email-only signup) is read from the vendor's own pages on 2026-10-24. Nothing about the block was measured, because no test IP is published. A purchased or trialled block, with one address checked against whois and a looking glass, would move this to measured and would also settle the registration class and the announcing AS.",
+  "evidence": [
+    {
+      "url": "https://linkstatic.com/pricing/isp-subnet/m",
+      "date": "2026-10-24",
+      "proved": "The /24 block prices by country (United States USD 500/mo at 100 Mbps, Japan 750, Hong Kong 850, Taiwan 950, Singapore 1,100), the USD 1.95 per address per month figure, and the quoted delivery claim 完整 IP 网段独立交付，优化跨境传输体验，无并发流量上限."
+    },
+    {
+      "url": "https://linkstatic.com/pricing/isp-proxy/m",
+      "date": "2026-10-24",
+      "proved": "The single static ISP IP tier at USD 2.80 per IP for 30 days, which is the comparison that makes a whole /24 cheaper per address (USD 1.95) than buying single addresses."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-24T10:07:11.000Z",
+  "price_per_tb_month": "not applicable: priced per address per month, not per byte",
+  "notes": "Three candidates were considered for what the caveat is, and two were ruled out on the arithmetic. (1) That the block is a diversity purchase: refuted by the shape of the product. A /24 is one contiguous prefix, so it is one announcing AS, one registration class and one lease, which is a single rung-3 unit and the opposite of independent exits; 256 addresses behind one prefix do not survive the failure that matters, a prefix-level block or withdrawal. (2) That the per-address price is a reason to prefer the block: confirmed as arithmetic and rejected as a conclusion. USD 1.95 x 256 = USD 499.20 against USD 2.80 x 256 = USD 716.80 over 30 days, so the block is about 30 percent cheaper per address, but it buys concentration rather than independence. (3) That the registration class and announcing AS could be checked: refuted, because no test IP is published for the block product, and the sibling single-IP page is a different product whose address would not prove the block's. That third one is the caveat in the verdict. One sample underlies every number: two vendor pages read once, on 2026-10-24, with no invoice, no trial and no probe behind them. What would settle it is a trial or a purchased block, one address checked against RIPE or ARIN whois for the registration class and a looking glass for the announcing AS. The identity tier has no URL of its own: the signup fields (email, password, verification code; no phone, no ID) come from the capture and the capture names no signup page, so no evidence row carries it. The interface token is `unknown` rather than a protocol name because the capture states delivery and shaping but never the access protocol; the schema's interface vocabulary has no SOCKS5 or HTTP-proxy member, so a protocol guess would have been both an invention and a schema defect. No record in another topic is corrected here: this is the first LinkStatic record in the corpus.",
+  "extras": {
+    "rung": 3,
+    "rung_note": "One contiguous /24 is a single prefix: 256 addresses behind one announcing AS and one registration class, which is the rung-3 unit and the opposite of diversity.",
+    "block_size": "256 addresses (/24)",
+    "block_price_usd_month": {
+      "United States": 500,
+      "Japan": 750,
+      "Hong Kong": 850,
+      "Taiwan": 950,
+      "Singapore": 1100
+    },
+    "price_per_address_month_usd": 1.95,
+    "single_ip_price_usd_30_days": 2.8,
+    "shaping": "100 Mbps per address, no byte cap",
+    "quote": "完整 IP 网段独立交付，优化跨境传输体验，无并发流量上限",
+    "quote_translation": "a complete IP prefix delivered independently; cross-border transport optimised; no concurrent-traffic cap",
+    "verification_gap": "no test IP published for the block product, so the registration class and the announcing AS are unknown",
+    "derivation": "USD 1.95 per address per month is the vendor's own figure; 1.95 x 256 = 499.20 and 2.80 x 256 = 716.80 are arithmetic on the two stated prices, not measurements."
+  }
+}

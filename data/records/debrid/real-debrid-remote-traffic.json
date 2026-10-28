@@ -1,0 +1,114 @@
+{
+  "topic": "debrid",
+  "slug": "real-debrid-remote-traffic",
+  "provider": "Real-Debrid Remote Traffic",
+  "url": "https://real-debrid.com/terms",
+  "category": "debrid add-on: metered egress that lifts the server-IP ban",
+  "tier": "Remote Traffic (add-on to any premium plan)",
+  "free_tier": {
+    "stated": "None. Remote Traffic is sold on top of the subscription: 'The User certifies that he will not use a dedicated server, VPS or any cloud service on our service other than by using his Remote Traffic (which is in addition to the subscription).' The vendor's own support answer says the same: 'If you want to download with or through a dedicated server (RDP, personal VPN, private proxy, etc.), you have to use your Remote Traffic.'",
+    "unit": "none",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://real-debrid.com/terms",
+    "read_on": "2026-10-23",
+    "notes": "The add-on is the only sanctioned way for a VPS, a cloud host or a private proxy to use Real-Debrid. VPN exits are a separate route: they are whitelisted by provider, not bought."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: a traffic allowance, not an object",
+    "bytes": null,
+    "source_url": "https://real-debrid.com/terms",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: traffic is spent, not stored",
+    "days": null,
+    "source_url": "https://real-debrid.com/terms",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Metered by volume and required for every server-side caller. The API exposes the switch as a per-link flag: 'POST remote | int | 0 or 1, use Remote traffic, dedicated servers and account sharing protections lifted'. An empty allowance returns the error 'traffic_exhausted'. it must be bought inside a premium account: 'your account must be Premium to use this traffic'.",
+    "metered": true,
+    "free_allowance": "none",
+    "price_per_tb": null,
+    "source_url": "https://api.real-debrid.com/"
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "HTTPS REST API at api.real-debrid.com. The switch is the 'remote' parameter on POST /unrestrict/link, or the 'Remote Traffic' checkbox on real-debrid.com/downloader.",
+  "endpoint": "https://api.real-debrid.com/rest/1.0/",
+  "tooling": "rclone's realdebrid backend, rdt-client, zurg and Debrid Media Manager all carry a note to switch off the account setting 'Use my Remote Traffic automatically when needed', because leaving it on spends the allowance on ordinary streaming without telling the user.",
+  "chaining": "This is the licence that makes a Real-Debrid subscription usable from a free VM at all: without it the account is used from the VM's residential-like egress, with it the VM downloads directly and pays per byte.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "unverified: the add-on is metered by volume, but the /trafficshare page returned 403, to a local reader and to the Wayback replay no allowance or unit price was readable",
+      "source": "https://real-debrid.com/trafficshare"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "server, VPS and cloud addresses are blocked unless the add-on is on; one IP address may use the account at a time",
+      "source": "https://real-debrid.com/terms"
+    }
+  ],
+  "limits_note": "The account page carries a second trap: an automatic Remote Traffic toggle that spends the paid allowance before the user asks for it. Debrid Media Manager's provider notes call this out by name.",
+  "binding": "volume-quota",
+  "binding_note": "At 1 TiB a month the metered add-on is what runs out, not the subscription: the subscription itself has no byte meter for hoster traffic, while Remote Traffic is sold by the gigabyte and reports exhaustion as an error.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "An email account plus a paid premium subscription; the add-on is bought inside that account and 'your account must be Premium to use this traffic'. The payment methods were not read.",
+    "country": null
+  },
+  "reliability_note": "Exhausting the allowance fails the link with 'traffic_exhausted' rather than a 4xx a user can retry; the automatic toggle can spend it silently.",
+  "confidence": "documented",
+  "confidence_note": "The requirement, the API flag and the exhaustion error are all on vendor pages read today. The price is the one load-bearing number not read: /trafficshare and /premium both render a 403 shell to anonymous readers, including the archive.org capture, so the price is named unverified rather than filled in.",
+  "evidence": [
+    {
+      "url": "https://real-debrid.com/terms",
+      "date": "2026-10-23",
+      "proved": "'The User certifies that he will not use a dedicated server, VPS or any cloud service on our service other than by using his Remote Traffic (which is in addition to the subscription).'"
+    },
+    {
+      "url": "https://api.real-debrid.com/",
+      "date": "2026-10-23",
+      "proved": "POST remote 'int, 0 or 1, use Remote traffic, dedicated servers and account sharing protections lifted'; the /traffic endpoint returns an 'extra' field described as 'Additional traffic / links the user may have buy'"
+    },
+    {
+      "url": "https://github.com/debridmediamanager/awesome-debrid/discussions/7",
+      "date": "2026-10-23",
+      "proved": "Real-Debrid's support answers reproduced verbatim: 'If you want to download with or through a dedicated server (RDP, personal VPN, private proxy, etc.), you have to use your Remote Traffic'; buy link https://real-debrid.com/trafficshare; 'If you get the error \"traffic_exhausted\", it means that you have no more Remote Traffic.' Third-party republication of vendor text, not a vendor page."
+    },
+    {
+      "url": "https://real-debrid.com/trafficshare",
+      "date": "2026-10-23",
+      "proved": "the price and allowance are therefore unverified"
+    },
+    {
+      "url": "https://notes.debridmediamanager.com/providers/realdebrid/",
+      "date": "2026-10-23",
+      "proved": "'On your account page make sure Use my Remote Traffic automatically when needed is unchecked. Left on it spends your remote traffic allowance on ordinary streaming without telling you.'"
+    },
+    {
+      "url": "https://real-debrid.com/vpn",
+      "date": "2026-10-23",
+      "proved": "the page names the caller and the verdict: (172.69.41.140) it said 'Your ISP or VPN provider IP address is currently blocked on our website, please contact the support', on two separate reads, while three probes from a user's own connection returned 'not blocked on our website, you don't seem behind a VPN'. The 'Cooperative VPN providers - Recommended' table rendered its header and zero provider rows in both the blocked and the allowed view."
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T02:21:34.000Z",
+  "price_per_tb_month": "unverified",
+  "notes": "A separate record from the Real-Debrid subscription because it is a separately sold, separately metered product aimed at exactly a user's machine class. this one prices the exemption. The unit price is the one gap: the German board freesoft-board.de quotes '100GB Traffic fur 9,99 EUR' in a 2012 thread, which is too old and too weakly sourced to promote to a number.",
+  "extras": {
+    "add_on_required_for": "dedicated server, VPS, any cloud service, RDP, personal VPN, private proxy",
+    "api_flag": "remote=1 on /unrestrict/link",
+    "error_on_exhaustion": "traffic_exhausted",
+    "price_route_failed": [
+      "https://real-debrid.com/trafficshare (403)",
+      "https://real-debrid.com/premium (403)",
+      null
+    ],
+    "volume_stated": "unverified",
+    "volume_tib_month": null
+  }
+}

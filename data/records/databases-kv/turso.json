@@ -1,0 +1,96 @@
+{
+  "topic": "databases-kv",
+  "slug": "turso",
+  "provider": "Turso",
+  "url": "https://turso.tech/pricing",
+  "category": "SQLite at the edge",
+  "free_tier": {
+    "stated": "100 databases; 5 GB storage; 500 million rows read per month; 10 million rows written per month; 3 GB sync",
+    "unit": "GB",
+    "source_url": "https://turso.tech/pricing",
+    "read_on": "2026-10-22",
+    "metered_on": "stored-bytes"
+  },
+  "per_object_cap": {
+    "stated": "5 GB across all databases on Free; the plan table gives no per-database cap",
+    "bytes": null
+  },
+  "retention": {
+    "stated": "a database is archived after 10 days of inactivity on a free plan, and an archived database must be unarchived before it can be used; a deleted database has no point-in-time restore on Free and the Free column shows 1-day audit logs",
+    "days": 10,
+    "source_url": "https://docs.turso.tech/cli/group/unarchive",
+    "notes": "the archive clock is documented on the CLI and API reference pages, not on the pricing page"
+  },
+  "egress": {
+    "terms": "no egress charge and no transfer allowance is published; the metered quantities are rows read and rows written, so a byte of egress is not what is counted",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://turso.tech/pricing"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "libSQL over HTTP and WebSockets; the Turso CLI; a platform API",
+  "tooling": "the turso CLI; libSQL client libraries; sqld for a local replica",
+  "chaining": "a free SQLite replica per tenant suits multi-tenant read-heavy work that a single free Postgres cannot hold, provided something touches each database at least every 10 days, because the free plan archives an inactive one",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "500 million rows read and 10 million rows written per month",
+      "source": "https://turso.tech/pricing"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "5 GB total across all databases; 100 databases",
+      "source": "https://turso.tech/pricing"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "an inactive database is archived after 10 days on a free plan",
+      "source": "https://docs.turso.tech/cli/group/unarchive"
+    },
+    {
+      "kind": "request-rate",
+      "value": "no connection limit is published on the pricing page or the feature pages; recorded as a gap",
+      "source": "https://turso.tech/pricing"
+    }
+  ],
+  "binding": "retention-clamped",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email signup; GitHub OAuth also offered",
+    "country": null
+  },
+  "reliability_note": "an inactive database on a free plan is archived after 10 days and must be unarchived before use; the archive is not a deletion and the data survives it",
+  "confidence": "documented",
+  "confidence_note": "the pricing table was read today and its own meta description states 100 databases and 5 GB. The 10-day archive clock is from Turso's CLI reference, read the same day",
+  "evidence": [
+    {
+      "url": "https://turso.tech/pricing",
+      "date": "2026-10-22",
+      "proved": "Free column: 100 databases, 5GB storage, 500 Million rows read, 10 Million rows written, 3GB sync, 1 day audit logs; Developer USD 4.99 gives unlimited databases and 9GB"
+    },
+    {
+      "url": "https://docs.turso.tech/cli/group/unarchive",
+      "date": "2026-10-22",
+      "proved": "'Databases get archived after 10 days of inactivity for users on a free plan'; the unarchive command restores one"
+    },
+    {
+      "url": "https://docs.turso.tech/api-reference/groups/unarchive",
+      "date": "2026-10-22",
+      "proved": "the platform API exposes a group unarchive endpoint, so the archive state is reachable programmatically and not only through the CLI"
+    },
+    {
+      "url": "probe:https://api.turso.tech/v1/organizations",
+      "date": "2026-10-22",
+      "proved": "an unauthenticated GET returns 401 with 'token contains an invalid number of segments', proving the platform API exists and is token-authenticated"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-22T03:05:00.000Z",
+  "price_per_tb_month": "USD 0.75/GB beyond 9 GB on Developer",
+  "notes": "The 500-database and 9-GB figures in circulation are the Developer plan, not Free. The 5 GB is a total, so 100 databases average 50 MB each. The binding constraint is not either number: it is the 10-day archive, which a quarterly job meets first and which nothing on the pricing page states.",
+  "binding_note": "10 days of inactivity archives the database on the free plan, so a job that runs less often than that finds the database unavailable. The 5 GB total and the 10-million-row monthly write budget are larger than that clock allows a quarterly job to reach."
+}

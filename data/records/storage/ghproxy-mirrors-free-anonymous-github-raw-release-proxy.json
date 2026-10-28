@@ -1,0 +1,86 @@
+{
+  "topic": "storage",
+  "slug": "ghproxy-mirrors-free-anonymous-github-raw-release-proxy",
+  "provider": "ghproxy mirrors (ghproxy.net, ghfast.top) — free anonymous GitHub raw/release proxy",
+  "url": "https://ghproxy.net/",
+  "category": "cdn",
+  "free_tier": {
+    "stated": "No quota; it proxies raw.githubusercontent.com and release assets, so the ceiling is GitHub's own (100 MiB/repo file, ~1.95 TiB/release). Probed a 50,901,339-byte GitHub file through ghproxy.net: HTTP 200, correct Content-Length.",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://ghproxy.net/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://ghproxy.net/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://ghproxy.net/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free, anonymous, no key. These are community-run mirrors of the GitHub CDN, funded by volunteers — hence the polyculture of hostnames (gh-proxy.com, ghproxy.net, ghfast.top, gh.api.99988866.xyz) and the constant churn.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Prefix form: https://ghproxy.net/https://raw.githubusercontent.com/<owner>/<repo>/<ref>/<path> and .../https://github.com/<owner>/<repo>/releases/download/<tag>/<asset>. Nothing else to install.",
+  "chaining": "A fourth free mirror for the same GitHub origin, and the only one that also carries *release assets* (which jsDelivr cannot see and raw.githack cannot serve).",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "128 KB/s",
+      "source": "https://ghproxy.net/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "11.3 MB/s",
+      "source": "https://ghproxy.net/"
+    }
+  ],
+  "limits_note": "per-ip-shaping is the real constraint — measured ~128 KB/s (7.1 MB in 55 s) on a 50 MB fetch, versus 11.3 MB/s from hop.js and 6.4 MB/s from jsDelivr. Rule 6 applies: measure a baseline before blaming the origin.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "anonymous",
+    "country": null
+  },
+  "reliability_note": "Treat as a bandwidth multiplier for large files, never as an availability guarantee. Their own issue trackers document the churn (hunshcn/gh-proxy#116 mirror list, 'ghproxy.com 打不开了').",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://ghproxy.net/https://raw.githubusercontent.com/P3TERX/GeoLite.mmdb/download/GeoLite2-City.mmdb",
+      "date": "2026-10-21",
+      "proved": "HTTP 200, Content-Length 50,901,339, correct prefix bytes; throughput ~128 KB/s (probed)"
+    },
+    {
+      "url": "https://ghfast.top/https://raw.githubusercontent.com/P3TERX/GeoLite.mmdb/download/GeoLite2-City.mmdb",
+      "date": "2026-10-21",
+      "proved": "HTTP 200, 50,901,339 bytes (probed)"
+    },
+    {
+      "url": "https://gh-proxy.com/…",
+      "date": "2026-10-21",
+      "proved": "and https://cdn.gitmirror.com/gh/… — connection failed / 0 bytes (probed, dead)"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "github.com/hunshcn/gh-proxy#116 — '镜像站点搜集' thread, a live census of which hostnames still work"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No quota; it proxies raw.githubusercontent.com and release assets, so the ceiling is GitHub's own (100 MiB/repo file, ~1.95 TiB/release). Probed a 50,901,339-byte GitHub file through ghproxy.net: HTTP 200, correct Content-Length.",
+  "extras": {
+    "unit_note": "free_tier.unit is 'mixed' because the headline is denominated in MiB or KiB, which the schema enum does not carry; the verbatim free_tier.stated keeps the true unit. See the storage-dossier handover."
+  },
+  "binding": "per-ip-shaping",
+  "binding_note": "one stream is shaped, and a user's throughput is the shaped rate times the number of streams"
+}

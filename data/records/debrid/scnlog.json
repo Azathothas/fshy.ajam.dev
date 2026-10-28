@@ -1,0 +1,94 @@
+{
+  "topic": "debrid",
+  "slug": "scnlog",
+  "provider": "Scnlog.me",
+  "url": "https://scnlog.me/",
+  "category": "DDL release index (scene releases with direct host links)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free to read with no account: /feed/ served 40 RSS items and the post page carried three direct host links. No fee, no registration, no captcha on the pages read.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://scnlog.me/feed/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: an index of release posts, not a store of bytes",
+    "bytes": null,
+    "source_url": "https://scnlog.me/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "Posts remain until removed. The feed carries the 40 most recent items; the home page carries the bare counter 3,600,609 beside 'Latest releases', whose unit the page does not label.",
+    "days": null,
+    "source_url": "https://scnlog.me/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No byte allowance and no traffic counter: the index serves HTML and XML. The bytes come from whichever host the post links to (nitroflare.com, ddownload.com and multiup.io in the post read).",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://scnlog.me/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "WordPress RSS 2.0 at /feed/ (content-type application/rss+xml, 40 items, generator wordpress.org/?v=7.1.3), per-category feeds, and HTML search. The WordPress JSON API is closed: /wp-json/wp/v2/posts?per_page=2 returned 401 Unauthorized, and /api returned 404. The feed is the only machine interface.",
+  "endpoint": "https://scnlog.me/feed/",
+  "tooling": "Any RSS reader or a short script. The feed's description carries release text rather than links, so host links still require the post page.",
+  "chaining": "Poll /feed/ for new releases, filter on group and size, open the post, then hand the nitroflare or ddownload link to a debrid service or a download manager.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "no published limit; 10 sequential requests about 1.3 s apart and 8 concurrent requests all returned 200, with no 429 and no Retry-After",
+      "source": "probe:scnlog.me/feed"
+    }
+  ],
+  "limits_note": "The forum is a separate login.",
+  "binding": "request-rate",
+  "binding_note": "An index holds no bytes to meter, so the only constraint a user meets here is the page rate while enumerating posts. None was observed at about 0.8 req/s; the per-host quotas behind the links belong to the storage topic.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account, cookie or captcha on the feed or the post read. The comment form asks for a name and email; reading does not.",
+    "country": null
+  },
+  "reliability_note": "Cloudflare in front. A post carries only the hosts that still hold the file, and the three links in the post read are the whole set, with no mirror beyond what the post shows.",
+  "confidence": "documented",
+  "confidence_note": "Feed, post and robots.txt were fetched on 2026-10-23. An hour of polling recorded through probe.py would raise this to measured.",
+  "evidence": [
+    {
+      "url": "https://scnlog.me/feed/",
+      "date": "2026-10-23",
+      "proved": "content-type application/rss+xml, 40 item entries, lastBuildDate Fri, 23 Oct 2026 01:39:15 +0000, generator wordpress.org/?v=7.1.3"
+    },
+    {
+      "url": "https://scnlog.me/music/lynx_and_kusp-elliptical-detail054-web-2026-ptc/",
+      "date": "2026-10-23",
+      "proved": "direct nitroflare.com, ddownload.com and multiup.io links rendered to an anonymous reader, with size 29.32 MB and an NFO"
+    },
+    {
+      "url": "https://scnlog.me/robots.txt",
+      "date": "2026-10-23",
+      "proved": null
+    },
+    {
+      "url": "https://scnlog.me/wp-json/wp/v2/posts?per_page=2",
+      "date": "2026-10-23",
+      "proved": "HTTP 401 Unauthorized, so the WordPress REST API is not an open route and RSS is the feed that works"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-23T01:52:28.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The strongest DDL-side feed: machine-readable, no account, and the post page hands over host links without a login. Candidates considered and rejected as the primary path: rlsbb.cc (robots.txt forbids the crawl), ddlbase.com (two mirrors then a login), 0daydown.com (VIP gate). The site's own JSON API is 401, which is why RSS rather than JSON is the answer.",
+  "extras": {
+    "feed_items": 40,
+    "feed_protocol": "rss2",
+    "account_for_links": false,
+    "host_links_in_post": 3,
+    "home_counter": "3600009 (unlabelled)",
+    "wp_json": 401
+  }
+}

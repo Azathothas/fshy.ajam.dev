@@ -1,0 +1,92 @@
+{
+  "topic": "storage",
+  "slug": "rentry-co",
+  "provider": "Rentry.co",
+  "url": "https://rentry.co",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "200,000 characters per entry (hard, enforced at API), unlimited entries, no account required. Entries kept 'forever' unless they break rules.",
+    "unit": "unlimited",
+    "metered_on": "unstated",
+    "source_url": "https://rentry.co/what",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://rentry.co/what",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "200,000 characters per entry (hard, enforced at API), unlimited entries, no account required. Entries kept 'forever' unless they break rules",
+    "source_url": "https://rentry.co/what",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "free direct GET, no metering; behind Cloudflare so it is CDN-cacheable at the edge.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Official Python client github.com/radude/rentry (593 stars) + pip package 'rentry'; single-file CLI with zero dependencies.",
+  "chaining": "unlimited anonymous entries x 200,000 chars (~150 KB of base64 binary after the 4/3 encoder penalty). To reach 500 GB you would need ~3.5M entries, so this is a control-plane / manifest store, not a data tier — unless an unlimited free identity source is added, and even then the operator's storage is the ceiling.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "8 requests/second",
+      "source": "https://rentry.co/what"
+    },
+    {
+      "kind": "write-gated",
+      "value": "application and stated in the 400 error, so silent truncation does not happen — writes fail",
+      "source": "https://rentry.co/what"
+    }
+  ],
+  "limits_note": "200,000 chars per entry; custom URL 2-100 chars; edit_code required to modify; no per-account quota and no per-IP cap observed (8 rapid anonymous POSTs all returned 200); URL squatting reclaimed after 12 months idle.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: 200,000 characters per entry (hard, enforced at API), unlimited entries, no account required. Entries kept 'forever' unless they break rules. No throttling at 8 request",
+    "country": null
+  },
+  "reliability_note": "No throttling at 8 requests/second-ish, but a 200k-character ceiling is enforced by the application and stated in the 400 error, so silent truncation does not happen — writes fail loudly. Bulk write volume is the untested risk.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://rentry.co/what",
+      "date": "2026-10-21",
+      "proved": "'200000 characters for text field', 'Your entries will be kept forever'"
+    },
+    {
+      "url": "https://rentry.co/api/new",
+      "date": "2026-10-21",
+      "proved": "probe: POST with form fields url/edit_code/text -> {\"status\":\"200\",\"url\":\"https://rentry.co/n7f74b9t\",\"edit_code\":\"...\"}; page then contained the probe string"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: POST with 293,336 chars -> {\"status\": \"400\", \"errors\": \"Ensure text field has at most 200000 characters (it has 293336).\"}"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: 8 sequential anonymous creations -> 200 x8, no rate limit"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "200,000 characters per entry (hard, enforced at API), unlimited entries, no account required. Entries kept 'forever' unless they break rules.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "200,000 characters per entry (hard, enforced at API), unlimited entries, no account required. Entries kept 'forever' unless they break rules.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "write-gated",
+  "binding_note": "the write is a queue with a person or a rule in it, so the upload rate is set by somebody else"
+}

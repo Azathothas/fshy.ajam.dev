@@ -1,0 +1,88 @@
+{
+  "topic": "storage",
+  "slug": "infinicloud",
+  "provider": "InfiniCLOUD (formerly TeraCLOUD)",
+  "url": "https://infini-cloud.net",
+  "category": "cloud-drive",
+  "free_tier": {
+    "stated": "20 GB free account; referral bonus up to 1,000 GB for the referrer (+5 GB once for the referee). No file size limit",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://infini-cloud.net/en/pricing.html",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://infini-cloud.net/en/pricing.html",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "'Writing Feature' is disabled on the free plan (no version history); 2 years of inactivity deletes the account; referrer bonuses are valid one year only; 'Malicious or spam referrals may lead to account suspension or deletion'",
+    "days": 730,
+    "source_url": "https://infini-cloud.net/en/pricing.html",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "no per-GB egress charge or transfer quota published on the plan table; free tier capped at 200 Mbps",
+    "metered": false
+  },
+  "interface": [
+    "webdav",
+    "rclone"
+  ],
+  "interface_detail": "webdav",
+  "tooling": "WebDAV endpoint (rclone/webdav, davfs, any WebDAV client); recurring 20 GB plan is free forever, 2-year inactivity expiry",
+  "chaining": "20 GB + 5 GB per account is small, but the referrer side scales to 1,000 GB per account, so a group of accounts that refer each other accumulates ~1 TB per account. The allowance is per account, so N accounts hold N x ~1 TB",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "speed capped at 200 Mbps per account",
+      "source": "https://infini-cloud.net/en/pricing.html"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "expire after 2 years",
+      "source": "https://infini-cloud.net/en/pricing.html"
+    }
+  ],
+  "limits_note": "'Writing Feature' is disabled on the free plan (no version history); 2 years of inactivity deletes the account; referrer bonuses are valid one year only; 'Malicious or spam referrals may lead to account suspension or deletion'",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "referral bonuses expire after a year for the referrer; free accounts silently expire after 2 years idle; Japanese-operated, speed capped at 200 Mbps per account",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://infini-cloud.net/en/pricing.html",
+      "date": "2026-10-21",
+      "proved": "'Capacity 20GB | Free', 'File Size Limit None', 'Referral Bonus 〇 (Up to 1,000GB)', 'Account Expiration 2 Years of inactivity'"
+    },
+    {
+      "url": "https://infini-cloud.net/en/about_introduce.html",
+      "date": "2026-10-21",
+      "proved": "'Referring User Up to 1TB (1,000GB)... Earn 2GB for each person you refer. Bonus storage is valid for one year', referred user 5 GB, last updated 2025-06-20"
+    },
+    {
+      "url": "https://webdav.infini-cloud.net/",
+      "date": "2026-10-21",
+      "proved": "probe: PROPFIND (Depth: 0, no creds) -> 405 Method Not Allowed (WebDAV listener live, rejects unauthenticated PROPFIND)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "20 GB free account; referral bonus up to 1,000 GB for the referrer (+5 GB once for the referee). No file size limit",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "20 GB free account; referral bonus up to 1,000 GB for the referrer (+5 GB once for the referee). No file size limit",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "retention-clamped",
+  "binding_note": "a clock, not a quota: bytes leave whether or not a user is finished with them"
+}

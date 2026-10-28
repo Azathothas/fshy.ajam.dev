@@ -1,0 +1,117 @@
+{
+  "topic": "debrid",
+  "slug": "bitport-io",
+  "provider": "Bitport.io",
+  "url": "https://bitport.io/pricelist",
+  "category": "torrent-to-cloud fetcher",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free: 1 GB cloud storage, 1 download slot, download speed 'Not guaranteed', 'Unsecured Only HTTP', 'Without antivirus control', online streaming on all devices, no extra features.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://bitport.io/pricelist",
+    "read_on": "2026-10-23",
+    "notes": "the free plan is storage-metered; a 20 GiB torrent cannot fit in 1 GB"
+  },
+  "per_object_cap": {
+    "stated": "No per-torrent cap is published. The free plan's cap is the 1 GB storage total.",
+    "bytes": null,
+    "source_url": "https://bitport.io/pricelist",
+    "notes": "third-party reviews report a one-torrent-per-day limit on free accounts; that number is not on the vendor's pricing page"
+  },
+  "retention": {
+    "stated": "Not stated on the pricing or features pages. The terms say that when a user's space expires 'the Company will delete all data uploaded by the User onto the Server'.",
+    "days": null,
+    "source_url": "https://bitport.io/docs/en/tos.pdf",
+    "notes": "files appear to persist while the plan is active; no inactivity clock is published"
+  },
+  "egress": {
+    "terms": "Paid plans list 'Unlimited Download speed'; free is 'Not guaranteed' and served over plain HTTP. No byte allowance is published on any plan.",
+    "metered": false,
+    "free_allowance": "not published",
+    "price_per_tb": null,
+    "source_url": "https://bitport.io/pricelist"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "HTTPS download links per file from the web UI; the free plan is explicitly HTTP-only. No public API is documented on the pages read.",
+  "tooling": "browser; FTP and RSS are paid-plan features ('RSS downloader' is listed from the Small plan up). No SDK.",
+  "chaining": "one of the few torrent-to-cloud services that advertises torrent and magnet only, so it drops into a stack as a pure fetch hop; 75 GB for $5 is the cheapest per-GB paid tier read after TorBox.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "1 GB stored on free; 75 GB on Small, 250 GB on Standard, 1 TB on Big",
+      "source": "https://bitport.io/pricelist"
+    },
+    {
+      "kind": "pull-count",
+      "value": "1 download slot on free; 5 on Small, 20 on Standard, 30 on Big",
+      "source": "https://bitport.io/pricelist"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "1 GB of cloud storage on the free plan; 75 GB Small, 250 GB Standard, 1 TB Big",
+      "source": "https://bitport.io/pricelist"
+    },
+    {
+      "kind": "pull-count",
+      "value": "one download slot on free; 5 on Small, 20 on Standard, 30 on Big",
+      "source": "https://bitport.io/pricelist"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "download speed 'Not guaranteed' on free, 'Unlimited' on every paid tier",
+      "source": "https://bitport.io/pricelist"
+    }
+  ],
+  "limits_note": "third-party reviews (torrentcompare 2019, rapidseedbox 2023) put the free plan at one torrent per day; the vendor's own help-centre page 'How much can I download per month?' is a JavaScript shell and returned no text through the reader.",
+  "binding": "volume-quota",
+  "binding_note": "The 1 GB storage total rejects a 20 GiB torrent before any slot or per-day limit applies.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "free account signup. The terms describe paid plans paid by card, PayPal or Bitcoin; the free plan needs no payment method.",
+    "country": null
+  },
+  "reliability_note": "free-tier downloads are HTTP-only and un-antivirused, unlike the paid tiers; the site has been running since at least 2016 and its help centre is now partly JavaScript-only.",
+  "confidence": "documented",
+  "confidence_note": "the four plans and their limits were read from the vendor's pricelist today. The free per-day torrent count is reported, not documented.",
+  "evidence": [
+    {
+      "url": "https://bitport.io/pricelist",
+      "date": "2026-10-23",
+      "proved": "free 1 GB / 1 slot / HTTP-only / not-guaranteed speed; Small 75 GB from $5 ($9); Standard 250 GB $10 ($15); Big 1 TB $15 ($25)"
+    },
+    {
+      "url": "https://bitport.io/docs/en/tos.pdf",
+      "date": "2026-10-23",
+      "proved": "on space expiry the company deletes all uploaded data"
+    },
+    {
+      "url": "https://torrentcompare.com/bitport-io/",
+      "date": "2026-10-23",
+      "proved": "reported: free users 'can download only one torrent per day' with 1 GB storage and one slot"
+    },
+    {
+      "url": "https://bitport.io/pricelist",
+      "date": "2026-10-23",
+      "proved": "'Limited / 1 GB / Cloud Storage', 'Free', '1 slot', 'Not guaranteed' speed, 'Unsecured / Only HTTP / Without antivirus control'"
+    },
+    {
+      "url": "https://bitport.io/docs/en/tos.pdf",
+      "date": "2026-10-23",
+      "proved": "on space expiry 'the Company will delete all data uploaded by the User onto the Server'"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-23T01:53:00.000Z",
+  "price_per_tb_month": "USD 5 for 75 GB; USD 15 for 1 TB",
+  "notes": "The free tier is the smallest of the western torrent-to-cloud services: 1 GB cannot hold a single episode. The paid entry, 75 GB for $5, is the second cheapest per byte after TorBox Essential, but the free plan's per-day limit means the service is bought for storage, not queue depth. The ladder's own row says 'storage cap' and then adds the 1 GB into a byte-committed monthly subtotal. It is the one row in that subtotal that does not multiply. The number is defensible as a conservative floor, and it is wrong as a monthly ceiling in both directions: a 2 GB torrent is refused outright, and a 1 GB file can be downloaded more than once. Recording it as 1 GB/month is a choice, and it should be labelled as a floor rather than a counter.",
+  "extras": {
+    "free_http_only": "yes",
+    "rss": "Small and above",
+    "is_counter_times_unit": false,
+    "floor_or_ceiling": "floor",
+    "ladder_gb_month": 1
+  }
+}

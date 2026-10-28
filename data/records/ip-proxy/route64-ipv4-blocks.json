@@ -1,0 +1,132 @@
+{
+  "topic": "ip-proxy",
+  "slug": "route64-ipv4-blocks",
+  "provider": "Route64",
+  "url": "https://route64.org/en",
+  "category": "prefix lease",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Route64 provides the following services to you completely free of charge. Static IPs: 'Need dedicated IPv4 and IPv6 addresses for your services? Route64 offers static IP allocations that remain permanently assigned to your account. Whether you need IPs for web hosting, mail servers, DNS infrastructure, or any other service, our static IPs are geographically flexible and can be deployed across multiple locations. All IP management is handled through our self-service portal.' The pricing block reads 'Pricing? No!' and 'Just created an account in our manager'.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://route64.org/en",
+    "read_on": "2026-10-24",
+    "notes": "The offer is denominated in addresses, a unit this enum does not carry, so the token is none rather than a byte or request unit. The vendor publishes neither a price nor a count of static IPs per account, and no page read on 2026-10-24 states how many addresses one account may hold."
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://route64.org/en",
+    "notes": "An address allocation carries no stored object and therefore no per-object ceiling. The nearest structural cap is the pool: five /24s, 1,280 addresses for the whole service, not a limit on one allocation."
+  },
+  "retention": {
+    "stated": "not applicable: a static address, not stored bytes",
+    "days": null,
+    "source_url": "https://route64.org/en",
+    "notes": "The page states the allocation 'remain[s] permanently assigned to your account', so there is no idle timer."
+  },
+  "egress": {
+    "terms": "No byte allowance and no traffic price is published for the static-IP product.",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://route64.org/en"
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "The reachable surface is the self-service web portal at manager.route64.org: 'All IP management is handled through our self-service portal.' No public API or CLI is documented, and manager.route64.org returned a login wall when read. The address is then used directly by the client's endpoint, or reached over one of the six published tunnel protocols the client terminates, so no SOCKS5 or HTTP-proxy protocol is involved. scripts/dossier/schema.json's interface enum has no member for a web portal, a bare address allocation or a tunnel product, so the token is unknown and the qualifier lives here.",
+  "tooling": "An account in the self-service manager portal is the only published route to an allocation. No proxy wrapper, API client, downloadable configuration or test address is published for the static-IP product, so the announcing AS and the registration class cannot be checked before signing up. A missing wrapper is not a reason to reject this provider: what is missing here is the protocol and the test address, not the wrapper.",
+  "chaining": "it adds address count and one ASN, not registration-class diversity, because every address in the five blocks is IPXO-registered.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "up to 200 Mbit/s design point: 'Our service is designed to deliver up to 200M throughput often more.'; 'We can throttle your bandwidth at any time.'",
+      "source": "https://route64.org/en/tos"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "none: 'Traffic is not metered' on the transit feature block, and no byte allowance or traffic price is published for the static-IP product",
+      "source": "https://route64.org/en"
+    }
+  ],
+  "limits_note": "No vocabulary kind fits the pool itself. AS212895 announces five IPv4 /24s, which is 1,280 addresses for the whole service, and the vendor's own page claims only '3 IPv4 /24 blocks'. No per-account count of static IPs is published at any tier.",
+  "binding": "none",
+  "binding_note": "The ceiling that arrives first is structural and unclassified: 1,280 addresses in one ASN and one registration class.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "An account in the self-service manager portal is required: 'Just created an account in our manager.' The sign-in page at manager.route64.org returned a login wall to the reader, so the exact fields a new account must supply were not read; email is the minimum such a portal implies and is not confirmed.",
+    "country": null
+  },
+  "reliability_note": "Best effort with no SLA ('This is a free best effort service. You have no service levels or guarantees.'); all five blocks are one IPXO registration class and one announcing AS, so a prefix-level blocklist entry or a nullroute removes all 1,280 addresses together.",
+  "confidence": "documented",
+  "confidence_note": "The weakest link is the offer, not the registry. The five /24s, their announcing AS and their RDAP registration were measured with RIPEstat and RDAP on 2026-10-24, while the free allocation, the portal account and the absence of a byte quota are read from the vendor's own pages, and no address was delivered. One delivered address, echoed back from an endpoint a user controls and checked against stat.ripe.net prefix-overview, would move this to measured and would settle the one open question that matters: whether a delivered static IP is one of these five blocks.",
+  "evidence": [
+    {
+      "url": "https://route64.org/en",
+      "date": "2026-10-24",
+      "proved": "The static-IP offer ('Route64 offers static IP allocations that remain permanently assigned to your account', 'our static IPs are geographically flexible'), the free-of-charge sentence, 'Pricing? No!', the portal account requirement, and the vendor's own count: 'Our address portfolio includes 3 IPv4 /24 blocks and 78 IPv6 /48 blocks.'"
+    },
+    {
+      "url": "https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS212895",
+      "date": "2026-10-24",
+      "proved": "AS212895 announces exactly five IPv4 /24s, 81.168.111.0/24, 192.208.1.0/24, 87.229.23.0/24, 81.18.58.0/24 and 79.175.70.0/24, alongside 96 IPv6 prefixes, so the page's '3 IPv4 /24 blocks' is not the current count."
+    },
+    {
+      "url": "https://stat.ripe.net/data/routing-status/data.json?resource=81.18.58.0/24",
+      "date": "2026-10-24",
+      "proved": "81.18.58.0/24 is originated by AS212895 and seen by 268 of 269 RIS peers; the same query on the same run returned origin 212895 and 268 or 269 peers for 81.168.111.0/24, 192.208.1.0/24, 87.229.23.0/24 and 79.175.70.0/24, so all five are in the DFZ rather than merely registered."
+    },
+    {
+      "url": "https://rdap.db.ripe.net/autnum/212895",
+      "date": "2026-10-24",
+      "proved": "The announcing AS is Route64's own: AS212895 is registered as ROUTE64_ORG, status active, registrant Johannes Ernst, Stuttgart, Germany. The announcement is therefore not a leased transit AS, which is what separates this case from a transit-only prefix lease."
+    },
+    {
+      "url": "https://rdap.org/ip/81.18.58.0",
+      "date": "2026-10-24",
+      "proved": "The registration is not Route64's and is not an ISP's: name IPXO, type SUB-ALLOCATED PA, country EU, registrant ORG-PC1552-RIPE, administrative, technical and abuse contact PC21176-RIPE 'Private Customer', remark 'End User Organization'. The same query returned IPXO-LEASED-81-168-111-0-24 for 81.168.111.0/24, HGC-Global-Communications-Limited with IPXO details for 87.229.23.0/24, and IPXO with type ASSIGNED PA for 79.175.70.0/24."
+    },
+    {
+      "url": "https://rdap.arin.net/registry/ip/192.208.1.0",
+      "date": "2026-10-24",
+      "proved": "The fifth block is registered in a different registry and reads differently: ARIN handle NET-192-208-1-0-4, type ASSIGNMENT, parent NET-192-208-1-0-3, registrant C11060843 'Private Customer', with a remark pointing at the vendor's geofeed. No IPXO name appears on it, so the five blocks are not one uniform registration."
+    },
+    {
+      "url": "https://manager.route64.org/data/geofeed.csv",
+      "date": "2026-10-24",
+      "proved": "The vendor declares location per sub-block inside single /24s: a /28 in Stockholm, a /29 in London, /31s in Paris, Zurich and Frankfurt, all inside 79.175.70.0/24. The country an address appears in is vendor-published, not a registry fact, and RDAP still reads EU for that block."
+    },
+    {
+      "url": "https://route64.org/en/tos",
+      "date": "2026-10-24",
+      "proved": "The published ceilings and the reliability position: 'Our service is designed to deliver up to 200M throughput often more.', 'We can throttle your bandwidth at any time.', 'We can cancel any service at any time without any warning.', 'We can nullroute your advertised prefixes at any time without any warning.', 'This is a free best effort service. You have no service levels or guarantees.', 'Multiple accounts are not allowed and will cause the suspension of all accounts.'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-24T10:07:11.000Z",
+  "price_per_tb_month": "USD 0: the allocation and its traffic are both free, and no per-byte price exists at any tier",
+  "notes": "Three candidates were considered for what the caveat is, and two were refuted on the evidence. (1) That the vendor claims an ISP or residential registration class, which is the failure mode the topic flags. Refuted for this vendor's own wording: the page read on 2026-10-24 says 'static IP allocations that remain permanently assigned to your account' and 'our static IPs are geographically flexible', and never uses the words ISP, residential, eyeball or native. Route64 makes no class claim at all, so the class is settled entirely by the registry, and the registry does not support one: four blocks read IPXO or IPXO-LEASED as SUB-ALLOCATED PA or ASSIGNED PA, country EU, registrant ORG-PC1552-RIPE, with PC21176-RIPE 'Private Customer' as admin, tech and abuse contact and the remark 'End User Organization'. A sub-allocation of a lease broker's PA space is a broker's pool, not an eyeball broadband network, so rung 5 is not cleared. (2) That the announcement and the registration disagree, which is the topic's warning stated as a claim. Confirmed, and precisely: the announcement is Route64's own, since RIPE autnum 212895 is registered as ROUTE64_ORG and all five /24s are originated there and visible to 268 or 269 of 269 RIS peers, while the registration belongs to IPXO on four blocks and to an ARIN 'Private Customer' assignment on the fifth. Two parties, neither of them an ISP. That is a rung-5 failure, and it is not a rung-3 or rung-4 failure: the addresses are in five different /24s and in an ASN that is not AS13335, so both of those rungs are cleared by the measured announcement. (3) That the vendor's own block count can be relied on. Refuted: the page says 'Our address portfolio includes 3 IPv4 /24 blocks' and RIPEstat returned five, so the pool a user would draw from is 1,280 addresses rather than 768. That changes the size of the caveat, not its direction. A fourth finding belongs in the record rather than the notes: the vendor publishes a geofeed that carves single /24s into per-country fragments, a /28 in Stockholm, a /29 in London, /31s in Paris, Zurich and Frankfurt. A geofeed-aware upstream will read the declared country while RDAP still says EU, so the declared location is a vendor artifact and neither a registry fact nor a class. Every fact about the network rests on one read, on 2026-10-24: one announced-prefixes query, five routing-status queries, five RDAP queries, one geofeed fetch and two vendor pages. Nothing was delivered and nothing was echoed, and the instruction that matters for this record is that one delivered address must be measured before the class is relied on. That measurement is not here: it needs an account, an allocation, an echo service and a control request from a Cloudflare address in the same minute, and without it this record reports what the registry says rather than what an address does. This record does not duplicate dossier/egress/route64-org.json, which owns the free IPv6 /56 WireGuard tunnel and was read on 2026-10-23; this record owns the IPv4 static allocation only. Nothing in that record is corrected here, and the 200 Mbit/s design point and the provider sentences appear in both because they bind both products, each citing the provider directly. The interface token is unknown rather than a protocol name because scripts/dossier/schema.json's interface enum has no member for a web portal, a bare address allocation or a tunnel product: api, socks5, http-proxy, wireguard and web-ui are not in it, so writing them would have failed the gate's schema check, and the qualifier lives in interface_detail instead.",
+  "extras": {
+    "rung": 4,
+    "rung_note": "Five /24s originated by AS212895 clear rung 3, an address in a different /24, and rung 4, a network that is not AS13335; rung 5 is not cleared, because all five blocks are IPXO sub-allocations reading 'Private Customer'.",
+    "announced_v4_blocks": [
+      "81.168.111.0/24",
+      "192.208.1.0/24",
+      "87.229.23.0/24",
+      "81.18.58.0/24",
+      "79.175.70.0/24"
+    ],
+    "address_count": 1280,
+    "announcing_asn": "AS212895",
+    "announcing_asn_name": "ROUTE64_ORG",
+    "vendor_claimed_v4_blocks": "3 IPv4 /24 blocks (page text, 2026-10-24), against five announced",
+    "registration": "IPXO or IPXO-LEASED on four blocks, SUB-ALLOCATED PA or ASSIGNED PA, country EU, ORG-PC1552-RIPE, contact PC21176-RIPE 'Private Customer', remark 'End User Organization'; ARIN ASSIGNMENT NET-192-208-1-0-4 to C11060843 'Private Customer' on the fifth",
+    "geofeed_url": "https://manager.route64.org/data/geofeed.csv",
+    "geofeed_note": "single /24s are carved into per-country fragments, so the declared country is vendor-published and not a registry fact",
+    "transit_cap": "200 Mbit/s design point, throttle at any time",
+    "derivation": "1,280 addresses is 5 x 256, arithmetic on the five /24s RIPEstat returned; 0.14 Mbit/s is 45 GB over 30 days; 2.16 TB/day is 200 Mbit/s. None of the three is a measurement.",
+    "verification_gap": "no address was delivered, so whether a delivered static IP is one of these five blocks, and whether it egresses from AS212895 as a usable exit, is unmeasured",
+    "duplicate_of": "dossier/egress/route64-org.json owns the IPv6 /56 tunnel product; this record owns IPv4 static allocation only"
+  }
+}

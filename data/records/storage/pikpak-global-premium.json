@@ -1,0 +1,96 @@
+{
+  "topic": "storage",
+  "slug": "pikpak-global-premium",
+  "provider": "PikPak Global Premium (10 TB)",
+  "url": "https://mypikpak.com/drive/payment",
+  "category": "cloud drive / BT saver",
+  "free_tier": {
+    "stated": "10 TB storage on Premium; additional storage purchasable",
+    "unit": "TB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://mypikpak.com/drive/payment",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://mypikpak.com/drive/payment",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://mypikpak.com/drive/payment",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "HARD METERED, and worse for programmatic use. Verbatim from help centre: base quotas are 'Cloud Download: 40 TB per month. Downstream: 4 TB per month, including playback, previews, and downloads. Upload: 1 TB per month.' And 'Connected Apps share a combined transfer quota limit equal to 25% of your monthly Transfer Quota, across all three traffic dimensions.' So rclone/WebDAV/CLI — the only programmatic paths — get 25% of 4 TB = 1 TB/month downstream.",
+    "metered": true,
+    "free_allowance": "40 TB per month"
+  },
+  "interface": [
+    "webdav",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "WebDAV (read-only, premium-only, 'experimental'), official CLI, rclone backend",
+  "tooling": "rclone 'pikpak' backend exists; WebDAV is read-only and flagged incomplete by the vendor",
+  "chaining": "rclone; CLI; NOT a general object store",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "20 GB/day",
+      "source": "https://mypikpak.com/drive/payment"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "33 GB/day",
+      "source": "https://mypikpak.com/drive/payment"
+    }
+  ],
+  "limits_note": "Connected-Apps cap = 25% of monthly quota; free accounts also have a 20 GB/day downstream limit",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "email + card (or App Store IAP)",
+    "country": null
+  },
+  "reliability_note": "The storage price is a decoy; the product is a BT/magnet cache.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://mypikpak.com/en-US/help-center/play_and_download/transfer_quota/meaning",
+      "date": "2026-10-21",
+      "proved": "'Cloud Download: 40 TB per month. Downstream: 4 TB per month, including playback, previews, and downloads. Upload: 1 TB per month.'"
+    },
+    {
+      "url": "https://mypikpak.com/en-US/connect-apps-faq",
+      "date": "2026-10-21",
+      "proved": "'Connected Apps share a combined transfer quota limit equal to 25% of your monthly Transfer Quota, across all three traffic dimensions … When your Connected Apps reach this limit, their requests will be throttled'; 'Free PikPak accounts have a daily downstream limit of 20 GB'"
+    },
+    {
+      "url": "https://apppriceatlas.com/subscriptions/pikpak-cloud-storage-saver-global-premium-yearly-yearly/countries/us/",
+      "date": "2026-10-21",
+      "proved": "'Global Premium Yearly … $99.99 per year'"
+    },
+    {
+      "url": "https://blog.hentioe.dev/posts/pikpak-webdav-rclone.html",
+      "date": "2026-10-21",
+      "proved": "PikPak's WebDAV is read-only and premium-only"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "price_per_tb_month": "$0.833/TB/mo at 10 TB ($99.99/yr Global Premium). Looks like the cheapest per-TB number in this dossier — and it is a trap. Usable programmatic egress is 1 TB/month (25% × 4 TB downstream). Effective cost per TB actually retrievable per month is fine, but the ceiling makes it unusable for serving o…",
+  "notes": "10 TB storage on Premium; additional storage purchasable",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "10 TB storage on Premium; additional storage purchasable",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    },
+    "price_verbatim": "$0.833/TB/mo at 10 TB ($99.99/yr Global Premium). Looks like the cheapest per-TB number in this dossier — and it is a trap. Usable programmatic egress is 1 TB/month (25% × 4 TB downstream). Effective cost per TB actually retrievable per month is fine, but the ceiling makes it unusable for serving or bulk restore. Reject on egress, not on price."
+  },
+  "binding": "per-ip-shaping",
+  "binding_note": "one stream is shaped, and a user's throughput is the shaped rate times the number of streams"
+}

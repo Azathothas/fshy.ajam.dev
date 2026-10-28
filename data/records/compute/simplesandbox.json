@@ -1,0 +1,113 @@
+{
+  "topic": "compute",
+  "slug": "simplesandbox",
+  "provider": "SimpleSandbox",
+  "url": "https://www.simplesandbox.dev/",
+  "category": "container sandbox / code execution API",
+  "tier": "Free",
+  "free_tier": {
+    "stated": "Free $0: 1M credits a month, 3 concurrent sandboxes, no credit card required. 1M credits = USD 1, and the meter is billed per second at USD 0.0252 per vCPU-hour.",
+    "unit": "mixed",
+    "metered_on": "wall-clock",
+    "source_url": "https://www.simplesandbox.dev/",
+    "read_on": "2026-10-24",
+    "notes": "a monthly credit allowance equal to USD 1 of CPU time"
+  },
+  "per_object_cap": {
+    "stated": "not applicable: the unit is a sandbox, not an object; no memory or disk allocation is published per sandbox"
+  },
+  "retention": {
+    "stated": "The sandbox advertises 'No duration limits'. Persistent volumes are 1-100 GB, one per sandbox, single attachment, 'currently free only during beta' with future pricing unpublished.",
+    "days": null,
+    "source_url": "https://docs.simplesandbox.dev/persistence"
+  },
+  "egress": {
+    "terms": "Not published on the homepage: no traffic allowance and no per-GB rate are stated, and the product is sold as CPU credits only.",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.simplesandbox.dev/"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "TypeScript/Node SDK ('import { Sandbox } from '@simplesandbox/sdk')') and a REST API, with a free API key issued from the app.",
+  "tooling": "The vendor SDK; the sandboxes run on Fly.io infrastructure under the vendor's own isolation.",
+  "chaining": "A genuinely free, no-card code-execution endpoint with a USD 1 monthly credit is useful as a fallback executor but not as a machine: 1M credits buys about 39 vCPU-hours of CPU time and the memory meter is not published, so it cannot be sized as an always-on box.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "1M credits a month on the free tier (USD 1 of usage); 10M on the USD 10 plan; 50M on the USD 50 plan",
+      "source": "https://www.simplesandbox.dev/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "3 concurrent sandboxes on free, 10 on the USD 10 plan, 1,000+ on Pro",
+      "source": "https://www.simplesandbox.dev/"
+    }
+  ],
+  "limits_note": "'No duration limits' and '~1s cold start' are the advertised shape. Auto top-up adds 1M credits (USD 1) when the balance runs low, which quietly converts a free tier into a paid one.",
+  "binding": "volume-quota",
+  "binding_note": "USD 1 of CPU credit is spent in about 39 vCPU-hours at the published rate, so an always-on 1 vCPU sandbox exhausts the free month in under two days.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "'No credit card required' on the Free plan, with a free API key issued at app.simplesandbox.dev. Card types for paid plans and any authorisation hold are not stated on the page read.",
+    "country": null
+  },
+  "reliability_note": "No reliability event observed the platform is a thin layer over Fly.io Machines, so its availability follows a third party's.",
+  "confidence": "documented",
+  "confidence_note": "The credit price, the CPU rate, the plan prices, the concurrency caps and the no-card claim are quoted from the vendor's homepage read today. The memory meter and the disk rate are not published, so no 24/7 total for a shape is recorded: the vCPU figure alone would understate the bill. What would raise it: the docs' billing page, or an account that reads the meter.",
+  "evidence": [
+    {
+      "url": "https://www.simplesandbox.dev/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Start free, upgrade to $10/mo (10 concurrent) or $50/mo (1,000+ concurrent)' and 'Per-second billing at $0.0252/vCPU-hour'"
+    },
+    {
+      "url": "https://www.simplesandbox.dev/",
+      "date": "2026-10-24",
+      "proved": "free tier: 'Free $0 - 1M credits/month - No credit card required' and '1M credits = $1. Pay only for what you use, billed per-second'"
+    },
+    {
+      "url": "https://www.simplesandbox.dev/",
+      "date": "2026-10-24",
+      "proved": "quoted: '~1s cold start', 'No duration limits', '1,000+ concurrent sandboxes'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-24T01:54:08.000Z",
+  "price_per_tb_month": null,
+  "notes": "Arithmetic from the published CPU rate alone: 1 vCPU × 730 h × USD 0.0252 = USD 18.396 a month of CPU time, before any memory charge, which the page does not publish. That number is deliberately not promoted to m24h_usd because a record cannot claim a 24/7 total from one of two meters. The free allowance is USD 1, which is 39.7 vCPU-hours. Region and egress are unverified.",
+  "extras": {
+    "shape": {
+      "vcpu": null,
+      "ram_gib": null,
+      "disk_gib": null,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "billing_model": "hourly",
+    "term": "monthly credit plans plus per-second metering",
+    "m10h_usd": null,
+    "m24h_usd": null,
+    "price_arithmetic": "CPU only: USD 0.0252/vCPU-hour × 730 h = USD 18.396 a month for 1 vCPU of CPU time. The memory meter is not published, so no complete 24/7 total is computed or claimed.",
+    "free_tier_kind": "credit",
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": null,
+      "ports": "not published",
+      "static_ip": null,
+      "ipv6": null,
+      "per_session_bytes": null
+    },
+    "session_cap": {
+      "wall_clock_min": null,
+      "idle_reap_s": null,
+      "restart_required": false,
+      "note": "'No duration limits' advertised"
+    },
+    "aggregator_gross_usd_month": null,
+    "aggregator_note": "sandboxprices.com carries SimpleSandbox in the picker with no modelled total; its note says the complete CPU/RAM shape tariff is unresolved, which matches what the vendor homepage shows today."
+  }
+}

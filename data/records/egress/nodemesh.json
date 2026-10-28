@@ -1,0 +1,104 @@
+{
+  "topic": "egress",
+  "slug": "nodemesh",
+  "provider": "NodeMesh",
+  "url": "https://nodemesh.app/games/minecraft-bedrock",
+  "category": "game server control plane with a UDP traffic relay",
+  "tier": "free",
+  "free_tier": {
+    "stated": "One host - your own PC - is free with no time limit, for as many game servers as your hardware can run: the web panel and console, the config editor, the mod manager, auto-restart on crash and the traffic relay.",
+    "unit": "mixed",
+    "metered_on": "none",
+    "source_url": "https://nodemesh.app/games/minecraft-bedrock",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://nodemesh.app/games/minecraft-bedrock",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://nodemesh.app/games/minecraft-bedrock",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No byte allowance is published anywhere read: 'Your first BYOH node is completely free - no time limits, no credit card, all features included.'; ingress: tcp+udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://nodemesh.app/games/minecraft-bedrock"
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "An agent binary plus a web panel; the pages read describe no public API and no tunnel-only command.",
+  "tooling": "nodemesh agent (sudo install script on Linux), web panel, console; no standalone tunnel CLI is documented",
+  "chaining": "The agent is the only thing that must run, so it fits a free Linux VM; the game server itself is installed by the platform.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "no byte allowance published for the traffic proxy",
+      "source": "https://nodemesh.app/docs"
+    }
+  ],
+  "limits_note": "",
+  "binding": "none",
+  "binding_note": "Nothing published caps 1 TiB/month, so the volume test can be neither failed nor passed from documents. The named constraint is the one the vendor states instead of a quota: the relay is 'Not DDoS protection', and in relay mode 'The game sees every player as one local address, so IP bans don't work.'",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "A signup with a verified email: 'Create a free account', and crash alerts go to 'your verified email'.",
+    "country": "None"
+  },
+  "reliability_note": "Relay mode collapses every player to one local address, so per-player IP bans stop working; the vendor says the relay is not DDoS protection; a node that goes offline pauses its servers and disconnects players.",
+  "confidence": "documented",
+  "confidence_note": "Running the agent and pushing a counted volume through the proxy would show whether an unpublished cap or throttle exists, and a probe record would make this measured.",
+  "evidence": [
+    {
+      "url": "https://nodemesh.app/games/minecraft-bedrock",
+      "date": "2026-10-23",
+      "proved": "'Bedrock uses UDP on port 19132 (IPv4) and 19133 (IPv6). The relay forwards them to your PC, so you make no changes to your router.'"
+    },
+    {
+      "url": "https://nodemesh.app/docs",
+      "date": "2026-10-23",
+      "proved": "'TCP and UDP both supported' under Traffic Proxy, and 'Included free with your first BYOH node'"
+    },
+    {
+      "url": "https://nodemesh.app/docs",
+      "date": "2026-10-23",
+      "proved": "In relay mode: 'The game sees every player as one local address, so IP bans don't work.' and 'Not DDoS protection.'"
+    },
+    {
+      "url": "https://nodemesh.app/pricing",
+      "date": "2026-10-23",
+      "proved": "'Your first BYOH node is completely free - no time limits, no credit card, all features included.' and 'This is free forever - not just during beta.'"
+    },
+    {
+      "url": "https://nodemesh.app/pricing",
+      "date": "2026-10-23",
+      "proved": "Extra nodes 'cost 5 NMC/month each', so the free unit is one node rather than a byte count"
+    },
+    {
+      "url": "https://nodemesh.app/docs",
+      "date": "2026-10-23",
+      "proved": "The agent install is 'curl -sSL https://install.nodemesh.app | sudo sh', and the origin must be Linux: 'It needs a Linux host'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0 for the first node",
+  "notes": "Beta, stated on the page: 'you can create this server today, but we have not run it on our own hardware yet'. The free unit is one host, so a second machine needs credits. The relay is documented for game servers; the site does not offer a generic arbitrary-UDP port, so whether a non-game UDP listener works behind it is unstated.",
+  "extras": {
+    "wg_path": "inside-udp",
+    "wg_detail": "No WireGuard mode of its own; the relay is documented as carrying UDP, so a WireGuard datagram to the proxy address is the same path. Untested.",
+    "ingress": "tcp+udp",
+    "volume_tib_month": null,
+    "volume_stated": "No byte allowance is published anywhere read: 'Your first BYOH node is completely free - no time limits, no credit card, all features included.'",
+    "bytes_transit": "yes",
+    "transit_note": "NodeMesh's edge proxy carries the player traffic; the origin only makes an outbound connection."
+  }
+}

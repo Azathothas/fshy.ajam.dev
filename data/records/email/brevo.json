@@ -1,0 +1,86 @@
+{
+  "topic": "email",
+  "slug": "brevo",
+  "provider": "Brevo",
+  "url": "https://www.brevo.com/pricing/",
+  "category": "transactional sender",
+  "free_tier": {
+    "stated": "300 email sends per day with no time limit; 100,000 contacts stored",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://www.brevo.com/pricing/",
+    "read_on": "2026-10-22",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: a send count rather than an object",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": "unused sends do not roll over",
+    "days": null,
+    "notes": "",
+    "source_url": "https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan"
+  },
+  "egress": {
+    "terms": "not applicable: an outbound sender",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.brevo.com/pricing/"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "tooling": "any SMTP client, or the Brevo API",
+  "chaining": "the highest card-free daily cap found: 300/day, which is three times Resend's. It is the outbound half of the inbound-plus-outbound chain and its scarce link is the day.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "300 sends per day, resetting daily, with no carry-over",
+      "source": "https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan"
+    },
+    {
+      "kind": "request-rate",
+      "value": "a campaign to more than 300 recipients delivers to 300 that day and needs a manual requeue, so the daily send counter is the campaign's limit too",
+      "source": "https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an account; no card is required for the free plan",
+    "country": null
+  },
+  "reliability_note": "once the daily limit is hit, up to 1,000 transactional emails are held in a retry queue and anything beyond that is not delivered",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan",
+      "date": "2026-10-22",
+      "proved": "'The Free plan includes 300 email sends per day', unused sends do not roll over, and a campaign above 300 recipients needs the Requeue option on successive days"
+    },
+    {
+      "url": "https://www.brevo.com/free-smtp-server/",
+      "date": "2026-10-22",
+      "proved": "'Send 300 emails a day with the best free SMTP server'"
+    },
+    {
+      "url": "probe:smtp://smtp-relay.brevo.com:587",
+      "date": "2026-10-22",
+      "proved": "banner 250, EHLO advertises SIZE and 8BITMIME, STARTTLS completed against the system trust store, and AUTH LOGIN returned 334. The submission endpoint answers; no message was sent"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T03:20:00.000Z",
+  "notes": "The help page states the campaign behaviour explicitly, which is why the 300/day figure is not the whole answer for a marketing send.",
+  "extras": {
+    "stale_after_days": 90
+  },
+  "binding": "request-rate",
+  "binding_note": "300/day. The campaign path is the trap: a 1,000-contact list takes four days.",
+  "interface_detail": "the SMTP relay and the transactional API; SMTP is the documented path",
+  "confidence_note": "no message was sent, so no delivery is proved. The submission path was probed: smtp-relay.brevo.com:587 answered 250, STARTTLS completed against the system trust store, and AUTH LOGIN returned 334",
+  "limits_note": "counts of things, not rates, so no vocabulary kind names them: 100,000 contacts stored on the free plan. The campaign entry is a rate: the same 300-a-day counter is what a campaign meets, so it stays request-rate"
+}

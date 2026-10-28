@@ -1,0 +1,97 @@
+{
+  "topic": "egress",
+  "slug": "zrok-hosted",
+  "provider": "zrok (hosted)",
+  "url": "https://zrok.io/pricing/",
+  "category": "tunnel (hosted, OpenZiti)",
+  "free_tier": {
+    "stated": "5 GB/day, 25 environments, 50 share backends, 50 private access frontends",
+    "unit": "GB",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://zrok.io/pricing/",
+    "read_on": "2026-10-22",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: a rolling daily allowance rather than a per-object cap",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": "5 GB per rolling 24 hours; shares are restricted on exceed",
+    "days": null,
+    "notes": "",
+    "source_url": "https://zrok.io/pricing/"
+  },
+  "egress": {
+    "terms": "metered at 5 GB/day, which is 0.5% of one day's workload",
+    "metered": true,
+    "free_allowance": "5 GB per rolling 24 hours",
+    "price_per_tb": null,
+    "source_url": "https://zrok.io/pricing/"
+  },
+  "interface": [
+    "cli"
+  ],
+  "tooling": "zrok",
+  "chaining": "composes with an origin and no domain, and the daily allowance is what stops it. The self-hosted build is the same software without the controller's journal.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "5 GB per rolling 24 hours; on crossing it the running shares are disabled and new shares refused until the window falls back below the limit",
+      "source": "https://zrok.io/pricing/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "2000 requests per 300 s per IP address",
+      "source": "https://github.com/openziti/zrok/commit/5a052ee86b84ac9c94ce37804c573f1199f44ec4"
+    },
+    {
+      "kind": "request-rate",
+      "value": "7500 requests per 300 s per share, from any number of addresses",
+      "source": "https://github.com/openziti/zrok/commit/5a052ee86b84ac9c94ce37804c573f1199f44ec4"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a zrok account; no card required",
+    "country": null
+  },
+  "reliability_note": "The limits agent has twice failed to release a limit once usage fell: a 2024 discourse thread and a 2026 repository commit both describe an account staying limited until the journal entry was cleared by hand.",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://zrok.io/pricing/",
+      "date": "2026-10-22",
+      "proved": "'5 Daily GB' in the Free column of the rendered HTML; the Markdown extraction drops it"
+    },
+    {
+      "url": "https://netfoundry.io/docs/zrok/concepts/private-shares/",
+      "date": "2026-10-23",
+      "proved": "'udpTunnel: Forwards raw UDP traffic to a target server' and the private-share access rule"
+    },
+    {
+      "url": "https://netfoundry.io/docs/zrok/concepts/backend-modes/",
+      "date": "2026-10-23",
+      "proved": "'zrok supports HTTP-based backends and raw TCP/UDP backends'"
+    },
+    {
+      "url": "https://zrok.io/pricing/",
+      "date": "2026-10-23",
+      "proved": "the free tier is 25 environments and 50 share backends; the 5 GB/day figure is no longer on the pricing page"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "notes": "It is on the page in the raw HTML, so it is documented. A 2024 forum answer says 10 GB per 24 hours, which the pricing page contradicts; the page is the owner. The record listed no limits and its binding_note complained that the vocabulary had no kind for a byte volume over a period, which it now does. It also omitted the two request-rate caps and what actually happens on crossing the daily allowance. Replaces the note that said the vocabulary could not name this constraint, and states the monthly product of a daily allowance. A known failure mode of the limiter matters more than the warning page for a client running at the edge of the allowance.",
+  "extras": {
+    "stale_after_days": 180,
+    "bytes_transit": "yes",
+    "transit_note": "the hosted controller relays the share's bytes, which is what the 5 GB daily counter counts",
+    "wg_path": "none"
+  },
+  "binding": "volume-quota",
+  "interface_detail": "zrok share public against the hosted controller",
+  "binding_note": "5 GB per rolling 24 hours is 150 GB in 30 days, or 0.136 TiB, so the daily byte window bands the month at about 7.3 times below 1 TiB. Crossing it disables running shares and refuses new ones until the window falls back, which is a hard stop rather than a throttle. Two request-rate caps sit underneath and would bind first for a request-heavy workload.",
+  "limits_note": "the allowance is a byte volume over a period, which none of the six kinds names; the number is in egress.free_allowance and binding names per-ip-shaping as the nearest kind"
+}

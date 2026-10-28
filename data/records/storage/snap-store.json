@@ -1,0 +1,86 @@
+{
+  "topic": "storage",
+  "slug": "snap-store",
+  "provider": "Snap Store (api.snapcraft.io / snapcraft.io)",
+  "url": "https://snapcraft.io/store",
+  "category": "paas",
+  "free_tier": {
+    "stated": "No published total-storage quota and no published per-snap byte cap; the practical ceiling is what the upload tooling survives. Evidence of real large artefacts: `kicad` stable snap is 1,659.5 MB and `android-studio` is 1,657.8 MB in the channel map (both served fine). A 5.5 GB upload attempt returned HTTP 500 and was diagnosed by Canonical as 'a timeout in the object storage load balancers'. 1.7 GB is documented as working; ~5 GB class uploads fail with a server-side timeout.",
+    "unit": "MB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://forum.snapcraft.io/t/snap-package-file-size-limit-on-the-store/37450",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: not documented, empirically ~1.7 GB",
+    "bytes": 1700000000,
+    "source_url": "https://forum.snapcraft.io/t/snap-package-file-size-limit-on-the-store/37450",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "per-object-cap: not documented, empirically ~1.7 GB works and 5.5 GB 500s (object-storage load-balancer timeout). retention: indefinite, full revision history retained (each revision is a separate stored .snap)",
+    "source_url": "https://forum.snapcraft.io/t/snap-package-file-size-limit-on-the-store/37450",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and CDN-backed. Downloads go through api.snapcraft.io -> redirect -> a CDN; no billing, no per-download accounting.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "`snapcraft upload` / `snapcraft push` (the write path), Snap Store API v2 (`api.snapcraft.io/v2/snaps/info/<name>` with header `Snap-Device-Series: 16`) for metadata, and plain HTTPS GET of the channel-map `download.url` for bytes. No rclone backend; a wrapper would have to speak the snapcraft upload protocol to push.",
+  "chaining": "unlimited snaps per publisher account x unlimited revisions per snap (revision history is retained server-side - the forum thread discusses 3 GB across 3 revisions of a 1 GB game). Multiply by unlimited free Ubuntu One accounts. Realistically ~1.6 GB x N revisions x N snaps, but upload reliability degrades well before 5 GB.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "application/octet-stream` verified)",
+      "source": "https://forum.snapcraft.io/t/snap-package-file-size-limit-on-the-store/37450"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: not documented, empirically ~1.7 GB",
+      "source": "https://forum.snapcraft.io/t/snap-package-file-size-limit-on-the-store/37450"
+    }
+  ],
+  "limits_note": "per-object-cap: not documented, empirically ~1.7 GB works and 5.5 GB 500s (object-storage load-balancer timeout). retention: indefinite, full revision history retained (each revision is a separate stored .snap). request-rate: not documented. A 'FATAL ERROR: Data queue size is too large' error hits multi-GB uploads client-side too.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "The write path is the weak link, not storage: multi-GB uploads fail with opaque HTTP 500 ('timeout in the object storage load balancers') and with client-side 'Data queue size is too large'. Bytes are served perfectly once published (`200 77574144 application/octet-stream` verified). Snaps are squashfs images - arbitrary content must be packaged into a snap with a valid snapcraft.yaml, so this is a wrapper-only route.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://forum.snapcraft.io/t/snap-package-file-size-limit-on-the-store/37450",
+      "date": "2026-10-21",
+      "proved": "5.5 GB upload 500s; Canonical: 'it seems to be related to a timeout in the object storage load balancers'"
+    },
+    {
+      "url": "https://forum.snapcraft.io/t/fatal-error-data-queue-size-is-too-large/43875",
+      "date": "2026-10-21",
+      "proved": "'I'm trying to upload a new version of Kicad, which is 1,7GBytes ... FATAL ERROR: Data queue size is too large'"
+    },
+    {
+      "url": "https://api.snapcraft.io/v2/snaps/info/kicad",
+      "date": "2026-10-21",
+      "proved": "probe: GET (Snap-Device-Series: 16) -> channel-map download.size 1,659,5xx,xxx bytes (1.66 GB stored and served)"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET .../snaps/download/amcUKQILKXHHTlmSa7NMdnXSx02dNeeT_2955.snap with -L -> 200, 77,574,144 bytes, application/octet-stream (core22, real squashfs bytes)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published total-storage quota and no published per-snap byte cap; the practical ceiling is what the upload tooling survives. Evidence of real large artefacts: `kicad` stable snap is 1,659.5 MB and `android-studio` is 1,657.8 MB in the channel map (both served fine). A 5.5 GB upload attempt returned HTTP 500 and was diagnosed by Canonical as 'a timeout in the object storage load balancers'. 1.7 GB is documented as working; ~5 GB class uploads fail with a server-side timeout.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

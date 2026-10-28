@@ -1,0 +1,119 @@
+{
+  "topic": "ip-proxy",
+  "slug": "oxylabs-isp-proxies",
+  "provider": "Oxylabs",
+  "url": "https://oxylabs.io/pricing/isp-proxies",
+  "category": "per-address ISP proxy",
+  "tier": "ISP Proxies (static residential), pay per address, Starter plan floor",
+  "free_tier": {
+    "stated": "'Welcome credits FREE $5 toward any product'. A credit against an invoice, not an allowance: at USD 1.50/IP the first band is 3 addresses, and the plan floor is USD 30/mo Starter, so the credit takes USD 5 off a first invoice and buys no service on its own. The pricing page states the credit and states no card requirement for it.",
+    "unit": "objects",
+    "metered_on": "object-count",
+    "source_url": "https://oxylabs.io/pricing/isp-proxies",
+    "read_on": "2026-10-24",
+    "notes": "The billed object is one ISP address for one billing period, so 'objects' is the address count and not a file or a record."
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://oxylabs.io/pricing/isp-proxies",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: an address, not an object",
+    "days": null,
+    "source_url": "https://oxylabs.io/pricing/isp-proxies",
+    "notes": "No stored bytes are involved. The nearest thing to retention is the session: the vendor sells 'Unlimited-duration sessions', so an address is held for the billing period rather than expiring on a timer."
+  },
+  "egress": {
+    "terms": "Unlimited and unpriced by the byte: the pricing page lists 'Unlimited bandwidth with fair usage', and the product page heads a bullet 'Unlimited bandwidth' and explains it as 'No additional charges on traffic expenditure with the Pay-per-IP pricing model'. Billing is per address, not per GB.",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://oxylabs.io/products/isp-proxies"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "The access is a proxy endpoint, not a REST resource: the vendor's quick start tabulates 'ISP isp.oxylabs.io 8000 user- 8001 and up' and 'Dedicated ISP disp.oxylabs.io 8000 user- 8001 and up', with the protocol set by a user's connection prefix - 'http://, https://, or socks5h://'. The product page lists 'HTTP, HTTPS, and SOCKS5 protocols' and 'UDP and TCP connection'. Management is a web dashboard. This token list carries no proxy-protocol value, so 'rest' is the nearest it has; see notes.",
+  "endpoint": "isp.oxylabs.io:8000 (ISP), disp.oxylabs.io:8000 (Dedicated ISP), static ports 8001 and up",
+  "tooling": "Any client that accepts a proxy URL: curl -x, Python requests with a proxies dict, Node.js, Scrapy. The vendor publishes integration guides for Python, Node.js and cURL, and an Agent Skills repository for agent frameworks. The address is selected by the static port - '8001 for IP #1, 8002 for IP #2, etc.' - so no session identifier is needed. No dedicated CLI was found, and none is required.",
+  "chaining": "The address layer in front of the Cloudflare Workers AI gateway at about 599,000 requests and 45 GB a month: the bytes do not cross a meter, so the cost is the address count against a USD 30/mo plan floor and the constraint is which targets the vendor will carry, not how much traffic moves.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "target blocklist rather than a rate: 'Some websites are restricted on our Residential Proxy network to avoid abuse and unclear activities', and 'The list includes but is not limited to targets such as:' 'All Apple domains', 'Some Google domains', 'Government websites'",
+      "source": "https://oxylabs.io/pricing/residential-proxy-pool"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "semi-dedicated, not exclusive: the product page labels the addresses 'Semi-dedicated IPs' and the pricing page lists 'Shared with up to 3 users'",
+      "source": "https://oxylabs.io/products/isp-proxies"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "'Unlimited bandwidth with fair usage' - unlimited in price, with a fair-use qualifier the vendor does not define",
+      "source": "https://oxylabs.io/pricing/isp-proxies"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "none: 'Unlimited bandwidth', explained as 'No additional charges on traffic expenditure with the Pay-per-IP pricing model'",
+      "source": "https://oxylabs.io/products/isp-proxies"
+    }
+  ],
+  "limits_note": "Two constraints found have no kind in the vocabulary. The plan floor is a minimum spend - USD 30/mo Starter - and the blocklist is a refusal of the destination rather than a rate on a user; the blocklist is filed under request-rate because that is the nearest kind, and the floor is recorded here. Whether a 3-address order bills USD 4.50 or the USD 30 floor is not stated on either page.",
+  "binding": "request-rate",
+  "binding_note": "No byte meter and no address ceiling fail at 45 GB and 599,000 requests a month - bandwidth is unmetered and the address count is what a user buys. What fails first is the target: the vendor refuses whole destination classes on the residential network, and the refusal arrives as a failed request, so it is the request that is denied and not the volume.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "Two gates. An email address claims the USD 5 welcome credit, and the pricing page states no card for it. Reaching the product at all costs a card: the smallest plan is USD 30/mo Starter. The card is the binding gate because the credit alone buys no address.",
+    "country": null
+  },
+  "reliability_note": "Semi-dedicated, not exclusive, and the vendor states the addresses 'originate from datacenter proxies', so a target that blocks hosting ranges sees the datacenter side of the registration; 'fair usage' is stated without a number, so a throttle would arrive without a published threshold.",
+  "confidence": "documented",
+  "confidence_note": "The price ladder, the plan floor, the credit, the protocol list and the blocklist are all on vendor pages read today. Measured would need a paid account, one address, a request through isp.oxylabs.io, and a status code from a blocked target; the blocklist's effect on a user's own targets was not tested.",
+  "evidence": [
+    {
+      "url": "https://oxylabs.io/pricing/isp-proxies",
+      "date": "2026-10-24",
+      "proved": "The per-address ladder - 'ISP Proxies $1.5/IP Up to 3 IPs', '$1.5/IP Up to 20 IPs', '$1.4/IP Up to 71 IPs', '$1.2/IP Up to 416 IPs', '$1.1/IP 2.27K+ IPs' - plus the plan floor 'Starter $30/mo', 'Welcome credits FREE $5 toward any product', and 'Unlimited bandwidth with fair usage'."
+    },
+    {
+      "url": "https://oxylabs.io/products/static-residential-proxies",
+      "date": "2026-10-24",
+      "proved": "The decisive sentence for the registration class: 'Static Residential Proxies originate from datacenter proxies, therefore they are just as fast as their counterparts.'"
+    },
+    {
+      "url": "https://oxylabs.io/products/isp-proxies",
+      "date": "2026-10-24",
+      "proved": "The product's own words: 'Semi-dedicated IPs', 'Unlimited-duration sessions', 'HTTP, HTTPS, and SOCKS5 protocols', 'UDP and TCP connection', the bullet 'Unlimited bandwidth' with its explanation 'No additional charges on traffic expenditure with the Pay-per-IP pricing model', and the premium ASN names Lumen, Comcast, BT Group, Orange and Cox Communications."
+    },
+    {
+      "url": "https://oxylabs.io/pricing/residential-proxy-pool",
+      "date": "2026-10-24",
+      "proved": "The target blocklist, and where it lives: 'Some websites are restricted on our Residential Proxy network to avoid abuse and unclear activities', then 'The list includes but is not limited to targets such as:' 'All Apple domains', 'Some Google domains', 'Government websites'. The sentence is not on any of the three ISP pages - all three were fetched and grepped for 'restricted on our' and returned zero matches - so the blocklist is attributed to this page and not to the ISP product pages."
+    },
+    {
+      "url": "https://developers.oxylabs.io/get-started/quick-start-proxies",
+      "date": "2026-10-24",
+      "proved": "How the address is reached: 'ISP isp.oxylabs.io 8000 user- 8001 and up' and 'Dedicated ISP disp.oxylabs.io 8000 user- 8001 and up', with the protocol chosen by connection prefix - 'http://, https://, or socks5h://' - and a static port per address, '8001 for IP #1, 8002 for IP #2, etc.'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-24T10:07:11.000Z",
+  "price_per_tb_month": "not applicable: priced per address at USD 1.50/IP in the smallest band, bandwidth unmetered",
+  "notes": "Registration class, and what the vendor actually sells. Three readings of 'ISP proxy' were considered. (1) Addresses physically hosted on consumer ISP lines - refuted by the vendor's own sentence that they 'originate from datacenter proxies'. (2) Datacenter-hosted addresses announced from an ISP's own ASN, which is what the page describes and what makes a target see a residential registration - confirmed by that sentence together with 'Premium ASN providers' and the named ASNs. (3) A marketing synonym for a datacenter proxy with no technical difference - not excluded, because the vendor publishes no ASN or hosting-provider list per address; what would settle it is a paid account, one address, and a lookup of the announcing ASN plus a traceroute showing a datacenter hop. The record therefore states the class the vendor claims and does not claim the addresses are consumer-hosted. Two source corrections. First, the blocklist is not on the ISP pages: the pricing and product pages for ISP proxies and static residential were each fetched and grepped for 'restricted on our' and returned zero matches, while the residential pricing page carries the full sentence. The record cites that page. Second, the products/isp-proxies page title advertises 'from $2.10/IP' while the pricing table's smallest band is USD 1.50/IP; the table is used because it carries the band structure, and the headline is recorded in extras as a discrepancy rather than resolved. Corrects a neighbouring record's emphasis. dossier/debrid/oxylabs.json records identity_cost.kind 'card' with the detail 'Self-service subscription with card', and records the USD 5 welcome credit as its free tier. This record finds the two gates are separate: the credit is claimed with an email and no card is stated for it, while the card belongs to the plan. That does not make the debrid record wrong about the subscription it prices, but its 'card' describes the paid plan and not the way in, and a reader who took it as the credit's cost would overstate the entry price. Interface vocabulary conflict, unresolved and named rather than hidden. scripts/dossier/schema.json enumerates interface items as s3, s3-compatible, rest, graphql, webdav, sftp, ftp, ftps, scp, rsync, smb, nfs, ssh, graph, oci, git, rclone, cli, webdav-proxy, nntp, unknown. It has no http-proxy and no socks5, so a record using either fails validate.py with an enum error - checked by running the validator on a copy carrying both tokens. This record uses 'rest', the token common to the schema and to the proxy vocabulary, and puts the protocols, the endpoint and the port scheme in interface_detail so nothing is lost. At the gate run on 2026-10-24, dossier/ip-proxy/decodo-isp-proxies.json and dossier/ip-proxy/openproxylist-xyz.json use 'socks5', 'http-proxy' and 'web-ui' and are the four enum errors the schema check reports; eleven of the topic's twenty-one records use 'rest' for the reason this one does. Adding the two proxy tokens to the enum is a two-line change and would let every ip-proxy record say what it is. Not settled: whether a 3-address order at USD 1.50/IP bills USD 4.50 against a USD 30/mo floor or is rounded up to the floor; whether 'Shared with up to 3 users' means dashboard sub-users or address sharing, since the bullet sits under a heading about the product rather than the panel; and what 'fair usage' permits in bytes. All three need an account and an invoice, or a support answer, and none is needed to price the offer.",
+  "extras": {
+    "rung": 5,
+    "rung_note": "The target reads the address's registration class - an ISP-announced ASN - and the vendor states the addresses 'originate from datacenter proxies', so what is bought is a class label on the address, not a session, a subnet or a chosen ASN block.",
+    "price_ladder": "$1.5/IP up to 3 IPs; $1.5/IP up to 20 IPs; $1.4/IP up to 71 IPs; $1.2/IP up to 416 IPs; $1.1/IP at 2.27K+ IPs",
+    "plan_floor_usd_month": 30,
+    "vendor_features": "Shared with up to 3 users; Premium ASN providers; HTTP/HTTPS/SOCKS5 protocols; Unlimited bandwidth with fair usage; Unlimited-duration sessions",
+    "premium_asns": "Lumen, Comcast, BT Group, Orange, Cox Communications on the product page; British Telecom, Comcast, Lumen, Frontier in the 'Why choose' list",
+    "headline_discrepancy": "The products/isp-proxies page title reads 'Buy Residential ISP Proxies from $2.10/IP' while the pricing page's smallest band is USD 1.50/IP. Unresolved; the pricing table is the figure used.",
+    "protocols": "http, https, socks5h by connection prefix; UDP and TCP",
+    "semi_dedicated": "Vendor label 'Semi-dedicated IPs' - not exclusive to one buyer",
+    "datacenter_origin": "Static Residential Proxies originate from datacenter proxies, therefore they are just as fast as their counterparts.",
+    "sessions": "Unlimited-duration; the vendor sells the address for the billing period, not for a session length"
+  }
+}

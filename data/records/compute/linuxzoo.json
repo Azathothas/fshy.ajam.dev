@@ -1,0 +1,136 @@
+{
+  "topic": "compute",
+  "slug": "linuxzoo",
+  "provider": "Linuxzoo",
+  "url": "https://linuxzoo.net/page/notes/tech.html",
+  "category": "VM",
+  "tier": "Free learner VM",
+  "free_tier": {
+    "stated": "Quoted: 'Learn Linux from the safety of your chair using a remote private linux machine with root access.' Machines are booked from a queue: 'Your position in the queue, your speed in getting a machine, the amount of time you get using a machine, and the things you can do with the machine once you have one are all related to the information you give during registration. This can range from 10 minutes of machine time, up to 2 hours of guaranteed time with automatic time extensions if the site is quiet (which is called HOLD time in the interface).'",
+    "unit": "minutes",
+    "metered_on": "wall-clock",
+    "source_url": "https://linuxzoo.net/page/notes/howtouse.html",
+    "read_on": "2026-10-24"
+  },
+  "per_object_cap": {
+    "stated": "Quoted: 'You are allowed to have only one account per person on this site.'"
+  },
+  "retention": {
+    "stated": "Quoted: 'This previous image approach is not precise and reliable (sometimes it will not give you your most up-to-date image when you request it). It tried hard to keep your work between reboots, but this is not guarenteed.' The disk files are deleted by the daemon 'as and when required'."
+  },
+  "egress": {
+    "terms": "Quoted: 'Firstly, the machines are sandboxed from the internet, so no outgoing traffic is supported.' and 'Free users are basically sandboxed to the virtual network.' There is no outbound path at all.",
+    "metered": false,
+    "free_allowance": "none",
+    "source_url": "https://linuxzoo.net/page/notes/tech.html"
+  },
+  "interface": [
+    "ssh"
+  ],
+  "interface_detail": "SSH to the guest through a browser JavaScript terminal or a real SSH client at `ssh [address removed]`, plus VNC for the images that run a desktop. Root on the guest; the images include AlmaLinux 10, Kali 2024-4, Caine Forensics and Windows 7.",
+  "tooling": "a browser, or any SSH client; VNC for the desktop images",
+  "chaining": "A root VM for a two-hour lab, with no account cost and no card, but no outbound network: useful for learning and for offline compute, useless for a tunnel or a monitor.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "10 minutes to 2 hours of guaranteed machine time, extended only when the site is quiet",
+      "source": "https://linuxzoo.net/page/notes/howtouse.html"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "the VM is shut down within a few minutes if no browser window has a control panel on it",
+      "source": "https://linuxzoo.net/page/notes/howtouse.html"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "7 server nodes of 192 GB RAM and 1 TB disk each, modelled for about 140 concurrent users",
+      "source": "https://linuxzoo.net/page/notes/tech.html"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "no outbound traffic; the guest is sandboxed to the virtual network",
+      "source": "https://linuxzoo.net/page/notes/tech.html"
+    }
+  ],
+  "binding": "per-ip-shaping",
+  "binding_note": "No outbound network means the machine cannot fetch a package, reach an API or carry a tunnel, which removes most uses before the two-hour clock even matters.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "no card, no phone, no document.",
+    "country": null
+  },
+  "reliability_note": "The site's own front page carries a live 'Status: Stable' line and also the notice 'Patching and rebooting underway', so the service is maintained but not always up; the operator states it is a privilege rather than a right and that response time may be long.",
+  "confidence": "documented",
+  "confidence_note": "The no-egress rule, the queue, the 10-minute to 2-hour window, the control-panel reap, the node count and the email requirement are all quoted from linuxzoo.net's own technical and how-to pages read today. The per-VM vCPU, RAM and disk allocation is not published on any page read; only the host nodes' totals are.",
+  "evidence": [
+    {
+      "url": "https://linuxzoo.net/page/notes/tech.html",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Firstly, the machines are sandboxed from the internet, so no outgoing traffic is supported. Secondly the machines only stay running when you are logged into them and logged into linuxzoo.'"
+    },
+    {
+      "url": "https://linuxzoo.net/page/notes/tech.html",
+      "date": "2026-10-24",
+      "proved": "quoted: 'As of 2025 we have 7 active server nodes, each with 192GB of RAM and 1TB of disk. The system is modelled on supporting around a maximum of 140 users at a time.'"
+    },
+    {
+      "url": "https://linuxzoo.net/page/notes/howtouse.html",
+      "date": "2026-10-24",
+      "proved": "quoted: 'This can range from 10 minutes of machine time, up to 2 hours of guaranteed time with automatic time extensions if the site is quiet (which is called HOLD time in the interface).'"
+    },
+    {
+      "url": "https://linuxzoo.net/page/notes/howtouse.html",
+      "date": "2026-10-24",
+      "proved": "quoted: 'if none of you web browser's windows have a control panel on them, then your VM machine will shutdown within a few minutes and you will be dequeued'"
+    },
+    {
+      "url": "https://linuxzoo.net/page/notes/terms.html",
+      "date": "2026-10-24",
+      "proved": "quoted: 'You are allowed to have only one account per person on this site.' and 'When you register use one of your own email addresses and make sure it is valid and working.'"
+    },
+    {
+      "url": "https://linuxzoo.net/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Learn Linux from the safety of your chair using a remote private linux machine with root access.' and the image table naming AlmaLinux 10, Caine Forensics 10.0/13.0 and Kali 2024-4"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-24T06:41:00.000Z",
+  "price_per_tb_month": null,
+  "notes": "Recorded as a rejection on egress, not on money or identity: it is free, it needs only an email, and it gives root. The disqualifier is explicit and repeated on the vendor's own page: 'no outgoing traffic is supported'. That makes it a lab for learning Linux, which is what it says it is, and not a machine for a user's stack. A second constraint is the control-panel reap: the VM dies within minutes if no browser window is showing a control panel, so it cannot run unattended even inside the two-hour window. The per-VM shape is unpublished. The front page showed a transient 'Having a disaster' error block on the same read, so the service is live but rough.",
+  "extras": {
+    "shape": {
+      "vcpu": null,
+      "ram_gib": null,
+      "disk_gib": null,
+      "gpu_class": null,
+      "gpu_count": null,
+      "note": "not published per VM; the host nodes are 192 GB RAM and 1 TB disk each, which is capacity, not an allocation"
+    },
+    "billing_model": "free",
+    "term": "per booking, 10 minutes to 2 hours",
+    "m10h_usd": 0,
+    "m24h_usd": 0,
+    "price_arithmetic": "no charge and no payment field; the currency is queue position and wall-clock",
+    "free_tier_kind": "always-free",
+    "network_out": {
+      "allow_outbound": false,
+      "allow_inbound_listen": false,
+      "ports": "none; the guest is sandboxed to the virtual network",
+      "static_ip": false,
+      "ipv6": null,
+      "per_session_bytes": null
+    },
+    "session_cap": {
+      "wall_clock_min": 120,
+      "idle_reap_s": null,
+      "restart_required": true,
+      "note": "10 min to 2 h of HOLD time; killed within minutes if no control panel is open in a browser"
+    },
+    "signup_url": "https://linuxzoo.net/",
+    "credit_usd": null,
+    "credit_hours_at_shape": null,
+    "card_hold_usd": null,
+    "payment_methods": "none; there is no billing system"
+  }
+}

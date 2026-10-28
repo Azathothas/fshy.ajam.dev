@@ -1,0 +1,115 @@
+{
+  "topic": "domains-dns",
+  "slug": "desec",
+  "provider": "deSEC",
+  "url": "https://desec.io/",
+  "category": "managed authoritative DNS with a full REST API",
+  "free_tier": {
+    "stated": "free managed DNS with anycast, a full REST API, DNSSEC and no published query cap; the number of domains an account may hold is not published and is capped by a support-visible counter",
+    "unit": "objects",
+    "source_url": "https://desec.io/",
+    "read_on": "2026-10-22",
+    "metered_on": "request-count"
+  },
+  "per_object_cap": {
+    "stated": "no published record count cap; the binding limits are the domain count per account and the RRset change rate per domain",
+    "bytes": null
+  },
+  "retention": {
+    "stated": "zones persist while the account is active; a domain not renewed is deleted after a grace period",
+    "days": null,
+    "source_url": "https://desec.io/"
+  },
+  "egress": {
+    "terms": "no query cap is published; the metered quantity is API requests",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://desec.readthedocs.io/en/latest/rate-limits.html"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "a REST API with token authentication; the API speaks RRsets rather than individual records, and an empty subname is the zone apex",
+  "tooling": "the deSEC API directly, DNSControl, certbot and acme.sh with a DNS-01 hook, Terraform",
+  "chaining": "one small zone with a real API, and a support request per additional domain; the domain counter is what constrains a multi-zone scheme, not the change rate",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "RRset create, delete or modify: 2 per second, 15 per minute, 100 per hour, 300 per day, per domain",
+      "source": "https://desec.readthedocs.io/en/latest/rate-limits.html"
+    },
+    {
+      "kind": "request-rate",
+      "value": "any authenticated or unauthenticated activity: 2,000 per day per account or per IP",
+      "source": "https://desec.readthedocs.io/en/latest/rate-limits.html"
+    },
+    {
+      "kind": "request-rate",
+      "value": "dynDNS updates: 2 per 2 minutes per domain",
+      "source": "https://desec.readthedocs.io/en/latest/rate-limits.html"
+    },
+    {
+      "kind": "write-gated",
+      "value": "the number of domains an account may hold is not published; a new account is reported to start at one and the message in the panel asks the user to contact support for a higher limit. A deSEC staff reply gives the current formula as max(1, s + round(sqrt(s))) for s DNSSEC-delegated domains",
+      "source": "https://talk.desec.io/t/feedback-about-recent-limit-changes/1834"
+    }
+  ],
+  "limits_note": "DNS reads are 10/s and 50/min; domain creation and deletion are 10/s, 300/min and 1,000/h; account actions with external effects are 3/min; a 429 carries Retry-After and the windows slide",
+  "binding": "write-gated",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email signup; a token per account",
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "confidence": "reported",
+  "confidence_note": "the API and the rate table are first-party and were read today: the API answered 401 with a Token challenge and the rate table is a documentation page. The domain-count limit is not published anywhere first-party, so it is recorded at the reported rung from deSEC's own forum and two independent write-ups.",
+  "evidence": [
+    {
+      "url": "probe:https://desec.io/api/v1/domains/",
+      "date": "2026-10-22",
+      "proved": "401, 58 bytes, 'Authentication credentials were not provided.', with WWW-Authenticate: Token and Allow: GET, POST, HEAD, OPTIONS. The endpoint exists and is token-authenticated"
+    },
+    {
+      "url": "probe:https://desec.io/api/v1/auth/login/",
+      "date": "2026-10-22",
+      "proved": "400 with '{\"email\":[\"This field is required.\"],\"password\":[\"This field is required.\"]}', a live DRF login endpoint"
+    },
+    {
+      "url": "https://desec.readthedocs.io/en/latest/rate-limits.html",
+      "date": "2026-10-22",
+      "proved": "dns_api_per_domain_expensive 2/s 15/min 100/h 300/day for RRset creation, deletion and modification per domain; user 2,000/day; dyndns 2/2min per domain; throttled requests return 429 with Retry-After"
+    },
+    {
+      "url": "https://desec.readthedocs.io/en/latest/dns/rrsets.html",
+      "date": "2026-10-22",
+      "proved": "'If subname is empty, this is equal to {name}.' so the apex is addressable; a wildcard component is allowed once at the beginning of the name"
+    },
+    {
+      "url": "https://talk.desec.io/t/feedback-about-recent-limit-changes/1834",
+      "date": "2026-10-22",
+      "proved": "a deSEC staff reply: 'the limit is max(1, s + round(sqrt(s))), were s is the number of domains delegated to us with DNSSEC enabled', giving 6 for s=4"
+    },
+    {
+      "url": "https://talk.desec.io/t/how-to-apply-for-a-spot/1370",
+      "date": "2026-10-22",
+      "proved": "'New accounts are limited to one domain and there is a note when you add a domain: Contact support to apply for a higher limit.'"
+    },
+    {
+      "url": "https://yepoleb.at/blog/2025/10/27/my-experience-with-desec/",
+      "date": "2026-10-22",
+      "proved": "an independent account: 'there is an initial limit of 1 domain per account. Right below is the note Contact support to apply for a higher limit.'"
+    },
+    {
+      "url": "https://desec.io/signup",
+      "date": "2026-10-22",
+      "proved": "the signup form says only 'Your first domain (you can add more later)', which is the closest thing to a published statement and gives no number"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-22T03:05:00.000Z",
+  "price_per_tb_month": null,
+  "notes": "The 300 changes a day per domain is generous for steady state and painful for provisioning: a 500-record import takes two days. Bulk endpoints exist and the docs recommend them, which is the alternative route. The domain counter is the constraint that was recorded as 'no published cap', which is a different claim: deSEC publishes no number, and its own forum gives one. Provisioning one account and counting the domains would settle it for the cost of an email address.",
+  "binding_note": "the change rate is generous for steady state. The domain counter is what stops a multi-zone scheme: it is not published, a new account is reported to begin at one domain, and raising it is a support request with a person in the queue."
+}

@@ -1,0 +1,86 @@
+{
+  "topic": "debrid",
+  "slug": "xrel",
+  "provider": "xREL.v3",
+  "url": "https://www.xrel.to/",
+  "category": "scene release database (metadata and NFO, no download links)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "The release lists are readable without an account; the JSON API at api.xrel.to answered a page reader with HTTP 403 and a 5-word bot challenge instead of content.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://www.xrel.to/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: release metadata, not an object",
+    "bytes": null,
+    "source_url": "https://www.xrel.to/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "records persist; the release lists carry dated entries per category (console, TV, movies), newest first",
+    "days": null,
+    "source_url": "https://www.xrel.to/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "no byte allowance: the site serves NFO text, screenshots and metadata, not files",
+    "metered": false,
+    "free_allowance": "none",
+    "price_per_tb": null,
+    "source_url": "https://www.xrel.to/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "A documented JSON API under api.xrel.to/v2/ (the v2 index path returned 404 from nginx, and /v2/ returned a 403 challenge), plus HTML release lists per category.",
+  "endpoint": "https://api.xrel.to/v2/",
+  "tooling": "HTTP client for the API when the challenge permits; otherwise HTML scraping of the release lists. Nothing to download, so no rclone or debrid tool applies.",
+  "chaining": "Use it as the metadata layer: given a release name from a DDL index, xREL gives the group, the date, the NFO and the IMDb/TVDB id, which is what makes a release name resolvable to a title.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "no published limit on the pages read; the API returned a 403 bot challenge to a page reader before any rate could be observed",
+      "source": "https://api.xrel.to/v2/"
+    }
+  ],
+  "limits_note": "The challenge is the first obstacle, not a quota: the reader saw 'bot challenge' with a 5-word body at HTTP 403.",
+  "binding": "none",
+  "binding_note": "An API challenge is not one of the seven constraints and no byte quota exists; a user meets the challenge first and would then meet an unpublished rate.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "The HTML lists were readable without an account. The API's authentication requirement was not established beyond the 403 challenge.",
+    "country": null
+  },
+  "reliability_note": "Cloudflare-style bot screening sits in front of the API, so a client that works today can be challenged tomorrow; the HTML surface answered normally.",
+  "confidence": "documented",
+  "confidence_note": "The home page was read on 2026-10-23 and the API challenge was captured. Getting one API response through a permitted client would settle the real endpoint shape and any rate limit.",
+  "evidence": [
+    {
+      "url": "https://www.xrel.to/",
+      "date": "2026-10-23",
+      "proved": "live German scene release database, title 'xREL.v3 - Release & NFO Source #1', release lists with NFO links and sizes"
+    },
+    {
+      "url": "https://api.xrel.to/v2/",
+      "date": "2026-10-23",
+      "proved": "HTTP 403 with a 5-word body: the reader classified it as a bot challenge, so no API content was read"
+    },
+    {
+      "url": "https://api.xrel.to/v2/index.html",
+      "date": "2026-10-23",
+      "proved": "HTTP 404 from nginx, so that documentation path does not exist"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T01:52:28.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Included because it is the metadata layer a DDL pipeline needs to turn 'Some.Release.2026.1080p-GRP' into a title, and because it is the clean example's challenge rule: HTML readable, API challenged, recorded as unverified rather than rejected.",
+  "extras": {
+    "api_status_observed": 403,
+    "challenge": true,
+    "has_download_links": false
+  }
+}

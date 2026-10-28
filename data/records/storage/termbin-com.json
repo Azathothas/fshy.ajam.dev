@@ -1,0 +1,75 @@
+{
+  "topic": "storage",
+  "slug": "termbin-com",
+  "provider": "termbin.com",
+  "url": "https://termbin.com",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "approx. 1 MB per paste, no account, no count limit. Measured: 1,000,000 bytes stored and retrievable; 2,400,000 bytes -> connection reset.",
+    "unit": "MB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://termbin.com/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://termbin.com/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://termbin.com/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "free direct GET over HTTPS, plain text, no metering.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "plain TCP: `nc termbin.com 9999` returns the URL on the socket. Works with any netcat, and with bash /dev/tcp where nc is absent (used for the probes here).",
+  "chaining": "unlimited pastes x ~1 MB. Its distinguishing property is that it needs no HTTP client and no TLS — a raw TCP sink. Useful as an out-of-band manifest/credential store, useless as a bulk tier.",
+  "limits": [],
+  "limits_note": "~1 MB per paste; no expiry documented; no delete path; no listing.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: approx. 1 MB per paste, no account, no count limit. Measured: 1,000,000 bytes stored and retrievable; 2,400,000 bytes -> connection reset. Oversize inp",
+    "country": null
+  },
+  "reliability_note": "Oversize input is dropped by resetting the connection mid-write, not by an error message — a user sees 'Connection reset by peer' and any partial data is lost. Random 4-5 char slugs, so URLs are guessable.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://termbin.com/",
+      "date": "2026-10-21",
+      "proved": "'echo just testing! | nc termbin.com 9999' -> 'https://termbin.com/test'; returns a URL on the socket"
+    },
+    {
+      "url": "https://termbin.com/9ffz",
+      "date": "2026-10-21",
+      "proved": "probe: printf ... >&3 to /dev/tcp/termbin.com/9999 -> ; GET -> 200"
+    },
+    {
+      "url": "https://termbin.com/c609",
+      "date": "2026-10-21",
+      "proved": "probe: 1,000,000-byte payload -> , GET bytes=1000000; 2,400,000-byte payload -> cat: write error: Connection reset by peer"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "approx. 1 MB per paste, no account, no count limit. Measured: 1,000,000 bytes stored and retrievable; 2,400,000 bytes -> connection reset.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "approx. 1 MB per paste, no account, no count limit. Measured: 1,000,000 bytes stored and retrievable; 2,400,000 bytes -> connection reset.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": "no constraint of a named kind was recorded; the verdict rests on the quota sentence rather than on a named limit"
+}

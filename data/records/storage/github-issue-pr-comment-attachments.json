@@ -1,0 +1,81 @@
+{
+  "topic": "storage",
+  "slug": "github-issue-pr-comment-attachments",
+  "provider": "GitHub issue/PR comment attachments (user-attachments)",
+  "url": "https://github.com",
+  "category": "media",
+  "free_tier": {
+    "stated": "no account-level byte quota stated; per-file only — 10 MB images/GIFs, 25 MB other files, 10 MB video on free plan (100 MB on paid)",
+    "unit": "MB",
+    "metered_on": "unstated",
+    "source_url": "https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/attaching-files",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "25 MB/file",
+    "bytes": 25000000,
+    "source_url": "https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/attaching-files",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/attaching-files",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "free and unmetered — 'For public repositories, uploaded files can be accessed without authentication'; served from githubusercontent CDN, cached by Camo",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "GitHub CLI: 'You can also attach local images and videos from the command line with GitHub CLI' (gh issue comment / gh pr comment --attach, changelog 2026-09-01); plus any REST client against the comment API",
+  "chaining": "unlimited comments per issue x unlimited issues x unlimited free repos; 25 MB per non-image attachment. 1 GiB of payload = ~41 comments. Effectively per-record-unlimited storage keyed to comment IDs, not to an account quota",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "25 MB/file",
+      "source": "https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/attaching-files"
+    }
+  ],
+  "limits_note": "25 MB/file (10 MB images), per-comment attachment count not documented; uploads are immediate on attach, so a failed comment still leaves the asset",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: no account-level byte quota stated; per-file only — 10 MB images/GIFs, 25 MB other files, 10 MB video on free plan (100 MB on paid",
+    "country": null
+  },
+  "reliability_note": "assets persist after comment edit/delete in practice (URL is anonymised and not reference-counted); bulk comment-creation is the one thing GitHub's usage-anomaly systems actually watch, and secondary rate limits are aggressive",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/attaching-files",
+      "date": "2026-10-21",
+      "proved": "'The maximum file size is: 10MB for images and gifs ... 25MB for all other files'"
+    },
+    {
+      "url": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/about-anonymized-urls",
+      "date": "2026-10-21",
+      "proved": "uploads get anonymous githubusercontent URLs via Camo"
+    },
+    {
+      "url": "https://github.blog/changelog/2026-09-01-github-cli-media-in-issues-pull-requests-and-comments/",
+      "date": "2026-10-21",
+      "proved": "scriptable attach path exists (API criterion met)"
+    },
+    {
+      "url": "https://github.com/user-attachments/assets/<uuid>",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 404 text/plain for a bogus id (route exists, not a generic 403)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "no account-level byte quota stated; per-file only — 10 MB images/GIFs, 25 MB other files, 10 MB video on free plan (100 MB on paid)",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

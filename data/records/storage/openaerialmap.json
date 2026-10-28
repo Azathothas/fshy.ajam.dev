@@ -1,0 +1,85 @@
+{
+  "topic": "storage",
+  "slug": "openaerialmap",
+  "provider": "OpenAerialMap (HOT / Open Imagery Network)",
+  "url": "https://imagery.hotosm.org/contribute",
+  "category": "open drone/satellite imagery commons",
+  "free_tier": {
+    "stated": "Free hosting for anyone with nowhere to publish. The rewrite of the uploader is explicitly scoped to 'Handle files up to 100GB with resume capability, using S3 multipart upload with presigned URLs (direct browser-to-S3)'. No per-account total published; the catalog holds 21,460 datasets.",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://github.com/hotosm/openaerialmap/discussions/258",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "100 GB/file",
+    "bytes": 100000000000,
+    "source_url": "https://github.com/hotosm/openaerialmap/discussions/258",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://github.com/hotosm/openaerialmap/discussions/258",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "free — and note the two-tier model: providers who already have cloud storage can 'Register a catalog', in which case OAM stores only metadata and links out ('Indexing uses none of your bandwidth and gives OAM no rights over the imagery')",
+    "metered": false
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "uploader web app at upload.imagery.hotosm.org; STAC API at api.imagery.hotosm.org/stac; eoAPI (raster/vector/stac) behind it",
+  "tooling": "stactools-hotosm; STAC client; no CLI uploader yet",
+  "chaining": "Output is a COG + STAC item, i.e. cloud-native GeoTIFF — directly readable with GDAL/rio-tiler and range-friendly. But the payload must be an orthomosaic with georeferencing.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "100 GB/file",
+      "source": "https://github.com/hotosm/openaerialmap/discussions/258"
+    }
+  ],
+  "limits_note": "geospatial raster only (GeoTIFF/COG orthomosaics); target 100 GB/file with resumable S3 multipart; account needed for API access and upload",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email — sign in with a Google account (documented third-party walkthrough: 'Sign in using your google account'), no affiliation or review",
+    "country": null
+  },
+  "reliability_note": "The uploader was historically unreliable for large files and is mid-rewrite by a UC Berkeley Code-for-Good team (Spring 2026), so the 100 GB target is a workplan goal, not a shipped, verified capability.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://imagery.hotosm.org/contribute",
+      "date": "2026-10-21",
+      "proved": "'If you cannot host imagery yourself, upload it'; the catalog-registration path stores metadata only"
+    },
+    {
+      "url": "https://github.com/hotosm/openaerialmap/discussions/258",
+      "date": "2026-10-21",
+      "proved": "'Handle files up to 100GB with resume capability, using S3 multipart upload with presigned URLs'; new API api.imagery.hotosm.org"
+    },
+    {
+      "url": "https://api.openaerialmap.org/meta?limit=1",
+      "date": "2026-10-21",
+      "proved": "200, {\"meta\":{...\"found\":21460},\"results\":[{...\"uuid\":\"https://oin-hotosm-temp.s3.amazonaws.com/...tif\"}]}"
+    },
+    {
+      "url": "https://api.imagery.hotosm.org/stac/collections",
+      "date": "2026-10-21",
+      "proved": "live STAC collections (cop-dem-glo-30, ...)"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "api.openaerialmap.org/{upload,uploads,api/upload,upload/} — 404 on all four (no documented REST upload endpoint reached)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Free hosting for anyone with nowhere to publish. The rewrite of the uploader is explicitly scoped to 'Handle files up to 100GB with resume capability, using S3 multipart upload with presigned URLs (direct browser-to-S3)'. No per-account total published; the catalog holds 21,460 datasets.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

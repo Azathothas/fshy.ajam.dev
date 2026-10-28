@@ -1,0 +1,83 @@
+{
+  "topic": "storage",
+  "slug": "outlook-com-15-gb-mail-quota-150-mib-smtp-size",
+  "provider": "Outlook.com (free) — 15 GB mail quota, 150 MiB SMTP SIZE",
+  "url": "https://outlook.com",
+  "category": "cloud-drive",
+  "free_tier": {
+    "stated": "15 GB mail storage, explicitly separate from the 5 GB OneDrive allowance: \"You get 15 GB of free Outlook.com email storage which is separate from your Microsoft cloud storage. You have 5 GB of free cloud storage with your Microsoft account shared across your files and photos, attachments in Outlook.com and your Microsoft 365 apps.\"",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://support.microsoft.com/en-us/outlook/storage-limits-in-outlook-com",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap governed by `250-SIZE 157286400` = 150 MiB",
+    "bytes": 157286400,
+    "source_url": "https://support.microsoft.com/en-us/outlook/storage-limits-in-outlook-com",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Deleted Items counts against quota until emptied or auto-purged at 30 days",
+    "days": 30,
+    "source_url": "https://support.microsoft.com/en-us/outlook/storage-limits-in-outlook-com",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered; no transfer billing on a mailbox.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "IMAP probe-verified: `imap-mail.outlook.com:993` -> `* OK Microsoft Exchange IMAP4 service ready` / `* CAPABILITY IMAP4 IMAP4rev1 AUTH=XOAUTH2 LOGINDISABLED SASL-IR UIDPLUS MOVE ID UNSELECT CHILDREN IDLE NAMESPACE LITERAL+`. Note LOGINDISABLED — OAuth2 only. SMTP probe: `smtp-mail.outlook.com:587` -> `250-SIZE 157286400` (150 MiB) and `250-BINARYMIME`.",
+  "chaining": "15 GB × N free Microsoft accounts. Distinct from the A1-education 100 TB tenant finding (already settled in round 1) — this is the consumer path, no tenant needed.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap governed by `250-SIZE 157286400` = 150 MiB",
+      "source": "https://support.microsoft.com/en-us/outlook/storage-limits-in-outlook-com"
+    }
+  ],
+  "limits_note": "per-object-cap governed by `250-SIZE 157286400` = 150 MiB per SMTP message, the largest SMTP SIZE probed in this area. Deleted Items counts against quota until emptied or auto-purged at 30 days. No published IMAP/day byte meter equivalent to Gmail's.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: te from the 5 GB OneDrive allowance: \"You get 15 GB of free Outlook.com email storage which is separate from your Microsoft cloud storage. You have 5 GB of free cloud storage with your Mi",
+    "country": null
+  },
+  "reliability_note": "LOGINDISABLED means app-password/basic auth is off — an OAuth2 client registration is mandatory, which is the real entry cost.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://support.microsoft.com/en-us/outlook/storage-limits-in-outlook-com",
+      "date": "2026-10-21",
+      "proved": "\"15 GB of free Outlook.com email storage which is separate from your Microsoft cloud storage\""
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: smtp-mail.outlook.com:587 STARTTLS EHLO -> 250-SIZE 157286400, 250-BINARYMIME"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: imap-mail.outlook.com:993 -> * OK Microsoft Exchange IMAP4 service ready + CAPABILITY with LOGINDISABLED, LITERAL+"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "15 GB mail storage, explicitly separate from the 5 GB OneDrive allowance: \"You get 15 GB of free Outlook.com email storage which is separate from your Microsoft cloud storage. You have 5 GB of free cloud storage with your Microsoft account shared across your files and photos, attachments in Outlook.com and your Microsoft 365 apps.\"",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "15 GB mail storage, explicitly separate from the 5 GB OneDrive allowance: \"You get 15 GB of free Outlook.com email storage which is separate from your Microsoft cloud storage. You have 5 GB of free cloud storage with your Microsoft account shared across your files and photos, attachments in Outlook.com and your Microsoft 365 apps.\"",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

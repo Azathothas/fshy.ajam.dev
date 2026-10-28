@@ -1,0 +1,112 @@
+{
+  "topic": "databases-kv",
+  "slug": "supabase",
+  "provider": "Supabase",
+  "url": "https://supabase.com/pricing",
+  "category": "managed Postgres with auth and storage",
+  "free_tier": {
+    "stated": "500 MB database on Shared CPU with 500 MB RAM; 2 active projects; 5 GB egress and 5 GB cached egress; unlimited API requests",
+    "unit": "mixed",
+    "source_url": "https://supabase.com/pricing",
+    "read_on": "2026-10-22",
+    "metered_on": "stored-bytes"
+  },
+  "per_object_cap": {
+    "stated": "500 MB per project database",
+    "bytes": null,
+    "source_url": "https://supabase.com/pricing"
+  },
+  "retention": {
+    "stated": "a Free project is paused after 1 week of low activity, and is restorable for up to 1 year after the pause. A paid project is never paused",
+    "days": 7,
+    "source_url": "https://supabase.com/docs/guides/platform/free-project-pausing",
+    "notes": "the pause trigger is activity, not age: a few user requests a day over the previous week keep it awake"
+  },
+  "egress": {
+    "terms": "5 GB egress and 5 GB cached egress per month included. The Free plan publishes no overage price, so the fifth gigabyte is a wall and not a bill",
+    "metered": false,
+    "free_allowance": "5 GB egress, 5 GB cached egress",
+    "price_per_tb": null,
+    "source_url": "https://supabase.com/pricing"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "Postgres wire protocol; a PostgREST data API; a Management API and the Supabase CLI",
+  "tooling": "psql and any Postgres client; the supabase CLI; PostgREST over HTTP",
+  "chaining": "a free Postgres plus free auth plus free object storage in one project, which is the whole reason to pick it over a bare Postgres",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "paused after 1 week of low activity; restorable for up to 1 year",
+      "source": "https://supabase.com/docs/guides/platform/free-project-pausing"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "500 MB per database",
+      "source": "https://supabase.com/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "2 active projects per account; paused projects do not count against the limit",
+      "source": "https://supabase.com/docs/guides/platform/billing-on-supabase"
+    },
+    {
+      "kind": "request-rate",
+      "value": "5 GB egress per month with no published overage path on Free",
+      "source": "https://supabase.com/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "connections are set by the compute size and not published as a single number; the free plan runs Nano compute with up to 0.5 GB of RAM, and the pooler queues above the direct limit rather than raising it",
+      "source": "https://supabase.com/docs/guides/platform/compute-and-disk"
+    }
+  ],
+  "limits_note": "the shared pooler is IPv4-only on every plan; a direct connection is IPv6-only without the paid IPv4 add-on, so an IPv4-only host must use the pooler",
+  "binding": "retention-clamped",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email signup; no card on Free",
+    "country": null
+  },
+  "reliability_note": "two warning emails precede an automatic pause, one about a week ahead and one on the pause; restore is a dashboard action, not an API call on the free plan",
+  "confidence": "documented",
+  "confidence_note": "the pricing page and the pausing guide were read today; nothing was provisioned. The 90-day restore window stated in the 2024-06-24 changelog has since been widened to 1 year.",
+  "evidence": [
+    {
+      "url": "https://supabase.com/pricing",
+      "date": "2026-10-22",
+      "proved": "500 MB database, 2 active projects, 5 GB egress, 5 GB cached egress, 'Free projects are paused after 1 week of inactivity', and the plan table row Pausing: After 1 week of inactivity"
+    },
+    {
+      "url": "https://supabase.com/docs/guides/platform/free-project-pausing",
+      "date": "2026-10-22",
+      "proved": "'Supabase pauses Free Plan projects that show low activity over a 7-day period'; restore is available 'for up to 1 year after it was paused'; a few user requests a day over a week prevent it"
+    },
+    {
+      "url": "https://supabase.com/docs/guides/platform/billing-on-supabase",
+      "date": "2026-10-22",
+      "proved": "two free projects across all organizations where you are Owner or Administrator; paused projects do not count toward the free project limit"
+    },
+    {
+      "url": "https://supabase.com/changelog/27497-paused-free-plan-projects-are-restorable-for-90-days",
+      "date": "2026-10-22",
+      "proved": "the 2024-06-24 change set the restore window at 90 days, which the current doc has since widened to 1 year"
+    },
+    {
+      "url": "https://supabase.com/docs/guides/database/connecting-to-postgres/pooling-and-limits",
+      "date": "2026-10-22",
+      "proved": "the shared Supavisor pooler is multi-tenant and IPv4-only; the dedicated PgBouncer pooler needs a paid plan"
+    },
+    {
+      "url": "https://supabase.com/docs/guides/platform/compute-and-disk",
+      "date": "2026-10-22",
+      "proved": "Nano compute is the free plan at USD 0 with up to 0.5 GB of RAM and a recommended 500 MB database; 'Database max connections are recommended values and can be customized via max_connections', so the compute size sets the count"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T03:05:00.000Z",
+  "price_per_tb_month": null,
+  "notes": "The pause is the finding, and it is a 7-day activity clock rather than a 30-day deletion. A weekly cron that touches the database keeps it alive; a monthly one loses a week of availability every cycle. The restore window is 1 year, so the data is not at risk the way a deletion would put it at risk."
+}

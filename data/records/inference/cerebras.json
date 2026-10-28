@@ -1,0 +1,107 @@
+{
+  "topic": "inference",
+  "slug": "cerebras",
+  "provider": "Cerebras",
+  "url": "https://inference-docs.cerebras.ai/support/rate-limits",
+  "category": "inference endpoint, keyed free trial",
+  "free_tier": {
+    "stated": "a Free Trial, not a free tier: USD 5 of credits granted after a verified payment method is added, expiring 30 days after they are granted. The page answers 'Is there a permanently free tier?' with 'No.'",
+    "unit": "none",
+    "metered_on": "request-count",
+    "source_url": "https://inference-docs.cerebras.ai/support/rate-limits",
+    "read_on": "2026-10-22",
+    "notes": "the trial's per-model limits are published: gpt-oss-120b and qwen-3.8-27b each at 5 RPM, 30K uncached TPM, 90K total TPM, 1M TPH and 1M TPD"
+  },
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "the trial credits expire 30 days after they are granted",
+    "days": 30,
+    "source_url": "https://inference-docs.cerebras.ai/support/rate-limits"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "an OpenAI-compatible chat completions endpoint at https://api.cerebras.ai/v1",
+  "endpoint": "https://api.cerebras.ai/v1/chat/completions",
+  "tooling": "any OpenAI-compatible client; curl against POST {base}/chat/completions",
+  "chaining": "pairs with an agent only inside a 30-day trial and only after a card; the scarce link is the verified payment method, which turns a free offer into a payment relationship",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "Free Trial, per organization and per model: gpt-oss-120b: 5 RPM, 30K uncached TPM, 90K total TPM, 1M TPH, 1M TPD. qwen-3.8-27b: 5 RPM, 30K uncached TPM, 90K total TPM, 1M TPH, 1M TPD, image limits 2 per request and 10 MiB total request payload. Any metric can trigger rate limiting, whichever comes first",
+      "source": "https://inference-docs.cerebras.ai/support/rate-limits, read 2026-10-22"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "the USD 5 of trial credits expire 30 days after they are granted, and API access stops when they run out or expire",
+      "source": "https://inference-docs.cerebras.ai/support/rate-limits, read 2026-10-22"
+    }
+  ],
+  "limits_note": "the Developer (Pay as You Go) tier removes the hourly and daily token caps and raises the per-model rates: gpt-oss-120b 1M uncached TPM, 3M total TPM and 1K RPM; qwen-3.8-27b 150K uncached TPM, 750K total TPM and 300 RPM; that tier is pay-as-you-go and not free",
+  "binding": "retention-clamped",
+  "binding_note": "the 30-day credit expiry binds before any rate does: the whole allowance is USD 5 that disappears, so there is no recurring quota to design against",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "a verified payment method is required before the USD 5 of trial credits is granted; without a payment method the Playground and API access remain inactive",
+    "country": null
+  },
+  "reliability_note": "an unauthenticated call returns 401 with 'Wrong API Key' and a 99-byte body, so an unauthenticated probe cannot distinguish a live endpoint from an expired one",
+  "confidence": "documented",
+  "confidence_note": "the trial's terms, its expiry, its per-model rates and the vendor's explicit 'No' to a permanently free tier are all quoted from the rate-limits page read 2026-10-22 at 200 with 393345 bytes. The 401 gate was also re-probed at 2026-10-22T04:42:43Z. No account was created, so the trial is documented and not measured.",
+  "evidence": [
+    {
+      "url": "https://inference-docs.cerebras.ai/support/rate-limits",
+      "date": "2026-10-22",
+      "proved": "'New accounts receive $5 in free credits after adding a verified payment method. These credits expire 30 days after they're granted'; 'Is there a permanently free tier? No. The Free Trial is time- and credit-bounded'; and the Free Trial table giving gpt-oss-120b 5 RPM, 30K uncached TPM, 90K total TPM, 1M TPH and 1M TPD"
+    },
+    {
+      "url": "probe:https://api.cerebras.ai/v1/chat/completions",
+      "date": "2026-10-22",
+      "proved": "an unauthenticated POST returned 401 with a 99-byte body, {\"message\":\"Wrong API Key\",\"type\":\"invalid_request_error\",\"param\":\"api_key\"}. The endpoint exists and gates on a key; no key existed here"
+    },
+    {
+      "url": "https://inference-docs.cerebras.ai/support/rate-limits",
+      "date": "2026-10-28",
+      "proved": "the Free Trial table lists qwen-3.8-27b at 5 RPM, 30K uncached TPM, 90K total TPM, 1M TPH and 1M TPD (gpt-oss-120b has the same row)",
+      "capture": "sha256:4c51b7a2f6c81ea5384b9480d6c61a803a5e4933a8168faf73a776c0f0444016",
+      "quote": "| `qwen-3.8-27b`<sup>1</sup> | 5 | 30K | 90K | 1M | 1M |"
+    },
+    {
+      "url": "https://inference-docs.cerebras.ai/support/rate-limits",
+      "date": "2026-10-28",
+      "proved": "the Developer (Pay as You Go) table lists qwen-3.8-27b at 150K uncached TPM, 750K total TPM and 300 RPM",
+      "capture": "sha256:4c51b7a2f6c81ea5384b9480d6c61a803a5e4933a8168faf73a776c0f0444016",
+      "quote": "| `qwen-3.8-27b`<sup>1</sup> | 150K | 750K<sup>2</sup> | 300 |"
+    },
+    {
+      "url": "https://inference-docs.cerebras.ai/support/rate-limits",
+      "date": "2026-10-28",
+      "proved": "API access stays inactive until a payment method is added",
+      "capture": "sha256:4c51b7a2f6c81ea5384b9480d6c61a803a5e4933a8168faf73a776c0f0444016",
+      "quote": "If you skip adding a payment method at sign-up, Playground and API access remain inactive until you do."
+    },
+    {
+      "url": "https://inference-docs.cerebras.ai/support/rate-limits",
+      "date": "2026-10-28",
+      "proved": "the Free Trial is USD 5 of credits granted after a verified payment method is added and expiring 30 days after they are granted",
+      "capture": "sha256:4c51b7a2f6c81ea5384b9480d6c61a803a5e4933a8168faf73a776c0f0444016",
+      "quote": "New accounts receive **\\$5 in free credits** after adding a verified payment method. These credits expire 30 days after they're granted and can be used across all public models."
+    },
+    {
+      "url": "https://inference-docs.cerebras.ai/support/rate-limits",
+      "date": "2026-10-28",
+      "proved": "the vendor answers 'Is there a permanently free tier?' with No: the trial is USD 5 of credits that expire 30 days after they are granted",
+      "capture": "sha256:4c51b7a2f6c81ea5384b9480d6c61a803a5e4933a8168faf73a776c0f0444016",
+      "quote": "No. The Free Trial is time- and credit-bounded: \\$5 in credits that expire 30 days after they're granted."
+    }
+  ],
+  "verdict": "trial-only",
+  "verified_at": "2026-10-28T09:47:54.945Z",
+  "notes": "The vendor's own page says there is no permanently free tier: the offer is USD 5 of credits that expire in 30 days and require a verified payment method. The identity cost is therefore card, not email, and the verdict is trial-only."
+}

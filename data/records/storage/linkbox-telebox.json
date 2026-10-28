@@ -1,0 +1,75 @@
+{
+  "topic": "storage",
+  "slug": "linkbox-telebox",
+  "provider": "Linkbox / TeleBox",
+  "url": "https://www.linkbox.to",
+  "category": "cloud-drive",
+  "free_tier": {
+    "stated": "5 GB on plain signup",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://en.anonyviet.com/instructions-for-getting-10tb-of-storage-on-linkbox-to/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://en.anonyviet.com/instructions-for-getting-10tb-of-storage-on-linkbox-to/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://en.anonyviet.com/instructions-for-getting-10tb-of-storage-on-linkbox-to/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "no published per-GB egress charge; free downloads are heavily throttled (that walkthrough measured ~700 KB/s down vs 15-17 MB/s up)",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "rclone backend 'linkbox' (Tier 5, since v1.65; since v1.74 needs API token *and* email/password because listing/downloading moved to account auth)",
+  "chaining": "if the edu/gov verification path still works, one verified identity yields 10 TB — that is 2000x the base tier, i.e. the largest single-account multiplier in this niche; otherwise 5 GB x unlimited accounts",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "1 MB/s",
+      "source": "https://en.anonyviet.com/instructions-for-getting-10tb-of-storage-on-linkbox-to/"
+    }
+  ],
+  "limits_note": "free downloads throttled to under 1 MB/s; the site is a JS SPA (www.linkbox.to now serves a 'TeleBox' bundle) so quotas are not readable without executing JS; rclone backend is Tier 5, i.e. least-tested",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "origin times out repeatedly under a headless reader (504 deadline on /, /pricing, /admin/account), indicative of an unstable front end behind an automated-traffic filter; Tier 5 backend means frequent breakage",
+  "confidence": "inferred",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://rclone.org/linkbox/",
+      "date": "2026-10-21",
+      "proved": "backend exists, Tier 5, changed auth model in v1.74"
+    },
+    {
+      "url": "https://en.anonyviet.com/instructions-for-getting-10tb-of-storage-on-linkbox-to/",
+      "date": "2026-10-21",
+      "proved": "'Each registered user will receive 5Gb of free storage... I will guide you to upgrade your account to 10TB' via edu/gov email; measured upload 15-17 MB/s, download 700 KB/s"
+    },
+    {
+      "url": "https://www.linkbox.to/pricing",
+      "date": "2026-10-21",
+      "proved": "origin returns a 'TeleBox' SPA shell only"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "5 GB on plain signup",
+  "extras": {},
+  "binding": "per-ip-shaping",
+  "binding_note": "one stream is shaped, and a user's throughput is the shaped rate times the number of streams"
+}

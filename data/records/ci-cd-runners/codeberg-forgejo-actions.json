@@ -1,0 +1,81 @@
+{
+  "topic": "ci-cd-runners",
+  "slug": "codeberg-forgejo-actions",
+  "provider": "Codeberg Forgejo Actions (hosted runners)",
+  "url": "https://codeberg.org/actions/meta",
+  "category": "CI runner",
+  "free_tier": {
+    "stated": "three hosted runner labels on a free Codeberg account, in open alpha: tiny, small and medium. No job-count cap and no monthly minute meter is published; the only published ceiling is the per-job runtime of 2, 5 or 10 minutes",
+    "unit": "minutes",
+    "source_url": "https://codeberg.org/actions/meta",
+    "read_on": "2026-10-22",
+    "metered_on": "wall-clock"
+  },
+  "per_object_cap": {
+    "stated": "codeberg-tiny 1 CPU / 2 GB / 2 min; codeberg-small 2 CPU / 4 GB / 5 min; codeberg-medium 4 CPU / 8 GB / 10 min",
+    "bytes": null,
+    "source_url": "https://codeberg.org/actions/meta",
+    "notes": "the RAM allocation includes writes to the filesystem, with 2 GB of extra temporary storage per container"
+  },
+  "retention": {
+    "stated": "no artifact retention is published; the service is in open alpha",
+    "days": null,
+    "source_url": "https://codeberg.org/actions/meta"
+  },
+  "egress": {
+    "terms": "no charge published",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://codeberg.org/actions/meta"
+  },
+  "interface": [
+    "git",
+    "cli"
+  ],
+  "interface_detail": "a GitHub-Actions-compatible workflow with runs-on set to a codeberg label; the default image is ghcr.io/catthehacker/ubuntu:act-latest",
+  "tooling": "the act-compatible image; podman for image builds; no Docker daemon",
+  "chaining": "a GitHub-Actions-compatible workflow on a free runner for jobs that finish in ten minutes, which is the only free path to Actions syntax without a GitHub repository",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "2 minutes per job on tiny, 5 on small, 10 on medium",
+      "source": "https://codeberg.org/actions/meta"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "1, 2 and 4 CPUs, with 2, 4 and 8 GB of RAM, and the RAM includes filesystem writes",
+      "source": "https://codeberg.org/actions/meta"
+    },
+    {
+      "kind": "request-rate",
+      "value": "lazy variants exist and may wait up to 24 hours for a slot",
+      "source": "https://codeberg.org/actions/meta"
+    }
+  ],
+  "binding": "per-object-cap",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a Codeberg account",
+    "country": null
+  },
+  "reliability_note": "open alpha: the runner sizes are guidelines enforced by fair use rather than hard quotas, and the CI page states the service 'might break at any time and for an undefined period of time'",
+  "confidence": "documented",
+  "confidence_note": "the runner table was read today from Codeberg's own meta repository. The CPU figures are 1, 2 and 4, not the 2, 4 and 8 that the census recorded.",
+  "evidence": [
+    {
+      "url": "https://codeberg.org/actions/meta",
+      "date": "2026-10-22",
+      "proved": "'codeberg-tiny amd64 1 2G 2 min'; 'codeberg-small amd64 2 4G 5 min'; 'codeberg-medium amd64 4 8G 10 min'; 'The RAM allocation includes writes to the filesystem ... we grant you 2 GB of additional storage for temporary files per container'; the lazy variants may take up to 24 hours"
+    },
+    {
+      "url": "https://docs.codeberg.org/ci/actions/",
+      "date": "2026-10-22",
+      "proved": "Forgejo Actions is available with self-hosted runners and a hosted version in limited fashion in open alpha"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T03:05:00.000Z",
+  "price_per_tb_month": null,
+  "notes": "Ten minutes on four CPUs is 40 CPU-minutes per job, and the jobs are unlimited. That is a real free compute lane for short work and it is the only one here with no monthly meter."
+}

@@ -1,0 +1,103 @@
+{
+  "topic": "storage",
+  "slug": "harvard-dataverse-repository-per-collection-quota",
+  "provider": "Harvard Dataverse Repository - per-collection quota (the multiplier, not the 1 TB headline)",
+  "url": "https://dataverse.harvard.edu/",
+  "category": "academic",
+  "free_tier": {
+    "stated": "1 TB per Dataverse Collection allocation (2.5 TB for Harvard affiliates). Per-file 2.5 GB through UI/API; larger via the S3 direct-upload path. The 1 TB is enforced as a *collection* allocation, not a per-person cap: GET /api/dataverses/<alias>/storage/quota?showInherited=true returns {\"Total quota allocation for this collection\": 1099511627776} for ordinary collections, and one live collection returns 2748779069440 (2.5 TB).",
+    "unit": "TB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://support.dataverse.harvard.edu/researchers",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "Per-file 2.5 GB",
+    "bytes": 2500000000,
+    "source_url": "https://support.dataverse.harvard.edu/researchers",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "| write-once: publishing is irreversible, no delete without support intervention, no embargo; 'Submit for Review' spam screen before publication; per-file 2.5 GB in the browser path; 1,000 files/dataset is the observed effectiveDatasetFileCountLimit; S3 direct upload is admin-enabled per install and is the only route past the 2.5 GB file cap.",
+    "source_url": "https://support.dataverse.harvard.edu/researchers",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free, anonymous, no login: GET /api/access/datafile/<id> returns 303 to a signed dvn-cloud-iqss S3 URL (X-Amz-Expires=3600), which serves 200 with Content-Length and honours Range (206 + Content-Range).",
+    "metered": false
+  },
+  "interface": [
+    "s3",
+    "rest",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "REST native API (create dataset, add files, direct S3 upload), plus the official Python/CLI clients. dataset count 306,027 live. rclone has no native backend but the S3 direct-upload path accepts any S3 client.",
+  "chaining": "This is the wave-8 correction: quota attaches to the COLLECTION, and any logged-in user can create collections again since June 2024 (restriction imposed Nov 2022 in IQSS/dataverse.harvard.edu#199 was lifted; #207 comment 2024-07-24: 'Anyone can create collections in Harvard Dataverse now, as of sometime in June 2024'). N collections = N x 1 TiB allocations. Sibling collections can also be nested, so a 'Dataverse Collection' tree is the natural shard key.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "Review' spam screen before publication",
+      "source": "https://support.dataverse.harvard.edu/researchers"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "Per-file 2.5 GB",
+      "source": "https://support.dataverse.harvard.edu/researchers"
+    }
+  ],
+  "limits_note": "write-once: publishing is irreversible, no delete without support intervention, no embargo; 'Submit for Review' spam screen before publication; per-file 2.5 GB in the browser path; 1,000 files/dataset is the observed effectiveDatasetFileCountLimit; S3 direct upload is admin-enabled per install and is the only route past the 2.5 GB file cap.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email",
+    "country": null
+  },
+  "reliability_note": "Anonymous read is a 1-hour signed S3 redirect, so re-resolve per request (rule 8); quota API is rate-limited and starts returning 403 after a short burst of collection probes.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://support.dataverse.harvard.edu/researchers",
+      "date": "2026-10-21",
+      "proved": "'All researchers from any discipline, both inside and out of the Harvard University community, can deposit files of up to 2.5GB, and store up to 1TB of data on the Harvard Dataverse Repository.'"
+    },
+    {
+      "url": "https://neurips.cc/Conferences/2025/DataHostingGuidelines",
+      "date": "2026-10-21",
+      "proved": "hosting restriction stated as '1TB per dataset (2.5GB per file) Any file types'"
+    },
+    {
+      "url": "https://dataverse.harvard.edu/api/dataverses/SEE_Precursors/storage/quota?showInherited=true",
+      "date": "2026-10-21",
+      "proved": "probe returned 1099511627776 bytes"
+    },
+    {
+      "url": "https://dataverse.harvard.edu/api/dataverses/kgwas/storage/quota?showInherited=true",
+      "date": "2026-10-21",
+      "proved": "probe returned 2748779069440 bytes (2.5 TB), proving allocations are set per collection and can exceed 1 TB"
+    },
+    {
+      "url": "https://dataverse.harvard.edu/api/access/datafile/13913528",
+      "date": "2026-10-21",
+      "proved": "303 then 200, Content-Length 16393, file written and SHA-256 fed450c5dfa423d6a51168611bbb9f4179e862a9c831ee41c37b23b128cc24fa (16,393 bytes, exact)"
+    },
+    {
+      "url": "https://dataverse.harvard.edu/api/access/datafile/13913528",
+      "date": "2026-10-21",
+      "proved": "with Range: bytes=0-1048575 - HTTP 206, Content-Range: bytes 0-16392/16393"
+    },
+    {
+      "url": "https://github.com/IQSS/dataverse.harvard.edu/issues/199",
+      "date": "2026-10-21",
+      "proved": "and #207 - collection creation was disabled for :authenticated-users in Nov 2022, reopened June 2024"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "1 TB per Dataverse Collection allocation (2.5 TB for Harvard affiliates). Per-file 2.5 GB through UI/API; larger via the S3 direct-upload path. The 1 TB is enforced as a *collection* allocation, not a per-person cap: GET /api/dataverses/<alias>/storage/quota?showInherited=true returns {\"Total quota allocation for this collection\": 1099511627776} for ordinary collections, and one live collection returns 2748779069440 (2.5 TB).",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

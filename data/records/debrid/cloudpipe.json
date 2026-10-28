@@ -1,0 +1,121 @@
+{
+  "topic": "debrid",
+  "slug": "cloudpipe",
+  "provider": "CloudPipe",
+  "url": "https://cloudpipe.app/pricing",
+  "category": "cloud download manager, torrent to Google Drive",
+  "tier": "free",
+  "free_tier": {
+    "stated": "'Free $0/month ... 5 jobs / day ... 3GB max file size ... Standard download speed ... 6hr server storage (no storage cap) ... 1 download at a time'. Home page adds 'No credit card required for free plan'.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://cloudpipe.app/pricing",
+    "read_on": "2026-10-23",
+    "notes": "The job counter is the only byte-bearing free counter that is also a daily one. The 450 GB in the ladder is 5 jobs x 3 GB x 30 days, which requires every job to be a distinct 3 GB file."
+  },
+  "per_object_cap": {
+    "stated": "'3GB max file size' on the free plan, '10GB max file size' on Basic and 'Unlimited file size' on Pro.",
+    "bytes": 3000000000,
+    "source_url": "https://cloudpipe.app/pricing",
+    "notes": "The page says max file, not max job. Whether a multi-file torrent summing above 3 GB is refused, or whether each file inside it is checked, is not stated."
+  },
+  "retention": {
+    "stated": "'6hr server storage (no storage cap)' on free; 'We delete our copy immediately' once the file lands in a user's cloud drive",
+    "days": null,
+    "source_url": "https://cloudpipe.app/pricing"
+  },
+  "egress": {
+    "terms": "not metered by bytes at any tier; 'No Storage Limits - We use your cloud storage. Download as much as your storage can handle without extra fees.'",
+    "metered": false,
+    "free_allowance": "5 jobs/day, 3 GB each",
+    "price_per_tb": null,
+    "source_url": "https://cloudpipe.app/"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "web dashboard that authorises against a user's Google Drive; no documented public API on the free plan",
+  "tooling": "browser dashboard plus a Drive OAuth grant; the Drive side is then reachable by rclone",
+  "chaining": "The largest step in the ladder and the only one that stages through a free Google Drive of 15 GB, so the 450 GB is a monthly flow rather than a monthly store.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "5 jobs a day on the free plan; 20 on Basic; unlimited on Pro",
+      "source": "https://cloudpipe.app/pricing"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "3 GB max file on free",
+      "source": "https://cloudpipe.app/pricing"
+    },
+    {
+      "kind": "pull-count",
+      "value": "1 download at a time on free",
+      "source": "https://cloudpipe.app/pricing"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "6 hours of server storage on free",
+      "source": "https://cloudpipe.app/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "5 jobs per day",
+      "source": "https://cloudpipe.app/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "3 GB per file on free",
+      "source": "https://cloudpipe.app/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "6 hours of server storage",
+      "source": "https://cloudpipe.app/"
+    }
+  ],
+  "limits_note": "The binding constraint on the 450 GB is not CloudPipe at all: it is whether a 15 GB free Google Drive can be emptied 30 times in a month without the OAuth app's read-only-write permission getting in the way.",
+  "binding": "per-object-cap",
+  "binding_note": "3 GB per file is 7.2x too small for a 20 GiB object, so the object fails before the daily count is reached.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "'No credit card required for free plan'; the destination is a Google Drive account connected by OAuth after signup. A Google account is itself the identity gate, and Google may ask for a phone number at creation.",
+    "country": null
+  },
+  "reliability_note": "files are on CloudPipe's servers for 6 hours on free and then gone; one download at a time; the Drive permission is read-only for existing files, so a user must delete through Drive, not through CloudPipe.",
+  "confidence": "documented",
+  "confidence_note": "Both the pricing and home pages were read today. No job was run, so the Drive churn is arithmetic, not measurement.",
+  "evidence": [
+    {
+      "url": "https://cloudpipe.app/pricing",
+      "date": "2026-10-23",
+      "proved": "'Free $0/month', '5 jobs / day', '3GB max file size', '6hr server storage (no storage cap)', '1 download at a time'"
+    },
+    {
+      "url": "https://cloudpipe.app/",
+      "date": "2026-10-23",
+      "proved": "'No credit card required for free plan', 'No Storage Limits - We use your cloud storage', 'We delete our copy immediately', and the FAQ sentence 'You connect your Drive after signing up'"
+    },
+    {
+      "url": "https://cloudpipe.app/",
+      "date": "2026-10-23",
+      "proved": "'Free $0 - 5 jobs/day, 3GB max file, 6hr server storage, 1 download at a time, No credit card required'; paid '$2.99 /mo'; 'We delete our copy immediately'"
+    },
+    {
+      "url": "https://cloudpipe.app/features/torrent-to-mega",
+      "date": "2026-10-23",
+      "proved": "a torrent-to-cloud destination page exists, so the target cloud is interchangeable"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-23T03:15:33.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Every number in the ladder's CloudPipe row is confirmed. Two caveats the arithmetic hides: '3GB max file' is a file cap that the ladder converts into a per-job cap, and the 450 GB needs the Drive emptied between jobs because free Drive holds 15 GB. If the cap is per file inside a multi-file torrent, 450 GB is an undercount; if it is per job, it stands. The page does not say which. The cheapest paid price, but the free 3 GB cap and the 6-hour server window mean it cannot host the 20 GiB case even on the paid plan unless the paid cap is larger, which the vendor does not state.",
+  "extras": {
+    "job_to_file_assumption": "unstated by the vendor",
+    "ladder_gb_month": 450,
+    "drive_free_gb": 15,
+    "destination": "user's own cloud drive"
+  }
+}

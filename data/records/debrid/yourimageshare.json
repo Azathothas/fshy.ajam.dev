@@ -1,0 +1,83 @@
+{
+  "topic": "debrid",
+  "slug": "yourimageshare",
+  "provider": "YourImageShare URL uploader",
+  "url": "https://yourimageshare.com/tools/upload-from-url",
+  "category": "URL-to-host relay for images and video (server fetches, re-hosts, returns a direct link)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "'This URL uploader takes a link to an image or video that is already online and uploads it for you. You do not download the file first, and you do not need an account.' Price: Free. Account: Not needed.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://yourimageshare.com/tools/upload-from-url",
+    "read_on": "2026-10-23",
+    "notes": "Batch of up to 40 URLs per upload, one per line."
+  },
+  "per_object_cap": {
+    "stated": "'Maximum file size | 200MB per file'.",
+    "bytes": 209715200,
+    "source_url": "https://yourimageshare.com/tools/upload-from-url"
+  },
+  "retention": {
+    "stated": "unverified: the page markets 'a permanent direct link' but publishes no retention period or deletion policy on this page.",
+    "days": null,
+    "source_url": "https://yourimageshare.com/tools/upload-from-url"
+  },
+  "egress": {
+    "terms": "Direct links to the re-hosted copy; no byte allowance or hotlink policy stated on this page.",
+    "metered": false,
+    "free_allowance": "unstated",
+    "price_per_tb": null,
+    "source_url": "https://yourimageshare.com/tools/upload-from-url"
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "A web form taking up to 40 URLs per submit, returning a page link, direct link, embed code, HTML, BBCode and Markdown per file. No API documentation. Allowed types: JPG, PNG, GIF, WEBP, AVIF, BMP, TIFF, HEIC, HEIF and MP4, WEBM, AVI.",
+  "tooling": "Browser. The automated path is blocked: a plain HTTP client got HTTP 403 with a challenge signature, so a wrapper needs a real browser session.",
+  "chaining": "It moves an image or clip from a dying host to a live one without using a user's bandwidth, which is the cheapest fix for hotlink-blocked or expiring media. It is not usable for archives or datasets.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "200 MB per file",
+      "source": "https://yourimageshare.com/tools/upload-from-url"
+    },
+    {
+      "kind": "request-rate",
+      "value": "40 URLs per upload; no daily count stated",
+      "source": "https://yourimageshare.com/tools/upload-from-url"
+    }
+  ],
+  "limits_note": "The type whitelist is the tighter constraint than either number: no archives, no documents, no audio.",
+  "binding": "per-object-cap",
+  "binding_note": "200 MB per media file binds long before any count could: a 1 TiB/month workload would need 5,243 files, and any archive over 200 MB cannot pass at all.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "'Account: Not needed' in the feature table, and no login field in the flow.",
+    "country": null
+  },
+  "reliability_note": "The site refuses non-browser clients (HTTP 403 with a challenge on a plain GET), so unattended use needs a browser driver. Re-hosted copies depend on this operator's retention, which is unpublished.",
+  "confidence": "documented",
+  "confidence_note": "The caps and the type list are quoted from the live page; the 403 is measured. No URL was actually re-hosted, so the flow itself is untested.",
+  "evidence": [
+    {
+      "url": "https://yourimageshare.com/tools/upload-from-url",
+      "date": "2026-10-23",
+      "proved": "'Account: Not needed', 'URLs per upload: Up to 40', 'Maximum file size: 200MB per file', and the image/video type whitelist"
+    },
+    {
+      "url": "probe:https://yourimageshare.com/tools/upload-from-url",
+      "date": "2026-10-23",
+      "proved": "a plain client is refused: HTTP 403, 5525 bytes, sha256 a2abe9fc99966465..., challenge detected"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T01:52:41.420Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The cleanest anonymous URL-pull found, and the narrowest: media only, 200 MB. It answers 'no install, no account' for one file type class and nothing else.",
+  "extras": {
+    "urls_per_upload": 40,
+    "allowed_types": "JPG, PNG, GIF, WEBP, AVIF, BMP, TIFF, HEIC, HEIF, MP4, WEBM, AVI",
+    "bot_gate": "HTTP 403 to a plain client"
+  }
+}

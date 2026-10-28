@@ -1,0 +1,109 @@
+{
+  "topic": "ip-proxy",
+  "slug": "brightdata-residential",
+  "provider": "Bright Data",
+  "url": "https://brightdata.com/pricing/proxy-network",
+  "category": "residential proxy network",
+  "tier": "paid: metered rotating residential and per-IP ISP",
+  "free_tier": {
+    "stated": "No free tier in the facts read on 2026-10-24: residential bandwidth is metered from the first byte at $8/GB list or $4/GB with code RESIGB50, and the smallest published plan is $499/month for 141 GB.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://brightdata.com/pricing/proxy-network",
+    "read_on": "2026-10-24",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://brightdata.com/pricing/proxy-network",
+    "notes": "The unit sold is bandwidth (GB through the proxy) or an address (one ISP IP), never a stored object."
+  },
+  "retention": {
+    "stated": "not applicable: a live proxy session, not stored bytes",
+    "days": null,
+    "source_url": "https://brightdata.com/pricing/proxy-network",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Rotating residential traffic is metered per GB: $8/GB list, $4/GB with code RESIGB50, then plan volume of $499/month for 141 GB, $999/month for 332 GB and $1,999/month for 798 GB with no rollover. ISP proxies are priced per IP instead of per byte: $1.80/IP shared at 10 IPs down to $1.30 at 1,000, and $3.50/IP dedicated at 10 down to $2.50 at 1,000.",
+    "metered": true,
+    "free_allowance": "none published",
+    "price_per_tb": "$8,192/TB at the $8/GB list rate and $4,096/TB at the $4/GB coupon rate, by arithmetic on the per-GB price the vendor states; the vendor prices in GB, not TB",
+    "source_url": "https://brightdata.com/pricing/proxy-network"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "HTTP/HTTPS and SOCKS5 forward proxy endpoints, with an API for zone and rotation configuration; the ISP product presents one fixed address per IP. The schema's interface enum carries no socks5, http-proxy or api token, so those names live here rather than in the array.",
+  "tooling": "Any HTTP client that accepts a proxy: curl --proxy, python requests with a proxy URL, a Worker fetch through an HTTP proxy agent, or a SOCKS5 client. No rclone backend and no vendor CLI are needed to reach it; the zone API is plain REST. Missing wrapper is a note about tooling, not a reason to reject.",
+  "chaining": "A Cloudflare Worker sends its outbound request to the proxy endpoint; Bright Data supplies the exit address the target sees, so the Worker's own egress is unchanged and the address is the only thing bought.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "$499 monthly minimum: the smallest published plan is $499/month for 141 GB, then $999/month for 332 GB and $1,999/month for 798 GB, with no rollover",
+      "source": "https://brightdata.com/pricing/proxy-network"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "metered per GB with no allowance: $8/GB list, $4/GB with code RESIGB50",
+      "source": "https://brightdata.com/pricing/proxy-network"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "ISP proxies are sold and shaped per IP: $1.80/IP shared at 10 IPs down to $1.30 at 1,000; dedicated $3.50/IP at 10 down to $2.50 at 1,000",
+      "source": "https://brightdata.com/proxy-types/isp-proxies"
+    }
+  ],
+  "limits_note": "The constraint with no vocabulary kind is identity, and it is the one that decides: 'prior to using Bright Data's Residential or Mobile IP network, a Bright Data representative will ask you to go through a short compliance process also known as a KYC ... The KYC process may include a quick intro video call and some verification of your company or personal information.' A card alone does not open a zone.",
+  "binding": "volume-quota",
+  "binding_note": "Identity stops the account before any quota exists, but it has no vocabulary kind",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "Card AND a live human KYC. A payment method is required to open a zone, and a Bright Data representative then runs a compliance check before the Residential or Mobile IP network is usable: 'prior to using Bright Data's Residential or Mobile IP network, a Bright Data representative will ask you to go through a short compliance process also known as a KYC ... The KYC process may include a quick intro video call and some verification of your company or personal information.' The video call is the part a person without a company cannot schedule around.",
+    "country": null
+  },
+  "reliability_note": "Rotating residential sessions hand out a different exit address between requests, so a target that binds a session to an address sees a new one.",
+  "confidence": "documented",
+  "confidence_note": "Every field the verdict rests on is a price or a registration condition read from a Bright Data page on 2026-10-24, which is the documented rung. Measured would need an account through the KYC and a byte count through a residential zone, which the identity gate prevents. A re-read of the two pages after the KYC policy changes would keep it documented; only a live zone moves it up.",
+  "evidence": [
+    {
+      "url": "https://brightdata.com/pricing/proxy-network",
+      "date": "2026-10-24",
+      "proved": "Rotating residential is $8/GB list and $4/GB with code RESIGB50; plans are $499/month for 141 GB, $999 for 332 GB and $1,999 for 798 GB; the $499 monthly minimum is the entry price with no rollover."
+    },
+    {
+      "url": "https://brightdata.com/pricing/proxy-network",
+      "date": "2026-10-24",
+      "proved": "The KYC paragraph quoted in identity_cost.detail, captured from the Bright Data residential pages on 2026-10-24"
+    },
+    {
+      "url": "https://brightdata.com/proxy-types/isp-proxies",
+      "date": "2026-10-24",
+      "proved": "ISP proxies are priced per IP, not per byte: $1.80/IP shared at 10 IPs down to $1.30 at 1,000, and $3.50/IP dedicated at 10 down to $2.50 at 1,000."
+    }
+  ],
+  "verdict": "fails-identity",
+  "verified_at": "2026-10-24T10:07:11.000Z",
+  "price_per_tb_month": "$8/GB list, $4/GB with code RESIGB50 (= $8,192/TB and $4,096/TB by arithmetic); plans $499/month for 141 GB, $999 for 332 GB, $1,999 for 798 GB; ISP per IP $1.80 shared at 10 down to $1.30 at 1,000, $3.50 dedicated at 10 down to $2.50 at 1,000",
+  "notes": "CORRECTS dossier/storage/bright-data-residential-network.json, which carries the same provider at the same pricing URL. Three things change. Verdict: fails-quota becomes fails-identity, because a card does not open a zone, a live human KYC with a possible video call does. Binding: per-ip-shaping becomes volume-quota, because the $499 monthly minimum is the first number that fails at 45 GB/month while nothing about a residential zone is shaped per address in the facts. Identity: 'card' becomes 'card plus a live human KYC' with the vendor's own sentence attached. The storage record's 'free trial on all proxy types' is neither confirmed nor refuted here and should be settled against the same page. (2) the $499 monthly minimum with no rollover, which is the binding quota and is confirmed by the plan table; (3) the KYC gate, confirmed by the vendor's own paragraph and decisive because it stops the account before either price applies. A fourth candidate, that the withdrawal of the mobile product would take the residential product with it, was refuted: the residential product page still carries prices while only the mobile page redirects. A fifth, that ISP pricing per IP makes the ISP product cheap at low volume, is plausible and untested: 10 shared IPs at $1.80 is $18/month, but the same KYC paragraph covers the residential and mobile networks and the facts do not say whether ISP is inside that gate, so this record does not claim it is out. The $179.70 figure is recorded as the facts give it. Arithmetic on the headline rate gives 45 GB x $4 = $180.00, so the quoted number implies a slightly different per-GB basis than the rounded $4/GB; the difference is small and the vendor page is the authority. Flagged rather than smoothed over. That is why the KYC quote's own page is not pinned to one URL in evidence[1]. The mobile withdrawal is recorded from the facts as an observation of two pages: the product page redirects and the docs index lists Residential, Data Center and ISP only. The URLs for that observation were not handed over, so it is a note here and not an evidence entry. Where the record rests on one sample: the plan table was read once, on one day, from one page, and Bright Data reprices often. The KYC sentence is one paragraph; whether the representative waves it through for a small residential zone is not established and cannot be from outside the process.",
+  "extras": {
+    "rung": 3,
+    "rung_note": "Rotating residential exits sit at rung 2/3 (a single address, then a subnet) and ISP proxies at rung 5 (a registration class behind a hosting ASN); recorded as 3, the coarser of the two rotating rungs.",
+    "rung_by_product": {
+      "rotating_residential": "2/3",
+      "isp": 5
+    },
+    "identity_gate": "card + live human KYC, possibly a video call",
+    "decisive_quote": "prior to using Bright Data's Residential or Mobile IP network, a Bright Data representative will ask you to go through a short compliance process also known as a KYC ... The KYC process may include a quick intro video call and some verification of your company or personal information.",
+    "monthly_minimum_usd": 499,
+    "cost_at_45gb_month_usd": 179.7,
+    "coupon": "RESIGB50",
+    "mobile_product": "withdrawn April 2026: product page redirects, docs index lists Residential, Data Center and ISP only",
+    "isp_price_basis": "per IP, not per byte",
+    "withdrawn_products": [
+      "mobile"
+    ]
+  }
+}

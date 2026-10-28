@@ -1,0 +1,85 @@
+{
+  "topic": "egress",
+  "slug": "fly-io",
+  "provider": "Fly.io",
+  "url": "https://docs.fly.io/networking/udp-and-tcp",
+  "category": "paas l4 port",
+  "tier": "paid",
+  "free_tier": {
+    "stated": "Fly.io bills for the resources you use, with no monthly platform fee. The smallest always-on app costs $2.19 per 30 days.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://fly.io/docs/about/pricing/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://docs.fly.io/networking/udp-and-tcp",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://docs.fly.io/networking/udp-and-tcp",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No free allowance. Outbound data $0.02/GB in North America and Europe, inbound free; dedicated IPv4 $2/month.; ingress: tcp+udp",
+    "metered": true,
+    "free_allowance": "No free allowance. Outbound data $0.02/GB in North America and Europe, inbound free; dedicated IPv4 $2/month.",
+    "price_per_tb": null,
+    "source_url": "https://docs.fly.io/networking/udp-and-tcp"
+  },
+  "interface": [
+    "cli",
+    "rest"
+  ],
+  "interface_detail": "flyctl and the Machines API; services declared in fly.toml.",
+  "tooling": "flyctl, fly.toml, wg-quick inside the Machine.",
+  "chaining": "Fly Machine running wg-quick on a dedicated IPv4 is a working endpoint; pairs with any free client.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "no free allowance; $0.02/GB egress plus $2/month dedicated IPv4",
+      "source": "https://fly.io/docs/about/pricing/"
+    }
+  ],
+  "limits_note": "",
+  "binding": "volume-quota",
+  "binding_note": "1 TiB/month of egress is $20.48 at $0.02/GB, plus $2/month for the dedicated IPv4 that UDP requires, plus machine time.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "An account with a payment method; the pricing page prices every resource, with no free tier to sign up for.",
+    "country": "None"
+  },
+  "reliability_note": "\"Fly will not rewrite the port; Fly only rewrites the IP address for UDP packets.\" A couple dozen bytes of MTU are taken for UDP.",
+  "confidence": "documented",
+  "confidence_note": "A measured handshake would confirm the endpoint; the price and the UDP requirement are already documented.",
+  "evidence": [
+    {
+      "url": "https://docs.fly.io/networking/udp-and-tcp",
+      "date": "2026-10-23",
+      "proved": "\"You need a dedicated IPv4 address. You can't use a shared IPv4 address or an IPv6 address for UDP.\""
+    },
+    {
+      "url": "https://fly.io/docs/about/pricing/",
+      "date": "2026-10-23",
+      "proved": "Dedicated IPv4 $2/month; outbound $0.02/GB NA and EU; \"no monthly platform fee\""
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 2",
+  "notes": "Technically the cleanest WireGuard host: a real UDP port, a stable dedicated IP, and port preservation. The reason it is not a finding is that nothing is free. Cheapest realistic WireGuard endpoint found anywhere at about $2-4/month.",
+  "extras": {
+    "wg_path": "inside-udp",
+    "wg_detail": "\"You need a dedicated IPv4 address. You can't use a shared IPv4 address or an IPv6 address for UDP.\" The app binds UDP to fly-global-services on the same external port.",
+    "ingress": "tcp+udp",
+    "volume_tib_month": 0,
+    "volume_stated": "No free allowance. Outbound data $0.02/GB in North America and Europe, inbound free; dedicated IPv4 $2/month.",
+    "bytes_transit": "yes",
+    "transit_note": "Fly's edge forwards UDP to the Machine on the same port."
+  }
+}

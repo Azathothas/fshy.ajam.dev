@@ -1,0 +1,96 @@
+{
+  "topic": "debrid",
+  "slug": "crossref-rest-api",
+  "provider": "Crossref REST API",
+  "url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/",
+  "category": "scholarly metadata index (DOI registry)",
+  "tier": "free",
+  "free_tier": {
+    "stated": null,
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/",
+    "read_on": "2026-10-23",
+    "notes": "No numeric rate limit is published. The documented guidance is 'back off if you start seeing 429 statuses'."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: paged JSON. rows=1000 with a select list returned 773,304 bytes in one response here.",
+    "bytes": null,
+    "source_url": "https://api.crossref.org/works",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "the registry only grows; records are corrected rather than deleted, and the API is the live view",
+    "days": null,
+    "source_url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Free and unmetered. No key, no account, no allowance published.",
+    "metered": false,
+    "free_allowance": "no byte allowance published",
+    "price_per_tb": null,
+    "source_url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "GET https://api.crossref.org/works with rows, cursor and select; content negotiation for single records. The polite pool is signalled with mailto= or a User-Agent carrying an address.",
+  "endpoint": "https://api.crossref.org/works",
+  "tooling": "curl/python-requests; the harvester package and the documented cursor pattern. No SDK required.",
+  "chaining": "Crossref supplies the DOI-level citation graph and licence metadata; the full text behind each DOI is a separate fetch from the publisher or from an OA mirror such as PMC or Europe PMC.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "no number published; the tips page says 'pay attention to the http status code and back off if you start seeing 429 statuses'",
+      "source": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/tips-for-using-the-crossref-rest-api/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "cursor paging is required past the first page; rows=1000 is accepted and returned 773,304 bytes here",
+      "source": "probe:https://api.crossref.org/works?rows=1000&cursor=*"
+    }
+  ],
+  "limits_note": "The documented bulk snapshot did not work: https://api.crossref.org/snapshots/monthly/latest.json.gz answered 200 with 41 bytes of text/html and no body, and /snapshots answered 200 with a zero-byte body. That is a false-200 shape, not a file.",
+  "binding": "request-rate",
+  "binding_note": "At 773 KB per rows=1000 call, 1 TiB is about 1.4 million calls; the call rate, which is unpublished and signalled only by 429, is what decides the day's bytes.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No sign-up is required. A mailto in the query or User-Agent is a courtesy that routes the caller to the polite pool; it is not a credential.",
+    "country": null
+  },
+  "reliability_note": "The polite pool is the difference between a fast run and a 429 storm, and it costs only an email in the User-Agent; the snapshot endpoint is silently broken and returns a 200 stub, which a naive client will save as a data file.",
+  "confidence": "documented",
+  "confidence_note": "Two endpoints were exercised with byte counts and the vendor page was read. No 429 was triggered here, so the unpublished rate ceiling is not characterised.",
+  "evidence": [
+    {
+      "url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/",
+      "date": "2026-10-23",
+      "proved": "'No sign-up is required to use the REST API' and the polite-pool mailto pattern"
+    },
+    {
+      "url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/tips-for-using-the-crossref-rest-api/",
+      "date": "2026-10-23",
+      "proved": "'back off if you start seeing 429 statuses' - the only published rate signal; cursor paging for bulk"
+    },
+    {
+      "url": "probe:https://api.crossref.org/works?rows=1000&cursor=*&select=DOI,title,container-title,published,author",
+      "date": "2026-10-23",
+      "proved": "200, 773,304 bytes of application/json in 3,456 ms - the real bytes per call"
+    },
+    {
+      "url": "probe:https://api.crossref.org/snapshots/monthly/latest.json.gz",
+      "date": "2026-10-23",
+      "proved": "200 with 41 bytes of text/html and no file - the documented snapshot URL did not serve a snapshot"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-23T03:24:34.450Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Metadata-only: the corpus is descriptions of papers, not papers.",
+  "extras": {
+    "rows_1000_bytes": 773304,
+    "snapshot_status": "200 with 41-byte HTML stub"
+  }
+}

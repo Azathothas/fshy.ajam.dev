@@ -1,0 +1,101 @@
+{
+  "topic": "storage",
+  "slug": "peertube-hittube-fr",
+  "provider": "PeerTube, the hittube.fr instance (50 GiB per user, no daily cap)",
+  "url": "https://hittube.fr",
+  "category": "video platform, federated, self-hosted instance",
+  "free_tier": {
+    "stated": "50 GiB per user and no daily upload cap: the instance config reports user.videoQuota 53687091200 and user.videoQuotaDaily -1",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://hittube.fr/api/v1/config",
+    "read_on": "2026-10-22",
+    "notes": "registration is open with no approval and no email verification: signup.allowed true, requiresApproval false, requiresEmailVerification false. The instance is HitTube, server version 8.3.1, serverCountry France"
+  },
+  "per_object_cap": {
+    "stated": "Not published as a byte cap. The instance transcodes to 720, 1080 and 2160 and sets alwaysTranscodeOriginalResolution true, so the file that comes back is a transcode and not the bytes that were uploaded",
+    "bytes": null,
+    "source_url": "https://hittube.fr/api/v1/config",
+    "notes": "this is the constraint that decides whether the quota is usable: a storage tier that re-encodes at ingest does not return originals"
+  },
+  "retention": {
+    "stated": "No stated expiry while the instance runs.",
+    "days": null,
+    "source_url": "https://hittube.fr/api/v1/config"
+  },
+  "egress": {
+    "terms": "Free and unmetered: downloads are enabled by default (publish.downloadEnabled true) and there is no egress line item. HLS is enabled and splitAudioAndVideo is false, so the stream is a single rendition set",
+    "metered": false,
+    "source_url": "https://hittube.fr/api/v1/config"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "the PeerTube REST API at /api/v1, with open registration and no token required to read the config or list videos; upload needs an account and a token",
+  "tooling": "any HTTP client against /api/v1. PeerTube's own client and third-party uploaders work; there is no rclone backend and no WebDAV, so a pipeline is the upload API or nothing",
+  "chaining": "A 50 GiB per-account tier with no daily cap is the largest video-platform allocation found and it does not chain into a storage stack, because the read path returns a transcode. Its role would be as a distribution surface for content that is already video, and not as a store for arbitrary bytes",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "no byte cap published, but the instance transcodes every upload at the source resolution and sets alwaysTranscodeOriginalResolution true, so the delivered file is not the uploaded file",
+      "source": "https://hittube.fr/api/v1/config"
+    },
+    {
+      "kind": "write-gated",
+      "value": "an account is required to upload; registration is open with no approval and no email verification",
+      "source": "https://hittube.fr/api/v1/config"
+    }
+  ],
+  "binding": "per-object-cap",
+  "binding_note": "50 GiB per account and no daily cap clears the quota filter cleanly. What binds is the transcode: an ingest that re-encodes returns different bytes, which is the failure the corpus's fourth rule names, and it makes the tier a video host rather than storage",
+  "limits_note": "The instance reports 201 local videos totalling 21,058,245,956 bytes with 2 registered users, so the operator's disk holds about 21 GB of other people's content. Two users and 21 GB is the scale of the goodwill a 50 GiB quota is drawn on",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an email address, and the instance does not verify it: signup.requiresEmailVerification is false and requiresApproval is false. No card, no phone",
+    "country": null
+  },
+  "reliability_note": "A single-admin volunteer instance in France with two registered users and 39 followers. The config carries a custom support banner and an a-ads iframe, so it is ad-funded and personal. An instance of this size disappears with one hosting decision",
+  "confidence": "measured",
+  "confidence_note": "the instance configuration and statistics were read live from /api/v1/config and /api/v1/server/stats on 2026-10-22. The quota, the daily cap and the transcode flag are the instance's own reported values. What would raise confidence in the capacity is an upload, which needs an account and was not created",
+  "evidence": [
+    {
+      "url": "probe:https://hittube.fr/api/v1/config",
+      "date": "2026-10-22",
+      "proved": "user.videoQuota is 53687091200 and user.videoQuotaDaily is -1, so 50 GiB per user with no daily cap; signup.allowed true, requiresApproval false, requiresEmailVerification false; serverVersion 8.3.1, instance name HitTube, serverCountry France"
+    },
+    {
+      "url": "probe:https://hittube.fr/api/v1/config",
+      "date": "2026-10-22",
+      "proved": "transcoding.enabledResolutions is [720, 1080, 2160] and transcoding.alwaysTranscodeOriginalResolution is true, so every upload is re-encoded at its own resolution rather than stored as received"
+    },
+    {
+      "url": "probe:https://hittube.fr/api/v1/config",
+      "date": "2026-10-22",
+      "proved": "defaults.publish.downloadEnabled is true and videoFile.update.enabled is false, so downloads are allowed and uploaded files cannot be replaced"
+    },
+    {
+      "url": "probe:https://hittube.fr/api/v1/server/stats",
+      "date": "2026-10-22",
+      "proved": "totalUsers 2, totalLocalVideos 201, totalLocalVideoFilesSize 21058245956, totalInstanceFollowers 39, totalAdmins 1, which sizes the operator's disk and the user base"
+    },
+    {
+      "url": "probe:https://hittube.fr/api/v1/videos?count=1",
+      "date": "2026-10-22",
+      "proved": "the public video list answers anonymously with total 201, so the read path needs no account"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T04:30:16.000Z",
+  "price_per_tb_month": null,
+  "notes": "The completeness audit recorded this finding as lost on the premise that the measured instance was gone and that docs/storage/free/media-and-archives.md carried a different, unmeasured host instead. The instance is live and measurable: 50 GiB per user, no daily cap, open registration with no email verification. The premise was wrong and this record is the correction. The caveat that the audit did not name is the one that matters more than the quota: the instance transcodes every upload, so it returns transcoded renditions and not originals",
+  "extras": {
+    "audit_status": "the completeness review listed this name as unsupported and said the measured instance was gone; the instance answered live on 2026-10-22",
+    "instance_software": "PeerTube 8.3.1",
+    "server_country": "France",
+    "registration": "open, no approval, no email verification",
+    "transcodes_at_ingest": true,
+    "sibling_instance": "peertube.cif.su, the instance docs/storage/free/media-and-archives.md carries",
+    "sibling_note": "that host reports videoQuota -1 with videoQuotaDaily 5368709120, which is the opposite trade: unlimited total with a 5 GiB daily cap. The two instances together show that the quota shape is per-instance policy and not a PeerTube default",
+    "what_this_record_owns": "the hittube.fr instance, which the audit believed was lost"
+  }
+}

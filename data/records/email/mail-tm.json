@@ -1,0 +1,93 @@
+{
+  "topic": "email",
+  "slug": "mail-tm",
+  "provider": "mail.tm",
+  "url": "https://api.mail.tm/",
+  "category": "disposable inbox API",
+  "free_tier": {
+    "stated": "a disposable inbox with a 40 MB quota, created and read over a keyless REST API",
+    "unit": "MB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://api.mail.tm/",
+    "read_on": "2026-10-22",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "40 MB quota per inbox, reported by the account object",
+    "bytes": null,
+    "notes": "",
+    "source_url": "https://api.mail.tm/"
+  },
+  "retention": {
+    "stated": "messages persist until the account is deleted; no expiry is stated",
+    "days": null,
+    "notes": "",
+    "source_url": "https://api.mail.tm/"
+  },
+  "egress": {
+    "terms": "not applicable: receive-only",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://api.mail.tm/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "curl, any HTTP client",
+  "chaining": "the verification-code sink, measured end to end: create an inbox with no key, let a service deliver over SMTP, read the message back over the API. The scarce link is the 40 MB quota and the single shared domain.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "no published rate limit; the API is undocumented beyond the Hydra index",
+      "source": "https://api.mail.tm/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "40 MB quota per inbox, reported by the account object",
+      "source": "probe"
+    }
+  ],
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no key, no email verification and no card; measured by creating an account",
+    "country": null
+  },
+  "reliability_note": "one active domain; a domain change would invalidate every address a script had recorded",
+  "confidence": "measured",
+  "evidence": [
+    {
+      "url": "probe:https://api.mail.tm/domains",
+      "date": "2026-10-22",
+      "proved": "200, one active domain maxxspace.com (id 6aa6b995482bea6f4a97f585, isActive true), read with no key"
+    },
+    {
+      "url": "probe:https://api.mail.tm/accounts",
+      "date": "2026-10-22",
+      "proved": "201, a fresh account with quota 40000000, used 0, isDisabled false; no email verification and no card"
+    },
+    {
+      "url": "probe:https://api.mail.tm/token",
+      "date": "2026-10-22",
+      "proved": "200, a 360-character JWT for the new account"
+    },
+    {
+      "url": "probe:smtp://in.mail.tm:25",
+      "date": "2026-10-22",
+      "proved": "EHLO returned 250 and an SMTP message to the created address was accepted; sendmail returned no refusal"
+    },
+    {
+      "url": "probe:https://api.mail.tm/messages",
+      "date": "2026-10-22",
+      "proved": "200, the message listed with its subject and sender, then GET /messages/{id} returned 200 with subject, from, a text part and an html part"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T03:20:00.000Z",
+  "notes": "Four requests and one SMTP message proved the whole chain. 25 MiB per message against a 40 MB inbox is the practical ceiling, so one inbox holds one message.",
+  "extras": {
+    "stale_after_days": 90
+  },
+  "binding": "per-object-cap",
+  "interface_detail": "/domains, /accounts, /token and /messages on api.mail.tm; SMTP delivery to in.mail.tm"
+}

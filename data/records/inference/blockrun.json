@@ -1,0 +1,146 @@
+{
+  "topic": "inference",
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "not applicable"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "any OpenAI-compatible client; curl against POST {base}/chat/completions",
+  "chaining": "pairs with a free-standing agent as a relay of last resort; the scarce link is BlockRun's own upstream key, because its 429 arrives as FREE_MODEL_FAILED inside a 200",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "unpublished at BlockRun. The free route fails with FREE_MODEL_FAILED carrying debug 'NVIDIA API error: 429 Too Many Requests', so the observed ceiling belongs to BlockRun's own upstream key",
+      "source": "probe:https://blockrun.ai/api/v1/chat/completions, 2026-10-22"
+    }
+  ],
+  "slug": "blockrun",
+  "provider": "BlockRun",
+  "url": "https://blockrun.ai/api/v1",
+  "category": "inference relay",
+  "free_tier": {
+    "stated": "7 of 117 model ids on /v1/models carry an input price of 0; the rest carry list prices spanning openai, google, anthropic, xai, zai, bytedance, deepseek, qwen, nvidia and eleven other families",
+    "unit": "tokens",
+    "metered_on": "request-count",
+    "source_url": "https://blockrun.ai/api/v1/models",
+    "read_on": "2026-10-22",
+    "notes": "the seven zero-priced ids are nvidia/nemotron-3-nano-omni-30b-a3b-reasoning, nvidia/nemotron-3.5-lightning, nvidia/llama-3.2-11b-vision, nvidia/nemotron-3-ultra-550b, cohere/north-mini-code, poolside/laguna-xs-2.1 and nvidia/muse-glimmer-30b"
+  },
+  "endpoint": "https://blockrun.ai/api/v1/chat/completions",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no Authorization header sent and none required for the free route",
+    "country": null
+  },
+  "reliability_note": "5 sequential identical calls answered 2 and refused 3 with FREE_MODEL_FAILED and a debug field naming 'NVIDIA API error: 429 Too Many Requests'",
+  "confidence": "measured",
+  "confidence_note": "the relay is proved by its own error body naming NVIDIA, and the substitution by the echoed model string. Both are measured; the upstream arrangement is inferred from them.",
+  "probe": {
+    "records": [
+      {
+        "probe_id": "blockrun-gptoss20b",
+        "requested_model": "nvidia/gpt-oss-20b",
+        "http_run1": 200,
+        "http_run2": 200,
+        "answered_run1": "yes",
+        "answered_run2": "yes",
+        "model_echoed": "nvidia/gpt-oss-20b",
+        "echo_match": "yes",
+        "latency_ms_run1": 2091,
+        "latency_ms_run2": 2543,
+        "ttft_ms_run1": 822,
+        "completion_tokens_run1": 51,
+        "tps_run1": "12.92",
+        "tps_run2": "13.23",
+        "tps_basis": null,
+        "needle_echoed_run1": "yes",
+        "body_bytes_run1": 451,
+        "body_sha256_16_run1": "056f8f161ffbc029",
+        "reasoning_only": "no",
+        "error_run1": "",
+        "error_run2": ""
+      }
+    ],
+    "runs": [
+      "probes-w.json",
+      "probes-w-run2.json"
+    ]
+  },
+  "evidence": [
+    {
+      "url": "probe:https://blockrun.ai/api/v1/chat/completions",
+      "date": "2026-10-22",
+      "proved": "nvidia/gpt-oss-20b answered 200 and echoed nvidia/gpt-oss-20b's two runs, 2091 ms and 2543 ms, 51 completion tokens each"
+    },
+    {
+      "url": "probe:https://blockrun.ai/api/v1/chat/completions",
+      "date": "2026-10-22",
+      "proved": "in the recon sweep eight minutes earlier, one of five sequential calls echoed nvidia/nemotron-3-super-120b for a nvidia/gpt-oss-20b request, and three returned FREE_MODEL_FAILED with debug 'NVIDIA API error: 429 Too Many Requests'"
+    },
+    {
+      "url": "https://blockrun.ai/api/v1/models",
+      "date": "2026-10-22",
+      "proved": "117 model ids across 13 or more vendor families including openai, anthropic, google, xai and elevenlabs, with per-model long_context price tiers"
+    },
+    {
+      "url": "https://blockrun.ai/docs/api-reference/rate-limits",
+      "date": "2026-10-28",
+      "proved": "the documented over-limit 429 carries Retry-After, X-RateLimit-Limit: 30, X-RateLimit-Remaining and X-RateLimit-Reset (unix milliseconds); a separate 429 with code FREE_MODEL_FAILED and Retry-After: 30 signals an exhausted free pool",
+      "capture": "sha256:ba788bc524f7f0c096e6f5599a022a32f41226246bf61875c5f1a74226e5ca01",
+      "quote": "X-RateLimit-Limit: 30"
+    },
+    {
+      "url": "https://blockrun.ai/free",
+      "date": "2026-10-28",
+      "proved": "the vendor documents that a busy free model is answered by another free model and that the model field names the one that answered",
+      "capture": "sha256:2a850de5e2d02ee8412c6ed4b4abf2f3b5a10fbd054ba091478c46dd19d15b7a",
+      "quote": "When the one you named is, we answer with another free model instead of failing the request."
+    },
+    {
+      "url": "probe:https://blockrun.ai/api/v1/chat/completions",
+      "date": "2026-10-28",
+      "proved": "one POST with no Authorization header for nvidia/nemotron-3.5-lightning answered 200 and echoed model nvidia/nemotron-3.5-lightning-nim; headers x-free-model: true, x-health-reroute: true, x-original-model: nvidia/nemotron-3.5-lightning, x-served-model: nvidia/nemotron-3.5-lightning-nim; no X-RateLimit header on the 200; content was a reasoning trace with finish_reason length at max_tokens 128"
+    },
+    {
+      "url": "https://blockrun.ai/docs/api-reference/errors",
+      "date": "2026-10-28",
+      "proved": "the error catalogue lists FREE_TIER_RATE_LIMITED as the 429 per-IP free-tier limit of 30 per minute and 300 per hour",
+      "capture": "sha256:b8ffbc5247355c81fa1087b9a13ef5dbf9a1f6be7d9bed386084eecbc1beafba",
+      "quote": "| `FREE_TIER_RATE_LIMITED` | 429 | Per-IP free-tier limit (30/min, 300/hour) |"
+    },
+    {
+      "url": "https://blockrun.ai/docs/api-reference/rate-limits",
+      "date": "2026-10-28",
+      "proved": "free-model pool exhaustion surfaces as FREE_MODEL_FAILED (non-streaming) or STREAM_FAILED (streaming), published as 429 with Retry-After 30",
+      "capture": "sha256:ba788bc524f7f0c096e6f5599a022a32f41226246bf61875c5f1a74226e5ca01",
+      "quote": "Separately, when the free model pool itself is out of capacity (every free rung is throttled or unhealthy upstream), the response is `429` with `code: \"STREAM_FAILED\"` (streaming) or `\"FREE_MODEL_FAILED\"` (non-streaming) and `Retry-After: 30`."
+    },
+    {
+      "url": "https://blockrun.ai/docs/api-reference/rate-limits",
+      "date": "2026-10-28",
+      "proved": "free chat models need no wallet and no payment",
+      "capture": "sha256:ba788bc524f7f0c096e6f5599a022a32f41226246bf61875c5f1a74226e5ca01",
+      "quote": "Free chat models (the ones `GET /v1/models` lists with `\"billing_mode\": \"free\"`) need no wallet and no payment"
+    },
+    {
+      "url": "https://blockrun.ai/docs/api-reference/rate-limits",
+      "date": "2026-10-28",
+      "proved": "the free-route limit is a per-IP request-rate limit, so the limit kind request-rate stands",
+      "capture": "sha256:ba788bc524f7f0c096e6f5599a022a32f41226246bf61875c5f1a74226e5ca01",
+      "quote": "**30 requests per minute** (burst) and **300 requests per hour** (sustained)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-28T09:47:48.921Z",
+  "notes": "The relay category's clearest instance. An error body that names a different vendor's API is the cheapest available tell, and the echoed model string is the second. A caller that does not compare the echoed model receives a plausible answer from a model it did not choose.",
+  "binding": "request-rate",
+  "binding_note": "the upstream NVIDIA 429 binds, and it arrives inside a 200-style error body rather than as a 429 status, so a client cannot see it by status code"
+}

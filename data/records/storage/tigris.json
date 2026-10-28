@@ -1,0 +1,78 @@
+{
+  "topic": "storage",
+  "slug": "tigris",
+  "provider": "Tigris",
+  "url": "https://www.tigrisdata.com/pricing/",
+  "category": "S3-compatible object storage, globally distributed",
+  "free_tier": {
+    "stated": "Per-GB-month, 5 GB free (Standard); tiers Standard / Infrequent Access / Archive Instant Retrieval / Archive",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://www.tigrisdata.com/pricing/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://www.tigrisdata.com/pricing/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://www.tigrisdata.com/pricing/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free on every tier, verbatim: \"Egress | Free\" across all four tiers, and \"Data Transfer (Egress) is always free\" / \"no charge for Data Transfer (Egress)\". No ratio, no fair-use clause in the pricing text.",
+    "metered": false
+  },
+  "interface": [
+    "s3-compatible",
+    "rclone"
+  ],
+  "interface_detail": "S3 API",
+  "tooling": "All S3 SDKs, rclone, bucket forking, lifecycle rules, soft deletes",
+  "chaining": "S3 origin with genuinely zero egress cost — the cleanest pairing with a Cloudflare front end because there is no allowance to police.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "delete or transition earlier and the full 30 days",
+      "source": "https://www.tigrisdata.com/pricing/"
+    }
+  ],
+  "limits_note": "`retention-clamped` on the cheap tiers: Infrequent Access and Archive tiers carry a minimum storage duration (30 days for IA) — delete or transition earlier and the full 30 days is still billed. Data retrieval is charged on IA ($0.01/GB) and Archive Instant Retrieval ($0.03/GB); Archive tier has no retrieval charge. Storage measured in binary GB (2^30).",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "card",
+    "country": null
+  },
+  "reliability_note": "Newer vendor; free tier is only 5 GB so there is no meaningful free path, and the archive tier still bills a full 30-day minimum per object.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://www.tigrisdata.com/pricing/",
+      "date": "2026-10-21",
+      "proved": "rate table strings from raw HTML: $0.02/GB/month (Standard), $0.01/GB/month (IA), $0.004/GB/month (Archive Instant Retrieval), $0.004/GB/month (Archive); retrieval $0.01/GB (IA), $0.03/GB (Archive IR), Free (Standard/Archive); \"Egress Free\" on all tiers"
+    },
+    {
+      "url": "https://www.tigrisdata.com/pricing/",
+      "date": "2026-10-21",
+      "proved": "\"A minimum storage retention charge applies to objects stored in the Infrequent Access, Archive, and Archive Instant Retrieval tiers... 30-day storage charge will still apply\""
+    },
+    {
+      "url": "https://c17.io/compare/object-storage",
+      "date": "2026-10-21",
+      "proved": "Tigris included in normalized comparison, checked 17 Oct 2026"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "price_per_tb_month": "Standard $20.00/TB at 5 TB and 20 TB. Archive $4.00/TB at 20 TB ($80/mo) with free egress and free retrieval — the best cold tier after OVH Cold Archive.",
+  "notes": "Per-GB-month, 5 GB free (Standard); tiers Standard / Infrequent Access / Archive Instant Retrieval / Archive",
+  "extras": {
+    "price_verbatim": "Standard $20.00/TB at 5 TB and 20 TB. Archive $4.00/TB at 20 TB ($80/mo) with free egress and free retrieval — the best cold tier after OVH Cold Archive."
+  },
+  "binding": "retention-clamped",
+  "binding_note": "a clock, not a quota: bytes leave whether or not a user is finished with them"
+}

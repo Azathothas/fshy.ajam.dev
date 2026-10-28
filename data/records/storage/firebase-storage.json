@@ -1,0 +1,78 @@
+{
+  "topic": "storage",
+  "slug": "firebase-storage",
+  "provider": "Firebase Storage (Cloud Storage for Firebase)",
+  "url": "https://firebase.google.com/products/storage",
+  "category": "paas",
+  "free_tier": {
+    "stated": "5 GB stored on Spark (no-cost) plan; 1 GB downloaded per day; 50k download ops/day",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://firebase.google.com/pricing",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://firebase.google.com/pricing",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://firebase.google.com/pricing",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "1 GB/day download (~30 GB/month) free, then $0.12/GB; outbound networking 5 GB/month. The 1 GB/DAY download cap is the binding constraint, not the 5 GB stored.",
+    "metered": true,
+    "free_allowance": "30 GB per month"
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Firebase SDKs (web/Android/iOS), Admin SDK, gsutil/gcloud storage against the underlying GCS bucket, `firebase storage:upload`; rclone can hit the bucket with GCS (not rclone's 'firebase' — that is the Realtime DB). Public download URLs via `getDownloadURL` / Firebase download tokens.",
+  "chaining": "5 GB per PROJECT. Projects per Google account on Spark are limited to 'a small number of projects (usually around 5-10)' — so ~25-50 GB/account, not a big multiplier. Multiple Google accounts is the only axis. Deleting a project takes 30 days and still counts against quota, which badly hurts churn-and-burn cycling.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "1 GB/day",
+      "source": "https://firebase.google.com/pricing"
+    }
+  ],
+  "limits_note": "1 GB/day egress (~30 GB/mo) is the practical ceiling — a 5 GB store is refetchable only 6x/month. Download-op cap 50k/day. Spark also caps Cloud Storage at 5 GB-months and 100 GB/month downloaded for the *default* bucket variant. No billing = hard stop, not overage.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Hard daily reset at midnight; exceeding it fails requests until reset. Project deletion is 30 days and blocked from quota reuse, so account cycling is slow.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://firebase.google.com/pricing",
+      "date": "2026-10-21",
+      "proved": "'GB stored | No-cost up to 5 GB | Then $0.026/GB', 'GB downloaded | No-cost up to 1 GB/day', 'Download operations | No-cost up to 50K/day'"
+    },
+    {
+      "url": "https://firebase.google.com/docs/projects/learn-more",
+      "date": "2026-10-21",
+      "proved": "'Spark pricing plan: Project-creation quota is limited to a small number of projects (usually around 5-10)'"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "5 GB stored on Spark (no-cost) plan; 1 GB downloaded per day; 50k download ops/day",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "5 GB stored on Spark (no-cost) plan; 1 GB downloaded per day; 50k download ops/day",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-ip-shaping",
+  "binding_note": "one stream is shaped, and a user's throughput is the shaped rate times the number of streams"
+}

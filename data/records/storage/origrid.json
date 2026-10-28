@@ -1,0 +1,96 @@
+{
+  "topic": "storage",
+  "slug": "origrid",
+  "provider": "Origrid",
+  "url": "https://origrid.io",
+  "category": "anon-host",
+  "free_tier": {
+    "stated": "25 GB per file with NO account; 50 GB per file / 50 GB storage with a free account; Contributor tier (automatic: 25 GB stored + 30 days old + clean record) gives 100 GB storage, 50 GB/file and links that never expire; Verified Uploader = 100 GB/file + 5 TB storage + links that never expire.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://origrid.io/pricing",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "25 GB per file",
+    "bytes": 25000000000,
+    "source_url": "https://origrid.io/pricing",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Retention: 15 days anonymous, 90 days from last download for a free account, never for Contributor/Plus",
+    "days": 15,
+    "source_url": "https://origrid.io/pricing",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "No ads, no wait, no cap, full speed on every plan; no per-download bandwidth meter stated. Bytes are served from R2/B2 origins via short-lived signed URLs.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Own REST API, documented and keyless for the anonymous path. /api/upload/create, /api/upload/part, /api/upload/complete. Remote-upload endpoint POST /api/upload/remote pulls a URL server-side (no local bandwidth).",
+  "chaining": "Anonymous upload needs no key at all, so per-identity multiplication is free; but each anon file lives only 15 days from last download. The interesting route is the automatic Contributor tier: park 25 GB, wait 30 days, and links stop expiring (100 GB) — a slow-burn archive, not a hot tier.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "25 GB per file",
+      "source": "https://origrid.io/pricing"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "50 GB per file",
+      "source": "https://origrid.io/pricing"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "Retention: 15 days",
+      "source": "https://origrid.io/pricing"
+    },
+    {
+      "kind": "write-gated",
+      "value": "invite-only Verified tier",
+      "source": "https://origrid.io/pricing"
+    }
+  ],
+  "limits_note": "per-object-cap: 25 GB/file anonymous, 50 GB/file free account. Retention: 15 days anonymous, 90 days from last download for a free account, never for Contributor/Plus. Storage cap is the real bind: 50 GB free account, 100 GB Contributor, 5 TB only on the invite-only Verified tier.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: 25 GB per file with NO account; 50 GB per file / 50 GB storage with a free account; Contributor tier (automatic: 25 GB stored + 30 days old + clean re",
+    "country": null
+  },
+  "reliability_note": "READ PATH IS GATED BY A MINTED TOKEN, not a static URL: /d/<id> is HTML whose Download button is a signed /dl/<JWT> that 302s to an R2 presigned URL with X-Amz-Expires=21600. The token is re-minted on every page view, so the file is durable but the *link* is not shareable as a bytes URL — you must re-scrape /d/<id> to fetch. Retains originals byte-exact.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: POST /api/upload/create (no auth) -> 200 {fileId, key, uploadId, partSize 67108864, claimToken}"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: PUT presigned part -> 200; POST /api/upload/complete -> {\"id\":\"BbSXVbzMZ\",\"status\":\"processing\",\"url\":\"/d/BbSXVbzMZ\"}"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET /d/BbSXVbzMZ -> 200 text/html; GET signed /dl/... -> 302 -> R2 presigned (X-Amz-Expires=21600); final GET 200 1048576 bytes, sha256 MATCH a60c67af...69a3a"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET /api/v1/files without key -> 401 {\"message\":\"Invalid API key.\"}"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "25 GB per file with NO account; 50 GB per file / 50 GB storage with a free account; Contributor tier (automatic: 25 GB stored + 30 days old + clean record) gives 100 GB storage, 50 GB/file and links that never expire; Verified Uploader = 100 GB/file + 5 TB storage + links that never expire.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

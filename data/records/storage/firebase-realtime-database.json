@@ -1,0 +1,78 @@
+{
+  "topic": "storage",
+  "slug": "firebase-realtime-database",
+  "provider": "Firebase Realtime Database",
+  "url": "https://firebase.google.com/products/realtime-database",
+  "category": "paas",
+  "free_tier": {
+    "stated": "1 GB stored on the Spark (no-cost) plan; 10 GB/month downloaded (~360 MB/day)",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://firebase.google.com/pricing",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://firebase.google.com/pricing",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://firebase.google.com/pricing",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Metered on Blaze at $1/GB, with 'No-cost up to 360 MB/day (equivalent to ~10 GB/month)' on Spark. 360 MB/day vs 500 GB/day = 1,400x short.",
+    "metered": true,
+    "free_allowance": "10 GB per month"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Firebase SDKs, REST API (`PUT/PATCH/GET .json`), Admin SDK, `firebase-tools` CLI; data is a JSON tree",
+  "chaining": "1 GB per database instance; multiple instances are possible via sharding, but the Spark plan limits you to a small number of instances and each shares the project's 10 GB/month download. 500 GB would need 500 projects.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "100 simultaneous connections",
+      "source": "https://firebase.google.com/pricing"
+    }
+  ],
+  "limits_note": "1 GB stored; 10 MB max string (so ~7.5 MB of binary as base64); 256 MB max response per read; 32 levels max depth; 768 byte key length; 1,000 writes/sec per DB; 100 simultaneous connections on Spark; 10 GB/month download",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Durable and simple, but base64 in JSON costs +33% and the 10 MB per-string cap means chunking into ~7.5 MB pieces. The 100-connection Spark limit and 360 MB/day download cap both bind hard.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://firebase.google.com/pricing",
+      "date": "2026-10-21",
+      "proved": "'Realtime Database | GB stored 1 GB (no-cost)'; 'GB downloaded 10 GB/month (no-cost)'; 'No-cost up to 360 MB/day (equivalent to ~10 GB/month) Then $1/GB'"
+    },
+    {
+      "url": "https://firebase.google.com/docs/database/usage/limits",
+      "date": "2026-10-21",
+      "proved": "'Maximum size of a string | 10 MB'; 'Size of a single response served by the database | 256 MB'; 'Maximum depth of child nodes | 32'; 'Write rate | 1,000 writes/second'; 'The Spark plan limit on simultaneous connections is 100'"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "1 GB stored on the Spark (no-cost) plan; 10 GB/month downloaded (~360 MB/day)",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "1 GB stored on the Spark (no-cost) plan; 10 GB/month downloaded (~360 MB/day)",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-ip-shaping",
+  "binding_note": "one stream is shaped, and a user's throughput is the shaped rate times the number of streams"
+}

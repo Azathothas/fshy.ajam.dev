@@ -1,0 +1,82 @@
+{
+  "topic": "storage",
+  "slug": "microsoft-365-business-basic-nonprofit-grant",
+  "provider": "Microsoft 365 Business Basic — nonprofit grant (300 free seats x 1 TB OneDrive)",
+  "url": "https://www.microsoft.com/en-us/microsoft-365/business/nonprofit-plans-and-pricing",
+  "category": "cloud-drive",
+  "free_tier": {
+    "stated": "Microsoft 365 Business Basic (Nonprofit Staff Pricing) is a 'Grant — Free up to 300 users', and every seat carries '1 TB of cloud storage per user' (OneDrive). 300 x 1 TB = 300 TB of pooled tenant storage at zero cost. SharePoint on top: total org storage '1 TB + 10GB per license purchased', max 25 TB per site collection.",
+    "unit": "TB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://www.microsoft.com/en-us/microsoft-365/business/nonprofit-plans-and-pricing",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "250 GB per file",
+    "bytes": 250000000000,
+    "source_url": "https://www.microsoft.com/en-us/microsoft-365/business/nonprofit-plans-and-pricing",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://www.microsoft.com/en-us/microsoft-365/business/nonprofit-plans-and-pricing",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "No egress meter on OneDrive/SharePoint downloads — Microsoft does not bill data transfer out for M365 storage. Put Cloudflare in front and it is fully covered.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "graph",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "rclone backend 'onedrive' (Tier 1, chunked upload, server-side move); Microsoft Graph API (/me/drive, /sites/{id}/drive); SharePoint REST. The Graph endpoints are the documented programmatic path.",
+  "chaining": "The multiplier here is seats, not orgs: 300 granted seats per nonprofit tenant, 1 TB each, plus 10 GB of SharePoint pool per licence with a 25 TB ceiling per site collection — so a single tenant can present 300 TB of OneDrive *and* multi-TB SharePoint document libraries. 300 seats at 1 TB is the largest free number found anywhere in this niche. Multiple 501(c)(3) entities = separate tenants.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "250 GB per file",
+      "source": "https://www.microsoft.com/en-us/microsoft-365/business/nonprofit-plans-and-pricing"
+    }
+  ],
+  "limits_note": "per-object-cap 250 GB per file in OneDrive (Microsoft's documented ceiling), 100 GB mailbox, SharePoint list/library max 30 million items. request-rate: Graph throttling is per-app-per-tenant and is the practical ceiling for bulk sync, not bytes. retention: perpetual while the subscription renews; Microsoft requires '85% active usage of all granted assigned licenses' or the org risks losing future grants.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: r file in OneDrive (Microsoft's documented ceiling), 100 GB mailbox, SharePoint list/library max 30 million items. request-rate: Graph throttling is per-app-per-tenant and is the practica",
+    "country": null
+  },
+  "reliability_note": "The grant survived the July 2025 cull that killed *donated* Business Premium and O365 E1 — Business Basic is still listed as 'Grant, Free up to 300 users'. Unused seats are reclaimed under the 85% rule; inactive tenants risk losing grants at renewal.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://www.microsoft.com/en-us/microsoft-365/business/nonprofit-plans-and-pricing",
+      "date": "2026-10-21",
+      "proved": "'Microsoft 365 Business Basic (Nonprofit Staff Pricing) | Grant | Free up to 300 users' and '1 TB of cloud storage per user' across the compare table"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/office365/servicedescriptions/sharepoint-online-service-description/sharepoint-online-limits",
+      "date": "2026-10-21",
+      "proved": "'Total storage per organization: 1 TB + 10GB per license purchased'; 'Max storage per site (site collection): 25 TB'"
+    },
+    {
+      "url": "https://support.techsoup.org/hc/en-us/articles/37040124982811-Discontinued-Donated-Microsoft-365-Business-Premium-and-Office-365-E1",
+      "date": "2026-10-21",
+      "proved": "donated Business Premium/E1 discontinued from 2025-07-01; Business Basic grant unaffected"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET graph.microsoft.com/v1.0/me/drive -> 401, 237 bytes (read path is Graph, auth-gated)"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Microsoft 365 Business Basic (Nonprofit Staff Pricing) is a 'Grant — Free up to 300 users', and every seat carries '1 TB of cloud storage per user' (OneDrive). 300 x 1 TB = 300 TB of pooled tenant storage at zero cost. SharePoint on top: total org storage '1 TB + 10GB per license purchased', max 25 TB per site collection.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

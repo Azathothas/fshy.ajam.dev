@@ -1,0 +1,138 @@
+{
+  "topic": "compute",
+  "slug": "microsoft-azure-spot",
+  "provider": "Microsoft Azure Spot",
+  "url": "https://prices.azure.com/api/retail/prices",
+  "category": "GPU cloud",
+  "free_tier": {
+    "stated": "The answer to the ten-minute-checkpoint question, computed from published inputs rather than measured. Take a checkpoint interval of 10 minutes, so the expected work lost per preemption is 5 minutes. With a preemption rate of 2.3 per cent an hour, the overhead is 0.19 per cent and the effective A100 80 GiB rate is USD 0.680 an hour. At 4.1 per cent an hour the overhead is 0.34 per cent and the rate is USD 0.681. Even at AWS's reported 17.5 per cent an hour for p4d, the overhead is 1.46 per cent, which raises USD 5.7337 to USD 5.8173. Survival of a one-hour run is 97.7 per cent at 2.3 per cent an hour, 96.0 per cent at 4.1 per cent, and 83.9 per cent at 17.5 per cent; over ten hours the same three are 79.5, 66.4 and 17.4 per cent.",
+    "unit": "hours",
+    "metered_on": "wall-clock",
+    "source_url": "https://prices.azure.com/api/retail/prices",
+    "read_on": "2026-10-22",
+    "notes": "none"
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://prices.azure.com/api/retail/prices",
+    "notes": null
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://prices.azure.com/api/retail/prices",
+    "notes": null
+  },
+  "egress": {
+    "terms": "not stated",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://prices.azure.com/api/retail/prices"
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "inferred from the tooling the provider documents; not probed",
+  "tooling": "not stated",
+  "chaining": "This closes the loop between the discount and the checkpoint: a 10-minute checkpoint turns a 5.41 times discount into a 5.40 times discount, so the interruption risk costs almost nothing and the rate is the whole finding.",
+  "limits": [],
+  "limits_note": "Checkpointing every ten minutes makes preemption overhead a rounding error on every lane measured, so the discount is real rather than eaten by restarts; what breaks a run is the absence of a resume path, not the interruption rate.",
+  "binding": "none",
+  "binding_note": "Checkpointing every ten minutes makes preemption overhead a rounding error on every lane measured, so the discount is real rather than eaten by restarts; what breaks a run is the absence of a resume path, not the interruption rate.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "confidence": "inferred",
+  "evidence": [
+    {
+      "url": "https://prices.azure.com/api/retail/prices",
+      "date": "2026-10-22",
+      "proved": "the A100 80 GiB spot and on-demand rates used as the price inputs: 0.67877 and 3.673 in eastus"
+    },
+    {
+      "url": "https://introl.com/blog/spot-instances-preemptible-gpus-cutting-ai-costs-70-percent",
+      "date": "2026-10-22",
+      "proved": "a third-party analysis of 10 million spot instance hours reports A100 at 2.3 per cent hourly interruption, V100 at 0.8 per cent, H100 at 4.1 per cent, weekend rates 40 per cent lower, and us-east-1 3x higher than us-west-2"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/virtual-machines/spot-vms",
+      "date": "2026-10-22",
+      "proved": "the vendor defines its eviction rate as a per-hour probability, which is the rate the overhead formula needs, quoted"
+    },
+    {
+      "url": "https://prices.azure.com/api/retail/prices",
+      "date": "2026-10-22",
+      "proved": "a query for armSkuName eq 'Standard_NC24ads_A100_v4' with priceType Consumption and productName containing Linux returns 78 rows; eastus Spot is 0.67877 and eastus on-demand is 3.673, both unitOfMeasure '1 Hour'"
+    },
+    {
+      "url": "https://prices.azure.com/api/retail/prices",
+      "date": "2026-10-22",
+      "proved": "the same 78-row set shows Spot at 0.67877 in eastus, eastus2, westus2 and westus3, and at 1.357541 in brazilsouth, so the discount is regional rather than flat"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/machine-learning/how-to-manage-quotas",
+      "date": "2026-10-22",
+      "proved": "NC_A100_v4 starts with 'a default of zero cores', quoted"
+    },
+    {
+      "url": "https://prices.azure.com/api/retail/prices",
+      "date": "2026-10-22",
+      "proved": "filter armRegionName eq 'eastus' and armSkuName eq 'Standard_NC24ads_A100_v4' returns meterName 'NC24ads_A100_v4 Spot' Linux at 0.67877 and the same SKU on-demand at 3.673, both unitOfMeasure '1 Hour'"
+    },
+    {
+      "url": "https://prices.azure.com/api/retail/prices",
+      "date": "2026-10-22",
+      "proved": "the same query returns 'NV6ads A10 v5 Spot' Linux at 0.083899 against on-demand 0.454, and 'NC4as T4 v3 Spot' Linux at 0.149174 against on-demand 0.526"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/virtual-machines/spot-vms",
+      "date": "2026-10-22",
+      "proved": "supported offer types are Enterprise Agreement, pay-as-you-go 003P, and Sponsored 0036P and 0136P, quoted"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/machine-learning/how-to-manage-quotas",
+      "date": "2026-10-22",
+      "proved": "'Specialized VM families like NCasT4_v3, NC_A100_v4, or NDv2 series start with a default of zero cores. GPUs also default to zero cores', quoted"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/virtual-machines/spot-vms",
+      "date": "2026-10-22",
+      "proved": "Spot supports only Enterprise Agreement, pay-as-you-go 003P and Sponsored offer types, quoted"
+    },
+    {
+      "url": "https://azure.microsoft.com/en-us/pricing/offers/ms-azr-0017g",
+      "date": "2026-10-22",
+      "proved": "the free account gives USD 200 of credit usable within the first 30 days, and the account must be upgraded to pay-as-you-go to continue, quoted"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/virtual-machines/spot-vms",
+      "date": "2026-10-22",
+      "proved": "eviction happens 'with 30-seconds notice', scheduled-event delivery is 'best effort', and the eviction rate is quoted as a probability per hour, quoted"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/virtual-machines/spot-vms",
+      "date": "2026-10-22",
+      "proved": "pricing history for 90 days and eviction rates for 28 trailing days are queryable through Azure Resource Graph in the SpotResources table, with a sample KQL query"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "No provider publishes a run-survival figure. Azure publishes a per-hour eviction probability per SKU and region through Resource Graph over 28 trailing days, and GCP publishes a preemption rate through advice.capacityHistory, but neither is a survival curve and the two are not the same statistic: GCP divides preempted VMs by VMs that stopped running, which counts user-caused stops in the denominator and so understates the rate a long job experiences. GCP also publishes an estimated uptime in three buckets only (60 minutes, 10 minutes, 1 minute) from advice.capacity, which is the closest thing to a published survival figure and is coarse. The numbers above use third-party rates as the probability input, so the finding is inferred, not measured. The probe that would settle it: rent one A100 spot in eastus for 24 hours, checkpoint every 10 minutes to object storage, log every eviction with its timestamp and the scheduled-event offset, and repeat across 4 regions; that yields both the real per-hour rate and the real notice-to-eviction interval. qualifies-with-caveat via a05-spot; fails-identity via a05-spot; qualifies-with-caveat via a05-spot. The one recorded is the better-evidenced.",
+  "extras": {
+    "wave2": {
+      "class": "spot-arbitrage",
+      "free_tier_kind": "none",
+      "shape": {
+        "vcpu": 24,
+        "ram_gib": 220,
+        "gpu_class": "A100-80GiB",
+        "gpu_count": 1
+      }
+    }
+  }
+}

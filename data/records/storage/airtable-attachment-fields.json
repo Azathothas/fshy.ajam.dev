@@ -1,0 +1,79 @@
+{
+  "topic": "storage",
+  "slug": "airtable-attachment-fields",
+  "provider": "Airtable (free plan) - attachment fields",
+  "url": "https://airtable.com",
+  "category": "paas",
+  "free_tier": {
+    "stated": "1 GB attachment storage per base on Free, with unlimited bases and 1,500 bases per workspace",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://support.airtable.com/docs/airtable-plans",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://support.airtable.com/docs/airtable-plans",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://support.airtable.com/docs/airtable-plans",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free; attachments served from airtableusercontent.com (CloudFront-fronted) with expiring signed URLs",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Official Web API v0: POST /v0/{baseId}/{recordId}/{attachmentFieldId}/uploadAttachment accepts raw bytes up to 5 MB, larger files go via the content.airtable.com upload-then-attach flow",
+  "chaining": "1 GB x 1,500 bases x N workspaces = ~1.5 TB per free workspace as documented, multiplied by unlimited free workspaces. Pricing config also states 'unlimited bases' on Free; the 1,500 figure is the per-workspace cap. This is the single largest documented multiplicative figure in this area.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "33 uploads/day",
+      "source": "https://support.airtable.com/docs/airtable-plans"
+    }
+  ],
+  "limits_note": "1,000 records per base on Free; 5 MB per direct API upload; 1,000 API calls per workspace per MONTH on Free; only 5 editor/creator collaborators; 1 GB per base is the billing-flag field maxTotalAttachmentSizeInBytes=1000000000",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: ith unlimited bases and 1,500 bases per workspace 1,000 API calls per month on Free is a hard wall - that is ~33 uploads/day, so the 1.5 TB chain is rate-limited long before it is",
+    "country": null
+  },
+  "reliability_note": "1,000 API calls per month on Free is a hard wall - that is ~33 uploads/day, so the 1.5 TB chain is rate-limited long before it is capacity-limited.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://support.airtable.com/docs/airtable-plans",
+      "date": "2026-10-21",
+      "proved": "'How many bases can a single workspace store? 1500 Bases per workspace'; also '1000 records per base... 1GB per of attachment storage per base' for the Free tier"
+    },
+    {
+      "url": "https://airtable.com/pricing",
+      "date": "2026-10-21",
+      "proved": "(raw page JSON) - Free plan object: maxTotalAttachmentSizeInBytes=1000000000, maxRowsPerApplication=1000, 'descriptionMarkdown: Unlimited bases / 1,000 records per base / 1GB attachment space per base'; Enterprise: maxTotalAttachmentSizeInBytes=1000000000000 (1 TB/base)"
+    },
+    {
+      "url": "https://airtable.com/developers/web/api/upload-attachment",
+      "date": "2026-10-21",
+      "proved": "'Upload an attachment up to 5 MB to an attachment cell via the file bytes directly'"
+    },
+    {
+      "url": "https://api.airtable.com/v0/meta/bases",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> HTTP 401 (API live, auth-gated)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "1 GB attachment storage per base on Free, with unlimited bases and 1,500 bases per workspace",
+  "extras": {},
+  "binding": "request-rate",
+  "binding_note": "calls are bounded rather than bytes, which is fatal to a nightly job on a monthly counter"
+}

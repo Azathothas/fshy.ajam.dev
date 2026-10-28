@@ -1,0 +1,76 @@
+{
+  "topic": "debrid",
+  "slug": "nyaa",
+  "provider": "Nyaa",
+  "url": "https://nyaa.si/",
+  "category": "torrent index, anime and East Asian media (RSS, no account)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "No account: the search feed at /?page=rss&q=... returned RSS 2.0 with a nyaa namespace and per-item torrent links.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://nyaa.si/?page=rss&q=ubuntu&c=0_0&f=0",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "the tracker caps a single torrent file and the site caps uploads, neither of which is a client-side limit on the index",
+    "bytes": null,
+    "source_url": "https://nyaa.si/",
+    "notes": "the caps were not read on the pages fetched today"
+  },
+  "retention": {
+    "stated": "releases persist; the feed returns only the query's matches, so age is not implied by the feed",
+    "days": null,
+    "source_url": "https://nyaa.si/?page=rss&q=ubuntu&c=0_0&f=0",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "no byte allowance: the feed serves XML and .torrent links; the transfer is client-to-swarm",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://nyaa.si/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "RSS at /?page=rss with the usual query parameters (q, c, f); each item's <link> is a .torrent download and <guid> is the view page.",
+  "endpoint": "https://nyaa.si/?page=rss&q=ubuntu&c=0_0&f=0",
+  "tooling": "Any RSS reader; the item link is already the .torrent, so no page fetch is needed.",
+  "chaining": "A saved search as an RSS feed is the cheapest possible subscription: the client polls one URL per interest and gets .torrent links, which a debrid service then turns into cached playback.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "none published on the pages fetched; the feed answered immediately with no 429",
+      "source": "https://nyaa.si/?page=rss&q=ubuntu&c=0_0&f=0"
+    }
+  ],
+  "limits_note": "The feed is the whole interface: no key, no token, no pagination wall on the routes tried.",
+  "binding": "request-rate",
+  "binding_note": "No byte accounting exists on an index; polling a saved search is a handful of requests a day, far below anything that would throttle.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account for search or RSS; uploading and commenting need one, which a user does not need.",
+    "country": null
+  },
+  "reliability_note": "A query with no match returns a valid feed with zero items rather than an error, so a client must check item count rather than status. The one match for 'ubuntu' was dated 2009, so the index holds very old items and a fresh-looking feed says nothing about freshness.",
+  "confidence": "documented",
+  "confidence_note": "The feed was fetched on 2026-10-23 and parsed: one item for 'ubuntu', with a .torrent link. A month of polling would raise it to measured.",
+  "evidence": [
+    {
+      "url": "https://nyaa.si/?page=rss&q=ubuntu&c=0_0&f=0",
+      "date": "2026-10-23",
+      "proved": "RSS 2.0 with the nyaa namespace, channel title 'Nyaa - ubuntu - Torrent File RSS', items whose link is https://nyaa.si/download/<id>.torrent and pubDate 2009 for the one match"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-23T01:52:28.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The narrowest and most reliable feed: a saved search is a URL, and the URL returns .torrent files. Useless outside anime and East Asian media, which is why it is a second feed rather than the primary one.",
+  "extras": {
+    "feed_protocol": "rss2",
+    "namespace": "nyaa",
+    "saved_search": true
+  }
+}

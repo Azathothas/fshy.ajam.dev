@@ -1,0 +1,111 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "lanzou-cloud",
+  "provider": "Lanzou Cloud (蓝奏云)",
+  "url": "https://www.lanzou.com",
+  "category": "consumer-pan",
+  "free_tier": {
+    "stated": "Unlimited total storage on the free tier: '拥有无限制的总存储空间'. The per-file cap is 100 MB, and share links are permanent",
+    "unit": "unlimited",
+    "metered_on": "stored-bytes",
+    "source_url": "https://www.lanzou.com/",
+    "read_on": "2026-10-21"
+  },
+  "per_object_cap": {
+    "stated": "100 MB per file on the free tier: '不限空间大小，不限下载速度，只是限制文件大小，最大不超过100M/个文件'",
+    "bytes": 100000000,
+    "source_url": "https://www.cnblogs.com/Dongmy/p/18143085"
+  },
+  "retention": {
+    "stated": "Share links are stated to be permanent: '分享文件地址永久有效'. Account retention is not published",
+    "days": null,
+    "source_url": "https://www.lanzou.com/"
+  },
+  "egress": {
+    "terms": "Free and explicitly unmetered: '下载不限速度，不限流量，不限次数，免登录下载'. The free product is ad-funded and the FAQ states 我们对下载速度不做任何限制",
+    "metered": false,
+    "free_allowance": "unlimited",
+    "price_per_tb": null,
+    "source_url": "https://www.lanzou.com/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "no official API. A mature unofficial Python wrapper, zaxtyson/LanZouCloud-API with 811 stars and PyPI lanzou-api 2.6.10, does login, list, upload, download, delete, move, folder operations and direct-link extraction, and its README claims it works around both the file-type and the per-file size limits by splitting",
+  "chaining": "Unlimited total times 100 MB per object is the pure per-record-unlimited shape: 20 TiB is about 210,000 objects, all inside one free account's allowance. The gate is that registration is SMS-only on a mainland number",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "100 MB per file on the free tier",
+      "source": "https://www.cnblogs.com/Dongmy/p/18143085"
+    },
+    {
+      "kind": "request-rate",
+      "value": "no WebDAV on a free account; access is only through direct-link extraction",
+      "source": "https://openlistteam.github.io/docs/zh/guide/drivers/lanzou.html"
+    }
+  ],
+  "identity_cost": {
+    "kind": "country-phone",
+    "detail": "registration moved to accounts.woozooo.com and asks for 手机号 plus an SMS code with no email path and no documented foreign-number path",
+    "country": "86"
+  },
+  "reliability_note": "Domains rotate constantly, across lanzou.com, lanzoue, lanzouj, lanzoux and lanzoul, and a share link that works on one suffix 404s on another, so a script must carry a domain list. The CDN host itself is geo-flaky. Two seed waves disagree on the free total, one saying unlimited and another 5 to 10 GB",
+  "confidence": "reported",
+  "evidence": [
+    {
+      "url": "https://www.lanzou.com/",
+      "date": "2026-10-21",
+      "proved": "'拥有无限制的总存储空间' '下载不限速度，不限流量，不限次数，免登录下载！'; '分享文件地址永久有效'"
+    },
+    {
+      "url": "https://www.cnblogs.com/Dongmy/p/18143085",
+      "date": "2026-10-21",
+      "proved": "'免费空间：无限制，只是限制文件大小，最大不超过100M/个文件'"
+    },
+    {
+      "url": "https://github.com/zaxtyson/LanZouCloud-API",
+      "date": "2026-10-21",
+      "proved": "811 stars, PyPI lanzou-api the README claims it works around both the file-type and the per-file size limits"
+    },
+    {
+      "url": "probe:https://abskoop.lanzoue.com/iyobY0jnhpdi",
+      "date": "2026-10-21",
+      "proved": "200, 1,976 B, title '数码小站 V0.4.2.zip - 蓝奏云', body contains src=\"/fn?AmQFb1o_bVDU...\""
+    },
+    {
+      "url": "probe:POST https://apifile.woozooo.com/ajaxfile.php?file=95202518",
+      "date": "2026-10-21",
+      "proved": "200, 643 B, {\"zt\":1,\"dom\":\"https://developer4.lanrar.com\",\"url\":\"?AmRaZF1s...\"} for action=downprocess"
+    },
+    {
+      "url": "probe:GET https://developer4.lanrar.com/file/<token>",
+      "date": "2026-10-21",
+      "proved": "200 but 2,714 B of gzipped JavaScript from an automated-traffic filter, so the raw CDN needs the token chain the parser path is reliable"
+    },
+    {
+      "url": "https://pc.woozooo.com/account.php?action=register",
+      "date": "2026-10-21",
+      "proved": "'新用户注册, 手机号, 获取短信验证码, 我已同意服务协议并注册', so signup is SMS-only"
+    },
+    {
+      "url": "https://openlistteam.github.io/docs/zh/guide/drivers/lanzou.html",
+      "date": "2026-10-21",
+      "proved": "'链接：只能显示链接里面的内容（不需要提供cookie就可以挂载）'"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "binding": "per-object-cap",
+  "binding_note": "The total is genuinely unlimited and the egress is genuinely free, so nothing about capacity or traffic binds. 100 MB per object over a 10 TiB working set is 105,000 objects, which makes the file count the problem before the bytes.",
+  "notes": "The cleanest example in the corpus of the per-record-unlimited pattern, and the per-file cap is the entire cost. Two seed waves disagreed on the total, one saying unlimited and another 5 to 10 GB; the vendor's own page says unlimited and that is what is recorded, with the disagreement named.",
+  "extras": {
+    "access_mode": "registration-gated",
+    "aliases": [
+      "Lanzou Cloud / 蓝奏云",
+      "Lanzou (蓝奏云)"
+    ],
+    "cross_topic_record": "dossier/storage/lanzou.json",
+    "cross_topic_note": "the storage topic carries the same provider; this record is scoped to its role as a direct-link target"
+  }
+}

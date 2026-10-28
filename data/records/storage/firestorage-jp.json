@@ -1,0 +1,82 @@
+{
+  "topic": "storage",
+  "slug": "firestorage-jp",
+  "provider": "firestorage.jp (ファイヤーストレージ)",
+  "url": "https://firestorage.jp",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "Unregistered and free-member tiers: per-file max 300 GiB, unlimited number of uploads. The free *member* storage drive is only 2 GiB (25 GiB light, 100 GiB regular) — the 'capacity unlimited' claim applies to the transfer service, not the drive.",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://firestorage.jp/doc/plan",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "300 GiB per file",
+    "bytes": 322122547200,
+    "source_url": "https://firestorage.jp/doc/plan",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Retention: user-selectable, '最長で14日間' on オクル, default 3 days; if unset the operator deletes on its own algorithm",
+    "days": 3,
+    "source_url": "https://firestorage.jp/doc/plan",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "No bandwidth metering on the free tiers; paid tiers sell storage GB and ad removal, not transfer.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "webdav"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Web upload form (オクル) only; no documented public API for the free tier. Member drive has no WebDAV.",
+  "chaining": "Account-less uploads so 300 GiB per object x unlimited objects, but each object has a hard expiry, so chaining is a re-upload loop rather than accumulation.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "300 GiB per file",
+      "source": "https://firestorage.jp/doc/plan"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "Retention: user-selectable, '最長で14日間' on オクル, default 3 days",
+      "source": "https://firestorage.jp/doc/plan"
+    }
+  ],
+  "limits_note": "300 GiB per file. Retention: user-selectable, '最長で14日間' on オクル, default 3 days; if unset the operator deletes on its own algorithm. TOP-page anonymous upload is separately capped at 2 GiB — the 300 GiB path requires the オクル flow.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: f unset the operator deletes on its own algorithm. TOP-page anonymous upload is separately capped at 2 GiB — the 300 GiB path requires the オクル flow. anonymous-dump",
+    "country": null
+  },
+  "reliability_note": "Two different caps on the same site (2 GiB from the front page, 300 GiB via オクル) is a real trap for any wrapper: the naive POST silently hits the 2 GiB ceiling. Deleted files are unrecoverable by policy.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://firestorage.jp/doc/plan",
+      "date": "2026-10-21",
+      "proved": "'1ファイルの最大アップロードサイズ300GiB(オクル)' on 未登録会員 and 無料会員; 'ストレージ保存 保存容量2GiB' for free members"
+    },
+    {
+      "url": "https://firestorage.jp/doc/okuru_m1",
+      "date": "2026-10-21",
+      "proved": "'1ファイル最大300GiBまで対応', '最長で14日間アップロード可能です', default 3 days"
+    },
+    {
+      "url": "https://firestorage.jp/doc/faq-all",
+      "date": "2026-10-21",
+      "proved": "'TOP画面からのアップロードは未登録の方の利用を主としている為、最大アップロードサイズは2GiBに制限'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Unregistered and free-member tiers: per-file max 300 GiB, unlimited number of uploads. The free *member* storage drive is only 2 GiB (25 GiB light, 100 GiB regular) — the 'capacity unlimited' claim applies to the transfer service, not the drive.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

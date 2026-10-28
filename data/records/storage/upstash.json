@@ -1,0 +1,93 @@
+{
+  "topic": "storage",
+  "slug": "upstash",
+  "provider": "Upstash (Redis / Vector / QStash)",
+  "url": "https://upstash.com",
+  "category": "paas",
+  "free_tier": {
+    "stated": "Redis Free: 250 MB max data, 10 GB bandwidth/month, 1 database. Vector Free: 1 GB total data, 200M vectors x dims. QStash Free: 1,000 messages/day, 50 GB bandwidth, 1 MB message.",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://upstash.com/pricing/redis",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://upstash.com/pricing/redis",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Unclaimed ephemeral DBs deleted after 3 days.",
+    "days": 3,
+    "source_url": "https://upstash.com/pricing/redis",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Redis Free caps bandwidth at 10 GB/month with max data 250 MB — a 40x fetch amplification before the egress meter binds. Vector Free: bandwidth free/unmetered, storage 1 GB is the wall.",
+    "metered": false,
+    "free_allowance": "10 GB per month"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Redis protocol (any redis client), REST API for all three products, `@upstash/redis` SDK; QStash is HTTP-only",
+  "chaining": "One free database per account on Redis Free ('Max databases | 1') — no per-project multiplication. BUT: `GET https://upstash.com/start-redis` mints a keyless, unauthenticated free Redis with no signup (deleted after 3 days unless claimed); claimed ones become normal free DBs. Vector's 1 GB with 1 MB per vector and 200M vectors is the better storage shape: unlimited vector COUNT, only total bytes capped.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "deleted after 3 days",
+      "source": "https://upstash.com/pricing/redis"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "delete at 3 days",
+      "source": "https://upstash.com/pricing/redis"
+    }
+  ],
+  "limits_note": "250 MB is tiny. 1 database per account. QStash 1 MB max message size makes it useless as storage. Request size 10 MB (upgradeable). Unclaimed ephemeral DBs deleted after 3 days.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: art-redis` mints a keyless, unauthenticated free Redis with no signup (deleted after 3 days unless claimed); claimed ones become normal free DBs. Vector's 1 GB with 1 MB per vector and 200M",
+    "country": null
+  },
+  "reliability_note": "Ephemeral DBs (unclaimed) hard-delete at 3 days — data vanishes by design. Claimed free DBs are durable.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://upstash.com/pricing/redis",
+      "date": "2026-10-21",
+      "proved": "'Free | $0/month | - | 250 MB | 10 GB', 'Max databases | 1' on Free"
+    },
+    {
+      "url": "https://upstash.com/pricing/vector",
+      "date": "2026-10-21",
+      "proved": "'Free | $0 | 200M | 10K | 1 GB', 'Max total data/metadata size: 1 GB'"
+    },
+    {
+      "url": "https://upstash.com/pricing/qstash",
+      "date": "2026-10-21",
+      "proved": "'Free | $0/month | 1,000 | 50 GB | 1 MB'"
+    },
+    {
+      "url": "https://upstash.com/start-redis",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, documents zero-signup POST with Idempotency-Key; 'Databases live for 3 days unless claimed'"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Redis Free: 250 MB max data, 10 GB bandwidth/month, 1 database. Vector Free: 1 GB total data, 200M vectors x dims. QStash Free: 1,000 messages/day, 50 GB bandwidth, 1 MB message.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "egress",
+      "why": "Redis Free: 250 MB max data, 10 GB bandwidth/month, 1 database. Vector Free: 1 GB total data, 200M vectors x dims. QStash Free: 1,000 messages/day, 50 GB bandwidth, 1 MB message.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "retention-clamped",
+  "binding_note": "a clock, not a quota: bytes leave whether or not a user is finished with them"
+}

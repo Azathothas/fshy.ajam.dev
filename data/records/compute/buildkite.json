@@ -1,0 +1,208 @@
+{
+  "topic": "compute",
+  "slug": "buildkite",
+  "provider": "Buildkite",
+  "url": "https://buildkite.com/pricing",
+  "category": "CI runner",
+  "free_tier": {
+    "stated": "Quoted from the Free plan: 'Up to 5 users', 'Up to 10 concurrent jobs', 'Up to 2,000 Linux vCPU minutes per month', 'Up to 250k test executions per month', and 'No credit card required'. The hosted-agent limits table makes the machine explicit: 'Linux vCPU minutes per month | ... | Free | Up to 2,000' and 'Linux vCPU concurrency | ... | 20 vCPU'. Quoted from the Linux hosted-agent page: 'The Free plan only provides access to small-sized instance shapes.' The small shape is `LINUX_AMD64_2X4`, quoted as 'Small | AMD64 | 2 | 4 GB | 47 GB'.",
+    "unit": "minutes",
+    "metered_on": "wall-clock",
+    "source_url": "https://buildkite.com/docs/platform/limits",
+    "read_on": "2026-10-24",
+    "notes": "The unit is a vCPU-minute, not a wall-clock minute. At the only shape the Free plan offers, 2 vCPU, 2,000 vCPU-minutes is 1,000 wall-clock minutes, or 16 h 40 min a month."
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "notes": null
+  },
+  "retention": {
+    "stated": "Quoted: 'Once the job is complete, regardless of its exit status, the virtualized environment and all of its associated data, including data it generated during job execution, is removed and destroyed.' Cache volumes are the exception and are persisted across jobs.",
+    "days": 0,
+    "source_url": "https://buildkite.com/docs/pipelines/hosted-agents",
+    "notes": "0 means the environment is destroyed at job end. Cache volumes survive, up to 50 GB for the container cache and 5 GB for the git mirror."
+  },
+  "egress": {
+    "terms": "not published on any page read: no egress quota, shaping tier or per-byte price is stated for Buildkite hosted agents",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://buildkite.com/docs/pipelines/hosted-agents"
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "inferred from the tooling the provider documents; not probed",
+  "tooling": "not stated",
+  "chaining": "None worth composing.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "Up to 2,000 Linux vCPU-minutes a month on the Free plan. At the 2 vCPU small shape that is 1,000 wall-clock minutes; there is no larger shape on this plan.",
+      "source": "https://buildkite.com/docs/platform/limits"
+    },
+    {
+      "kind": "request-rate",
+      "value": "Linux vCPU concurrency on the Free plan is 20 vCPU. Quoted worked example: 'the Free plan's 20-vCPU Linux limit supports up to 10 Small Linux machines at 2 vCPU each'.",
+      "source": "https://buildkite.com/docs/platform/limits"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "Quoted: 'Job timeout | The maximum time before a running job will time out. Default: 4 hours on the Free plan. Unlimited on Pro and Enterprise plans.' Separately, hosted Linux instances are 'capable of running up to 8 hours'.",
+      "source": "https://buildkite.com/docs/platform/limits"
+    },
+    {
+      "kind": "write-gated",
+      "value": "No inbound reachability published and the environment is destroyed at job end; no static IP is offered on the Free plan",
+      "source": "https://buildkite.com/docs/pipelines/hosted-agents"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "The Free plan reaches only the small shape, so the machine is 2 vCPU and 4 GB with no way to buy a bigger one without a paid plan",
+      "source": "https://buildkite.com/docs/agent/buildkite-hosted/linux"
+    }
+  ],
+  "limits_note": "The 2,000 vCPU-minute pool is the ceiling: 1,000 wall-clock minutes a month on the only shape the Free plan allows, which is 33 minutes a day. The 4-hour job timeout does not bind before it.",
+  "binding": "volume-quota",
+  "binding_note": "2,000 vCPU-minutes is 1,000 wall-clock minutes on the only shape the Free plan offers, which is 33 minutes a day: the month runs out long before the 4-hour job timeout does.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Quoted from the Free plan: 'No credit card required', and from the signup block: 'Start Free or Pro with 30 days of the all-access trial. No credit card or commitment.' No card, no hold and no phone is stated as required anywhere read. The account limits are 'Organizations per day | Default: 4 organizations' and 'Unverified emails per user | Default: 5 emails', which implies an email-verified account is the gate.",
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://buildkite.com/pricing",
+      "date": "2026-10-22",
+      "proved": "'Free Plan ... Up to 5 users, Up to 10 concurrent jobs, Up to 2,000 Linux vCPU minutes per month, Up to 250k test executions per month', and 'No credit card required'; Pro includes '4,000 Linux vCPU minutes per month'"
+    },
+    {
+      "url": "https://buildkite.com/pricing",
+      "date": "2026-10-24",
+      "proved": "quoted, Free plan: 'For solo developers and small teams', '$ 0', 'No credit card required', with 'Up to 5 users', 'Up to 10 concurrent jobs', 'Up to 2,000 Linux vCPU minutes per month', 'Up to 250k test executions per month'"
+    },
+    {
+      "url": "https://buildkite.com/docs/platform/limits",
+      "date": "2026-10-24",
+      "proved": "quoted, hosted agents limits table: '| Linux vCPU concurrency | 24 vCPU | 20 vCPU | 256 vCPU | Custom |' and '| Linux vCPU minutes per month | 4,000 included | Up to 2,000 | 4,000 included | Volume discounts |'"
+    },
+    {
+      "url": "https://buildkite.com/docs/platform/limits",
+      "date": "2026-10-24",
+      "proved": "quoted: 'the Free plan's 20-vCPU Linux limit supports up to 10 Small Linux machines at 2 vCPU each'"
+    },
+    {
+      "url": "https://buildkite.com/docs/platform/limits",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Job timeout | The maximum time before a running job will time out. Default: 4 hours on the Free plan. Unlimited on Pro and Enterprise plans'"
+    },
+    {
+      "url": "https://buildkite.com/docs/agent/buildkite-hosted/linux",
+      "date": "2026-10-24",
+      "proved": "quoted: 'only provides access to small-sized instance shapes' (the sentence is 'The [Free plan](https://buildkite.com/pricing/) only provides access to small-sized instance shapes.' with the plan name as a link) and the shape table row '| `LINUX_AMD64_2X4` | Small | AMD64 | 2 | 4 GB | 47 GB |', plus 'To accommodate different workloads, instances are capable of running up to 8 hours.'"
+    },
+    {
+      "url": "https://buildkite.com/pricing/feature-comparison",
+      "date": "2026-10-24",
+      "proved": "quoted, the Hosted Agents block for the Free column: 'Up to 2,000 mins/month', 'Small only', 'Up to 20 vCPU'"
+    },
+    {
+      "url": "https://buildkite.com/docs/pipelines/hosted-agents",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Once the job is complete, regardless of its exit status, the virtualized environment and all of its associated data, including data it generated during job execution, is removed and destroyed. For Linux and macOS hosted agents, any cache volume data is persisted.'"
+    },
+    {
+      "url": "https://buildkite.com/docs/pipelines/hosted-agents",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Hosted agents are provisioned on demand and destroyed after each job, providing clean, reproducible builds'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-24T04:00:19.000Z",
+  "notes": "This corrects the corpus's own record, which said Buildkite supplies 'the scheduler and the agent binary' and that 'the machine the agent runs on is the customer's, or a Buildkite-hosted agent on a paid plan', and which recorded no shape. That was wrong on 2026-10-24: Buildkite's own limits table gives the Free plan 2,000 Linux vCPU-minutes of hosted agents and 20 vCPU of concurrency, and its Linux hosted-agent page restricts the Free plan to the small 2 vCPU / 4 GB / 47 GB shape. So Buildkite does sell a free machine, it is 2 vCPU and 4 GB, and it needs no card. The corpus also had the arithmetic backwards: it priced the pool against a 4 vCPU agent, but a Free-plan namespace cannot select one. At 2 vCPU the pool is 16 h 40 min a month, not 8 h 20 min. Not established: the egress term; whether a hosted agent can be reached inbound (no page read says it can, and the environment is destroyed at job end); and whether the 2,000 vCPU-minutes includes the boot time of the agent, which the limits page says consumes concurrency 'from the time it starts booting' but does not say whether it consumes minutes.",
+  "extras": {
+    "wave2": {
+      "class": "ci-runner-capacity",
+      "free_tier_kind": "monthly-vcpu-minute",
+      "shape": {
+        "vcpu": null,
+        "ram_gib": null,
+        "gpu_class": null,
+        "gpu_count": 0
+      }
+    },
+    "shape": {
+      "vcpu": 2,
+      "ram_gib": 4,
+      "disk_gib": 47,
+      "gpu_class": null,
+      "gpu_count": null,
+      "note": "`LINUX_AMD64_2X4`, the only shape the Free plan offers, quoted as 'Small | AMD64 | 2 | 4 GB | 47 GB'. The vendor writes decimal GB; kept unconverted, so 4 GB is about 3.7 GiB and 47 GB about 43.8 GiB. Larger shapes exist (4/16/95, 8/32/158 and up to 64 vCPU) but are paid-plan or Enterprise only."
+    },
+    "billing_model": "free",
+    "term": "none",
+    "m10h_usd": null,
+    "m24h_usd": null,
+    "price_arithmetic": "2,000 vCPU-minutes / 2 vCPU = 1,000 wall-clock minutes = 16 h 40 min a month at USD 0.00. 10 h a day x 30 = 300 h = 18,000 wall-clock minutes = 36,000 vCPU-minutes, eighteen times the pool. 24/7 x 30 = 730 h needs 87,600 vCPU-minutes, forty-four times the pool. Past the pool the rate is USD 0.004 per vCPU-minute on a paid platform plan, so 36,000 vCPU-minutes would be USD 144.00 and 87,600 USD 350.40.",
+    "free_tier_kind": "monthly-vcpu-minute",
+    "session_cap": {
+      "wall_clock_min": 240,
+      "idle_reap_s": null,
+      "restart_required": true,
+      "note": "4 hours per job on the Free plan; the 2,000 vCPU-minute monthly pool runs out far sooner. The environment is destroyed at job end."
+    },
+    "concurrency": {
+      "jobs_at_once": 10,
+      "note": "20 vCPU of Linux concurrency on the Free plan, and the only shape is 2 vCPU, so 10 machines at once. Quoted: 'the Free plan's 20-vCPU Linux limit supports up to 10 Small Linux machines at 2 vCPU each'."
+    },
+    "keep_rate": {
+      "value": 0.0,
+      "basis": "the environment is destroyed at job end; cache volumes persist at no stated charge",
+      "source": "https://buildkite.com/docs/pipelines/hosted-agents"
+    },
+    "persistent_storage": {
+      "included_gib": 0,
+      "price_gib_month": "not published; cache volumes are 'included at no additional cost' with a 50 GB container cache and 5 GB git mirror default quota",
+      "durability": "the job environment is destroyed; cache volumes persist across jobs",
+      "survives_stop": false,
+      "survives_destroy": false,
+      "max_retention": "the job, except cache volumes"
+    },
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": false,
+      "ports": "none inbound: no page read offers a public address and the environment is destroyed at job end",
+      "static_ip": false,
+      "ipv6": null,
+      "per_session_bytes": null
+    },
+    "units": "RAM and disk are the vendor's decimal GB, kept unconverted. 4 GB reads as 4, 47 GB as 47.",
+    "granularity": {
+      "min_billed_s": 1,
+      "rounding_s": 1,
+      "note": "quoted for the paid rate: 'billed per vCPU minute and metered to the second, with no minimums and no rounding'"
+    },
+    "burst_x": 10.0,
+    "burst_note": "10 concurrent 2 vCPU small machines on the Free plan's 20 vCPU of Linux concurrency. burst_x is that concurrency multiplier over a single runner.",
+    "census_rows": [
+      "buildkite"
+    ],
+    "topic_note": "belongs to ci-cd-runners; recorded here to stop the double count",
+    "wave3": {
+      "verified": [
+        "2,000 Linux vCPU-minutes a month on the Free plan",
+        "20 vCPU Linux concurrency = 10 small machines",
+        "the small shape is 2 vCPU / 4 GB / 47 GB",
+        "4-hour job timeout on the Free plan",
+        "no credit card required"
+      ],
+      "corrected": "It does and they are not. The earlier arithmetic also priced the pool against a 4 vCPU agent that a Free namespace cannot select.",
+      "new": "the shape, the concurrency and the 4-hour Free-plan job timeout, none of which the corpus had"
+    }
+  },
+  "tier": "Free plan, Buildkite-hosted Linux agents",
+  "confidence_note": "the 2,000 vCPU-minutes, the 20 vCPU concurrency, the 4-hour Free-plan job timeout and 'No credit card required' are quoted from buildkite.com/pricing and buildkite.com/docs/platform/limits read today; the 2 vCPU / 4 GB / 47 GB shape and the Free-plan shape restriction are quoted from the Linux hosted-agent page read today."
+}

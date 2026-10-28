@@ -1,0 +1,81 @@
+{
+  "topic": "debrid",
+  "slug": "databay",
+  "provider": "Databay",
+  "url": "https://databay.com/proxies/residential/pricing",
+  "category": "residential egress: rotating residential, prepaid GB packages",
+  "tier": "Residential, prepaid package",
+  "free_tier": {
+    "stated": "No free allowance published; 'Entry allowance 5 GB, Entry rate $2.75/GB, Payable total USD $13.75, Traffic validity 186 days'.",
+    "unit": "GB",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://databay.com/proxies/residential/pricing",
+    "read_on": "2026-10-23",
+    "notes": "The 186-day validity is why this is the one metered product that could be bought in small amounts without losing the purchase at month end."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: a byte stream, not an object",
+    "bytes": null,
+    "source_url": "https://databay.com/proxies/residential/pricing",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable to the traffic; the purchased GB is valid for 186 days (5 GB package) or 31 days (packages from 10 GB)",
+    "days": null,
+    "source_url": "https://databay.com/proxies/residential/pricing",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Prepaid packages, each a fixed allowance at a fixed rate: '5 GB+ $13.75 $2.75/GB ... 10 GB $22.50 $2.25/GB ... 50 GB $87.50 $1.75/GB ... 150 GB $210.00 $1.40/GB ... 500 GB $475.00'. The product is 'a shared rotating pool, not a static ISP allocation'.",
+    "metered": true,
+    "free_allowance": "none",
+    "price_per_tb": "USD 0.95/GB at the 500 GB package (USD 475); the 1 TB package was not read",
+    "source_url": "https://databay.com/proxies/residential/pricing"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "HTTP(S) and SOCKS5 rotating pool, country or continent selector, sticky sessions up to 120 minutes on the datacenter product; the residential page states connection-based rotation.",
+  "endpoint": "https://app.databay.com/",
+  "tooling": "any HTTP/SOCKS5 client",
+  "chaining": "Prepaid and valid for 186 days at the entry tier, so it is the metered product a corpus can test once without a monthly commitment; at TiB scale it is still USD 973 for 500 GB.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "prepaid GB package; 500 GB for USD 475 is the largest package read",
+      "source": "https://databay.com/proxies/residential/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "'Connection-based rotation; a fresh IP is not guaranteed' and sticky sessions up to 120 minutes",
+      "source": "https://databay.com/proxies/residential/pricing"
+    }
+  ],
+  "limits_note": "Rotation per connection is the wrong shape for a long download: a single HTTP transfer holds one connection, so a rotation policy that only changes on a new connection leaves the transfer on one address, which is what a debrid IP check wants.",
+  "binding": "volume-quota",
+  "binding_note": null,
+  "identity_cost": {
+    "kind": "card",
+    "detail": "Self-service checkout at app.databay.com with card; no identity document mentioned on the page read.",
+    "country": null
+  },
+  "reliability_note": "'A fresh IP is not guaranteed for every connection' and sticky sessions 'may end before that requested window' - a mid-transfer address change is the failure mode, and it is the one debrid terms punish as account sharing.",
+  "confidence": "documented",
+  "confidence_note": "The package table is on the vendor page read today. The 1 TB rung was below the fold and is not quoted, so the per-TiB figure is derived from the 500 GB package and labelled as such.",
+  "evidence": [
+    {
+      "url": "https://databay.com/proxies/residential/pricing",
+      "date": "2026-10-23",
+      "proved": "the package ladder with rates and totals: 5 GB $2.75/GB ($13.75), 10 GB $2.25/GB ($22.50), 50 GB $1.75/GB ($87.50), 150 GB $1.40/GB ($210), 500 GB $475; and 'Entry starts at 5 GB' with 186-day validity"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T02:21:34.000Z",
+  "price_per_tb_month": "USD 0.95/GB at the 500 GB package, i.e. USD 973 per TiB derived from that rung",
+  "notes": "Entered as a low-rate outlier and stayed because of the 186-day validity, which makes it the only metered vendor here a small test purchase does not waste.",
+  "extras": {
+    "ladder": "2.75 / 2.25 / 1.75 / 1.40 / 0.95 USD per GB at 5 / 10 / 50 / 150 / 500 GB",
+    "validity": "186 days at 5 GB, 31 days from 10 GB",
+    "rotation": "connection-based; sticky up to 120 minutes"
+  }
+}

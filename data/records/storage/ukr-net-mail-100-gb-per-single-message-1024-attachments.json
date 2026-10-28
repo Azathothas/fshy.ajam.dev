@@ -1,0 +1,75 @@
+{
+  "topic": "storage",
+  "slug": "ukr-net-mail-100-gb-per-single-message-1024-attachments",
+  "provider": "UKR.NET Mail — 100 GB per single message, 1024 attachments/message",
+  "url": "https://www.ukr.net",
+  "category": "cloud-drive",
+  "free_tier": {
+    "stated": "Help wiki states verbatim: \"До кожного листа можна прикріпити до 1024 вкладень, однак пам'ятайте, що загальний розмір листа разом з усіма вкладеннями не повинен перевищувати 100 Гб.\" = up to 1,024 attachments per message, and the total message size including all attachments must not exceed 100 GB. If that figure is real it is the largest per-object cap found anywhere in this niche — 40x Yahoo's APPENDLIMIT and 3x Outlook's SMTP SIZE.",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://wiki.ukr.net/WorkWithMessages",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap claimed 100 GB",
+    "bytes": 100000000000,
+    "source_url": "https://wiki.ukr.net/WorkWithMessages",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://wiki.ukr.net/WorkWithMessages",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered by provider; mailbox service, no transfer billing.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "IMAP with app-specific passwords (account password blocked for IMAP since 2020-02-18). probe-verified live: `imap.ukr.net:993` -> `* OK IMAP4 ready` / `* CAPABILITY IMAP4rev1 IDLE ID XLIST NAMESPACE AUTH=PLAIN`. Requires enabling IMAP in settings and generating a per-app password.",
+  "chaining": "Byte quota per account is not published at all — only the per-message cap. If the 100 GB/message figure holds, a handful of accounts covers 10 TiB; if it is a unit typo the real cap is likely 100 MB and the provider collapses to noise. This needs an authenticated test before it is counted.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap claimed 100 GB",
+      "source": "https://wiki.ukr.net/WorkWithMessages"
+    }
+  ],
+  "limits_note": "per-object-cap claimed 100 GB/message (unverified — no APPENDLIMIT in CAPABILITY, so the server may reject below that). Actual mailbox byte quota not published. IMAP requires a generated app password; the account password is refused.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: und anywhere in this niche — 40x Yahoo's APPENDLIMIT and 3x Outlook's SMTP SIZE. The 100 GB claim is a docs statement with no probe evidence behind it and one plausible unit error (Гб",
+    "country": null
+  },
+  "reliability_note": "The 100 GB claim is a docs statement with no probe evidence behind it and one plausible unit error (Гб vs Мб); do not size anything against it until an authenticated APPEND succeeds.",
+  "confidence": "inferred",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://wiki.ukr.net/WorkWithMessages",
+      "date": "2026-10-21",
+      "proved": "\"до 1024 вкладень ... не повинен перевищувати 100 Гб\", read live 2026-10-21"
+    },
+    {
+      "url": "https://wiki.ukr.net/ManageIMAPAccess",
+      "date": "2026-10-21",
+      "proved": "IMAP enabled + app password required since 2020-02-18"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: openssl s_client -connect imap.ukr.net:993 -> * OK IMAP4 ready; CAPABILITY has no APPENDLIMIT"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Help wiki states verbatim: \"До кожного листа можна прикріпити до 1024 вкладень, однак пам'ятайте, що загальний розмір листа разом з усіма вкладеннями не повинен перевищувати 100 Гб.\" = up to 1,024 attachments per message, and the total message size including all attachments must not exceed 100 GB. If that figure is real it is the largest per-object cap found anywhere in this niche — 40x Yahoo's APPENDLIMIT and 3x Outlook's SMTP SIZE.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

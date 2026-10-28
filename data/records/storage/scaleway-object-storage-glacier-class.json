@@ -1,0 +1,80 @@
+{
+  "topic": "storage",
+  "slug": "scaleway-object-storage-glacier-class",
+  "provider": "Scaleway Object Storage — Glacier class",
+  "url": "https://www.scaleway.com/en/pricing/storage/",
+  "category": "S3-compatible cold archive class",
+  "free_tier": {
+    "stated": "Per-GB-month; Paris (DC4), one region",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://www.scaleway.com/en/pricing/storage/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://www.scaleway.com/en/pricing/storage/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://www.scaleway.com/en/pricing/storage/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "75 GB free every month, then EUR 0.01/GB (= EUR 10/TB) for all classes. No free-egress exemption for Glacier.",
+    "metered": true,
+    "price_per_tb": "EUR 10/TB"
+  },
+  "interface": [
+    "s3-compatible",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "S3 API",
+  "tooling": "AWS CLI, rclone, all S3 SDKs",
+  "chaining": "Archive leg only — objects must be restored to Standard Multi-AZ before download.",
+  "limits": [],
+  "limits_note": "`retention-clamped` + restore path: objects are listed but not downloadable until restored; restore target is Standard Multi-AZ only (lifecycle rules are top-down, so you cannot restore Glacier -> One Zone); restore start takes minutes to 24 h for objects over 1 MB; default restore window is 1 day and the object is billed at Standard Multi-AZ while restored. Also: \"a billable unit started is due, so 1KB for 1 second on Object Storage is billed 1 GB hour\".",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "card",
+    "country": null
+  },
+  "reliability_note": "Hosted in the DC4 fallout shelter, 25 m underground — high physical durability, deliberately slow retrieval path.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://www.scaleway.com/en/pricing/storage/",
+      "date": "2026-10-21",
+      "proved": "Glacier EUR 0.0000035/GB/hour = EUR 0.00254/GB/month; Standard Multi-AZ EUR 0.01606/GB/month; Standard One Zone EUR 0.00803/GB/month; Egress \"75GB free every month then EUR 0.01/GB /MONTH\""
+    },
+    {
+      "url": "https://www.scaleway.com/en/docs/object-storage/faq/",
+      "date": "2026-10-21",
+      "proved": "restore only Glacier -> Standard Multi-AZ; 750 GB free for 90 days on new accounts (trial, not steady-state)"
+    },
+    {
+      "url": "https://www.scaleway.com/en/docs/object-storage/how-to/restore-an-object-from-glacier/",
+      "date": "2026-10-21",
+      "proved": "restore Days=NUM, default 1 day, minutes-to-24h to start for objects >1 MB"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "price_per_tb_month": "$2.85/TB at both 5 TB and 20 TB (EUR 2.54 = $2.85), plus EUR 10/TB on anything actually read out.",
+  "notes": "Per-GB-month; Paris (DC4), one region",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "Per-GB-month; Paris (DC4), one region",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    },
+    "price_verbatim": "$2.85/TB at both 5 TB and 20 TB (EUR 2.54 = $2.85), plus EUR 10/TB on anything actually read out."
+  },
+  "binding": "none",
+  "binding_note": "no constraint of a named kind was recorded; the verdict rests on the quota sentence rather than on a named limit"
+}

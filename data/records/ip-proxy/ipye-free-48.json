@@ -1,0 +1,171 @@
+{
+  "topic": "ip-proxy",
+  "slug": "ipye-free-48",
+  "provider": "IPYE",
+  "url": "https://ipye.com/ipv6-rental",
+  "category": "prefix lease (IPv6)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "/48 IPv6 (Free): Full /48 prefix, Instant deployment, RPKI ROA and route object, $0. The same page prices the larger blocks: /44 $20/yr, /40 $100/yr, /36 $200/yr, /29 $200/mo, and IPv6 Registration at $300 one-time (IPv6 prefix allocation, ARIN or RIPE PI with full control, a company is required).",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://ipye.com/ipv6-rental",
+    "read_on": "2026-10-24",
+    "notes": "The $0 is a checkout total, not a headline: the order page's summary reads Total today: $0.00. /pricing returns 404 on this date, so every price here was read on /ipv6-rental, /ipv4-rental, /asn, /use-cases, ipye.com/ and my.ipye.com/products/server-ip-bundles, not on a pricing page."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: a prefix, not an object. The nearest equivalent is the block size, and the free allocation is one /48, which the page states as Free · 65,536 /64s",
+    "bytes": null,
+    "source_url": "https://ipye.com/ipv6-rental",
+    "notes": "Anything larger is a paid tier: /44 is 16 × /48 at $20/yr, /40 is 256 × /48 at $100/yr, /36 is 4,096 × /48 at $200/yr, /29 is monthly at $200."
+  },
+  "retention": {
+    "stated": "not applicable: a routed prefix, not stored bytes. No term is stated for the free /48; /44, /40 and /36 are labelled Yearly and the /29 Monthly",
+    "days": null,
+    "source_url": "https://ipye.com/ipv6-rental",
+    "notes": "Whether a free /48 persists indefinitely is unverified. The page states no duration for it and no order was placed, so the absence of a term is read off a page rather than confirmed by a subscription record."
+  },
+  "egress": {
+    "terms": "No traffic term is published for a prefix, because the bytes never cross IPYE: the block is announced from a user's own compute. The only traffic statement on the site belongs to the server bundles: 'Our Datacenter Bundles come natively provisioned with 10 Gbps unmetered upstream ports, ensuring your commercial VPNs never face peak-hour throttling, scaling transparently as active users surge.'",
+    "metered": false,
+    "free_allowance": "none published; a prefix carries no traffic of its own",
+    "price_per_tb": null,
+    "source_url": "https://ipye.com/use-cases"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "Ordering is a web checkout and nothing else: my.ipye.com/products/ipv6-rental/48-ipv6/checkout asks for ASN(s), Region and Intended Use, with name servers for rDNS optional, and returns 200 with an order summary of $0.00. No endpoint for ordering or for prefix management is documented. The vendor states an API for a different job, DNS and geolocation: 'Take absolute control via our API and dashboard' and 'Dashboard API provides programmatic access for bulk Reverse DNS (rDNS/PTR) modifications'. The prefix itself is reached by announcing it over BGP from a user's own routing daemon; that is a network interface, and the schema's token list has no name for it.",
+  "tooling": "A routing daemon on the client's side: bird or FRR on the host that originates the prefix, plus the LOA the portal generates. No wrapper exists and none is needed; the checkout is a form and the portal is the management surface. rDNS and PTR edits are the one programmatic path, and only after an account exists.",
+  "chaining": "Take the free /48, announce it from a user's own compute under an origin ASN, and every request leaving that host presents an address in a prefix a user controls; that is one prefix in one network, so it meets a gate counting the /64 and not a gate counting the ASN.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "an origin ASN must exist before the prefix can be announced; the checkout refuses the order without ASN(s), Region and Intended Use",
+      "source": "https://ipye.com/ipv6-rental"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "the free allocation is one /48 (65,536 /64s); a /44 is the next size and costs $20/yr",
+      "source": "https://ipye.com/ipv6-rental"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "none published for a prefix; the only unmetered claim is 10 Gbps unmetered upstream ports on the Datacenter Bundles",
+      "source": "https://ipye.com/use-cases"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "no term stated for the free /48; /44, /40 and /36 are yearly and the /29 monthly, so a paid prefix is committed for a year",
+      "source": "https://ipye.com/ipv6-rental"
+    }
+  ],
+  "limits_note": "Not a vocabulary kind, kept so it is not lost: the $300 one-time IPv6 Registration is a provider-independent allocation under your company at ARIN or RIPE and needs a company; the $500 one-time ASN Registration needs a company registration certificate, proof of ID for the administrative contact and a signed framework agreement. Neither is required to take the free /48 with a rented shared or dedicated ASN.",
+  "binding": "write-gated",
+  "binding_note": "45 GB a month across about 599,000 requests meets no byte quota and no address cap here, because the prefix carries no traffic of its own; the first thing that stops a user is that the free /48 cannot be announced until an origin ASN exists, and the ASN behind IPYE's shared-ASN product could not be identified from RIPE without placing an order.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "An account at my.ipye.com is required to order, and the vendor says the account costs no identity document: the homepage carries 'No KYC/ID Verification Required', the /asn page description reads 'Crypto accepted, no KYC required', and the free /48 checkout asks for ASN(s), Region and Intended Use rather than a document. The exception is a different product on the same site: ASN Registration at $500 one-time requires a Company Registration Certificate (LLC, LTD), proof of ID for the administrative contact and a signed framework agreement. A rented shared ($300/yr) or dedicated ($700/yr) ASN is not described as requiring any of that.",
+    "country": null
+  },
+  "reliability_note": "One prefix is one network: every /64 in the /48 is announced by the same origin ASN, so a gate counting the ASN or the /48 sees one client however many addresses are used. The vendor states 'We don't shut down your servers for typical bulk operations'; that is a claim, not a measurement. Whether the free /48 is registered to an eyeball ISP as /use-cases describes is unverified, because no block was obtained.",
+  "confidence": "documented",
+  "confidence_note": "Every price, the ASN requirement and the KYC claim were read from the vendor's own pages on 2026-10-24, and the RIPE check was run but establishes only a negative. Measured would need an ordered /48, the prefix in hand, the prefix's registration confirmed against RIPE, and one refusal captured from an upstream that refuses Cloudflare's ranges.",
+  "evidence": [
+    {
+      "url": "https://ipye.com/ipv6-rental",
+      "date": "2026-10-24",
+      "proved": "The free /48 at $0 with an automatic RPKI ROA and route object, and the paid ladder: /44 $20/yr, /40 $100/yr, /36 $200/yr, /29 $200/mo, IPv6 Registration $300 one-time with a company required. Also the FAQ answer 'Do I need an ASN? Announcing the prefix needs an origin ASN. Use one you already operate, or add a shared or dedicated ASN from IPYE.' and 'Every prefix, including the free /48, gets an automatic RPKI ROA and route object.'"
+    },
+    {
+      "url": "https://my.ipye.com/products/ipv6-rental/48-ipv6/checkout",
+      "date": "2026-10-24",
+      "proved": "The free /48 is an orderable product with a $0.00 total, and the three required fields are ASN(s), Region and Intended Use, with name servers for rDNS optional."
+    },
+    {
+      "url": "https://ipye.com/use-cases",
+      "date": "2026-10-24",
+      "proved": "The proxy claim in the vendor's words: 'IPv6 Goldmine: Generate almost infinite proxy instances cheaply utilizing our /48 IPv6 deployments for platforms like Meta and Google', and the registration-class claim 'We lease prefixes registered to eyeball broadband networks and assign them to your compute hardware', plus 'We don't shut down your servers for typical bulk operations' and the 10 Gbps unmetered bundle ports."
+    },
+    {
+      "url": "https://ipye.com/asn",
+      "date": "2026-10-24",
+      "proved": "Shared ASN $300/yr, Dedicated ASN Rental $700/yr, ASN Registration $500 one-time, and the documents ASN Registration demands: a Company Registration Certificate, proof of ID for the administrative contact and a signed framework agreement. Page description: 'Crypto accepted, no KYC required.'"
+    },
+    {
+      "url": "https://ipye.com/",
+      "date": "2026-10-24",
+      "proved": "The identity claim 'No KYC/ID Verification Required', and the headline price 'IPv6 Blocks $0/yr Starting at /48'."
+    },
+    {
+      "url": "https://ipye.com/ipv4-rental",
+      "date": "2026-10-24",
+      "proved": "/24 $160/mo, /23 $300/mo, /22 $600/mo with an auto-generated LOA and RPKI ROA, and the same ASN gate on the IPv4 side: 'You can announce the block from an ASN you already have, or add a shared or dedicated ASN from IPYE.'"
+    },
+    {
+      "url": "https://my.ipye.com/products/server-ip-bundles",
+      "date": "2026-10-24",
+      "proved": "The ISP Network Bundle (RCN /22 IPv4+10 Gbps) at $1,600.00, described as 'Prefixes registered completely under eyeball ISP transit providers', alongside the DC /24 bundle at $300 and the ISP IPv6 proxy servers at $300, $600 and $1,100."
+    },
+    {
+      "url": "probe:https://stat.ripe.net/data/searchcomplete/data.json?resource=IPYE",
+      "date": "2026-10-24",
+      "proved": "RIPE searchcomplete for the string IPYE returns categories: [] at 2026-10-24T11:56:15Z, so no ASN registered under that name is findable in RIPE, and the ASN behind the shared-ASN product cannot be identified before an order."
+    },
+    {
+      "url": null,
+      "date": "2026-10-24",
+      "proved": "https://ipye.com/pricing returns HTTP 404, so no pricing page exists to read; the prices live on the per-product pages."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-24T10:07:11.000Z",
+  "price_per_tb_month": null,
+  "notes": "Three readings of the free /48 were considered. (1) It is a lead magnet that does not exist at the stated price: refuted, because the order page returns 200 with an order summary of $0.00 and three required fields. (2) /pricing 404ing means the offer is unpublished: refuted the same way, and the 404 is recorded as a probe rather than treated as evidence of absence. (3) The free tier is a /48 of IPYE's own datacenter space and the eyeball-ISP sentence on /use-cases is about the paid ISP bundles only: not refuted. The /ipv6-rental page never repeats the registration-class claim for the free /48, and no block was obtained, so the class of the free block is unverified and this record does not claim it. What the record does establish is narrower and firmer. The /48 is $0, it is a real order, it comes with an automatic RPKI ROA and route object, and it is unusable until an origin ASN exists. That last fact is the binding one and it is the vendor's own sentence, not an inference. Size is not diversity: 65,536 /64s are one prefix in one network, so the product meets a gate counting the /64 and leaves a gate counting the ASN untouched unless the prefix is announced from a different ASN than the compute, which is a fact about the announcement and not about the registration. The ASN itself is the open question. A RIPE searchcomplete for IPYE returns no ASN, so the network the shared ASN sits in cannot be named before paying $300/yr, and whether that ASN is a hosting ASN or an eyeball ASN decides whether this product reaches rung 5 at all. What would settle it: buy the shared ASN, obtain the /48, resolve the prefix with RIPE prefix-overview, and capture one refusal from an upstream that refuses Cloudflare's ranges from the same minute as a Cloudflare control. Two discrepancies are recorded rather than smoothed. The assignment quotes the KYC line as 'No KYC/ID Number Verification Required'; the homepage as read on 2026-10-24 says 'No KYC/ID Verification Required', and the word Number does not appear on it. And the bundle price is $1,600.00 on my.ipye.com/products/server-ip-bundles with no cadence in the extracted text, recorded here as per month as the assignment has it; The interface tokens are a deliberate deviation. The assignment lists api, socks5, http-proxy, web-ui and none, but scripts/dossier/schema.json's interface enum contains none of those, and the gate validates against that enum. The record therefore uses rest for the stated rDNS API and cli for the BGP announcement, and puts the web checkout and the missing name for a network interface in interface_detail. Checked against dossier/egress/ first, as the topic brief requires: no IPYE record exists there, so this is the first record for the provider and nothing is duplicated or corrected. No record in another topic is corrected by this one.",
+  "extras": {
+    "rung": 3,
+    "rung_note": "A /48 is a subnet, so it clears rung 3 by construction; it does not reach rung 4, because every address in the block is announced by one origin ASN.",
+    "price_table": {
+      "/48": "USD 0",
+      "/44": "USD 20/yr",
+      "/40": "USD 100/yr",
+      "/36": "USD 200/yr",
+      "/29": "USD 200/mo",
+      "ipv6_registration": "USD 300 one-time, a company required"
+    },
+    "asn_prices": {
+      "shared": "USD 300/yr",
+      "dedicated": "USD 700/yr",
+      "registration": "USD 500 one-time, company certificate and proof of ID"
+    },
+    "ipv4_prices": {
+      "/24": "USD 160/mo",
+      "/23": "USD 300/mo",
+      "/22": "USD 600/mo"
+    },
+    "bundle_prices": {
+      "dc_/24_ipv4": "USD 300.00",
+      "isp_rcn_/22_ipv4_10gbps": "USD 1,600.00",
+      "dc_/44_ipv6_1gbps": "USD 160.00",
+      "isp_/44_ipv6_1gbps": "USD 300.00",
+      "isp_10gbps_/36_ipv6": "USD 600.00",
+      "rcn_isp_10gbps_/29_ipv6": "USD 1,100.00"
+    },
+    "checkout_url": "https://my.ipye.com/products/ipv6-rental/48-ipv6/checkout",
+    "checkout_fields": [
+      "ASN(s) (required)",
+      "Region (required)",
+      "Name Servers for rDNS (optional)",
+      "Intended Use (required)"
+    ],
+    "order_summary": "Total today: $0.00",
+    "prefix_obtained": false,
+    "registration_class_checked": false,
+    "registration_class_note": "Not checked, because no block was issued. /use-cases claims eyeball-ISP registration for ISP Network Subnets; /ipv6-rental makes no such claim for the free /48.",
+    "ripe_probe": "stat.ripe.net/data/searchcomplete/data.json?resource=IPYE -> categories: [], 2026-10-24T11:56:15Z",
+    "pricing_page": "https://ipye.com/pricing returns 404",
+    "bundle_page_real_path": "https://my.ipye.com/products/server-ip-bundles (/server-ip-bundles 404s)",
+    "interface_enum_note": "The assignment's token list (api, socks5, http-proxy, web-ui, none) is not the enum in scripts/dossier/schema.json; rest and cli are the honest intersection."
+  }
+}

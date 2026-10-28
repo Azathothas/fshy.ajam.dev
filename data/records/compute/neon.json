@@ -1,0 +1,113 @@
+{
+  "topic": "compute",
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "notes": null
+  },
+  "interface": [
+    "ssh"
+  ],
+  "interface_detail": "a PostgreSQL connection string; scale-to-zero and autosuspend",
+  "tooling": "any Postgres client; the Neon API and CLI; branching",
+  "chaining": "100 CU-hours a month is the clock, and a database that never sleeps exhausts it",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "100 compute unit-hours a month per project",
+      "source": "https://neon.com/pricing"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "1 GB of storage per project",
+      "source": "https://neon.com/pricing"
+    }
+  ],
+  "limits_note": "scale-to-zero is what makes the allowance last; a database kept awake consumes the whole month",
+  "reliability_note": "no reliability event recorded",
+  "confidence": "reported",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "price_per_tb_month": null,
+  "notes": "The census demoted this from always-on and the demotion is right: an always-on database burns 730 hours against a 100 CU-hour allowance, so it exhausts in about four days. Corrected 2026-10-22: fails-quota treated 100 CU-hours as an account ceiling. The quota is per project and the plan is permanent, so the aggregate is 100 CU-hours per project. The suspension on exhaustion is persistent until the next billing period.",
+  "slug": "neon",
+  "provider": "Neon",
+  "url": "https://neon.com/pricing",
+  "category": "managed database",
+  "free_tier": {
+    "stated": "a free plan with 100 compute unit-hours a month per project and 1 GB of storage per project, no time limit and no credit card",
+    "unit": "hours",
+    "metered_on": "wall-clock",
+    "source_url": "https://neon.com/pricing",
+    "read_on": "2026-10-06",
+    "notes": "the free plan does not auto-delete, but 100 CU-hours is exhaustible"
+  },
+  "retention": {
+    "stated": "data is retained; the compute allowance, not the data, is the limit",
+    "days": null,
+    "source_url": "https://neon.com/pricing"
+  },
+  "egress": {
+    "terms": "not published on the page read",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://neon.com/pricing"
+  },
+  "identity_cost": {
+    "kind": "email",
+    "detail": "'no credit card required' on the free plan, quoted",
+    "country": null
+  },
+  "evidence": [
+    {
+      "url": "https://neon.com/pricing",
+      "date": "2026-10-06",
+      "proved": "free plan: 100 CU-hours a month per project, 1 GB storage per project, no time limit, no credit card"
+    },
+    {
+      "url": "https://neon.com/pricing",
+      "date": "2026-10-22",
+      "proved": "read live: 100 CU-hours a month per project, permanent free plan"
+    },
+    {
+      "url": "https://neon.com/faqs/free-plan-limits-and-quotas",
+      "date": "2026-10-22",
+      "proved": "'100 CU-hours of compute per project per month, 1 GB of Postgres storage per project (up to 20 GB total across all projects), and 5 GB of public network transfer per project per month', with 'Compute quotas are measured per project, so 100 projects each get their own 100 CU-hour bucket' and 'Running out of CU-hours or egress (5 GB) suspends compute until the next billing period', quoted"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "extras": {
+    "shape": null,
+    "billing_model": "wall-clock",
+    "session_cap": {
+      "wall_clock_min": null,
+      "idle_reap_s": null,
+      "restart_required": false,
+      "note": "scales to zero when idle"
+    },
+    "keep_rate": null,
+    "persistent_storage": {
+      "included_gib": 1,
+      "price_gib_month": "1 GB included",
+      "durability": "Postgres",
+      "survives_stop": true,
+      "survives_destroy": false,
+      "max_retention": "while the project exists"
+    },
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": true,
+      "ports": "the Postgres port",
+      "static_ip": null,
+      "ipv6": true,
+      "per_session_bytes": null
+    },
+    "free_tier_kind": "allowance",
+    "census_rows": [
+      "neon-free"
+    ],
+    "wave2": {}
+  },
+  "confidence_note": "re-read live on 2026-10-22 for the free-tier and limit figures",
+  "binding_note": "compute suspends on exhausting 100 CU-hours or 5 GB of transfer in a project-month, and the suspension lasts until the period resets"
+}

@@ -1,0 +1,99 @@
+{
+  "topic": "storage",
+  "slug": "kaggle-datasets",
+  "provider": "Kaggle Datasets (public)",
+  "url": "https://www.kaggle.com/datasets",
+  "category": "ml-hub",
+  "free_tier": {
+    "stated": "200 GB per dataset (hard, public or private), 50 top-level files per dataset, 200 GB max total PRIVATE datasets. There is NO documented aggregate cap on public datasets — the docs' 'Technical Specifications' section states only '200GB per dataset limit', '200GB max private datasets', 'A max of 50 top-level files'. Public total is therefore effectively unlimited per account, and the 200 GB/dataset ceiling is raised on request (see quota-program candidate).",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://www.kaggle.com/docs/datasets#technical-specifications",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://www.kaggle.com/docs/datasets#technical-specifications",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://www.kaggle.com/docs/datasets#technical-specifications",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and CDN-backed: the download endpoint 302s to a signed storage.googleapis.com URL (Google Cloud Storage), which is Fastly/Google-fronted. No egress quota documented, no per-GB charge, no auth needed for public datasets.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "kagglehub (pip install kagglehub, official, github.com/Kaggle/kagglehub) — resolves public datasets with NO credentials; kaggle-api CLI (`kaggle datasets download -d owner/slug`); plain HTTPS + curl/wget against /api/v1/datasets/download/<owner>/<slug>; rclone can front the signed GCS URL with an HTTP remote.",
+  "chaining": "200 GB x unlimited public datasets x unlimited free accounts. Live proof of the unlimited-public side: account sahangunasekara92 holds 23 public datasets totalling 1,197.7 GB with a largest single dataset of 163.0 GB (API-verified) — i.e. 6x over the 200 GB 'private quota' figure, so the private quota demonstrably does not apply to public datasets. Multiply again by Kaggle Organizations (a dataset can be owned by an org the account belongs to) and by the free quota-request program for >200 GB single datasets.",
+  "limits": [],
+  "limits_note": "200 GB/dataset; 50 top-level files per dataset (use a directory tree or a ZIP — Kaggle unzips archives server-side and the unzipped size counts); each new version adds a full copy so versioned datasets consume quota per version and old versions cannot be deleted (documented user complaint, unresolved); dynamic rate limiting on the API (HTTP 429). Dataset ingestion of a >100 GB upload via the web UI/API is flaky — Kaggle staff recommend creating from a remote URL or GCS bucket instead.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: ling 1,197.7 GB with a largest single dataset of 163.0 GB (API-verified) — i.e. 6x over the 200 GB 'private quota' figure, so the private quota demonstrably does not apply to public",
+    "country": null
+  },
+  "reliability_note": "Stable, corporate-owned (Google), no history of quota clawback; the failure modes are ingestion flakiness on very large uploads and un-deletable old versions, not data loss.",
+  "confidence": "documented",
+  "confidence_note": "The page states the number in the record; the claim is documented, not measured.",
+  "evidence": [
+    {
+      "url": "https://www.kaggle.com/docs/datasets",
+      "date": "2026-10-22",
+      "proved": "the dataset size guidance. Re-read https://www.kaggle.com/docs/datasets: HTTP 200, 29944 bytes, sha256 1d2b0cd026b1e3a6. Quoted: --- title: \"Datasets Documentation\" words: 3998 upstream_status: 200 content_kind: page extraction: none source: provider contextdev title_source: provider final_url: \"https://www.kaggle.com/docs/datasets\" fetched_at: \"2026-10-22T02:59:53.786Z\" --- Kaggle uses cookies from Google to deliver and enhance the quality of its servi"
+    },
+    {
+      "url": "https://www.kaggle.com/docs/datasets#technical-specifications",
+      "date": "2026-10-21",
+      "proved": "'200GB per dataset limit', '200GB max private datasets (if you exceed this, either make your datasets public or delete unused datasets)', 'A max of 50 top-level files'"
+    },
+    {
+      "url": "https://www.kaggle.com/discussions/product-announcements/512322",
+      "date": "2026-10-21",
+      "proved": "Kaggle staff, 2 years ago: 'Users now have a limit of 200GB for private models and 200GB for private datasets. Kaggle has also doubled the maximum upload size of public models and datasets from 100GB to 200GB.'"
+    },
+    {
+      "url": "https://www.kaggle.com/api/v1/datasets/download/rounakbanik/pokemon",
+      "date": "2026-10-21",
+      "proved": "probe: curl -I -> 302 Location: https://storage.googleapis.com:443/kaggle-data-sets/2756/4568/bundle/archive.zip?X-Goog-... (signed, no auth required)"
+    },
+    {
+      "url": "https://www.kaggle.com/api/v1/datasets/download/wanghaohan/imagenetsketch",
+      "date": "2026-10-21",
+      "proved": "probe: curl -r 0-62914559 -> 206, 62,914,560 bytes in 17.7 s = ~3.5 MB/s; on a 170 GB dataset (sahangunasekara92/av2-sensor-train-group-3) same range -> 206, 104,857,600 bytes in 16.5 s = ~6.3 MB/s, anonymous"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET /api/v1/datasets/list?user=sahangunasekara92&pageSize=100 -> 23 public datasets, 1,197.7 GB aggregate, max 163.0 GB single dataset"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "200 GB per dataset (hard, public or private), 50 top-level files per dataset, 200 GB max total PRIVATE datasets. There is NO documented aggregate cap on public datasets — the docs' 'Technical Specifications' section states only '200GB per dataset limit', '200GB max private datasets', 'A max of 50 top-level files'. Public total is therefore effectively unlimited per account, and the 200 GB/dataset ceiling is raised on request (see quota-program candidate).",
+  "extras": {
+    "verified_in_pass": [
+      {
+        "url": "https://www.kaggle.com/docs/datasets",
+        "date": "2026-10-22",
+        "via": null,
+        "http_status": 200,
+        "bytes": 29944,
+        "sha256": "1d2b0cd026b1e3a6cf001635d0efc4f18bbd4fdd9d6797e2655e713ef215491d",
+        "pattern_found": true,
+        "what_changed": "no change: the page still states the claim",
+        "capture": "captures\\kaggle-datasets-public-www-kaggle-com-docs-datasets.txt"
+      }
+    ]
+  },
+  "binding": "none",
+  "binding_note": "no constraint in the record binds at this scale; the record carries no limit of a kind the vocabulary names"
+}

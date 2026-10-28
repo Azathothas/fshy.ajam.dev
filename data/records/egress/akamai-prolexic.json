@@ -1,0 +1,84 @@
+{
+  "topic": "egress",
+  "slug": "akamai-prolexic",
+  "provider": "Akamai Prolexic",
+  "url": "https://www.akamai.com/products/prolexic-solutions",
+  "category": "L4 anycast and GRE DDoS protection",
+  "tier": "enterprise",
+  "free_tier": {
+    "stated": "No free tier is published; both the routed and the anycast shapes are contract products.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://www.akamai.com/products/prolexic-solutions",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://www.akamai.com/products/prolexic-solutions",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://www.akamai.com/products/prolexic-solutions",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No volume is published. The service is sold as capacity against an attack profile, not as a byte allowance.; ingress: tcp+udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://www.akamai.com/products/prolexic-solutions"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "Prolexic IP Protect Configuration API on techdocs.akamai.com/ip-protect, managing mapped IP addresses and policy domains",
+  "tooling": "Prolexic IP Protect Configuration API; otherwise a managed service",
+  "chaining": "IP Protect is the only path that works with a single free VM as origin, and it needs a contract, so it does not chain with anything free",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "Routed GRE requires an assigned /24 (IPv4) or /48 (IPv6), BGP advertisement and GRE support; the alternative is a contract for IP Protect",
+      "source": "https://www.akamai.com/products/prolexic-solutions"
+    }
+  ],
+  "limits_note": "",
+  "binding": "write-gated",
+  "binding_note": "The block size and the contract are the gates, not bytes. A client with one rented VM and no prefix can only take the IP Protect shape, which is the anycast product and is still contracted.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "A contract; the routed option additionally needs an assigned /24 or larger advertisable block, the ability to advertise via BGP, and GRE support on the origin network hardware.",
+    "country": "None"
+  },
+  "reliability_note": "the GRE shape is only for networks that can announce their own prefix; the anycast shape is the only one open to a host without a /24",
+  "confidence": "documented",
+  "confidence_note": "The /24-BGP-GRE requirement and the IP Protect anycast alternative are quoted from the page read today. The IP Protect price, its protocol coverage and its port model are not published and were not read.",
+  "evidence": [
+    {
+      "url": "https://www.akamai.com/products/prolexic-solutions",
+      "date": "2026-10-23",
+      "proved": "For the Prolexic Routed GRE option, you need to have an assigned /24 or larger advertisable network block (IPv4) or /48 (IPv6), the ability to advertise your network traffic via BGP, and support generic routing encapsulation (GRE) with your origin-based network hardware."
+    },
+    {
+      "url": "https://www.akamai.com/products/prolexic-solutions",
+      "date": "2026-10-23",
+      "proved": "For customers with less than a routable IPv4 /24 and/or IPv6 /48, fragmented IP space, or cloud-hosting provider, the Prolexic IP Protect option provides the same level of DDoS protection via IP anycast to route symmetric traffic through Akamai scrubbing centers."
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "unpublished (sales contract)",
+  "notes": "The useful sentence on this page is the one that names a user's exact situation: 'less than a routable IPv4 /24 ... or cloud-hosting provider'. IP Protect is therefore the only Akamai shape that could apply, and it is contracted. techdocs.akamai.com/ip-protect exists as a configuration API but the welcome page 404s; the API index was reachable and describes mapped IP addresses.",
+  "extras": {
+    "wg_path": "inside-udp",
+    "wg_detail": "Prolexic IP Protect routes symmetric traffic through Akamai scrubbing centres by IP anycast, which carries any UDP listener on that address; the routed option uses GRE instead.",
+    "ingress": "tcp+udp",
+    "volume_tib_month": null,
+    "volume_stated": "No volume is published. The service is sold as capacity against an attack profile, not as a byte allowance.",
+    "bytes_transit": "yes",
+    "transit_note": "clean traffic is delivered from Akamai scrubbing centres to the origin"
+  }
+}

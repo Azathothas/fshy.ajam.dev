@@ -1,0 +1,103 @@
+{
+  "topic": "debrid",
+  "slug": "sto-care",
+  "provider": "sto.care (ul.sto.care)",
+  "url": "https://ul.sto.care/",
+  "category": "anonymous transfer.sh-shaped upload (PUT a body, get a JSON link)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "3-day expiry and a JSON link from a single PUT, no account. The site advertises 'a retention period that depends on file size' and the upload reply carried expiresAt three days out.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://sto.care/blog/0x0-st-alternative/",
+    "read_on": "2026-10-23",
+    "notes": "The upload host is ul.sto.care and the download host is trystocare.com; the brand and both domains disagree."
+  },
+  "per_object_cap": {
+    "stated": "unverified: no size cap is stated on the pages read; 1 MiB was accepted",
+    "bytes": null,
+    "source_url": "https://ul.sto.care/",
+    "notes": "A 100 MB cap is mentioned by a third-party blog for a different product on the same site, so it was not carried over."
+  },
+  "retention": {
+    "stated": "expiresAt 2026-10-26T02:22:40.454Z for an upload at 2026-10-23T02:22:40Z, so 72 hours",
+    "days": 3,
+    "source_url": "https://ul.sto.care/",
+    "notes": "Measured from the reply field, not from the page."
+  },
+  "egress": {
+    "terms": "Downloads are served from trystocare.com. The site advertises a 10-download limit per link, which makes the link a distribution budget rather than a store.",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://sto.care/blog/file-io-alternative/"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "curl -T file https://ul.sto.care/<name> returns JSON {url, expiresAt}, with the download URL on a different host.",
+  "endpoint": "https://ul.sto.care/",
+  "tooling": "Any HTTP client that can PUT a file; the transfer.sh one-liner works with the hostname swapped",
+  "chaining": "A transfer.sh-shaped PUT is the cheapest thing to wire into a script that already speaks that idiom, and the JSON reply makes the link parseable, but 3 days and a per-link download count make it a hand-off, not a mirror.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "72 hours",
+      "source": "measured: expiresAt in the upload reply"
+    },
+    {
+      "kind": "pull-count",
+      "value": "10 downloads per link (vendor claim)",
+      "source": "https://sto.care/blog/file-io-alternative/"
+    }
+  ],
+  "limits_note": "The download limit was not exercised: 10 fetches of one link would settle it, and the second fetch is the interesting one because the first may not count.",
+  "binding": "pull-count",
+  "binding_note": "At 1 TiB a month no published byte cap was hit, but a 10-download link means a re-fetch of the same object fails once ten readers have had it, and 72 hours bounds it again; the pull count is the first of the two that a busy object meets.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "A bare PUT with no cookie, no account and no email returned a link.",
+    "country": null
+  },
+  "reliability_note": "The upload host and the download host are different domains, so a client that allow-lists the upload domain breaks at retrieval.",
+  "confidence": "measured",
+  "confidence_note": "Upload and read-back at 1 MiB with a matching SHA-256; the cap and the 10-download limit are vendor claims and were not pushed.",
+  "evidence": [
+    {
+      "url": "probe:https://ul.sto.care/",
+      "date": "2026-10-23",
+      "proved": "PUT of 1 048 576 bytes -> HTTP 200 body {'url':'https://trystocare.com/c8aujwob94','expiresAt':'2026-10-26T02:22:40.454Z'}"
+    },
+    {
+      "url": "probe:https://trystocare.com/c8aujwob94",
+      "date": "2026-10-23",
+      "proved": "read-back 1 048 576 bytes, sha256 da0099c231f1182a5d411c8ac5149dfb7a2e3578a3970928490cb78ba92aecc9, full-body hash matched"
+    },
+    {
+      "url": "https://sto.care/blog/file-io-alternative/",
+      "date": "2026-10-23",
+      "proved": "'You get a JSON link that allows 10 downloads over 72 hours' - the vendor's own blog, which is the only place either number is stated"
+    },
+    {
+      "url": "https://sto.care/blog/0x0-st-alternative/",
+      "date": "2026-10-23",
+      "proved": "the service positions itself as a 0x0.st and transfer.sh replacement with a curl one-liner"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T02:30:47.000Z",
+  "price_per_tb_month": "USD 0",
+  "probe": {
+    "record": "probes/raw/ul.sto.care.json",
+    "upload_bytes": 1048576,
+    "download_bytes": 1048576,
+    "match": true,
+    "status": 200
+  },
+  "notes": "A credible transfer.sh replacement that actually answers, and the only measured relay that returns a machine-readable expiry. The caveat is that its own documentation lives in blog posts rather than a docs page.",
+  "extras": {
+    "download_host": "trystocare.com",
+    "expires_at": "2026-10-26T02:22:40.454Z"
+  }
+}
