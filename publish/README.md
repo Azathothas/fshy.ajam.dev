@@ -96,6 +96,10 @@ To change a rule, do these steps in this order:
 
 Until step 2, the research CI keeps the old pin, so it stays green.
 
+**The parity pin.** After a pull request here that changes `site/worker/` merges, the research repository moves
+`scripts/fshy/public.lock` to its merge commit. It does this in its own pull request, together with any change of
+the Python twin.
+
 ## The contract between export and build
 
 `data/meta.json` names the `schema_version` of the data. `build.py` reads one version, `SCHEMA_VERSION`. It
