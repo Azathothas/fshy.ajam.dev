@@ -42,6 +42,10 @@ jobs:
           cd site && npm ci --no-audit --no-fund && cd ..
           node site/worker/test/run.mjs
 
+      - name: files for agents
+        if: hashFiles('data/meta.json') != ''
+        run: python3 publish/test_llms.py --site site/dist
+
       - name: no data yet
         if: hashFiles('data/meta.json') == ''
         run: echo "data/ is empty until the first publish; the build has nothing to check"

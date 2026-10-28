@@ -29,7 +29,9 @@ API files and the Worker copy, then scans the site too. One leak hit fails the b
 | `export.py` | stage one, as above |
 | `build.py` | stage two, as above; also `make_worker_db` and the leak scan |
 | `site_gen.py` | the store to the data files of the site: the Worker copy in chunks, record and entity JSON, names, needs, vocabularies |
-| `pages.py` | the HTML pages, the sitemap, `robots.txt` and `llms.txt` |
+| `pages.py` | the HTML pages, the sitemap and `robots.txt` |
+| `llms.py` | `llms.txt`, `llms-full.txt` and the Markdown versions of the pages, for agents ([`../site/README.md`](../site/README.md)) |
+| `test_llms.py` | the selftest of `llms.py`, over the store that `build.py` writes |
 | `primer.py` | the text primer of the store: schema, vocabularies, worked queries |
 | `schema.sql` | the store schema, shared by the Worker |
 | `rules/needs.json` | the best-per-need queries |
