@@ -9,7 +9,9 @@ import * as api from './api.js';
 
 export const PROTOCOL_VERSIONS = ['2025-11-25', '2025-06-18', '2025-03-26', '2024-11-05'];
 const MAX_TOKENS = 20000;
-const ALLOWED_HOSTS = new Set(['fshy.ajam.dev', 'localhost', '127.0.0.1']);
+// the site's own host (wrangler.jsonc vars.FSHY_HOST), the local hosts of `wrangler dev`, and *.workers.dev previews
+const LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
+const DEFAULT_HOST = 'fshy.ajam.dev';
 
 const s = (description, extra = {}) => ({ type: 'string', description, ...extra });
 const n = (description, extra = {}) => ({ type: 'integer', description, ...extra });
@@ -222,15 +224,16 @@ async function dispatch(msg, store, env, request) {
   }
 }
 
-function hostAllowed(request, url) {
+function hostAllowed(request, url, env) {
   const raw = request.headers.get('host') || url.host;
   const host = raw.replace(/:\d+$/, '').toLowerCase();
-  return ALLOWED_HOSTS.has(host) || host.endsWith('.workers.dev');
+  const own = String((env && env.FSHY_HOST) || DEFAULT_HOST).toLowerCase();
+  return host === own || LOCAL_HOSTS.includes(host) || host.endsWith('.workers.dev');
 }
 
 export async function handleMcp(request, env, url, store) {
   const h = baseHeaders(store, { 'cache-control': 'no-store' });
-  if (!hostAllowed(request, url)) return jsonResponse({ error: 'host not allowed' }, 403, h);
+  if (!hostAllowed(request, url, env)) return jsonResponse({ error: 'host not allowed' }, 403, h);
   if (request.method !== 'POST') {
     h.set('allow', 'POST, OPTIONS');
     return jsonResponse(rpcError(null, -32000, 'method not allowed: POST JSON-RPC messages to /mcp'), 405, h);

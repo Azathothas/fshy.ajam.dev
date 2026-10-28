@@ -27,11 +27,22 @@ export function errorResponse(e, store) {
   return jsonResponse({ error: msg }, status, h);
 }
 
-/** Workers rate limiting binding; absent outside Cloudflare (tests), where nothing is limited. */
+/**
+ * Workers rate limiting binding. Absent in the node tests, and `limit()` throws in some local `wrangler dev`
+ * runs: both fail open, because the store is read-only and the Worker has a CPU limit. A thrown error is
+ * logged once per isolate, so a binding that breaks in production is visible in the logs.
+ */
+let limiterFailed = false;
 export async function rateLimited(env, binding, request) {
   const rl = env[binding];
   if (!rl || typeof rl.limit !== 'function') return false;
   const key = request.headers.get('cf-connecting-ip') || 'unknown';
-  const { success } = await rl.limit({ key });
-  return !success;
+  try {
+    const r = await rl.limit({ key });
+    return !(r && r.success);
+  } catch (e) {
+    if (!limiterFailed) console.error('fshy rate limiter ' + binding + ' failed, request allowed:', e && e.stack ? e.stack : String(e));
+    limiterFailed = true;
+    return false;
+  }
 }

@@ -10,24 +10,13 @@ import html
 import json
 import os
 import re
+from urllib.parse import quote
 
 import llms
 
-TOPICS = [
-    ("storage", "Storage", "Where bytes can live: object storage, drives, registries, academic repositories, hosts used as storage."),
-    ("compute", "Compute", "Machines, sandboxes, notebooks, GPU time, platform hosts and how long each runs before it is reaped."),
-    ("inference", "Inference", "Model APIs that answer a completion request, keyless or behind a free key."),
-    ("egress", "Egress and tunnels", "Ways to get traffic out or a service in: tunnels, relays, IPv6 brokers, UDP forwards."),
-    ("ip-proxy", "IP and proxies", "Exit addresses: proxy lists, VPN exits, address sources and what the upstream sees."),
-    ("crawler-scraper", "Crawling", "Crawl, search, reader and unblocker APIs for reading the web at scale."),
-    ("debrid", "Debrid", "Multi-hosters, premium-link generators, usenet and retrieval services."),
-    ("netdisk-pan", "Netdisk and pan", "Pan drives and public AList/OpenList instances, and whether they mount."),
-    ("databases-kv", "Databases and KV", "Hosted databases, vector stores and key-value stores."),
-    ("email", "Email", "Sending, receiving, forwarding and inbox APIs."),
-    ("domains-dns", "Domains and DNS", "Managed DNS, free domains and certificate authorities."),
-    ("ci-cd-runners", "CI runners", "Hosted CI runners and registries, and what they will run."),
-    ("coding-subs", "Coding subscriptions", "Coding-agent subscriptions and their price per unit of work."),
-]
+# the topics, their names and descriptions, in the order of the topic bar: rules/topics.json is the one list
+TOPICS = [(t["id"], t["name"], t["description"]) for t in json.load(open(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "rules", "topics.json"), encoding="utf-8"))["topics"]]
 TOPIC_NAME = {t: n for t, n, _ in TOPICS}
 GROUPS = [("usable", "Usable"), ("trial", "Trial"), ("paid", "Paid only"), ("rejected", "Rejected"), ("dead", "Dead")]
 VERDICT_LABEL = {"qualifies": "★ qualifies", "qualifies-with-caveat": "caveat", "trial-only": "trial",
@@ -119,7 +108,8 @@ class Site:
             '<nav class="topics" aria-label="Topics">%s</nav><main id="main">%s</main>'
             '<footer><p>Built from commit <code>%s</code>, data as of %s. Every value links to its source; freshness is computed '
             'in your browser against today. <a href="/about/#read">How to read a record</a> &middot; <a href="/changes.xml">RSS</a> '
-            '&middot; <a href="/api/v1/help.txt">API primer</a></p><p>For research and education only; not legal advice.</p></footer>'
+            '&middot; <a href="/api/v1/help.txt">API primer</a></p><p>For research and education only; not legal advice. Code and data: <a href="/about/#licence">0BSD</a>. '
+            '<a href="/about/#report">Report an error</a>.</p></footer>'
             '<script src="%s" defer></script></body></html>'
         ) % (e(title + " - fshy" if title != "fshy" else "fshy"), e(desc), self.css, extra_head, util, nav, body, e(commit), e(self.meta.get("as_of")),
              self.js)
@@ -255,6 +245,8 @@ class Site:
         desc = next((d for x, _, d in TOPICS if x == t), "")
         main, rest = [c for c in cs if c["grp"] in ("usable", "trial", "paid")], [c for c in cs if c["grp"] in ("rejected", "dead")]
         parts = ['<h1>%s</h1><p class="lede">%s</p>' % (e(name), e(desc))]
+        if not cs:
+            parts.append("<p>No record is in this topic yet.</p>")
         sts = self.stats(main, GROUPS[:3], lambda g: "#" + g)
         if rest:
             sts += '<li><a class="st rejected" href="rejected/"><b>%s</b>rejected or dead</a></li>' % num(len(rest))
@@ -380,7 +372,8 @@ class Site:
         if c["category"]:
             meta.append("<span>%s</span>" % e(c["category"]))
         meta += ["<code>%s</code>" % e(rid), '<a href="/api/v1/record/%s.json">JSON</a>' % e(rid),
-                 '<a href="/compare/?r=%s">compare</a>' % e(rid)]
+                 '<a href="/compare/?r=%s">compare</a>' % e(rid),
+                 '<a href="%s/issues/new?template=correction.yml&amp;record=%s">report an error</a>' % (e(llms.REPO), e(quote(rid)))]
         if solo:
             meta.append('<a href="/api/v1/entity/%s.json">provider JSON</a>' % e(c["eid"]))
             head = "<h1>%s</h1>" % e(c["provider"])
@@ -482,8 +475,8 @@ class Site:
                 e(anchor), e(title), meta,
                 ("<span>records: " + ", ".join('<a href="/r/%s">%s</a>' % (e(r), e(r)) for r in links[:12]) + "</span>") if links else "",
                 ('<details><summary>What changed</summary><pre class="md">%s</pre></details>' % e(body)) if body else ""))
-            rss.append("<item><title>%s</title><link>https://fshy.ajam.dev/changes/#%s</link><guid>%s</guid><pubDate>%s</pubDate></item>" % (
-                e(title), e(anchor), e(hid), e(when)))
+            rss.append("<item><title>%s</title><link>%s/changes/#%s</link><guid>%s</guid><pubDate>%s</pubDate></item>" % (
+                e(title), e(llms.BASE), e(anchor), e(hid), e(when)))
         # the published ledger says when, which record and field, the rung and the source; the values are on the record
         led = db.execute("SELECT at, rid, path, rung, url FROM ledger ORDER BY at DESC LIMIT 500").fetchall()
         lh = "".join('<tr><td>%s</td><td><a href="/r/%s">%s</a></td><td><code>%s</code></td><td>%s</td><td>%s</td></tr>' % (
@@ -498,7 +491,8 @@ class Site:
              '<th>rung</th><th>source</th></tr></thead><tbody>%s</tbody></table></div>' % (num(len(led)), lh)) if lh else "")
         self.page("changes/index.html", "Changes", body)
         self.write("changes.xml", '<?xml version="1.0" encoding="utf-8"?><rss version="2.0"><channel><title>fshy changes</title>'
-                   '<link>https://fshy.ajam.dev/changes/</link><description>Corrections to the fshy corpus</description>%s</channel></rss>' % "".join(rss[:100]))
+                   '<link>%s/changes/</link><description>Corrections to the fshy corpus</description>%s</channel></rss>' % (
+                       e(llms.BASE), "".join(rss[:100])))
 
     def about(self, counts):
         v = self.ctx["vocab"]
@@ -523,7 +517,7 @@ class Site:
             'its staleness window ends. The fresh or stale label is computed in your browser against today. <i>inherited</i> means the record '
             'was carried from an earlier source and its check date is an upper bound.</p><h3>Unknown values</h3>%s'
             '<h2 id="api">Query it</h2><ul>'
-            '<li>Remote MCP for agents: <code>claude mcp add --transport http fshy https://fshy.ajam.dev/mcp</code> '
+            '<li>Remote MCP for agents: <code>claude mcp add --transport http fshy %s/mcp</code> '
             '(tools: help, search, filter, get, entity, need, sql, worklist).</li>'
             '<li>HTTP: <code>/api/v1/search?q=</code>, <code>/api/v1/records?topic=storage&amp;no_card=1&amp;sort=usd_per_tb_month</code>, '
             '<code>/api/v1/sql?q=SELECT ...</code> (read-only), <code>/api/v1/need/&lt;id&gt;</code>, <code>/api/v1/record/&lt;topic&gt;/&lt;slug&gt;</code>, '
@@ -536,11 +530,27 @@ class Site:
             'commentary are not published. Of %d source values, %d are published as written, %d were rewritten (for example an '
             'archive mirror replaced by its origin URL) and %d are not published; %d belong to %d records about '
             'infrastructure that is not a public offer.</p>'
-            '<p>Build: commit <code>%s</code>, data as of %s, %d records, %d providers.</p></div>'
+            '<p>Build: commit <code>%s</code>, data as of %s, %d records, %d providers.</p>'
+            '<h2 id="report">Report an error or a missing offer</h2><p>Each record has a <i>report an error</i> link. It '
+            'opens the <a href="%s/issues/new?template=correction.yml">Correction form</a> with the record filled in. For an '
+            'offer that the catalogue does not have, use the <a href="%s/issues/new?template=new-offer.yml">New offer form</a>. '
+            'A report is a lead: a research lane checks it against the pages of the provider before a record changes. The issue '
+            'closes when a publish carries the result.</p><p>Do not report a leaked secret, a personal detail or a vulnerability '
+            'in a public issue. Read the <a href="%s/security/policy">security policy</a> first.</p>'
+            '<h2 id="contribute">Contribute</h2><p>The site, the API, the MCP endpoint and the publish tools are in '
+            '<a href="%s">the source repository</a>. A pull request that improves them is welcome: read '
+            '<a href="%s/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> first. A pull request that changes <code>data/</code> '
+            'is not merged, because the export writes <code>data/</code> from the research corpus. Report a correction '
+            'with an issue.</p>'
+            '<h2 id="licence">Licence</h2><p>The code and the records are under the <a href="%s/blob/main/LICENSE">%s licence</a>. '
+            'A record restates public facts in its own words and cites each source by URL. A short quote from the page of a '
+            'provider identifies the sentence that proves a value, and stays with its owner. The search box uses MiniSearch '
+            '(MIT) and the Worker uses sql.js (MIT).</p></div>'
         ) % (tbl("verdict"), tbl("confidence"), tbl("binding"), tbl("identity_kind"), tbl("identity_basis"), tbl("unknown_class"),
-             round(man["public_db"]["gzip_bytes"] / 1e6, 1), e(man["public_db"]["sha256"]),
+             e(llms.BASE), round(man["public_db"]["gzip_bytes"] / 1e6, 1), e(man["public_db"]["sha256"]),
              counts.get("leaves", 0), disp.get("kept", 0), disp.get("modified", 0), disp.get("withheld", 0), disp.get("excluded", 0),
-             counts.get("excluded", 0), e(self.meta.get("commit")), e(self.meta.get("as_of")), counts.get("records", 0), counts.get("entities", 0))
+             counts.get("excluded", 0), e(self.meta.get("commit")), e(self.meta.get("as_of")), counts.get("records", 0), counts.get("entities", 0),
+             *([e(llms.REPO)] * 6 + [e(llms.LICENCE)]))
         self.page("about/index.html", "About and API", body)
 
     def simple(self):
@@ -574,7 +584,7 @@ def render(repo, dist, ctx):
     s.changes()
     s.about(counts)
     s.simple()
-    base = "https://fshy.ajam.dev"
+    base = llms.BASE
     urls = (["/", "/need/", "/graveyard/", "/changes/", "/about/"] + ["/t/%s/" % t for t, _, _ in TOPICS]
             + ["/t/%s/rejected/" % t for t, _, _ in TOPICS] + ["/need/%s/" % x["id"] for x in ctx["needs"]["needs"]]
             + ["/p/%s/" % eid for eid in sorted(ctx["ents"])])

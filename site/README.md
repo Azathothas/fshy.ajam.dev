@@ -7,13 +7,13 @@ The public wiki, and its read-only API and MCP endpoint. Everything it serves co
 | --- | --- |
 | `wrangler.jsonc` | the Worker `fshy`: static assets from `dist/`, the custom domain `fshy.ajam.dev`, the API and MCP routes |
 | `worker/` | the Worker: sql.js (SQLite in WebAssembly) over the store's Worker copy, the API, the MCP server |
-| `worker/test/` | the Worker's tests; they run under node, with no wrangler |
+| `worker/test/` | the Worker's tests: `run.mjs` runs under node with fake bindings; `smoke.mjs` runs the Worker on workerd with `wrangler dev` |
 | `static/` | the stylesheet, the browser script, vendored MiniSearch 7.2.0 (MIT), `_headers` |
 | `dist/` | the built site. Generated, never committed |
 
 ## Build and preview
 
-From the repository root:
+Node 22.15 or later is necessary. From the repository root:
 
 ```bash
 python publish/build.py --site site/dist
@@ -22,12 +22,22 @@ npm ci --no-audit --no-fund
 npx wrangler dev --port 8787
 ```
 
+The preview needs no Cloudflare account. It serves the pages, the API and the MCP endpoint on
+`http://127.0.0.1:8787`. ⚠ The local rate limiting binding of `wrangler dev` can throw. The Worker then logs the
+error once and allows the request, so the preview does not limit requests. In production the same rule applies:
+a limiter that fails does not take the API down.
+
 Then test the Worker and the files for agents from the repository root:
 
 ```bash
 node site/worker/test/run.mjs
+node site/worker/test/smoke.mjs
 python publish/test_llms.py --site site/dist
+python publish/test_publish.py
 ```
+
+`smoke.mjs` starts `wrangler dev` on port 8791, or on the port in `FSHY_SMOKE_PORT`. It asks the API, the SQL
+route and the MCP endpoint, and it stops wrangler by the PID that it started.
 
 ## The pages
 
@@ -47,7 +57,9 @@ either file thus reaches a browser that holds the old copy, because `_headers` c
 
 ⚠ The page shell (header, topic bar, footer) repeats on about 2,900 provider pages, so each byte added to it is
 paid on each of them. Keep markup that only the script uses, such as the ARIA state of the search box, in the
-script.
+script. The footer links to the licence and to the report section of the about page with relative links, which
+are short. Each record has a "report an error" link that opens the Correction form of the source repository with
+the record filled in.
 
 ## Files for agents: llms.txt, llms-full.txt and Markdown pages
 
@@ -81,6 +93,18 @@ when a record changes.
 **Serving.** `.md` is served as `text/markdown; charset=utf-8` and `.txt` as `text/plain; charset=utf-8`, with
 `Cache-Control: public, max-age=300` and `Access-Control-Allow-Origin: *` from `static/_headers`. The paths there
 do not overlap, because a second matching rule appends to a header instead of replacing it.
+
+## Fork
+
+A fork that serves the site on its own domain changes these settings, and nothing else:
+
+| where | what |
+| --- | --- |
+| the environment of the build | `FSHY_ORIGIN`, the origin of the site, and `FSHY_REPO`, the URL of the source repository ([`../publish/README.md`](../publish/README.md)) |
+| `wrangler.jsonc` | `routes`, the custom domain, and `vars.FSHY_HOST`, the host that the MCP endpoint accepts |
+
+The MCP endpoint accepts its own host, `localhost`, `127.0.0.1`, `[::1]` and `*.workers.dev`. It refuses other
+hosts with 403.
 
 ## Deploy
 

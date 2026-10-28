@@ -34,8 +34,8 @@ project = build  # leaves() and jpath() are in build.py here
 
 FAILS = []
 LEAK = build.leak_rx()
-LINK = re.compile(r"\]\((https://fshy\.ajam\.dev/[^)\s]*)\)")
-ITEM = re.compile(r"^- \[[^\]]+\]\(https://fshy\.ajam\.dev/[^)\s]*\)(?:: \S.*)?$")
+LINK = re.compile(r"\]\((" + re.escape(llms.BASE) + r"/[^)\s]*)\)")
+ITEM = re.compile(r"^- \[[^\]]+\]\(" + re.escape(llms.BASE) + r"/[^)\s]*\)(?:: \S.*)?$")
 DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
 
 def check(name, cond, detail=""):
