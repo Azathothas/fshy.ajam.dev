@@ -395,6 +395,48 @@ test('parity fixture: the text, ranking and guard rules give the outputs in pari
   }
 });
 
+test('sql: the statement budget refuses a nested loop of two large full scans (issue #5)', async () => {
+  const refuse = [
+    'SELECT count(*) FROM claim a, evidence b WHERE a.rid <> b.rid',
+    'SELECT count(*) FROM record r JOIN claim c ON c.rid <> r.rid',
+    'SELECT count(*) FROM record a CROSS JOIN entity b',
+    'SELECT (SELECT count(*) FROM evidence e WHERE e.url <> r.url) FROM record r',
+    'SELECT count(*) FROM "claim" a, [evidence] b',
+    'WITH t AS MATERIALIZED (SELECT * FROM claim) SELECT count(*) FROM t, evidence WHERE t.rid <> evidence.rid',
+  ];
+  for (const q of refuse) {
+    const r = await call('/api/v1/sql?q=' + encodeURIComponent(q));
+    assert.equal(r.res.status, 400, q + ': ' + r.body);
+    assert.match(r.json.error, /^refused: the plan scans .+ once for each row of /, q);
+  }
+  const accept = [
+    'SELECT r.rid FROM record r JOIN claim c ON c.rid = r.rid',
+    'SELECT * FROM record WHERE rid IN (SELECT rid FROM claim)',
+    'SELECT * FROM fx a, vocab b',
+    'SELECT count(*) FROM record a, record b WHERE a.topic = b.topic',
+    "SELECT r.rid FROM text_fts JOIN record r ON r.rno = text_fts.docid WHERE text_fts MATCH 'webdav*'",
+    'EXPLAIN QUERY PLAN SELECT count(*) FROM claim a, evidence b',
+  ];
+  for (const q of accept) {
+    const r = await call('/api/v1/sql?q=' + encodeURIComponent(q));
+    assert.equal(r.res.status, 200, q + ': ' + r.body);
+  }
+  const m = await rpc('tools/call', { name: 'sql', arguments: { query: refuse[0] } });
+  assert.equal(m.json.result.isError, true);
+  assert.match(m.json.result.content[0].text, /the plan scans/);
+  // the needs and the worked queries of the primer pass the budget
+  const { getStore } = await import('../db.js');
+  const { checkPlan } = await import('../plan.js');
+  const { store } = await getStore(env, globalThis.__fshyWasm);
+  const needs = JSON.parse(readFileSync(join(REPO, 'publish', 'rules', 'needs.json'), 'utf8')).needs;
+  for (const x of needs) assert.doesNotThrow(() => checkPlan(store, x.sql), x.id);
+  const help = join(DIST, 'api', 'v1', 'help.txt');
+  if (!existsSync(help)) { console.log('# skipped the primer queries: no ' + help); return; }
+  const worked = readFileSync(help, 'utf8').split('EXAMPLES')[1].split('\n').filter((l) => /^ {3}(SELECT|WITH) /.test(l)).map((l) => l.trim());
+  assert.ok(worked.length >= 5, 'the primer has its worked queries');
+  for (const q of worked) assert.doesNotThrow(() => checkPlan(store, q), q);
+});
+
 test('a rate limiter that throws fails open', async () => {
   const broken = { ...env, RL_API: throws, RL_SQL: throws };
   const s = await call('/api/v1/search?q=hetzner&limit=1', {}, broken);

@@ -94,6 +94,8 @@ if (!(await ready(120000))) {
 }
 const page = await fetch(ORIGIN + '/');
 check('GET / is a static page', page.status === 200);
+const plan = await fetch(ORIGIN + '/api/v1/sql?q=' + encodeURIComponent('SELECT count(*) FROM claim a, evidence b WHERE a.rid <> b.rid'));
+check('GET /api/v1/sql refuses a nested loop of two large scans with 400', plan.status === 400, plan.status);
 const search = await fetch(ORIGIN + '/api/v1/search?q=hetzner&limit=3');
 const sj = await search.json().catch(() => null);
 check('GET /api/v1/search answers 200 with rows', search.status === 200 && sj && sj.rows && sj.rows.length > 0, `${search.status} ${JSON.stringify(sj)}`);
