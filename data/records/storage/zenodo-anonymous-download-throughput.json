@@ -5,7 +5,7 @@
   "url": "https://zenodo.org/api/records/5656641/files/iPS.zip/content",
   "category": "academic",
   "free_tier": {
-    "stated": "n/a — this entry records the measured read path for the 500GB-1TiB/day serving workload",
+    "stated": null,
     "unit": "mixed",
     "metered_on": "unstated",
     "source_url": "https://help.zenodo.org/docs/deposit/manage-quota/",
@@ -32,7 +32,7 @@
   ],
   "interface_detail": "rest",
   "tooling": "zenodo_get (pip) already parallelises; any HTTP client with range support (aria2c -x/-s, rclone non-backend http, curl --parallel) will do.",
-  "chaining": "Per-connection shaping ~350-480 KB/s means you need concurrency, not accounts. Measured scaling: 1 conn 0.3 MB/s -> 6 conns 2.33 MB/s -> 16 conns 6.01 MB/s -> 32 conns 11.95 MB/s -> 64 conns 23.07 MB/s. Essentially linear, no knee up to 64. At 23 MB/s that is ~2 TB/day, i.e. the 1 TiB/day serving workload is met with ~2x headroom from one host.",
+  "chaining": "Per-connection shaping ~350-480 KB/s means you need concurrency, not accounts. Measured scaling: 1 conn 0.3 MB/s -> 6 conns 2.33 MB/s -> 16 conns 6.01 MB/s -> 32 conns 11.95 MB/s -> 64 conns 23.07 MB/s. Essentially linear, no knee up to 64.",
   "limits": [
     {
       "kind": "per-ip-shaping",
@@ -128,9 +128,9 @@
   ],
   "verdict": "qualifies",
   "verified_at": "2026-10-22T00:00:00.000Z",
-  "notes": "n/a — this entry records the measured read path for the 500GB-1TiB/day serving workload",
+  "notes": null,
   "extras": {
-    "verified_in_pass": [
+    "verified": [
       {
         "url": "https://help.zenodo.org/docs/deposit/manage-quota/",
         "date": "2026-10-22",
@@ -143,14 +143,12 @@
         "capture": "captures\\zenodo-cern-help-zenodo-org-docs-deposit-manage-quota-.txt"
       }
     ],
-    "verify_file": "verify/zenodo.json",
     "verify_quota": "50 GB per record by default, unlimited records, plus a 150 GB per-account allowance that can be pooled onto a single record (=> 200 GB max for one record). Verbatim: 'Each record comes with a default storage quota of 50GB and you can upload an unlimited number of records under 50GB. For larger files, you also have an additional allowance of up to 150GB that can be distributed across your uploads as needed.' Policy page: 'Total files size limit per record is 50GB. Higher quotas can be requested and granted on a case-by-case basis.'",
     "verify_per_unit_cap": "50 GB per record default; 200 GB absolute ceiling on a single record with the 150 GB allowance pooled in; max 100 files per record (new API: 'a limit of 50GB total in the record (and any given file), and up to 100 files in the record').",
     "verify_probe": "parallel ranged GET https://zenodo.org/api/records/5656641/files/iPS.zip/content (7.77 GB file, 15 s each) -> 1 conn 0.48 MB/s, 8 conns 4.93 MB/s, 32 conns 19.68 MB/s, all 206",
-    "verify_notes": "All quota numbers confirmed unchanged. 1 conn 0.48 MB/s -> 8 conns 4.93 MB/s (10.3x for 8x) -> 32 conns 19.68 MB/s (4.0x for 4x, perfectly linear). 19.68 MB/s = ~1.70 TB/day, so one host meets the 1 TiB/day serving workload with ~1.7x headroom. Correction to the dossier's scaling table: my 32-conn number is 19.7 MB/s where the dossier recorded 11.95 MB/s — today's link is faster, the shape (linear, no knee) is identical. Also confirmed the new-API file cap the dossier did not state: 100 files per record, which matters for sharding — 50 GB must be split into no more than 100 files, i.e. >=500 MB per file.",
+    "verify_notes": "All quota numbers confirmed unchanged. 1 conn 0.48 MB/s -> 8 conns 4.93 MB/s (10.3x for 8x) -> 32 conns 19.68 MB/s (4.0x for 4x, perfectly linear). Also confirmed the new-API file cap the dossier did not state: 100 files per record, which matters for sharding — 50 GB must be split into no more than 100 files, i.e. >=500 MB per file.",
     "verify_verdict": "qualifies-with-caveat",
-    "verify_confidence": "high",
-    "changed_since_dossier": false
+    "verify_confidence": "high"
   },
   "binding": "per-object-cap",
   "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
