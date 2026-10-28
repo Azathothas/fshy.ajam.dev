@@ -119,7 +119,7 @@ class Site:
             '<nav class="topics" aria-label="Topics">%s</nav><main id="main">%s</main>'
             '<footer><p>Built from commit <code>%s</code>, data as of %s. Every value links to its source; freshness is computed '
             'in your browser against today. <a href="/about/#read">How to read a record</a> &middot; <a href="/changes.xml">RSS</a> '
-            '&middot; <a href="/api/v1/help.txt">API primer</a></p></footer>'
+            '&middot; <a href="/api/v1/help.txt">API primer</a></p><p>For research and education only; not legal advice.</p></footer>'
             '<script src="%s" defer></script></body></html>'
         ) % (e(title + " - fshy" if title != "fshy" else "fshy"), e(desc), self.css, extra_head, util, nav, body, e(commit), e(self.meta.get("as_of")),
              self.js)
@@ -484,9 +484,10 @@ class Site:
                 ('<details><summary>What changed</summary><pre class="md">%s</pre></details>' % e(body)) if body else ""))
             rss.append("<item><title>%s</title><link>https://fshy.ajam.dev/changes/#%s</link><guid>%s</guid><pubDate>%s</pubDate></item>" % (
                 e(title), e(anchor), e(hid), e(when)))
-        led = db.execute("SELECT at, rid, path, old, new, url, reason FROM ledger ORDER BY at DESC LIMIT 500").fetchall()
-        lh = "".join('<tr><td>%s</td><td><a href="/r/%s">%s</a></td><td><code>%s</code></td><td>%s</td><td>%s</td><td>%s</td></tr>' % (
-            e((a or "")[:10]), e(r), e(r), e(p), e(o), e(n), prose(u)) for a, r, p, o, n, u, _ in led)
+        # the published ledger says when, which record and field, the rung and the source; the values are on the record
+        led = db.execute("SELECT at, rid, path, rung, url FROM ledger ORDER BY at DESC LIMIT 500").fetchall()
+        lh = "".join('<tr><td>%s</td><td><a href="/r/%s">%s</a></td><td><code>%s</code></td><td>%s</td><td>%s</td></tr>' % (
+            e((a or "")[:10]), e(r), e(r), e(p or ""), e(g or ""), prose(u)) for a, r, p, g, u in led)
         body = ('<h1>Changes</h1><p class="lede">Corrections to earlier claims, newest first, and every mechanical '
                 'amendment from the change ledger. RSS: <a href="/changes.xml">/changes.xml</a>.</p>'
                 '<ul class="stats"><li><a class="st" href="#corrections"><b>%s</b>corrections</a></li>%s</ul>'
@@ -494,7 +495,7 @@ class Site:
             num(len(items)), ('<li><a class="st" href="#ledger"><b>%s</b>ledger rows</a></li>' % num(len(led))) if lh else "",
             num(len(items)), "".join(items),
             ('<h2 id="ledger">Ledger <small>%s</small></h2><div class="tw"><table class="ev led"><thead><tr><th>date</th><th>record</th><th>field</th>'
-             '<th>old</th><th>new</th><th>source</th></tr></thead><tbody>%s</tbody></table></div>' % (num(len(led)), lh)) if lh else "")
+             '<th>rung</th><th>source</th></tr></thead><tbody>%s</tbody></table></div>' % (num(len(led)), lh)) if lh else "")
         self.page("changes/index.html", "Changes", body)
         self.write("changes.xml", '<?xml version="1.0" encoding="utf-8"?><rss version="2.0"><channel><title>fshy changes</title>'
                    '<link>https://fshy.ajam.dev/changes/</link><description>Corrections to the fshy corpus</description>%s</channel></rss>' % "".join(rss[:100]))
@@ -513,6 +514,9 @@ class Site:
             '<h1>About and API</h1>'
             '<p class="lede">fshy is a catalogue of free, nearly free and cheapest-paid cloud capacity. Each page is generated '
             'from one JSON record per offer; the records are the source, and every number on a page comes from a record.</p>'
+            '<p><b>For research and education only.</b> The catalogue records technical facts about third-party services. '
+            'It is not legal advice, and it makes no statement about whether a use is permitted. The rules that each '
+            'provider publishes for its service apply to its use.</p>'
             '<div class="prose"><h2 id="read">How to read a record</h2><h3>Verdict</h3>%s<h3>Evidence rung</h3>%s<h3>Binding constraint</h3>%s'
             '<h3>Identity</h3>%s%s<p>A question mark after an identity value means the identity kind is a placeholder: card and phone '
             'requirements are unknown, not absent.</p><h3>Freshness</h3><p>Each record has a date it was last checked and a date '
