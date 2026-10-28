@@ -1,5 +1,5 @@
 {
- "about": "Patterns that must not appear anywhere in data/, the store or the built site. publish/build.py and publish/export.py fail on one hit. Generic shapes only: a value that identifies a person or a machine never goes in this file, because this file is public. The export also applies the research repository's own leak rules, which stay private.",
+ "about": "Patterns that must not appear anywhere in data/, the store or the built site. A rule of level fail (the default) fails publish/build.py and publish/export.py on one hit. A rule of level warn fails the export and only warns in the build, because the data on main still has the shape; remove its level after the first publish whose build shows no warning for it. A rule with a scope reads only that column of the store and of data/tables/. Generic shapes only: a value that identifies a person or a machine never goes in this file, because this file is public. The export also applies the research repository's own leak rules, which stay private.",
  "patterns": [
   {"id": "L01", "re": "-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----", "why": "a private key"},
   {"id": "L02", "re": "\\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{36}\\b|\\bgithub_pat_[A-Za-z0-9_]{60,}", "why": "a GitHub token"},
@@ -14,6 +14,12 @@
   {"id": "L11", "re": "\\b100\\.(?:6[5-9]|[7-9]\\d|1[01]\\d|12[0-7])\\.\\d{1,3}\\.\\d{1,3}\\b(?!/)", "why": "a tailnet address"},
   {"id": "L12", "re": "\\b[Tt]erms of [Ss]ervice\\b", "why": "terms text; the published corpus is technical only"},
   {"id": "L13", "re": "\\b[A-Za-z0-9._%+-]+@(?:gmail|googlemail|outlook|hotmail|live|yahoo|icloud|proton|protonmail|qq|163|126|yandex|gmx)\\.(?:com|me|ch|ru|de|net|cn)\\b", "why": "a personal email address: a provider's own address is on its own domain"},
-  {"id": "L14", "re": "(?<![\\w.-])/Users/[^/\\s]+/", "why": "a local macOS home path"}
+  {"id": "L14", "re": "(?<![\\w.-])/Users/[^/\\s]+/", "why": "a local macOS home path"},
+  {"id": "L15", "re": "(?<![\\w.-])dossier/[a-z0-9-]+", "level": "warn", "why": "a path of the research repository; data/records/ has no dossier/"},
+  {"id": "L16", "re": "\\b[Nn]ot in (?:the )?dossier\\b", "level": "warn", "why": "a search note of the research process"},
+  {"id": "L17", "re": "\\(searched:", "level": "warn", "why": "a search note of the research process"},
+  {"id": "L18", "re": "\\b(?:[Tt]he|[Aa]|[Oo]ur|[Tt]his)(?: (?:compute|error|whole error|live))? census\\b", "level": "warn", "why": "the census of the research process; a census of a third party is written with a capital, for example the Census Bureau"},
+  {"id": "L19", "re": "\\bserving target\\b", "level": "warn", "why": "the workload of the reader of the corpus"},
+  {"id": "L20", "re": "\\b(?:[Tt]he operator|[Tt]he client|[Ww]e|[Oo]ur|session|[Tt]he harness|census|[Ss]eed (?:claims?|corrections?|records?)|[Aa] review found|prober|dossier)\\b", "level": "warn", "scope": "history.title", "why": "a history title that tells the research process; a public title states the corrected fact"}
  ]
 }

@@ -4,10 +4,9 @@
 "Review and merge the research pull requests". Any agent in any tool can be the merge session. It needs a
 checkout of both repositories and `gh` access to both.
 
-⚠ `scripts/rq review RUN`, `scripts/rq merge RUN` and `scripts/rq cleanup RUN` read the state of the run in
-`.tmp/rq/` of the research clone that ran it. On another clone they stop with "no run". Until they can read a
-run from its pull request alone, start the merge session in the research clone that ran the run. A merge session
-in another tool is still a different session, so the rule in the next paragraph holds.
+`scripts/rq review RUN`, `scripts/rq merge RUN`, `scripts/rq cleanup RUN` and `scripts/rq report RUN` work in
+any clone. They read the run manifest, `history/ledger/RUN/manifest.json`, on `origin/rq/RUN` or on `origin/main`.
+⚠ A run that landed before 2026-10-28 has no manifest; for such a run, use the research clone that ran it.
 
 A merge session is the third key. The first key is the research harness's own checks (lint, integrator, gate).
 The second key is the audit, where a second model re-reads a sample of each lane's claims. The third key is a
@@ -29,7 +28,21 @@ git -C f-research config core.hooksPath .githooks
 git -C fshy.ajam.dev config core.hooksPath .githooks
 ```
 
-The commands in sections 2 to 5 run in `f-research`. The commands in section 6 run in `fshy.ajam.dev`.
+The commands in sections 2 to 5 run in `f-research`. The commands in sections 6 and 7 run in `fshy.ajam.dev`,
+and the export of section 6 reads `f-research` beside it.
+
+## Text that the public can read
+
+⛔ **A comment, a pull request title or body, a commit message and an issue in `fshy.ajam.dev` follow rule 4 of
+[`../AGENTS.md`](../AGENTS.md).** They are public, and an edit keeps the old text in the edit history.
+
+- Cite a defect by its file and line. Never quote a line that is itself the leak.
+- Do not name a path, an issue number or a review file of the research repository.
+- Before you post, write the text to a file and scan it. CI scans the title and the body of each pull request too:
+
+  ```bash
+  python publish/build.py --scan draft.md
+  ```
 
 ## 2. List what waits for review
 
@@ -67,6 +80,33 @@ Read all of it. Then check these, in this order:
    Then compare the value in the line with the page. One wrong value is a stop.
 6. **The shape of the diff.** `git diff --stat origin/main...origin/rq/RUN -- dossier` shows which records
    changed. Open two new or changed records at random and read them in full against the run's question.
+7. **The baseline.** A row of `scripts/research/baseline.tsv` hides a violation from the gate. The gate reads the
+   baseline of the same tree, so one pull request can add a violation and the row that hides it. In `f-research`,
+   read the rows that the pull request adds:
+
+   ```bash
+   git diff origin/main...origin/BRANCH -- scripts/research/baseline.tsv
+   ```
+
+   A research run adds no row, because `scripts/rq land` refuses one. Another pull request that adds rows fails
+   the CI job `baseline` until it carries the label `rq:baseline`. Apply the label only when both are true:
+
+   - Each added row comes from a rule that the pull request adds or widens, in
+     `scripts/fshy/rules/projection.json` or `scripts/research/checks.py`.
+   - No added row names a record that the pull request adds or edits. Compare the record id of each added row
+     with this list:
+
+     ```bash
+     git diff --name-only origin/main...origin/BRANCH -- dossier
+     ```
+
+   Then apply the label. CI runs again:
+
+   ```bash
+   gh pr edit NUMBER --repo Azathothas/f-research --add-label rq:baseline
+   ```
+
+   ⚠ A row that names a record that the pull request touches is a send-back, not a label.
 
 If a check fails, do not merge. Write what is wrong, with the record and the field, as a comment:
 
@@ -92,6 +132,16 @@ that you close without a merge, run `scripts/rq cleanup RUN` after the close.
 
 A pull request that is not a run (code, documents, rules) gets a code review: read the diff, run the checks it
 names, and confirm CI is green. Then merge it with `gh pr merge <number> --merge`. ⛔ Do not merge your own.
+In `f-research`, also do step 7 of section 3, the baseline.
+
+A Dependabot pull request in `fshy.ajam.dev` is not the merge session's own work, so the merge session may merge
+it. Before the merge:
+
+1. Read the diff of `site/package-lock.json`: the resolved versions, and any new package or install script.
+2. For a change of `wrangler`, `miniflare` or `workerd`, run `node site/worker/test/smoke.mjs` on the branch.
+3. Merge after CI is green. Close a Dependabot pull request that a merged pull request already covers.
+
+The merge closes the Dependabot alerts that it fixes.
 
 ## 6. Publish
 
@@ -105,7 +155,9 @@ git pull --ff-only
 python publish/export.py --source ../f-research
 ```
 
-The last line of the output names the `source_commit`. Use its first 7 characters as SHORT below:
+The last line of the output names the `source_commit`. Use its first 7 characters as SHORT below. If a branch
+`publish/SHORT` exists already, for example for a second publish of one commit after a change of the tools, use
+`publish/SHORT-2`.
 
 ```bash
 git checkout -b publish/SHORT
@@ -123,6 +175,10 @@ repository's own rules. It checks that `publish/build.py` rebuilds the same stor
 scans every file with both sets of leak rules. With one failed check, `data/` does not change. Read
 `git diff --stat main -- data` before the commit: the changed record files must match the runs you merged.
 Merge the publish pull request after CI is green. The merge session may merge its own publish pull request.
+
+A leak rule of level `warn` in `publish/rules/leak.json` fails the export, and only warns in the build of the
+data that is already on `main`. If the build of the new data shows no warning for a `warn` rule, remove its level
+in a pull request after the publish. Then the build fails on that shape too.
 
 If the export stops with a contract problem (schema version, tables, columns, `needs.json` or a topic), the
 research repository changed its store or its topics. Do not publish. Change `publish/` first, as [`../publish/README.md`](../publish/README.md)
