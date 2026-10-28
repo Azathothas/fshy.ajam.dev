@@ -124,10 +124,16 @@ public store without record JSON, leaves and evidence quotes, which are served a
 **The SQL route and the MCP tool `sql`.** Three checks stop a costly or a writing statement:
 
 1. The guard (`worker/guard.js`) accepts one statement that starts with SELECT, WITH, VALUES or EXPLAIN. It refuses
-   a write or a session keyword outside a literal, and U+FEFF outside a literal. It appends a LIMIT.
-2. The statement budget (`worker/plan.js`) reads `EXPLAIN QUERY PLAN`. It refuses a nested loop of two full scans of
-   tables over 1,000 rows, for example a cross join or a join on `<>`. sql.js has no progress handler, so the plan
-   is the budget. A join with `=` on an indexed column passes.
+   a write or a session keyword outside a literal. It also refuses, outside a literal, a character that JavaScript
+   or Python reads as white space and SQLite does not, for example U+FEFF or U+0085. It appends a LIMIT.
+2. The statement budget (`worker/plan.js`) reads `EXPLAIN QUERY PLAN`, because sql.js has no progress handler. A
+   scan is a plan line that reads a whole table, whatever words follow the name, or a SEARCH with only a range
+   constraint. A SEARCH with `=` reads the rows of one key: the table's rows divided by the distinct values of the
+   column. The steps of one loop chain run nested. The budget refuses a chain with two steps that read over 1,000
+   rows each, or with a product of rows over 5,000,000. A subquery that is not correlated, a MATERIALIZE
+   step, a CO-ROUTINE step and each part of a compound SELECT run once, so each is a chain of its own. A recursive
+   CTE, `randomblob()`, `zeroblob()` and a `printf()` width over 1,000 are refused too. A join with `=` on an
+   indexed column passes.
 3. The rate limits: 30 SQL requests a minute for each address, and `limits.cpu_ms`.
 
 **Headers.** `static/_headers` sets a Content-Security-Policy on every page: scripts, styles, images and requests

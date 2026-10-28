@@ -96,8 +96,8 @@ const page = await fetch(ORIGIN + '/');
 check('GET / is a static page', page.status === 200);
 check('GET / carries the Content-Security-Policy of _headers', /default-src 'self'/.test(page.headers.get('content-security-policy') || ''),
   page.headers.get('content-security-policy'));
-const plan = await fetch(ORIGIN + '/api/v1/sql?q=' + encodeURIComponent('SELECT count(*) FROM claim a, evidence b WHERE a.rid <> b.rid'));
-check('GET /api/v1/sql refuses a nested loop of two large scans with 400', plan.status === 400, plan.status);
+const plan = await fetch(ORIGIN + '/api/v1/sql?q=' + encodeURIComponent('SELECT count(*) FROM record a LEFT JOIN record b ON a.rno <> b.rno'));
+check('GET /api/v1/sql refuses a LEFT JOIN of two large scans with 400', plan.status === 400, plan.status);
 const search = await fetch(ORIGIN + '/api/v1/search?q=hetzner&limit=3');
 const sj = await search.json().catch(() => null);
 check('GET /api/v1/search answers 200 with rows', search.status === 200 && sj && sj.rows && sj.rows.length > 0, `${search.status} ${JSON.stringify(sj)}`);

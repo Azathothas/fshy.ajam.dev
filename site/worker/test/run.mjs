@@ -395,35 +395,57 @@ test('parity fixture: the text, ranking and guard rules give the outputs in pari
   }
 });
 
-test('sql: the statement budget refuses a nested loop of two large full scans (issue #5)', async () => {
+test('sql: the statement budget refuses a costly plan, whatever its shape (issue #5)', async () => {
+  // each line: [statement, the start of the refusal]; the first eleven are the bypasses of review round 3
   const refuse = [
-    'SELECT count(*) FROM claim a, evidence b WHERE a.rid <> b.rid',
-    'SELECT count(*) FROM record r JOIN claim c ON c.rid <> r.rid',
-    'SELECT count(*) FROM record a CROSS JOIN entity b',
-    'SELECT (SELECT count(*) FROM evidence e WHERE e.url <> r.url) FROM record r',
-    'SELECT count(*) FROM "claim" a, [evidence] b',
-    'WITH t AS MATERIALIZED (SELECT * FROM claim) SELECT count(*) FROM t, evidence WHERE t.rid <> evidence.rid',
+    ["SELECT count(*) FROM evidence e WHERE EXISTS (SELECT 1 FROM limit_row l WHERE l.value LIKE '%'||e.proved||'%')", 'the plan reads'],
+    ['SELECT count(*) FROM evidence e WHERE NOT EXISTS (SELECT 1 FROM limit_row l WHERE l.value = e.proved)', 'the plan reads'],
+    ['SELECT count(*) FROM edge a, edge b, edge c WHERE a.src <> b.src AND b.src <> c.src AND c.dst <> a.dst', 'the plan reads'],
+    ['SELECT count(*) FROM record a LEFT JOIN record b ON a.rno <> b.rno', 'the plan reads'],
+    ['SELECT count(*) FROM record a LEFT JOIN record b ON a.rno <> b.rno LEFT JOIN record c ON b.rno <> c.rno', 'the plan reads'],
+    ['SELECT count(*) FROM record a LEFT JOIN record b ON 1 LEFT JOIN record c ON 1 LEFT JOIN record d ON 1', 'the plan reads'],
+    ['WITH x AS (SELECT rno FROM record) SELECT count(*) FROM x a, x b WHERE a.rno < b.rno', 'the plan reads'],
+    ['WITH RECURSIVE c(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM c) SELECT count(*) FROM c', 'a recursive CTE'],
+    ['SELECT length(hex(randomblob(50000000)))', 'randomblob()'],
+    ['SELECT length(zeroblob(100000000))', 'zeroblob()'],
+    ["SELECT length(printf('%.*c', 100000000, 'x'))", 'printf() width'],
+    ['SELECT count(*) FROM claim a, evidence b WHERE a.rid <> b.rid', 'the plan reads'],
+    ['SELECT count(*) FROM record r JOIN claim c ON c.rid <> r.rid', 'the plan reads'],
+    ['SELECT count(*) FROM record a CROSS JOIN entity b', 'the plan reads'],
+    ['SELECT (SELECT count(*) FROM evidence e WHERE e.url <> r.url) FROM record r', 'the plan reads'],
+    ['SELECT count(*) FROM "claim" a, [evidence] b', 'the plan reads'],
+    ['WITH t AS MATERIALIZED (SELECT * FROM claim) SELECT count(*) FROM t, evidence WHERE t.rid <> evidence.rid', 'the plan reads'],
+    ['SELECT count(*) FROM record WHERE rid IN (SELECT a.rid FROM claim a, evidence b WHERE a.rid <> b.rid)', 'the plan reads'],
+    ['SELECT count(*) FROM record a, record b, record c WHERE a.topic = b.topic AND b.eid <> c.eid', 'the plan reads'],
+    // an = join on a column with few values reads many rows a key
+    ['SELECT count(*) FROM record a, record b, record c WHERE a.topic = b.topic AND b.topic = c.topic', 'the plan reads'],
   ];
-  for (const q of refuse) {
+  for (const [q, why] of refuse) {
     const r = await call('/api/v1/sql?q=' + encodeURIComponent(q));
     assert.equal(r.res.status, 400, q + ': ' + r.body);
-    assert.match(r.json.error, /^refused: the plan scans .+ once for each row of /, q);
+    assert.ok(r.json.error.startsWith('refused: ' + why), q + ': ' + r.json.error);
   }
   const accept = [
     'SELECT r.rid FROM record r JOIN claim c ON c.rid = r.rid',
+    'SELECT count(*) FROM record a, record b WHERE a.topic = b.topic',
+    'SELECT count(*) FROM record a JOIN record b ON a.grp = b.grp',
     'SELECT * FROM record WHERE rid IN (SELECT rid FROM claim)',
     'SELECT * FROM fx a, vocab b',
-    'SELECT count(*) FROM record a, record b WHERE a.topic = b.topic',
     "SELECT r.rid FROM text_fts JOIN record r ON r.rno = text_fts.docid WHERE text_fts MATCH 'webdav*'",
+    'SELECT rid FROM record UNION ALL SELECT rid FROM claim',
+    'SELECT r.rid, (SELECT count(*) FROM claim c WHERE c.rid = r.rid) FROM record r',
+    'SELECT count(*) FROM record a LEFT JOIN entity e ON e.eid = a.eid',
+    "SELECT printf('%.2f', usd_month) FROM record",
+    'WITH t AS (SELECT eid, count(*) AS n FROM record GROUP BY eid) SELECT * FROM t ORDER BY n DESC',
     'EXPLAIN QUERY PLAN SELECT count(*) FROM claim a, evidence b',
   ];
   for (const q of accept) {
     const r = await call('/api/v1/sql?q=' + encodeURIComponent(q));
     assert.equal(r.res.status, 200, q + ': ' + r.body);
   }
-  const m = await rpc('tools/call', { name: 'sql', arguments: { query: refuse[0] } });
+  const m = await rpc('tools/call', { name: 'sql', arguments: { query: refuse[0][0] } });
   assert.equal(m.json.result.isError, true);
-  assert.match(m.json.result.content[0].text, /the plan scans/);
+  assert.match(m.json.result.content[0].text, /the plan reads/);
   // the needs and the worked queries of the primer pass the budget
   const { getStore } = await import('../db.js');
   const { checkPlan } = await import('../plan.js');
