@@ -1,0 +1,103 @@
+{
+  "topic": "ip-proxy",
+  "slug": "vpn-gate-sstp",
+  "provider": "VPN Gate",
+  "url": null,
+  "category": "volunteer VPN relay",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free with no registration: the relay nodes are volunteered by their operators, and a client connects to one from a published list without creating an account.",
+    "unit": "unlimited",
+    "metered_on": "unstated",
+    "source_url": "https://www.vpngate.net/",
+    "read_on": "2026-10-24",
+    "notes": "No byte allowance is published on the front page, so unlimited here records that no quota is stated, not that none exists. The measurement puts the ceiling on throughput per client rather than on a byte count."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: a tunnel and an exit address, not an object",
+    "bytes": null,
+    "source_url": "https://www.vpngate.net/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://www.vpngate.net/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No traffic allowance in either direction is published. The offer is free with no registration, and the far end is a volunteer's own machine. The measured position is a rate rather than a cap: 16 MiB crossed in 918 s.",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://www.vpngate.net/"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "SSTP carries the tunnel inside TLS. The client supplies a relay's address from the published node list and connects with an SSTP client; this record measures the SSTP path only.",
+  "tooling": "An SSTP client inside a free or rented host with a full TCP stack, driven by hand from the published node list, plus a way to pick and re-pick a node as volunteers drop out. No rclone backend covers SSTP, so a wrapper would have to be written; that is a tooling note, not a verdict.",
+  "chaining": "A free outbound exit for fetches the gateway would otherwise make from a datacentre address, held as a fallback rather than a primary path because 16 MiB took 918 s.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "16 MiB in 918 s, about 17.8 KiB/s (about 146 kbit/s) for one client against one relay; the slowest path measured on the dash.vpn slate",
+      "source": null
+    },
+    {
+      "kind": "volume-quota",
+      "value": "none published: free with no registration, and no byte allowance stated on the front page",
+      "source": "https://www.vpngate.net/"
+    }
+  ],
+  "limits_note": "The ceiling that was measured is a rate, not a byte cap, so it is filed under per-ip-shaping. The volume-quota entry records that no allowance was found, not that a generous one exists.",
+  "binding": "per-ip-shaping",
+  "binding_note": "At the measured rate the client's 45 GB month occupies about 28.5 days counted as 45 GB decimal and about 30.6 days counted as 45 GiB, so the shaped throughput saturates a month of continuous use before any quota, request count or object cap can be reached; the roughly 599,000 requests are small and are never the binding quantity.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No registration: the node list is public and a client connects straight to a volunteer's relay, so no email, phone, card or account is collected at any point.",
+    "country": null
+  },
+  "reliability_note": "The transit TLS terminates at a volunteer's own machine rather than at an audited endpoint, and a volunteer's node can disappear or change its exit address at any time; the measured path was the slowest on the dash.vpn slate.",
+  "confidence": "documented",
+  "confidence_note": "The free-and-no-registration fact the verdict also rests on is the vendor's own page, so the weakest rung among the fields the verdict depends on is documented. It moves to measured when the anonymous path is exercised end to end from a client that records the signup state itself, so the vendor page stops being the only support for it.",
+  "evidence": [
+    {
+      "url": null,
+      "date": "2026-10-10",
+      "proved": "A 16 MiB payload crossed the SSTP relay in 918 s and exited at AS8369 INTERSVYAZ; this is the slowest path measured on the dash.vpn slate."
+    },
+    {
+      "url": "https://www.vpngate.net/",
+      "date": "2026-10-24",
+      "proved": "The relay is free and needs no registration, and its nodes are volunteered by their operators rather than run by the site."
+    },
+    {
+      "url": "probe:vpngate-lane4-exit-asn-sweep",
+      "date": "2026-10-24",
+      "proved": "Lane 4 counted 35 distinct exit ASNs across the relays, led by Korea Telecom, SoftBank, KDDI and LG Powercomm. The sweep's own run date was not carried in the handoff, so this row is dated to the record rather than to the run."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-24T10:07:11.000Z",
+  "price_per_tb_month": "USD 0: free, no registration, no allowance published",
+  "notes": "Why per-ip-shaping and not volume-quota: nothing on the vendor page states an allowance, so there is no byte ceiling to hit, while the one thing that was measured is a rate. Why not request-rate: the client's ~599,000 monthly requests are individually small and the byte volume is what saturates the link, so request count never arrives first. The 45 GB arithmetic above is derived from the measured 16 MiB in 918 s, not a second measurement: 16,777,216 bytes over 918 s is about 18,275 bytes a second, which is 17.8 KiB/s. Only one transfer was measured, through one relay at one time, so 918 s is a sample and not a distribution. That sample cannot separate three candidate causes for the slowness: (1) the volunteer's own uplink, (2) deliberate per-IP shaping on the relay, (3) SSTP-in-TLS overhead on the path. Ruling them out needs the same payload repeated against several relays at different hours with the bytes-per-second compared; until that runs, the per-ip-shaping label follows the handoff's own reading rather than a measurement that distinguishes the three. Rung 5 rather than 2 because lane 4's 35 distinct exit ASNs characterise the exit identity by the registration class of the carriers behind the relays, with Korea Telecom, SoftBank, KDDI and LG Powercomm leading that set, and the single measured exit AS8369 INTERSVYAZ is one member of it. That count is why this is the strongest free source of carrier-registered exits found so far, and it is also why one address going bad does not condemn the source. No correction is filed: a search of dossier/ and docs/ found no other record naming VPN Gate, so this record contradicts nothing already written.",
+  "extras": {
+    "rung": 5,
+    "rung_note": "The exit identity is characterised at the registration class of the carrier ASNs behind the relays, not at one address: lane 4 counted 35 distinct exit ASNs led by consumer carriers, and the measured transfer exited one of them.",
+    "measured_exit_asn": "AS8369",
+    "measured_exit_asn_name": "INTERSVYAZ",
+    "payload_mib": 16,
+    "elapsed_seconds": 918,
+    "derived_throughput": "16 MiB / 918 s = about 17.8 KiB/s, about 146 kbit/s",
+    "lane4_distinct_exit_asns": 35,
+    "lane4_leading_asns": [
+      "Korea Telecom",
+      "SoftBank",
+      "KDDI",
+      "LG Powercomm"
+    ],
+    "slowest_on_slate": "dash.vpn",
+    "transport_tls_terminates_at": "the volunteer relay operator"
+  }
+}

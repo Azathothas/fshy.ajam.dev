@@ -1,0 +1,81 @@
+{
+  "topic": "storage",
+  "slug": "google-chat-spaces-as-a-quota-exempt-attachment-store",
+  "provider": "Google Chat spaces as a quota-exempt attachment store (Chat API media.upload/media.download)",
+  "url": "https://developers.google.com/workspace/chat/api/reference/rest/v1/media/download",
+  "category": "messaging",
+  "free_tier": {
+    "stated": "Per-record unlimited: 200 MB per attachment, and Chat messages AND attachments explicitly do NOT count toward Google storage quota. 600 attachment uploads/min/project x 200 MB = ~120 GB/min theoretical ingest.",
+    "unit": "MB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://knowledge.workspace.google.com/admin/storage/google-workspace-storage-faq-for-admins",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "200 MB per file",
+    "bytes": 200000000,
+    "source_url": "https://knowledge.workspace.google.com/admin/storage/google-workspace-storage-faq-for-admins",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://knowledge.workspace.google.com/admin/storage/google-workspace-storage-faq-for-admins",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Not metered — downloaded through Chat API media.download (3,000 attachment reads/min/project), supports Range requests. No per-GB charge in the docs.",
+    "metered": true
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Official Chat API with service-account (app) auth; media.upload for write, GET /v1/media/{name}?alt=media for read with Range. No dedicated rclone backend exists — this is a build-it-yourself REST store; google-api-* client libs cover both directions.",
+  "chaining": "Unlimited messages x 200 MB per attachment. 20 attachments per interactive message on web, but the API path is per-media-upload, so the binding constraint is the 600 uploads/min/project rate, and projects are multiplicative (30-project default quota per user). Storage is free because Chat attachments are quota-exempt — this is the strongest multiplier in the Google stack.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "200 MB per file",
+      "source": "https://knowledge.workspace.google.com/admin/storage/google-workspace-storage-faq-for-admins"
+    }
+  ],
+  "limits_note": "200 MB per file hard cap; some file types blocked; 600 media.upload/min/project and 3,000 media.download/min/project; requires a Google Workspace account + Cloud project + Chat API enabled (personal @gmail.com accounts are not a supported developer surface; Chat API auth doc requires Workspace). Chat API quotas are per-minute only — the docs state 'no limit to the number of requests you can make per day' if you stay under them.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: nt. 20 attachments per interactive message on web, but the API path is per-media-upload, so the binding constraint is the 600 uploads/min/project rate, and projects are multiplicativ",
+    "country": null
+  },
+  "reliability_note": "Messages/attachments live in a space — deleting or archiving the space, or removing the app from it, can orphan the data; no documented retention guarantee. Blocked MIME types must be avoided.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://knowledge.workspace.google.com/admin/storage/google-workspace-storage-faq-for-admins",
+      "date": "2026-10-21",
+      "proved": "under 'The following content doesn't count toward storage:' lists 'Google Chat messages and attachments'"
+    },
+    {
+      "url": "https://developers.google.com/workspace/chat/upload-media-attachments",
+      "date": "2026-10-21",
+      "proved": "'You can upload file sizes up to 200 MB' + 'Some file types aren't supported'"
+    },
+    {
+      "url": "https://developers.google.com/workspace/chat/limits",
+      "date": "2026-10-21",
+      "proved": "'Attachment writes per minute | media.upload | 600' and 'Attachment reads per minute | spaces.messages.attachments.get media.download | 3000' + 'there's no limit to the number of requests you can make per day'"
+    },
+    {
+      "url": "https://developers.google.com/workspace/chat/api/reference/rest/v1/media/download",
+      "date": "2026-10-21",
+      "proved": "download supports Range partial downloads via /v1/media/{name}?alt=media"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Per-record unlimited: 200 MB per attachment, and Chat messages AND attachments explicitly do NOT count toward Google storage quota. 600 attachment uploads/min/project x 200 MB = ~120 GB/min theoretical ingest.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

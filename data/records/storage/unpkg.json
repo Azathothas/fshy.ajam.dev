@@ -1,0 +1,81 @@
+{
+  "topic": "storage",
+  "slug": "unpkg",
+  "provider": "unpkg (npm CDN)",
+  "url": "https://unpkg.com/",
+  "category": "cdn",
+  "free_tier": {
+    "stated": "No storage quota of its own — it serves the npm registry, so the ceiling is npm's ~100 MB publish limit. Probed 28.3 MB, 32.2 MB, 54.0 MB and 64.5 MB single files: all HTTP 200, all full length, sha256 identity with hop.js on the 54 MB and 64.5 MB cases. No per-file cap was encountered.",
+    "unit": "MB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://unpkg.com/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: npm publish-side (~100 MB",
+    "bytes": 100000000,
+    "source_url": "https://unpkg.com/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://unpkg.com/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free, no account, Cloudflare-fronted (cf-cache-status HIT on repeat). No published bandwidth limit.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "GET https://unpkg.com/<pkg>@<ver>/<path>. Also /<pkg>@<ver>/ (directory listing) and ?meta. Plain curl/rclone.",
+  "chaining": "Second mirror in a 3-way npm serving tier (unpkg + hop.js + jsDelivr). Because all three read the same npm tarballs, publishing once to npm gives you three independent free CDNs with different per-file ceilings — jsDelivr 50 MB, unpkg and hop.js effectively npm-bounded. Shard at 45 MB and every mirror serves every shard.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: npm publish-side (~100 MB",
+      "source": "https://unpkg.com/"
+    }
+  ],
+  "limits_note": "per-object-cap: npm publish-side (~100 MB tarball, 413 above that). No cap observed on the read side up to 64.5 MB. Version pinning required for immutability.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email",
+    "country": null
+  },
+  "reliability_note": "Long-running but small-team; Cloudflare absorbs the bandwidth. Was 403 on the .exe? No — unpkg served it; it is jsDelivr that blocks the extension.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://unpkg.com/@ffmpeg-installer/win32-x64@4.1.0/ffmpeg.exe",
+      "date": "2026-10-21",
+      "proved": "HTTP 200, 64,458,752 bytes (probed)"
+    },
+    {
+      "url": "https://unpkg.com/@swc/core-win32-x64-msvc@1.7.0/swc.win32-x64-msvc.node",
+      "date": "2026-10-21",
+      "proved": "HTTP 200, 53,974,528 bytes (probed)"
+    },
+    {
+      "url": "https://unpkg.com/onnxruntime-web@1.30.0/dist/ort-wasm-simd-threaded.jsep.wasm",
+      "date": "2026-10-21",
+      "proved": "HTTP 200, 28,312,028 bytes (probed)"
+    },
+    {
+      "url": "https://unpkg.com/jquery@3.7.1/dist/jquery.min.js",
+      "date": "2026-10-21",
+      "proved": "HTTP 200, 87,533 bytes, sha256 fc9a93dd… matches jsDelivr and githack copies (probed)"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No storage quota of its own — it serves the npm registry, so the ceiling is npm's ~100 MB publish limit. Probed 28.3 MB, 32.2 MB, 54.0 MB and 64.5 MB single files: all HTTP 200, all full length, sha256 identity with hop.js on the 54 MB and 64.5 MB cases. No per-file cap was encountered.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

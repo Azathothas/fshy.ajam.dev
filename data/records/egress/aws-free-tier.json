@@ -1,0 +1,95 @@
+{
+  "topic": "egress",
+  "slug": "aws-free-tier",
+  "provider": "AWS Free Tier",
+  "url": "https://aws.amazon.com/free/",
+  "category": "trial credit (provider VM)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "When you create a new AWS Free Tier account, you get $100 in credits immediately. As you explore key services, you can earn up to $100 more. That's up to $200 over 6 months ... The account closes on its own 6 months after you open it or when your credits run out, whichever comes first.",
+    "unit": "mixed",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://aws.amazon.com/free/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://aws.amazon.com/free/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://aws.amazon.com/free/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "$100 of credit at $0.09 per GB is 1.01 TiB, or $200 for 2.02 TiB, plus 100 GB a month free; across 6 months that is 0.26 to 0.43 TiB a month; ingress: udp",
+    "metered": true,
+    "free_allowance": "$100 of credit at $0.09 per GB is 1.01 TiB, or $200 for 2.02 TiB, plus 100 GB a month free; across 6 months that is 0.26 to 0.43 TiB a month",
+    "price_per_tb": null,
+    "source_url": "https://aws.amazon.com/free/"
+  },
+  "interface": [
+    "cli",
+    "rest"
+  ],
+  "interface_detail": "AWS CLI and the EC2 API",
+  "tooling": "wg-quick on the instance; AWS CLI for the security group and Elastic IP",
+  "chaining": "one EC2 instance for up to 6 months on the credit, with the 100 GB a month free egress as the only recurring free volume",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "$100 to $200 of egress at $0.09 per GB is 1.01 to 2.02 TiB, plus 100 GB a month free",
+      "source": "https://aws.amazon.com/ec2/pricing/on-demand/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "the account closes 6 months after it opens or when the credits run out, whichever comes first",
+      "source": "https://aws.amazon.com/free/"
+    }
+  ],
+  "limits_note": "",
+  "binding": "volume-quota",
+  "binding_note": "at 1 TiB a month the $100 of guaranteed credit is spent in about 35 days, and the 100 GB a month free egress covers only a tenth of one month. The 6-month clock is not what stops it; the money is.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "a credit or debit card at signup for identity verification; the page says 'You won't be charged unless you convert to a Paid plan'",
+    "country": "None"
+  },
+  "reliability_note": "the account and every resource in it are closed at 6 months without conversion to a paid plan",
+  "confidence": "documented",
+  "confidence_note": "the rate comes from the machine-readable price feed the EC2 pricing page renders, at us-east-1; a probe would confirm the same rate is charged against a trial's credits, which needs an account",
+  "evidence": [
+    {
+      "url": "https://aws.amazon.com/free/",
+      "date": "2026-10-23",
+      "proved": "'you get $100 in credits immediately ... you can earn up to $100 more. That's up to $200 over 6 months' and 'The account closes on its own 6 months after you open it or when your credits run out, whichever comes first'"
+    },
+    {
+      "url": "https://aws.amazon.com/ec2/pricing/on-demand/",
+      "date": "2026-10-23",
+      "proved": "'AWS customers receive 100 GB of free data transfer out to the internet free each month, aggregated across all AWS Services and Regions (except China and GovCloud)'"
+    },
+    {
+      "url": "https://b0.p.awsstatic.com/pricing/2.0/meteredUnitMaps/datatransfer/USD/current/datatransfer.json",
+      "date": "2026-10-23",
+      "proved": "the price feed the EC2 page renders: us-east-1 'DataTransfer External Outbound Next 10 TB' price 0.0900000000 and 'DataTransfer External Inbound' price 0.0000000000, published 2026-09-16"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 100 to 200 of credit",
+  "notes": "Arithmetic: $100 over $0.09 a GB is 1,111 GB = 1.01 TiB, and $200 is 2,222 GB = 2.02 TiB. Spread across the 6 months the account lives, $100 is $16.67 a month, or 185 GB, plus the 100 GB free each month, so 285 GB = 0.28 TiB a month; with the full $200 it is 0.43 TiB. The old 12-month Free Tier with 100 GB a month egress for a year is gone from this page; what replaced it is a credit that a reader has to earn half of. Candidates considered: the always-free line, which the page describes as '30+ AWS services are always free within monthly usage limits' and which does not include a t3.micro with a public IPv4 in this reading.",
+  "extras": {
+    "wg_path": "native-conf",
+    "wg_detail": "an EC2 instance with an Elastic IP or a public IPv4; wg-quick binds UDP natively",
+    "ingress": "udp",
+    "volume_tib_month": 0.26,
+    "volume_stated": "$100 of credit at $0.09 per GB is 1.01 TiB, or $200 for 2.02 TiB, plus 100 GB a month free; across 6 months that is 0.26 to 0.43 TiB a month",
+    "bytes_transit": "yes",
+    "transit_note": "the instance's outbound bytes cross Amazon's network and are metered as data transfer out to the internet"
+  }
+}

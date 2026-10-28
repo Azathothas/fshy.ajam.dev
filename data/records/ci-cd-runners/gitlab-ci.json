@@ -1,0 +1,80 @@
+{
+  "topic": "ci-cd-runners",
+  "slug": "gitlab-ci",
+  "provider": "GitLab CI on GitLab.com Free",
+  "url": "https://docs.gitlab.com/ci/pipelines/compute_minutes/",
+  "category": "CI runner",
+  "free_tier": {
+    "stated": "400 compute minutes a month per namespace; 5 users per top-level group; 10 GiB of repository storage",
+    "unit": "minutes",
+    "source_url": "https://docs.gitlab.com/ci/pipelines/compute_minutes/",
+    "read_on": "2026-10-22",
+    "metered_on": "wall-clock"
+  },
+  "per_object_cap": {
+    "stated": "no published per-job cap on the small Linux runner; the binding limit is the monthly pool and the cost factor",
+    "bytes": null
+  },
+  "retention": {
+    "stated": "artifacts expire per job configuration, default 30 days; compute minutes reset on the first of the month",
+    "days": 30,
+    "source_url": "https://docs.gitlab.com/ci/pipelines/compute_minutes/"
+  },
+  "egress": {
+    "terms": "the container registry is excluded from the namespace storage quota; storage beyond the purchased amount is billed",
+    "metered": true,
+    "free_allowance": "10 GiB per namespace",
+    "price_per_tb": null,
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/"
+  },
+  "interface": [
+    "git",
+    "cli"
+  ],
+  "interface_detail": "a .gitlab-ci.yml pipeline; instance runners on GitLab.com; self-managed runners are free of the vendor cap",
+  "tooling": "the runner images; any shell; docker-in-docker on the Linux runners",
+  "chaining": "the only free pool here with a cost-factor discount that makes open-source work cheaper: 0.5 for a GitLab-for-Open-Source project and 0.008 for a public fork of one",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "400 compute minutes a month on Free; a job consumes duration divided by 60 times the cost factor",
+      "source": "https://docs.gitlab.com/ci/pipelines/compute_minutes/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "cost factor 1 for small Linux, 2 for medium, 3 for large, 6 for xlarge, 12 for 2xlarge, 6 for macOS M1",
+      "source": "https://docs.gitlab.com/ci/pipelines/compute_minutes/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "10 GiB of repository storage per namespace",
+      "source": "https://docs.gitlab.com/user/storage_usage_quotas/"
+    }
+  ],
+  "limits_note": "a 1,000-minute grace period exists before jobs are dropped when the quota is exceeded; the 300,000-minute cap applies only to the community-contribution programme",
+  "binding": "request-rate",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email signup; identity verification is required for some namespaces",
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "confidence_note": "the compute-minutes doc and the storage-quota doc were read today.",
+  "evidence": [
+    {
+      "url": "https://docs.gitlab.com/ci/pipelines/compute_minutes/",
+      "date": "2026-10-22",
+      "proved": "'Free tier namespaces receive 400 compute minutes per month'; cost factors small 1, medium 2, large 3, xlarge 6, 2xlarge 12; public projects in GitLab for Open Source 0.5 and public forks 0.008; usage resets on the first day of the month"
+    },
+    {
+      "url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+      "date": "2026-10-22",
+      "proved": "the container registry is excluded from the namespace repository quota"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T03:05:00.000Z",
+  "price_per_tb_month": null,
+  "notes": "400 minutes is 6.7 hours, and a medium runner halves that. The open-source discount is the interesting part and it needs the project to be accepted into the programme, which is a review."
+}

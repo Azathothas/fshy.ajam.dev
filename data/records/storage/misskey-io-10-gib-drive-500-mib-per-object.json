@@ -1,0 +1,78 @@
+{
+  "topic": "storage",
+  "slug": "misskey-io-10-gib-drive-500-mib-per-object",
+  "provider": "misskey.io — 10 GiB drive, 500 MiB per object (largest per-object cap in the family)",
+  "url": "https://misskey.io",
+  "category": "fediverse-misskey",
+  "free_tier": {
+    "stated": "10240 MB = 10 GiB per user; maxFileSize 524288000 bytes = 500 MiB per object.",
+    "unit": "GiB",
+    "metered_on": "unstated",
+    "source_url": "https://misskey.io/api/meta",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "500 MiB per object",
+    "bytes": 524288000,
+    "source_url": "https://misskey.io/api/meta",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://misskey.io/api/meta",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free, served from misskey.io's own CDN (Cloudflare + object storage). No egress charge.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Misskey API / MiAuth.",
+  "chaining": "The largest Misskey instance in existence (~600k users) so the best-tested API, BUT registration is CLOSED: the /api/meta description states in Japanese that new signups are suspended because the cloud provider for their servers suffered unauthorised access and they cannot add capacity. Only useful with existing accounts or an invite if the operator reopens.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "500 MiB per object",
+      "source": "https://misskey.io/api/meta"
+    }
+  ],
+  "limits_note": "per-object-cap 500 MiB; per-user 10 GiB; request-rate is the real constraint here (huge shared IP pool, aggressive per-IP limits).",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: key instance in existence (~600k users) so the best-tested API, BUT registration is CLOSED: the /api/meta description states in Japanese that new signups are suspended because the cl",
+    "country": null
+  },
+  "reliability_note": "Registration closed as of this probe; operator explicitly cannot expand capacity. The 500 MiB per-object number is still the useful data point: it proves the family's per-object ceiling.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://misskey.io/api/meta",
+      "date": "2026-10-21",
+      "proved": "probe: POST -> 200, policies.driveCapacityMb=10240, maxFileSize=524288000, disableRegistration=true"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: description field (ja) — '現在、利用しているクラウド事業者への不正アクセスによりサーバーの増設が出来ないため新規登録を停止しています'"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "10240 MB = 10 GiB per user; maxFileSize 524288000 bytes = 500 MiB per object.",
+  "extras": {
+    "verdict_note": "PLAN.md §3.2 rules fails-quota by default, because no row in this set clears 500 GiB per unit for a user.",
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "10240 MB = 10 GiB per user; maxFileSize 524288000 bytes = 500 MiB per object.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

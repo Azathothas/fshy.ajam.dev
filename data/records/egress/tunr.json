@@ -1,0 +1,100 @@
+{
+  "topic": "egress",
+  "slug": "tunr",
+  "provider": "tunr",
+  "url": "https://tunr.sh/",
+  "category": "tunnel",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Open-source CLI - Free tunnels - 3 free apps. The 3-second tunnel that started it all - still free, still first-class. HTTPS, WebSocket, TCP, UDP, TLS.",
+    "unit": "none",
+    "metered_on": "unstated",
+    "source_url": "https://tunr.sh/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://tunr.sh/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://tunr.sh/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No byte allowance is published. The deploy path caps the compressed upload at 50 MB, which is a deploy limit and not a tunnel allowance.; ingress: http-only",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://tunr.sh/"
+  },
+  "interface": [
+    "cli",
+    "rest"
+  ],
+  "interface_detail": "tunr share --port 3000, tunr deploy, and an MCP tool surface.",
+  "tooling": "brew install ahmetvural79/tap/tunr, or go install; an MCP server exposes tunr_deploy.",
+  "chaining": "Replaces a free VM for static demos; cannot carry a WireGuard handshake or a raw game protocol.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "UDP never reaches the wire: raw TCP and UDP are only framed onto a WebSocket, so a WireGuard client cannot dial it at all. That gate binds before any allowance.",
+      "source": "https://tunr.sh/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "compressed deploy upload limited to 50 MB",
+      "source": "https://tunr.sh/docs.html"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "no tunnel byte allowance published",
+      "source": "https://tunr.sh/"
+    }
+  ],
+  "limits_note": "",
+  "binding": "write-gated",
+  "binding_note": "UDP never reaches the wire: raw TCP and UDP are only framed onto a WebSocket, so a WireGuard client cannot dial it at all. That gate binds before any allowance.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Deploying an app needs a dashboard account at app.tunr.sh; share tunnels appear usable from the CLI. The signup form was not read.",
+    "country": "None"
+  },
+  "reliability_note": "Deployed apps sleep when idle and wake in about 150 ms; the tunnel tier is a marketing on-ramp to the deploy product, so it can be repriced.",
+  "confidence": "documented",
+  "confidence_note": "A probe against a live tunnel would confirm the WebSocket-only framing; the docs state it plainly.",
+  "evidence": [
+    {
+      "url": "https://tunr.sh/",
+      "date": "2026-10-23",
+      "proved": "Free tunnels, 3 free apps, and the claim of HTTPS, WebSocket, TCP, UDP and TLS support."
+    },
+    {
+      "url": "https://tunr.sh/docs.html",
+      "date": "2026-10-23",
+      "proved": "TCP, UDP and TLS are experimental and exposed only as a WebSocket stream; there is no raw TCP/UDP port on the relay yet."
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=48623146",
+      "date": "2026-06-21",
+      "proved": "Show HN launch date."
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Launched 2026-06-21 as a 3-second tunnel and has since pivoted to an app-deploy platform. The homepage claim of TCP and UDP support is true only in the WebSocket-framing sense, which the docs admit.",
+  "extras": {
+    "wg_path": "none",
+    "wg_detail": "The relay has no raw UDP port yet: the docs say the relay exposes a raw tunnel only as a WebSocket stream at wss://<subdomain>.tunr.sh/tunnel/tcp (binary frames carry the bytes). There's no raw TCP/UDP port on the relay yet, so native clients like psql or ssh can't connect directly.",
+    "ingress": "http-only",
+    "volume_tib_month": null,
+    "volume_stated": "No byte allowance is published. The deploy path caps the compressed upload at 50 MB, which is a deploy limit and not a tunnel allowance.",
+    "bytes_transit": "yes",
+    "transit_note": "The tunr.sh edge relay carries the bytes over WebSocket."
+  }
+}

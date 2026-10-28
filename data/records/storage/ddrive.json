@@ -1,0 +1,76 @@
+{
+  "topic": "storage",
+  "slug": "ddrive",
+  "provider": "ddrive (Discord as a filesystem)",
+  "url": "https://github.com/forscht/ddrive",
+  "category": "messaging",
+  "free_tier": {
+    "stated": "Unlimited logical file size and unlimited total: 'Tested with storing 4000 GB of data on single discord channel'. Splits files into 24 MB chunks and fans them across webhooks.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://github.com/forscht/ddrive",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "file size and unlimited total: 'Tested with storing 4000 GB",
+    "bytes": 4000000000000,
+    "source_url": "https://github.com/forscht/ddrive",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://github.com/forscht/ddrive",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free — downloads are proxied by ddrive, which pulls refreshed signed URLs from Discord on demand. On the read path the only cost is your own egress.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "ftp"
+  ],
+  "interface_detail": "rest",
+  "tooling": "github.com/forscht/ddrive, 533 stars, MIT, Node 16+ / Docker, REST API with OpenAPI 3.1 spec, Postgres for metadata, web UI. Companion: `tris203/disftp` (FTP front-end for Disbox).",
+  "chaining": "1 Discord account x N webhook/channel pairs. Webhooks are used because 'Webhooks are not bound to a user's global rate limit' (Discord docs), so throughput scales with channel count rather than with the 50 req/s token budget.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "file size and unlimited total: 'Tested with storing 4000 GB",
+      "source": "https://github.com/forscht/ddrive"
+    }
+  ],
+  "limits_note": "24 MB chunk size; ~5 messages/5 s per channel even via webhook (~30 msg/min per webhook reported); metadata lives in Postgres — lose the DB and 3 TB of chunks become unreachable in a channel (author notes a 3 TB cold start takes 30+ min).",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Viable and battle-tested at multi-TB scale, but every download depends on re-deriving a 24 h signed URL, so the front-end must be alive. Two major rewrites (v2 -> v4) invalidated old layouts.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://github.com/forscht/ddrive",
+      "date": "2026-10-21",
+      "proved": "'Tested with storing 4000 GB of data on single discord channel (With max file size of 16GB)'"
+    },
+    {
+      "url": "https://github.com/forscht/ddrive",
+      "date": "2026-10-21",
+      "proved": "the project's own note, quoted: 'Now uses webhooks instead of bot/user tokens to bypass the discord rate limit', which is to say it routes around the per-token limit by using webhooks; 'I was able to upload file with 5GB of size in just 85 seconds'"
+    },
+    {
+      "url": "https://docs.discord.food/topics/rate-limits",
+      "date": "2026-10-21",
+      "proved": "'Webhooks are not bound to a user's global rate limit.'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Unlimited logical file size and unlimited total: 'Tested with storing 4000 GB of data on single discord channel'. Splits files into 24 MB chunks and fans them across webhooks.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

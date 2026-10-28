@@ -1,0 +1,87 @@
+{
+  "topic": "debrid",
+  "slug": "filepursuit",
+  "provider": "FilePursuit",
+  "url": "https://filepursuit.com/",
+  "category": "file-host search engine (index over public file links) + metered JSON API",
+  "tier": "free",
+  "free_tier": {
+    "stated": "The site was not readable today. The API is documented on RapidAPI as a Basic plan at $0.00/month with 3,000 requests per day and 500 requests per hour.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://rapidapi.com/azharxes/api/filepursuit/pricing",
+    "read_on": "2026-10-23",
+    "notes": "The website itself returned HTTP 530 through the broker on four attempts; the API figures are the vendor's published plan on a marketplace we could read."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: a search result, not an object we store",
+    "bytes": null,
+    "source_url": "https://filepursuit.com/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "unknown: the index's own retention was not readable, and the API terms say nothing about how long a link stays in the index",
+    "days": null,
+    "source_url": "https://filepursuit.com/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "the API returns links, not bytes; bytes come from whichever host the link names",
+    "metered": true,
+    "free_allowance": "3,000 requests/day on the free RapidAPI plan",
+    "price_per_tb": null,
+    "source_url": "https://rapidapi.com/azharxes/api/filepursuit/pricing"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "RapidAPI JSON endpoint with an X-RapidAPI-Key header; the site itself is HTML. The API is also offered through third-party clients (filepursuit-cli, go-filepursuit, a PyPI scraper).",
+  "endpoint": "rapidapi.com/azharxes/api/filepursuit",
+  "tooling": "The PyPI 'filepursuit' scraper and a Go client exist. Both drive the site rather than the paid API, and the scraper's own documentation says the site answers a flood of requests with a captcha.",
+  "chaining": "Query the index for a filename, then hand the file-host URL to a debrid service. The value is discovery: the index is what tells you which public link exists.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "500 requests per hour on the free RapidAPI plan, with a hard cap of 3,000 requests per day",
+      "source": "https://rapidapi.com/azharxes/api/filepursuit/pricing"
+    }
+  ],
+  "limits_note": "The free plan also meters bandwidth at 10,240 MB/month plus $0.001 per 1 MB over. A third-party scraper reports that flooding the site triggers a captcha, which is the HTML path's limit rather than the API's.",
+  "binding": "request-rate",
+  "binding_note": "500/hour is 0.14 req/s, so enumeration stops long before any byte quota does; and the API additionally requires an account, which is recorded under identity_cost.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The API needs a RapidAPI account and key, which is an email signup; the amount of identity RapidAPI demands beyond that was not established because the signup flow was not entered.",
+    "country": null
+  },
+  "reliability_note": "The site answered HTTP 530 four times on 2026-10-23, which is Cloudflare reporting an origin failure. The API is a third-party marketplace listing, so its availability is a second dependency on top of the index.",
+  "confidence": "unverified",
+  "confidence_note": "The site itself produced no page: four broker attempts returned HTTP 530 (broker exit 4 on some, an origin failure on others) and no archive capture after 2025-11-25 was reachable. The API numbers came from the RapidAPI pricing page, which is the vendor's plan page and was read today, but nothing was executed against the API. A successful API call would settle both the index's liveness and the real quota.",
+  "evidence": [
+    {
+      "url": "https://rapidapi.com/azharxes/api/filepursuit/pricing",
+      "date": "2026-10-23",
+      "proved": "Basic $0.00/mo, 'Requests 3,000 / Day Hard Limit', 'Rate Limit 500 requests per hour', 10240 MB/month bandwidth"
+    },
+    {
+      "url": "https://filepursuit.com/",
+      "date": "2026-10-23",
+      "proved": "four broker attempts returned HTTP 530; nothing was established about the live site"
+    },
+    {
+      "url": "https://pypi.org/project/filepursuit/",
+      "date": "2026-10-23",
+      "proved": "a third-party scraper's README says FilePursuit answers flooding with a captcha"
+    }
+  ],
+  "verdict": "fails-identity",
+  "verified_at": "2026-10-23T01:52:28.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Not recorded as dead: HTTP 530 is an origin failure, and the API is a separate endpoint that may still answer. The identity finding is independent of the outage, because the machine interface is behind a RapidAPI key whatever the website does.",
+  "extras": {
+    "http_status_observed": 530,
+    "attempts": 4,
+    "api_marketplace": "RapidAPI",
+    "anonymous_api": false
+  }
+}

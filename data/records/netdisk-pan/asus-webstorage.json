@@ -1,0 +1,82 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "asus-webstorage",
+  "provider": "ASUS WebStorage",
+  "url": "https://www.asuswebstorage.com/",
+  "category": "hardware-vendor cloud",
+  "free_tier": {
+    "stated": "5 GB on the free trial; paid Lite 100 GB, Pro 1 TB, Enterprise 5 TB",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://service.asuswebstorage.com/store/?bp=_t",
+    "read_on": "2026-10-21"
+  },
+  "per_object_cap": {
+    "stated": "Not published",
+    "bytes": null,
+    "source_url": "https://service.asuswebstorage.com/store/?bp=_t"
+  },
+  "retention": {
+    "stated": "Not published",
+    "days": null,
+    "source_url": "https://www.asuswebstorage.com/"
+  },
+  "egress": {
+    "terms": "Not published; FTP is offered on paid tiers with a bandwidth limit",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://service.asuswebstorage.com/store/?bp=_t"
+  },
+  "interface": [
+    "unknown"
+  ],
+  "tooling": "reverse-engineered. There is a draft rclone backend, pull request 6808 with 1,913 lines, whose description states 'API is not publicly available. Protocol and API were discovered with official Linux client.' It has been open since 2023-03-06 and is in no release",
+  "chaining": "Had the rclone backend landed this would be a clean one-line remote. It has not, after three years, and that is itself the signal: no upstream protocol stability and no maintainer",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "API calls are a paid-tier entitlement: 10 million a month on Pro, 50 million on Enterprise",
+      "source": "https://service.asuswebstorage.com/store/?bp=_t"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "5 GB is the free tier total, which is the cap in practice",
+      "source": "https://service.asuswebstorage.com/store/?bp=_t"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an email address",
+    "country": null
+  },
+  "reliability_note": "The interesting signal is negative: a draft rclone backend open for more than three years usually means the upstream protocol is unstable or the maintainer lost interest. Do not plan on it",
+  "confidence": "reported",
+  "evidence": [
+    {
+      "url": "https://service.asuswebstorage.com/store/?bp=_t",
+      "date": "2026-10-21",
+      "proved": "plan table Free Trial 5 GB, Lite 100 GB, Pro 1 TB, Enterprise 5 TB, and 'API Function: Pro 10 million per month'"
+    },
+    {
+      "url": "https://github.com/rclone/rclone/pull/6808",
+      "date": "2026-10-21",
+      "proved": "'API is not publicly available. Protocol and API were discovered with official Linux client', state Draft since 2023-03-06"
+    },
+    {
+      "url": "probe:https://www.asuswebstorage.com/navigate/price/",
+      "date": "2026-10-21",
+      "proved": "HTTP 404 with a 774-byte body, so that path is dead and the live price page is service.asuswebstorage.com/store/"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "binding": "per-object-cap",
+  "binding_note": "5 GB free is 1% of the filter, and the API is metered by a paid-tier entitlement, so there is no free programmatic path at any capacity.",
+  "notes": "Both a quota failure and a tooling failure, recorded as fails-quota because the quota is the first thing a reader checks. The API being a paid-tier entitlement is the part that would surprise a reader who assumed the draft rclone backend implied free access.",
+  "extras": {
+    "access_mode": "registration-gated",
+    "rclone_backend": "draft PR 6808, not in any release",
+    "api_included_free": false
+  }
+}

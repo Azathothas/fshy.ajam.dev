@@ -1,0 +1,95 @@
+{
+  "topic": "storage",
+  "slug": "nexus-mods",
+  "provider": "Nexus Mods",
+  "url": "https://www.nexusmods.com",
+  "category": "Game-mod repository — unlimited hosting, GB-scale files",
+  "free_tier": {
+    "stated": "Vendor help page states it outright: 'Unlimited storage and distribution for mods and images that you create. Unlimited file hosting for mods and images that you've created and uploaded.' Their own wiki table: Maximum Storage 'Unrestricted', Upload Limitations 'Unlimited (20GB limit through the browser, contact us for larger uploads)'.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://help.nexusmods.com/article/42-what-are-the-benefits-of-creating-a-nexus-mods-account",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap 20 GB",
+    "bytes": 20000000000,
+    "source_url": "https://help.nexusmods.com/article/42-what-are-the-benefits-of-creating-a-nexus-mods-account",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://help.nexusmods.com/article/42-what-are-the-benefits-of-creating-a-nexus-mods-account",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free, no egress quota — but per-IP shaped (see reliability_note). No Cloudflare in front of the file CDN; downloads come from their own edge.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "Web upload + REST API v1 (api.nexusmods.com, `users/validate.json` returned 401 unauthenticated = live and auth-gated, not dead). Free API key issued per account.",
+  "tooling": "REST + a maintained community uploader (Digitalroot.ModUploader, supports `nexusmods` commands).",
+  "chaining": "Unlimited storage makes it a candidate cold-archive shard: 20 GB/object with no aggregate cap is the best per-object-to-quota ratio in this dossier after Printables. No hot-link story — downloads require a session/API key, so it is archive-tier, not serving-tier.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "1 MB/s",
+      "source": "https://help.nexusmods.com/article/42-what-are-the-benefits-of-creating-a-nexus-mods-account"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "1.5 MB/s",
+      "source": "https://help.nexusmods.com/article/42-what-are-the-benefits-of-creating-a-nexus-mods-account"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap 20 GB",
+      "source": "https://help.nexusmods.com/article/42-what-are-the-benefits-of-creating-a-nexus-mods-account"
+    }
+  ],
+  "limits_note": "per-object-cap 20 GB via browser, larger by request. per-ip-shaping is the binding number: ~1 MB/s regular, ~1.5 MB/s with an adblocker, 3 MB/s Supporters; uncapped only for Premium (paid). Resumable downloads are free only on files >500 MB.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email",
+    "country": null
+  },
+  "reliability_note": "The 1–1.5 MB/s un-premium cap is the real constraint — ~3.5–5 GB/hour per stream, so per-IP-shaping governs, not storage. Files are virus-scanned and quarantined on false positives (WinRAR .rar especially).",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://help.nexusmods.com/article/42-what-are-the-benefits-of-creating-a-nexus-mods-account",
+      "date": "2026-10-21",
+      "proved": "'Unlimited storage and distribution' and 'Unlimited file hosting' as free Basic benefits"
+    },
+    {
+      "url": "https://wiki.nexusmods.com/index.php/List_of_online_hosting_sites",
+      "date": "2026-10-21",
+      "proved": "Nexus Mods row: Maximum Storage Unrestricted, Upload Limitations 20GB via browser"
+    },
+    {
+      "url": "https://help.nexusmods.com/article/96-download-speed-caps-adblockers-and-different-types-of-membership",
+      "date": "2026-10-21",
+      "proved": "speed cap table: ~1.5MB/s adblock, 3MB/s Supporter, uncapped Premium"
+    },
+    {
+      "url": "https://help.nexusmods.com/article/170-resumable-downloads",
+      "date": "2026-10-21",
+      "proved": "resumable downloads free only on files over 500MB, still in beta"
+    },
+    {
+      "url": "https://api.nexusmods.com/v1/users/validate.json",
+      "date": "2026-10-21",
+      "proved": "401 (endpoint alive, auth required); www.nexusmods.com itself 403s plain curl (Cloudflare)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Vendor help page states it outright: 'Unlimited storage and distribution for mods and images that you create. Unlimited file hosting for mods and images that you've created and uploaded.' Their own wiki table: Maximum Storage 'Unrestricted', Upload Limitations 'Unlimited (20GB limit through the browser, contact us for larger uploads)'.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

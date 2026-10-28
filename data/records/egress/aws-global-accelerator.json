@@ -1,0 +1,95 @@
+{
+  "topic": "egress",
+  "slug": "aws-global-accelerator",
+  "provider": "AWS Global Accelerator",
+  "url": "https://aws.amazon.com/global-accelerator/pricing/",
+  "category": "L4 anycast proxy (TCP/UDP)",
+  "tier": "payg",
+  "free_tier": {
+    "stated": "No free tier is listed. For every full or partial hour when an accelerator runs in your account, you are charged $0.025 until it is deleted.",
+    "unit": "none",
+    "metered_on": "unstated",
+    "source_url": "https://aws.amazon.com/global-accelerator/pricing/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://aws.amazon.com/global-accelerator/pricing/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://aws.amazon.com/global-accelerator/pricing/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Unmetered in the sense that nothing is capped: USD 0.025 per accelerator-hour plus DT-Premium of USD 0.015/GB for the first 10 TB from United States and Canada or Europe. 1 TiB/month is 1,099.5 GB at USD 0.015, about USD 16.49, plus USD 18 of fixed fee.; ingress: tcp+udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://aws.amazon.com/global-accelerator/pricing/"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "accelerators, listeners, endpoint groups and endpoints, created through the console, CLI or API",
+  "tooling": "AWS console, CLI or API; an NLB or EC2 instance as the endpoint",
+  "chaining": "only with an AWS origin, so it does not chain with a free VM from another cloud",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "no free allowance; USD 0.015/GB DT-Premium in United States and Canada and in Europe, higher in other regions",
+      "source": "https://aws.amazon.com/global-accelerator/pricing/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "USD 0.025 per accelerator-hour whether enabled or disabled",
+      "source": "https://aws.amazon.com/global-accelerator/pricing/"
+    }
+  ],
+  "limits_note": "",
+  "binding": "none",
+  "binding_note": "No byte cap exists: cost is linear in GB. At 1 TiB/month the bill is about USD 34 and nothing throttles. The real ceiling is that the endpoint must be an AWS resource, so this is ingress to AWS rather than to a machine the client already runs elsewhere.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "An AWS account with a payment method; there is no free-tier accelerator.",
+    "country": "None"
+  },
+  "reliability_note": "TCP fragments are dropped at the edge because the AWS network does not support them; UDP fragments are forwarded",
+  "confidence": "documented",
+  "confidence_note": "Anycast, UDP fragment forwarding, the endpoint types and the two rates are quoted from pages read today. A measured claim would need an accelerator created and a UDP listener counted.",
+  "evidence": [
+    {
+      "url": "https://docs.aws.amazon.com/global-accelerator/latest/dg/introduction-how-it-works.html",
+      "date": "2026-10-23",
+      "proved": "The static IP addresses are anycast from the AWS edge network. Global Accelerator forwards UDP fragments to the configured endpoint, which reassembles the original IP packet."
+    },
+    {
+      "url": "https://docs.aws.amazon.com/global-accelerator/latest/dg/about-endpoints.html",
+      "date": "2026-10-23",
+      "proved": "Endpoints for standard accelerators can be Network Load Balancers, Application Load Balancers, Amazon EC2 instances, or Elastic IP addresses"
+    },
+    {
+      "url": "https://aws.amazon.com/global-accelerator/pricing/",
+      "date": "2026-10-23",
+      "proved": "We are charged $0.025 per accelerator-hour, and DT-Premium is $0.015/GB for the first 10 TB from United States & Canada and Europe"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 18 per month plus USD 0.015 per GB",
+  "notes": "The cleanest documented UDP anycast and the only one with a published per-GB rate, but the endpoint list is AWS-only, so a free VM on Oracle or GCP cannot be the origin. Compared with Gcore (EUR 17/month flat) it is cheaper at low volume and has no rule model, but it buys reachability into AWS, which the VM already had.",
+  "extras": {
+    "wg_path": "inside-udp",
+    "wg_detail": "Global Accelerator forwards UDP fragments to the configured endpoint, so a WireGuard listener on an EC2 instance behind it is reachable on the listener port.",
+    "ingress": "tcp+udp",
+    "volume_tib_month": null,
+    "volume_stated": "Unmetered in the sense that nothing is capped: USD 0.025 per accelerator-hour plus DT-Premium of USD 0.015/GB for the first 10 TB from United States and Canada or Europe. 1 TiB/month is 1,099.5 GB at USD 0.015, about USD 16.49, plus USD 18 of fixed fee.",
+    "bytes_transit": "yes",
+    "transit_note": "traffic enters the AWS global network at the nearest edge and exits to the endpoint"
+  }
+}

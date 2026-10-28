@@ -1,0 +1,727 @@
+{
+  "topic": "debrid",
+  "slug": "torbox-free",
+  "provider": "TorBox",
+  "url": "https://torbox.app/pricing",
+  "category": "debrid link generator with torrent and usenet backends (free tier)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "US$0/mo: 1 concurrent slot, 24-hour cool down, ten downloads per month, 10 GB maximum download size, 250 Mbps, reduced traffic priority, API access.",
+    "unit": "GB",
+    "metered_on": "object-count",
+    "source_url": "https://torbox.app/pricing",
+    "read_on": "2026-10-23",
+    "notes": "The support article says the 10 GB is enforced as 10 GB and not 10 GiB: a 10 GiB torrent is deleted because '10GiB = ~11GB which is too high'."
+  },
+  "per_object_cap": {
+    "stated": "10 GB per torrent; '10GiB = ~11GB which is too high so your torrent will be deleted'",
+    "bytes": 10000000000,
+    "source_url": "https://support.torbox.app/en/articles/9836418-account-restrictions",
+    "notes": "Byte figure is the decimal 10 GB the vendor states; the vendor explicitly does not mean 10 GiB."
+  },
+  "retention": {
+    "stated": "Torrents do not seed at all on Free: 'Once the download is complete, the torrent will simply show as cached.' No storage allowance is listed for the free plan.",
+    "days": null,
+    "source_url": "https://support.torbox.app/en/articles/9836418-account-restrictions",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "10 downloads a month at a 10 GB maximum each, so 100 GB a month is the ceiling of the free plan even if every torrent lands at the cap. Speed is 250 Mbps with reduced priority.",
+    "metered": true,
+    "free_allowance": "10 downloads per month, 10 GB each",
+    "price_per_tb": null,
+    "source_url": "https://torbox.app/pricing"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "REST API at api.torbox.app with a bearer API key; 'API Access' and '3rd Party Apps' are listed on every plan including Free.",
+  "endpoint": "https://api.torbox.app/v1/api/",
+  "tooling": "Documented REST API (api-docs.torbox.app), a Postman collection, and third-party integrations. TorBox publishes its own open-source repositories on GitHub.",
+  "chaining": "Cheap way to test whether TorBox's cache and the client's trackers agree: one torrent every 24 hours, ten a month, no card. It cannot carry a real workload and is not meant to.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "ten downloads per calendar month, reset on the first of the month",
+      "source": "https://support.torbox.app/en/articles/9836418-account-restrictions"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "10 GB per torrent (decimal, not GiB)",
+      "source": "https://support.torbox.app/en/articles/9836418-account-restrictions"
+    },
+    {
+      "kind": "pull-count",
+      "value": "one download may be added every 24 hours; one active download at a time",
+      "source": "https://support.torbox.app/en/articles/9836418-account-restrictions"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "ten downloads per month",
+      "source": "https://support.torbox.app/en/articles/9836418-account-restrictions"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "10 GB per torrent, decimal not GiB",
+      "source": "https://support.torbox.app/en/articles/9836418-account-restrictions"
+    },
+    {
+      "kind": "pull-count",
+      "value": "one download added per 24 hours; one active at a time",
+      "source": "https://support.torbox.app/en/articles/9836418-account-restrictions"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "10 GB maximum download size on the free plan",
+      "source": "https://torbox.app/pricing"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "250 Mbps, 'Reduced Traffic Priority', 1 concurrent slot",
+      "source": "https://torbox.app/pricing"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "per host per day: 10737418240 B (wupfile) up to 21474836480000 B (mediafire, mega, pixeldrain, gofile, buzzheavier, fuckingfast, yandex disk); default 10737418240000 B",
+      "source": "https://api.torbox.app/v1/api/webdl/hosters"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "10 GB per download on the free plan; 107374182400 B (100 GiB) per link otherwise",
+      "source": "https://torbox.app/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "300 requests/minute per API token; torrent creation limited to 60/hour for uncached items (300/min when cached); usenet and webdl creation 60/hour each",
+      "source": "https://api-docs.torbox.app/"
+    },
+    {
+      "kind": "pull-count",
+      "value": "link resolution is a budget of about 100 calls: a 429 with Retry-After 300 arrived at call 100 when issued flat out and at call 94 when paced; the lockout is account-wide and lasts five minutes",
+      "source": "https://notes.debridmediamanager.com/providers/torbox/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "the 21st concurrent connection to one CDN host gets a 429 (third-party measurement 2026-08-23); the limit is per host, not per key",
+      "source": "https://notes.debridmediamanager.com/providers/torbox/"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "fair-use floor per tier: 10 TB/month Essential, 20 TB Standard, 30 TB Pro; three warnings then 'On the 4th abuse event, the account is banned without refund'",
+      "source": "https://www.reddit.com/r/TorBoxApp/comments/1tji9n1/fair_use_policy_updated_cached_transfers_now/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "300 requests per minute per API token, no edge limiting: 'all endpoints are rate limited to 300/min per API token, no edge rate limiting'",
+      "source": "https://api-docs.torbox.app/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "60 per hour for uncached torrent creation, 300 per minute when the torrent is cached; an uncached add spends from both pools",
+      "source": "https://support.torbox.app/en/articles/13726368-api-rate-limits"
+    },
+    {
+      "kind": "request-rate",
+      "value": "60 per hour each for POST /usenet/createusenetdownload and POST /webdl/createwebdownload",
+      "source": "https://support.torbox.app/en/articles/13726368-api-rate-limits"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "10 GiB per download on the free plan",
+      "source": "https://api-docs.torbox.app/"
+    },
+    {
+      "kind": "pull-count",
+      "value": "active download slots per plan; cached items do not consume a slot. Not an address limit",
+      "source": "https://support.torbox.app/en/articles/12159366-account-restrictions"
+    },
+    {
+      "kind": "request-rate",
+      "value": "rate limiting is API-token based ('We no longer accept IP whitelisting requests due to rate limiting being API token based, rather than IP based')",
+      "source": "https://api-docs.torbox.app/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "none published; the answer says the opposite: 'There is no restriction on where you log in and download files from'",
+      "source": "https://support.torbox.app/en/articles/9836406-can-i-use-my-account-with-many-different-ips"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "30 days after the last download",
+      "source": "https://support.torbox.app/en/articles/9961332-how-long-are-torbox-files-stored-for"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "AirLock 1 TB Pro / 500 GB Standard / 300 GB Essential / 0 GB Free",
+      "source": "https://support.torbox.app/en/articles/15417147-torbox-airlock"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "1 TB per torrent on Pro, 200 GB Essential, 10 GB Free",
+      "source": "https://support.torbox.app/en/articles/9836418-account-restrictions"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "10 GB maximum download size (free tier)",
+      "source": "https://torbox.app/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "1 concurrent slot (free), 3 (Essential), no count published for Standard or Pro",
+      "source": "https://torbox.app/pricing"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "10 GB per torrent",
+      "source": "https://support.torbox.app/en/articles/9836418-account-restrictions"
+    },
+    {
+      "kind": "request-rate",
+      "value": "1 download added every 24 hours; 10 downloads per month, reset on the 1st",
+      "source": "https://support.torbox.app/en/articles/9836418-account-restrictions"
+    },
+    {
+      "kind": "pull-count",
+      "value": "1 active download at a time; extra additions queue",
+      "source": "https://support.torbox.app/en/articles/9836418-account-restrictions"
+    }
+  ],
+  "limits_note": "Private torrents are refused on the free plan, and web downloads and usenet downloads are not available at all. Cached items do not count against the active-slot limit.",
+  "binding": "volume-quota",
+  "binding_note": "Ten downloads at 10 GB is 100 GB a month, a tenth of the 1 TiB target, and the 24-hour cool down means the tenth download cannot even be reached before day ten. Both the count and the size cap are lower than every other service.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "E-mail account with an API key; no card and no phone for the free plan.",
+    "country": null
+  },
+  "reliability_note": "TorBox runs a dynamic abuse system keyed to a rolling 99th percentile of usage, and its terms state that 'unlimited' does not survive automation or sharing; the service has a public status page and a history of downtime incidents.",
+  "confidence": "documented",
+  "confidence_note": "Plan limits come from the pricing page and from the vendor's own support article, which agree. The 10-download figure appears on the pricing page read through a browser renderer; the static payload does not carry it.",
+  "evidence": [
+    {
+      "url": "https://torbox.app/pricing",
+      "date": "2026-10-23",
+      "proved": "'$0/mo', '1 Concurrent Slot', '24 Hour Cool Down', 'Ten Downloads Per Month', '10GB Max Download Size', '250Mbps Speed', 'Reduced Traffic Priority', 'API Access'"
+    },
+    {
+      "url": "https://support.torbox.app/en/articles/9836418-account-restrictions",
+      "date": "2026-10-23",
+      "proved": "'You can only add 10 downloads per month', the 24-hour cool down, the 10 GB cap and why 10 GiB fails, no seeding, no private torrents, no web or usenet downloads"
+    },
+    {
+      "url": "https://support.torbox.app/en/articles/10336778-the-torbox-abuse-system",
+      "date": "2026-10-23",
+      "proved": "the abuse system is dynamic and keyed to the rolling 99th percentile of usage"
+    },
+    {
+      "url": "https://support.torbox.app/en/articles/9836418-account-restrictions",
+      "date": "2026-10-23",
+      "proved": "'You can only add 10 downloads per month', 'You can only add 1 download every 24 hours', 'You can only have 1 download active at a time', and 'Torrents downloaded can only have a max size of 10GB ... 10GiB = ~11GB which is too high so your torrent will be deleted.'"
+    },
+    {
+      "url": "https://torbox.app/pricing",
+      "date": "2026-10-23",
+      "proved": "'FREE ... $0/mo ... 1 Concurrent Slot ... 10GB Max Download Size ... 250Mbps Speed ... Reduced Traffic Priority ... API Access' - and no download count"
+    },
+    {
+      "url": "https://torbox.app/pricing",
+      "date": "2026-10-23",
+      "proved": "the four plans and the free plan's five stated limits: 1 concurrent slot, 10GB max download size, 250Mbps, reduced traffic priority, API access"
+    },
+    {
+      "url": "probe:https://api.torbox.app/v1/api/webdl/hosters",
+      "date": "2026-10-23",
+      "proved": "162 hosters with `daily_bandwidth_limit`, `daily_link_limit`, `per_link_size_limit`, `status`; GET 200, 72261 bytes"
+    },
+    {
+      "url": "https://torbox.app/pricing",
+      "date": "2026-10-23",
+      "proved": "free plan card: '$0/mo', '1 Concurrent Slot', '10GB Max Download Size', 'API Access'"
+    },
+    {
+      "url": "https://torbox.app/hosters",
+      "date": "2026-10-23",
+      "proved": "the vendor's own hosters page is a JS shell that the reader reports as login_required, which is why the API endpoint is the authority here"
+    },
+    {
+      "url": "probe:https://webdav.torbox.app/",
+      "date": "2026-10-23",
+      "proved": "a WebDAV endpoint exists and asks for the key: 30 bytes, {\"detail\":\"Not authenticated\"}"
+    },
+    {
+      "url": "https://api-docs.torbox.app/",
+      "date": "2026-10-23",
+      "proved": "Status semantics ('200 always means a success. 403 means authentication error'); rate limits '300/min per API token', 'createtorrent is rate limited to 60/hour for uncached items ... 300/min if the items are cached'; and the error table: NO_AUTH, BAD_TOKEN, PLAN_RESTRICTED_FEATURE, DOWNLOAD_TOO_LARGE with the four byte caps, MONTHLY_LIMIT, COOLDOWN_LIMIT, ACTIVE_LIMIT, LINK_OFFLINE, VENDOR_DISABLED, TOO_MUCH_DATA, BOZO_TORRENT, BOZO_NZB, DUPLICATE_ITEM, ITEM_NOT_FOUND."
+    },
+    {
+      "url": "https://torbox.app/pricing",
+      "date": "2026-10-23",
+      "proved": "Free plan '$0/mo, 1 Concurrent Slot, 10GB Max Download Size, 250Mbps Speed, Reduced Traffic Priority, API Access'; Essential $3/mo with 3 concurrent slots; Standard $5/mo; Pro $10/mo."
+    },
+    {
+      "url": "https://notes.debridmediamanager.com/providers/torbox/",
+      "date": "2026-10-23",
+      "proved": "Third-party measurements: 'A 429 carrying Retry-After: 300 arrived at cumulative call 100 ... It arrived at call 94 when they were paced to one a second. The lockout is account-wide.'; 'The 21st connection to one CDN host gets a 429. Measured 2026-08-23'; 'A free account does not work with zurg. TorBox answers every library request from a free key with PLAN_RESTRICTED_FEATURE.'"
+    },
+    {
+      "url": "https://www.reddit.com/r/TorBoxApp/comments/1tji9n1/fair_use_policy_updated_cached_transfers_now/",
+      "date": "2026-10-23",
+      "proved": "Reported, a community summary quoting TorBox's support article and changelog: fair-use floors Essential 10 TB, Standard 20 TB, Pro 30 TB per month; cached streaming counted from 2026-05-22; 'You get 3 separate warnings in total before they ban abusive accounts ... On the 4th abuse event, the account is banned without refund.' Also TorBox's own words: 'we don't monitor IPs'."
+    },
+    {
+      "url": "https://status.torbox.app/incidents",
+      "date": "2026-10-23",
+      "proved": "11 resolved incidents between 2026-08-03 and 2026-10-17: three 'General outage' (Aug 3, Aug 8, Aug 23 and again Oct 17), 'API Timeouts' (Aug 18), 'Cross continental processing degraded' (Sep 17), 'API outage' (Sep 26), 'APAC outage' and 'Network event' (Oct 13), 'WEUR - degredation' (Oct 17), and a region pull: 'We have pulled our SLAV region until a suitable alternative is found' (Sep 23)."
+    },
+    {
+      "url": "https://api-docs.torbox.app/",
+      "date": "2026-10-23",
+      "proved": "'all endpoints are rate limited to 300/min per API token, no edge rate limiting'; the 60/hour uncached, usenet and webdl limits; DOWNLOAD_TOO_LARGE plan table with 'Free Plan Limit: 10737418240 bytes'; the full error table (ACTIVE_LIMIT, MONTHLY_LIMIT, COOLDOWN_LIMIT, PLAN_RESTRICTED_FEATURE); the Real-Debrid route translation table; the SDK list"
+    },
+    {
+      "url": "https://support.torbox.app/en/articles/13726368-api-rate-limits",
+      "date": "2026-10-23",
+      "proved": "'if you're adding uncached torrents, they contribute to the original 300/minute limit on top of the 60/hour limit', and that the limits are per API key and synchronised across all servers"
+    },
+    {
+      "url": "https://torbox.app/pricing",
+      "date": "2026-10-23",
+      "proved": "the free plan card: '$0/mo', '1 Concurrent Slot', '10GB Max Download Size', '250Mbps Speed', 'API Access'"
+    },
+    {
+      "url": "https://support.torbox.app/en/articles/14662867-torbox-webdav",
+      "date": "2026-10-23",
+      "proved": "first-party WebDAV at https://webdav.torbox.app with the API key as password, and 'Our WebDAV refreshes every 15 minutes'"
+    },
+    {
+      "url": "https://github.com/sirrobot01/decypharr",
+      "date": "2026-10-23",
+      "proved": "TorBox is one of five debrid providers behind Decypharr's 'Mock Qbittorent and Sabnzbd API'"
+    },
+    {
+      "url": "https://support.torbox.app/en/articles/9836406-can-i-use-my-account-with-many-different-ips",
+      "date": "2026-10-23",
+      "proved": "'TorBox doesn't track your IP at all ... or even on a VPN ... There is no restriction on where you log in and download files from.' Also 'You can even share your account and API key with others if you like! There is no restriction on how many devices can be logged in at a time'."
+    },
+    {
+      "url": "https://api-docs.torbox.app/",
+      "date": "2026-10-23",
+      "proved": "'We no longer accept IP whitelisting requests due to rate limiting being API token based, rather than IP based.' The published error table has no address-refusal code; the only device-shaped code is INVALID_DEVICE, which is about the requesting client, not its address."
+    },
+    {
+      "url": "https://torbox.app/terms",
+      "date": "2026-10-23",
+      "proved": "'Last updated: July 31, 2026'. The full text contains no VPN, proxy, server, datacenter or cloud-address clause. The class permission is therefore untouched while the sharing permission is withdrawn."
+    },
+    {
+      "url": "https://www.reddit.com/r/TorBoxApp/comments/1tmfx6l/concurrent_ip_usage/",
+      "date": "2026-10-23",
+      "proved": null
+    },
+    {
+      "url": "https://www.reddit.com/r/StremioAddons/comments/1vbjnsk/torbox_quietly_changed_operating_entity_policies/",
+      "date": "2026-10-23",
+      "proved": "This is the only vendor-document movement on addresses in 2026, and it is about collection, not blocking."
+    },
+    {
+      "url": "https://support.torbox.app/en/articles/9961332-how-long-are-torbox-files-stored-for",
+      "date": "2026-10-23",
+      "proved": "'TorBox stores each file for at least 30 days' and that popularity extends it"
+    },
+    {
+      "url": "https://support.torbox.app/en/articles/15417147-torbox-airlock",
+      "date": "2026-10-23",
+      "proved": "'deleted 30 days after the last download'; AirLock sizes per tier; 'You will have 7 days... After 7 days of being over your Airlock limit, ALL of your accounts Airlock files will automatically be removed from your Airlock... they will then be treated as normal files that will expire after 30 days of inactivity'"
+    },
+    {
+      "url": "https://support.torbox.app/en/articles/10333785-why-is-my-download-inactive",
+      "date": "2026-10-23",
+      "proved": "'Any downloads not downloaded within 30 days of being cached are removed'; downloading, or someone else downloading, resets the clock"
+    },
+    {
+      "url": "https://torbox.app/policies/terms",
+      "date": "2026-10-23",
+      "proved": "'TorBox may provide a grace period to reduce your AirLock usage, but is not required to do so'; AirLock is 'not a permanent storage service... or guarantee of continued access'"
+    },
+    {
+      "url": "https://torbox.app/pricing",
+      "date": "2026-10-23",
+      "proved": "Free / Essential $3 / Standard $5 / Pro $10 per month, and the Free plan's 1 slot and 10 GB cap"
+    },
+    {
+      "url": "https://torbox.app/pricing",
+      "date": "2026-10-23",
+      "proved": "the four tiers at $0 / $3 / $5 / $10 and the free tier's '1 Concurrent Slot', '10GB Max Download Size', '250Mbps Speed'"
+    },
+    {
+      "url": "https://web.archive.org/web/20241002194254/https://torbox.app/pricing",
+      "date": "2024-10-02",
+      "proved": "that the capture exists and carries only the Wayback toolbar: the page body is empty because the price table is rendered client-side"
+    },
+    {
+      "url": "https://web.archive.org/web/20251013200632/https://torbox.app/pricing",
+      "date": "2025-10-13",
+      "proved": "the same empty shell twelve months later, and the toolbar's own count of '198 captures' between 28 Mar 2024 and 9 Oct 2026"
+    },
+    {
+      "url": "https://web.archive.org/cdx/search/cdx?url=torbox.app&output=json&fl=timestamp&limit=3",
+      "date": "2026-10-23",
+      "proved": "the domain's first capture is 2023-09-05, which bounds how far back any TorBox price history can go"
+    },
+    {
+      "url": "https://support.torbox.app/en/articles/9835794-what-payment-types-can-i-use",
+      "date": "2026-10-23",
+      "proved": "the full rail list: 'Credit Card/Debit Cards' with 'We don't allow prepaid cards to be used'; 'Wallets ... Google Pay ..., Apple Pay ..., Amazon Pay ... and PayPal (available for only one-time payments)'; 'Patreon'; 'ACH Transfer'; 'Cryptocurrency ... Available in all countries' with 20 named coins; 'Gift Cards' via support; 'Mail in Cash'; 'UPI'; 'Telegram Stars'; and 'Unsupported Payment Methods: Paysafe, Privacy Cards, Virtual Cards'."
+    },
+    {
+      "url": "https://torbox.app/pricing",
+      "date": "2026-10-23",
+      "proved": "the price ladder: FREE $0/mo, ESSENTIAL $3/mo, STANDARD $5/mo, PRO $10/mo"
+    },
+    {
+      "url": "https://feedback.torbox.app/changelog/v352",
+      "date": "2026-10-23",
+      "proved": "the processor: 'Switched from PayPal and Coinbase to Sellix, which is a payment processor that combines PayPal, Crypto, and Card payments all in one'"
+    },
+    {
+      "url": "https://api.frankfurter.app/latest?from=USD&to=EUR",
+      "date": "2026-10-22",
+      "proved": "ECB reference rate used for the euro comparison: 1 USD = 0.89246 EUR on 2026-10-22, so $3 is about EUR 2.68"
+    },
+    {
+      "url": "https://torbox.app/pricing",
+      "date": "2026-10-23",
+      "proved": "FREE $0/mo with '1 Concurrent Slot', '10GB Max Download Size', '250Mbps Speed', 'API Access'"
+    },
+    {
+      "url": "https://support.torbox.app/en/articles/9836418-account-restrictions",
+      "date": "2026-10-23",
+      "proved": "'only add 1 download every 24 hours', '10 downloads per month', the 10GB maximum with the GiB warning, 'Torrents will not seed at all', and 'No private torrents are allowed on the Free plan'"
+    },
+    {
+      "url": "https://support.torbox.app/en/articles/15417147-torbox-airlock",
+      "date": "2026-10-23",
+      "proved": "normal files are 'deleted 30 days after the last download'; Airlock space is Free 0GB, Essential 300GB"
+    },
+    {
+      "url": "https://support.torbox.app/en/articles/10336778-the-torbox-abuse-system",
+      "date": "2026-10-23",
+      "proved": "absolute abuse floors of 'Free - 5TB/month', Essential 10TB, Standard 20TB, Pro 30TB"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-23T01:57:49.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "all four are confirmed on the vendor page. Facts unchanged, evidence route changed: two earlier records cite torbox.app/pricing for 'Ten Downloads Per Month' and '24 Hour Cool Down', and that page no longer carries either string. The rules are still true, from the support article. The ladder's 100 GB therefore survives, but a re-verification that only opens the pricing page would wrongly conclude the count was dropped. This is the load-bearing piece of the free-only answer, and the weakest-evidenced record: one vendor page read, no account, no API call. The next session should create a free account and measure a 9 GB fetch, a 12 GB fetch (expected to fail) and the cache hit rate on a popular title. No host reports a zero cap, and the SDK documentation says zero means unlimited, so every host here is capped in fact. 67 of the 162 rows are streams (YouTube, Twitch, Vimeo) and are excluded from the host matrix, which leaves 95 file hosts. Candidates for the first failure: the resolution budget, the active-slot count, or the fair-use floor. The budget is confirmed by a dated measurement with the retry header value; the slot count is documented; the fair-use floor is 30x above a 1 TiB/month client. The Rapidgator hoster is documented by the comparison project's issue #34 as 'constantly Offline ... Links cannot be added', which is a host-level refusal the service does not signal with an error code. The free plan is the only tier of any provider here that combines a free key, a published per-token rate limit and a documented mount path. What it cannot do is one file over 10 GiB. Abandonment condition: if the free plan drops 'API Access', answer changes and this record must be re-read the same day. Written because the ip-class lane's table row gives TorBox 'unlimited devices, account sharing allowed', which its own July 2026 terms contradict. The IP permission is unchanged and is the load-bearing fact: this is the only seed service that states that a bare cloud address may call it. The closest thing to a purpose-built answer to question, and the vendor says so in its own changelog: AirLock exists for 'users who may not use TorBox constantly'. The trap is that the 30-day countdown after a purge starts at the last download, not at the lapse, so a file fetched five months ago can vanish on day 7 of the gap. Abandonment condition: if the 7-day window is removed from the terms, the 37-day figure becomes unknown. This is the one provider in the set whose price history is unreadable rather than unchanged, and the reason is structural: a Svelte app renders the table in the browser, so the archived HTML has no price in it. Rendering the replay through a headless browser also produced no table. Any future attempt needs a text-extraction crawler run against the live page and stored as a capture, not the Wayback replay. Cheapest first purchase of any service that takes crypto directly. The rail is a third-party aggregator (Sellix), not the vendor's own wallet, so the crypto leg inherits Sellix's availability. Gift-card and mail-in-cash rails are the only paths in the whole sample that need neither card nor bank nor wallet. The strongest free torrent path that publishes a byte number, and it is still half of the 20 GiB case at the per-object level. It is also the cheapest way to test a cache: a torrent already cached by another user does not consume a slot and can be streamed or downloaded on the free plan.",
+  "extras": {
+    "usenet": "no",
+    "torrent": "yes, public torrents only",
+    "seeding": "none",
+    "speed_mbps": 250,
+    "pricing_page_bullets_today": [
+      "1 Concurrent Slot",
+      "10GB Max Download Size",
+      "250Mbps Speed",
+      "Reduced Traffic Priority",
+      "API Access"
+    ],
+    "ladder_gb_month": 100,
+    "paid_tiers_usd_month": "Essential 3, Standard 5, Pro 10",
+    "overlap": "the free-debrid and seed-western lanes also cover TorBox; this record is the hosted-stack angle (the key the free addons use)",
+    "host_matrix": {
+      "published_daily_caps": true,
+      "source": "https://api.torbox.app/v1/api/webdl/hosters",
+      "hosts_listed": 162,
+      "hosts_in_matrix": 95,
+      "default_daily_bytes": 10737418240000,
+      "rows": [
+        {
+          "host": "wupfile.com",
+          "daily_bytes": 10737418240,
+          "daily_links": 5,
+          "per_link_bytes": 107374182400,
+          "status": true
+        },
+        {
+          "host": "dailyuploads.net",
+          "daily_bytes": 21474836480,
+          "daily_links": 5,
+          "per_link_bytes": 107374182400,
+          "status": false
+        },
+        {
+          "host": "4shared.com",
+          "daily_bytes": 53687091200,
+          "daily_links": 5,
+          "per_link_bytes": 107374182400,
+          "status": true
+        },
+        {
+          "host": "drop.download",
+          "daily_bytes": 53687091200,
+          "daily_links": 5,
+          "per_link_bytes": 107374182400,
+          "status": true
+        },
+        {
+          "host": "filer.net",
+          "daily_bytes": 53687091200,
+          "daily_links": 5,
+          "per_link_bytes": 107374182400,
+          "status": true
+        },
+        {
+          "host": "isra.cloud",
+          "daily_bytes": 53687091200,
+          "daily_links": 5,
+          "per_link_bytes": 107374182400,
+          "status": true
+        },
+        {
+          "host": "katfile.com",
+          "daily_bytes": 53687091200,
+          "daily_links": 5,
+          "per_link_bytes": 107374182400,
+          "status": false
+        },
+        {
+          "host": "nitroflare.com",
+          "daily_bytes": 53687091200,
+          "daily_links": 5,
+          "per_link_bytes": 107374182400,
+          "status": false
+        },
+        {
+          "host": "turbobit.net",
+          "daily_bytes": 53687091200,
+          "daily_links": 5,
+          "per_link_bytes": 107374182400,
+          "status": true
+        },
+        {
+          "host": "123684.com",
+          "daily_bytes": 536870912000,
+          "daily_links": 5,
+          "per_link_bytes": 107374182400,
+          "status": false
+        },
+        {
+          "host": "alfafile.net",
+          "daily_bytes": 536870912000,
+          "daily_links": 5,
+          "per_link_bytes": 107374182400,
+          "status": true
+        },
+        {
+          "host": "pan.baidu.com",
+          "daily_bytes": 536870912000,
+          "daily_links": 5,
+          "per_link_bytes": 107374182400,
+          "status": false
+        },
+        {
+          "host": "rapidgator.net",
+          "daily_bytes": 536870912000,
+          "daily_links": 5,
+          "per_link_bytes": 107374182400,
+          "status": false
+        },
+        {
+          "host": "send.cm",
+          "daily_bytes": 536870912000,
+          "daily_links": 5,
+          "per_link_bytes": 107374182400,
+          "status": true
+        },
+        {
+          "host": "uploady.io",
+          "daily_bytes": 536870912000,
+          "daily_links": 5,
+          "per_link_bytes": 107374182400,
+          "status": true
+        },
+        {
+          "host": "ddownload.com",
+          "daily_bytes": 1073741824000,
+          "daily_links": 10,
+          "per_link_bytes": 107374182400,
+          "status": false
+        },
+        {
+          "host": "hitfile.net",
+          "daily_bytes": 1073741824000,
+          "daily_links": 10,
+          "per_link_bytes": 107374182400,
+          "status": true
+        },
+        {
+          "host": "mypikpak.com",
+          "daily_bytes": 1073741824000,
+          "daily_links": 10,
+          "per_link_bytes": 107374182400,
+          "status": false
+        },
+        {
+          "host": "terabytez.org",
+          "daily_bytes": 1073741824000,
+          "daily_links": 10,
+          "per_link_bytes": 107374182400,
+          "status": true
+        },
+        {
+          "host": "annas-archive.org",
+          "daily_bytes": 2684354560000,
+          "daily_links": 25,
+          "per_link_bytes": 107374182400,
+          "status": false
+        },
+        {
+          "host": "hexload.com",
+          "daily_bytes": 2684354560000,
+          "daily_links": 25,
+          "per_link_bytes": 107374182400,
+          "status": true
+        },
+        {
+          "host": "clicknupload.click",
+          "daily_bytes": 5368709120000,
+          "daily_links": 50,
+          "per_link_bytes": 107374182400,
+          "status": false
+        }
+      ]
+    },
+    "matrix_ref": "matrix.md",
+    "probe_tsv": "probes.tsv",
+    "type_split": {
+      "hoster": 95,
+      "stream": 67
+    },
+    "status_false": 15,
+    "failure_angle": "account-wide rate lockout",
+    "strongest_signal": "429 with Retry-After: 300",
+    "account_states": "PLAN_RESTRICTED_FEATURE (free key or lapsed plan); ACTIVE_LIMIT; COOLDOWN_LIMIT; MONTHLY_LIMIT; DOWNLOAD_TOO_LARGE; BAD_TOKEN; VENDOR_DISABLED; LINK_OFFLINE",
+    "cache_miss": "createtorrent accepts the add and queues it; the 60/hour cap applies only to uncached items, so an uncached add is slower by design and not by error",
+    "host_removal": "the terms reserve the right to 'change, add, remove ... any ... hoster ... at any time'; the public hosters page returned an error to the broker on 2026-10-23, so the list is not readable without an account",
+    "simultaneous_use": "enforcement is concurrent slots and monthly bytes, not concurrent addresses.",
+    "auth_flows": "one: a long-lived API token in the Authorization header, minted at https://torbox.app/settings. No OAuth2 device flow, no refresh, no scopes. The error NO_AUTH / BAD_TOKEN distinguish missing from invalid.",
+    "unrestrict_endpoint": "GET /torrents/requestdl (the documented equivalent of Real-Debrid's /unrestrict/link)",
+    "torrent_endpoints": "POST /torrents/createtorrent, /torrents/controltorrent, /torrents/asynccreatetorrent; GET /torrents/mylist, /torrents/checkcached, /torrents/getqueued. Usenet and webdl mirror the same shape under /usenet and /webdl.",
+    "account_endpoints": "the generated OpenAPI at http://api.torbox.app/docs is where the account and traffic routes would be. Plan limits surface as errors (MONTHLY_LIMIT, ACTIVE_LIMIT, COOLDOWN_LIMIT) rather than as a quota endpoint we could read",
+    "public_endpoints_no_account": "none found; every endpoint takes the token. A separate TorBox search API is referenced in the error table (SEARCH_ERROR) but its host answered 530 through the broker twice, so its public/private status is unverified",
+    "date_format": "all dates normalized to UTC '%Y-%m-%dT%H:%M:%SZ'",
+    "webdav_caveat": "the WebDAV article does not state which plans it is available on; the free plan's inclusion of it is inferred from the plan card listing API Access, not read",
+    "class_rule_quoted": "There is no restriction on where you log in and download files from",
+    "accepts_bare_cloud_ip": true,
+    "accepts_listed_cloud_ip": true,
+    "sanctioned_routes": [
+      "none needed"
+    ],
+    "sharing_and_class_separated": null,
+    "contradiction": "knowledge base invites account and API-key sharing",
+    "retention_map": {
+      "normal_file": {
+        "stated": "last download",
+        "days": 30,
+        "source_url": "https://support.torbox.app/en/articles/9961332-how-long-are-torbox-files-stored-for"
+      },
+      "airlock_while_eligible": {
+        "stated": "no inactivity expiry",
+        "days": null,
+        "source_url": "https://support.torbox.app/en/articles/15417147-torbox-airlock"
+      },
+      "grace_after_lapse": {
+        "stated": "purge window before AirLock ejection",
+        "days": 7,
+        "source_url": "https://support.torbox.app/en/articles/15417147-torbox-airlock"
+      },
+      "worst_case_after_lapse": {
+        "stated": "7 days plus a 30-day clock that may already be spent",
+        "days": 37,
+        "source_url": "https://support.torbox.app/en/articles/15417147-torbox-airlock"
+      }
+    },
+    "account_deletion": {
+      "stated": "no inactivity deletion published",
+      "days": null,
+      "source_url": "https://torbox.app/policies/terms"
+    },
+    "reactivation": "normal files that survived the 30-day clock reappear; ejected AirLock items are re-Airlocked by hand",
+    "storage_model": "shared cache plus a per-account AirLock allowance",
+    "price_history": [
+      {
+        "date": "2026-10-23",
+        "price": "USD 0 / month",
+        "plan": "Free",
+        "source_url": "https://torbox.app/pricing"
+      },
+      {
+        "date": "2026-10-23",
+        "price": "USD 3 / month",
+        "plan": "Essential",
+        "source_url": "https://torbox.app/pricing"
+      },
+      {
+        "date": "2026-10-23",
+        "price": "USD 5 / month",
+        "plan": "Standard",
+        "source_url": "https://torbox.app/pricing"
+      },
+      {
+        "date": "2026-10-23",
+        "price": "USD 10 / month",
+        "plan": "Pro",
+        "source_url": "https://torbox.app/pricing"
+      }
+    ],
+    "price_history_status": "unread",
+    "price_history_note": "Three dated captures (2024-10-02, 2025-10-13, 2026-10-23) but the first two store no price body. Earliest domain capture 2023-09-05.",
+    "change_36m": "unknown",
+    "currency": "USD",
+    "payment_group": "crypto",
+    "payment": {
+      "card": true,
+      "card_note": "Visa, Master, American Express, Discover, JCB; prepaid cards refused",
+      "paypal": true,
+      "paypal_note": "one-time payments only, and only while the processor enables it",
+      "crypto": [
+        "BTC",
+        "ETH",
+        "LTC",
+        "USDT",
+        "USDC",
+        "TRX",
+        "BNB",
+        "SOL",
+        "MATIC",
+        "XNO",
+        "XMR",
+        "BCH",
+        "XRP",
+        "DOGE",
+        "CRO",
+        "APE",
+        "PEPE",
+        "WETH",
+        "DAI",
+        "SHIB"
+      ],
+      "crypto_processor": "Sellix",
+      "local_rails": [
+        "UPI (India only)",
+        "ACH (100+ banks, 2-4 business days manual verification)"
+      ],
+      "voucher": false,
+      "non_bank_rails": [
+        "gift card (eGifts24 ZAR, Amazon/Apple/Steam US/AU/CA, min $20)",
+        "mail-in cash to Dover DE",
+        "Patreon",
+        "Telegram Stars via @torboxapp_command_bot"
+      ],
+      "entry_price": "USD 3/mo (Essential)",
+      "entry_price_eur": "EUR 2.68 at the ECB rate of 2026-10-22"
+    },
+    "max_slots_all_plans": "10 (Pro)",
+    "free_airlock_gb": 0
+  }
+}

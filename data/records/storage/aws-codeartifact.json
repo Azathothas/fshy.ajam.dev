@@ -1,0 +1,110 @@
+{
+  "topic": "storage",
+  "slug": "aws-codeartifact",
+  "provider": "AWS CodeArtifact",
+  "url": "https://aws.amazon.com/codeartifact/pricing/",
+  "category": "registry",
+  "free_tier": {
+    "stated": "First 2 GB of storage and first 100,000 requests per month free — a recurring monthly allowance, described on the pricing page as 'a monthly AWS Free Tier for storage and requests', with no 12-month expiry language attached to CodeArtifact itself. Then $0.05/GB-month storage and $0.05 per 10,000 requests.",
+    "unit": "objects",
+    "metered_on": "stored-bytes",
+    "source_url": "https://aws.amazon.com/codeartifact/pricing/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "5 GB max per asset",
+    "bytes": 5000000000,
+    "source_url": "https://aws.amazon.com/codeartifact/pricing/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://aws.amazon.com/codeartifact/pricing/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "METERED and this is the killer: 'You pay for all bandwidth into and out of CodeArtifact, except ... Data transferred in from the Internet ... Data transfer between CodeArtifact and another AWS Service in the same AWS Region.' Internet egress is billed at the standard AWS data-transfer-out tiers, aggregated across all AWS services. No Cloudflare Bandwidth Alliance path.",
+    "metered": true
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest (CodeArtifact API), plus native npm/pip/twine/maven/gradle/nuget/cargo/swift clients through a repository endpoint and a short-lived auth token",
+  "tooling": "`aws codeartifact login --tool npm|pip|twine|nuget|maven`, `twine upload --repository-url`, `npm publish`; first-class documented tooling.",
+  "chaining": "Per AWS account: 2 GB free × unlimited AWS accounts. Within one account, storage is a single pooled meter (no per-repo allowance), so 1,000 repositories do not multiply 2 GB. Per-repo limits are on count (1,000 repos/domain, 10 domains/account) not bytes.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "100,000 requests per month",
+      "source": "https://aws.amazon.com/codeartifact/pricing/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "100,000 requests/month",
+      "source": "https://aws.amazon.com/codeartifact/pricing/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "500 GB/day",
+      "source": "https://aws.amazon.com/codeartifact/pricing/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "5 GB max per asset",
+      "source": "https://aws.amazon.com/codeartifact/pricing/"
+    }
+  ],
+  "limits_note": "2 GB/month free; 100,000 requests/month free; 5 GB max per asset (raisable by quota request); 350 assets per package version; npm publish request capped at 2 GB and NOT raisable; requests are also metered — a 500 GB/day fetch would blow 100k requests instantly; repos are private-only ('CodeArtifact does not publish packages ... to public repositories'), so anonymous pulls do not exist.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: month expiry language attached to CodeArtifact itself. Then $0.05/GB-month storage and $0.05 per 10,000 requests. Technically excellent but structurally wrong for this brief: no p",
+    "country": null
+  },
+  "reliability_note": "Technically excellent but structurally wrong for this brief: no public/anonymous access at all, and both storage and egress are metered past trivial limits.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented. Re-read 2026-10-22: the page answers and the claim holds; the rung is unchanged because the read establishes the page, not the enforcement.",
+  "evidence": [
+    {
+      "url": "https://aws.amazon.com/codeartifact/pricing/",
+      "date": "2026-10-21",
+      "proved": "read live: 'CodeArtifact includes a monthly AWS Free Tier for storage and requests'; 'You pay for all bandwidth into and out of CodeArtifact, except ... Data transferred in from the Internet'; outbound tiers 'Up to 1 GB/month / Next 9.999 TB/month / Next 40 TB/month'"
+    },
+    {
+      "url": "https://docs.aws.amazon.com/codeartifact/latest/ug/service-limits.html",
+      "date": "2026-10-21",
+      "proved": "read live: 'Asset file size: Each supported Region: 5 Gigabytes' (adjustable); 'Assets per package version: 350'"
+    },
+    {
+      "url": "https://docs.aws.amazon.com/codeartifact/latest/ug/packages-overview.html",
+      "date": "2026-10-21",
+      "proved": "read live: 'the maximum size of a publishing request for npm packages is 2 GB ... cannot be raised'; 'CodeArtifact does not publish packages stored in CodeArtifact repositories to public repositories'"
+    },
+    {
+      "url": "https://docs.aws.amazon.com/codeartifact/latest/ug/service-limits.html",
+      "date": "2026-10-22",
+      "proved": "re-read 2026-10-22 (HTTP 200, 5,980 B): quota table reads 'Asset file size | Each supported Region: 5 Gigabytes | Adjustable: Yes' and 'Assets per package version | 350 | No'"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "First 2 GB of storage and first 100,000 requests per month free — a recurring monthly allowance, described on the pricing page as 'a monthly AWS Free Tier for storage and requests', with no 12-month expiry language attached to CodeArtifact itself. Then $0.05/GB-month storage and $0.05 per 10,000 requests.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "First 2 GB of storage and first 100,000 requests per month free — a recurring monthly allowance, described on the pricing page as 'a monthly AWS Free Tier for storage and requests', with no 12-month expiry language attached to CodeArtifact itself. Then $0.05/GB-month storage and $0.05 per 10,000 requests.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    },
+    "superseded_evidence": [
+      {
+        "url": "https://web.archive.org/web/20240324020353/https://aws.amazon.com/codeartifact/pricing/",
+        "date": "2024-03-24",
+        "proved": "via read — captured 2024-03-24: 'you get the first 2GB of storage and first 100,000 requests of CodeArtifact usage for free every month'"
+      }
+    ],
+    "superseded_evidence_note": "Rows that are older than the topic's 180-day evidence window. They are kept as the historically read statement and are not evidence for the current claim; the current claim rests on the 2026-10-22 re-read in evidence[]. Nothing was deleted."
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

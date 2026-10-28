@@ -1,0 +1,105 @@
+{
+  "topic": "storage",
+  "slug": "printables",
+  "provider": "Printables (Prusa Research)",
+  "url": "https://www.printables.com",
+  "category": "3D model repository / maker marketplace — the strongest find in this niche",
+  "free_tier": {
+    "stated": "No published account quota and no published upload cap. Verified live object: a single 1,036,822,737 B (1.037 GB) STL served from files.printables.com. Also verified a model holding 29 files totalling 404.3 MB, and one holding six ZIPs of 62.5/167.5/208.5/65.0/98.8/118.6 MB. 'Other files' accepts ZIP, so arbitrary payloads ride inside an archive; and a single model accepts 1335+ files (forum report of a user hitting UI limits, not a storage limit).",
+    "unit": "objects",
+    "metered_on": "stored-bytes",
+    "source_url": "https://api.printables.com/graphql/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: 1.037 GB",
+    "bytes": 1036999999,
+    "source_url": "https://api.printables.com/graphql/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://api.printables.com/graphql/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Backed by Google Cloud Storage (x-goog-* headers), fronted by files.printables.com with `Cache-Control: public, max-age=31536000` and `Access-Control-Allow-Origin: *`. No egress cap published, no paywall on download, no account needed to download.",
+    "metered": false
+  },
+  "interface": [
+    "graphql"
+  ],
+  "interface_detail": "Undocumented but stable public GraphQL: POST https://api.printables.com/graphql/ with no auth. `print(id:N){ name stls{id name fileSize} otherFiles{id name fileSize} downloadPacks{...} }` to enumerate; then mutation `getDownloadLink(id, printId, source:\"model_detail\", fileType:\"stl\"|\"other\")` returns `{ok, output:{link}}`.",
+  "tooling": "Plain HTTP + JSON. No SDK needed. gid/uid path component is an opaque UUID, not a signature.",
+  "chaining": "The returned link is a plain GCS object URL with NO signature and NO expiry field that is enforced (headers showed `expires: Fri, 06 Mar 2026` — a date already in the past — and the object still served on 2026-10-21, i.e. rule 9: the signature field is not a gate). Hot-linkable behind Cloudflare with zero origin egress cost. Object keys are enumerable per model, so a shard-and-replicate writer can treat each model as a bucket.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "curator",
+      "source": "https://api.printables.com/graphql/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: 1.037 GB",
+      "source": "https://api.printables.com/graphql/"
+    }
+  ],
+  "limits_note": "per-object-cap: 1.037 GB observed (no stated ceiling found — the '1 GB' in that model's own title is the author's description, not a platform limit). Write is normal account signup; no curator. Download is anonymous. RANGE VERIFIED: `Range: bytes=100-199` returned `HTTP/1.1 206 Partial Content`, `Content-Range: bytes 100-199/1036822737`, 100 bytes — so resumable/ranged GET works (this is NOT the RepOD case).",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email",
+    "country": null
+  },
+  "reliability_note": "Signup page returns 403 to plain curl (Cloudflare) but email signup is the documented path.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://api.printables.com/graphql/",
+      "date": "2026-10-21",
+      "proved": "print(id:1216949){stls{fileSize}} returned 1036822737 for high_poly_benchy.stl, and downloadPacks 123718835; proves a real 1.037 GB object, not a claim"
+    },
+    {
+      "url": "https://files.printables.com/media/prints/1216949/stls/9131937_666a2768-.../high_poly_benchy.stl",
+      "date": "2026-10-21",
+      "proved": "getDownloadLink mutation — returned with no query-string signature"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "curl -D - on that URL — 200, Content-Length: 1036822737, Content-Type: model/stl, x-goog-storage-class: STANDARD, Access-Control-Allow-Origin: *, Accept-Ranges: bytes"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "curl -r 100-199 — HTTP/1.1 206 Partial Content, Content-Range: bytes 100-199/1036822737, exactly 100 bytes written"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "full-object download of 24695 '0.25mm clip part 1.zip' — got exactly 62,510,662 B; md5sum 4df344d46a0452592f6a70bd88e63777 matched the server's x-goog-hash md5=TfNE1GoEUlkvanC9iOY3dw== (base64 -> same digest). SHA-256-class byte-exact roundtrip."
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "print(id:868222) — 29 files, 404.3 MB in one model"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "print(id:180017) — six ZIPs in 'Other files' up to 208,474,336 B; proves arbitrary archive types survive ingest"
+    },
+    {
+      "url": "https://www.prusa3d.com/page/terms-of-service-of-printables-com_231249/",
+      "date": "2026-10-21",
+      "proved": "section 2.1 lists accepted types incl. .gcode/.bgcode/.sl1/.stl/.3mf/.obj/.step/.scad/.amf plus images, 'and other information and files'; 2.9 disclaims storage durability"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published account quota and no published upload cap. Verified live object: a single 1,036,822,737 B (1.037 GB) STL served from files.printables.com. Also verified a model holding 29 files totalling 404.3 MB, and one holding six ZIPs of 62.5/167.5/208.5/65.0/98.8/118.6 MB. 'Other files' accepts ZIP, so arbitrary payloads ride inside an archive; and a single model accepts 1335+ files (forum report of a user hitting UI limits, not a storage limit).",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

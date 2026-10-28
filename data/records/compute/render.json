@@ -1,0 +1,213 @@
+{
+  "topic": "compute",
+  "per_object_cap": {
+    "stated": "no per-object cap; the free tier is one service shape, less than one CPU and 512 MB of RAM"
+  },
+  "interface": [
+    "ssh"
+  ],
+  "interface_detail": "a git push deploy, a public HTTPS endpoint, and a REST API",
+  "tooling": "git-based deploy, a render.yaml blueprint, the Render API",
+  "chaining": "an endpoint that answers and holds no state, kept warm by a request every 15 minutes",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "spins down after 15 minutes without inbound HTTP or WebSocket traffic; a wake takes about one minute",
+      "source": "https://render.com/docs/free"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "750 Free instance hours a month per workspace; exhausted, Render suspends all Free web services until the next month",
+      "source": "https://render.com/docs/free"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "5 GB a month of outbound bandwidth on Hobby, then suspension if no card is on file",
+      "source": "https://render.com/docs/outbound-bandwidth"
+    },
+    {
+      "kind": "write-gated",
+      "value": "no persistent disk and no shell on a Free web service",
+      "source": "https://render.com/docs/free"
+    }
+  ],
+  "limits_note": "a WebSocket message from an existing connection resets the 15-minute timer, which the vendor states explicitly",
+  "reliability_note": "'Render might restart a Free web service at any time'; a service that initiates an uncommonly high volume of outbound traffic may be suspended",
+  "confidence": "documented",
+  "verified_at": "2026-10-24T01:55:00.000Z",
+  "price_per_tb_month": null,
+  "notes": "The corpus open question 'does a cron job count against the 15-minute sleep' resolves to neither: a cron job is a separate service type that cannot be on the free plan, because 'There is a minimum monthly charge of $1 per cron job service.' Its executions also run in a separate container from the web service and do not keep it awake. What is still unverified is whether a spun-down service wakes purely from an inbound request to a non-HTTP port; the docs name only HTTP requests and new WebSocket connections.",
+  "slug": "render",
+  "provider": "Render",
+  "url": "https://render.com/docs/free",
+  "category": "platform host",
+  "free_tier": {
+    "stated": "A Free web service with an ephemeral filesystem, 750 Free instance hours per workspace per calendar month, and a 5 GB monthly outbound bandwidth allowance on the Hobby plan.",
+    "unit": "hours",
+    "metered_on": "wall-clock",
+    "source_url": "https://render.com/docs/free",
+    "read_on": "2026-10-24"
+  },
+  "retention": {
+    "stated": "the filesystem is ephemeral and is lost on every redeploy, restart or spin-down; a Free Postgres database expires 30 days after creation"
+  },
+  "egress": {
+    "terms": "Hobby workspaces include 5 GB of outbound bandwidth a month, then USD 0.15 per GB; without a payment method Render suspends all Free services for the rest of the month",
+    "metered": true,
+    "free_allowance": "5 GB",
+    "price_per_tb": "USD 150",
+    "source_url": "https://render.com/docs/outbound-bandwidth"
+  },
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an account is enough for a Free web service; a payment method is optional and its absence converts a bandwidth overrun into a suspension instead of a bill",
+    "country": null
+  },
+  "evidence": [
+    {
+      "url": "https://render.com/docs/free",
+      "date": "2026-10-06",
+      "proved": "'Render spins down a Free web service that goes 15 minutes without receiving any inbound traffic'"
+    },
+    {
+      "url": "https://render.com/docs/free",
+      "date": "2026-10-06",
+      "proved": "any changes to the local filesystem are lost on spin-down; 750 free instance-hours per workspace a month"
+    },
+    {
+      "url": "https://render.com/docs/free",
+      "date": "2026-10-22",
+      "proved": "read live: 750 instance-hours a month and the 15-minute spin-down"
+    },
+    {
+      "url": "https://render.com/pricing",
+      "date": "2026-10-22",
+      "proved": "quoted: Hobby includes 5 GB of bandwidth a month, additional bandwidth at USD 0.15 per GB, 25 services maximum, 2 custom domains"
+    },
+    {
+      "url": "https://render.com/docs/free",
+      "date": "2026-10-22",
+      "proved": "quoted: if you consume all of your outbound bandwidth during a given month, Render bills you for a supplementary amount, and if you have not added a payment method Render suspends all of your free services for the remainder of the month"
+    },
+    {
+      "url": "https://www.nodeseek.com/post-854242-1",
+      "date": "2026-08-02",
+      "proved": "forum observation of the rollout lag, translated: Render announced that on 1 August the legacy Hobby plan becomes Hobby New and free traffic drops to 5 GB, but the old plan still had 100 GB that day"
+    },
+    {
+      "url": "https://render.com/blog/better-pricing-for-fast-growing-teams",
+      "date": "2026-10-22",
+      "proved": "vendor post, quoted: we are also reducing the bandwidth included in the Hobby and Pro plans; Hobby is USD 0 a month and the bandwidth line reads 5 GB included [re-read 2026-10-22]"
+    },
+    {
+      "url": "https://render.com/docs/compute-plans",
+      "date": "2026-10-24",
+      "proved": "quoted table row: '0.1 CPU | 512 MB | free'"
+    },
+    {
+      "url": "https://render.com/docs/free",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Render spins down a Free web service that goes 15 minutes without receiving any inbound traffic.'"
+    },
+    {
+      "url": "https://render.com/docs/free",
+      "date": "2026-10-24",
+      "proved": "quoted: 'are lost every time the service redeploys, restarts, or spins down'"
+    },
+    {
+      "url": "https://render.com/docs/free",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Shell access via SSH or the Render Dashboard', listed among the features free web services do not support"
+    },
+    {
+      "url": "https://render.com/docs/free",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Render grants 750 Free instance hours to each workspace per calendar month'"
+    },
+    {
+      "url": "https://render.com/docs/free",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Render spins down a Free web service that goes 15 minutes without receiving any inbound traffic. This includes both HTTP requests and WebSocket messages from existing connections.'"
+    },
+    {
+      "url": "https://render.com/docs/free",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Render grants 750 Free instance hours to each workspace per calendar month' and 'If you consume all of your Free instance hours during a given month, Render suspends all of your Free web services'"
+    },
+    {
+      "url": "https://render.com/docs/free",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Running one-off jobs' listed among features Free web services do not support, and 'Render might restart a Free web service at any time.'"
+    },
+    {
+      "url": "https://render.com/docs/outbound-bandwidth",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Hobby | 5 GB' in the monthly included bandwidth table, and '$0.15 per GB' above the allowance"
+    },
+    {
+      "url": "https://render.com/docs/cronjobs",
+      "date": "2026-10-24",
+      "proved": "quoted: 'There is a minimum monthly charge of $1 per cron job service.'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "extras": {
+    "shape": {
+      "vcpu": 0.1,
+      "ram_gib": 0.5,
+      "disk_gib": null,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "billing_model": "free-instance",
+    "session_cap": {
+      "wall_clock_min": null,
+      "idle_reap_s": 900,
+      "restart_required": false,
+      "note": "15 minutes without inbound HTTP or WebSocket traffic; wake takes about a minute"
+    },
+    "keep_rate": null,
+    "persistent_storage": {
+      "included_gib": 0,
+      "price_gib_month": "no persistent disk on free",
+      "durability": "ephemeral",
+      "survives_stop": false,
+      "survives_destroy": false,
+      "max_retention": "the instance lifetime"
+    },
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": true,
+      "ports": "one HTTP port; outbound ports 25, 465 and 587 blocked; reserved ports 18012, 18013, 19099 refused",
+      "static_ip": false,
+      "ipv6": false,
+      "per_session_bytes": null
+    },
+    "free_tier_kind": "free-instance-hours",
+    "census_rows": [
+      "render-free",
+      "render-free-web-service"
+    ],
+    "granularity": {
+      "min_billed_s": 0,
+      "rounding_s": null
+    },
+    "burst_x": 1.0,
+    "wave2": {
+      "merged_agents": [
+        "a09-forums"
+      ],
+      "merged_evidence_rows": 4,
+      "merged_note": "quoted: the Hobby plan includes 5 GB of bandwidth a month with additional bandwidth at USD 0.15 per GB; the same plan previously included 100 GB."
+    },
+    "shape_note": "0.1 CPU and 512 MB as the vendor states; no disk is allocated on free",
+    "term": "monthly",
+    "m10h_usd": 0.0,
+    "m24h_usd": 0.0,
+    "price_arithmetic": "no charge; 750 instance hours a month is 31.25 days, so one always-on service consumes the whole workspace pool"
+  },
+  "confidence_note": "the spin-down trigger, the 750 hours, the suspension rule and the 5 GB Hobby allowance were all read today on two Render documentation pages",
+  "tier": "Free instance (web service)",
+  "binding": "retention-clamped",
+  "binding_note": "15 minutes of silence ends the process, so an always-on workload cannot live here at all; the 750 hours only bind for a service that is kept awake deliberately."
+}

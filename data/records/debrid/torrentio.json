@@ -1,0 +1,102 @@
+{
+  "topic": "debrid",
+  "slug": "torrentio",
+  "provider": "Torrentio",
+  "url": "https://torrentio.strem.fun/",
+  "category": "torrent-side aggregator (Stremio addon over multiple public trackers, debrid-aware)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Anonymous: GET /stream/movie/tt1254207.json returned 5,709 bytes of JSON with infoHash, fileIdx and per-stream size and seeders, with no key and no account.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://torrentio.strem.fun/stream/movie/tt1254207.json",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: the addon returns magnet hashes, not bytes",
+    "bytes": null,
+    "source_url": "https://torrentio.strem.fun/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: results are computed per request; the debrid cache behind them is the provider's retention",
+    "days": null,
+    "source_url": "https://torrentio.strem.fun/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No byte allowance from the addon: it returns magnet links, and the transfer is between the client (or the debrid provider) and the swarm.",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://torrentio.strem.fun/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "Stremio addon protocol over HTTP: /stream/<type>/<imdb>.json, /manifest.json and a /configure page that takes a debrid key. Every response is JSON.",
+  "endpoint": "https://torrentio.strem.fun/stream/movie/tt1254207.json",
+  "tooling": "Any HTTP client. Stremio or a Kodi addon consumes it directly; AIOStreams, MediaFusion and StremThru chain it behind a single addon. The debrid path needs the provider's API key in the config URL.",
+  "chaining": "Torrentio resolves an IMDb id to magnets from public trackers, and with a debrid key it asks the provider which hashes are cached; that cached answer is what makes playback start without seeding.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "no published limit on torrentio.strem.fun; the only published statement is from the operator of a shared public instance, who reports that its traffic to Torrentio was rate-limited",
+      "source": "https://github.com/Viren070/AIOStreams/issues/19"
+    },
+    {
+      "kind": "request-rate",
+      "value": "not published; the add-on is a shared host, so the limit is its capacity rather than a documented number",
+      "source": "https://torrentio.strem.fun/"
+    }
+  ],
+  "limits_note": "The addon returns a per-title stream list; each title opened is one request. Its own cache headers are explicit: cacheMaxAge 3600, staleRevalidate 14400, staleError 604800, so one title is cheap to ask twice and a shared proxy is what multiplies the rate. Torrentio has also been down for hosting reasons more than once (issues 288 and 370).",
+  "binding": "request-rate",
+  "binding_note": "There is no byte accounting anywhere in the addon; the only thing that breaks at scale is the request rate from one address, which is exactly what the shared-instance reports describe.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account for the P2P path. A debrid key is optional and is the provider's, not Torrentio's.",
+    "country": null
+  },
+  "reliability_note": "Hosting moves and blocks: the tracker's own issues record the VPS being blocked (issue 288) and a DDoS (issue 370), each taking the public instance down for days. The addon's cacheMaxAge is 3600 s, so a cached stream list can outlive the swarm it describes.",
+  "confidence": "documented",
+  "confidence_note": "One stream request was executed on 2026-10-23 and returned real magnets. The rate figure stays reported, because the number came from a third-party operator rather than from Torrentio.",
+  "evidence": [
+    {
+      "url": "https://torrentio.strem.fun/stream/movie/tt1254207.json",
+      "date": "2026-10-23",
+      "proved": "HTTP 200 JSON, 5,709 bytes, streams carrying name 'Torrentio', infoHash f181e166e440b355ce73cc8b988f47ad7e8ea6ab, '7.1 GB' and seed counts, with no key supplied"
+    },
+    {
+      "url": "https://github.com/Viren070/AIOStreams/issues/19",
+      "date": "2026-10-23",
+      "proved": "a maintainer states the shared public instance 'probably got rate limited by Torrentio' because all its users' requests come from one address"
+    },
+    {
+      "url": "https://github.com/TheBeastLT/torrentio-scraper/issues/288",
+      "date": "2026-10-23",
+      "proved": "the addon maintainer wrote that torrentio's VPS was blocked and the addon would be down until a new host was found; read from the issue title and quoted reply in search results, not opened"
+    },
+    {
+      "url": "https://torrentio.strem.fun/",
+      "date": "2026-10-23",
+      "proved": "version v0.0.15, the scraped provider list, and 'RealDebrid/Premiumize/AllDebrid/DebridLink/EasyDebrid/Offcloud/TorBox/Put.io support' on the configuration page - which came back with upstream_status 403 and full body text"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-23T01:52:28.000Z",
+  "price_per_tb_month": "USD 0 for the add-on",
+  "notes": "Caution: the addon is not an index you can crawl by title, it is a per-title resolver, so 1 TiB/month means thousands of per-title requests and the request rate is the whole story. Listed because the client layer is what makes a free key usable at all, and because it names two providers outside the eight (EasyDebrid, Offcloud) that the next breadth pass should pick up.",
+  "extras": {
+    "streams_in_sample": 6,
+    "debrid_key_optional": true,
+    "protocol": "stremio-addon",
+    "cache_max_age_s": 3600,
+    "stale_error_s": 604800,
+    "stale_revalidate_s": 14400,
+    "providers": "real-debrid, premiumize, alldebrid, debrid-link, easydebrid, offcloud, torbox, put.io",
+    "scrapers": "YTS, EZTV, RARBG, 1337x, EXT, ThePirateBay, KickassTorrents, TorrentGalaxy, MagnetDL, HorribleSubs, NyaaSi, TokyoTosho, AniDex, nekoBT, Rutor, Rutracker, Comando, BluDV, MicoLeaoDublado, Torrent9, ilCorSaRoNeRo, MejorTorrent, Wolfmax4k, Cinecalidad, BestTorrents",
+    "alternatives": "Comet (cache-first), AIOStreams (multi-addon aggregation), MediaFusion, Jackettio, StremThru (proxy)"
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "topic": "storage",
+  "slug": "uploadhive",
+  "provider": "UploadHive",
+  "url": "https://uploadhive.com",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "Free tier published table: max upload file size 'Unlimited', download volume 'Unlimited', storage column '-' (no storage cap published), files deleted 50 days after last download",
+    "unit": "unlimited",
+    "metered_on": "stored-bytes",
+    "source_url": "https://uploadhive.com/premium",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://uploadhive.com/premium",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Free tier published table: max upload file size 'Unlimited', download volume 'Unlimited', storage column '-' (no storage cap published), files deleted 50 days after last download",
+    "days": 50,
+    "source_url": "https://uploadhive.com/premium",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "'Download volume: Unlimited' on the free row; direct fs430.uploadhive.com/cgi-bin/dl.cgi/<key>/<name> links",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "XFileSharing Pro family (sibsoft.net/xfilesharing.html) — same shape as ~hundreds of hosts, so one client works across all of them; discovery is GET /server -> {\"url\":\"https://fs430.uploadhive.com/cgi-bin\"} then POST upload.cgi with utype=anon; also used by PolyUploader (github.com/spel987/PolyUploader)",
+  "chaining": "3 layers: (a) files per host carry no stated limit, (b) 50-day retention resets on download so a periodic re-fetch keeps data alive indefinitely, (c) the whole XFileSharing family is the multiplier — each host takes one free registration with its own 100s-of-GB-to-2TB pool (see UpZur/FileAxa/Mega4up entries)",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "deleted 50 days",
+      "source": "https://uploadhive.com/premium"
+    }
+  ],
+  "limits_note": "unlimited per file; 50 days after last download for free; no API key needed for anonymous upload",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: r FAQ (direct dl.cgi links resolved but were IP-gated); no API key needed for anonymous upload anonymous-dump",
+    "country": null
+  },
+  "reliability_note": "dl.cgi returned 'Wrong IP' on every download attempt regardless of referer/cookies — downloads appear bound to the uploading IP, so a distributed fetch layer needs matching egress IPs",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://uploadhive.com/premium",
+      "date": "2026-10-21",
+      "proved": "Free row: Max upload file size 'Unlimited', Download volume 'Unlimited', deletion '50 days after last download'"
+    },
+    {
+      "url": "https://uploadhive.com/pages/faq/",
+      "date": "2026-10-21",
+      "proved": "'Powered by XFileSharing Pro'"
+    },
+    {
+      "url": "https://fs430.uploadhive.com/cgi-bin/upload.cgi",
+      "date": "2026-10-21",
+      "proved": "probe: POST (utype=anon, sess_id=, file_0) -> 200 [{\"file_code\":\"6wpsyu0nx862\",\"file_status\":\"OK\"}]"
+    },
+    {
+      "url": "https://fs430.uploadhive.com/cgi-bin/dl.cgi/<key>/probe.bin",
+      "date": "2026-10-21",
+      "proved": "probe: POST /6wpsyu0nx862 op=download2 -> 200 page containing ; GET that -> 200 body 'Wrong IP' (8 bytes)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Free tier published table: max upload file size 'Unlimited', download volume 'Unlimited', storage column '-' (no storage cap published), files deleted 50 days after last download",
+  "extras": {},
+  "binding": "retention-clamped",
+  "binding_note": "a clock, not a quota: bytes leave whether or not the client is finished with them"
+}

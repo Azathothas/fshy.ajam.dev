@@ -1,0 +1,101 @@
+{
+  "topic": "ip-proxy",
+  "slug": "webshare-static-residential",
+  "provider": "Webshare",
+  "url": "https://www.webshare.io/pricing",
+  "category": "per-address ISP proxy",
+  "tier": "Static Residential (ISP)",
+  "free_tier": {
+    "stated": "Yes. Webshare's free plan includes 10 shared proxies and 1GB of monthly bandwidth, with HTTP and SOCKS5 support. There's no time limit and no credit card required.",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://www.webshare.io/pricing",
+    "read_on": "2026-10-24",
+    "notes": "Two quantities, and the second is the one that stops you: 10 addresses and 1 GB per month. The page says bandwidth without naming a direction, so metered_on is unstated rather than downloaded-bytes. The 10 addresses are datacenter, not the static residential product, so the free plan clears nothing at rung 5."
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://www.webshare.io/pricing",
+    "notes": "The comparable ceiling for this product is the number of addresses bought and the bytes the plan carries, both recorded in limits[], not a per-object size."
+  },
+  "retention": {
+    "stated": "not applicable: an address, not stored bytes. The address itself is static for the life of the plan: 'These proxies are static by default, meaning they keep the same IP address for as long as you need.'",
+    "days": null,
+    "source_url": "https://help.webshare.io/en/articles/15518733-what-is-a-static-residential-proxy-isp-proxy",
+    "notes": "Address persistence is the product. The same article names two ways to change it: an Auto-Refresh add-on, and a Replace Proxies feature for a wrong location or a high fraud score."
+  },
+  "egress": {
+    "terms": "Proxy Server and Static Residential (ISP) plans include 250GB of bandwidth, and you can upgrade to unlimited bandwidth, subject to the fair the provider. No overage price per TB appears on either page read 2026-10-24.",
+    "metered": true,
+    "free_allowance": "250 GB per month on a Static Residential (ISP) plan; 1 GB per month on the free plan",
+    "price_per_tb": null,
+    "source_url": "https://www.webshare.io/pricing"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "The address is reached as an HTTP proxy or a SOCKS5 proxy endpoint: 'Webshare provides static residential proxies with ISP-issued static IPs, up to unlimited bandwidth, and HTTP/SOCKS5 support'. The plan also exposes a dashboard API and a downloadable proxy list (TXT), and lists IP Authorization among its connection controls. The schema's interface tokens carry no value for a proxy protocol, so the two tokens recorded here mean: rest for the control API, cli for any HTTP or SOCKS5 client.",
+  "tooling": "Any HTTP or SOCKS5 client reaches the address: curl -x, a language HTTP library with a proxy setting, or a Workers-side shim. The corpus already has a proxy path in the broker: the fetch host takes __egress=broker:socks5, which is the working example of a Cloudflare-side caller reaching the internet through a SOCKS5 relay. The address list is machine-readable through the dashboard API, so no scraping of the panel is needed.",
+  "chaining": "It is the rung-5 move for the gateway: the 102 relay Workers supply geographic spread and a per-connection address that are still Cloudflare's, and one Webshare static ISP address supplies an ISP-registered prefix in a non-Cloudflare ASN for the upstreams that refuse Cloudflare's ranges. At $6.00/month for 20 addresses it is the cheapest way to hold several distinct ISP-registered exits at once, and the addresses are static, so a per-upstream choice of exit is possible rather than a per-request draw.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "250 GB of bandwidth included per Static Residential (ISP) plan per month",
+      "source": "https://www.webshare.io/pricing"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "1 GB per month on the free plan",
+      "source": "https://www.webshare.io/pricing"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "Threads 500 - 3,000, listed as a plan spec beside Bandwidth and IP Authorization; the page does not say whether the range is per plan or per address",
+      "source": "https://www.webshare.io/static-residential-proxy"
+    }
+  ],
+  "limits_note": "The address count is the unit of purchase, not a limit: 20 addresses at the entry tier, 10,000 at the top, and the byte allowance does not multiply with it, because the 250 GB is per plan. Whether the free plan's 10 datacenter addresses survive a signup is unverified; no account was created for this record.",
+  "binding": "volume-quota",
+  "binding_note": "The 250 GB included allowance is the only ceiling in the vocabulary this product imposes, and it is the one that would fail first: the per-plan thread ceiling and the address count impose nothing at 599,000 requests a month, while 250 GB is about 5.5 times the gateway's inferred ~45 GB a month, so the quota binds only if volume grows past 250 GB or a second workload shares the plan.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "Email for the free plan, card for paid. The free plan states no credit card required; the paid Static Residential plan is bought from the dashboard with a card, and the pricing page lists Visa, Mastercard, American Express, Discover, Diners, China UnionPay, JCB, Cartes Bancaires and Interac, with Google Pay and Apple Pay on mobile. No phone and no national identity document is asked for at either tier.",
+    "country": null
+  },
+  "reliability_note": "The address is static per plan, and the vendor offers a Replace Proxies feature and an Auto-Refresh add-on, so a burned address costs a replacement rather than a new plan; the same help article states that hosting-environment checkers may label the address datacenter and that fraud scores differ between tools, and the product page claims 99.97% uptime.",
+  "confidence": "documented",
+  "confidence_note": "Every field the verdict rests on was read on the vendor's own pages on 2026-10-24 and none was measured: the per-address ladder, the 250 GB allowance, the free plan's terms, and the registration-class split.",
+  "evidence": [
+    {
+      "url": "https://www.webshare.io/pricing",
+      "date": "2026-10-24",
+      "proved": "Static Residential (ISP) is priced per proxy: $6/month for 20 proxies ($0.30/proxy), dropping to $0.225/proxy at 10,000 proxies, with the monthly ladder 20 $0.30, 500 $0.285, 1,000 $0.27, 2,000 $0.255, 3,000 $0.24, 5,000 $0.24, 10,000 $0.225. Also: Proxy Server and Static Residential (ISP) plans include 250GB of bandwidth, and you can upgrade to unlimited bandwidth, subject to the fair the provider. Also the free plan: 10 shared proxies, 1GB of monthly bandwidth, HTTP and SOCKS5, no time limit, no credit card."
+    },
+    {
+      "url": "https://www.webshare.io/static-residential-proxy",
+      "date": "2026-10-24",
+      "proved": "The product page's own framing of the same split: Residential trust, datacenter speed, and an IP that never changes; Registered to real internet providers, not hosting companies, so sites treat your traffic like a home connection with datacenter-level speed. Specs: Bandwidth Up to Unlimited* with the footnote *Subject to our Fair the provider, Threads 500 - 3,000, IP Authorization, up to 1 Gbps, 100K+ proxies, 99.97% uptime, HTTP and SOCKS5 endpoints, ISPs named as AT&T, Sprint, Cox Communications, Comcast, RCN and Lumen."
+    },
+    {
+      "url": "https://help.webshare.io/en/articles/15518733-what-is-a-static-residential-proxy-isp-proxy",
+      "date": "2026-10-24",
+      "proved": "The vendor states the two-worlds split in its own words: An ISP proxy lives in two worlds at once: the IP address belongs to a residential ISP, but the server it runs on sits in a datacenter. Tools that check the ASN will correctly show a residential ISP like AT&T or Comcast. Tools that check the hosting environment may label the IP as datacenter or hosting, because, technically, that is where the server is. Same article: static by default, same IP for as long as you need, with Auto-Refresh and Replace Proxies as the two ways to change it."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-24T10:07:11.000Z",
+  "price_per_tb_month": "USD 6.00 per month for 20 static ISP proxies (USD 0.30 per address per month), falling to USD 0.225 per address per month at 10,000 addresses; 250 GB included per plan. Priced per address, not per byte.",
+  "notes": "Why this verdict and not another. Three candidate readings were put up before the pages were read, and each was tested against what the vendor wrote rather than against its marketing headline. (1) The address is a real rung-5 move: an ISP-registered prefix in a non-Cloudflare ASN. Supported, and the vendor says so twice, once on the product page as Registered to real internet providers, not hosting companies. (2) It is a datacenter box wearing a residential ASN, so any upstream that keys on the hosting environment rather than the ASN still sees a datacenter address. Also supported, and conceded by the vendor in the help article. That second reading is why the verdict carries a caveat: the purchase buys one of the two signals, and the topic cannot yet say which signal the refusing upstream uses. (3) The 250 GB allowance makes it unusable. Refuted at a user's  scale, because the gateway moves on the order of 45 GB a month, so 250 GB is about 5.5 times the month and not a quarter of it. The rung-5 question is what a purchase would settle, and it is the only one of the three that is still open. Until then the split is the vendor's account of its own product and nothing more. Every claim here rests on one read of each of three pages on one day; there is no second sample. This record CORRECTS dossier/debrid/webshare.json, which files the same provider under the wrong topic for the wrong question: that record prices it as an egress path and judges the 250 GB against a 1 TiB storage month, so it reads the allowance as a quarter of the client's month and reaches the same verdict for the wrong reason. Webshare sells an address, the unit here is cost per distinct address-class, and against the gateway's 45 GB the allowance is headroom rather than the binding failure. Two records now describe one provider; the debrid one should be retired to history/ once the ip-proxy document exists. One structural note for a later session: the schema's interface enum has no value for a proxy protocol, so socks5 and http-proxy cannot be recorded as tokens and the protocols live in interface_detail. That is a schema gap this new topic will hit on every record, and it is worth adding the two tokens rather than repeating this note.",
+  "extras": {
+    "rung": 5,
+    "rung_note": "Rung 5 is the registration class, and this is the one vendor in the topic whose own documentation states that the class and the hosting environment disagree, which makes the purchase a test of which signal an upstream reads rather than a guarantee of either.",
+    "decisive_quote": "An ISP proxy lives in two worlds at once: the IP address belongs to a residential ISP, but the server it runs on sits in a datacenter. Tools that check the ASN will correctly show a residential ISP like AT&T or Comcast. Tools that check the hosting environment may label the IP as datacenter or hosting, because, technically, that is where the server is.",
+    "per_address_usd_month": "$0.30 at 20-250 addresses; $0.285 at 500; $0.27 at 1,000; $0.255 at 2,000; $0.24 at 3,000-5,000; $0.225 at 10,000",
+    "free_plan_class": "datacenter, shared: the 10 free proxies are not the static residential product",
+    "address_replacement": "Replace Proxies on demand, plus an Auto-Refresh add-on for automatic changes",
+    "cheapest_note": "$0.30 per address per month is the cheapest verified per-address ISP rate found in this topic, and it is priced per address rather than per gigabyte, which is the unit this topic compares on.",
+    "read_path": "the pricing page also returned the same figures to a direct fetch"
+  }
+}

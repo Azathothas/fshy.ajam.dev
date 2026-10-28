@@ -1,0 +1,85 @@
+{
+  "topic": "storage",
+  "slug": "anyflip",
+  "provider": "AnyFlip (flipbook PDF host)",
+  "url": "https://anyflip.com",
+  "category": "media",
+  "free_tier": {
+    "stated": "FREE plan: 100 GB storage, unlimited number of publications, 5 uploads/day, 150 MB max PDF.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://anyflip.com/pricing/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "100 GB cap",
+    "bytes": 100000000000,
+    "source_url": "https://anyflip.com/pricing/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://anyflip.com/pricing/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "No egress metering documented; free plan caps \"Daily Opens\" at 30,000/day and readers can download the PDF; flipbooks are served from online.anyflip.com with a per-page HTML reader. Free tier embeds an AnyFlip watermark in the embed.",
+    "metered": false
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "wrapper-only",
+  "tooling": "No public API; upload is the web form at anyflip.com/quick-upload/ (POST without a session 302s to /login.php). Flipbook pages are static per-page HTML at online.anyflip.com/<a>/<b>/files/basic-html/pageN.html so a downloader can be written, but there is no upload client.",
+  "chaining": "Unlimited free accounts x 100 GB each. Rate is the binding constraint, not storage: 5 uploads/day x 150 MB = 750 MB/day/account, so 10 TiB/month needs ~450 accounts uploading daily; 20 TiB archive needs ~900.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "5 uploads/day",
+      "source": "https://anyflip.com/pricing/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "100 GB cap",
+      "source": "https://anyflip.com/pricing/"
+    }
+  ],
+  "limits_note": "150 MB per PDF; 5 uploads/day free (60/day Pro); 30,000 daily opens; 100 GB cap; watermark on free embeds; download of the source PDF is plan-gated in practice.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Originals are re-served as derived page images, and the free download path returns 403 without a session; content is publicly listed, so anything put here is discoverable.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://anyflip.com/pricing/",
+      "date": "2026-10-21",
+      "proved": "table: 'Storage | 100G' (free column), 'Uploads / Day | 5', 'Daily Opens | 30 000'"
+    },
+    {
+      "url": "https://anyflip.com/faq/",
+      "date": "2026-10-21",
+      "proved": "'The max PDF file size is 150 MB'; 'There is no limit on the publications you may have'"
+    },
+    {
+      "url": "https://anyflip.com/quick-upload/",
+      "date": "2026-10-21",
+      "proved": "probe: POST -F file=@t.pdf -> 302 Location: /login.php (no anonymous upload)"
+    },
+    {
+      "url": "https://online.anyflip.com/xrbo/eygi/files/basic-html/page2.html",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200 HTML reader page; GET https://online.anyflip.com/xrbo/eygi/download.pdf -> 403"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "FREE plan: 100 GB storage, unlimited number of publications, 5 uploads/day, 150 MB max PDF.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

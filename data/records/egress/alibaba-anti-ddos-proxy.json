@@ -1,0 +1,95 @@
+{
+  "topic": "egress",
+  "slug": "alibaba-anti-ddos-proxy",
+  "provider": "Alibaba Cloud Anti-DDoS Proxy",
+  "url": "https://www.alibabacloud.com/product/ddos/pricing",
+  "category": "L4 anycast proxy (TCP/UDP)",
+  "tier": "subscription",
+  "free_tier": {
+    "stated": "No free tier is published. The cheapest committed row in the price table is 30 Gbps committed mitigation for 3,120 USD per month; the Insurance Plan row reads Contact sales.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://www.alibabacloud.com/product/ddos/pricing",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://www.alibabacloud.com/product/ddos/pricing",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://www.alibabacloud.com/product/ddos/pricing",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "The entry plan carries 100 Mbps of clean bandwidth, about 32 TB per month at saturation (arithmetic from 100 Mbps over 30 days); the port rules carry no separate byte allowance.; ingress: tcp+udp",
+    "metered": true,
+    "free_allowance": "The entry plan carries 100 Mbps of clean bandwidth, about 32 TB per month at saturation (arithmetic from 100 Mbps over 30 days); the port rules carry no separate byte allowance.",
+    "price_per_tb": null,
+    "source_url": "https://www.alibabacloud.com/product/ddos/pricing"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "one port forwarding rule per protocol and port, batch-importable as protocol, forwarding port, origin port, origin IP",
+  "tooling": "console, API (CreatePort) or the bulk import of four-field rules",
+  "chaining": "an origin outside Alibaba Cloud is allowed, so a free VM elsewhere can sit behind it; only the instance price blocks it",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "commitment starts at 30 Gbps mitigation with 100 Mbps clean bandwidth for 3,120 USD/month",
+      "source": "https://www.alibabacloud.com/product/ddos/pricing"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "clean bandwidth is sold in steps: 100 Mbps / 3000 QPS on the entry plan",
+      "source": "https://www.alibabacloud.com/product/ddos/pricing"
+    }
+  ],
+  "limits_note": "",
+  "binding": "per-ip-shaping",
+  "binding_note": "The 100 Mbps clean-bandwidth step is the first ceiling a 1 TiB/month workload could touch, but it is 30 times the 3.24 Mbit/s that 1 TiB/month implies. The price fails long before the bandwidth does.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "An Alibaba Cloud account with a payment method for a subscription instance; the mainland tier additionally requires real-name verification, which was not read.",
+    "country": "None"
+  },
+  "reliability_note": "all UDP is dropped until a UDP port rule exists, and the instance blocks reflection ports by default (17, 19, 69, 111, 123, 137, 161, 389, 1194, 1900, 3389, 3702, 11211); 1194 means an OpenVPN listener must move, WireGuard's 51820 is unaffected",
+  "confidence": "documented",
+  "confidence_note": "UDP forwarding, the non-Alibaba origin, the default UDP drop and the 3,120 USD entry row are each quoted from pages read today. A cheaper mainland Pro tier may exist; it was not read.",
+  "evidence": [
+    {
+      "url": "https://www.alibabacloud.com/help/en/anti-ddos/anti-ddos-pro-and-premium/user-guide/manage-forwarding-rules",
+      "date": "2026-10-23",
+      "proved": "Forwarding Protocol: Select the protocol for traffic forwarding. Valid values are TCP and UDP. The Origin can be an Alibaba Cloud service or a service not hosted on Alibaba Cloud."
+    },
+    {
+      "url": "https://www.alibabacloud.com/help/en/anti-ddos/anti-ddos-pro-and-premium/user-guide/use-the-feature-of-udp-reflection-attacks-protection",
+      "date": "2026-10-23",
+      "proved": "Anti-DDoS Proxy drops all UDP traffic by default; it blocks a default list of reflection ports including 123, 161, 389, 1194 and 3389"
+    },
+    {
+      "url": "https://www.alibabacloud.com/product/ddos/pricing",
+      "date": "2026-10-23",
+      "proved": "30 Gbps committed mitigation / 300 Gbps burst / 100 Mbps / 3000 QPS at 3,120 USD per month"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 3120 per month",
+  "notes": "The product is Spectrum-class in shape and enterprise in price: the cheapest published row is 3,120 USD/month against Gcore's EUR 17. The UDP default-drop and the 1194 block are the two operational traps. Whether a free trial instance exists was not established.",
+  "extras": {
+    "wg_path": "inside-udp",
+    "wg_detail": "Port forwarding rules take 'Valid values are TCP and UDP', so a WireGuard datagram is forwarded to an origin that need not be an Alibaba Cloud host.",
+    "ingress": "tcp+udp",
+    "volume_tib_month": 29.5,
+    "volume_stated": "The entry plan carries 100 Mbps of clean bandwidth, about 32 TB per month at saturation (arithmetic from 100 Mbps over 30 days); the port rules carry no separate byte allowance.",
+    "bytes_transit": "yes",
+    "transit_note": "Alibaba's scrubbing centres carry clean traffic back to the origin"
+  }
+}

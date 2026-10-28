@@ -1,0 +1,95 @@
+{
+  "topic": "compute",
+  "slug": "containarium",
+  "provider": "Containarium",
+  "url": "https://containarium.dev/pricing",
+  "category": "cloud VM",
+  "free_tier": {
+    "stated": "One price of USD 20 per seat per month for 2 vCPU (1 guaranteed, the second when the host has spare capacity), 4 GiB RAM, a 20 GB disk, 100 GB of egress and a public IPv4, with no per-second meter and no overage. Each seat is one box with SSH, an MCP server inside the box and a dashboard. Idle boxes sleep, which is how the flat price is possible.",
+    "unit": "hours",
+    "metered_on": "wall-clock",
+    "source_url": "https://containarium.dev/pricing",
+    "read_on": "2026-10-22",
+    "notes": "none"
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://containarium.dev/pricing",
+    "notes": null
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://containarium.dev/pricing",
+    "notes": null
+  },
+  "egress": {
+    "terms": "'Containarium seat | 2 vCPU (1 guaranteed) 4 GiB | included | included | included | included | $20.00 / mo', with 20 GB disk, 100 GB egress and a public IPv4 included and no overage",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://containarium.dev/pricing"
+  },
+  "interface": [
+    "ssh"
+  ],
+  "interface_detail": "inferred from the tooling the provider documents; not probed",
+  "tooling": "not stated",
+  "chaining": "A box that keeps its filesystem and runs an MCP server is the piece a stateless sandbox lacks: an agent reconnects over SSH or HTTPS by hostname and finds its tools and caches still installed, so the setup cost is paid once a month rather than once a run.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "The 100 GB monthly egress and the single guaranteed vCPU are the terms that bind: the second vCPU is best-effort on host spare capacity, and the box sleeps when idle so a background job that needs a warm box has to keep it awake.",
+      "source": "https://containarium.dev/pricing"
+    }
+  ],
+  "limits_note": "The 100 GB monthly egress and the single guaranteed vCPU are the terms that bind: the second vCPU is best-effort on host spare capacity, and the box sleeps when idle so a background job that needs a warm box has to keep it awake.",
+  "binding": "per-ip-shaping",
+  "binding_note": "The 100 GB monthly egress and the single guaranteed vCPU are the terms that bind: the second vCPU is best-effort on host spare capacity, and the box sleeps when idle so a background job that needs a warm box has to keep it awake.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://containarium.dev/pricing",
+      "date": "2026-10-22",
+      "proved": "'Containarium seat | 2 vCPU (1 guaranteed) · 4 GiB | included | included | included | included | $20.00 / mo', with 20 GB disk, 100 GB egress and a public IPv4 included and no overage"
+    },
+    {
+      "url": "https://containarium.dev/pricing",
+      "date": "2026-10-22",
+      "proved": "the vendor's own comparison at 730 hours per month: AWS t3.medium totals USD 35.62, Google Cloud e2-medium USD 41.15, Azure B2s USD 36.42, list prices read 2026-10-18"
+    },
+    {
+      "url": "https://containarium.dev/sandbox-for-ai-agents",
+      "date": "2026-10-22",
+      "proved": "one LXC container per agent with real root, a built-in MCP server over stdio, a routable hostname with TLS, and state that survives between runs until the box is deleted"
+    },
+    {
+      "url": "https://containarium.dev/pricing",
+      "date": "2026-10-22",
+      "proved": "'the box sleeps when idle' and the seat is a share of an instance rather than a dedicated machine"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "Recorded as paid-only rather than trial-only because no free lane was found on the pages reached. The hosted cloud console at cloud.containarium.dev answered with a login wall behind scripts (broker read reported login-wall, status 409), so a trial, if one exists, is invisible without an account; that is the open question and an account is what would settle it. The core is Apache 2.0 and self-hostable, which is not a price for a user but does mean the same box can run on any rented VM. At USD 20 for 1 guaranteed vCPU and 4 GiB this is the cheapest flat-rate agent box found after RemoteHost's per-hour arithmetic.",
+  "extras": {
+    "wave2": {
+      "class": "flat-seat-box",
+      "free_tier_kind": "none",
+      "shape": {
+        "vcpu": 2,
+        "ram_gib": 4,
+        "disk_gib": 20,
+        "gpu_class": null,
+        "gpu_count": null
+      }
+    }
+  }
+}

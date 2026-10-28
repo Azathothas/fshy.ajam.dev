@@ -1,0 +1,100 @@
+{
+  "topic": "compute",
+  "slug": "digitalocean-harness-runtime",
+  "provider": "DigitalOcean Harness Runtime",
+  "url": "https://www.digitalocean.com/pricing/harness-runtime",
+  "category": "cloud VM",
+  "free_tier": {
+    "stated": "Hardware-isolated microVM sandboxes with Chromium and a coding environment built in, billed per second of active compute: USD 0.044 per vCPU-hour of actual CPU consumed, USD 0.0095 per GB-hour of memory allocated over time, USD 0.05 per GiB-month of session storage, USD 0.01 per GiB of public egress and USD 0.05 per GiB-month for snapshots, checkpoints and custom templates. At full allocation the sizes cost USD 0.0535 per hour for XSmall (1 vCPU, 1 GB), USD 0.107 for Small (2, 2), USD 0.126 for Medium (2, 4), USD 0.252 for Large (4, 8) and USD 1.008 for XLarge (16, 32). New customers get a USD 5 promotional credit, which DigitalOcean's own table estimates at 200 agent hours for a light workload. Harness Runtime requires a positive prepaid account balance.",
+    "unit": "hours",
+    "metered_on": "wall-clock",
+    "source_url": "https://www.digitalocean.com/pricing/harness-runtime",
+    "read_on": "2026-10-22",
+    "notes": "one-time-credit"
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://www.digitalocean.com/pricing/harness-runtime",
+    "notes": null
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://www.digitalocean.com/pricing/harness-runtime",
+    "notes": null
+  },
+  "egress": {
+    "terms": "CPU USD 0.044 per vCPU-hour of actual CPU consumed, memory USD 0.0095 per GB-hour allocated, session storage USD 0.05 per GiB-month, egress USD 0.01 per GiB, snapshots USD 0.05 per GiB-month, and 'when an agent is waiting and consuming no CPU, its CPU charge falls to zero'",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.digitalocean.com/pricing/harness-runtime"
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "inferred from the tooling the provider documents; not probed",
+  "tooling": "not stated",
+  "chaining": "CPU is charged only while it is consumed, so a Harness session that waits on a model costs memory and storage but almost no CPU; combined with pause, resume and fork that makes a long agent conversation cheap to hold open, and the fork semantics let one exploration branch into several for the price of the memory.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "The prepaid balance is the binding term: usage draws it down with no per-session limit, retained checkpoints keep accruing storage charges while a session is paused even at a zero balance, and there is no free allowance beyond the one-time USD 5 credit.",
+      "source": "https://www.digitalocean.com/pricing/harness-runtime"
+    }
+  ],
+  "limits_note": "The prepaid balance is the binding term: usage draws it down with no per-session limit, retained checkpoints keep accruing storage charges while a session is paused even at a zero balance, and there is no free allowance beyond the one-time USD 5 credit.",
+  "binding": "volume-quota",
+  "binding_note": "The prepaid balance is the binding term: usage draws it down with no per-session limit, retained checkpoints keep accruing storage charges while a session is paused even at a zero balance, and there is no free allowance beyond the one-time USD 5 credit.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://www.digitalocean.com/pricing/harness-runtime",
+      "date": "2026-10-22",
+      "proved": "CPU USD 0.044 per vCPU-hour of actual CPU consumed, memory USD 0.0095 per GB-hour allocated, session storage USD 0.05 per GiB-month, egress USD 0.01 per GiB, snapshots USD 0.05 per GiB-month, and 'when an agent is waiting and consuming no CPU, its CPU charge falls to zero'"
+    },
+    {
+      "url": "https://www.digitalocean.com/pricing/harness-runtime",
+      "date": "2026-10-22",
+      "proved": "sizes at full allocation: XSmall 1 vCPU / 1 GB USD 0.0535 per hour, Small 2 / 2 USD 0.107, Medium 2 / 4 USD 0.126, Large 4 / 8 USD 0.252, XLarge 16 / 32 USD 1.008"
+    },
+    {
+      "url": "https://docs.digitalocean.com/products/managed-agents/agent-harness-runtime/details/pricing/",
+      "date": "2026-10-22",
+      "proved": "'New customer with the $5 promotional credit' is a stated funding case, and the plan table estimates 200 agent hours, 3.5M tokens and 5 GB of storage for a light workload on that credit"
+    },
+    {
+      "url": "https://docs.digitalocean.com/products/managed-agents/agent-harness-runtime/details/pricing/",
+      "date": "2026-10-22",
+      "proved": "Agent Droplets plans USD 50 per month for Pro at a 15 percent discount covering USD 58.82 of standard rate usage, and USD 200 for Team at 20 percent covering USD 250, in public preview"
+    },
+    {
+      "url": "https://www.digitalocean.com/pricing/harness-runtime",
+      "date": "2026-10-22",
+      "proved": "'Harness Runtime requires a positive prepaid account balance' and there is no per-session or per-product spend limit"
+    }
+  ],
+  "verdict": "trial-only",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "This is a product the corpus has no record of: digitalocean-2 covers the withdrawn student credit and nothing else, and no record mentions Harness Runtime. The CPU meter is the term that decides the bill: at USD 0.044 per vCPU-hour of consumed CPU a Medium sandbox that is 25 percent busy costs about USD 0.011 per hour in CPU plus USD 0.038 in memory, so USD 0.049 against the vendor's USD 0.126 full-allocation figure and below E2B's USD 0.166. Egress at USD 0.01 per GiB matches bunny.net's European rate. The USD 5 credit is small; the real free lane is that the balance can come from a DigitalOcean promotional credit. Checkpoints bill while paused, which is the trap: the vendor says so explicitly, including at a zero balance.",
+  "extras": {
+    "wave2": {
+      "class": "major-cloud-agent-runtime",
+      "free_tier_kind": "one-time-credit",
+      "shape": {
+        "vcpu": 2,
+        "ram_gib": 4,
+        "disk_gib": null,
+        "gpu_class": null,
+        "gpu_count": null
+      }
+    }
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "topic": "egress",
+  "slug": "proton-vpn",
+  "provider": "Proton VPN",
+  "url": "https://protonvpn.com/support/port-forwarding",
+  "category": "vpn port forward",
+  "tier": "plus",
+  "free_tier": {
+    "stated": "Port forwarding is currently available on our Windows, macOS, and Linux GUI apps for everyone with a paid Proton VPN plan. The plan table marks P2P/BitTorrent as absent from Proton Free and present on VPN Plus.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://protonvpn.com/support/port-forwarding",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://protonvpn.com/support/port-forwarding",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://protonvpn.com/support/port-forwarding",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "unverified: no page read states a Proton VPN traffic allowance for the paid tier the plan table lists features and speeds, not bytes.; ingress: tcp+udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://protonvpn.com/support/port-forwarding"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "Account web page generates configs; port control is NAT-PMP on the tunnel gateway, not a REST API.",
+  "tooling": "natpmpc from libnatpmp, or the official app; WireGuard config from the account page.",
+  "chaining": "Provides the public endpoint; the loop that keeps the lease alive is a small daemon the client must run beside the service.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "NAT-PMP mapping expires in 60 seconds and must be looped: natpmpc -a 1 0 udp 60 -g 10.2.0.1, with sleep 45 between calls; closing the terminal terminates the loop",
+      "source": "https://protonvpn.com/support/port-forwarding-manual-setup"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "P2P servers only; port forwarding is not compatible with NAT type 2 (moderate NAT)",
+      "source": "https://protonvpn.com/support/port-forwarding"
+    }
+  ],
+  "limits_note": "",
+  "binding": "write-gated",
+  "binding_note": "At 1 TiB/month nothing in the pages read states a byte cap, so the thing that fails first is the mapping: a 60-second NAT-PMP lease driven by a loop, on a port the vendor says usually changes when you reconnect. That is a keepalive dependency, not a volume limit.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "An account with an email address; the signup page offers Or sign up for free and then a paid plan, with card, PayPal or Google Pay.",
+    "country": "None"
+  },
+  "reliability_note": "The forwarded port expires 60 seconds after the last NAT-PMP renewal; a crashed loop closes the port silently.",
+  "confidence": "documented",
+  "confidence_note": "Measured would need an account, a natpmpc loop and a byte count. The moving-port sentence comes from the GUI guide, so the stability claim is documented and the byte ceiling is openly unverified.",
+  "evidence": [
+    {
+      "url": "https://protonvpn.com/support/port-forwarding",
+      "date": "2026-10-23",
+      "proved": "Port forwarding is on all paid plans and not on Free; The port number usually changes when you reconnect to VPN."
+    },
+    {
+      "url": "https://protonvpn.com/support/port-forwarding-manual-setup",
+      "date": "2026-10-23",
+      "proved": "A WireGuard config can carry NAT-PMP port forwarding; mappings last 60 seconds and must be renewed in a loop; example allocation port 53186 for both UDP and TCP."
+    },
+    {
+      "url": "https://protonvpn.com/pricing",
+      "date": "2026-10-23",
+      "proved": "Proton Free has no P2P/BitTorrent and connects to servers in 10 countries; VPN Plus carries P2P."
+    },
+    {
+      "url": "https://account.protonvpn.com/signup?plan=vpn2024&currency=EUR",
+      "date": "2026-10-23",
+      "proved": "VPN Plus prices: 9.99 EUR per month monthly, 5.32 EUR per month billed at 63.81 EUR for 12 months, 4.49 EUR per month billed at 107.76 EUR for 24 months."
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "EUR 9.99 per month; EUR 5.32 per month on 12 months (63.81 EUR); EUR 4.49 per month on 24 months (107.76 EUR)",
+  "notes": "Three candidate explanations for a port-forwarding product on a shared IP: (1) the port is per-account and stable, refuted by The port number usually changes when you reconnect to VPN; (2) the port is allocated per session and leased, confirmed by the 60-second natpmpc lease and the 45-second sleep loop; (3) the port is fixed per server, refuted because the guide tells you to re-derive the public port after each session and paste it into the client. The practical consequence is that ingress works but the endpoint is not addressable across a reconnect without a control loop that rewrites the consumer's config.",
+  "extras": {
+    "wg_path": "native-conf",
+    "wg_detail": "A WireGuard configuration file is generated in the account with the port-forwarding toggle baked in: Select a VPN server that supports P2P (double-arrow icon) and generate a WireGuard configuration file. When doing this, ensure that Select VPN options then NAT-PMP (port forwarding) is enabled. Mappings are then made with natpmpc from the client.",
+    "ingress": "tcp+udp",
+    "volume_tib_month": null,
+    "volume_stated": "unverified: no page read states a Proton VPN traffic allowance for the paid tier the plan table lists features and speeds, not bytes.",
+    "bytes_transit": "yes",
+    "transit_note": "Traffic exits at the P2P server's address for the duration of the mapping."
+  }
+}

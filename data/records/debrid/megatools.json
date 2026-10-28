@@ -1,0 +1,88 @@
+{
+  "topic": "debrid",
+  "slug": "megatools",
+  "provider": "megatools",
+  "url": "https://megatools.megous.com/",
+  "category": "MEGA command-line client (public-link downloader and account client)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "'Megatools is a collection of programs for accessing Mega service from a command line of your desktop or server.' Free software; the command set includes 'dl Download file from a \"public\" Mega link (doesn't require login)'.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://xff.cz/megatools/man/megatools.html",
+    "read_on": "2026-10-23",
+    "notes": "The project site megatools.megous.com answered HTTP 503 'We'll be back soon' (scheduled maintenance) today, so the man page was read from a mirror of the same document."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: MEGA states it has no file size limit; the local disk is the cap.",
+    "bytes": null,
+    "source_url": "https://help.mega.io/files-folders/transfers/no-file-size-limits"
+  },
+  "retention": {
+    "stated": "not applicable: writes to local disk; no service-side storage.",
+    "days": null,
+    "source_url": "https://xff.cz/megatools/man/megatools.html"
+  },
+  "egress": {
+    "terms": "MEGA's IP-based six-hour transfer window applies to the machine running megatools; there is no megatools-side quota or proxy rotation.",
+    "metered": true,
+    "free_allowance": "dynamic, IP-based, six-hour window",
+    "price_per_tb": null,
+    "source_url": "https://help.mega.io/plans-storage/space-storage/transfer-quota"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "Subcommands: df, ls, get, put, copy, rm, mkdir, export, reg, test and 'dl' for public links. Streaming is supported with '--path -', so a wrapper can pipe a public link into another process without touching disk.",
+  "tooling": "Native builds for Windows and Linux, plus source. A shell wrapper is enough; nothing needs a GUI or a display.",
+  "chaining": "The streaming flag makes it the cheapest MEGA leg for a pipeline that must not stage the file on local disk: piped output can go straight into an uploader or a hash check.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "MEGA counts downloads from the IP over six hours; no fixed number published",
+      "source": "https://help.mega.io/plans-storage/space-storage/transfer-quota"
+    }
+  ],
+  "limits_note": "MEGA's help page lists third-party tools as a hazard: 'these tools can't detect your quota', and using them with account credentials can lock the account. Public-link download avoids the credential risk.",
+  "binding": "per-ip-shaping",
+  "binding_note": "The six-hour per-IP window is the only quota in the path; megatools does not rotate proxies, so the client meets it directly and must wait for the reset.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "'megatools dl' takes a public link and needs no login. Account subcommands exist for private files but are not required for the public-link path.",
+    "country": null
+  },
+  "reliability_note": "The project site was 503 today and the man page had to be read from a mirror; the tool is maintained but the distribution site is not always up. Over-quota downloads fail mid-transfer and resume after the window resets.",
+  "confidence": "documented",
+  "confidence_note": "Man page and MEGA quota page read; the project site's 503 is measured. Running 'megatools dl' against a real link would raise this to measured.",
+  "evidence": [
+    {
+      "url": "https://xff.cz/megatools/man/megatools.html",
+      "date": "2026-10-23",
+      "proved": "'dl Download file from a \"public\" Mega link (doesn't require login)'; streaming with 'megatools get --path -'"
+    },
+    {
+      "url": "https://megatools.megous.com/",
+      "date": "2026-10-23",
+      "proved": "the project site is down for maintenance: HTTP 503, 17 words, 'This site is currently undergoing scheduled maintenance.'"
+    },
+    {
+      "url": "https://help.mega.io/plans-storage/space-storage/transfer-quota",
+      "date": "2026-10-23",
+      "proved": "per-IP six-hour download limit for free and anonymous users; no fixed limit"
+    },
+    {
+      "url": "https://help.mega.io/files-folders/transfers/download-files-folders",
+      "date": "2026-10-23",
+      "proved": "third-party tools 'can't detect your quota' and may cause account lock-ups when given credentials"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T01:52:41.420Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Tooling note applies: a CLI is not a hosted path, but this one is a single binary and a one-line wrapper, and it streams, so it is the least-bad local MEGA leg. It does not satisfy 'no install'.",
+  "extras": {
+    "public_link_command": "megatools dl <link>",
+    "streaming_command": "megatools get --path - <remotefile>",
+    "site_status_today": "503 maintenance"
+  }
+}

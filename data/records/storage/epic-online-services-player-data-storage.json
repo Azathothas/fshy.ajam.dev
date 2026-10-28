@@ -1,0 +1,76 @@
+{
+  "topic": "storage",
+  "slug": "epic-online-services-player-data-storage",
+  "provider": "Epic Online Services Player Data Storage",
+  "url": "https://dev.epicgames.com/docs/epic-online-services/player-and-game-data/player-data-storage-interface/player-data-storage-overview",
+  "category": "paas",
+  "free_tier": {
+    "stated": "400 MB total storage per user, 200 MB maximum per file, 1,000 files per user. No published product-level or title-level byte cap.",
+    "unit": "MB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://dev.epicgames.com/docs/epic-online-services/player-and-game-data/player-data-storage-interface/player-data-storage-overview",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "200 MB maximum per file",
+    "bytes": 200000000,
+    "source_url": "https://dev.epicgames.com/docs/epic-online-services/player-and-game-data/player-data-storage-interface/player-data-storage-overview",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://dev.epicgames.com/docs/epic-online-services/player-and-game-data/player-data-storage-interface/player-data-storage-overview",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "No per-GB egress meter documented for Player Data Storage; access is metered as API requests. EOS itself is free for all developers.",
+    "metered": true
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "EOS SDK (C/C++), C# and Unreal plugins (PlayEveryWare/eos_plugin_for_unity). File ops are chunked read/write callbacks: EOS_PlayerDataStorage_WriteFile / ReadFile / QueryFileList. No rclone backend.",
+  "chaining": "400 MB per ProductUserId x unlimited free player identities. EOS supports anonymous/device auth, so identities are mintable at will; each new ProductUserId is a fresh 400 MB bucket. 2,500 identities = 1 TB.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "200 MB per file",
+      "source": "https://dev.epicgames.com/docs/epic-online-services/player-and-game-data/player-data-storage-interface/player-data-storage-overview"
+    }
+  ],
+  "limits_note": "per-object-cap: 200 MB per file and 64-character filename limit; request-rate: ~1,000 read or write requests per minute per user, then EOS_PlayerDataStorage_UserThrottled; per-object-cap: 1,000 files per user. Retention: none stated — files persist until explicitly deleted; no expiry found. Data is encrypted at rest with a client-side key EOS never stores, so losing the key loses the bytes.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: ductUserId x unlimited free player identities. EOS supports anonymous/device auth, so identities are mintable at will; each new ProductUserId is a fresh 400 MB bucket. 2,500 identities = 1",
+    "country": null
+  },
+  "reliability_note": "Throttles writes (not errors) once the 400 MB per-user total is reached until files are deleted; quota is per-deployment so a busy title can hit service-level allocation failures.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://dev.epicgames.com/docs/epic-online-services/player-and-game-data/player-data-storage-interface/player-data-storage-overview",
+      "date": "2026-10-21",
+      "proved": "filename format, 64-char limit, encryption-key requirement, 'Data that you store through this interface is accessible to players (users) on any device'"
+    },
+    {
+      "url": "https://grokipedia.com/page/Player_Data_Storage_Epic_Online_Services",
+      "date": "2026-10-21",
+      "proved": "quotas table 'Maximum individual file size 200 MB / Total storage space per user 400 MB / Maximum files per user 1000' (secondary source, corroborates the SDK error codes EOS_Result_PlayerDataStorageFileSizeTooLarge and _UserThrottled)"
+    },
+    {
+      "url": "https://dev.epicgames.com/docs/epic-online-services/working-with-the-eos-sdk/conventions-and-limitations",
+      "date": "2026-10-21",
+      "proved": "'Each service applies usage quotas on a per-deployment basis'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "400 MB total storage per user, 200 MB maximum per file, 1,000 files per user. No published product-level or title-level byte cap.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

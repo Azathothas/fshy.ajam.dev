@@ -1,0 +1,84 @@
+{
+  "topic": "egress",
+  "slug": "wstunnel-demo",
+  "provider": "wstunnel demo relay",
+  "url": "https://github.com/erebe/wstunnel",
+  "category": "udp port forward (demo relay, open-source client)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "You can give it a try with wstunnel demo server",
+    "unit": "none",
+    "metered_on": "unstated",
+    "source_url": "https://github.com/erebe/wstunnel",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://github.com/erebe/wstunnel",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://github.com/erebe/wstunnel",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "no allowance published for the demo relay; it is described as a way to check that you can bypass a proxy, not as a service; ingress: udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://github.com/erebe/wstunnel"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "wstunnel client -R 'udp://PORT:HOST:PORT' -P demo wss://ws.erebe.dev",
+  "tooling": "wstunnel static binary",
+  "chaining": "wstunnel -R udp://51820 on any free VM, or the demo relay if it permits the binding; this is the shape that composes with a free compute lane",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "the demo server allowlists one tunnel: 'The tunnel is the only one that is going to be allowed.'",
+      "source": "https://github.com/erebe/wstunnel"
+    }
+  ],
+  "limits_note": "",
+  "binding": "write-gated",
+  "binding_note": "The demo relay's allowlist is the first thing that fails, before any byte count: the documented example is a single fixed TCP forward, so a reverse UDP binding is not established to be permitted at all.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "the demo takes a shared password: '-P demo' with wss://ws.erebe.dev, no account",
+    "country": "None"
+  },
+  "reliability_note": "a shared demo endpoint with no stated capacity; the operator can withdraw it without notice",
+  "confidence": "unverified",
+  "confidence_note": "Unverified because the demo's UDP permission was not tested and its capacity is unpublished. What would settle it: run wstunnel client -R 'udp://51820:127.0.0.1:51820' -P demo wss://ws.erebe.dev, send a WireGuard handshake to the reported port, and read wg show.",
+  "evidence": [
+    {
+      "url": "https://github.com/erebe/wstunnel",
+      "date": "2026-10-23",
+      "proved": "the demo server, the -P demo shared password, the allowlist sentence, and the -R udp:// reverse UDP form in the client usage block"
+    },
+    {
+      "url": "https://github.com/erebe/wstunnel",
+      "date": "2026-10-23",
+      "proved": "repository metadata: 'Tunnel all your traffic over Websocket or HTTP2 - Bypass firewalls/DPI', public, not archived"
+    }
+  ],
+  "verdict": "trial-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The client is genuinely capable of a reverse UDP port and is the standard tool for carrying WireGuard over TCP 443. The free part is the demo relay, which is explicitly a courtesy.",
+  "extras": {
+    "wg_path": "inside-udp",
+    "wg_detail": "the client carries raw UDP both ways and reverse mode binds a port on the server: 'udp://1212:1.1.1.1:53 => listen on server for incoming udp on port 1212 and forward to cloudflare dns 1.1.1.1 on port 53 from local machine'. Whether the shared demo relay at wss://ws.erebe.dev permits a reverse UDP binding is not documented.",
+    "ingress": "udp",
+    "volume_tib_month": null,
+    "volume_stated": "no allowance published for the demo relay; it is described as a way to check that you can bypass a proxy, not as a service",
+    "bytes_transit": "yes",
+    "transit_note": "the wstunnel server unwraps the websocket and emits the datagrams"
+  }
+}

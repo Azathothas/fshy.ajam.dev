@@ -1,0 +1,90 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "trekmail-drive",
+  "provider": "TrekMail Drive",
+  "url": "https://trekmail.net/cloud-drive",
+  "category": "flat-rate cloud storage with WebDAV, REST and MCP",
+  "free_tier": {
+    "stated": "5 GB permanent on the free plan, plus 1 TB for 30 days once per account with no card. Paid storage is sold on a slider from 250 GB to 100 TB, priced per terabyte",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://trekmail.net/cloud-drive",
+    "read_on": "2026-10-21"
+  },
+  "per_object_cap": {
+    "stated": "10 TB per file, with resumable transfers",
+    "bytes": 10000000000000,
+    "source_url": "https://trekmail.net/cloud-drive",
+    "notes": "the vendor writes 10 TB; the decimal figure is used as stated"
+  },
+  "retention": {
+    "stated": "Permanent on the free plan. The 1 TB trial is 30 days",
+    "days": null,
+    "source_url": "https://trekmail.net/cloud-drive"
+  },
+  "egress": {
+    "terms": "No egress line item published; the page states '250 GB to 100 TB, priced by the terabyte and never by the head'",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://trekmail.net/cloud-drive"
+  },
+  "interface": [
+    "webdav",
+    "rest",
+    "rclone"
+  ],
+  "tooling": "rclone webdav is named on the page, against https://drive.trekmail.net/dav/files/account/. A REST API and a 42-tool MCP server exist, and per-device WebDAV passwords are issued",
+  "chaining": "A 10 TB per-file ceiling with resumable uploads, a REST API and MCP tooling is the only design in this survey aimed at programmatic bulk ingest by an agent rather than a human. The free plan is 5 GB, so the capability is priced and only the trial is free",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "10 TB per file, with resumable transfers",
+      "source": "https://trekmail.net/cloud-drive"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an email address. The 1 TB trial is 'one-time offer per account' with no card",
+    "country": null
+  },
+  "reliability_note": "An email host that added a Drive product. drive.trekmail.net/status.php returns 404, so it is not a Nextcloud backend; /dav/files/ returns 401 on GET, so the endpoint exists and is auth-gated. The paid price is behind a slider and absent from the static page, which is why this is medium confidence",
+  "confidence": "reported",
+  "evidence": [
+    {
+      "url": "https://trekmail.net/cloud-drive",
+      "date": "2026-10-21",
+      "proved": "'250 GB to 100 TB, priced by the terabyte and never by the head' 'Biggest file 10 TB'; 'Up to 10 TB per file, resumable transfers'"
+    },
+    {
+      "url": "https://trekmail.net/cloud-drive",
+      "date": "2026-10-21",
+      "proved": "'Server URL https://drive.trekmail.net/dav/files/account/' 'rclone for scheduled backups, Cyberduck for parallel uploads'; 'One password per device'"
+    },
+    {
+      "url": "https://trekmail.net/cloud-drive",
+      "date": "2026-10-21",
+      "proved": "FAQ: 'Yes: 1 TB free for 30 days, and no card. It is a one-time offer per account'; free plan 5 GB permanent"
+    },
+    {
+      "url": "https://drive.trekmail.net/dav/files/",
+      "date": "2026-10-21",
+      "proved": "HTTP 401 on GET, so the DAV path exists and is auth-gated status.php returns 404, so the backend is not Nextcloud"
+    }
+  ],
+  "verdict": "trial-only",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "binding": "per-object-cap",
+  "binding_note": "The trial is 30 days and the free plan is 5 GB, so the clock is what ends it. The per-file ceiling is the number that would decide the plan if the price were known, and the price is behind a slider that the static page does not carry.",
+  "confidence_note": "The paid price is not in the static HTML, so `price_per_tb_month` is absent rather than estimated.",
+  "notes": "The design is right for a user and the free tier is wrong: 5 GB permanent and a 30-day terabyte. The paid ladder is unpublished in the static page, so no price is recorded rather than a guessed one. What would settle it is one order flow viewed end to end.",
+  "extras": {
+    "access_mode": "trial",
+    "free_tier_exists": true,
+    "trial_days": 30,
+    "trial_bytes": "1 TB, one per account",
+    "per_file_cap_bytes_derived": 10000000000000,
+    "paid_price_published_in_static_html": false,
+    "mcp_server_tools": 42
+  }
+}

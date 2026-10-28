@@ -1,0 +1,100 @@
+{
+  "topic": "storage",
+  "slug": "cloudlab-c240g1-per-node-local-blockstore",
+  "provider": "CloudLab c240g1 / per-node local blockstore (40 TB)",
+  "url": "https://docs.cloudlab.us/advanced-storage.html",
+  "category": "research testbed - free bare metal with local HDDs",
+  "free_tier": {
+    "stated": "c240g1 node type = 12 x 3 TB HDDs (36 TB raw) on 5 nodes at Wisconsin; the storage table prices a 'per-node local blockstore' at 90GB-40TB, so a multi-TB blockstore is requestable by size in the profile and the system picks a node type",
+    "unit": "TB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.cloudlab.us/hardware.html",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.cloudlab.us/hardware.html",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Default experiment lifetime is 'a few hours'; extensions need a written justification reviewed by staff, indefinite needs the steering committee",
+    "source_url": "https://docs.cloudlab.us/hardware.html",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "free - nodes are on 10-25 Gb experiment fabric plus a 1-25 Gb control link to the internet; no byte meter of any kind",
+    "metered": false
+  },
+  "interface": [
+    "s3",
+    "webdav",
+    "scp",
+    "rsync",
+    "ssh"
+  ],
+  "interface_detail": "ssh (key-only) + root/sudo on real hardware; anything you install - S3, WebDAV, rsync, nginx",
+  "tooling": "geni-lib RSpec profiles, portal API token, terraform-provider-cloudlab, ssh/scp",
+  "chaining": "run rclone/S3/WebDAV server directly on the node; put Cloudflare in front of it and the fabric becomes the origin. This is the only path in the whole research where the origin has no provider and no byte bill.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "reviewed by staff, indefinite needs the steering committee",
+      "source": "https://docs.cloudlab.us/hardware.html"
+    }
+  ],
+  "limits_note": "local datasets are ALWAYS ephemeral - node disks are re-imaged after every experiment use, and the manual is explicit that infrastructure is 'not a storage provider' and node disks are 'not configure[d] in any redundant way'. Default experiment lifetime is 'a few hours'; extensions need a written justification reviewed by staff, indefinite needs the steering committee. Usage is metered in node-hours, not bytes. The Emulab parent facility has BYTE-IDENTICAL terms and shares the account: 'Emulab is a public facility, available without charge to most researchers worldwide', but project leaders must still be 'faculty, senior research staff, or others who are relatively senior positions', and an Emulab login is accepted directly as a CloudLab login - so it is a second door onto the same hardware with the same institutional lock.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "institution",
+    "country": null
+  },
+  "reliability_note": "No redundancy on node disks by design; a single drive failure loses the blockstore, and the whole volume is destroyed at experiment termination.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://docs.cloudlab.us/hardware.html",
+      "date": "2026-10-21",
+      "proved": "c240g1 = 5 nodes, Haswell 16 core, 128GB RAM, two 480GB SATA SSD + 'Twelve 3 TB HDDs donated by Seagate'; c240g2 = 3 nodes with four 3TB HDDs"
+    },
+    {
+      "url": "https://docs.cloudlab.us/advanced-storage.html",
+      "date": "2026-10-21",
+      "proved": "storage table: 'Per-node local blockstore | No [persistent] | 90GB to 40TB | 100-1000MB/sec | When up to 40TB is needed; specified by size in profile, system picks the node type'"
+    },
+    {
+      "url": "https://docs.cloudlab.us/basic-concepts.html",
+      "date": "2026-10-21",
+      "proved": "'All experiments have an expiration time. By default, the expiration time is short (a few hours)' and longer extensions 'require the intervention of CloudLab staff'"
+    },
+    {
+      "url": "https://www.cloudlab.us/aup.php",
+      "date": "2026-10-21",
+      "proved": "Use for research and educational purposes is allowed'; litmus test is intent to publish in scholarly venues"
+    },
+    {
+      "url": "https://docs.emulab.net/",
+      "date": "2026-10-21",
+      "proved": "the parent facility shares the account: 'Emulab is a public facility, available without charge to most researchers worldwide'"
+    },
+    {
+      "url": "https://docs.emulab.net/users.html",
+      "date": "2026-10-21",
+      "proved": "'We therefore require that project leaders be faculty, senior research staff, or others who are relatively senior positions'"
+    }
+  ],
+  "verdict": "fails-identity",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "c240g1 node type = 12 x 3 TB HDDs (36 TB raw) on 5 nodes at Wisconsin; the storage table prices a 'per-node local blockstore' at 90GB-40TB, so a multi-TB blockstore is requestable by size in the profile and the system picks a node type",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "c240g1 node type = 12 x 3 TB HDDs (36 TB raw) on 5 nodes at Wisconsin; the storage table prices a 'per-node local blockstore' at 90GB-40TB, so a multi-TB blockstore is requestable by size in the profile and the system picks a node type",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": "the quota is real and unreachable: identity is the binding constraint, and it is not one of the six limits kinds"
+}

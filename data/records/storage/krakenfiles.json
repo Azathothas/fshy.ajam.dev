@@ -1,0 +1,93 @@
+{
+  "topic": "storage",
+  "slug": "krakenfiles",
+  "provider": "KrakenFiles",
+  "url": "https://krakenfiles.com",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "Marketed as 'unlimit drive'; free registered users get unlimited file count with a 500 MB per-file ceiling for private files. No numeric total quota published.",
+    "unit": "unlimited",
+    "metered_on": "unstated",
+    "source_url": "https://krakenfiles.com/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "500 MB per file",
+    "bytes": 500000000,
+    "source_url": "https://krakenfiles.com/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Retention: 1 month inactive for unregistered, 3 months registered, 5 months premium",
+    "days": 30,
+    "source_url": "https://krakenfiles.com/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free downloads speed-limited ('We need to limit download speed for keep our servers online 24/7'); no GB cap published.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Documented API: GET /api/server/available returns {url, serverAccessToken}; POST {url} multipart with serverAccessToken (+ optional X-AUTH-TOKEN for account uploads).",
+  "chaining": "Anonymous uploads allowed without X-AUTH-TOKEN, so unlimited identities x 500 MB/file. 500 MB per file is the binding constraint; you would shard.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "Speed-limited downloads",
+      "source": "https://krakenfiles.com/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "500 MB per file",
+      "source": "https://krakenfiles.com/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "Retention: 1 month",
+      "source": "https://krakenfiles.com/"
+    }
+  ],
+  "limits_note": "500 MB per file for anonymous/private; larger downloads require a registered account. Retention: 1 month inactive for unregistered, 3 months registered, 5 months premium. TTL grows with downloads/plays.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: rakencloud.net failed to connect on 443 after 21s — so the API is currently broken in practice, not just rate-limited. Speed-limited downloads. Anonymous uploads allowed without X-AU",
+    "country": null
+  },
+  "reliability_note": "The upload nodes themselves were unreachable — hs6/hs7/hs12.krakencloud.net failed to connect on 443 after 21s — so the API is currently broken in practice, not just rate-limited. Speed-limited downloads.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://krakenfiles.com/terms",
+      "date": "2026-10-21",
+      "proved": "'maximum size of the user's private files cannot exceed 500MB'; anonymous users 'may not ... download files exceeding 500MB'"
+    },
+    {
+      "url": "https://krakenfiles.com/faq",
+      "date": "2026-10-21",
+      "proved": "'not been downloaded for at least 1 month for non-register user, 3 months register users and 5 month for premium'"
+    },
+    {
+      "url": "https://krakenfiles.com/api/server/available",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200 {\"status\":200,\"data\":{\"url\":\"https://hs7.krakencloud.net/api/file\",\"serverAccessToken\":\"...\"}} but POST to hs6.krakencloud.net:443 -> connect timeout after 21s"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Marketed as 'unlimit drive'; free registered users get unlimited file count with a 500 MB per-file ceiling for private files. No numeric total quota published.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "Marketed as 'unlimit drive'; free registered users get unlimited file count with a 500 MB per-file ceiling for private files. No numeric total quota published.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

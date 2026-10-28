@@ -1,0 +1,89 @@
+{
+  "topic": "storage",
+  "slug": "youtube-with-dct-fountain-coded-payload",
+  "provider": "YouTube (unlisted) — with DCT/fountain-coded payload",
+  "url": "https://www.youtube.com",
+  "category": "media",
+  "free_tier": {
+    "stated": "No total storage cap. Per-upload max 256 GB or 12 hours, whichever is less. Unverified accounts are limited to 15-minute videos; phone verification lifts that.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://support.google.com/youtube/answer/71673",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://support.google.com/youtube/answer/71673",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://support.google.com/youtube/answer/71673",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and unmetered — playback and yt-dlp retrieval are served from Google's CDN at no cost; there is no egress meter on the account.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "yt-dlp (youtube extractor, verified present in `yt-dlp --list-extractors`; 1752 extractors total). Binary-in-video: freddiev4/yts3 (FFV1/DCT + fountain codes, 2 stars, pushed 2026-02), KKarmugil/Infinite_Storage_Glitch (188 stars, Python ISG port), karaketir16/file2video (70 stars).",
+  "chaining": "Unlimited files per channel x unlimited free Google accounts. Each upload is independently 256 GB-capped, so capacity = N accounts x M videos x 256 GB. Upload throughput, not quota, is the binding constraint.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "6 uploads/day",
+      "source": "https://support.google.com/youtube/answer/71673"
+    },
+    {
+      "kind": "request-rate",
+      "value": "1600 quota units each against a 10,000/day",
+      "source": "https://support.google.com/youtube/answer/71673"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "47 Mbps",
+      "source": "https://support.google.com/youtube/answer/71673"
+    }
+  ],
+  "limits_note": "A daily upload-count cap exists but Google does not publish the number; its own tier page only distinguishes 'limited daily limit' (unverified) from 'higher daily limit' (phone-verified). The Data API v3 path is capped near 6 uploads/day (~1600 quota units each against a 10,000/day budget). 12-hour duration ceiling means a 256 GB file must average 47 Mbps to be reachable.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: fied) from 'higher daily limit' (phone-verified). The Data API v3 path is capped near 6 uploads/day (~1600 quota units each against a 10,000/day budget). 12-hour duration ceiling mea",
+    "country": null
+  },
+  "reliability_note": "From a datacenter IP, yt-dlp hit `Sign in to confirm you're not a bot` on 2 of 3 probe videos and HTTP 429 on the watch page — retrieval reliably needs cookies or a residential egress. Data does not vanish, but the account can be terminated and the whole channel with it.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://support.google.com/youtube/answer/71673",
+      "date": "2026-10-21",
+      "proved": "'The maximum file size you can upload is 256 GB or 12 hours, whichever is less'; 15-minute default for unverified accounts"
+    },
+    {
+      "url": "https://support.google.com/youtube/answer/57407",
+      "date": "2026-10-21",
+      "proved": "'There's a limit to how many videos a channel can upload each day'; no number given"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ`",
+      "date": "2026-10-21",
+      "proved": "probe: `yt-dlp -F -> 720p/1080p/1440p/2160p renditions only (av01, vp9, avc1), no original stream"
+    },
+    {
+      "url": "https://github.com/freddiev4/yts3",
+      "date": "2026-10-21",
+      "proved": "'converts any file into an FFV1/MKV lossless video ... embedding data into 8x8 DCT blocks', fountain codes 'for surviving re-encoding'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No total storage cap. Per-upload max 256 GB or 12 hours, whichever is less. Unverified accounts are limited to 15-minute videos; phone verification lifts that.",
+  "extras": {},
+  "binding": "per-ip-shaping",
+  "binding_note": "one stream is shaped, and a user's throughput is the shaped rate times the number of streams"
+}

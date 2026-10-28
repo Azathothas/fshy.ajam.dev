@@ -1,0 +1,85 @@
+{
+  "topic": "debrid",
+  "slug": "payholder-ru",
+  "provider": "Payholder.ru",
+  "url": "https://payholder.ru/",
+  "category": "payment intermediary (pays foreign services for Russian and Belarusian customers)",
+  "tier": "per-payment commission, from RUB 290 per service",
+  "free_tier": {
+    "stated": "No free tier: the service charges per payment, with a floor of 'от 290 р.' on the service list.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://payholder.ru/service-oplata",
+    "read_on": "2026-10-23",
+    "notes": "'Оплата производится по актуальному курсу и без комиссий' is the vendor's own claim, which contradicts the 'от 290 р.' floor unless the floor is a minimum order rather than a fee."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: a payment, not an object",
+    "bytes": null,
+    "source_url": "https://payholder.ru/",
+    "notes": "unstated"
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://payholder.ru/",
+    "notes": "unstated"
+  },
+  "egress": {
+    "terms": "not applicable: the customer pays in rubles and the intermediary pays the foreign service; no traffic is involved",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://payholder.ru/"
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "Web order form plus a manager who confirms the payment; a personal cabinet at lk.payholder.ru and a Telegram bot (@Payholders_Bot).",
+  "tooling": "Browser and Telegram. The order is processed by a person ('Оставляете заявку на payholder.ru ... специалист уточняет детали') rather than by an API.",
+  "chaining": "The bridge that makes a foreign debrid usable from Russia: pay Payholder in RUB, it pays Real-Debrid or the foreign shop, the account is credited. It is the inverse of a CIS service closed to foreigners - here the foreign service is closed to Russians and Payholder is the workaround.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "every order is confirmed by a manager before it is paid, so the turnaround is human",
+      "source": "https://vc.ru/services/2758428-oplata-podpiski-real-debrid-cherez-payholder"
+    }
+  ],
+  "limits_note": "The vendor serves 'России и Беларуси' and a separate business site for legal entities; the rail is rubles from a Russian bank account or SBP.",
+  "binding": "write-gated",
+  "binding_note": "There is no rate or byte limit - the constraint is that a human confirms each payment and the payer needs a Russian rail. For a client outside Russia the service is unusable, which is why the verdict is fails-identity rather than a quota failure.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "Russian payment methods only: SBP and a Russian bank card on the gift-card page ('Способ оплаты СБП Карта РФ'), and a Russian current account for the business arm. No foreign card path is offered.",
+    "country": "Russia (and Belarus, per the vendor)"
+  },
+  "reliability_note": "A third-party review site questions whether the service is a scam; the vendor answers with a refund promise ('Гарантируем возврат денежных средств в случае неуспешной оплаты'). Unverified either way - recorded as a claim, not as a finding.",
+  "confidence": "documented",
+  "confidence_note": "The service list, the 'от 290 р.' floor, the Russia/Belarus scope and the SBP/Карта РФ rails are quoted from live pages today. The Real-Debrid use case is reported by two vc.ru guides, not by Payholder's own service list as read.",
+  "evidence": [
+    {
+      "url": "https://payholder.ru/",
+      "date": "2026-10-23",
+      "proved": "'Посредник для оплаты зарубежных сервисов из России и Беларуси', 'Оплата производится по актуальному курсу и без комиссий', and 'Гарантируем возврат денежных средств'"
+    },
+    {
+      "url": "https://payholder.ru/gift-card",
+      "date": "2026-10-23",
+      "proved": "the payment methods offered are 'СБП' and 'Карта РФ' - a Russian rail only"
+    },
+    {
+      "url": "https://vc.ru/services/2758428-oplata-podpiski-real-debrid-cherez-payholder",
+      "date": "2026-10-23",
+      "proved": "third-party guide titled 'Как оплатить подписку Real-Debrid из России и Беларуси через Payholder', describing the manager-confirmed order flow"
+    },
+    {
+      "url": "https://payholder.ru/service-oplata",
+      "date": "2026-10-23",
+      "proved": "the per-service floor 'от 290 р.' repeated across the catalogue"
+    }
+  ],
+  "verdict": "fails-identity",
+  "verified_at": "2026-10-23T02:16:08.502Z",
+  "price_per_tb_month": null,
+  "notes": "The clearest evidence that the wall runs in both directions. A Russian cannot pay Real-Debrid directly, so a Russian intermediary exists; a foreigner cannot use that intermediary, so the two markets have separate payment paths and no single card works on both sides. The vc.ru guides date from 2026 and the service list is live; the exact fee schedule is not published, only a floor."
+}

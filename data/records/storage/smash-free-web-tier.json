@@ -1,0 +1,97 @@
+{
+  "topic": "storage",
+  "slug": "smash-free-web-tier",
+  "provider": "Smash (fromsmash.com) — Free web tier",
+  "url": "https://fromsmash.com/discover-smash/everyone",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "No file size limit and no limit on number of transfers on the free web tier; no account required. Transfers above 2 GB are queued behind paid traffic.",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://fromsmash.com/pricing",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object behaviour beyond 2 GB",
+    "bytes": 2000000000,
+    "source_url": "https://fromsmash.com/pricing",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://fromsmash.com/pricing",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and unmetered on the free tier (no per-GB line anywhere on the pricing page); free tier is ad-supported.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest (official API + SDKs, but gated behind an API key) / web for the anonymous path",
+  "tooling": "Official SDKs: @smash-sdk/uploader (npm), @smash-sdk/downloader, github.com/fromsmash/smash-uploader-js, smash-sdk-js, smash-downloader-js; docs api.fromsmash.com/docs/quick-start",
+  "chaining": "Per-transfer model caps multiplication: unlimited transfers but each dies in 7 days. As storage it is a 7-day rolling window — n transfers/day x (size) x 7 days, nothing retained past 7. The API path (100 GB trial key x free accounts) is a 14-day trial, not perpetual.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "retention 7 days",
+      "source": "https://fromsmash.com/pricing"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "deleted at 7 days",
+      "source": "https://fromsmash.com/pricing"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "per-object behaviour beyond 2 GB",
+      "source": "https://fromsmash.com/pricing"
+    }
+  ],
+  "limits_note": "retention 7 days on free (30 days paid) — this is the binding constraint; no per-object-cap on the anonymous web tier; per-object behaviour beyond 2 GB is queue+deprioritisation not rejection; API keys are '100 GB, 14-day free trial (No credit card required)' — trial, not free tier.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: nsfers/day x (size) x 7 days, nothing retained past 7. The API path (100 GB trial key x free accounts) is a 14-day trial, not perpetual. retention 7 days on free (30 days paid) — thi",
+    "country": null
+  },
+  "reliability_note": "Free transfers are queued when >2 GB with no SLA on queue time; files are 'stored temporarily' on AWS regions and deleted at 7 days.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://fromsmash.com/pricing",
+      "date": "2026-10-21",
+      "proved": "Free '$0.00 ... - 2 GB per transfer* - Transfers valid for 7 days; *Beyond 2 GB, transfers join a queue behind Pro transfers'"
+    },
+    {
+      "url": "https://fromsmash.com/help/articles/13885610-what-is-the-file-size-limit-on-smash",
+      "date": "2026-10-21",
+      "proved": "'With the free version, there is no file size limit for the files you send. However ... transfers larger than 2 GB are not prioritized and are placed in a waiting queue' (dated February 27, 2026)"
+    },
+    {
+      "url": "https://api.fromsmash.com/docs/quick-start",
+      "date": "2026-10-21",
+      "proved": "'You will have a 100 GB, 14-day free trial (No credit card required)'"
+    },
+    {
+      "url": "https://api.fromsmash.com/",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200 (660,946 bytes); POST https://api.fromsmash.com/transfer -> 404 text/plain (endpoint path differs, no anonymous write path found); GET https://transfer.fromsmash.com/<zero-uuid> -> 404 (27,204 bytes, real 404 not a 200 error page)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No file size limit and no limit on number of transfers on the free web tier; no account required. Transfers above 2 GB are queued behind paid traffic.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "No file size limit and no limit on number of transfers on the free web tier; no account required. Transfers above 2 GB are queued behind paid traffic.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

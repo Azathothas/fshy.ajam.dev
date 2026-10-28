@@ -1,0 +1,108 @@
+{
+  "topic": "debrid",
+  "slug": "jdownloader",
+  "provider": "JDownloader 2",
+  "url": "https://jdownloader.org/download/index",
+  "category": "open-source multi-hoster download manager and link decrypter (desktop/headless)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "'JDownloader is a free, open-source download management tool with a huge community that makes downloading as easy and fast as it should be.' The software and its hoster/decrypter plugins are free; what it needs is a machine with Java and disk space.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://jdownloader.org/download/index",
+    "read_on": "2026-10-23",
+    "notes": "No hosted first-party instance exists. The vendor offers desktop installers for Windows, Linux and macOS plus a multi-OS JAR, and every remote path points back at a JD installation the caller runs."
+  },
+  "per_object_cap": {
+    "stated": "not applicable to the tool: the largest object is whatever the target host serves. JD writes to local disk, so the practical cap is the device's free space.",
+    "bytes": null,
+    "source_url": "https://jdownloader.org/download/index"
+  },
+  "retention": {
+    "stated": "not applicable: JD downloads to local storage it does not own. Nothing is retained server-side.",
+    "days": null,
+    "source_url": "https://jdownloader.org/download/index"
+  },
+  "egress": {
+    "terms": "The transfer runs between the client's JD host and the file host. JD meters nothing and resells nothing.",
+    "metered": false,
+    "free_allowance": "none: no service-side bytes",
+    "price_per_tb": null,
+    "source_url": "https://jdownloader.org/download/index"
+  },
+  "interface": [
+    "cli",
+    "rest"
+  ],
+  "interface_detail": "GUI and headless (jar) modes; a Click'n'Load listener on port 9666 that accepts container posts from a browser; and a 'Deprecated API' the MyJD docs say can be enabled in Advanced Options to bypass the connection server and reach JD directly.",
+  "tooling": "First-party installers and JAR; MyJDownloader for remote control; Docker images by third parties (jlesage/docker-jdownloader-2, junkerderprovinz/jdownloader) that expose the GUI over VNC in a browser. A wrapper needs a machine to install on, which the client does not have.",
+  "chaining": "JD is the decrypter layer of last resort: one tool covers roughly a hundred hosters and several hundred container/decrypter plugins, so it composes with any storage or debrid service that hands it links.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "core caps simultaneous connections per file at 20; board staff describe raising it with domain rules",
+      "source": "https://board.jdownloader.org/showthread.php?t=71264"
+    },
+    {
+      "kind": "write-gated",
+      "value": "captchas and host wait timers must be solved per download unless a premium account is attached",
+      "source": "https://jdownloader.org/home/features"
+    }
+  ],
+  "limits_note": "Every cap that matters is imposed by the target host, not by JD. The tool adds a 20-connection ceiling per file and a default concurrency limit.",
+  "binding": "none",
+  "binding_note": "No JD-side quota binds at 1 TiB/month; the host's free-tier limits and the client's lack of a machine bind first. Public instances exist but are private containers behind credentials (see evidence), so they are not a route.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account needed to install and use JDownloader. A MyJDownloader account is optional and only needed for remote control. The support FAQ states: 'Do I need to register an account to use JDownloader? No! You only need an account when you use MyJDownloader which is completely optional!'",
+    "country": null
+  },
+  "reliability_note": "Public web instances found in the wild are other people's containers: one answered HTTP 200 with a 'Credentials needed' gate, one answered 530, one 502. They are not a service, they disappear without notice, and using one puts the client's links on a stranger's disk.",
+  "confidence": "documented",
+  "confidence_note": "The vendor page, the board thread and three probes are in hand. A measured rung needs a JD install downloading a real link, which needs a machine for a user does not have.",
+  "evidence": [
+    {
+      "url": "https://jdownloader.org/download/index",
+      "date": "2026-10-23",
+      "proved": "'JDownloader is a free, open-source download management tool'; installers for Windows/Linux/macOS plus a MULTIOS JAR, i.e. an install, not a hosted service"
+    },
+    {
+      "url": "https://my.jdownloader.org/developers/",
+      "date": "2026-10-23",
+      "proved": "the 'Deprecated API' can bypass the MyJD connection server and reach JD directly; JD is the device the API talks to"
+    },
+    {
+      "url": "probe:https://wojd.goip.de/",
+      "date": "2026-10-23",
+      "proved": "a public JDownloader web instance answers HTTP 200, 17403 bytes, sha256 4fb03946a848be39dea877b14593fe69f55a0f54c332de5cc4fca20744a94979, and its body is 'Credentials needed / Please enter the credentials to connect.'"
+    },
+    {
+      "url": "probe:https://jdownloader.markodj.com/",
+      "date": "2026-10-23",
+      "proved": "second public instance is down: HTTP 530, 7660 bytes, sha256 f97e88f5ca4fe49388a454ddfce24f2ed91abda9b6ff29e3e3c6be063086c029, retry-after 120"
+    },
+    {
+      "url": "probe:https://jdownloader.stehuenet.selfhost.co/",
+      "date": "2026-10-23",
+      "proved": "third public instance is down: HTTP 502, 154 bytes, sha256 bf4d0c2fe5252a3e32908499c90a4da5f961c7a7d989c5ef37b406d145929f1b"
+    },
+    {
+      "url": "https://board.jdownloader.org/showthread.php?t=71264",
+      "date": "2026-10-23",
+      "proved": "third-party board statement that 20 chunks per file is the core limit"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T01:52:41.420Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "This is the tool question is usually answered with, and it fails on the install requirement. The three public instances were found by search and probed as ordinary web pages; no login was attempted on any of them. Their existence shows the pattern (docker + KasmVNC + credentials), not a public service.",
+  "extras": {
+    "public_instance_survey": "3 found by search, 1 up behind a credential gate, 2 dead; 0 accepted anonymous input",
+    "hoster_plugin_count": "unverified: the vendor feature page was not readable today; a third-party page claims ~110 hosters and 300+ decrypters",
+    "probe_records": [
+      null,
+      null,
+      null
+    ]
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "topic": "storage",
+  "slug": "gitlab-package-registry",
+  "provider": "GitLab Package Registry (generic / npm / Maven / PyPI / NuGet / Conan)",
+  "url": "https://gitlab.com",
+  "category": "registry",
+  "free_tier": {
+    "stated": "Explicitly EXCLUDED from the project storage quota. GitLab docs, verbatim: 'GitLab projects have a storage limit for their Git repository and Large File Storage (LFS). Only the project's repository and LFS are included in the storage limit. The container registry, package registry, and build artifacts are not included in the limit.' The 10 GiB figure (pricing page: 'Storage 10 GiB') therefore applies only to git+LFS; package bytes are unquota'd. Per-file ceilings: Generic 5 GB, npm 5 GB, Maven 5 GB, NuGet 5 GB, PyPI 5 GB, Conan 5 GB, Terraform 1 GB, ML model 10 GB (uploads capped at 5 GB), Helm 5 MB.",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "5 GB per file",
+    "bytes": 5000000000,
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and unmetered for downloads; no egress line item anywhere in GitLab pricing. Served through Cloudflare (probe returned Server: cloudflare).",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Full REST API: PUT /api/v4/projects/:id/packages/generic/:package_name/:version/:file_name and GET the same path for download. Also native npm/maven/pypi/nuget/conan clients by pointing the client at the GitLab URL. No rclone backend, but the generic-package PUT/GET is a two-verb blob API — trivial to drive from curl or a 30-line Python loop. Deploy tokens with write_package_registry scope give scoped push credentials.",
+  "chaining": "UNBOUNDED on two axes: (a) unlimited free projects per account (GitLab Free has no project cap; only project *creation rate* is limited to 200/day/user) x 5 GB per file x unlimited files per project; (b) package bytes sit outside the 10 GiB quota entirely, so a single project is already a de-facto unlimited bucket and additional projects multiply it further. 10 TiB hot = 2,048 x 5 GB generic files, achievable in one project.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "5 GB per file",
+      "source": "https://docs.gitlab.com/user/storage_usage_quotas/"
+    }
+  ],
+  "limits_note": "5 GB per file (generic). Package registry rate limits apply to the Packages API. Authenticated API traffic 2,000 req/min per user; unauthenticated 60 req/hr per IP. Project creation 200/day/user. No per-project package storage cap documented.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: ceilings: Generic 5 GB, npm 5 GB, Maven 5 GB, NuGet 5 GB, PyPI 5 GB, Conan 5 GB, Terraform 1 GB, ML model 10 GB (uploads capped at 5 GB), Helm 5 MB. Package registry is a real fea",
+    "country": null
+  },
+  "reliability_note": "Package registry is a real feature not a cache — no TTL, but a project cleanup policy can auto-delete package assets if configured, so leave it off. Anonymous pull must be enabled per project ('Allow anyone to pull from package registry'). NuGet group endpoints refuse anonymous pulls entirely.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+      "date": "2026-10-21",
+      "proved": "'the container registry, package registry, and build artifacts are not included in the limit'; 'Each project in a Free tier namespace on GitLab.com has 10 GiB of free storage'"
+    },
+    {
+      "url": "https://docs.gitlab.com/user/gitlab_com/",
+      "date": "2026-10-21",
+      "proved": "per-format max file size table (Generic 5 GB, npm 5 GB, ML model 10 GB)"
+    },
+    {
+      "url": "https://gitlab.com/api/v4/projects/34675721/packages/generic/glab/1.44.1/glab_1.44.1_Linux_x86_64.tar.gz",
+      "date": "2026-10-21",
+      "proved": "probe: GET (no auth) -> 200 OK, Content-Length: 9035444, Content-Type: application/gzip, Server: cloudflare"
+    },
+    {
+      "url": "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages",
+      "date": "2026-10-21",
+      "proved": "probe: GET (no auth) -> 200 OK, JSON listing packages"
+    },
+    {
+      "url": "https://docs.gitlab.com/user/packages/generic_packages/",
+      "date": "2026-10-21",
+      "proved": "'To interact with the package registry, you must authenticate' for upload; download paths documented as GET"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Explicitly EXCLUDED from the project storage quota. GitLab docs, verbatim: 'GitLab projects have a storage limit for their Git repository and Large File Storage (LFS). Only the project's repository and LFS are included in the storage limit. The container registry, package registry, and build artifacts are not included in the limit.' The 10 GiB figure (pricing page: 'Storage 10 GiB') therefore applies only to git+LFS; package bytes are unquota'd. Per-file ceilings: Generic 5 GB, npm 5 GB, Maven 5 GB, NuGet 5 GB, PyPI 5 GB, Conan 5 GB, Terraform 1 GB, ML model 10 GB (uploads capped at 5 GB), Helm 5 MB.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

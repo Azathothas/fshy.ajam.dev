@@ -1,0 +1,113 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "ploud-storage",
+  "provider": "Ploud Storage (PSIADE, France)",
+  "url": "https://storage.ploud.fr",
+  "category": "hosted Nextcloud, free",
+  "free_tier": {
+    "stated": "No paid tier exists, so 1 TB is a ceiling and not a teaser",
+    "unit": "TiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://wiki.ploud.fr/doku.php?id=services%3Aploud_storage",
+    "read_on": "2026-10-21"
+  },
+  "per_object_cap": {
+    "stated": "100 MiB upload chunk per the login page's oc_appconfig; the per-object ceiling is the Nextcloud default and is not published",
+    "bytes": null,
+    "source_url": "https://storage.ploud.fr"
+  },
+  "retention": {
+    "stated": "Until deleted. Public link expiry defaults to 7 days unless changed. No retention clock on stored files",
+    "days": null,
+    "source_url": "https://wiki.ploud.fr/doku.php?id=services%3Aploud_storage"
+  },
+  "egress": {
+    "terms": "No traffic allotment is published in the wiki or on the portal. The service is presented as free for personal use with a donation page and no metering is mentioned",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://wiki.ploud.fr/doku.php?id=a_propos%3Afrequently_asked_questions"
+  },
+  "interface": [
+    "webdav",
+    "rest",
+    "rclone"
+  ],
+  "tooling": "rclone webdav, davfs2, curl -u, any Nextcloud client. The WebDAV endpoint is /remote.php/webdav/ for the legacy path and /remote.php/dav/ for the modern one, documented by the operator itself",
+  "chaining": "A clean 1 TB WebDAV bucket with no payment and no phone, which drops straight into rclone mount or a Cloudflare-fronted origin. Each account is an independent island and the signup form has a phone field, so farming is not free",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "100 MiB upload chunk; the per-object ceiling is unpublished",
+      "source": "https://storage.ploud.fr"
+    },
+    {
+      "kind": "write-gated",
+      "value": "signup needs a name, date of birth, sex, an international phone number, a postcode and the reCAPTCHA v3 human-verification widget token",
+      "source": "https://www.ploud.fr/js/off/ploud-off.js"
+    }
+  ],
+  "identity_cost": {
+    "kind": "any-phone",
+    "detail": "the signup form requires prenom, nom, date of birth, sexe, an international phone number and a postcode, plus the reCAPTCHA v3 human-verification widget. The JavaScript has no SMS or code path, so the only gate actually exercised is an email activation link",
+    "country": null
+  },
+  "reliability_note": "A single-sponsor instance operated by PSIADE in Toulouse. A 2024 help.nextcloud.com thread predicted imminent shutdown and reported stale certificates; the instance now answers status.php as Nextcloud 31.0.6.2 with valid TLS, so that post is stale, but one funding decision still ends it. The .jp mirror is dead",
+  "confidence": "reported",
+  "evidence": [
+    {
+      "url": "probe:https://storage.ploud.fr/status.php",
+      "date": "2026-10-21",
+      "proved": "HTTP 200, {\"installed\":true,\"version\":\"31.0.6.2\",\"productname\":\"Nextcloud\"}, so a live current server"
+    },
+    {
+      "url": "probe:https://storage.ploud.fr/remote.php/dav/",
+      "date": "2026-10-21",
+      "proved": "HTTP 401 with WWW-Authenticate: Basic realm=\"Ploud Storage\", so the DAV read path exists and is auth-gated"
+    },
+    {
+      "url": "probe:https://storage.ploud.fr/remote.php/dav/files/",
+      "date": "2026-10-21",
+      "proved": "HTTP 401, 584 bytes, real SabreDAV XML with Sabre\\DAV\\Exception\\NotAuthenticated and X-Powered-By: PHP/8.3.8"
+    },
+    {
+      "url": "https://wiki.ploud.fr/doku.php?id=services%3Aploud_storage",
+      "date": "2026-10-21",
+      "proved": "'Vous disposez d'un espace de 500 Go ou 1 To' plus the explicit WebDAV URL https://storage.ploud.fr/remote.php/webdav/"
+    },
+    {
+      "url": "https://www.ploud.fr/",
+      "date": "2026-10-21",
+      "proved": "'Ploud Storage: 1 espace de stockage securise et crypte de 1 To'"
+    },
+    {
+      "url": "https://wiki.ploud.fr/doku.php?id=a_propos%3Afrequently_asked_questions",
+      "date": "2026-10-21",
+      "proved": "operated by PSIADE SAS, servers in France near Paris, no ad model, donation page"
+    },
+    {
+      "url": "https://www.ploud.fr/js/off/ploud-off.js",
+      "date": "2026-10-21",
+      "proved": "signup posts to php/create_userv2.php with name, date of birth, sex, phone, postcode and email plus a grecaptcha token, with no SMS code anywhere in the bundle"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "binding": "write-gated",
+  "binding_note": "1 TB free with a working WebDAV endpoint clears the capacity and protocol filters. What binds is the signup: a phone number and an address are collected, and the form is a single-sponsor instance's only gate, so an account that survives is a favour rather than a contract.",
+  "notes": "The best free Nextcloud in Europe by volume and the least durable: one sponsor, one data centre, and a 2024 forum thread that has already predicted its closure once. A reader should use it with a second copy and not as the second copy.",
+  "extras": {
+    "access_mode": "registration-gated",
+    "free_tier_exists": true,
+    "region": "France, near Paris",
+    "nextcloud_version": "31.0.6.2",
+    "webdav_paths": [
+      "/remote.php/webdav/",
+      "/remote.php/dav/"
+    ],
+    "aliases": [
+      "Ploud Storage (PSIADE, FR)",
+      "Ploud Storage (PSIADE, Toulouse)"
+    ]
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "topic": "storage",
+  "slug": "azure-devops-repos",
+  "provider": "Azure DevOps Repos (Git as bulk blob store)",
+  "url": "https://azure.microsoft.com/en-us/pricing/details/devops/azure-devops-services/",
+  "category": "paas",
+  "free_tier": {
+    "stated": "Unlimited private Git repositories free per organization; each repository may be up to 250 GB; storage is NOT a billed meter - the Azure DevOps free tier bills only users, parallel jobs and Artifacts storage. Git LFS is free and does not count toward the 5 GB push limit.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://learn.microsoft.com/en-us/azure/devops/repos/git/limits",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://learn.microsoft.com/en-us/azure/devops/repos/git/limits",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://learn.microsoft.com/en-us/azure/devops/repos/git/limits",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered. Clone/fetch over HTTPS from dev.azure.com has no egress meter - the billing FAQ enumerates every chargeable meter (extra Basic users, Basic+Test Plans, parallel jobs, Artifacts >2 GB, GHAS) and data transfer is not among them.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "git",
+    "rclone"
+  ],
+  "interface_detail": "git",
+  "tooling": "Plain git / git-lfs; Azure DevOps REST API for repository + item download (GET /_apis/git/repositories/{repo}/items?path=); rclone has no ADO Repos backend, so use git or the REST item API",
+  "chaining": "Unlimited repos x 250 GB each within one org; each org holds up to 1,000 projects; orgs are free and you may hold many. 250 GB x N repos x M orgs. The 2026 sprint-273 change removed the Git object-count limit, which was the per-repo ceiling that used to bite before 250 GB. Files are content-addressed and deduplicated across history, so a repo of distinct chunks stores each chunk once.",
+  "limits": [],
+  "limits_note": "250 GB per repository (soft - pack-file limit errors before it); 5 GB per push (LFS pushes exempt); individual files ~100 MB without LFS; path length 32,766 chars; rate limits 200 TSTU per 5-min window; anonymous access to public projects is being removed (new public projects blocked April 2026, all converted to private and anonymous disabled in 2027) - authenticate with a PAT.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: length 32,766 chars; rate limits 200 TSTU per 5-min window; anonymous access to public projects is being removed (new public projects blocked April 2026, all converted to private and anonym",
+    "country": null
+  },
+  "reliability_note": "Reliable but slow as bulk storage: no random-access read, no partial download, whole-repo clone semantics; the 'temporarily unavailable while repository is updated' pack-optimization window can block writes for large repos.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/devops/repos/git/limits",
+      "date": "2026-10-21",
+      "proved": "'Repositories should be no larger than 250 GB'; 'pushes are limited to 5 GB at a time'; 'Git LFS doesn't count towards the 5-GB repository limit'"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/devops/repos/git/manage-large-files",
+      "date": "2026-10-21",
+      "proved": "'Azure DevOps Services fully supports Git LFS and offers it for free'"
+    },
+    {
+      "url": "https://azure.microsoft.com/en-us/pricing/details/devops/azure-devops-services/",
+      "date": "2026-10-21",
+      "proved": "'Azure Repos: Unlimited private Git repos'; 'Azure Artifacts: 2 GiB free per organization'"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/devops/release-notes/2026/sprint-273-update",
+      "date": "2026-10-21",
+      "proved": "'Git object count limit removed ... enables unrestricted repository growth'"
+    },
+    {
+      "url": "https://dev.azure.com/powershell/powershell/_apis/git/repositories?api-version=7.0",
+      "date": "2026-10-21",
+      "proved": "probe: curl -> HTTP 200, returned repo objects with size fields (PowerShell repo size 90822000 bytes at time of probe)"
+    },
+    {
+      "url": "https://dev.azure.com/powershell/powershell/_git/powershell",
+      "date": "2026-10-21",
+      "proved": "probe: git ls-remote -> 200, returned HEAD 2f027ba4356e363f65e2cc71c7bd49c5d1556b32 (anonymous read works today, dies in 2027)"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Unlimited private Git repositories free per organization; each repository may be up to 250 GB; storage is NOT a billed meter - the Azure DevOps free tier bills only users, parallel jobs and Artifacts storage. Git LFS is free and does not count toward the 5 GB push limit.",
+  "extras": {},
+  "binding": "none",
+  "binding_note": "no constraint in the record binds at this scale; the record carries no limit of a kind the vocabulary names"
+}

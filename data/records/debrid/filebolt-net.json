@@ -1,0 +1,85 @@
+{
+  "topic": "debrid",
+  "slug": "filebolt-net",
+  "provider": "FileBolt",
+  "url": "https://filebolt.net/",
+  "category": "anonymous large-file transfer page (browser upload)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Send Large Files - Free File Sharing and Transfer up to 10 GB. No Email Required.",
+    "unit": "GB",
+    "metered_on": "none",
+    "source_url": "https://filebolt.net/",
+    "read_on": "2026-10-23"
+  },
+  "per_object_cap": {
+    "stated": "up to 10 GB",
+    "bytes": 10000000000,
+    "source_url": "https://filebolt.net/"
+  },
+  "retention": {
+    "stated": "unverified: expiry is an option ('optionally with a password or an expiry date'), no default period is published",
+    "days": null,
+    "source_url": "https://filebolt.net/"
+  },
+  "egress": {
+    "terms": "No byte allowance stated. The page offers a download limit and revocation per transfer, so traffic out is controlled by the sender rather than metered by the vendor.",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://filebolt.net/"
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "Browser drop zone. /api/upload returns 404, /api/files returns 400, so a JSON API exists (the 400 is a validation answer) but its contract is not published.",
+  "tooling": "Browser only as observed. The 400 from /api/files is the one opening: it means a JSON endpoint answers, and a wrapper could probe it.",
+  "chaining": "A per-transfer download limit and revocation make it a controlled hand-off, which is the opposite of a mirror; it does not chain into an archive.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "10 GB",
+      "source": "https://filebolt.net/"
+    },
+    {
+      "kind": "pull-count",
+      "value": "sender can set a download limit per transfer",
+      "source": "https://filebolt.net/"
+    }
+  ],
+  "limits_note": "Revocation and per-download visibility are the differentiators the page sells; neither was exercised.",
+  "binding": "pull-count",
+  "binding_note": "The publishable download limit is the first constraint a re-fetch meets: a link with a limit of one is spent by the first reader, and at 1 TiB a month that means a new transfer per read.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "'No accounts, no ads: Nobody needs to sign up, neither you nor your recipients'",
+    "country": null
+  },
+  "reliability_note": "No published operator, no API documentation, and an edge that answers unknown POSTs with 404.",
+  "confidence": "documented",
+  "confidence_note": "The 10 GB offer and the no-account sentence are quoted from the vendor page; nothing was uploaded, so the cap is the page's word.",
+  "evidence": [
+    {
+      "url": "https://filebolt.net/",
+      "date": "2026-10-23",
+      "proved": "'Free File Sharing and Transfer up to 10 GB', 'No accounts, no ads: Nobody needs to sign up, neither you nor your recipients', and the password / download-limit / revocation options"
+    },
+    {
+      "url": "probe:https://filebolt.net/api/files",
+      "date": "2026-10-23",
+      "proved": "HTTP 400 from a JSON endpoint at /api/files, so an API exists but publishes no contract"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T02:30:47.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The controlled-hand-off feature set is real but unmeasured; the record exists so the next session does not re-discover the name.",
+  "extras": {
+    "api_shapes_tried": [
+      "/api/upload",
+      "/upload",
+      "/api/files",
+      "/v1/upload"
+    ]
+  }
+}

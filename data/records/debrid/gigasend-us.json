@@ -1,0 +1,84 @@
+{
+  "topic": "debrid",
+  "slug": "gigasend-us",
+  "provider": "Gigasend",
+  "url": "https://gigasend.us/",
+  "category": "anonymous large-file transfer page (browser upload)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Up to 10 GB free - 3-day link expiration",
+    "unit": "GB",
+    "metered_on": "none",
+    "source_url": "https://gigasend.us/",
+    "read_on": "2026-10-23",
+    "notes": "Paid tiers go to 5 TB per transfer; the free tier is the 10 GB row."
+  },
+  "per_object_cap": {
+    "stated": "Up to 10 GB free, or up to 5 TB with a paid transfer",
+    "bytes": 10000000000,
+    "source_url": "https://gigasend.us/",
+    "notes": "Decimal GB as written on the page; the boundary was not pushed to."
+  },
+  "retention": {
+    "stated": "3-day link expiration",
+    "days": 3,
+    "source_url": "https://gigasend.us/"
+  },
+  "egress": {
+    "terms": "The page advertises no per-download charge and no account; traffic is not metered on the free tier as stated.",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://gigasend.us/"
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "A browser drop zone. No anonymous HTTP upload endpoint was found: POST to /api/upload, /upload, /api/files and /v1/upload all returned 403 from the edge, so the upload is a browser-orchestrated presigned flow whose endpoint is inside a JS bundle.",
+  "tooling": "Browser only as observed. A wrapper would need a headless browser or the presigned-URL flow read out of the JS bundle; neither was done here.",
+  "chaining": "A 10 GB drop with a 3-day life is the hand-off tier: send a finished archive to one reader, not a mirror an archive can be rebuilt from.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "10 GB free",
+      "source": "https://gigasend.us/"
+    }
+  ],
+  "limits_note": "Four shape probes at the likely API paths returned 403 rather than 404, so the edge is refusing before the application sees the request.",
+  "binding": "per-object-cap",
+  "binding_note": "10 GB per transfer with a 3-day life: at 1 TiB a month the object size forces 100 transfers, and the retention means none of them is still there when the month ends.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "The page states no account is needed for the free 10 GB tier; uploads are browser-driven and no registration was attempted.",
+    "country": null
+  },
+  "reliability_note": "An SEO-visible 2026 entrant with no published API and an edge that refuses unknown POSTs; nothing indicates long-term operation.",
+  "confidence": "documented",
+  "confidence_note": "The offer and the 3-day expiry are quoted from the vendor page read today; the upload path could not be driven from a script, so no byte was moved and the cap is the vendor's sentence only.",
+  "evidence": [
+    {
+      "url": "https://gigasend.us/",
+      "date": "2026-10-23",
+      "proved": "'Up to 10 GB free - 3-day link expiration' and 'Share up to 10 GB free - or up to 5 TB'"
+    },
+    {
+      "url": "probe:https://gigasend.us/api/upload",
+      "date": "2026-10-23",
+      "proved": "multipart POST to /api/upload, /upload, /api/files, /v1/upload, /api/v1/upload -> HTTP 403 on all five, so no anonymous HTTP upload endpoint is exposed"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T02:30:47.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Browser-only, so it fails the client's programmatic requirement until a wrapper exists; that is a tooling note, not a rejection.",
+  "extras": {
+    "api_shapes_tried": [
+      "/api/upload",
+      "/upload",
+      "/api/files",
+      "/v1/upload",
+      "/api/v1/upload"
+    ],
+    "api_result": "403 on every path"
+  }
+}

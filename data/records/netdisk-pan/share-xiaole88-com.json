@@ -1,0 +1,94 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "share-xiaole88-com",
+  "provider": "小乐的网盘",
+  "url": "https://share.xiaole88.com/",
+  "category": "public-instance",
+  "free_tier": {
+    "stated": "anonymous guest read of 15 root entries; no account and no payment",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://share.xiaole88.com/",
+    "read_on": "2026-10-22"
+  },
+  "per_object_cap": {
+    "stated": null,
+    "source_url": "https://share.xiaole88.com/"
+  },
+  "retention": {
+    "stated": null,
+    "days": null,
+    "source_url": "https://share.xiaole88.com/"
+  },
+  "egress": {
+    "terms": "served through Tengine; the reader pays nothing",
+    "metered": false,
+    "source_url": "https://share.xiaole88.com/"
+  },
+  "interface": [
+    "rest",
+    "webdav"
+  ],
+  "interface_detail": "rest",
+  "tooling": null,
+  "chaining": "a fetch substrate: point a cache and two mirrors at it, never a write tier Read-only. Useful as an Android TV software mirror and not as capacity",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "no published rate; one operator and a CDN front absorb the read",
+      "source": "https://share.xiaole88.com/"
+    },
+    {
+      "kind": "write-gated",
+      "value": "PUT denied at the guest role",
+      "source": "probe:https://share.xiaole88.com/api/fs/put"
+    }
+  ],
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "15 root entries, provider Onedrive, on AList v3.40 behind Tengine. A pooled-tenant export like al.chirmyram.com but without Cloudflare in front, so no edge cache.",
+  "confidence": "measured",
+  "evidence": [
+    {
+      "url": "probe:https://share.xiaole88.com/api/public/settings",
+      "date": "2026-10-22",
+      "proved": "HTTP 200, JSON carrying a code field, site_title '小乐的网盘'"
+    },
+    {
+      "url": "probe:https://share.xiaole88.com/api/fs/list",
+      "date": "2026-10-22",
+      "proved": "anonymous POST /api/fs/list on / returned code 200 with 15 root entries; write:false, write_content_bypass:None, provider:Onedrive"
+    },
+    {
+      "url": "probe:https://share.xiaole88.com/api/fs/put",
+      "date": "2026-10-22",
+      "proved": "the zero-byte oracle (PUT at an existing directory with Overwrite:false) returned code 403 with message 'permission denied' inside HTTP 200, so the write permission failed and nothing was written"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T03:37:00.574Z",
+  "binding": "per-ip-shaping",
+  "notes": "15 root entries, provider Onedrive, on AList v3.40 behind Tengine. A pooled-tenant export like al.chirmyram.com but without Cloudflare in front, so no edge cache.",
+  "extras": {
+    "access_mode": "public-instance",
+    "read_capability": "full",
+    "write_capability": "permission-denied",
+    "upstream_provider": "Onedrive",
+    "fronting_cdn": "tengine",
+    "advertised_write_flag": false,
+    "write_content_bypass": null,
+    "permission_bitmask": "2",
+    "base_path": "/",
+    "listing_sha256": "410d4236",
+    "first_seen": "2024-01-20",
+    "last_verified_alive": "2026-10-22T03:37:00.574Z",
+    "last_verified_dead": null,
+    "consecutive_failures": 0,
+    "aliases": [
+      "小乐的网盘 (share.xiaole88.com) — public AList, Android TV software"
+    ]
+  }
+}

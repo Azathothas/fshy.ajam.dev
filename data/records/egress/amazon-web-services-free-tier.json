@@ -1,0 +1,99 @@
+{
+  "topic": "egress",
+  "slug": "amazon-web-services-free-tier",
+  "provider": "AWS Free Tier (EC2)",
+  "url": "https://aws.amazon.com/free/",
+  "category": "origin VM (free plan)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "When you create a new AWS Free Tier account, you get $100 in credits immediately. As you explore key services, you can earn up to $100 more. That's up to $200 over 6 months to build, break things, and experiment with no charges and no surprise bills on the Free plan. The account closes on its own 6 months after you open it or when your credits run out, whichever comes first.",
+    "unit": "mixed",
+    "metered_on": "wall-clock",
+    "source_url": "https://aws.amazon.com/free/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://aws.amazon.com/free/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://aws.amazon.com/free/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "AWS customers receive 100 GB of free data transfer out to the internet free each month, aggregated across all AWS Services and Regions (except China and GovCloud).; ingress: udp",
+    "metered": true,
+    "free_allowance": "AWS customers receive 100 GB of free data transfer out to the internet free each month, aggregated across all AWS Services and Regions (except China and GovCloud).",
+    "price_per_tb": null,
+    "source_url": "https://aws.amazon.com/free/"
+  },
+  "interface": [
+    "ssh"
+  ],
+  "interface_detail": "SSH to the instance's public IPv4 or IPv6 address, with a security group rule for any further port",
+  "tooling": "wg-quick, nothing vendor-specific",
+  "chaining": "100 GB a month is a signalling or control-plane allowance, not a data path; it does not compose into a 1 TiB a month chain at any price of zero",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "100 GB of data transfer out to the internet each month, aggregated across services and regions",
+      "source": "https://aws.amazon.com/ec2/pricing/on-demand/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "the Free plan account closes 6 months after creation or when credits run out",
+      "source": "https://aws.amazon.com/free/"
+    }
+  ],
+  "limits_note": "",
+  "binding": "volume-quota",
+  "binding_note": "100 GB a month is 3.33 GB a day, 9.1% of 1 TiB a month, so a run at a 1 TiB/month pace exhausts the allowance in about 2.7 days; the 6-month account closure sits behind it and would matter only to an idle account",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "unverified on the pages read: neither aws.amazon.com/free nor its FAQ states the signup instrument, so a card is recorded as the expected instrument and not as a quoted term",
+    "country": "None"
+  },
+  "reliability_note": "the Free plan closes the account 6 months after creation or when the credits run out, whichever comes first; nothing in the pages read says an EC2 instance survives that",
+  "confidence": "documented",
+  "confidence_note": "the 100 GB line and the 6-month plan are on AWS pages read today; the identity instrument and any per-service hour allowance are not, so those parts stay unverified",
+  "evidence": [
+    {
+      "url": "https://aws.amazon.com/ec2/pricing/on-demand/",
+      "date": "2026-10-23",
+      "proved": "'AWS customers receive 100 GB of free data transfer out to the internet free each month, aggregated across all AWS Services and Regions (except China and GovCloud).'"
+    },
+    {
+      "url": "https://aws.amazon.com/free/",
+      "date": "2026-10-23",
+      "proved": "'up to $200 over 6 months ... The account closes on its own 6 months after you open it or when your credits run out, whichever comes first.'"
+    },
+    {
+      "url": "https://aws.amazon.com/ec2/",
+      "date": "2026-10-23",
+      "proved": "'The free plan is available for 6 months after account creation' and no 750-hour figure on the EC2 product page"
+    },
+    {
+      "url": "https://docs.aws.amazon.com/vpc/latest/userguide/security-group-rules.html",
+      "date": "2026-10-23",
+      "proved": "a security group rule names protocol 17 (UDP) and a single port, so UDP ingress is expressible and 51820 is not special"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0 on the Free plan for 6 months; the 100 GB a month egress allowance is free on every account",
+  "notes": "The 750 hours for 12 months that was asked to confirm is not on any page read today: aws.amazon.com/free, its free-tier FAQ, the EC2 product page and the EC2 on-demand pricing page all describe USD 200 of credits over a 6-month Free plan, and none carries a per-service hour allowance. The offer appears to have been restructured around credits; whether a 750-hour line survives on a page not read is open, and the pages read do not support the claim. The 100 GB allowance is separate from the plan and is standing for all customers.",
+  "extras": {
+    "wg_path": "native-conf",
+    "wg_detail": "a security group rule takes a protocol number and a port range: 'The most common protocols are 6 (TCP), 17 (UDP), and 1 (ICMP)' and 'For TCP, UDP, or a custom protocol, the range of ports to allow. You can specify a single port number (for example, 22)', so 51820/udp is one rule and wg-quick runs natively",
+    "ingress": "udp",
+    "volume_tib_month": 0.091,
+    "volume_stated": "AWS customers receive 100 GB of free data transfer out to the internet free each month, aggregated across all AWS Services and Regions (except China and GovCloud).",
+    "bytes_transit": "yes",
+    "transit_note": "bytes leave through the instance's public address and are aggregated with every other AWS service's egress into the same 100 GB"
+  }
+}

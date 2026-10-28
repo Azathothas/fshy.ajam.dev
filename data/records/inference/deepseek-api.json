@@ -1,0 +1,114 @@
+{
+  "topic": "inference",
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "not applicable"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "any OpenAI-compatible client; curl against POST {base}/chat/completions",
+  "chaining": "pairs with an agent as the cheapest paid per-token route; the scarce link is the prepaid balance, not a rate",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "concurrency limit per account, counted across all API keys: 2500 concurrent requests for deepseek-flash and 500 for deepseek-v4-pro; HTTP 429 above the limit; higher concurrency is available on request at no additional cost",
+      "source": "https://api-docs.deepseek.com/quick_start/rate_limit"
+    }
+  ],
+  "slug": "deepseek-api",
+  "provider": "DeepSeek API",
+  "url": "https://api-docs.deepseek.com/",
+  "category": "inference endpoint, paid",
+  "free_tier": {
+    "stated": "no free tier or signup credit is stated: usage is deducted from a topped-up balance or a granted balance, granted balance first, and no granted amount is published",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://api-docs.deepseek.com/quick_start/pricing",
+    "read_on": "2026-10-22",
+    "notes": "a granted balance can expire: the balance endpoint reports granted_balance as the total not expired granted balance"
+  },
+  "endpoint": "https://api.deepseek.com",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "an API key from platform.deepseek.com; calls are paid from a topped-up balance and an empty balance returns HTTP 402 Insufficient Balance; the payment instrument and the sign-up fields are not stated on the documentation pages (unverified)",
+    "country": null
+  },
+  "reliability_note": "the legacy model names deepseek-v4-flash and deepseek-v4-flash-vision-exp are retired and their requests are now served by DeepSeek-V4.1-Flash-1017 at the Flash price",
+  "confidence": "documented",
+  "confidence_note": "the model naming, the retirement of the legacy names, the per-token prices and the concurrency limits are quoted from the first-party pricing and rate-limit pages",
+  "evidence": [
+    {
+      "url": "https://api-docs.deepseek.com/quick_start/pricing",
+      "date": "2026-10-22",
+      "proved": "the served models are deepseek-flash and deepseek-v4-pro; deepseek-flash is served by DeepSeek-V4.1-Flash-1017; the legacy names are accepted but their models are retired and billed at the Flash price; OpenAI and Anthropic compatible base URLs"
+    },
+    {
+      "url": "https://api-docs.deepseek.com/quick_start/rate_limit",
+      "date": "2026-10-28",
+      "proved": "the concurrency limit is 2500 for deepseek-flash and 500 for deepseek-v4-pro",
+      "capture": "sha256:cb20f8e4f1f49d13770bc5f820d26bbf963c77627bbd02818e8458e6c9065ac7",
+      "quote": "| Concurrency Limit | 2500 | 500 |"
+    },
+    {
+      "url": "https://api-docs.deepseek.com/quick_start/rate_limit",
+      "date": "2026-10-28",
+      "proved": "higher concurrency is granted on request at no additional cost",
+      "capture": "sha256:cb20f8e4f1f49d13770bc5f820d26bbf963c77627bbd02818e8458e6c9065ac7",
+      "quote": "We will match the appropriate concurrency based on your actual business needs. There is no additional cost for capacity expansion."
+    },
+    {
+      "url": "https://api-docs.deepseek.com/quick_start/pricing",
+      "date": "2026-10-28",
+      "proved": "usage is deducted from a topped-up balance or a granted balance, granted balance first; no amount is stated",
+      "capture": "sha256:fcb5d07afdadb10b82724bc83b45b8b456f7702336b4989e279837c2b7e8a55d",
+      "quote": "The corresponding fees will be directly deducted from your topped-up balance or granted balance, with a preference for using the granted balance first when both balances are available."
+    },
+    {
+      "url": "https://api-docs.deepseek.com/api/get-user-balance",
+      "date": "2026-10-28",
+      "proved": "the balance endpoint's granted_balance is the total not expired granted balance",
+      "capture": "sha256:f5cc88ab45de56b6ec6d9277e962870c5822f0da5c3b5f77f3258cee3852903a",
+      "quote": "The total not expired granted balance."
+    },
+    {
+      "url": "https://api-docs.deepseek.com/quick_start/error_codes",
+      "date": "2026-10-28",
+      "proved": "an empty balance returns 402 Insufficient Balance and the fix is to top up on platform.deepseek.com",
+      "capture": "sha256:c00e3ec23a349438b6bb4d8f912ce2b574a386a1854b2f60a36be768eafdf366",
+      "quote": "| 402 - Insufficient Balance | **Cause**: You have run out of balance. **Solution**: Please check your account's balance, and go to the [Top up](https://platform.deepseek.com/top_up) page to add funds. |"
+    },
+    {
+      "url": "https://api-docs.deepseek.com/quick_start/pricing",
+      "date": "2026-10-28",
+      "proved": "the pricing page tabulates the per-token prices and defines the peak hours",
+      "capture": "sha256:fcb5d07afdadb10b82724bc83b45b8b456f7702336b4989e279837c2b7e8a55d",
+      "quote": "(2) Off-peak rates are half of the peak rates. Peak hours are 01:00 - 04:00 and 06:00 - 10:00 UTC, Monday through Friday, excluding Chinese public holidays. All other hours are off-peak, including weekends and Chinese public holidays in full."
+    },
+    {
+      "url": "https://api-docs.deepseek.com/quick_start/pricing",
+      "date": "2026-10-28",
+      "proved": "the OpenAI-format base URL is https://api.deepseek.com",
+      "capture": "sha256:fcb5d07afdadb10b82724bc83b45b8b456f7702336b4989e279837c2b7e8a55d",
+      "quote": "| BASE URL (OpenAI Format) | [https://api.deepseek.com](https://api.deepseek.com/) |  |  |  |"
+    },
+    {
+      "url": "https://api-docs.deepseek.com/quick_start/pricing",
+      "date": "2026-10-28",
+      "proved": "the legacy names are retired and served by DeepSeek-V4.1-Flash-1017 at the Flash price",
+      "capture": "sha256:fcb5d07afdadb10b82724bc83b45b8b456f7702336b4989e279837c2b7e8a55d",
+      "quote": "(1) Use `deepseek-flash` as the model name. The legacy names `deepseek-v4-flash` and `deepseek-v4-flash-vision-exp` are still accepted, but the corresponding models have been retired, their requests are served by the DeepSeek-V4.1-Flash-1017 model and billed at the Flash price."
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-28T09:47:54.948Z",
+  "notes": "Prices per 1M tokens, deepseek-flash / deepseek-v4-pro: input cache hit off-peak USD 0.003 / USD 0.022 and peak USD 0.006 / USD 0.044; input cache miss off-peak USD 0.15 / USD 0.66 and peak USD 0.3 / USD 1.32; output off-peak USD 0.6 / USD 1.98 and peak USD 1.2 / USD 3.96. Off-peak rates are half of the peak rates; peak hours are 01:00 - 04:00 and 06:00 - 10:00 UTC, Monday through Friday, excluding Chinese public holidays",
+  "binding": "none",
+  "limits_note": "the published limit is account-level concurrency, 2500 for deepseek-flash and 500 for deepseek-v4-pro, with higher concurrency available on request at no additional cost; the rate-limit page publishes no requests-per-minute or token quota"
+}

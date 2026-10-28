@@ -1,0 +1,91 @@
+{
+  "topic": "egress",
+  "slug": "arena-tunnel",
+  "provider": "arena-tunnel",
+  "url": "https://github.com/dc-holdings-spa/arena-tunnel",
+  "category": "tool (wireguard transport)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "no service and no account; AGPL-3.0 source with static binaries, described as \"Free public ingress through any CDN\"",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://github.com/dc-holdings-spa/arena-tunnel",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://github.com/dc-holdings-spa/arena-tunnel",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://github.com/dc-holdings-spa/arena-tunnel",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not applicable; the tunnel's ceiling is the CDN's, and the README states none; ingress: tcp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://github.com/dc-holdings-spa/arena-tunnel"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "arena-tunnel client and arena-tunnel-server",
+  "tooling": "single Go binary per platform, cloudflared or any HTTP publisher in front",
+  "chaining": "the intended composition is cloudflare-tunnel Free in front of arena-tunnel-server, which makes an HTTP-only hosted tunnel carry WireGuard for the first time without a paid plan.",
+  "limits": [],
+  "limits_note": "",
+  "binding": "none",
+  "binding_note": "the constraint is a WireGuard server host plus a way to publish an HTTP port, which is the same host requirement as every other wrapper",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no account for the DIY path; the vendor's own deployment adds a browser pairing flow with a signed-in identity",
+    "country": "None"
+  },
+  "reliability_note": "new and lightly used; client needs root for the TUN device; one WebSocket per session means a dropped TCP connection restarts the tunnel",
+  "confidence": "documented",
+  "confidence_note": "a measured run behind a free Cloudflare Tunnel would raise it, and is the single most useful measurement leaves open",
+  "evidence": [
+    {
+      "url": "https://github.com/dc-holdings-spa/arena-tunnel",
+      "date": "2026-10-23",
+      "proved": "\"punches a WireGuard VPN through any HTTP/HTTPS path - including a free Cloudflare Tunnel. No VPS rental\" and \"one WS binary frame <-> one UDP datagram\""
+    },
+    {
+      "url": "https://github.com/dc-holdings-spa/arena-tunnel",
+      "date": "2026-10-23",
+      "proved": "the DIY section: \"Requires a running WireGuard server on the same host and a way to publish your HTTP port (cloudflared tunnel, ngrok, etc.)\""
+    },
+    {
+      "url": "https://github.com/dc-holdings-spa/arena-tunnel",
+      "date": "2026-10-23",
+      "proved": "\"Latency cost: ~80-150 ms one-way through a free CF tunnel from most of LATAM\" - the author's own figure, not reproduced"
+    },
+    {
+      "url": "https://github.com/dc-holdings-spa/arena-tunnel",
+      "date": "2026-10-23",
+      "proved": "release v1.2.1 published 2026-10-21; last push 2026-10-23; 4 stars"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The clearest statement's central problem: \"Most free CDNs (Cloudflare Free, Fastly, Bunny) only proxy HTTP/WS\", so WireGuard has to be framed into WebSocket to use them. Released two days before this read, four stars, single purpose. It still needs the WireGuard server host, so its claim of no VPS rental assumes the reader already has somewhere to put the server half. Frame-per-datagram framing avoids putting a length-prefixed stream in the datagram path, but the websocket still rides TCP.",
+  "extras": {
+    "wg_path": "none",
+    "wg_detail": "\"encapsulating each WireGuard UDP datagram inside one binary WebSocket frame\"; the client runs wireguard-go locally and the server hands frames to a local WireGuard interface",
+    "ingress": "tcp",
+    "volume_tib_month": null,
+    "volume_stated": "not applicable; the tunnel's ceiling is the CDN's, and the README states none",
+    "bytes_transit": "yes",
+    "transit_note": "through cloudflared and Cloudflare's edge, then to the server half",
+    "hosting_requirement": "a WireGuard server host plus cloudflared or another HTTP publisher; the client half needs root for a TUN device",
+    "last_release": "v1.2.1 2026-10-21",
+    "stars": 4
+  }
+}

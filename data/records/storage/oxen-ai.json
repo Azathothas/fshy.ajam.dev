@@ -1,0 +1,83 @@
+{
+  "topic": "storage",
+  "slug": "oxen-ai",
+  "provider": "Oxen.ai (Oxen Hub — dataset versioning for ML)",
+  "url": "https://www.oxen.ai",
+  "category": "dataset-hosting",
+  "free_tier": {
+    "stated": "Explorer (free forever): 50 GB data storage + 50 GB data transfer, unlimited public repos with unlimited collaborators, 5 private repos (max 3 collaborators). Hacker $30/mo: 100 GB storage / 100 GB transfer. Pro $60/mo: 500 GB / 500 GB.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://oxen.ai/pricing",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "No per-file cap published",
+    "source_url": "https://oxen.ai/pricing",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://oxen.ai/pricing",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Hard-capped rather than metered: 50 GB of data transfer per month on the free tier. That is the binding constraint for the 500 GB-1 TiB/day serving workload — you would exhaust a month of transfer in about an hour and a half.",
+    "metered": true
+  },
+  "interface": [
+    "rest",
+    "git",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Genuine: `oxen` CLI (oxen add/commit/push/pull, merkle-tree diffing), Python SDK, and a documented REST API. The oxen-server is open source and self-hostable (Oxen positions itself as 'git for data'). This is a real product with a real client, not a wrapper.",
+  "chaining": "50 GB x N free accounts, but the 50 GB/month transfer cap applies per account too, so chaining accounts multiplies egress but not storage usefulness. 10 TiB would need 205 accounts.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "transfer, unlimited public repos with unlimited collaborators, 5 private repos",
+      "source": "https://oxen.ai/pricing"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "No per-file cap published",
+      "source": "https://oxen.ai/pricing"
+    }
+  ],
+  "limits_note": "50 GB storage, 50 GB/month transfer, 5 private repos. No per-file cap published. Public repos are unlimited in COUNT, which is the only multiplier — but the 50 GB is account-level, so repo count does not add bytes.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email (self-service signup).",
+    "country": null
+  },
+  "reliability_note": "Mature, funded, stable. Data is content-addressed and versioned, so no silent expiry. The API host api.oxen.ai did not resolve from this network, which suggests the documented API endpoint has moved or is geo-restricted.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://oxen.ai/pricing",
+      "date": "2026-10-21",
+      "proved": "read live: 'Free Forever! ... Unlimited public repositories with unlimited collaborators · 5 private repositories · 50gb of data storage · 50gb of data transfer'; Hacker '100gb of data storage / 100gb of data transfer'; Pro '500gb'"
+    },
+    {
+      "url": "https://hub.oxen.ai/api/repos/ox/COCO-2017",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 404 (146 bytes); GET https://api.oxen.ai/api/repos/ox/COCO-2017 -> DNS resolution failure (Could not resolve host)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Explorer (free forever): 50 GB data storage + 50 GB data transfer, unlimited public repos with unlimited collaborators, 5 private repos (max 3 collaborators). Hacker $30/mo: 100 GB storage / 100 GB transfer. Pro $60/mo: 500 GB / 500 GB.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "Explorer (free forever): 50 GB data storage + 50 GB data transfer, unlimited public repos with unlimited collaborators, 5 private repos (max 3 collaborators). Hacker $30/mo: 100 GB storage / 100 GB transfer. Pro $60/mo: 500 GB / 500 GB.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

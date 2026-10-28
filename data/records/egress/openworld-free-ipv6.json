@@ -1,0 +1,104 @@
+{
+  "topic": "egress",
+  "slug": "openworld-free-ipv6",
+  "provider": "Openworld Free IPv6 VPS",
+  "url": "https://openworld.eu.org/faq",
+  "category": "origin VM (free container)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Yes. The free tier is permanent as long as you renew it - no trial, no card required.",
+    "unit": "unlimited",
+    "metered_on": "unstated",
+    "source_url": "https://openworld.eu.org/faq",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://openworld.eu.org/faq",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://openworld.eu.org/faq",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "no traffic allowance is published on the landing page or the FAQ; the page names CPU, RAM, disk, one dedicated public IPv6 and a NAT IPv4, and no byte figure; ingress: udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://openworld.eu.org/faq"
+  },
+  "interface": [
+    "ssh"
+  ],
+  "interface_detail": "root over SSH at a dedicated public IPv6 address, with a NAT IPv4 also included",
+  "tooling": "wg-quick if /dev/net/tun is present, otherwise wireguard-go with a TUN the container must still provide",
+  "chaining": "a free IPv6 endpoint with root and no card is the cheapest possible WireGuard peer; if its unpublished allowance is at least 1 TiB a month it composes directly with a bulk origin behind it",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "no byte allowance is published anywhere, so the limit is a discretionary throttle with no number and no threshold to design against",
+      "source": "https://openworld.eu.org/faq"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "free VPS periods last 7 days and an unrenewed VPS is auto-suspended",
+      "source": "https://openworld.eu.org/faq"
+    }
+  ],
+  "limits_note": "",
+  "binding": "per-ip-shaping",
+  "binding_note": "no byte allowance is published anywhere, so the limit is a discretionary throttle with no number and no threshold to design against",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "'no card required just Discord', so the account is a Discord identity rather than an email address or a card",
+    "country": "None"
+  },
+  "reliability_note": "free servers are suspended automatically unless renewed at least every 7 days, and renewal is allowed once per 24 hours; a three-node service at 145 VPS is small enough that a node loss takes instances with it",
+  "confidence": "unverified",
+  "confidence_note": "the no-card, root, IPv6 and renewal facts are quoted from the vendor's own FAQ, but volume test cannot be met without a traffic figure one signup and a day of measured transfer, or the plan's traffic field, would settle it",
+  "evidence": [
+    {
+      "url": "https://openworld.eu.org/faq",
+      "date": "2026-10-23",
+      "proved": "'Yes. The free tier is permanent as long as you renew it - no trial, no card required.'"
+    },
+    {
+      "url": "https://openworld.eu.org/faq",
+      "date": "2026-10-23",
+      "proved": "'Do I get an IPv4 address? Yes. Every plan includes NAT IPv4, and the free plan includes a dedicated public IPv6 address.'"
+    },
+    {
+      "url": "https://openworld.eu.org/faq",
+      "date": "2026-10-23",
+      "proved": "'Do I get root access? Yes. You log in as root over SSH, with the password (or key) you set during creation.' and 'Containers run with full systemd access.'"
+    },
+    {
+      "url": "https://openworld.eu.org/faq",
+      "date": "2026-10-23",
+      "proved": "'Free VPS periods last 7 days. Renewal is free and can be done once every 24 hours to reset the countdown - an unrenewed VPS gets auto-suspended'"
+    },
+    {
+      "url": "https://openworld.eu.org/",
+      "date": "2026-10-23",
+      "proved": "the landing page's fastfetch panel shows 'Nodes: 3', 'VPS: 145', 'IPs: 2,220', 'Users: 3,795', which sizes the service at a few hundred servers rather than a cloud region"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The only free offer found that gives a dedicated public IPv6, root and no card at the same time, which is exactly the shape a WireGuard endpoint needs. It fails on evidence rather than on capacity: no traffic number is published anywhere on the site that could be read, so the 1 TiB test is unestablished. The NAT IPv4 means inbound over IPv4 would need a port forward the FAQ does not describe, so the reachable address family is IPv6. A container with full systemd suggests a privileged LXC, which usually does carry /dev/net/tun, but 'usually' is not a measurement.",
+  "extras": {
+    "wg_path": "unknown",
+    "wg_detail": "root over SSH in a container with 'full systemd access', so wg-quick installs; whether /dev/net/tun is exposed is not stated on either page read, and that decides between the kernel module and a userspace fallback. Not tested, because spent no signup",
+    "ingress": "udp",
+    "volume_tib_month": null,
+    "volume_stated": "no traffic allowance is published on the landing page or the FAQ; the page names CPU, RAM, disk, one dedicated public IPv6 and a NAT IPv4, and no byte figure",
+    "bytes_transit": "yes",
+    "transit_note": "bytes leave through the node's uplink to the container's public IPv6 address"
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "slug": "nzbindex",
+  "provider": "NZBIndex",
+  "url": "https://www.nzbindex.com/",
+  "category": "Usenet search engine (undocumented JSON search API, anonymous NZB download)",
+  "tier": "anonymous",
+  "free_tier": {
+    "stated": "No account and no key. GET /api/search?q=linux returned 7,318 bytes of JSON: 25 items, totalElements 4,348 over 174 pages. GET /download/<item-id>.nzb returned a 4,264-byte NZB. The route is what the site's own single-page app calls; no API documentation was found on any page reached.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://www.nzbindex.com/",
+    "read_on": "2026-10-23",
+    "notes": "No quota is published, and no account exists to attach one to. 6 rapid requests and 1 download in one session produced no 429."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: the answer is an NZB pointer file (4,264 bytes), never the payload",
+    "bytes": null,
+    "source_url": "https://www.nzbindex.com/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not stated on the pages read. A third-party indexer comparison claims 'approximately 1,900 days retention, 900+ newsgroups indexed' (nzbhydra.com, 2026-10-23).",
+    "days": null,
+    "source_url": "https://nzbhydra.com/indexers/",
+    "notes": "reported"
+  },
+  "egress": {
+    "terms": "No metering. The JSON is a result list and the download is an XML pointer file measured at 4,264 bytes.",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.nzbindex.com/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "The search page is a client-rendered Next.js app: /search?q=linux returns 8,702 bytes of HTML shell with zero results and an empty query state. The real interface is GET /api/search?q=<query>, which returns JSON with data.content[] and data.page{size,number,totalElements,totalPages}. NZB download is GET /download/<item-id>.nzb.",
+  "endpoint": "https://www.nzbindex.com/api/search?q=<query> ; https://www.nzbindex.com/download/<id>.nzb",
+  "tooling": "No Newznab endpoint, so Prowlarr, NZBHydra2, Sonarr and Radarr cannot add it directly. A wrapper is small: one GET for JSON, one GET per download, both unauthenticated. The JSON route is undocumented and can change with any front-end deploy, which is the maintenance cost.",
+  "chaining": "A second unnamed fallback beside Binsearch, and the only one of the three open engines with a JSON answer, so it is the easiest to wrap and the one to poll when a name has to be resolved without an account.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "none observed: 6 consecutive JSON searches in one session, all 200",
+      "source": "probe:https://www.nzbindex.com/api/search?q=test1..test6"
+    }
+  ],
+  "limits_note": "Page size is fixed at 25 in the JSON the app consumes (data.page.size = 25); there is no limit parameter to raise it.",
+  "binding": "none",
+  "binding_note": "No byte counter, no daily cap, no account. At 1 TiB/month the indexer is not the constraint; the news provider's retention is, and a missing post costs a failed grab rather than a quota.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "Nothing is collected: both the JSON search and the NZB download answered without a cookie, header or key.",
+    "country": null
+  },
+  "reliability_note": "Advertiser-supported; the JSON route is an internal app call, so a front-end deploy can move or rename it without notice, and a scrape that depended on it fails silently as an empty result list.",
+  "confidence": "measured",
+  "confidence_note": "Search and download were run today with status, byte count and digest recorded. The undocumented route is the fragility, not the confidence rung: it worked when measured and may not tomorrow.",
+  "evidence": [
+    {
+      "url": "probe:https://www.nzbindex.com/api/search?q=linux",
+      "date": "2026-10-23",
+      "proved": "anonymous JSON search returned 200 and 7,318 bytes: 25 items, totalElements 4,348, 174 pages"
+    },
+    {
+      "url": "probe:https://www.nzbindex.com/download/288b97bf-89a3-359e-8ac8-d1b8623caa9c.nzb?x=1",
+      "date": "2026-10-23",
+      "proved": "anonymous NZB download returned 200, application/x-nzb, 4,264 bytes (sha256 12eb9715...)"
+    },
+    {
+      "url": "probe:https://www.nzbindex.com/search?q=linux",
+      "date": "2026-10-23",
+      "proved": "the HTML page carries no results: 8,702 bytes of app shell with \"q\":\"\" in the serialised state, which is why a scraper must use /api/search"
+    }
+  ],
+  "verdict": "qualifies",
+  "extras": {
+    "price": "USD 0",
+    "measurements": [
+      {
+        "url": "https://www.nzbindex.com/api/search?q=linux",
+        "status": 200,
+        "bytes": 7318,
+        "sha256": "2333a15273d5eb24afc8e4aff8f09d7fe7976967dd323248f378c221f4ac91b5",
+        "note": ""
+      },
+      {
+        "url": "https://www.nzbindex.com/download/288b97bf-89a3-359e-8ac8-d1b8623caa9c.nzb?x=1",
+        "status": 200,
+        "bytes": 4264,
+        "sha256": "12eb97154cf848ba0dd79400d412d3714595b9961c7e9c0cda9fdccf14d5b0c7",
+        "note": ""
+      },
+      {
+        "url": "https://www.nzbindex.com/search?q=linux",
+        "status": 200,
+        "bytes": 8702,
+        "sha256": "01ff0f47761e25a17ea5b8d4681f766ee9daa6643acf6ba13b01ea6ea761d6cf",
+        "note": ""
+      }
+    ],
+    "nzb_is_newznab": false,
+    "burst": "6 sequential JSON searches, all 200"
+  },
+  "notes": "A bare GET to /download/<id>.nzb returned 404 while HEAD returned 200 because the broker appends &__strip-platform-headers=false to a URL that carries no query string; adding ?x=1 made the path valid and the download worked. That is a measurement artefact of this repository's broker and not evidence about NZBIndex.",
+  "verified_at": "2026-10-23T02:11:54.066Z",
+  "topic": "debrid",
+  "price_per_tb_month": null
+}

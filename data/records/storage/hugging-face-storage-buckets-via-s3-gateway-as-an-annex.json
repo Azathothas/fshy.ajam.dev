@@ -1,0 +1,82 @@
+{
+  "topic": "storage",
+  "slug": "hugging-face-storage-buckets-via-s3-gateway-as-an-annex",
+  "provider": "Hugging Face Storage Buckets via S3 gateway (s3.hf.co) — as an annex/DVC backend",
+  "url": "https://huggingface.co/docs/hub/storage-buckets-s3",
+  "category": "academic",
+  "free_tier": {
+    "stated": "Public repos/buckets: 'Best-effort' — no published numeric ceiling on a Free account (private is a hard 100 GB). Storage plans table: Free user or org = Public 'Best-effort', Private 100 GB. HF is on the known list, but the S3 gateway is new and turns HF into a generic S3 endpoint, which is the part that matters for this slot.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://huggingface.co/docs/hub/storage-limits",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "single file will exceed 500GB",
+    "bytes": 500000000000,
+    "source_url": "https://huggingface.co/docs/hub/storage-limits",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://huggingface.co/docs/hub/storage-limits",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and CDN-backed: 'Egress and CDN included at no extra cost'. Served via CloudFront, so downloads are cacheable. This is the single best egress term of any LFS-adjacent host found.",
+    "metered": false
+  },
+  "interface": [
+    "s3",
+    "git",
+    "cli"
+  ],
+  "interface_detail": "s3",
+  "tooling": "Any S3 client: AWS CLI, boto3, s5cmd; `hf` CLI (`hf sync`, `hf buckets`); python `huggingface_hub`. For this slot: `git annex initremote type=S3 host=s3.hf.co region=us-east-1 requeststyle=path` (annex needs path-style, which the gateway requires anyway) and `dvc remote add ... ; dvc remote modify myremote endpointurl https://s3.hf.co/<namespace>`. S3 creds are derived from an HF token via 'Generate S3 credentials' (HFAK... key).",
+  "chaining": "Bucket-per-purpose, unlimited buckets per namespace, unlimited free orgs. Because buckets are NON-versioned, git-annex supplies the versioning (hash-keyed objects) and DVC supplies the pointer layer — that combination gives you a versioned 500GB+ dataset store on a free, CDN-backed S3 endpoint. Dedupe is chunk-level on the Xet backend, so re-pushing near-identical files is cheap.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "single file will exceed 500GB",
+      "source": "https://huggingface.co/docs/hub/storage-limits"
+    }
+  ],
+  "limits_note": "Bucket = not Git, so no git LFS semantics — you get S3 PUT/GET only. Hard limit: 'no single file will exceed 500GB' for Hub repos (buckets: gateway multipart, docs recommend 2 GB multipart chunks). Recommended <100k files and <10k entries per folder; >200 GB files discouraged due to CloudFront not caching them. Region pinned us-east-1. Gateway does not parse aws-chunked trailing checksums — must set request_checksum_calculation=when_required.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "inferred from the category 'academic'; the source record states no identity cost, so this is a class assumption, not evidence",
+    "country": null
+  },
+  "reliability_note": "Free public storage is explicitly 'best-effort' and HF says 'Beyond the first few gigabytes, please use this resource responsibly', with a mitigation the page describes as 'in place to prevent abuse', meaning a limit on excess use. That is the softest possible enforcement language, but also the least contractual. Gateway is single-region (us-east-1).",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://huggingface.co/docs/hub/storage-buckets-s3",
+      "date": "2026-10-21",
+      "proved": "endpoint `https://s3.hf.co/<namespace>`, region us-east-1, path addressing, HFAK credentials from an HF token"
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/storage-limits",
+      "date": "2026-10-21",
+      "proved": "Free user or org: Public 'Best-effort', Private 100GB; 'no single file will exceed 500GB'"
+    },
+    {
+      "url": "https://huggingface.co/storage",
+      "date": "2026-10-21",
+      "proved": "'Egress and CDN included at no extra cost'"
+    },
+    {
+      "url": "https://s3.hf.co/",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> HTTP 403 with x-amz-request-id (live S3-compatible gateway answering)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Public repos/buckets: 'Best-effort' — no published numeric ceiling on a Free account (private is a hard 100 GB). Storage plans table: Free user or org = Public 'Best-effort', Private 100 GB. HF is on the known list, but the S3 gateway is new and turns HF into a generic S3 endpoint, which is the part that matters for this slot.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

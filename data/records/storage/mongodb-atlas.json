@@ -1,0 +1,75 @@
+{
+  "topic": "storage",
+  "slug": "mongodb-atlas",
+  "provider": "MongoDB Atlas (M0 / Free cluster)",
+  "url": "https://www.mongodb.com/atlas",
+  "category": "paas",
+  "free_tier": {
+    "stated": "512 MB data storage per free cluster (0.5 GB, uncompressed BSON + indexes); one free cluster per project; 250 projects per Atlas user and 250 per organization",
+    "unit": "objects",
+    "metered_on": "stored-bytes",
+    "source_url": "https://www.mongodb.com/docs/atlas/reference/free-shared-limitations/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://www.mongodb.com/docs/atlas/reference/free-shared-limitations/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://www.mongodb.com/docs/atlas/reference/free-shared-limitations/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Data transfer out is not the metered axis on M0 — there is no published egress allowance or overage for Free clusters; the limits that bite are 500 connections and 100 ops/sec. Effectively unmetered for read volume, which makes M0 unusual in this class.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Standard MongoDB drivers (pymongo, motor), `mongosh`, Atlas Data API (HTTPS), `mongodump`/`mongorestore`; GridFS for files >16 MB via pymongo's gridfs",
+  "chaining": "250 projects per user x 1 free cluster each x 512 MB = ~128 GB per Atlas account, and 250 organizations per user gives another axis. GridFS chunks (255 KB default) mean no practical per-object cap beyond the 512 MB total.",
+  "limits": [],
+  "limits_note": "512 MB total is tiny per unit — the whole value is the 250x multiplier. 100 ops/sec, 500 connections, no sharding, no configurable storage. Cluster creation is heavily rate-limited in practice (one free cluster per project, project creation itself throttled).",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Free clusters are shared and throttle at 100 ops/sec; a bulk-write workload will be visibly slow rather than failing. Data is 3-node replicated, no vanishing.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://www.mongodb.com/pricing",
+      "date": "2026-10-21",
+      "proved": "'M0 | 512 MB | Shared | Shared | Free forever'"
+    },
+    {
+      "url": "https://www.mongodb.com/docs/atlas/reference/free-shared-limitations/",
+      "date": "2026-10-21",
+      "proved": "'Free clusters: 0.5 GB ... all uncompressed BSON documents ... plus the bytes stored in their associated indexes'; 'only one Free cluster per project'"
+    },
+    {
+      "url": "https://www.mongodb.com/docs/atlas/reference/atlas-limits/",
+      "date": "2026-10-21",
+      "proved": "'Projects per Atlas User | 250', 'Projects per Atlas Organization | 250'"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "512 MB data storage per free cluster (0.5 GB, uncompressed BSON + indexes); one free cluster per project; 250 projects per Atlas user and 250 per organization",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "512 MB data storage per free cluster (0.5 GB, uncompressed BSON + indexes); one free cluster per project; 250 projects per Atlas user and 250 per organization",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": "no constraint of a named kind was recorded; the verdict rests on the quota sentence rather than on a named limit"
+}

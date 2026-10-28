@@ -1,0 +1,78 @@
+{
+  "topic": "crawler-scraper",
+  "slug": "commoncrawl",
+  "provider": "Common Crawl",
+  "url": "https://commoncrawl.org/",
+  "category": "archive",
+  "verdict": "qualifies-with-caveat",
+  "confidence": "measured",
+  "confidence_note": "",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "free_tier": {
+    "stated": "keyless index and WARC access",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://commoncrawl.org/",
+    "read_on": "2026-10-22",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: the unit is a WARC record",
+    "bytes": null,
+    "source_url": "https://commoncrawl.org/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "each crawl keeps its own index; up to 12 are asked",
+    "days": null,
+    "source_url": "https://commoncrawl.org/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not applicable: the archived body, read from a WARC",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://commoncrawl.org/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "Index API per crawl on index.commoncrawl.org; WARC files on data.commoncrawl.org",
+  "tooling": "not stated",
+  "chaining": "The last archive the broker asks, and the only one that can answer more true on an otherwise empty listing",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "about 1 request a second on the index, per the platform research report",
+      "source": "platform research report 2026-10-20-archive.md"
+    },
+    {
+      "kind": "request-rate",
+      "value": "a crawl index call is bounded at 5 s by the broker; the listing ends at 8 s",
+      "source": null
+    }
+  ],
+  "binding": "request-rate",
+  "limits_note": "",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "keyless",
+    "country": null
+  },
+  "reliability_note": "504 to a direct index call; 9 consecutive probe timeouts as of 02:50Z 2026-10-22",
+  "price_per_tb_month": null,
+  "evidence": [
+    {
+      "url": "https://index.commoncrawl.org/CC-MAIN-2026-38-index?url=example.com&output=json&limit=1",
+      "date": "2026-10-22",
+      "proved": "504 Gateway Time-out after 11.3 s from nginx: the index did not answer"
+    },
+    {
+      "url": null,
+      "date": "2026-10-22",
+      "proved": "state failing, 9 consecutive probe timeouts, the only provider not ok"
+    }
+  ],
+  "notes": "Degraded, not dead, and the distinction is the finding: the index answered 504 to a direct call and has failed nine broker probes in a row. A listing can return unknown for every crawl it could not read, so an empty answer is not evidence of absence."
+}

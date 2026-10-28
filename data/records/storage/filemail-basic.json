@@ -1,0 +1,81 @@
+{
+  "topic": "storage",
+  "slug": "filemail-basic",
+  "provider": "Filemail Basic",
+  "url": "https://www.filemail.com/plans/basic",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "5 GB of storage space and 5 GB max per transfer, on a free 1-user account.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://www.filemail.com/plans/basic",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap 5 GB",
+    "bytes": 5000000000,
+    "source_url": "https://www.filemail.com/plans/basic",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "per-object-cap 5 GB; retention 7 days file availability; pull-count 10 downloads per transfer; 3 recipients per transfer; 5 GB total storage per account.",
+    "days": 7,
+    "source_url": "https://www.filemail.com/plans/basic",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free within the plan; download count is the real meter (10 downloads per transfer).",
+    "metered": false
+  },
+  "interface": [
+    "s3",
+    "webdav",
+    "sftp",
+    "rclone"
+  ],
+  "interface_detail": "web + desktop app; no S3/WebDAV/SFTP on the free tier",
+  "tooling": "Filemail desktop app; no rclone backend",
+  "chaining": "5 GB storage x unlimited free 1-user accounts = trivially repeatable but each account is a 5 GB silo with 7-day file availability, so aggregate retention is worthless for archive. Would need 100+ accounts to reach 500 GB of *expiring* data.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "retention 7 days",
+      "source": "https://www.filemail.com/plans/basic"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap 5 GB",
+      "source": "https://www.filemail.com/plans/basic"
+    }
+  ],
+  "limits_note": "per-object-cap 5 GB; retention 7 days file availability; pull-count 10 downloads per transfer; 3 recipients per transfer; 5 GB total storage per account.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: 3 recipients per transfer; 5 GB total storage per account. anonymous-dump",
+    "country": null
+  },
+  "reliability_note": "Files disappear after 7 days regardless of account; download cap of 10 makes it unusable for serving.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://www.filemail.com/plans/basic",
+      "date": "2026-10-21",
+      "proved": "'We provide 5 GB of storage space and the ability to send and receive any file type, up to 5 GB in size', '7-Day File Availability', '10 Downloads Per Transfer', '3 Recipients Per Transfer'"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "5 GB of storage space and 5 GB max per transfer, on a free 1-user account.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "5 GB of storage space and 5 GB max per transfer, on a free 1-user account.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

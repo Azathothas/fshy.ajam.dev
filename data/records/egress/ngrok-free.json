@@ -1,0 +1,88 @@
+{
+  "topic": "egress",
+  "slug": "ngrok-free",
+  "provider": "ngrok",
+  "url": "https://ngrok.com/docs/pricing-limits/free-plan-limits",
+  "category": "tunnel (hosted)",
+  "free_tier": {
+    "stated": "1 GB out, 20,000 HTTP requests and 5,000 TCP connections per month; 3 endpoints",
+    "unit": "GB",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://ngrok.com/docs/pricing-limits/free-plan-limits",
+    "read_on": "2026-10-22",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: counted per month rather than per object",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "notes": "",
+    "source_url": "https://ngrok.com/docs/pricing-limits/free-plan-limits"
+  },
+  "egress": {
+    "terms": "metered at 1 GB/month, which is 33.3 MiB/day",
+    "metered": true,
+    "free_allowance": "1 GB/month",
+    "price_per_tb": "USD 0.10/GB",
+    "source_url": "https://ngrok.com/docs/pricing-limits/free-plan-limits"
+  },
+  "interface": [
+    "cli",
+    "rest"
+  ],
+  "tooling": "ngrok",
+  "chaining": "composes with an origin and no domain; the 1 GB monthly allowance is what stops it being the front of anything served.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "1 GB per month of data transfer out; 20,000 HTTP requests, 5,000 TCP connections, 10,000 log events and 500 webhook verifications per month",
+      "source": "https://ngrok.com/docs/pricing-limits/free-plan-limits"
+    },
+    {
+      "kind": "request-rate",
+      "value": "4,000 HTTP requests per minute and 100 TCP connections per minute, separate from the monthly quotas",
+      "source": "https://ngrok.com/docs/pricing-limits/free-plan-limits"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an ngrok account; TCP tunnels need a card on file",
+    "country": null
+  },
+  "reliability_note": "an interstitial page intercepts HTML browser traffic on the free tier",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://ngrok.com/docs/pricing-limits/free-plan-limits",
+      "date": "2026-10-22",
+      "proved": "Data transfer out 1 GB/month, 20,000 HTTP requests/month, 5,000 TCP connections/month, 3 endpoints and one dev domain"
+    },
+    {
+      "url": "https://ngrok.com/compare/wireguard",
+      "date": "2026-10-23",
+      "proved": "'No. ngrok supports HTTP, HTTPS, TCP, and TLS endpoints.'"
+    },
+    {
+      "url": "https://ngrok.com/docs/gateway/endpoints/protocols",
+      "date": "2026-10-23",
+      "proved": "endpoints are limited to http, https, tcp and tls"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "notes": "The record merged rate and quota into one request-rate entry. The docs separate three kinds of limit and the rate row is a distinct constraint that binds before the monthly count on a burst. Replaces the note about the vocabulary with the ratio and the documented consequence.",
+  "extras": {
+    "stale_after_days": 180,
+    "bytes_transit": "yes",
+    "transit_note": "the agent dials out and ngrok's edge relays the bytes, which is what the 1 GB monthly counter counts",
+    "ingress": "none"
+  },
+  "binding": "volume-quota",
+  "binding_note": "1 GB per month is about 1,100 times below 1 TiB, so the byte quota fails first by three orders of magnitude. The docs state the consequence as an upgrade recommendation rather than a throttle: once a limit is hit or the credit is gone, the endpoints stop being always available and the recommendation is to move to pay-as-you-go.",
+  "interface_detail": "ngrok http; the dev domain is <name>.ngrok-free.app",
+  "limits_note": "the allowance is a byte volume over a period, which none of the six kinds names; the number is in egress.free_allowance and binding names per-ip-shaping as the nearest kind. counts of things, not rates, so no vocabulary kind names them: 3 online endpoints and one dev domain per account"
+}

@@ -1,0 +1,77 @@
+{
+  "topic": "storage",
+  "slug": "common-crawl",
+  "provider": "Common Crawl (the petabyte corpus — read side only)",
+  "url": "https://commoncrawl.org/get-started",
+  "category": "academic",
+  "free_tier": {
+    "stated": "Not a hosting service: ~300 billion web pages across ~100+ monthly crawls, multi-petabyte, free to READ and free to re-host yourself. There is NO path to host your own data with Common Crawl — confirmed, it publishes its own crawls only.",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://commoncrawl.org/get-started",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://commoncrawl.org/get-started",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://commoncrawl.org/get-started",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and anonymous over HTTPS: 'The data is accessible via the https://data.commoncrawl.org/[...] URL scheme. There is no need to create an AWS account in order to access the data using this method.' S3 access (s3://commoncrawl) requires an authenticated AWS account. New: selected crawls are mirrored into a Hugging Face Storage Bucket with CDN pre-warming.",
+    "metered": false,
+    "source_url": "https://data.commoncrawl.org/["
+  },
+  "interface": [
+    "s3",
+    "cli"
+  ],
+  "interface_detail": "s3",
+  "tooling": "wget/curl against data.commoncrawl.org, aws-cli against s3://commoncrawl (auth), the pycrawl / cc-index-table Athena tooling, and now `hf buckets cp hf://buckets/commoncrawl/commoncrawl/...`.",
+  "chaining": "Read-side: any amount of free inbound bandwidth for corpus you would otherwise have to build. The useful pattern for a user is the reverse of storage — Common Crawl is the SOURCE that makes a 200 GB Kaggle/generic pipeline interesting without owning a petabyte.",
+  "limits": [],
+  "limits_note": "WARC files are ~1 GB each, ~300k of them; us-east-1 locality strongly recommended ('It's mandatory to access the data from the region where it is located'); the public S3 listing at commoncrawl.s3.amazonaws.com returns 403 to unauthenticated callers (probed) — use HTTPS or HF instead.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "inferred from the category 'academic'; the source record states no identity cost, so this is a class assumption, not evidence",
+    "country": null
+  },
+  "reliability_note": "Extremely stable (running since 2008, sponsored by AWS), immutable crawl archives, no access throttling observed on the HTTPS path.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://commoncrawl.org/get-started",
+      "date": "2026-10-21",
+      "proved": "'There is no need to create an AWS account in order to access the data using this method'; 'access to data from the Amazon cloud using the S3 API is only allowed for authenticated users'"
+    },
+    {
+      "url": "https://data.commoncrawl.org/crawl-data/CC-MAIN-2026-17/warc.paths.gz",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, 201,605 bytes, gzip (anonymous listing manifest)"
+    },
+    {
+      "url": "https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2026-17/warc.paths.gz",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 403 (S3 path is auth-only)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Not a hosting service: ~300 billion web pages across ~100+ monthly crawls, multi-petabyte, free to READ and free to re-host yourself. There is NO path to host your own data with Common Crawl — confirmed, it publishes its own crawls only.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "Not a hosting service: ~300 billion web pages across ~100+ monthly crawls, multi-petabyte, free to READ and free to re-host yourself. There is NO path to host your own data with Common Crawl — confirmed, it publishes its own crawls only.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": "no constraint of a named kind was recorded; the verdict rests on the quota sentence rather than on a named limit"
+}

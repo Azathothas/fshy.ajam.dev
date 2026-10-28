@@ -1,0 +1,98 @@
+{
+  "topic": "crawler-scraper",
+  "slug": "jina-reader",
+  "provider": "Jina Reader",
+  "url": "https://jina.ai/reader/",
+  "category": "reader and extractor API",
+  "verdict": "qualifies",
+  "confidence": "measured",
+  "confidence_note": "",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "free_tier": {
+    "stated": "r.jina.ai is free at 20 requests a minute with no key; a free API key raises it to 500 RPM and carries 10M tokens",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://jina.ai/reader/",
+    "read_on": "2026-10-22",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: the unit is a request, billed in output tokens once a key is used",
+    "bytes": null,
+    "source_url": "https://jina.ai/reader/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "10M tokens per new key, one-time",
+    "days": null,
+    "source_url": "https://jina.ai/reader/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not applicable: Markdown answers",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://jina.ai/reader/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "GET https://r.jina.ai/<url>; search at s.jina.ai; token budget per request",
+  "tooling": "Apache-2.0 source; Readability over linkedom; pdfjs-dist",
+  "chaining": "Read step 2 in the broker's ladder; the only keyless renderer found",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "20 RPM keyless, 500 RPM with a free key, 5,000 RPM premium",
+      "source": "https://jina.ai/reader/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "10M free tokens per new key, counted on the output response",
+      "source": "https://jina.ai/reader/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "a per-request token budget header bounds the answer; the OCR path costs 40 times more tokens",
+      "source": "https://jina.ai/reader/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "20 requests a minute per IP keyless, reported in x-ratelimit-limit as `20, 20;w=60`; a domain can be blocked for a year or more after excess use",
+      "source": "https://r.jina.ai/https://www.nodeseek.com/post-918318-1"
+    }
+  ],
+  "binding": "per-ip-shaping",
+  "limits_note": "",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "the keyless route needs nothing; a key is an account",
+    "country": null
+  },
+  "reliability_note": "A domain can be blocked for years after excess use: nodeseek.com answered 403 with a block dated 2027-07-02. Page text arrives with the page's own instructions to models intact, so it must be treated as data.",
+  "price_per_tb_month": null,
+  "evidence": [
+    {
+      "url": "https://jina.ai/reader/",
+      "date": "2026-10-22",
+      "proved": "Reader API free; 20 RPM without an API key, 500 RPM with a free key, 5000 with premium; 10M free tokens per new key; s.jina.ai 100 RPM with a free key"
+    },
+    {
+      "url": "https://r.jina.ai/https://example.com/",
+      "date": "2026-10-22",
+      "proved": "200, 460 bytes, 0.9 s, keyless, Markdown with a title and a published time; the body carried two warnings about the page maybe not being fully loaded"
+    },
+    {
+      "url": "https://r.jina.ai/https://linux.do/",
+      "date": "2026-10-22",
+      "proved": "200, 30,172 bytes, 1,288 whitespace tokens, keyless, of a forum the broker's own read answers only through a provider with upstream_status 403; x-ratelimit-limit reads `20, 20;w=60` and x-usage-tokens 28 on a small page"
+    },
+    {
+      "url": "https://r.jina.ai/https://linux.do/t/topic/49044",
+      "date": "2026-10-22",
+      "proved": "200, a whole 2024 thread with every post body, 19 posts with author and date; the answer also carries the forum's own all-caps instruction block addressed to language models, so the page text is untrusted input"
+    }
+  ],
+  "notes": "The strongest keyless read leg found in this topic and the one that changes the escalation ladder: it read linux.do and a 2024 linux.do thread whole, keyless, where the broker's own read needed a provider and reported upstream_status 403. It is not universal. It refused www.nodeseek.com with a 403 AbuseAlleviationError stating the domain is blocked until 2027-07-02 after suspected excess use, so a per-domain block is the failure mode and it outlasts any retry budget. Every answer is a third party's rendering, so a number read from it is reported, not documented, until the origin confirms it."
+}

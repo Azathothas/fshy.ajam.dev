@@ -1,0 +1,77 @@
+{
+  "topic": "storage",
+  "slug": "f-droid",
+  "provider": "F-Droid (f-droid.org/repo APK archive)",
+  "url": "https://f-droid.org",
+  "category": "paas",
+  "free_tier": {
+    "stated": "No published total or per-app byte quota. The archive is large and browsable: index-v2.json is 66,480,070 bytes and a single APK (org.fdroid.fdroid) is 12,426,276 bytes. Builds are produced by F-Droid's own build farm from source in fdroiddata; the 24-48 h publish latency is due to human keystore signing.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://f-droid.org/docs/Submitting_to_F-Droid_Quick_Start_Guide/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://f-droid.org/docs/Submitting_to_F-Droid_Quick_Start_Guide/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "per-object-cap: none documented for the published APK; the build environment is documented in GB terms (1000 MB container, 800 MB build, 4000 MB for the large path) which caps what can be built. retention: indefinite - F-Droid keeps all published versions",
+    "source_url": "https://f-droid.org/docs/Submitting_to_F-Droid_Quick_Start_Guide/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free. Mirrored via f-droid.org and third-party mirrors. No billing.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "`fdroid` CLI (fdroidserver), the repo is a plain signed index (index-v2.json / index-v2.jar) with APKs at /repo/<pkg>_<vc>.apk. Clients: `fdroid`, vanilla Android F-Droid client. No rclone backend.",
+  "chaining": "unlimited apps x unlimited versions (every published version stays in /repo, keyed by versionCode). Multiply by unlimited GitLab/Codeberg source repos and unlimited forks. But each app is reviewed and built by F-Droid's farm - so this is a per-app, human-gated store, not an arbitrary-blob host.",
+  "limits": [],
+  "limits_note": "per-object-cap: none documented for the published APK; the build environment is documented in GB terms (1000 MB container, 800 MB build, 4000 MB for the large path) which caps what can be built. retention: indefinite - F-Droid keeps all published versions. request-rate: not documented on the docs page read.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Fully programmatic on the read side (static index + APKs, range-capable in principle), but the write side is a merge request into fdroiddata built on F-Droid's farm with human keystore signing - 24-48 h latency. Cannot store arbitrary blobs; must be an Android app build.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://f-droid.org/repo/index-v2.json",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, 66,480,070 bytes (full repo index, anonymous)"
+    },
+    {
+      "url": "https://f-droid.org/repo/org.fdroid.fdroid_1023051.apk",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, 12,426,276 bytes"
+    },
+    {
+      "url": "https://f-droid.org/docs/Submitting_to_F-Droid_Quick_Start_Guide/",
+      "date": "2026-10-21",
+      "proved": "build environment sizes 60/75/1000/800/4000 MB; 'around 24 to 48 hours' from merge to appearance"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published total or per-app byte quota. The archive is large and browsable: index-v2.json is 66,480,070 bytes and a single APK (org.fdroid.fdroid) is 12,426,276 bytes. Builds are produced by F-Droid's own build farm from source in fdroiddata; the 24-48 h publish latency is due to human keystore signing.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "No published total or per-app byte quota. The archive is large and browsable: index-v2.json is 66,480,070 bytes and a single APK (org.fdroid.fdroid) is 12,426,276 bytes. Builds are produced by F-Droid's own build farm from source in fdroiddata; the 24-48 h publish latency is due to human keystore signing.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": "no constraint of a named kind was recorded; the verdict rests on the quota sentence rather than on a named limit"
+}

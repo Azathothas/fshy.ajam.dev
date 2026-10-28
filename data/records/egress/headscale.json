@@ -1,0 +1,71 @@
+{
+  "topic": "egress",
+  "slug": "headscale",
+  "provider": "Headscale",
+  "url": "https://github.com/juanfont/headscale",
+  "category": "mesh control plane (self-hosted)",
+  "free_tier": {
+    "stated": "BSD-3 control server for Tailscale clients, with no node cap",
+    "unit": "unlimited",
+    "metered_on": "identity-count",
+    "source_url": "https://github.com/juanfont/headscale",
+    "read_on": "2026-10-22",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "notes": "",
+    "source_url": "https://github.com/juanfont/headscale"
+  },
+  "egress": {
+    "terms": "signalling only once peers connect directly; DERP relay only when they do not",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://github.com/juanfont/headscale"
+  },
+  "interface": [
+    "cli"
+  ],
+  "tooling": "tailscale clients against headscale",
+  "chaining": "signalling for a private mesh: it composes with the client's own machines and carries no bytes once they hole-punch.",
+  "limits": [],
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "the software needs no account",
+    "country": null
+  },
+  "reliability_note": "the control server's uptime is the constraint",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://github.com/juanfont/headscale",
+      "date": "2026-10-22",
+      "proved": "BSD-3 control server with no node limit stated"
+    },
+    {
+      "url": "https://kf8edq.dev/",
+      "date": "2026-10-23",
+      "proved": "a public headscale instance advertising 'Active Nodes 4 / 5 total' and an authkey join flow, with no service-publishing feature, read through the search index"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "notes": "2026-10-23: public instances exist and carry no ingress. One public control server, headscale.kf8edq.dev, publishes join keys and shows 'Active Nodes 4 / 5 total', so the free public instance is a 5-node control plane with no public listener of any kind. A control plane distributes keys and endpoints; the payload never touches it, which is why headscale cannot satisfy ingress test at any size. Re-graded 2026-10-23: the software is free and the path is not, because it needs a host. The finding is the host.",
+  "extras": {
+    "stale_after_days": 180,
+    "bytes_transit": "no",
+    "transit_note": "a control server for Tailscale clients: it distributes keys and endpoints and sees no payload",
+    "hosting_requirement": "a rented or free compute service"
+  },
+  "binding": "volume-quota",
+  "interface_detail": "tailscale up --login-server against your own headscale",
+  "confidence_note": "no probe: a control server was not stood up. The claim rests on the project page, and the read path a client would take is the Tailscale one measured in `tailscale-personal`",
+  "binding_note": "the software imposes no byte meter; what runs out is the monthly egress allowance of the host it runs on, and that host is a separate provider"
+}

@@ -1,0 +1,75 @@
+{
+  "topic": "storage",
+  "slug": "data-gov-ro",
+  "provider": "data.gov.ro (Romania national portal)",
+  "url": "https://data.gov.ro/",
+  "category": "gov-ckan-portal",
+  "free_tier": {
+    "stated": "5,255 datasets across 181 organisations. Files are hosted on-portal, not linked out: resources resolve to /dataset/<uuid>/resource/<uuid>/download/<name>.xls. No per-user quota is published.",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://data.gov.ro/pages/publish",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://data.gov.ro/pages/publish",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://data.gov.ro/pages/publish",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "unmetered public GET on the download path, no token, no egress metering.",
+    "metered": false
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "CKAN 2.x action API, fully live (package_search returns 200).",
+  "tooling": "curl + CKAN API key. Session-based upload via /dataset/new.",
+  "chaining": "none meaningful — the write path is not reachable without an institutional organisation.",
+  "limits": [],
+  "limits_note": "write-gated at the organisation level. `/user/register` is a plain open form (username, full name, email, password) with NO invitation code, but `POST /api/3/action/organization_create` unauthenticated returns `Acces interzis: Action organization_create is not authorized`. Publishing is per the national Law 179/2022 open-data regime, i.e. public bodies.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email",
+    "country": null
+  },
+  "reliability_note": "state-run, stable, but the account you can create is a consumer account: it grants no organisation, and a dataset with no owner_org is not creatable by a non-sysadmin.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://data.gov.ro/api/3/action/package_search?rows=1",
+      "date": "2026-10-21",
+      "proved": "HTTP 200, count 5255; resource URLs are https://data.gov.ro/dataset/.../download/... i.e. self-hosted bytes"
+    },
+    {
+      "url": "https://data.gov.ro/user/register",
+      "date": "2026-10-21",
+      "proved": "HTTP 200, plain form: Username / Nume complet / E-mail / Parolă / Confirmare, no invite field"
+    },
+    {
+      "url": "https://data.gov.ro/api/3/action/organization_create",
+      "date": "2026-10-21",
+      "proved": "POST (unauthenticated) — {\"success\": false, \"error\": {\"message\": \"Acces interzis: Action organization_create\"}}"
+    }
+  ],
+  "verdict": "fails-identity",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "5,255 datasets across 181 organisations. Files are hosted on-portal, not linked out: resources resolve to /dataset/<uuid>/resource/<uuid>/download/<name>.xls. No per-user quota is published.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "5,255 datasets across 181 organisations. Files are hosted on-portal, not linked out: resources resolve to /dataset/<uuid>/resource/<uuid>/download/<name>.xls. No per-user quota is published.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": "the quota is real and unreachable: identity is the binding constraint, and it is not one of the six limits kinds"
+}

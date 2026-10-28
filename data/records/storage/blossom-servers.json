@@ -1,0 +1,89 @@
+{
+  "topic": "storage",
+  "slug": "blossom-servers",
+  "provider": "Blossom servers (blossom.band / blossom.nostr.build, run by nostr.build)",
+  "url": "https://blossom.band/",
+  "category": "media",
+  "free_tier": {
+    "stated": "'Free uploads for everyone, from any Blossom-capable client.' 'A hard cap of 100 MiB per upload (20 MiB for free uploads), with no limit on the number of uploads or retention.'",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://blossom.band/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "100 MiB per upload",
+    "bytes": 104857600,
+    "source_url": "https://blossom.band/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "'Free uploads for everyone, from any Blossom-capable client.' 'A hard cap of 100 MiB per upload (20 MiB for free uploads), with no limit on the number of uploads or retention.'",
+    "source_url": "https://blossom.band/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "unmetered, direct CDN URLs, CORS '*'. Reads 307-redirect to image.nostr.build which serves with Accept-Ranges and 206.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Blossom protocol: PUT /upload with an 'Authorization: Nostr <base64 kind-24242 event>' header signed by any self-generated secp256k1 key — no signup, no account, no email. Any Nostr client (Amethyst, Coracle, nak, blossom-server CLI) speaks it.",
+  "chaining": "Identity is a pubkey you generate offline in one line of code — unlimited free identities, zero cost, zero email. Each pubkey gets its own npub1....blossom.band hostname at upload time. 20 MiB x unlimited uploads x unlimited pubkeys. At 19 MiB per object, 10 TiB = ~550,000 uploads across ~550k keys, or a few thousand keys each doing 100 uploads.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "100 MiB per upload",
+      "source": "https://blossom.band/"
+    },
+    {
+      "kind": "write-gated",
+      "value": "application/zip and application/octet-stream were both 415 'File type not allowed'",
+      "source": "https://blossom.band/"
+    },
+    {
+      "kind": "write-gated",
+      "value": "application/octet-stream got 400 'Content-Type header does not match the file content'",
+      "source": "https://blossom.band/"
+    }
+  ],
+  "limits_note": "per-object-cap: 20 MiB for free uploads (100 MiB only on the $18/yr plan); I measured 15 MiB accepted and 25 MiB rejected with 413 'File size exceeds the maximum allowed size of 20 MiB'. Type gate is real and content-sniffed: application/zip and application/octet-stream were both 415 'File type not allowed'; PNG bytes sent with Content-Type: application/octet-stream got 400 'Content-Type header does not match the file content'. retention: none stated, 'no limit on ... retention'.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: er-object-cap: 20 MiB for free uploads (100 MiB only on the $18/yr plan); I measured 15 MiB accepted and 25 MiB rejected with 413 'File size exceeds the maximum allowed size of 20 Mi",
+    "country": null
+  },
+  "reliability_note": "A ~19 MiB upload returned HTTP 500 'Error uploading the file: unknown error' while 5 and 15 MiB succeeded, so the usable ceiling is somewhat below the advertised 20 MiB; one 5 MiB upload took 14 s from the client.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://blossom.band/",
+      "date": "2026-10-21",
+      "proved": "'Free uploads for everyone, from any Blossom-capable client'; 'A hard cap of 100 MiB per upload (20 MiB for free uploads), with no limit on the number of uploads or retention'"
+    },
+    {
+      "url": "https://blossom.band/upload",
+      "date": "2026-10-21",
+      "proved": "probe: PUT with self-signed kind-24242 auth -> 201 CREATED, url https://npub1n33yj...blossom.band/<sha256>.png, then GET -L -> 200, 1266 bytes, sha256 identical to uploaded file"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: 15,728,509-byte PNG -> 201; 26,214,269-byte PNG -> 413 'File size exceeds the maximum allowed size of 20 MiB'; probe GET with Range: bytes=1000-1099 -> 206 Content-Range: bytes 1000-1099/5242749"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "'Free uploads for everyone, from any Blossom-capable client.' 'A hard cap of 100 MiB per upload (20 MiB for free uploads), with no limit on the number of uploads or retention.'",
+  "extras": {
+    "verdict_note": null,
+    "unit_note": "free_tier.unit is 'mixed' because the headline is denominated in MiB or KiB, which the schema enum does not carry; the verbatim free_tier.stated keeps the true unit. See the storage-dossier handover."
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

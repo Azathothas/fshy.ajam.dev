@@ -1,0 +1,89 @@
+{
+  "topic": "egress",
+  "slug": "remote-it",
+  "provider": "Remote.It",
+  "url": "https://docs.remote.it/features/services/udp",
+  "category": "overlay (device network, not a public relay)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Every plan includes 5 base devices per account",
+    "unit": "users",
+    "metered_on": "identity-count",
+    "source_url": "https://remote.it/pricing/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://docs.remote.it/features/services/udp",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://docs.remote.it/features/services/udp",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "no byte quota is published for the free tier; the metered resource is devices, five of them; ingress: none",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://docs.remote.it/features/services/udp"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "the remoteit agent registers services; access is through the client's local proxy address",
+  "tooling": "remoteit and connectd packages, desktop and mobile clients",
+  "chaining": "composes with a fleet of devices you control; does not compose with an arbitrary WireGuard peer",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "the peer must run the remote.it agent and be granted access; there is no anonymous public port",
+      "source": "https://docs.remote.it/features/services/udp"
+    }
+  ],
+  "limits_note": "",
+  "binding": "write-gated",
+  "binding_note": "No quantity binds because the address is not public: the access grant is the gate, and a WireGuard peer that is not a remote.it device cannot reach the service at all.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an account with devices registered to it; the free tier is five devices",
+    "country": "None"
+  },
+  "reliability_note": "connections depend on the vendor's connection broker and on the client agent running on the peer",
+  "confidence": "documented",
+  "confidence_note": "Raise by registering a UDP service and attempting a datagram from a host that is not enrolled in the account, which the documentation says cannot work.",
+  "evidence": [
+    {
+      "url": "https://docs.remote.it/features/services/udp",
+      "date": "2026-10-23",
+      "proved": "'Create a Remote.It UDP service on any port you need', with no default UDP port"
+    },
+    {
+      "url": "https://docs.remote.it/introduction/get-started",
+      "date": "2026-10-23",
+      "proved": "'we provide a local device or proxy address and port where all traffic will be routed to the target device and port'"
+    },
+    {
+      "url": "https://remote.it/pricing/",
+      "date": "2026-10-23",
+      "proved": "'Every plan includes 5 base devices per account'"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Recorded because brief asks for it and because UDP support here is real enough to mislead a reader who sees 'UDP' and stops. It is an overlay with an authenticated client, which is the same shape as Tailscale or NetBird and not the shape of ingress.",
+  "extras": {
+    "wg_path": "none",
+    "wg_detail": "UDP services exist but are reached through the client's own local proxy, not a public address: 'we provide a local device or proxy address and port where all traffic will be routed to the target device and port'. A peer must run the agent and authenticate.",
+    "ingress": "none",
+    "volume_tib_month": null,
+    "volume_stated": "no byte quota is published for the free tier; the metered resource is devices, five of them",
+    "bytes_transit": "overlay-only",
+    "transit_note": "traffic is proxied between enrolled devices, not published on a public port"
+  }
+}

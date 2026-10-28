@@ -1,0 +1,106 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "baidu-pan",
+  "provider": "Baidu Pan (百度网盘)",
+  "url": "https://pan.baidu.com",
+  "category": "consumer-pan",
+  "free_tier": {
+    "stated": "300 GB after a mobile-client login; 100 GB on registration alone: '用户注册即有100G云空间，在手机客户端登录则升级为300G'",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://zh.wikipedia.org/wiki/中国大陆网盘列表",
+    "read_on": "2026-10-21"
+  },
+  "per_object_cap": {
+    "stated": "1 GB per file on the web uploader, 4 GB on the desktop client, 10 GB on VIP and 20 GB on SVIP",
+    "bytes": 1000000000,
+    "source_url": "https://pan.baidu.com/disk/help"
+  },
+  "retention": {
+    "stated": "Trash holds deleted files for 10 days. The free allowance was cut from 2 TB to 100 GB in 2020 for accounts not logged in for two years",
+    "days": null,
+    "source_url": "https://www.ithome.com/0/511/746.htm"
+  },
+  "egress": {
+    "terms": "Metered by throttle rather than by byte: non-member downloads are capped around 0.1 MB/s and anything sizeable needs the desktop or mobile client",
+    "metered": true,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://zh.wikipedia.org/wiki/中国大陆网盘列表"
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "an official open platform with OAuth 2.0 at pan.baidu.com/union/doc, for example GET /api/quota with an access token returning total, free and used in bytes; the OpenList BaiduNetdisk driver; a Baidu developer app is required",
+  "chaining": "300 GB per Baidu account and Baidu accounts need a phone number. At 0.1 MB/s the non-member throttle makes even 500 GB a day impossible, so the read path fails independently of the quota",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "about 0.1 MB/s on a non-member download",
+      "source": "https://zh.wikipedia.org/wiki/中国大陆网盘列表"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "1 GB per file on web, 4 GB on the desktop client, free",
+      "source": "https://pan.baidu.com/disk/help"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "the free allowance drops to 100 GB for accounts idle for two years",
+      "source": "https://www.ithome.com/0/511/746.htm"
+    }
+  ],
+  "identity_cost": {
+    "kind": "country-phone",
+    "detail": "a Chinese mobile number. The open platform adds a developer app on top",
+    "country": "86"
+  },
+  "reliability_note": "Content scanning applies even to private files: matching files become unreadable for the uploader too. The free tier is effectively read-only at serving scale. The guest share path gets further than expected and then stops: /share/verify returns errno 0 with a randsk cookie and the page renders the real file tree, but /share/list answers errno 2 and every byte path needs BDUSS",
+  "confidence": "reported",
+  "evidence": [
+    {
+      "url": "https://zh.wikipedia.org/wiki/中国大陆网盘列表",
+      "date": "2026-10-21",
+      "proved": "table row '百度网盘, 300G, 无, 有, 有, 0.1M/s, 是, 是' and '注册即有100G云空间，在手机客户端登录则升级为300G'"
+    },
+    {
+      "url": "https://pan.baidu.com/disk/help",
+      "date": "2026-10-21",
+      "proved": "'普通用户使用百度网盘Web端上传文件时，单文件最大支持1G' desktop client 4 GB; VIP 10 GB; SVIP 20 GB"
+    },
+    {
+      "url": "https://www.ithome.com/0/511/746.htm",
+      "date": "2026-10-21",
+      "proved": "'若过去两年未登录过，免费空间将从 2TB 调整为 100GB'"
+    },
+    {
+      "url": "probe:POST https://pan.baidu.com/share/verify?surl=RK7uBqaqgqJHLJbadXI48g",
+      "date": "2026-10-21",
+      "proved": "200 with {\"errno\":0,\"randsk\":\"oMkK%2Fo1NQiRi7U58...\"}, so the passcode gate opens a guest session"
+    },
+    {
+      "url": "probe:GET https://pan.baidu.com/share/list?uk=858219170&shareid=47786905570",
+      "date": "2026-10-21",
+      "proved": "200 with {\"errno\":2,\"show_msg\":\"啊哦，链接出错了\"} for the same uk and shareid the page rendered"
+    },
+    {
+      "url": "probe:GET https://pan.baidu.com/rest/2.0/xpan/multimedia",
+      "date": "2026-10-21",
+      "proved": "{\"errmsg\":\"Invalid Bduss\",\"errno\":-6}, so every byte path needs a logged-in session"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "binding": "per-ip-shaping",
+  "binding_note": "300 GB is 60% of the filter and 0.1 MB/s is 8.6 GB a day, so the throttle binds first: the corpus would need 116 days of continuous reading to serve one day's target.",
+  "notes": "One record for the provider and its two seed sub-findings, the 2 TB to 100 GB cut and the anonymous share path. The anonymous path is the more interesting of the two: it proves the share metadata is public and the bytes are not, which is the pattern the whole topic is built on.",
+  "extras": {
+    "access_mode": "registration-gated",
+    "anonymous_read": "metadata yes, bytes no",
+    "aliases": [
+      "Baidu Pan / 百度网盘"
+    ],
+    "cross_topic_record": "dossier/storage/baidu-pan.json",
+    "cross_topic_note": "A record for this provider already exists under the storage topic; this one is scoped to its role as a pan, following the same split dossier/netdisk-pan/lanzou.json uses."
+  }
+}

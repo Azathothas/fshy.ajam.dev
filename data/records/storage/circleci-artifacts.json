@@ -1,0 +1,89 @@
+{
+  "topic": "storage",
+  "slug": "circleci-artifacts",
+  "provider": "CircleCI artifacts",
+  "url": "https://circleci.com",
+  "category": "paas",
+  "free_tier": {
+    "stated": "No storage quota advertised on Free (30,000 credits/month). Artifact retention default AND maximum is 30 days on Cloud; storage usage is a billed meter, not an allowance.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://circleci.com/docs/guides/optimize/artifacts/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://circleci.com/docs/guides/optimize/artifacts/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Artifact retention default AND maximum is 30 days on Cloud; storage usage is a billed meter, not an allowance",
+    "days": 30,
+    "source_url": "https://circleci.com/docs/guides/optimize/artifacts/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free download from app.circleci.com; artifacts are 'protected with your CircleCI account for private projects' — public-project artifacts are reachable, private are not.",
+    "metered": false
+  },
+  "interface": [
+    "s3",
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "REST v2 artifacts endpoint; artifacts stored on Amazon S3 behind CircleCI. No rclone backend, no first-class bulk client.",
+  "chaining": "Unlimited projects x 3 GB per file, but the 30-day hard ceiling makes this a rolling buffer, not storage.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "retention default AND maximum is 30 days",
+      "source": "https://circleci.com/docs/guides/optimize/artifacts/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "retention 30 days",
+      "source": "https://circleci.com/docs/guides/optimize/artifacts/"
+    }
+  ],
+  "limits_note": "3 GB max per individual artifact file; retention 30 days maximum (workspaces/caches 15 days max); storage beyond plan is billed.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "30-day deletion is unconditional and irreversible. Purely a CI convenience store.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://circleci.com/docs/guides/optimize/artifacts/",
+      "date": "2026-10-21",
+      "proved": "'Individual artifact files have a maximum size limit of 3GB'; 'By default, artifact storage duration is set to 30 days ... Currently, 30 days is also the maximum storage duration you can set'"
+    },
+    {
+      "url": "https://circleci.com/docs/guides/optimize/persist-data/",
+      "date": "2026-10-21",
+      "proved": "'Artifacts (default and maximum is 30 days)'"
+    },
+    {
+      "url": "https://circleci.com/pricing/",
+      "date": "2026-10-21",
+      "proved": "Free plan, 30,000 credits"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No storage quota advertised on Free (30,000 credits/month). Artifact retention default AND maximum is 30 days on Cloud; storage usage is a billed meter, not an allowance.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "retention",
+      "why": "No storage quota advertised on Free (30,000 credits/month). Artifact retention default AND maximum is 30 days on Cloud; storage usage is a billed meter, not an allowance.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "retention-clamped",
+  "binding_note": "a clock, not a quota: bytes leave whether or not the client is finished with them"
+}

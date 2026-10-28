@@ -1,0 +1,99 @@
+{
+  "topic": "egress",
+  "slug": "hoppy",
+  "provider": "Hoppy Network",
+  "url": "https://hoppy.network/pricing/",
+  "category": "public IPv4 over WireGuard",
+  "tier": "standard",
+  "free_tier": {
+    "stated": "STANDARD $8/mo: '1 IPv4 Address', '/56 IPv6 Network', '1 TB Monthly data', '100/100 Mbps'. No free plan is listed.",
+    "unit": "TB",
+    "metered_on": "unstated",
+    "source_url": "https://hoppy.network/docs/frequently-asked-questions/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://hoppy.network/pricing/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://hoppy.network/pricing/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "'We calculate the limit using the sum of bytes transferred in and bytes transferred out, as reported by the WireGuard tunnel.' 1 TB per month on STANDARD, 3 TB on PLUS.; ingress: tcp+udp",
+    "metered": true,
+    "free_allowance": "'We calculate the limit using the sum of bytes transferred in and bytes transferred out, as reported by the WireGuard tunnel.' 1 TB per month on STANDARD, 3 TB on PLUS.",
+    "price_per_tb": null,
+    "source_url": "https://hoppy.network/pricing/"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "'download the configuration file. Import the configuration file into your client and activate the interface.'",
+  "tooling": "any WireGuard client (wg-quick, the official apps), the Hoppy dashboard",
+  "chaining": "replaces the VPS in the Pangolin/Wiredoor/Wireport chain with a rented address, so it removes the server to patch and keeps the port-opening job",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "1 TB per month on STANDARD, counted as bytes in plus bytes out",
+      "source": "https://hoppy.network/pricing/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "100/100 Mbps on STANDARD; after the quota is exceeded the interface is 'rate-limited to anywhere between 64 kbps and 256 kbps'",
+      "source": "https://hoppy.network/docs/frequently-asked-questions/"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "1 TB per month on Standard, counted in and out",
+      "source": "https://hoppy.network/docs/frequently-asked-questions/"
+    }
+  ],
+  "limits_note": "",
+  "binding": "volume-quota",
+  "binding_note": "1 TB counted as in plus out is 0.6 TB each way, which at 3.24 Mbit/s sustained is about 34 days of the client's 1 TiB/month target, and the count is bidirectional so the usable one-way figure is half the headline. The 100 Mbps rate is 32.4 TB/day, so the quota binds long before the rate.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "a Hoppy account plus a paid plan; the pricing page lists card checkout through Stripe Portal and no free tier",
+    "country": "None"
+  },
+  "reliability_note": "exceeding the quota does not cut the tunnel, it shapes it to 64-256 kbps, which keeps SSH and SMTP alive and makes bulk transfer impractical",
+  "confidence": "documented",
+  "confidence_note": "A transfer through a provisioned interface would raise this to measured and would confirm that inbound ports really are open.",
+  "evidence": [
+    {
+      "url": "https://hoppy.network/pricing/",
+      "date": "2026-10-23",
+      "proved": "STANDARD $8/mo with 1 TB monthly data and 100/100 Mbps; PLUS $16/mo with 3 TB; no free plan on the page"
+    },
+    {
+      "url": "https://hoppy.network/docs/wireguard-config/quickstart.html",
+      "date": "2026-10-23",
+      "proved": "a downloadable WireGuard configuration file and 'Your device is now using the Hoppy Public IP address for all incoming and outgoing traffic!'"
+    },
+    {
+      "url": "https://hoppy.network/docs/frequently-asked-questions/",
+      "date": "2026-10-23",
+      "proved": "'Do you block ports on the tunnels? Nope'; over-limit shaping to 64-256 kbps; the limit counts bytes in plus bytes out"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 8 per month",
+  "notes": "The only provider where a standard .conf plus a real public IPv4 plus no port blocking was all stated first-party. It fails the free test, not the technical one: at USD 8/mo for 1 TB it is the cheapest documented route to a public address that carries UDP. metered_on is recorded as unstated because the vocabulary has no token for a bidirectional sum; the vendor sentence is in volume_stated. At 256 kbps that is 2.76 GB/day, which is 0.08 TiB/month: unusable for the stated workload and enough for SSH. Yggdrasil traffic on the private relay is not counted toward the cap.",
+  "extras": {
+    "wg_path": "native-conf",
+    "wg_detail": "'Create a New Interface, making sure to select Generate Client Keypair. Click Modify on the provisioned interface, then download the configuration file. Import the configuration file into your client.' The vendor then states: 'Your device is now using the Hoppy Public IP address for all incoming and outgoing traffic!'",
+    "ingress": "tcp+udp",
+    "volume_tib_month": 0.909,
+    "volume_stated": "'We calculate the limit using the sum of bytes transferred in and bytes transferred out, as reported by the WireGuard tunnel.' 1 TB per month on STANDARD, 3 TB on PLUS.",
+    "bytes_transit": "yes",
+    "transit_note": "Hoppy terminates the WireGuard tunnel on its own address, so every byte crosses its network"
+  }
+}

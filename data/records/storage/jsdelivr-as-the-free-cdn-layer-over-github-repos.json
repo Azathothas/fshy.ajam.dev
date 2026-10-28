@@ -1,0 +1,75 @@
+{
+  "topic": "storage",
+  "slug": "jsdelivr-as-the-free-cdn-layer-over-github-repos",
+  "provider": "jsDelivr as the free CDN layer over GitHub repos",
+  "url": "https://www.jsdelivr.com",
+  "category": "paas",
+  "free_tier": {
+    "stated": "Not storage, it is the egress answer for the serving workload: \"there are no limits on bandwidth or number of requests\" (the provider), with soft limits of 10,000 actively accessed files and 100,000 files per repository.",
+    "unit": "objects",
+    "metered_on": "stored-bytes",
+    "source_url": "https://www.jsdelivr.com/terms/acceptable-use-policy",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per file | 20 MB",
+    "bytes": 20000000,
+    "source_url": "https://www.jsdelivr.com/terms/acceptable-use-policy",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "| Immutable: 'Previously served immutable files may be retained in permanent storage even after upstream deletion' — deletion upstream does not remove it from jsDelivr",
+    "source_url": "https://www.jsdelivr.com/terms/acceptable-use-policy",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered, and immutable-cached at the edge: probed 'Cache-Control: public, max-age=31536000, s-maxage=31536000, immutable' plus Access-Control-Allow-Origin: *. This cleanly covers the 500 GB-1 TiB/day serving workload from a single repo without touching GitHub's own edge.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "URL pattern https://cdn.jsdelivr.net/gh/USER/REPO@TAG/path — no client needed, no auth, no config. Purge API exists for cache busting.",
+  "chaining": "Serving layer only: pair it with Releases (storage) or a git repo (small files). One repo backs 1 TiB/day because the edge absorbs repeats with a 1-year immutable TTL.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per file | 20 MB",
+      "source": "https://www.jsdelivr.com/terms/acceptable-use-policy"
+    }
+  ],
+  "limits_note": "Git repo files only — release assets are NOT served (probed: /gh/cli/cli@v2.102.1/dist/README.md -> 404). ~20 MB effective per-file ceiling for the GitHub proxy (the git-unlimited-storage README states 'jsDelivr per file | 20 MB'); hard per-file/per-package caps are undocumented and enforced at request time. Does not serve the >2 GiB release assets, so the serving path for big objects stays on GitHub's own Fastly edge.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Immutable: 'Previously served immutable files may be retained in permanent storage even after upstream deletion' — deletion upstream does not remove it from jsDelivr. Extension blocklist exists; binaries with unusual extensions can be refused.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://www.jsdelivr.com/terms/acceptable-use-policy",
+      "date": "2026-10-21",
+      "proved": "'there are no limits on bandwidth or number of requests'; soft limit '100 000' files per repository"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET cdn.jsdelivr.net/gh/jquery/jquery@3.7.1/dist/jquery.min.js -> 200, Cache-Control: public, max-age=31536000, s-maxage=31536000, immutable, Access-Control-Allow-Origin: *"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET cdn.jsdelivr.net/gh/cli/cli@v2.102.1/dist/README.md -> 404 (release assets not mirrored)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Not storage, it is the egress answer for the serving workload: \"there are no limits on bandwidth or number of requests\" (the provider), with soft limits of 10,000 actively accessed files and 100,000 files per repository.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

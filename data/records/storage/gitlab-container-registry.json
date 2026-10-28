@@ -1,0 +1,74 @@
+{
+  "topic": "storage",
+  "slug": "gitlab-container-registry",
+  "provider": "GitLab Container Registry (gitlab.com)",
+  "url": "https://registry.gitlab.com",
+  "category": "registry",
+  "free_tier": {
+    "stated": "Not counted against any storage quota. GitLab docs: 'Only the project's repository and LFS are included in the storage limit. The container registry, package registry, and build artifacts are not included in the limit.' The 10 GiB Free limit therefore does not apply to OCI blobs.",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "No egress charge is published for gitlab.com registry pulls; anonymous pulls are served without auth beyond a JWT. Effectively unmetered for anonymous public projects.",
+    "metered": false
+  },
+  "interface": [
+    "oci",
+    "rclone"
+  ],
+  "interface_detail": "oci",
+  "tooling": "ORAS / docker / skopeo / crane all work against registry.gitlab.com; rclone has no OCI backend but 'oras cp' + rclone covers push/pull. Public projects allow anonymous pull tokens.",
+  "chaining": "Unlimited projects per namespace x unlimited namespaces/accounts x 5 GB per layer (generic package max file is 5 GB; container layers see the same class of limit). Since blobs are outside the 10 GiB project quota, a single free account can host arbitrarily many OCI layers. Compare GHCR (already known) — the differentiator here is the explicit quota exemption, not the registry itself.",
+  "limits": [],
+  "limits_note": "Container registry storage is visible but not capped in docs; individual blob uploads go through the standard Docker chunked path so layer size is bounded by the client, not by a documented per-file cap. Requires CI or a token for push; anonymous pull works on public projects.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: a documented per-file cap. Requires CI or a token for push; anonymous pull works on public projects. registry",
+    "country": null
+  },
+  "reliability_note": "Storage is reported under 'reduce container registry storage' but no hard cap or eviction is documented on Free; the risk is administrative cleanup of dormant projects rather than quota enforcement.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+      "date": "2026-10-21",
+      "proved": "'Only the project's repository and LFS are included in the storage limit. The container registry, package registry, and build artifacts are not included in the limit.'"
+    },
+    {
+      "url": "https://about.gitlab.com/pricing/",
+      "date": "2026-10-21",
+      "proved": "'Purchased storage applies to Git repository size and LFS usage. It does not apply to other storage types, such as the container registry.'"
+    },
+    {
+      "url": "https://gitlab.com/jwt/auth?service=container_registry&scope=repository:gitlab-org/gitlab-runner:pull",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> {\"token\":\"eyJ...\"} anonymous pull token issued with no credentials"
+    },
+    {
+      "url": "https://registry.gitlab.com/v2/gitlab-org/gitlab-runner/manifests/latest",
+      "date": "2026-10-21",
+      "proved": "probe: GET (Bearer token) -> 200, Content-Type: application/vnd.oci.image.index.v1+json, docker-content-digest: sha256:f1c76f91... (real OCI manifest served anonymously)"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Not counted against any storage quota. GitLab docs: 'Only the project's repository and LFS are included in the storage limit. The container registry, package registry, and build artifacts are not included in the limit.' The 10 GiB Free limit therefore does not apply to OCI blobs.",
+  "extras": {},
+  "binding": "none",
+  "binding_note": "no constraint in the record binds at this scale; the record carries no limit of a kind the vocabulary names"
+}

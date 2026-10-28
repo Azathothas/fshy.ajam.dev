@@ -1,0 +1,84 @@
+{
+  "topic": "egress",
+  "slug": "twingate",
+  "provider": "Twingate",
+  "url": "https://www.twingate.com/pricing",
+  "category": "zero trust access (private only)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Starter: 'Free per user / month', 'Up to 5 users'.",
+    "unit": "users",
+    "metered_on": "identity-count",
+    "source_url": "https://www.twingate.com/pricing",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://www.twingate.com/pricing",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://www.twingate.com/pricing",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No byte allowance is published; the plan is priced per user.; ingress: none",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://www.twingate.com/pricing"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "the Twingate client on each device and the Connector in the private network",
+  "tooling": "Twingate client and Connector",
+  "chaining": "carries nothing on its own; it is a private access layer, so it composes with a public ingress rather than replacing one",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "The only published meter is the 5-user cap, and the vocabulary has no token for an identity count; request-rate is the nearest. It is also moot: with no public ingress there is no 1 TiB/month to spend.",
+      "source": "https://www.twingate.com/pricing"
+    }
+  ],
+  "limits_note": "",
+  "binding": "request-rate",
+  "binding_note": "The only published meter is the 5-user cap, and the vocabulary has no token for an identity count; request-rate is the nearest. It is also moot: with no public ingress there is no 1 TiB/month to spend.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a Twingate account at auth.twingate.com",
+    "country": "None"
+  },
+  "reliability_note": "Relays carry traffic only when peer-to-peer fails, and the free plan is bounded by users rather than bytes",
+  "confidence": "documented",
+  "confidence_note": "A live attempt to reach a Resource without the Twingate client would confirm the private-only claim.",
+  "evidence": [
+    {
+      "url": "https://www.twingate.com/pricing",
+      "date": "2026-10-23",
+      "proved": "Starter is 'Free per user / month' with 'Up to 5 users'"
+    },
+    {
+      "url": "https://www.twingate.com/docs/how-twingate-works",
+      "date": "2026-10-23",
+      "proved": "'The Connector is intended to be deployed behind the firewall of a private Remote network'; the client-to-connector path is a 'certificate-pinned TLS tunnel'"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Fails the ingress test by design: every path needs a Twingate client and an ACL issued by the Controller. The Connector does proxy 'TCP and UDP traffic for protected Resources', which is why UDP appears in the product and still carries nothing to a public reader.",
+  "extras": {
+    "wg_path": "none",
+    "wg_detail": "No WireGuard. 'The Client is responsible for establishing an encrypted tunnel with the appropriate Connector to access a protected Resource. This TLS tunnel is established based on the anonymous, unique Connector ID'. No .conf exists.",
+    "ingress": "none",
+    "volume_tib_month": null,
+    "volume_stated": "No byte allowance is published; the plan is priced per user.",
+    "bytes_transit": "unknown",
+    "transit_note": "peer-to-peer between client and Connector where possible, with a Relay as backup"
+  }
+}

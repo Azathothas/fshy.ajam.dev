@@ -1,0 +1,74 @@
+{
+  "topic": "email",
+  "slug": "mailjet",
+  "provider": "Mailjet",
+  "url": "https://www.mailjet.com/pricing/",
+  "category": "transactional sender",
+  "free_tier": {
+    "stated": "6,000 emails/month, 200/day, 1,000 contacts",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://www.mailjet.com/pricing/",
+    "read_on": "2026-10-22",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": "over-quota mail is queued for 3 days then discarded",
+    "days": null,
+    "notes": "",
+    "source_url": "https://www.mailjet.com/pricing/"
+  },
+  "egress": {
+    "terms": "not applicable: an outbound sender",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.mailjet.com/pricing/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "curl, any HTTP client",
+  "chaining": "the largest monthly figure in the free sender set at 6,000, cut down to 200/day. It composes with the same domain as Brevo and Resend, which is where the reputation problem starts.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "200 emails per day",
+      "source": "https://www.mailjet.com/pricing/"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an account; the page states no credit card is required at signup",
+    "country": null
+  },
+  "reliability_note": "over-quota mail is reported to be queued for three days and then discarded, which makes an overrun silent data loss. That sentence is reported and not documented: the knowledge-base article it came from, documentation.mailjet.com article 360043048393, returns 404 on 2026-10-22, and the pricing page does not state it",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://www.mailjet.com/pricing/",
+      "date": "2026-10-22",
+      "proved": "'6,000 emails/month', '200 emails per day', '1,000 contacts', and 'there is no credit card required for the free plan at sign up'"
+    },
+    {
+      "url": "probe:smtp://in-v3.mailjet.com:587",
+      "date": "2026-10-22",
+      "proved": "banner 250, EHLO advertises SIZE and 8BITMIME, STARTTLS completed, and AUTH LOGIN returned 334. The submission endpoint answers; no message was sent"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T03:20:00.000Z",
+  "notes": "The 30:1 monthly-to-daily ratio is the same shape as Resend's. The queue-and-discard behaviour is the technical fact a reader needs before pointing a campaign at it.",
+  "extras": {
+    "stale_after_days": 90
+  },
+  "binding": "request-rate",
+  "interface_detail": "https://api.mailjet.com/v3.1/send",
+  "limits_note": "counts of things, not rates, so no vocabulary kind names them: 1,000 contacts stored on the free plan",
+  "confidence_note": "no message was sent, so no delivery is proved. The submission path was probed: in-v3.mailjet.com:587 answered 250, STARTTLS completed, and AUTH LOGIN returned 334"
+}

@@ -1,0 +1,91 @@
+{
+  "topic": "storage",
+  "slug": "aiven-free-tier",
+  "provider": "Aiven free tier (PostgreSQL / MySQL / Valkey / OpenSearch / Kafka)",
+  "url": "https://aiven.io/",
+  "category": "paas",
+  "free_tier": {
+    "stated": "1 GB disk each for PostgreSQL, MySQL and Valkey (Valkey maxmemory = 50% of 1 GB RAM = 512 MB usable); 20 GB storage for OpenSearch; Kafka free tier is throughput-capped at 250 KiB/s. 'Only one service of each service type in your organization.' No time limit, no credit card.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://aiven.io/docs/platform/concepts/free-plan",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://aiven.io/docs/platform/concepts/free-plan",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://aiven.io/docs/platform/concepts/free-plan",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free — 'Network traffic is not charged separately' (Aiven service pricing doc). This is the best egress term of any structured store here, which makes the tiny byte quotas the only blocker.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "psql / mysql / redis-cli / OpenSearch REST API / any Kafka client; Aiven Terraform provider and `avn` CLI for provisioning; PG-wire and RESP protocols unchanged",
+  "chaining": "One service of each type per ORG (verified in the Valkey free-tier doc: 'Only one service of each service type in your organization'). So one org yields ~1 + 1 + 0.5 + 20 GB = ~22.5 GB across four services, plus Kafka. 23 orgs would reach 500 GB — the best per-org yield of any structured store found, and the only one where egress is genuinely free.",
+  "limits": [],
+  "limits_note": "1 GB disk (PG/MySQL), 1 GB RAM (Valkey, 50% maxmemory), 20 GB + 4 GB RAM + 2 shards (OpenSearch free), Kafka 250 KiB/s ingress/egress with 5 topics x 2 partitions and fixed retention; single node; no VPC; no static IPs; no forking; `max_connections` 20 on free PG",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: each service type in your organization.' No time limit, no credit card. Aiven 'reserves the right to power off free services with no initial usage in the first few hours' and to power off",
+    "country": null
+  },
+  "reliability_note": "Aiven 'reserves the right to power off free services with no initial usage in the first few hours' and to power off services with no continuing activity. For a cold archive that means keep-alive traffic is mandatory or the service sleeps. No data loss reported, just power-off.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://aiven.io/docs/platform/concepts/free-plan",
+      "date": "2026-10-21",
+      "proved": "'The Free tier is available for the following service types: Apache Kafka, MySQL, OpenSearch, PostgreSQL, Valkey'; 'You don't need a credit card ... use them indefinitely free of charge'; 'Aiven reserves the right to power off free services with no initial usage ... Power off free services with no continuative activity'"
+    },
+    {
+      "url": "https://aiven.io/docs/products/postgresql/concepts/pg-free-tier",
+      "date": "2026-10-21",
+      "proved": "'1 GB RAM', '1 GB disk storage'"
+    },
+    {
+      "url": "https://aiven.io/docs/products/mysql/concepts/mysql-free-tier",
+      "date": "2026-10-21",
+      "proved": "'1 GB disk storage'; https://aiven.io/docs/products/valkey/concepts/valkey-free-tier — '1 GB RAM', 'maxmemory set to 50%', 'Only one service of each service type in your organization'"
+    },
+    {
+      "url": "https://aiven.io/docs/products/opensearch/concepts/opensearch-free-tier",
+      "date": "2026-10-21",
+      "proved": "'4 GB RAM, 20 GB storage', '2 shards', 'Max 20 shards per node', '50 concurrent connections'"
+    },
+    {
+      "url": "https://aiven.io/docs/products/kafka/free-tier/kafka-free-tier",
+      "date": "2026-10-21",
+      "proved": "'Streaming throughput up to 250 KiB/s ingress and 250 KiB/s egress', 'Up to 5 topics, each with two partitions'"
+    },
+    {
+      "url": "https://aiven.io/docs/platform/concepts/service-pricing",
+      "date": "2026-10-21",
+      "proved": "'Network traffic is not charged separately'"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "1 GB disk each for PostgreSQL, MySQL and Valkey (Valkey maxmemory = 50% of 1 GB RAM = 512 MB usable); 20 GB storage for OpenSearch; Kafka free tier is throughput-capped at 250 KiB/s. 'Only one service of each service type in your organization.' No time limit, no credit card.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "1 GB disk each for PostgreSQL, MySQL and Valkey (Valkey maxmemory = 50% of 1 GB RAM = 512 MB usable); 20 GB storage for OpenSearch; Kafka free tier is throughput-capped at 250 KiB/s. 'Only one service of each service type in your organization.' No time limit, no credit card.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": "no constraint of a named kind was recorded; the verdict rests on the quota sentence rather than on a named limit"
+}

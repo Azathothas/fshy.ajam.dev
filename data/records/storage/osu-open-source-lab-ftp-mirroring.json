@@ -1,0 +1,76 @@
+{
+  "topic": "storage",
+  "slug": "osu-open-source-lab-ftp-mirroring",
+  "provider": "OSU Open Source Lab - FTP mirroring (ftp.osuosl.org / ftp2.osuosl.org)",
+  "url": "https://osuosl.org",
+  "category": "paas",
+  "free_tier": {
+    "stated": "No published per-project quota, but an explicit capacity statement and an allocation policy: 'Because space on the main mirrors is limited, we also host projects on ftp2.osuosl.org. It runs in Salem and stores its content on our Ceph cluster instead of copying it to every server. We currently host about 100 projects using around 37 TB of disk space, about 16 TB on the main mirrors and 21 TB on ftp2.' Mean is therefore ~370 GB per hosted project.",
+    "unit": "objects",
+    "metered_on": "stored-bytes",
+    "source_url": "https://osuosl.org/services/hosting/details/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://osuosl.org/services/hosting/details/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "The binding constraint is the request/review process ('Please give us a few days or a week to discuss and respond') and the statement that main-mirror space is limited. retention: indefinite for accepted projects",
+    "source_url": "https://osuosl.org/services/hosting/details/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and genuinely high-capacity: 'Three servers sit behind ftp.osuosl.org with a combined bandwidth capacity of 60 gigabits per second. They are located in Salem, Chicago and New York, and each one carries a full copy of the content.' No billing.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "ftp",
+    "rsync"
+  ],
+  "interface_detail": "rest",
+  "tooling": "FTP/HTTP mirror distribution plus rsync from the mirror ring; no self-service upload API - content is placed by arrangement. Request flow is a form at osuosl.org/services/hosting/request/ asking for project name, URL, source repo, and role.",
+  "chaining": "Not multiplicable - it is an allocation, not a tier. The value is scale per allocation: ~370 GB mean, 60 Gbps aggregate egress, three-city replication, and a Ceph-backed second tier (ftp2) with 21 TB already in use.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "review process ('Please give us a few days or a week to discuss and respond') and the",
+      "source": "https://osuosl.org/services/hosting/details/"
+    }
+  ],
+  "limits_note": "per-object-cap: none published. The binding constraint is the request/review process ('Please give us a few days or a week to discuss and respond') and the statement that main-mirror space is limited. retention: indefinite for accepted projects. request-rate: N/A (mirror serves static files).",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Human-gated and OSS-only in practice (the form asks for a source code repository and a role such as maintainer). It is a good home for a legitimately large OSS release corpus and a bad fit for arbitrary bulk - there is no self-service path and capacity is finite and publicly rationed.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://osuosl.org/services/hosting/details/",
+      "date": "2026-10-21",
+      "proved": "'Three servers sit behind ftp.osuosl.org with a combined bandwidth capacity of 60 gigabits per second'; 'about 100 projects using around 37 TB of disk space, about 16 TB on the main mirrors and 21 TB on ftp2'"
+    },
+    {
+      "url": "https://osuosl.org/services/hosting/request/",
+      "date": "2026-10-21",
+      "proved": "request form requires project name, URL, source code repository, and role; 'Please give us a few days or a week to discuss and respond'"
+    },
+    {
+      "url": "https://osuosl.org/services/hosting/",
+      "date": "2026-10-21",
+      "proved": "'Release files and package repositories served from mirrors in three cities'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published per-project quota, but an explicit capacity statement and an allocation policy: 'Because space on the main mirrors is limited, we also host projects on ftp2.osuosl.org. It runs in Salem and stores its content on our Ceph cluster instead of copying it to every server. We currently host about 100 projects using around 37 TB of disk space, about 16 TB on the main mirrors and 21 TB on ftp2.' Mean is therefore ~370 GB per hosted project.",
+  "extras": {},
+  "binding": "write-gated",
+  "binding_note": "the write is a queue with a person or a rule in it, so the upload rate is set by somebody else"
+}

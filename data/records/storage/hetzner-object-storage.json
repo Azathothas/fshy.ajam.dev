@@ -1,0 +1,104 @@
+{
+  "topic": "storage",
+  "slug": "hetzner-object-storage",
+  "provider": "Hetzner Object Storage",
+  "url": "https://www.hetzner.com/storage/object-storage/",
+  "category": "S3-compatible object storage",
+  "free_tier": {
+    "stated": "Up to 100 buckets, each up to 100 TB / 50 million objects; 5 TB max per object; regions FSN1/HEL1/NBG1",
+    "unit": "TB",
+    "metered_on": "unstated",
+    "source_url": "https://www.hetzner.com/storage/object-storage/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "5 TB max per object",
+    "bytes": 5000000000000,
+    "source_url": "https://www.hetzner.com/storage/object-storage/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://www.hetzner.com/storage/object-storage/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Base price includes 1 TB/month egress (1.1160 TB in a 31-day month, accumulated hourly). Overage verbatim: \"Egress traffic: EUR 1.0000 per hour... per TB\". Ingress, internal eu-central traffic, and all S3 API calls are free.",
+    "metered": true,
+    "free_allowance": "1 TB per month"
+  },
+  "interface": [
+    "s3-compatible",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "S3 API",
+  "tooling": "AWS CLI, rclone, all S3 SDKs",
+  "chaining": "S3 origin",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "5 TB max per object",
+      "source": "https://www.hetzner.com/storage/object-storage/"
+    }
+  ],
+  "limits_note": "Base price EUR 6.49/mo billed hourly at EUR 0.0104/h, charged for every hour a bucket exists even if empty. Storage overage EUR 0.0087 per TB-hour (= EUR 6.35/TB/month). Minimum billable object size 64 KB — pathological for small files.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "card",
+    "country": null
+  },
+  "reliability_note": "LowEndTalk scepticism: \"bandwidth limit is per bucket (not per object) and the pricing is based on 1TB increments it makes feel that it's just a fancy wrapped single-node storage with S3 compatibility, rather than actual distributed object storage\".",
+  "confidence": "documented",
+  "confidence_note": "re-read from read-broker on 2026-10-22 (HTTP 200, 7102 bytes, sha256 165549bb8b5db4ee). The page states the number in the record; the claim is documented, not measured.",
+  "evidence": [
+    {
+      "url": "https://www.hetzner.com/storage/object-storage/",
+      "date": "2026-10-22",
+      "proved": "the object storage page and its price row answer. Re-read https://www.hetzner.com/storage/object-storage/: HTTP 200, 7102 bytes, sha256 165549bb8b5db4ee."
+    },
+    {
+      "url": "https://www.hetzner.com/storage/object-storage/",
+      "date": "2026-10-21",
+      "proved": "\"base price of EUR 6.49 per month... includes 1 TB of storage (up to 744 TB-hours) and 1 TB of egress traffic\"; overage \"Storage: EUR 0.0087 per hour per TB-hour. Egress traffic: EUR 1.0000 per hour per TB\"; 64 KB minimum billable object size"
+    },
+    {
+      "url": "https://docs.hetzner.com/storage/object-storage/overview/",
+      "date": "2026-10-21",
+      "proved": "egress quota accumulates hourly (max 1.1160 TB in a 31-day month); free traffic classes = ingress, internal eu-central, S3 API calls; quota does not carry over"
+    },
+    {
+      "url": "https://fsn1.your-objectstorage.com/",
+      "date": "2026-10-21",
+      "proved": "endpoint probe -> 200, https://hel1.your-objectstorage.com/ -> 200, https://nbg1.your-objectstorage.com/ -> 200 (s3.hetzner.com does not resolve)"
+    },
+    {
+      "url": "https://lowendtalk.com/discussion/197903/hetzner-launches-object-storage-6-50-tb/p2",
+      "date": "2026-10-21",
+      "proved": "\"traffic to other resources within the same region is free. So you can route egress via a Hetzner Cloud VM to get 20TB\""
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "price_per_tb_month": "$8.06/TB at 5 TB stored + 5 TB egress (EUR 35.89 = $40.32); $8.21/TB at 20 TB stored + 20 TB egress (EUR 146.16 = $164.19). Roughly 3.6x the Storage Box for the same bytes.",
+  "notes": "Up to 100 buckets, each up to 100 TB / 50 million objects; 5 TB max per object; regions FSN1/HEL1/NBG1",
+  "extras": {
+    "price_verbatim": "$8.06/TB at 5 TB stored + 5 TB egress (EUR 35.89 = $40.32); $8.21/TB at 20 TB stored + 20 TB egress (EUR 146.16 = $164.19). Roughly 3.6x the Storage Box for the same bytes.",
+    "verified_in_pass": [
+      {
+        "url": "https://www.hetzner.com/storage/object-storage/",
+        "date": "2026-10-22",
+        "via": "read-broker",
+        "http_status": 200,
+        "bytes": 7102,
+        "sha256": "165549bb8b5db4eed914109733b559cbb78bf3f864f0612427c545a368629598",
+        "pattern_found": true,
+        "what_changed": "no change: the page still states the claim",
+        "capture": "captures\\hetzner-object-storage-www-hetzner-com-storage-object-storage-.txt"
+      }
+    ]
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

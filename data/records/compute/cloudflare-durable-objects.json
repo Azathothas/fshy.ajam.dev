@@ -1,0 +1,116 @@
+{
+  "topic": "compute",
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "notes": null
+  },
+  "interface": [
+    "ssh"
+  ],
+  "interface_detail": "a Worker binding; RPC and WebSocket to the object",
+  "tooling": "Wrangler, the Workers runtime, SQLite storage per object",
+  "chaining": "a stateful coordination point with a WebSocket, which is a relay substrate and not a general machine",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "13,000 GB-s of duration a day; a WebSocket held open on the non-hibernation API bills for the whole connection",
+      "source": "https://developers.cloudflare.com/durable-objects/platform/pricing/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "128 MB of memory per object, billed as a full 128 MB regardless of use",
+      "source": "https://developers.cloudflare.com/durable-objects/platform/pricing/"
+    }
+  ],
+  "limits_note": "a Durable Object stays active while a request, response stream, WebSocket or pending I/O is in flight",
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "price_per_tb_month": null,
+  "notes": "It is a Durable Object allowance and attributing it to Workers was a category error.",
+  "slug": "cloudflare-durable-objects",
+  "provider": "Cloudflare Durable Objects",
+  "url": "https://developers.cloudflare.com/workers/platform/limits/",
+  "category": "serverless runtime",
+  "free_tier": {
+    "stated": "13,000 GB-seconds of Durable Object duration a day on the free plan. That is a Durable Object allowance; Workers Free separately carries 100,000 requests a day",
+    "unit": "mixed",
+    "metered_on": "wall-clock",
+    "source_url": "https://developers.cloudflare.com/durable-objects/platform/pricing/",
+    "read_on": "2026-10-22",
+    "notes": "an object that is idle and eligible for hibernation is not billed for duration; duration is billed for the 128 MB allocation regardless of actual use"
+  },
+  "retention": {
+    "stated": "SQLite-backed storage persists; hibernation disconnects clients without destroying state",
+    "days": null,
+    "source_url": "https://developers.cloudflare.com/durable-objects/"
+  },
+  "egress": {
+    "terms": "served from the edge; no per-byte charge on the limits page",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://developers.cloudflare.com/workers/platform/limits/"
+  },
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a Cloudflare account; no card for the Free plan",
+    "country": null
+  },
+  "evidence": [
+    {
+      "url": "https://developers.cloudflare.com/durable-objects/platform/pricing/",
+      "date": "2026-10-22",
+      "proved": "the included allocation table reads 'Duration | 13,000 GB-s / day | 400,000 GB-s / month, + $12.50/million GB-s'"
+    },
+    {
+      "url": "https://developers.cloudflare.com/durable-objects/platform/pricing/",
+      "date": "2026-10-22",
+      "proved": "'Durable Objects that are idle and eligible for hibernation are not billed for duration'; duration is billed for the 128 MB allocation regardless of actual usage"
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/platform/limits/",
+      "date": "2026-10-22",
+      "proved": "Workers Free carries 100,000 requests a day; the page does not carry the 13,000 GB-s figure"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "extras": {
+    "shape": null,
+    "billing_model": "wall-clock",
+    "session_cap": {
+      "wall_clock_min": null,
+      "idle_reap_s": null,
+      "restart_required": false,
+      "note": "no idle kill while connected; duration billed only while active"
+    },
+    "keep_rate": {
+      "value": 0.0,
+      "basis": "duration is billed only while active",
+      "source": "https://developers.cloudflare.com/workers/platform/limits/"
+    },
+    "persistent_storage": {
+      "included_gib": null,
+      "price_gib_month": "SQLite-backed storage billed separately",
+      "durability": "survives hibernation",
+      "survives_stop": true,
+      "survives_destroy": false,
+      "max_retention": "while the object exists"
+    },
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": true,
+      "ports": "HTTP and WebSocket through the edge",
+      "static_ip": false,
+      "ipv6": true,
+      "per_session_bytes": null
+    },
+    "free_tier_kind": "allowance",
+    "census_rows": [
+      "cloudflare-do"
+    ]
+  },
+  "binding": "request-rate",
+  "binding_note": "the daily duration allocation binds before the 128 MB ceiling, and a non-hibernating WebSocket spends it at wall-clock rate"
+}

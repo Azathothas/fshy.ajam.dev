@@ -1,0 +1,83 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "shadow-drive",
+  "provider": "Shadow Drive (Blade, France)",
+  "url": "https://shadow.tech/eu/drive/offers/",
+  "category": "hosted Nextcloud, freemium",
+  "free_tier": {
+    "stated": "20 GB free; Basic 200 GB at EUR 2.99/month; Premium 2 TB at EUR 6.99/month. Every tier carries the same 'Upload up to 20 GB' line",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://shadow.tech/eu/drive/offers/",
+    "read_on": "2026-10-21"
+  },
+  "per_object_cap": {
+    "stated": "20 GB per upload on every plan, including the 2 TB one",
+    "bytes": 20000000000,
+    "source_url": "https://shadow.tech/eu/drive/offers/",
+    "notes": "the vendor writes 20 GB; the decimal figure is used as stated"
+  },
+  "retention": {
+    "stated": "Until deleted. No retention clock published",
+    "days": null,
+    "source_url": "https://shadow.tech/eu/drive/offers/"
+  },
+  "egress": {
+    "terms": "Not metered in the offer table",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://shadow.tech/eu/drive/offers/"
+  },
+  "interface": [
+    "webdav",
+    "rest",
+    "rclone"
+  ],
+  "tooling": "rclone webdav against /remote.php/webdav/, which answers 401 with a Basic realm of 'Shadow Drive'. Standard Nextcloud clients",
+  "chaining": "The cheapest Enterprise-build Nextcloud in Europe at EUR 2.99 for 200 GB, so it is a candidate small shard. The 20 GB per-file cap is uniform across tiers and does not scale, which stops it being an archive target",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "20 GB per upload on every tier including 2 TB",
+      "source": "https://shadow.tech/eu/drive/offers/"
+    }
+  ],
+  "identity_cost": {
+    "kind": "card",
+    "detail": "a card, and a billing address in one of twelve countries: France, the United Kingdom, Belgium, Switzerland, Luxembourg, Germany, the Netherlands, Austria, Italy, Sweden, Denmark and Spain",
+    "country": "FR, GB, BE, CH, LU, DE, NL, AT, IT, SE, DK, ES"
+  },
+  "reliability_note": "Signup is geo-fenced to twelve countries. Encryption at rest is still listed as not implemented. The price rose from EUR 4.99 to EUR 6.99 for 2 TB since the 2024 announcement while press coverage still quotes the old figure",
+  "confidence": "reported",
+  "evidence": [
+    {
+      "url": "https://shadow.tech/eu/drive/offers/",
+      "date": "2026-10-21",
+      "proved": "'Free 20 GB ... Upload up to 20 GB', 'Basic 200 GB ... 2.99 EUR/month', 'Premium 2 TB ... 6.99 EUR/month', all three with the same 20 GB upload line, and 'Shadow Drive is already available in 12 countries: France, UK, Belgium, Switzerland, Luxemburg, Germany, Netherlands, Austria, Italy, Sweden, Denmark and Spain'"
+    },
+    {
+      "url": "https://drive.shadow.tech/status.php",
+      "date": "2026-10-21",
+      "proved": "HTTP 200, version 27.1.11.4, versionstring '27.1.11 Enterprise', productname Nextcloud"
+    },
+    {
+      "url": "https://drive.shadow.tech/remote.php/dav/",
+      "date": "2026-10-21",
+      "proved": "OPTIONS returned HTTP 401 with WWW-Authenticate: Basic realm=\"Shadow Drive\""
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "binding": "per-object-cap",
+  "binding_note": "The free 20 GB is an order of magnitude under the 500 GB filter, and the paid tiers carry a 20 GB per-file cap that does not move with the plan. Either number alone stops it; the cap is the one that would still bind at 2 TB.",
+  "confidence_note": "What would raise it is a live re-read of the offers page, because this provider has already moved its price once.",
+  "notes": "The free 20 GB is real and it is the same Enterprise build as the paid tiers, so it works as a cheap test endpoint. It fails as capacity on size, and it fails on a per-file cap that never improves.",
+  "extras": {
+    "access_mode": "registration-gated",
+    "free_tier_exists": true,
+    "geo_fenced_countries": 12,
+    "per_file_cap_bytes_derived": 20000000000,
+    "nextcloud_version": "27.1.11 Enterprise"
+  }
+}

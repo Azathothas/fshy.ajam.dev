@@ -1,0 +1,136 @@
+{
+  "topic": "compute",
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "notes": null
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "REST instances API: POST /v1/instances, plus stop, start, resize, fork, backup and restore",
+  "tooling": "HTTP API and a CLI; the instance object carries resources so a client can read its real shape",
+  "chaining": "a sandbox that bills disk alone while stopped, so a long-lived agent workspace can sit idle cheaply",
+  "limits_note": "disk also caps the shape: 2 to 12 GB on the 2 vCPU shape, 2 to 80 GB on the 4 vCPU/32 GB shape",
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "price_per_tb_month": null,
+  "slug": "agent-37",
+  "provider": "Agent 37",
+  "url": "https://www.agent37.com/pricing",
+  "category": "container and VM sandbox",
+  "free_tier": {
+    "stated": "USD 5 of credit after adding a card; no perpetual free tier is published on the pricing page",
+    "unit": "mixed",
+    "metered_on": "wall-clock",
+    "source_url": "https://www.agent37.com/pricing",
+    "read_on": "2026-10-22",
+    "notes": "page meta description: 'start with $5 credit after adding a card'"
+  },
+  "retention": {
+    "stated": "disk billed while you keep the instance; deleting an instance settles its final minutes and billing ends",
+    "days": 0,
+    "notes": "the disk outlives a stop and dies on delete"
+  },
+  "egress": {
+    "terms": "not published on the pricing page; recorded as a gap",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.agent37.com/pricing"
+  },
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "4 vCPU ceiling on every instance type; a request for more cores returns 4 vCPU at the same price",
+      "source": "https://www.agent37.com/docs/agents-api/instance-sizing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "no published concurrency or start-rate cap on the pricing page",
+      "source": "https://www.agent37.com/pricing"
+    }
+  ],
+  "identity_cost": {
+    "kind": "card",
+    "detail": "USD 5 of credit is offered after adding a card; the pricing page states no card-free path",
+    "country": null
+  },
+  "evidence": [
+    {
+      "url": "https://www.agent37.com/pricing",
+      "date": "2026-10-22",
+      "proved": "rate is USD 0.80/vCPU + USD 0.70/GB RAM + USD 0.09/GB disk per 730-hour month, metered by the minute; a VM costs 2.5x compute"
+    },
+    {
+      "url": "https://www.agent37.com/docs/agents-api/instance-sizing",
+      "date": "2026-10-22",
+      "proved": "four shapes with monthly prices: 2/4/12 GB USD 4.76, 4/8 USD 9.34, 4/16 USD 15.48, 4/32 USD 27.76"
+    },
+    {
+      "url": "https://www.agent37.com/docs/agents-api/instance-sizing",
+      "date": "2026-10-22",
+      "proved": "4 vCPU is the ceiling on every type; an oversize request silently provisions 4 vCPU"
+    },
+    {
+      "url": "https://www.agent37.com/docs/agents-api/instances",
+      "date": "2026-10-22",
+      "proved": "REST lifecycle: create, stop, start, restart, resize, fork, backup, restore"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "notes": "Cheapest credible 2 vCPU sandbox that bills disk alone while stopped. The 4 vCPU ceiling is the number that binds an agent that wants 8 cores, and it is silent: the create succeeds with a smaller machine.",
+  "extras": {
+    "shape": {
+      "vcpu": 2,
+      "ram_gib": 4,
+      "disk_gib": 12,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "billing_model": "allocated",
+    "granularity": {
+      "min_billed_s": 60,
+      "rounding_s": 60
+    },
+    "session_cap": {
+      "wall_clock_min": null,
+      "idle_reap_s": null,
+      "restart_required": false,
+      "note": "an auto-sleep setting exists; the interval was not read on a page that answered"
+    },
+    "keep_rate": {
+      "value": 0.0,
+      "basis": "stopped or sleeping time bills the disk alone, quoted from the sizing page",
+      "source": "https://www.agent37.com/docs/agents-api/instance-sizing"
+    },
+    "persistent_storage": {
+      "included_gib": 12,
+      "price_gib_month": "USD 0.09",
+      "durability": "survives stop",
+      "survives_stop": true,
+      "survives_destroy": false,
+      "max_retention": "until delete"
+    },
+    "network_out": {
+      "allow_outbound": null,
+      "allow_inbound_listen": "preview URLs on instance ports",
+      "ports": "services on the sandbox ports are reachable",
+      "static_ip": false,
+      "ipv6": null,
+      "per_session_bytes": null,
+      "note": "egress terms and the outbound policy were not on the page read"
+    },
+    "free_tier_kind": "one-time-credit",
+    "m10h_usd": 2.17,
+    "m24h_usd": 4.76,
+    "price_arithmetic": "2(0.80) + 4(0.70) + 4(0.09) = 4.76 at 730 h; at 10 h/day x30 the same rate gives 1.81",
+    "price_note": "compute bills while the instance runs, disk bills every month while the instance is kept. At 300 running hours the compute is USD 1.81 and the disk is USD 0.36 for the month, so the bill is USD 2.17.",
+    "price_basis": "10 h/day x 30 = 300 h; 24/7 x 30 = 730 h",
+    "burst_x": 1.0
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the 4 vCPU ceiling binds: a create that asks for more cores keeps the memory it asked for and comes back with 4 vCPU, so the shape is capped"
+}

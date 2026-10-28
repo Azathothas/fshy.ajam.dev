@@ -1,0 +1,85 @@
+{
+  "topic": "storage",
+  "slug": "puter-user-pays-cloud-storage",
+  "provider": "Puter (puter.com / Puter.js) — user-pays cloud storage",
+  "url": "https://developer.puter.com/pricing/",
+  "category": "paas",
+  "free_tier": {
+    "stated": "Free tier shown on puter.com as '25 MB Storage' (the 100 GB / 500 GB / 2 TB figures on that page are the paid tiers — verified by reading the raw HTML, not the rendered summary). Developer-side cost is $0: 'Puter doesn't charge developers for infrastructure. Storage, database, and AI usage are metered to each signed-in user's own Puter account.'",
+    "unit": "TB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://puter.com/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: not documented, but the free allowance is 25 MB",
+    "bytes": 25000000,
+    "source_url": "https://puter.com/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://puter.com/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Not metered per-GB to the developer; metered to the end user's Puter allowance. No egress line found.",
+    "metered": true
+  },
+  "interface": [
+    "s3",
+    "rest",
+    "webdav",
+    "sftp"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Puter.js — a single <script> tag or the @heyputer/puter.js npm module, keyless. puter.fs.write / read / mkdir give a browser-side filesystem API; auth is 'sign in with Puter'. No S3/WebDAV/SFTP shim.",
+  "chaining": "The interesting multiplier is the opposite of the usual one: because storage is metered to each *signed-in user's* account, an app with N users gets N x (that user's allowance) and the developer pays nothing. But the free allowance per user is 25 MB, so the chain only works if the client also controls the user accounts — i.e. it is a way to make storage free for an app's users, not a way to get 10 TiB.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: not documented, but the free allowance is 25 MB",
+      "source": "https://puter.com/"
+    }
+  ],
+  "limits_note": "per-object-cap: not documented, but the free allowance is 25 MB total, which is the real cap. Request-rate: the vendor states that 'Anti-abuse, rate limiting, and fraud detection are also built into the Puter account layer, so bots and fake sign-ups are filtered before they reach your app'. In neutral terms, its signup layer screens for excess use and automated signups, so free identities are NOT unlimited here. Retention: not documented.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: raw HTML, not the rendered summary). Developer-side cost is $0: 'Puter doesn't charge developers for infrastructure. Storage, database, and AI usage are metered to each signed-in use",
+    "country": null
+  },
+  "reliability_note": "Explicitly blocks the several-accounts route: Puter markets that 'usage is metered to each user's own account, so a bad actor has no free resources to farm', plus automated-signup filtering. That removes the second-account allowance this niche usually relies on.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://puter.com/",
+      "date": "2026-10-21",
+      "proved": "free tier '25 MB Storage'; paid tiers 100 GB / 500 GB / 2 TB"
+    },
+    {
+      "url": "https://developer.puter.com/pricing/",
+      "date": "2026-10-21",
+      "proved": "'Storage, database, and AI usage are metered to each signed-in user's own Puter account, so your costs don't grow with your user count'"
+    },
+    {
+      "url": "https://docs.puter.com/",
+      "date": "2026-10-21",
+      "proved": "puter.fs.write / puter.fs.read / puter.fs.mkdir cloud storage API"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Free tier shown on puter.com as '25 MB Storage' (the 100 GB / 500 GB / 2 TB figures on that page are the paid tiers — verified by reading the raw HTML, not the rendered summary). Developer-side cost is $0: 'Puter doesn't charge developers for infrastructure. Storage, database, and AI usage are metered to each signed-in user's own Puter account.'",
+  "extras": {
+    "dead_end": {
+      "failure_class": "egress",
+      "why": "Free tier shown on puter.com as '25 MB Storage' (the 100 GB / 500 GB / 2 TB figures on that page are the paid tiers — verified by reading the raw HTML, not the rendered summary). Developer-side cost is $0: 'Puter doesn't charge developers for infrastructure. Storage, database, and AI usage are metered to each signed-in user's own Puter account.'",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

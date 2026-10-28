@@ -1,0 +1,94 @@
+{
+  "topic": "egress",
+  "slug": "novanode-ip-tunnel",
+  "provider": "NovaNode IP Tunnel",
+  "url": "https://novanode.eu/tunnel",
+  "category": "routed public IPv4 and IPv6 over WireGuard",
+  "tier": "ip-tunnel",
+  "free_tier": {
+    "stated": "No free tier; the product is quote-only: \"Request a quote\" and \"We review every tunnel order individually.\"",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://novanode.eu/tunnel",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://novanode.eu/tunnel",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://novanode.eu/tunnel",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "\"Ordinary traffic is unlimited and not metered per GB. Each tunnel has a monthly reference level: 1 TB for every full euro of the monthly price excluding VAT, rounded up, at least 3 TB.\" Above that: \"Going above the level is not a breach and costs nothing by itself\" and the vendor says it will not cut a tunnel for volume alone.; ingress: tcp+udp",
+    "metered": true,
+    "free_allowance": "\"Ordinary traffic is unlimited and not metered per GB. Each tunnel has a monthly reference level: 1 TB for every full euro of the monthly price excluding VAT, rounded up, at least 3 TB.\" Above that: \"Going above the level is not a breach and costs nothing by itself\" and the vendor says it will not cut a tunnel for volume alone.",
+    "price_per_tb": null,
+    "source_url": "https://novanode.eu/tunnel"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "Quote and ticket flow, then a client-configured tunnel; no API named.",
+  "tooling": "wg-quick on MikroTik, OPNsense, pfSense, Linux or a VM",
+  "chaining": "The routed prefix plus a free-tier VM gives a whole subnet rather than one forwarded port range.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "1 TB per full euro of monthly price, minimum 3 TB",
+      "source": "https://novanode.eu/tunnel"
+    },
+    {
+      "kind": "request-rate",
+      "value": "one active WireGuard peer per tunnel; single endpoint, no SLA",
+      "source": "https://novanode.eu/tunnel"
+    }
+  ],
+  "limits_note": "",
+  "binding": "volume-quota",
+  "binding_note": "The reference level is the only counter, and it is generous by construction: at a 3 EUR monthly price the level is 3 TB, which is 2.728 TiB, so 1 TiB/month sits at a third of the allowance. The binding constraint is really the quote and the one-peer shape.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "A quote request through the support system followed by payment; activation is human: \"Activation normally takes one to five business days from the later of payment and receipt of your key.\" The account form was not read.",
+    "country": "None"
+  },
+  "reliability_note": "Single endpoint, best effort, no SLA by default; a second endpoint is a paid add-on. Outbound 25 is closed until reviewed.",
+  "confidence": "documented",
+  "confidence_note": "The routing shape, the protocol, the fair-use formula and the process are all first-party. The price itself is quote-only, so cost per TiB stays unverified.",
+  "evidence": [
+    {
+      "url": "https://novanode.eu/tunnel",
+      "date": "2026-10-23",
+      "proved": "WireGuard over UDP, a /32 or larger IPv4 block routed for a user, an IPv6 prefix, all ports forwarded, monthly reference level of 1 TB per euro with a 3 TB floor, one peer per tunnel, no BGP needed"
+    },
+    {
+      "url": "https://novanode.eu/tunnel",
+      "date": "2026-10-23",
+      "proved": "a complete wg-quick configuration example with the client-supplied private key and the vendor's endpoint"
+    },
+    {
+      "url": "https://novanode.eu/tunnel",
+      "date": "2026-10-23",
+      "proved": "outbound TCP 25 closed by default and opened after review; addresses are the vendor's PA space"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "quote only; the volume reference level is 1 TB per full euro of monthly price with a 3 TB minimum",
+  "notes": "The only provider that states a volume policy in a formula a reader can apply, and the only one that says outright it will not cut a tunnel for volume. WireGuard only: \"WireGuard only. Other protocols are not offered.\" No price is published, so this row establishes shape and volume policy rather than cost.",
+  "extras": {
+    "wg_path": "extractable",
+    "wg_detail": "The vendor publishes the exact wg-quick shape it expects, with keys exchanged by ticket: \"You send us your WireGuard public key in a ticket. We reply with our endpoint, our public key, your addresses and the gateway addresses.\" The published block is a standard [Interface]/[Peer] pair with AllowedIPs 0.0.0.0/0.",
+    "ingress": "tcp+udp",
+    "volume_tib_month": 2.728,
+    "volume_stated": "\"Ordinary traffic is unlimited and not metered per GB. Each tunnel has a monthly reference level: 1 TB for every full euro of the monthly price excluding VAT, rounded up, at least 3 TB.\" Above that: \"Going above the level is not a breach and costs nothing by itself\" and the vendor says it will not cut a tunnel for volume alone.",
+    "bytes_transit": "yes",
+    "transit_note": "NovaNode PA space registered in Luxembourg and routed statically to the tunnel."
+  }
+}

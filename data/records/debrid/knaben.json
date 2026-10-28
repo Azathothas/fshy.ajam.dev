@@ -1,0 +1,87 @@
+{
+  "topic": "debrid",
+  "slug": "knaben",
+  "provider": "Knaben",
+  "url": "https://knaben.org/api/v2/",
+  "category": "meta indexer over public trackers (JSON API, no key)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "No key and no account: GET https://api.knaben.org/v2/search?q=... returned hits with hash, magnetUrl, tracker, seeders and bytes. The docs publish no quota.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://knaben.org/api/v2/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: results are metadata and magnets",
+    "bytes": null,
+    "source_url": "https://knaben.org/api/v2/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "the database keeps documents after they go dead; the docs say 1.7 million documents were seen in the last week and the 'dead' flag is opt-in",
+    "days": null,
+    "source_url": "https://knaben.org/api/v2/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "no byte allowance: the API returns JSON records and magnets",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://knaben.org/api/v2/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "GET /v2/search and GET /v2/browse with query parameters (q, sf, c, t, o, d, s, f, xxx, unsafe, dead, seen); size maximum 300. v1 still exists as POST /v1 with a JSON body. There is also an RSS page at knaben.org/rss/.",
+  "endpoint": "https://api.knaben.org/v2/search?q=ubuntu&s=2",
+  "tooling": "One GET. Sonarr/Radarr-style clients reach it through Torznab proxies; TorrentClaw lists Knaben as one of its sources, so the API is already the feed behind another index.",
+  "chaining": "Query by title, take the magnetUrl or hash, hand the hash to a debrid service's cache check, and only fetch the ones that come back cached.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "no number published; the v2 docs justify the rewrite with 'we've been struggling to serve the amount of bandwidth from the server to all the API clients' and close with 'if you alone are the main reason the server CPU sits at 100%, I will hunt you down'. Measured: 10 sequential GETs over about 24 s all 200, and 6 concurrent GETs all 200",
+      "source": "https://knaben.org/api/v2/"
+    }
+  ],
+  "limits_note": "v2 moved from POST to GET so the edge can cache the responses, which is a bandwidth measure rather than a per-client quota. The 300-result ceiling is the only hard number, and six concurrent requests drew no 429.",
+  "binding": "request-rate",
+  "binding_note": "The operator names CPU and bandwidth as the failure mode and refuses to publish a number, so the client's own restraint is the only limit; no byte quota exists on this side.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No key, no account, no captcha on the GET requests made today.",
+    "country": null
+  },
+  "reliability_note": "Bandwidth pressure is stated by the operator, and the API answers are edge-cached (Cache-Control public with s-maxage 300), so a stale page can show a torrent that has since gone dead.",
+  "confidence": "documented",
+  "confidence_note": "Both doc pages and a live v2 response were read on 2026-10-23. A sustained poll with recorded statuses would raise the rate row to measured.",
+  "evidence": [
+    {
+      "url": "https://knaben.org/api/v2/",
+      "date": "2026-10-23",
+      "proved": "the full parameter table, the 300-result maximum, the bandwidth rationale and the 'server CPU sits at 100%' warning"
+    },
+    {
+      "url": "https://api.knaben.org/v2/search?q=ubuntu&s=2",
+      "date": "2026-10-23",
+      "proved": "HTTP 200 JSON with hits containing hash, magnetUrl, tracker, seeders, bytes and virusDetection, with no key"
+    },
+    {
+      "url": "https://knaben.org/api/v1/",
+      "date": "2026-10-23",
+      "proved": "v1 is a POST/GET endpoint with the same fields and the same warning, and states the DB holds 1.7 million documents seen in the last week"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-23T01:52:28.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The best machine-readable torrent feed that needs nothing: no key, documented parameters, 300 results per call, and a magnet in every hit that carries a hash. Its weakness is exactly the thing asks about: the operator publishes no rate, only a threat.",
+  "extras": {
+    "max_results": 300,
+    "protocol": "rest-json",
+    "auth": "none",
+    "cache_s_maxage": 300
+  }
+}

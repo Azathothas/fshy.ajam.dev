@@ -1,0 +1,91 @@
+{
+  "topic": "storage",
+  "slug": "yandex-360-3-tb-the-regional-price-floor-with-unlimited",
+  "provider": "Yandex 360 \"Для профи\" (Profi) 3 TB — the regional price floor with unlimited public-link download",
+  "url": "https://360.yandex.ru/premium-plans/",
+  "category": "consumer-cloud-drive",
+  "free_tier": {
+    "stated": "3 TB / 5 TB / 10 TB / 20 TB / 30 TB tiers under Profi. 3 TB is the value tier: 990 ₽/mo list, 495 ₽/mo when paid annually (50 % annual discount is the steady state, not a short promo — the crossed-out 990 ₽ is the monthly rate). Upload per file: 100 GB. Monthly upload ceiling: 3× your Disk size.",
+    "unit": "TB",
+    "metered_on": "unstated",
+    "source_url": "https://360.yandex.ru/premium-plans/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per file: 100 GB",
+    "bytes": 100000000000,
+    "source_url": "https://360.yandex.ru/premium-plans/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://360.yandex.ru/premium-plans/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "FREE and explicitly unlimited: the plan comparison table states «Неограниченное скачивание по публичным ссылкам» (unlimited downloading via public links) and «Неограниченный доступ по вашим публичным ссылкам». No per-GB egress line exists anywhere in Yandex 360 consumer pricing — you cannot buy extra traffic because none is metered.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "webdav",
+    "rclone",
+    "webdav-proxy"
+  ],
+  "interface_detail": "webdav + rest",
+  "tooling": "WebDAV endpoint live: `curl https://webdav.yandex.ru/` -> HTTP 302 to auth (expected; the mount is up). rclone `yandex` backend, rclone `webdav` with an app password, alist/OpenList `yandex` driver, official REST Disk API at cloud-api.yandex.net, plus the desktop client for Linux/Windows/macOS.",
+  "chaining": "Cannot be pooled: one Yandex ID = one Disk. But the Family plan gives 1 TB to each of up to 8 members on one subscription (250 ₽/mo annual ≈ $3.03/TB), which is the cheapest legitimate multiplication path in this entire dossier. Profi and Family can be stacked — Yandex's own FAQ says the Disk volume sums across two plans on one account.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per file: 100 GB",
+      "source": "https://360.yandex.ru/premium-plans/"
+    }
+  ],
+  "limits_note": "The binding constraint is the UPLOAD side, not egress: «Месячный лимит загрузки на Диск до 3 объёмов Диска» (3× Disk size per month). On a 3 TB plan that is a 9 TB/month write ceiling — fine for the 20 TiB archive written once, fatal for a churning 10 TiB hot set. Per-object cap 100 GB on Profi. Public-link download is untimed and unthrottled but served from Yandex's own edge, not a CDN you control.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email",
+    "country": null
+  },
+  "reliability_note": "Two real risks. (1) PRICE DISCRIMINATION IS DOCUMENTED AND MEASURABLE: the same page carries a «Оплата картой другой страны» (payment by a foreign card) block that routes to a separate tariff sheet, and the USD sheet at 360.yandex.com/premium-plans publishes $12.50/mo for 3 TB Pro versus 495 ₽ (~$5.99) on the RUB sheet — a 2.09× markup for exactly for a user. Budget the USD number, not the rouble one. (2) Non-payment locks access progressively and then fully at 44 days (yandex.ru/support/disk/enlarge/disk-space.html) — so this is not a set-and-forget archive unless the card keeps working.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://360.yandex.ru/premium-plans/",
+      "date": "2026-10-21",
+      "proved": "read broker, upstream_status 200: «Место на Диске 3 ТБ 990 ₽ 495 ₽/мес -50% … 5 ТБ 1 583 ₽/мес … Подключить за 11 880 ₽ 5 940 ₽/год первый год»; comparison table rows «Неограниченное скачивание по публичным ссылкам», «Месячный лимит загрузки на Диск до 3 объёмов Диска», «Загрузка больших файлов до 100 ГБ»"
+    },
+    {
+      "url": "https://360.yandex.com/premium-plans/",
+      "date": "2026-10-21",
+      "proved": "same product, English/USD sheet: 1 TB $3.17, 2 TB $5.07, 3 TB Pro $12.50, 5 TB Pro $21.25 per month. This is the price a foreign card actually pays."
+    },
+    {
+      "url": "https://360.yandex.ru/premium-plans/",
+      "date": "2026-10-21",
+      "proved": "«Оплата картой другой страны / Перейдите на страницу с доступными тарифами для вашей карты» block present in the page payload, confirming a separate non-RUB tariff path exists"
+    },
+    {
+      "url": "https://webdav.yandex.ru/",
+      "date": "2026-10-21",
+      "proved": "probe: curl -o /dev/null -w '%{http_code}' -> 302 (WebDAV mount live)"
+    },
+    {
+      "url": "https://yandex.ru/support/yandex-360/customers/purchase/ru/pay",
+      "date": "2026-10-21",
+      "proved": "«Для профи на 5 ТБ … 11 880 ₽» annual list"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "price_per_tb_month": "RUB sheet (Russian card): $2.00/TB/mo at 3 TB ($5.99/mo); $3.83/TB/mo at 5 TB ($19.17/mo); $7.27/TB/mo at 10 TB ($72.67/mo). USD sheet (foreign card — the client's real price): $4.17/TB/mo at 3 TB ($12.50/mo); $4.25/TB/mo at 5 TB ($21.25/mo); $3.17/TB/mo at 1 TB. Family variant: $3.03/TB/mo per mem…",
+  "notes": "3 TB / 5 TB / 10 TB / 20 TB / 30 TB tiers under Profi. 3 TB is the value tier: 990 ₽/mo list, 495 ₽/mo when paid annually (50 % annual discount is the steady state, not a short promo — the crossed-out 990 ₽ is the monthly rate). Upload per file: 100 GB. Monthly upload ceiling: 3× your Disk size.",
+  "extras": {
+    "price_verbatim": "RUB sheet (Russian card): $2.00/TB/mo at 3 TB ($5.99/mo); $3.83/TB/mo at 5 TB ($19.17/mo); $7.27/TB/mo at 10 TB ($72.67/mo). USD sheet (foreign card — the client's real price): $4.17/TB/mo at 3 TB ($12.50/mo); $4.25/TB/mo at 5 TB ($21.25/mo); $3.17/TB/mo at 1 TB. Family variant: $3.03/TB/mo per member. At 20 TB: not published on either sheet — the 20 TB and 30 TB options exist in the tier selector but render no price without a logged-in account, so no 20 TB figure is claimed."
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

@@ -1,0 +1,91 @@
+{
+  "topic": "storage",
+  "slug": "wikimedia-commons",
+  "provider": "Wikimedia Commons",
+  "url": "https://commons.wikimedia.org",
+  "category": "open media repository (institutional-grade, Wikimedia Foundation)",
+  "free_tier": {
+    "stated": "NO TOTAL QUOTA — read verbatim from Commons:Maximum_file_size: 'there is no limit to the *total* size of uploads by an individual account.' Per-file cap is 5 GiB (5,368,709,120 bytes) via chunked upload, 100 MiB otherwise. Live API confirms: `maxuploadsize: 5368709120`.",
+    "unit": "GiB",
+    "metered_on": "unstated",
+    "source_url": "https://commons.wikimedia.org/wiki/Commons:Maximum_file_size",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "5 GiB/file",
+    "bytes": 5368709120,
+    "source_url": "https://commons.wikimedia.org/wiki/Commons:Maximum_file_size",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://commons.wikimedia.org/wiki/Commons:Maximum_file_size",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "free, unmetered, CDN (upload.wikimedia.org), no auth, Range supported. Wikimedia runs its own edge cache in front of Swift.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "MediaWiki Action API + REST; `action=upload` with `stash`/`filekey` for chunked; `upload_by_url` right for server-side upload",
+  "tooling": "mwclient / pywikibot / commons-cli; `upload` and `upload_by_url` are granted to the plain `user` group (verified in siteinfo usergroups), so a brand-new account can already do server-side upload without waiting",
+  "chaining": "`upload_by_url` means Commons fetches the file from YOUR url — no local bandwidth at all. Files land at upload.wikimedia.org/wikipedia/commons/<x>/<xy>/<name>, hash-addressed and immutably versioned.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "5 GiB/file",
+      "source": "https://commons.wikimedia.org/wiki/Commons:Maximum_file_size"
+    },
+    {
+      "kind": "write-gated",
+      "value": "review at the community level",
+      "source": "https://commons.wikimedia.org/wiki/Commons:Maximum_file_size"
+    }
+  ],
+  "limits_note": "5 GiB/file, 100 MiB without chunking; per-licence/scope review at the community level; thumbnailing capped at a 59 s timeout, 100 MP for GIFs",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email — account is username+password+email, no affiliation. Note the nuance: upload itself is in the base `user` group, but `reupload` (overwrite) needs autoconfirmed. So first uploads are open; overwriting an existing file needs account age.",
+    "country": null
+  },
+  "reliability_note": "The one platform here where a multi-TB batch is explicitly contemplated — Commons asks you to warn sysadmins before 'batch uploads amounting to several TB', which is an acknowledgement that people do it.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&meta=siteinfo&siprop=general&format=json",
+      "date": "2026-10-21",
+      "proved": "maxuploadsize: 5368709120, generator MediaWiki 1.47.0-wmf.24"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "same API with siprop=usergroups — `user` group holds ['upload','upload_by_url','reupload-own','move-categorypages']"
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Commons:Maximum_file_size",
+      "date": "2026-10-21",
+      "proved": "'no limit to the *total* size of uploads by an individual account'; 5 GiB chunked / 100 MiB direct"
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?...siprop=statistics",
+      "date": "2026-10-21",
+      "proved": "149,839,243 files on the cluster (scale of the storage layer)"
+    },
+    {
+      "url": "https://wikitech.wikimedia.org/wiki/Uploading_large_files",
+      "date": "2026-10-21",
+      "proved": "'Our swift backend storage is limited to files smaller than 5 Gb'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "NO TOTAL QUOTA — read verbatim from Commons:Maximum_file_size: 'there is no limit to the *total* size of uploads by an individual account.' Per-file cap is 5 GiB (5,368,709,120 bytes) via chunked upload, 100 MiB otherwise. Live API confirms: `maxuploadsize: 5368709120`.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

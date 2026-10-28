@@ -1,0 +1,86 @@
+{
+  "topic": "debrid",
+  "slug": "core-ac-uk",
+  "provider": "CORE (core.ac.uk) API v3",
+  "url": "https://core.ac.uk/services/api",
+  "category": "open-access aggregator (metadata plus full-text links)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "The vendor advertises 'Free real-time machine access to the world's largest collection of open access papers' with 'Unlimited access' and 'Direct machine access to full texts of research papers'. The v3 API reference authenticates with 'Authorization: Bearer {apikey}'.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://core.ac.uk/services/api",
+    "read_on": "2026-10-23",
+    "notes": "'Unlimited access' is the vendor's phrase and is not a measured rate."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: JSON per query, with download endpoints that return the stored PDF. A one-record search response measured 2,091 bytes.",
+    "bytes": null,
+    "source_url": "https://api.core.ac.uk/v3/search/works",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "the index is rebuilt from provider repositories; full texts live at the provider, so a CORE download can stop resolving when a repository changes",
+    "days": null,
+    "source_url": "https://core.ac.uk/services/api",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Free. The API key is a free registration, not a purchase; no price appears on the service page.",
+    "metered": false,
+    "free_allowance": "no byte allowance published",
+    "price_per_tb": null,
+    "source_url": "https://core.ac.uk/services/api"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "GET https://api.core.ac.uk/v3/search/works?q=...&limit=N with an Authorization: Bearer header; separate endpoints for outputs, data providers and full-text download.",
+  "endpoint": "https://api.core.ac.uk/v3/search/works",
+  "tooling": "curl/python-requests; no SDK required.",
+  "chaining": "A full-text aggregator that overlaps Europe PMC and PMC on biomedical content but also covers humanities and social science repositories those two miss.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "no numeric limit is published on the service page or in the API reference; the reference documents 429 as the throttling response",
+      "source": "https://api.core.ac.uk/docs/v3"
+    }
+  ],
+  "limits_note": "The key requirement is documented ('Bearer {apikey}') but the gate is soft today: an anonymous /v3/search/works call returned 200 with 2,091 bytes of real JSON on 2026-10-23. Treat the key as required by contract and not by enforcement until it is re-tested.",
+  "binding": "request-rate",
+  "binding_note": "The documented unlimited access is an unmeasured claim; with no published rate, the only known ceiling is the 429 the reference documents, which cannot be located without a sustained run.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "A free API key from CORE registration, sent as a Bearer token. Anonymous calls answered 200 in this test, so the gate is not enforced on search today.",
+    "country": null
+  },
+  "reliability_note": "A full-text link can rot on the provider side even while the CORE record survives; the aggregator's copy is a pointer, not a mirror.",
+  "confidence": "documented",
+  "confidence_note": "The service page and the API reference were read, and one anonymous call was made. The rate ceiling and the enforcement of the key are both unverified.",
+  "evidence": [
+    {
+      "url": "https://core.ac.uk/services/api",
+      "date": "2026-10-23",
+      "proved": "'Free real-time machine access', 'Unlimited access', 'Direct machine access to full texts of research papers'"
+    },
+    {
+      "url": "https://api.core.ac.uk/docs/v3",
+      "date": "2026-10-23",
+      "proved": "the v3 reference's authentication scheme: 'Authorization: Bearer {apikey}'"
+    },
+    {
+      "url": "probe:https://api.core.ac.uk/v3/search/works?q=cancer&limit=1",
+      "date": "2026-10-23",
+      "proved": "200 with 2,091 bytes of JSON to an anonymous client - the key is documented but not enforced on this endpoint today"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T03:24:34.450Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Caveat is the unmeasured rate: the marketing says unlimited and the reference says 429. Neither is a number, so the record cannot promise a day's bytes.",
+  "extras": {
+    "auth_header": "Authorization: Bearer <apikey>",
+    "anonymous_search_status": 200
+  }
+}

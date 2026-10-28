@@ -1,0 +1,107 @@
+{
+  "slug": "binsearch",
+  "provider": "Binsearch",
+  "url": "https://www.binsearch.info/",
+  "category": "Usenet binary search engine (HTML search, anonymous NZB build)",
+  "tier": "anonymous",
+  "free_tier": {
+    "stated": "No account and no key. GET /search?q=linux returned 98,890 bytes of results, paginated to 174 pages. GET /nzb?q=linux&<base64 collection id>=on returned a 4,229-byte NZB carrying 9 files. The site publishes no daily counter anywhere a reader can reach.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://www.binsearch.info/",
+    "read_on": "2026-10-23",
+    "notes": "'unlimited' is a statement about the absence of a published quota, supported by a 6-request burst, not by a vendor sentence."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: the answer is an NZB pointer file (4,229 bytes, 9 files), never the payload",
+    "bytes": null,
+    "source_url": "https://www.binsearch.info/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not stated on the pages read. A third-party indexer comparison claims 'up to 1,100 days of binary retention, searches 400+ popular newsgroups by default' (nzbhydra.com, 2026-10-23).",
+    "days": null,
+    "source_url": "https://nzbhydra.com/indexers/",
+    "notes": "reported, not documented: Binsearch publishes no retention figure on its search or results page."
+  },
+  "egress": {
+    "terms": "No metering. Every answer is a small XML pointer file; the bytes themselves come from whichever news provider the client holds an account with.",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.binsearch.info/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "HTML search over HTTP GET against /search (Next.js front end, results server-rendered). NZB is built by a GET to /nzb?q=<query>&<name>=on where <name> is the base64 collection id carried by each result's checkbox. There is no Newznab endpoint: /api returns 404.",
+  "endpoint": "https://www.binsearch.info/search?q=<query> ; https://www.binsearch.info/nzb?q=<query>&<collection-id>=on",
+  "tooling": "No Newznab API, so Sonarr, Radarr, Prowlarr and NZBHydra2 cannot add it as an indexer. A wrapper must GET /search, parse the collection ids out of the checkbox names, and re-issue GET /nzb. Two GETs per download.",
+  "chaining": "A fallback name search when every Newznab indexer is down or refuses registration; the NZB it returns goes into the same SABnzbd or NZBGet queue as any other.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "none observed: 6 consecutive anonymous searches in one session all returned 200",
+      "source": "probe:https://www.binsearch.info/search?q=test1..test6"
+    }
+  ],
+  "limits_note": "Page depth is the only ceiling the service shows: the query 'linux' exposed 174 pages. No per-IP shaping was observed and no quota page exists to read.",
+  "binding": "none",
+  "binding_note": "Nothing in the seven-kind vocabulary fails at a client pulling 1 TiB a month: there is no counter to hit. The real cost is two GETs per NZB plus a scraper that survives a front-end rewrite, which is a tooling cost and not a limit.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account, no key, no cookie. Search and NZB creation both answered an anonymous request with no credential of any kind.",
+    "country": null
+  },
+  "reliability_note": "Advertiser-supported binary search engine; results are raw article headers, so completion depends entirely on the retention of the news provider the client pays, and dead posts stay listed until the indexer notices.",
+  "confidence": "measured",
+  "confidence_note": "Search and NZB creation were both run today and both produced payload bytes with a recorded digest. Nothing here is quoted from a third party. What would raise nothing: the rung is already the top one; what is missing is a long-run rate test, which a 6-request burst does not provide.",
+  "evidence": [
+    {
+      "url": "probe:https://www.binsearch.info/search?q=linux&o=1",
+      "date": "2026-10-23",
+      "proved": "anonymous HTML search returned 200 and 98,890 bytes with 174 result pages and per-result collection ids"
+    },
+    {
+      "url": "probe:https://www.binsearch.info/nzb?q=linux&Mjg4Yjk3YmYtODlhMy0zNTllLThhYzgtZDFiODYyM2NhYTlj=on",
+      "date": "2026-10-23",
+      "proved": "anonymous GET returned 200, a 4,229-byte NZB with 9 <file> elements (sha256 7070590f...)"
+    },
+    {
+      "url": "probe:https://www.binsearch.info/api",
+      "date": "2026-10-23",
+      "proved": "the API path does not exist: 404, so there is no Newznab surface to add to a client"
+    },
+    {
+      "url": "https://nzbhydra.com/indexers/",
+      "date": "2026-10-23",
+      "proved": "third-party claim of 1,100 days retention and 400+ groups; used only for the retention field, which Binsearch does not publish"
+    }
+  ],
+  "verdict": "qualifies",
+  "extras": {
+    "price": "USD 0",
+    "measurements": [
+      {
+        "url": "https://www.binsearch.info/search?q=linux&o=1",
+        "status": 200,
+        "bytes": 98890,
+        "sha256": "c7624df04530992f588d89403f858d43888f39b640d376a279f0cf500b4df236",
+        "note": ""
+      },
+      {
+        "url": "https://www.binsearch.info/nzb?q=linux&Mjg4Yjk3YmYtODlhMy0zNTllLThhYzgtZDFiODYyM2NhYTlj=on",
+        "status": 200,
+        "bytes": 4229,
+        "sha256": "7070590ff44a8fa02a9da80d3c706348b5a8a0b5ca8710a9d8a6c18f7444a089",
+        "note": ""
+      }
+    ],
+    "nzb_is_newznab": false,
+    "burst": "6 sequential searches, all 200"
+  },
+  "notes": "The result page is a Next.js front end but the results are server-rendered, so the HTML carries them; that is why a plain GET works where NZBIndex's does not. A query string is mandatory on /nzb or the broker's own parameter append corrupts the path, which is a tooling detail recorded here so the next session does not read a 404 as a dead endpoint.",
+  "verified_at": "2026-10-23T02:11:54.066Z",
+  "topic": "debrid",
+  "price_per_tb_month": null
+}

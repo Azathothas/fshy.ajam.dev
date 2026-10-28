@@ -1,0 +1,90 @@
+{
+  "topic": "egress",
+  "slug": "render",
+  "provider": "Render",
+  "url": "https://render.com/docs/free",
+  "category": "paas l4 port",
+  "tier": "free",
+  "free_tier": {
+    "stated": "You can deploy certain Render service types free of charge ... Free instances have important limitations, described below. Do not use them for production applications.",
+    "unit": "GB",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://render.com/docs/outbound-bandwidth",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://render.com/docs/free",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://render.com/docs/free",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Hobby workspace included bandwidth: 5 GB per month. Above that, $0.15 per GB, or the workspace is spun down until the next month.; ingress: http-only",
+    "metered": true,
+    "free_allowance": "Hobby workspace included bandwidth: 5 GB per month. Above that, $0.15 per GB, or the workspace is spun down until the next month.",
+    "price_per_tb": null,
+    "source_url": "https://render.com/docs/free"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "Dashboard, API, and render.yaml blueprint.",
+  "tooling": "Git push or Dockerfile; no port configuration beyond PORT.",
+  "chaining": "Render can host the HTTP side of a stack; it cannot host an endpoint.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "5 GB per month on Hobby; $0.15/GB above",
+      "source": "https://render.com/docs/outbound-bandwidth"
+    }
+  ],
+  "limits_note": "",
+  "binding": "volume-quota",
+  "binding_note": "5 GB/month is 0.005 TiB. The transport fails first though: no public port other than one HTTP port exists on a free web service.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Free instances need an account; a payment method is optional, and without one Render \"spins down your workspace's services until the start of the next month\" at the cap.",
+    "country": "None"
+  },
+  "reliability_note": "Free instances spin down when idle; the workspace is spun down at the bandwidth cap if no card is on file.",
+  "confidence": "documented",
+  "confidence_note": "A probe cannot be run because no non-HTTP public port can be created on a free instance.",
+  "evidence": [
+    {
+      "url": "https://render.com/docs/free",
+      "date": "2026-10-23",
+      "proved": "Free web services and static sites; bandwidth counted against workspace allowance"
+    },
+    {
+      "url": "https://render.com/docs/outbound-bandwidth",
+      "date": "2026-10-23",
+      "proved": "Hobby 5 GB included bandwidth; $0.15/GB public internet; spin-down without a payment method"
+    },
+    {
+      "url": "https://render.com/docs/web-services",
+      "date": "2026-10-23",
+      "proved": "\"Render forwards inbound requests to your web service at this port (it is not directly reachable via the public internet).\""
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Private services can bind extra ports but only over the private network; the free tier does not include private services. One public HTTP port per service.",
+  "extras": {
+    "wg_path": "none",
+    "wg_detail": "HTTP only. \"Every Render web service must bind to a port on host 0.0.0.0 to serve HTTP requests ... Render forwards inbound requests to your web service at this port (it is not directly reachable via the public internet).\"",
+    "ingress": "http-only",
+    "volume_tib_month": 0.00455,
+    "volume_stated": "Hobby workspace included bandwidth: 5 GB per month. Above that, $0.15 per GB, or the workspace is spun down until the next month.",
+    "bytes_transit": "no",
+    "transit_note": "Render terminates HTTP; no raw socket reaches the client."
+  }
+}

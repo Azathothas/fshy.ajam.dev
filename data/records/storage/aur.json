@@ -1,0 +1,85 @@
+{
+  "topic": "storage",
+  "slug": "aur",
+  "provider": "AUR (Arch User Repository)",
+  "url": "https://aur.archlinux.org",
+  "category": "registry",
+  "free_tier": {
+    "stated": "Not a storage candidate at all: the AUR enforces a hard maximum blob size of 250 KiB per git object. The git hook rejects the push: 'remote: error: maximum blob size (250.00KiB) exceeded / remote: error: hook declined to update refs/heads/master'. Config files around 250.8 KiB already trip it.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://bugs.archlinux.org/task/68997",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: 250 KiB",
+    "bytes": 256000,
+    "source_url": "https://bugs.archlinux.org/task/68997",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "per-object-cap: 250 KiB (hard, server-side git hook). retention: indefinite for packages",
+    "source_url": "https://bugs.archlinux.org/task/68997",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free (plain git over SSH/HTTPS), but irrelevant given the cap.",
+    "metered": false
+  },
+  "interface": [
+    "ssh",
+    "git",
+    "rclone"
+  ],
+  "interface_detail": "git",
+  "tooling": "git over ssh://aur.archlinux.org/<pkg>.git; AUR RPC v5 at /rpc/. No rclone backend (git is the interface).",
+  "chaining": "unlimited AUR packages x 250 KiB = useless for bulk. Content must be PKGBUILD + patches; large sources are fetched at build time by URL, never stored.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: 250 KiB",
+      "source": "https://bugs.archlinux.org/task/68997"
+    }
+  ],
+  "limits_note": "per-object-cap: 250 KiB (hard, server-side git hook). retention: indefinite for packages. request-rate: git push over ssh, per-key.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Cleanest possible dead end: a hard 250 KiB blob limit enforced by a git hook. Any 'AUR as storage' idea dies here. Not covered in round 1.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://bugs.archlinux.org/task/68997",
+      "date": "2026-10-21",
+      "proved": "'remote: error: maximum blob size (250.00KiB) exceeded' on a 250.8 KiB config file; maintainer confirms the limit is intentional"
+    },
+    {
+      "url": "https://lists.archlinux.org/pipermail/aur-general/2015-August/031470.html",
+      "date": "2026-10-21",
+      "proved": "'[aur-general] max blob size exceeded'"
+    },
+    {
+      "url": "https://aur.archlinux.org/rpc/?v=5&type=info&arg=google-chrome",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, 679 bytes (RPC v5 live; metadata only, no blob path)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Not a storage candidate at all: the AUR enforces a hard maximum blob size of 250 KiB per git object. The git hook rejects the push: 'remote: error: maximum blob size (250.00KiB) exceeded / remote: error: hook declined to update refs/heads/master'. Config files around 250.8 KiB already trip it.",
+  "extras": {
+    "unit_note": "free_tier.unit is 'mixed' because the headline is denominated in MiB or KiB, which the schema enum does not carry; the verbatim free_tier.stated keeps the true unit. See the storage-dossier handover.",
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "Not a storage candidate at all: the AUR enforces a hard maximum blob size of 250 KiB per git object. The git hook rejects the push: 'remote: error: maximum blob size (250.00KiB) exceeded / remote: error: hook declined to update refs/heads/master'. Config files around 250.8 KiB already trip it.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

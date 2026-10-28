@@ -1,0 +1,93 @@
+{
+  "topic": "egress",
+  "slug": "cloudflare-tunnel",
+  "provider": "Cloudflare Tunnel (named)",
+  "url": "https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/",
+  "category": "tunnel (hosted, named)",
+  "free_tier": {
+    "stated": "unlimited tunnels and unmetered transit; 1,000 tunnels per account",
+    "unit": "unlimited",
+    "metered_on": "identity-count",
+    "source_url": "https://developers.cloudflare.com/cloudflare-one/account-limits/",
+    "read_on": "2026-10-22",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "100 MB proxied request body on Free and Pro (413), 200 MB Business",
+    "bytes": null,
+    "notes": "",
+    "source_url": "https://developers.cloudflare.com/workers/platform/limits/"
+  },
+  "retention": {
+    "stated": "not applicable: the tunnel and its hostname persist",
+    "days": null,
+    "notes": "",
+    "source_url": "https://developers.cloudflare.com/tunnel/setup/"
+  },
+  "egress": {
+    "terms": "unmetered; no bandwidth figure appears among the account limits",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://developers.cloudflare.com/cloudflare-one/account-limits/"
+  },
+  "interface": [
+    "cli",
+    "rest"
+  ],
+  "tooling": "cloudflared",
+  "chaining": "the serving chain for a real hostname: a domain on Cloudflare nameservers -> a named tunnel -> an origin that cannot open a port. Composes with Oracle Always Free as the origin and with R2 behind it, and the scarce link is the domain.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "the hostname must be a zone on Cloudflare nameservers",
+      "source": "https://developers.cloudflare.com/tunnel/setup/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "100 MB proxied request body on Free and Pro",
+      "source": "https://developers.cloudflare.com/workers/platform/limits/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "125 s proxy read timeout and 30 s proxy write timeout, both 524",
+      "source": "https://developers.cloudflare.com/fundamentals/reference/connection-limits/"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a Cloudflare account plus a domain delegated to Cloudflare nameservers",
+    "country": null
+  },
+  "reliability_note": "community reports describe about 20 Mbit/s on tunnel transfers; not reproduced here",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://developers.cloudflare.com/cloudflare-one/account-limits/",
+      "date": "2026-10-22",
+      "proved": "1,000 tunnels per account, 25 replicas per tunnel, 50,000 routes, and no bandwidth figure anywhere on the page"
+    },
+    {
+      "url": "https://developers.cloudflare.com/fundamentals/reference/connection-limits/",
+      "date": "2026-10-22",
+      "proved": "Proxy Read Timeout 125 s and Proxy Write Timeout 30 s, both returning 524"
+    },
+    {
+      "url": "https://community.cloudflare.com/t/cloudflare-tunnel-limits-and-bandwith/393006",
+      "date": "2026-10-22",
+      "proved": "Cloudflare staff, 2022-06-21: 'There are no bandwidth limits'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T03:20:00.000Z",
+  "notes": "'Unmetered' is a documented absence rather than a quota, so it is not multiplied here. The census cited the account-limits page for the 100 MB figure; that page does not contain it.",
+  "extras": {
+    "stale_after_days": 180,
+    "bytes_transit": "yes",
+    "transit_note": "cloudflared dials out and Cloudflare relays the request and response bytes"
+  },
+  "binding": "write-gated",
+  "binding_note": "the domain is the only paid element and the gate; the 100 MB body cap binds writes, not reads.",
+  "interface_detail": "cloudflared tunnel run; the hostname is a record on a zone the client owns",
+  "limits_note": "counts of things, not rates, so no vocabulary kind names them: 1,000 cloudflared tunnels per account and 25 active replicas per tunnel; 50,000 routes per account, shared with Cloudflare Mesh"
+}

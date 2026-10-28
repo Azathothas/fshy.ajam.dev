@@ -1,0 +1,81 @@
+{
+  "topic": "storage",
+  "slug": "gofile",
+  "provider": "Gofile",
+  "url": "https://gofile.io",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "no storage figure at all on the free tier — free accounts get temporary storage with a 10,000-content cap per account ('Free accounts are capped at 10,000 stored contents'); free traffic allowance is '100 GB traffic / 30 days'",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://gofile.io/premium",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://gofile.io/premium",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "30 days' | content is deleted after 10 days of inactivity unless it keeps being downloaded; past the storage period content may be moved to cold storage and importing it back requires Premium; most API endpoints (listing, direct links) return error-notPremium; 'Repeatedly exceeding rate limits may result in automatic IP bans'",
+    "days": 30,
+    "source_url": "https://gofile.io/premium",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "free plan: '100 GB traffic / 30 days'; 'We never throttle bandwidth' but traffic over the allowance restricts download functionality. Premium removes caps entirely",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "REST API at api.gofile.io (documented, CORS, per-endpoint rate limits); rclone backend 'gofile' (Tier 1) but its docs warn 'if you wish to connect rclone to Gofile you will need a premium account'; guest account creation is a single unauthenticated POST",
+  "chaining": "unlimited guest accounts created by API call (no email, no human-verification step) x 10,000 files each — probe-verified; each guest account also brings its own 100 GB/30-day traffic bucket, so fetch load can be sharded by account",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "deleted after 10 days",
+      "source": "https://gofile.io/premium"
+    }
+  ],
+  "limits_note": "content is deleted after 10 days of inactivity unless it keeps being downloaded; past the storage period content may be moved to cold storage and importing it back requires Premium; most API endpoints (listing, direct links) return error-notPremium; 'Repeatedly exceeding rate limits may result in automatic IP bans'",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: ny-small-file datasets unlimited guest accounts created by API call (no email, no human-verification step) x 10,000 files each — probe-verified; each guest account also brings its own 100 GB/30-day",
+    "country": null
+  },
+  "reliability_note": "10-day inactivity expiry plus cold-storage migration makes it storage-with-a-TTL, not a drive; content-count cap (10k) bites hard on many-small-file datasets",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://gofile.io/faq",
+      "date": "2026-10-21",
+      "proved": "'Content is kept for 10 days of inactivity', 'Content past its storage period may be moved to cold storage', free traffic counted per IP"
+    },
+    {
+      "url": "https://gofile.io/api",
+      "date": "2026-10-21",
+      "proved": "'Free accounts are capped at 10,000 stored contents', error-limits/error-notPremium statuses, rate limits per IP and per account"
+    },
+    {
+      "url": "https://api.gofile.io/accounts",
+      "date": "2026-10-21",
+      "proved": "probe: POST (no auth) -> {\"status\":\"ok\",\"data\":{\"tier\":\"guest\",\"token\":\"DtZGU7IXTjUXIor2UTCc8LwVuuELs1e7\"}} (unlimited anonymous identities, one HTTP call each)"
+    },
+    {
+      "url": "https://store4.gofile.io/contents/uploadfile",
+      "date": "2026-10-21",
+      "proved": "probe: POST (no token) -> 200, file stored, downloadPage https://gofile.io/d/nxWCc29o; later GET api.gofile.io/contents/nxWCc29o with the guest token -> {\"status\":\"error-notPremium\"}"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "no storage figure at all on the free tier — free accounts get temporary storage with a 10,000-content cap per account ('Free accounts are capped at 10,000 stored contents'); free traffic allowance is '100 GB traffic / 30 days'",
+  "extras": {},
+  "binding": "retention-clamped",
+  "binding_note": "a clock, not a quota: bytes leave whether or not the client is finished with them"
+}

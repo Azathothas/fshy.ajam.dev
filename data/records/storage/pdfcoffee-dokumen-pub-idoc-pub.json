@@ -1,0 +1,97 @@
+{
+  "topic": "storage",
+  "slug": "pdfcoffee-dokumen-pub-idoc-pub",
+  "provider": "pdfcoffee / dokumen.pub / idoc.pub (unlimited-PDF dump network)",
+  "url": "https://pdfcoffee.com",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "\"Upload as much as you need! Unlimited volume of uploaded files\" — no document count or account quota; dokument.pub FAQ caps a single PDF at 200 MB and states \"No limitation\" on number of pages/uploads. Per-record unlimited x unlimited records.",
+    "unit": "unlimited",
+    "metered_on": "unstated",
+    "source_url": "https://dokument.pub/faqs",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "200 MB per file",
+    "bytes": 200000000,
+    "source_url": "https://dokument.pub/faqs",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://dokument.pub/faqs",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free public HTTP: every document has a permanent public page and a download endpoint (idoc.pub: /download-file-partner/<slug>?hash=<md5-like>); no auth, no metering, no expiry documented.",
+    "metered": false
+  },
+  "interface": [
+    "rclone"
+  ],
+  "interface_detail": "wrapper-only",
+  "tooling": "No API. Upload is a browser form behind Cloudflare/nginx bot filtering; download is a plain GET. No rclone backend, no known maintained client.",
+  "chaining": "Per-record unlimited means the chain is just 'keep uploading': 200 MB/PDF x unlimited PDFs. But every unit needs a form POST, so throughput is bounded by bot defences, not quota.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "200 MB per file",
+      "source": "https://dokument.pub/faqs"
+    },
+    {
+      "kind": "write-gated",
+      "value": "approval before publishing (idoc",
+      "source": "https://dokument.pub/faqs"
+    }
+  ],
+  "limits_note": "200 MB per PDF (dokument.pub); 150 MB-200 MB per file on siblings; three-step moderation/approval before publishing (idoc.pub); file types restricted to PDF/DOC/PPT.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: ublishing (idoc.pub); file types restricted to PDF/DOC/PPT. anonymous-dump",
+    "country": null
+  },
+  "reliability_note": "Upload path is walled by an automated-traffic filter and by login (idoc.pub), so unattended bulk ingest fails",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://dokument.pub/faqs",
+      "date": "2026-10-21",
+      "proved": "'The max PDF file size is 200 MB'; 'Is there a limitation on the number of ... uploads? No limitation.'"
+    },
+    {
+      "url": "https://dokumen.pub/about",
+      "date": "2026-10-21",
+      "proved": "'Upload as much as you need! Unlimited volume of uploaded files. You may publish any number of documents in PDF, Microsoft Word and PowerPoint format.'"
+    },
+    {
+      "url": "https://pdfcoffee.com/upload",
+      "date": "2026-10-21",
+      "proved": "POST https://dokumen.pub/upload -F file=@t.pdf -> 403 Cloudflare 'Just a moment...'"
+    },
+    {
+      "url": "https://idoc.pub/upload",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> login wall (/login?redirect_url=...); GET https://idoc.pub/download-file-partner/anonymous-presentacion-vlr0vrvwjzlz?hash=e2e0... -> 302 to /404 (hash is per-document, not reusable)"
+    },
+    {
+      "url": "https://pdfcoffee.com/download/upload-10-pdf-free.html",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200 but Content-Type text/html (viewer page, not the original bytes)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "\"Upload as much as you need! Unlimited volume of uploaded files\" — no document count or account quota; dokument.pub FAQ caps a single PDF at 200 MB and states \"No limitation\" on number of pages/uploads. Per-record unlimited x unlimited records.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "\"Upload as much as you need! Unlimited volume of uploaded files\" — no document count or account quota; dokument.pub FAQ caps a single PDF at 200 MB and states \"No limitation\" on number of pages/uploads. Per-record unlimited x unlimited records.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

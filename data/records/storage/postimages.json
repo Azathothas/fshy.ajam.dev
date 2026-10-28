@@ -1,0 +1,75 @@
+{
+  "topic": "storage",
+  "slug": "postimages",
+  "provider": "Postimages (postimages.org / postimg.cc)",
+  "url": "https://postimages.org",
+  "category": "media",
+  "free_tier": {
+    "stated": "No storage cap stated: 'we do not impose strict limits on our users... Some users store and share tens of thousands of images'. Explicitly 'you will never have to worry about your images being removed due to inactivity'.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://postimages.org/faq",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "32 MB/file",
+    "bytes": 32000000,
+    "source_url": "https://postimages.org/faq",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://postimages.org/faq",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free, unmetered hotlinking, CDN-served, no published bandwidth tier. Only soft pressure: if you use 'a really large amount' of disk/bandwidth without linking back they reserve the right to contact you.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Documented token API — their own upload endpoint says 'Please use the official API: https://api.postimages.org/'. ShareX ships a Postimages destination keyed on an account API key from the profile page; npm 'postimages-upload'.",
+  "chaining": "Unlimited free accounts, each with unlimited images. Gallery per account, 1,000 images per batch (batch size, not a cap).",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "32 MB/file",
+      "source": "https://postimages.org/faq"
+    }
+  ],
+  "limits_note": "32 MB/file and 10,000x10,000 px for free and anonymous; Premium 96 MB / 65,535 px. EXIF preserved by default (evidence of no re-encode). Programmatic upload only via the token API, not the web endpoint.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "derived from the record's prose, not from an identity field, and no signup was executed: oads are not allowed via the website' — must use the token API. Otherwise durable, no inactivity deletion. Unlimited free accounts, each with unlimited images. Gallery per account, 1,000 imag",
+    "country": null
+  },
+  "reliability_note": "Web endpoint blocks scripted uploads with 403 'Automated uploads are not allowed via the website' — must use the token API. Otherwise durable, no inactivity deletion.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://postimages.org/faq",
+      "date": "2026-10-21",
+      "proved": "'limited to a file size of 32Mb and maximum dimensions of 10000 x 10000 pixels'; 'unlimited number of images per post... never have to worry about your images being removed due to inactivity'; 'By default, Postimages keeps the original EXIF data embedded'"
+    },
+    {
+      "url": "https://api.postimages.org/",
+      "date": "2026-10-21",
+      "proved": "probe: POST postimages.org/json/rr with anonymous token -> 403 {\"error\":{\"message\":\"Automated uploads are not allowed via the website. Please use the official API: \",\"code\":403}}"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: HEAD api.postimages.org -> 301 nginx (endpoint exists; no human-readable docs page published)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No storage cap stated: 'we do not impose strict limits on our users... Some users store and share tens of thousands of images'. Explicitly 'you will never have to worry about your images being removed due to inactivity'.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": "the per-object cap sets the shard size and therefore the object count; it bounds the total more tightly than any headline quota"
+}

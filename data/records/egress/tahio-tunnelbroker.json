@@ -1,0 +1,109 @@
+{
+  "topic": "egress",
+  "slug": "tahio-tunnelbroker",
+  "provider": "tahio TunnelBroker",
+  "url": "https://tb.tahio.eu/",
+  "category": "ipv6 tunnel broker",
+  "tier": "free",
+  "free_tier": {
+    "stated": "SIT, GRE and WireGuard tunnels with BGP-routed /48s. Free, dual-stack, dyndns2-ready.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://tb.tahio.eu/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://tb.tahio.eu/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://tb.tahio.eu/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "no monthly byte allowance is published; the fair-use section caps speed instead: '50 Mbit/s up + down, kernel-shaped'; ingress: tcp+udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://tb.tahio.eu/"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "the site hands out SIT, GRE and WireGuard configuration; a dyndns2 endpoint updater is offered per tunnel for dynamic IPv4",
+  "tooling": "wg-quick or wireguard-tools; a plain SIT/GRE interface for the other two transports",
+  "chaining": "a native WireGuard profile with no dashboard step makes it the cheapest way to put a free compute instance on a public IPv6 address with every port open.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "50 Mbit/s up and down, kernel-shaped, per tunnel",
+      "source": "https://tb.tahio.eu/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "SYN-flood and ICMP rate limits applied per tunnel automatically",
+      "source": "https://tb.tahio.eu/"
+    }
+  ],
+  "limits_note": "",
+  "binding": "none",
+  "binding_note": "At 1 TiB/month the client needs 3.24 Mbit/s sustained; the 50 Mbit/s cap is about fifteen times that, so the speed limit does not bind at this volume and no byte quota exists. What actually constrains a workload here is the blocked-port list, which the seven kinds do not name: 'SMTP - 25 - 465 - 587 - 2525' and 'POP3/IMAP - 110 - 143 - 993 - 995' are closed, so a mail service on this prefix cannot work. Reachability is IPv6-only.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "https://tb.tahio.eu/sign-up asks for Email, Password and Full Name, with Nickname optional; no card and no phone field.",
+    "country": "None"
+  },
+  "reliability_note": "no SLA: 'No SLA, no uptime guarantee.' Abuse, spam or scanning gives 'instant termination, no warning.'",
+  "confidence": "documented",
+  "confidence_note": "documented from the vendor page read today, including a full WireGuard profile. A measured rung needs a tunnel brought up and a UDP service reached through it, which needs an account.",
+  "evidence": [
+    {
+      "url": "https://tb.tahio.eu/",
+      "date": "2026-10-23",
+      "proved": "'SIT, GRE and WireGuard tunnels with BGP-routed /48s. Free, dual-stack, dyndns2-ready.'"
+    },
+    {
+      "url": "https://tb.tahio.eu/",
+      "date": "2026-10-23",
+      "proved": "a WireGuard profile with Endpoint = tb.tahio.eu:51820 and Address 2a05:1083:bef0::1/64"
+    },
+    {
+      "url": "https://tb.tahio.eu/",
+      "date": "2026-10-23",
+      "proved": "'50 Mbit/s up + down, kernel-shaped' and '2 tunnels per account' under 'Free isn't unlimited'"
+    },
+    {
+      "url": "https://tb.tahio.eu/",
+      "date": "2026-10-23",
+      "proved": "blocked ports: 'SMTP - 25 - 465 - 587 - 2525', 'POP3/IMAP - 110 - 143 - 993 - 995'"
+    },
+    {
+      "url": "https://tb.tahio.eu/sign-up",
+      "date": "2026-10-23",
+      "proved": "Email, Password and Full Name are the only account fields"
+    },
+    {
+      "url": "https://tb.tahio.eu/",
+      "date": "2026-10-23",
+      "proved": "'Each tunnel gets two /64s from the primary pools plus a /64 from a tertiary.'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The page contradicts itself on prefix size: the headline says 'BGP-routed /48s' while the network section says 'Each tunnel gets two /64s from the primary pools plus a /64 from a tertiary.' The /64 arithmetic is the concrete statement and the /48 is unexplained, so the record carries three /64s and flags the /48 as unestablished. AS198889, single PoP in Oslo, peered with Gigahost.",
+  "extras": {
+    "wg_path": "native-conf",
+    "wg_detail": "the page publishes a complete WireGuard profile with 'Endpoint = tb.tahio.eu:51820', AllowedIPs ::/0 and PersistentKeepalive 25, and says 'The endpoint learns your IP from the handshake, so dynamic IPv4 routers work out of the box.'",
+    "ingress": "tcp+udp",
+    "volume_tib_month": null,
+    "volume_stated": "no monthly byte allowance is published; the fair-use section caps speed instead: '50 Mbit/s up + down, kernel-shaped'",
+    "bytes_transit": "yes",
+    "transit_note": "AS198889 carries the traffic; upstream is AS56655 (Gigahost), importing a default route."
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "topic": "egress",
+  "slug": "gcp-passthrough-nlb",
+  "provider": "Google Cloud external passthrough Network Load Balancer",
+  "url": "https://cloud.google.com/load-balancing/docs/network",
+  "category": "L4 passthrough load balancer (regional)",
+  "tier": "payg",
+  "free_tier": {
+    "stated": "No free tier is stated for the load balancer. Backends must be instance groups or NEGs: These backends must be in the same region and project.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://cloud.google.com/load-balancing/docs/network",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://cloud.google.com/load-balancing/docs/network",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://cloud.google.com/load-balancing/docs/network",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No byte allowance: a forwarding rule is billed hourly and the traffic is billed at Cloud egress rates. The price page could not be read - its extraction returned an unrelated domain-price table.; ingress: tcp+udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://cloud.google.com/load-balancing/docs/network"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "a forwarding rule selects address, protocol and ports and points at one regional backend service",
+  "tooling": "gcloud, the API or the console; a forwarding rule plus a backend service and health check",
+  "chaining": "only with a GCP backend, so it chains with a free GCP e2-micro but that VM already has a public IP",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "backends must be instance groups or zonal NEGs in the same region and project as the load balancer",
+      "source": "https://cloud.google.com/load-balancing/docs/network"
+    }
+  ],
+  "limits_note": "",
+  "binding": "write-gated",
+  "binding_note": "At 1 TiB/month the first thing that stops the client is not a byte count but the backend requirement: the service must already run in the same GCP project and region, which means the origin already has a public address of its own.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "A Google Cloud project with billing enabled; the free trial credit is a credit, not a free tier for this product.",
+    "country": "None"
+  },
+  "reliability_note": "none recorded",
+  "confidence": "documented",
+  "confidence_note": "The protocol list and the backend constraint are quoted from the page read today. The price is unverified because the pricing page extraction failed, so the record cannot support a cost claim.",
+  "evidence": [
+    {
+      "url": "https://cloud.google.com/load-balancing/docs/network",
+      "date": "2026-10-23",
+      "proved": "Backend service-based regional external passthrough Network Load Balancers can load-balance TCP, UDP, ESP, GRE, ICMP, and ICMPv6 traffic."
+    },
+    {
+      "url": "https://cloud.google.com/load-balancing/docs/network",
+      "date": "2026-10-23",
+      "proved": "These backends must be in the same region and project but can be in different VPC networks."
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "unverified",
+  "notes": "UDP is documented and the address can be Premium Tier, which is anycast to the nearest region. It still adds no reachability a GCP VM's own external IP does not already provide, and it is regional rather than global for L4. Hybrid NEGs can point at on-premises hosts through Cloud VPN or Interconnect, which is a route but not a cheap one.",
+  "extras": {
+    "wg_path": "inside-udp",
+    "wg_detail": "The backend service forwards TCP, UDP, ESP, GRE, ICMP and ICMPv6, so a WireGuard datagram reaches a GCE backend on the forwarding rule's port.",
+    "ingress": "tcp+udp",
+    "volume_tib_month": null,
+    "volume_stated": "No byte allowance: a forwarding rule is billed hourly and the traffic is billed at Cloud egress rates. The price page could not be read - its extraction returned an unrelated domain-price table.",
+    "bytes_transit": "yes",
+    "transit_note": "Google's network carries the bytes to the backend"
+  }
+}

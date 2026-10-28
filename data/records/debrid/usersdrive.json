@@ -1,0 +1,206 @@
+{
+  "topic": "debrid",
+  "tier": "free",
+  "limits_note": "",
+  "slug": "usersdrive",
+  "provider": "UsersDrive",
+  "url": "https://usersdrive.com/vzm2kpefxwwx.html",
+  "category": "premium file host (XFileSharing), retrieval target",
+  "free_tier": {
+    "stated": "the free download button issues no link without a Cloudflare Turnstile token: the page renders cf-turnstile with sitekey 0x4AAAAAACeImx-4o4i5J2uf and the button text 'Create Download Link'",
+    "unit": "mixed",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://usersdrive.com/vzm2kpefxwwx.html",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not stated on the page read; the object offered was 11,183,547 bytes",
+    "bytes": null,
+    "source_url": "https://usersdrive.com/vzm2kpefxwwx.html"
+  },
+  "retention": {
+    "stated": "not stated on the page read; the object offered was uploaded 2024-05-15 and still listed",
+    "days": null,
+    "source_url": "https://usersdrive.com/vzm2kpefxwwx.html"
+  },
+  "egress": {
+    "terms": "no anonymous scripted path: a GET with the download2 fields returns the 32,447-byte page again instead of the file, because the free flow needs a Turnstile token",
+    "metered": true,
+    "free_allowance": "not published",
+    "price_per_tb": "not priced",
+    "source_url": "https://usersdrive.com/vzm2kpefxwwx.html"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "HTML form with op=download2 and an empty rand, gated by cf-turnstile; no API",
+  "tooling": "JDownloader and debrid services solve or proxy the challenge; a bare HTTP client cannot",
+  "chaining": "a debrid that already handles XFileSharing Turnstile turns this host into a normal download; without one the host is browser-only",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "free download requires a Cloudflare Turnstile token on sitekey 0x4AAAAAACeImx-4o4i5J2uf",
+      "source": "probe:https://usersdrive.com/vzm2kpefxwwx.html"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "9 s countdown before the button; speed not measurable because no link was issued",
+      "source": "probe:https://usersdrive.com/vzm2kpefxwwx.html"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "73 GB/day on a registered free account; 54 GB/day anonymous",
+      "source": "https://usersdrive.com/?op=payments"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "11 days after the last download on a registered free account, down from 20 days in 2026-03",
+      "source": "https://usersdrive.com/?op=payments"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "10500 Mb per file on a registered free account",
+      "source": "https://usersdrive.com/?op=payments"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "73 GB/day registered free, 54 GB/day anonymous; premium publishes 'Unlimited'",
+      "source": "https://usersdrive.com/?op=payments"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "1024 Kbytes/sec = 0.98 MiB/s on free and registered",
+      "source": "https://usersdrive.com/?op=payments"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "files deleted 11 days after the last download on a registered free account",
+      "source": "https://usersdrive.com/?op=payments"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "73 GB/day registered free, unlimited on premium",
+      "source": "https://usersdrive.com/?op=payments"
+    }
+  ],
+  "binding": "write-gated",
+  "binding_note": "No byte ever moved, so no throughput constraint was reached: the free flow stops at a bot check before a link exists.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no account is required to reach the page, but the download button will not issue a link without a Turnstile token",
+    "country": null
+  },
+  "reliability_note": "Free downloads are Turnstile-gated as of 2026-10-23; the same page family used to expose a plain download2 form, and a client written to that shape now receives the page twice and no file.",
+  "confidence": "measured",
+  "confidence_note": "The refusal was produced twice with the fields the page itself publishes. What would raise it: a browser session that solves the challenge, which did not attempt.",
+  "evidence": [
+    {
+      "url": "probe:https://usersdrive.com/vzm2kpefxwwx.html",
+      "date": "2026-10-23",
+      "proved": "HTTP 200 with 32,447 bytes of HTML and no file, for both the page and a GET carrying op=download2&id=vzm2kpefxwwx; the page contains 'cf-turnstile' with sitekey 0x4AAAAAACeImx-4o4i5J2uf and a 9-second countdown"
+    },
+    {
+      "url": "https://usersdrive.com/vzm2kpefxwwx.html",
+      "date": "2026-10-23",
+      "proved": "WinRAR.7.01.Portable.zip, 10.7 MB, with the exact byte count 11183547 in the page's own forum code"
+    },
+    {
+      "url": "https://usersdrive.com/?op=payments",
+      "date": "2026-10-23",
+      "proved": "'Download volume' row reads '54 GB in 1 days' for free, 'Unlimited' for Premium and '73 GB in 1 days' for 'Registred'; 'Storage space' reads '-', 'Unlimited', 'Unlimited'; max upload '5250 Mb' / 'Unlimited' / '10500 Mb'; retention '8' / '18' / '11 days after last download'. The ten feature rows contain no download-speed row."
+    },
+    {
+      "url": "https://web.archive.org/web/20260908100928/https://usersdrive.com/?op=payments",
+      "date": "2026-09-08",
+      "proved": "same '73 GB in 1 days' in the Registred column and '54 GB in 1 days' in the free column, with retention '15' and '10' days: the volume figure is stable across the capture and retention is not."
+    },
+    {
+      "url": "https://web.archive.org/web/20260304022010/https://usersdrive.com/?op=payments",
+      "date": "2026-03-04",
+      "proved": "'73 GB in 1 days' registered, '54 GB in 1 days' free, retention '20' and '15' days; no speed row."
+    },
+    {
+      "url": "https://web.archive.org/web/20251220075745/https://usersdrive.com/?op=payments",
+      "date": "2025-12-20",
+      "proved": "'73 GB in 1 days' registered, '54 GB in 1 days' free, retention '20' and '15' days; no speed row, so the 0.98 MiB/s figure previously recorded here has no source on this page at any date."
+    },
+    {
+      "url": "https://usersdrive.com/?op=news",
+      "date": "2026-10-23",
+      "proved": "'All accounts must use a valid, working email address', 'Email verification will be required for uploading', 'Temporary/disposable email addresses are no longer accepted for new registrations'."
+    },
+    {
+      "url": "https://usersdrive.com/tos.html",
+      "date": "2026-10-23",
+      "proved": "'We reserve the right to disable direct linking on user accounts that are using excessive bandwidth or otherwise abusing the system.'"
+    },
+    {
+      "url": "https://usersdrive.com/faq.html",
+      "date": "2026-10-23",
+      "proved": "the FAQ is script boilerplate and states no quota: it does say 'Can I search for files other people uploaded? No', which is what makes a large allowance hard to spend, and 'Can I hotlink the stuff I upload? No'."
+    },
+    {
+      "url": "https://usersdrive.com/register.html",
+      "date": "2026-10-23",
+      "proved": "the signup form: usr_login, usr_email, usr_password twice, optional payment e-mail and coupon, reCAPTCHA present. No phone field, no card field."
+    },
+    {
+      "url": "https://usersdrive.org/faq/",
+      "date": "2026-10-23",
+      "proved": "Its file-lifetime answer (ten / thirteen / twenty-one days) matches no capture of the .com table."
+    },
+    {
+      "url": "https://usersdrive.com/?op=payments",
+      "date": "2026-10-23",
+      "proved": "Premium 'Unlimited' download volume at USD 10.00 / 30 days, USD 24.99 / 90 days, USD 39.99 / 180 days, USD 70.00 / 365 days; free 54 GB/day anonymous and 73 GB/day registered; traffic packs 8 GB USD 2 to 75 GB USD 20."
+    },
+    {
+      "url": "https://usersdrive.com/?op=payments",
+      "date": "2026-10-23",
+      "proved": "Free-tier retention: 'files deleted 11 days after the last download'; free speed 1024 Kbytes/sec."
+    },
+    {
+      "url": "https://usersdrive.com/?op=payments",
+      "date": "2026-10-23",
+      "proved": "comparison table: free 5250 Mb / 54 GB in 1 days / 8 days; registered 10500 Mb / 73 GB in 1 days / 11 days; premium Unlimited / 18 days; 3 days $2.00, 7 days $5.00, 30 days $10.00, 90 days $24.99, 180 days $39.99, 365 days $70"
+    },
+    {
+      "url": "https://usersdrive.org/faq/",
+      "date": "2026-10-23",
+      "proved": "'54 GB on a free account, 73 GB registered, and no stated limit with premium'; '5250 MB without an account, 10500 MB once registered'"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-23T03:31:02.558Z",
+  "price_per_tb_month": null,
+  "notes": "The verdict is about the scripted path, not about the host: a browser or a debrid reaches the file. 73 GB/day x 30 = 2,190 GB = 2.19 TB = 1.99 TiB if the vendor's GB is decimal, which is what the rest of the table implies (5250 Mb file cap). Treated as GiB the month is 2.14 TiB. The claim that this 'beats USD 3.00 for one TiB' is true of the quota and false of the price comparison: TorBox Essential at USD 3.00 sells a 10 TB/month non-flagging ceiling, 9.095 TiB, across many hosts. Free wins on cash for 1 TiB from this host; it does not win on capacity, coverage or time. Correction to the filehost-premium record, which read 'USD 10.00 per TiB-month with no published cap at the 30-day plan USD 70.00 for a year makes it USD 5.83 per TiB-month'. Two defects: a plan that publishes no allowance cannot carry a per-TiB figure, and 70/12 is USD 5.83 only on a 12-month year with no days in it. The plan belongs in the flat-month group, and its price is USD 70.00/year = USD 5.75/month. The reason it matters is ranking: a per-TiB label put a single-host key in the same column as plans that publish a byte cap. The finding that matters is the free tier, not the price: 73 GB/day free with unlimited storage is the only free allowance found that covers the client's whole month without a key.",
+  "extras": {
+    "object_bytes": 11183547,
+    "object_name": "WinRAR.7.01.Portable.zip",
+    "client_countdown_s": 9,
+    "challenge": "cloudflare-turnstile",
+    "free_daily_cap_gb_decimal": 73,
+    "free_daily_cap_gib": 67.99,
+    "month_30d_gb": 2190,
+    "month_30d_tib": 1.9918,
+    "days_to_fetch_1_tib_at_cap": 15.06,
+    "files_for_1_tib_at_10_5_gb": 98,
+    "free_tier_wait": "yes, length unstated by the vendor; a stale Vietnamese review says 12 s registered against 17 s anonymous",
+    "free_tier_captcha": "yes",
+    "free_tier_ads": "yes",
+    "accelerators_free": "yes, ticked",
+    "resume_free": "yes, ticked",
+    "speed_published": "none, on any tier or any capture",
+    "price_30d_usd": 10.0,
+    "price_ladder_reported": "USD 10.00 / 30 days; USD 2.00 / 3 days; USD 5.00 / 7 days; USD 24.99 / 90 days; USD 39.99 / 180 days; USD 70.00 / 365 days",
+    "on_site_search": "none",
+    "free_speed_mib_s": 0.9766,
+    "premium_parallel": "not published",
+    "max_file_free": "10.5 GB",
+    "max_file_premium": "unlimited",
+    "api": "link published",
+    "volume_tib_month": 1.0
+  }
+}

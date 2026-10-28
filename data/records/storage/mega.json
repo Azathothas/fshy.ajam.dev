@@ -1,0 +1,93 @@
+{
+  "topic": "storage",
+  "slug": "mega",
+  "provider": "MEGA",
+  "url": "https://mega.io/",
+  "category": "cloud-drive",
+  "free_tier": {
+    "stated": "20 GB free at signup, plus stacking achievements of 5 GB each (desktop app, mobile app, per invite, VPN trial, Pass trial) valid 365 days",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://mega.io/storage",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://mega.io/storage",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Achievements expire after 365 days",
+    "days": 365,
+    "source_url": "https://mega.io/storage",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Not metered per GB, but free/non-account downloads are throttled by a transfer quota computed on your IP over the past six hours. Paid users are metered per account instead and can grant a slice of their quota to link downloaders (25% default).",
+    "metered": true
+  },
+  "interface": [
+    "s3-compatible",
+    "rest",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Native rclone backend 'mega' (Tier 2, v1.41+); official MEGAcmd CLI; MEGA S4 (S3-compatible) is the paid object store.",
+  "chaining": "20 GB + N x 5 GB achievements per account, x unlimited free accounts. Achievement bonuses are per-account and do NOT compound within one account beyond one of each, so the multiplication is accounts, not achievements.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "1 TiB/day",
+      "source": "https://mega.io/storage"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "expire after 365 days",
+      "source": "https://mega.io/storage"
+    },
+    {
+      "kind": "write-gated",
+      "value": "invite, VPN trial, Pass trial) valid 365 days Transfer quota is per-IP over 6 h on fre",
+      "source": "https://mega.io/storage"
+    }
+  ],
+  "limits_note": "Transfer quota is per-IP over 6 h on free accounts — this is the real blocker for 500 GB-1 TiB/day serving, because one IP's allowance throttles before the volume is reached. Achievements expire after 365 days. Zero-knowledge encryption means every client re-encrypts.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Does not lose data; throttles hard per IP and per link. Accounts with no login for ~3 months are at risk of quota cuts.",
+  "confidence": "reported",
+  "confidence_note": "One page read moves it to documented.",
+  "evidence": [
+    {
+      "url": "https://mega.io/storage",
+      "date": "2026-10-21",
+      "proved": "'Get 20 GB free storage with MEGA's secure encrypted cloud storage' (meta description) and body 'MEGA offers 20 GB of free storage'"
+    },
+    {
+      "url": "https://mega.io/achievements",
+      "date": "2026-10-21",
+      "proved": "(archive 20260215) — 'Get 5 GB of free storage when you install our MEGA app... Valid for 365 days' for each of desktop, mobile, invite, VPN trial, Pass trial; 'Achievement bonuses stack'"
+    },
+    {
+      "url": "https://help.mega.io/plans-storage/space-storage/transfer-quota",
+      "date": "2026-10-21",
+      "proved": "(archive 20250519) — 'For free account holders or non-MEGA users... The limit is based on the amount of data downloaded from your IP address over the past six hours.'"
+    },
+    {
+      "url": "https://rclone.org/mega/",
+      "date": "2026-10-21",
+      "proved": "native Mega backend, Tier 2"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "20 GB free at signup, plus stacking achievements of 5 GB each (desktop app, mobile app, per invite, VPN trial, Pass trial) valid 365 days",
+  "extras": {},
+  "binding": "retention-clamped",
+  "binding_note": "a clock, not a quota: bytes leave whether or not the client is finished with them"
+}
