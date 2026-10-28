@@ -4,6 +4,7 @@
 
 import { all, asset, capped, HttpError, nameIndex } from './db.js';
 import { guard, GuardError } from './guard.js';
+import { checkPlan } from './plan.js';
 import { bm25, scoreNames } from './rank.js';
 import { clip, ftsMatch } from './text.js';
 
@@ -483,6 +484,12 @@ export function sql(store, p) {
   } catch (e) {
     if (e instanceof GuardError) throw bad('refused: ' + e.message);
     throw e;
+  }
+  try {
+    checkPlan(store, g.sql); // the statement budget: no nested loop of two large full scans (issue #5)
+  } catch (e) {
+    if (e instanceof GuardError) throw bad('refused: ' + e.message);
+    throw bad('SQL error: ' + String(e.message || e));
   }
   let r;
   try {

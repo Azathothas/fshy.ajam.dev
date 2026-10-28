@@ -2,9 +2,12 @@
 """Selftest of the publish tools: what test_llms.py and the Worker tests do not cover.
 
 1. The contract between export and build: build.py refuses data/ of another schema version, an unknown table
-   file, and an unknown or a missing column, with exit 3 and a message that names the problem.
-2. The export refuses a source that is not a research checkout (exit 3), and a test export into data/ (exit 2).
-3. The leak rules match each leak sample and pass each technical sample.
+   file, an unknown or a missing column, and files that do not match files_sha256, with exit 3 and a message that
+   names the problem.
+2. The export refuses a source that is not a research checkout (exit 3), a test export into data/ (exit 2), and a
+   --data that is not data/ and not empty (exit 2), and it keeps the files of that directory.
+3. The leak rules, of both levels, match each leak sample and pass each technical sample; the history title rule
+   matches a narrative title and passes a correction; build.py --scan finds a leak in a text file.
 4. The lists agree. rules/topics.json is the one list of topics: pages.py reads it, app.js holds no copy and
    reads the topic bar, and the New offer form lists the same topics. The verdict labels of pages.py and app.js
    agree. When the store exists, its vocabulary and its topics agree with them.
@@ -92,6 +95,17 @@ def contract_checks(tmp):
         fake_data(d, **kw)
         rc, err = quiet(build.main, ["--data", d, "--db", os.path.join(tmp, "s%d.db" % i), "--check", "--quiet"])
         check("build refuses %s with exit 3 and says so" % what, rc == 3 and want in err, (rc, err))
+    d = os.path.join(tmp, "data-digest")
+    fake_data(d)
+    meta = json.load(open(os.path.join(d, "meta.json"), encoding="utf-8"))
+    meta["files_sha256"] = build.files_digest(d)
+    json.dump(meta, open(os.path.join(d, "meta.json"), "w", encoding="utf-8"))
+    check("files_sha256 matches the files it was made from", build.read_meta(d)["files_sha256"] == meta["files_sha256"])
+    with open(os.path.join(d, "tables", "fx.jsonl"), "w", encoding="utf-8") as f:
+        f.write("\n")  # a hand edit that changes no row
+    rc, err = quiet(build.main, ["--data", d, "--db", os.path.join(tmp, "sd.db"), "--check", "--quiet"])
+    check("build refuses a hand edit of data/ after the export (files_sha256), with exit 3",
+          rc == 3 and "files_sha256" in err, (rc, err))
 
 
 def export_checks(tmp):
@@ -112,6 +126,14 @@ def export_checks(tmp):
     rc, err = quiet(export.main, ["--source", repo, "--no-fetch", "--allow-unmerged"])
     check("export refuses a test export into data/ (exit 2)", rc == 2 and "--data" in err, (rc, err))
     check("export writes nothing to a --data it refused", not os.path.exists(os.path.join(tmp, "out")))
+    keep = os.path.join(tmp, "notes")
+    os.makedirs(keep)
+    with open(os.path.join(keep, "KEEP.txt"), "w", encoding="utf-8") as f:
+        f.write("my notes\n")
+    rc, err = quiet(export.main, ["--source", repo, "--no-fetch", "--ref", "HEAD", "--data", keep])
+    check("export refuses a --data that is not data/ and not empty (exit 2), before it reads the source",
+          rc == 2 and "not empty" in err, (rc, err))
+    check("export keeps the files of a --data it refused", os.path.exists(os.path.join(keep, "KEEP.txt")))
 
 
 LEAK_SAMPLES = [  # (text, a leak rule must match it)
@@ -120,13 +142,38 @@ LEAK_SAMPLES = [  # (text, a leak rule must match it)
     ("ghp_" + "a" * 36, True), ("see the Terms of Service", True), ("in .tmp/run/x", True),
     ("abuse@provider.example", False), ("grants@fal.ai", False), ("GET /api/Users/1/", False),
     ("/home/aistudio/work", False), ("127.0.0.1:9666", False), ("100.64.0.0/10", False), ("fshy.ajam.dev", False),
+    # the research process: warn level
+    ("Not in dossier/compute (searched: example, no record).", True), ("it is recorded once, in dossier/x/y.json", True),
+    ("a number the census did not have", True), ("the compute census stops there", True),
+    ("3 percent of the 1 TB a day serving target", True),
+    ("the US Census Bureau API gives 500 calls a day", False), ("a dossier of the case", False),
+    ("data/records/compute/x.json", False), ("results (search: free)", False),
+]
+TITLE_SAMPLES = [
+    ("The operator decided seven open questions", True), ("A review found 58 defects in the three answers", True),
+    ("The rung was the rung we wished it had", True), ("Two seed corrections were reverted", True),
+    ("Hetzner's fair-use threshold is 250 TB/month, not 50 to 100", False),
+    ("Kamatera's trial needs a card, not an email", False), ("The prober's answer rates were right", True),
 ]
 
 
-def leak_checks():
-    rx = build.leak_rx()
+def leak_checks(tmp):
+    rx = build.leak_rx(("fail", "warn"))
     wrong = [(s, want) for s, want in LEAK_SAMPLES if bool(rx.search(s)) != want]
     check("the leak rules match the leak samples and pass the technical ones (%d samples)" % len(LEAK_SAMPLES), not wrong, wrong)
+    titles = [re.compile(p["re"]) for p in build.leak_rules() if p.get("scope") == "history.title"]
+    wrong = [(s, want) for s, want in TITLE_SAMPLES if any(r.search(s) for r in titles) != want]
+    check("the history title rule matches a narrative title and passes a correction (%d samples)" % len(TITLE_SAMPLES),
+          titles and not wrong, wrong)
+    levels = {p.get("level", "fail") for p in build.leak_rules()}
+    check("every leak rule has the level fail or warn", levels <= {"fail", "warn"}, levels)
+    bad, good = os.path.join(tmp, "body-bad.md"), os.path.join(tmp, "body-good.md")
+    open(bad, "w", encoding="utf-8").write("Fixes the notes. Not in dossier/compute (searched: x).\n")
+    open(good, "w", encoding="utf-8").write("Fixes the notes of three records.\n")
+    rc_bad, err = quiet(build.main, ["--scan", bad])
+    rc_good, _ = quiet(build.main, ["--scan", good])
+    check("build.py --scan exits 1 on a leak in a text file and 0 on clean text", rc_bad == 1 and "LEAK" in err and rc_good == 0,
+          (rc_bad, rc_good, err))
 
 
 def js_list(src, name):
@@ -183,9 +230,9 @@ def main(argv=None):
     try:
         contract_checks(tmp)
         export_checks(tmp)
+        leak_checks(tmp)
     finally:
         export.cleanup(tmp)
-    leak_checks()
     db = a.db if os.path.exists(a.db) else None
     list_checks(db)
     if db:

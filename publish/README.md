@@ -37,25 +37,68 @@ breaks thus shows before a publish does. MiniSearch is not updated there, becaus
    which records changed. `data/meta.json` names the commit as `source_commit`.
 6. It builds a store from the written files with `build.py` and compares each table, the full-text index and the
    leaves with the research store. A value that the build drops or changes stops the export.
-7. It scans every written file with this repository's leak rules and with the research repository's leak rules.
+7. It scans every written file with this repository's leak rules, of both levels, and with the research
+   repository's leak rules. `data/meta.json` gets `files_sha256`, one digest of every written file.
+8. It renames the old `data/` aside, moves the new one in, and only then removes the old one.
 
 With one failed check or one leak hit, `data/` does not change. The export refuses a source that is not a
 research checkout. That is a directory that is not a git checkout, or a commit that does not hold `dossier/` and
-`scripts/fshy/`.
+`scripts/fshy/`. ⚠ The export replaces its target, so it writes only to `data/` of this repository or to a new or
+empty directory. It refuses any other `--data` with exit 2, before it reads the source.
 
 | option | what it does |
 | --- | --- |
 | `--ref REF` | export another commit of the source. It must be on `origin/main`. |
 | `--no-fetch` | do not fetch `origin` first, for example with no network |
 | `--allow-unmerged` | export a commit that is not on `origin/main`. Only with a `--data` other than `data/`, for a test |
-| `--data DIR` | write to DIR instead of `data/` |
+| `--data DIR` | write to DIR instead of `data/`. DIR must be new or empty |
 
 **Build.** It loads `data/` into a SQLite store with `schema.sql`, rebuilds the leaf table and the full-text index
 from the record files, and scans every text value of every table. A public history entry is its date, status,
 title and linked records, so a history row with a body, a supersedes line or a confidence is a leak hit. With
 `--site`, it writes the wiki, the API files and the Worker copy, scans every text file of the site, and checks the
 size of each file against the static asset limit of Workers (25 MiB). It warns at 70 percent of that limit. One
-leak hit, or one file over the limit, fails the build.
+leak hit, or one file over the limit, fails the build. When `data/meta.json` has `files_sha256`, the build
+recomputes it and refuses data that changed after the export, with exit 3.
+
+## The leak rules
+
+[`rules/leak.json`](rules/leak.json) holds generic shapes only. Each rule has a level:
+
+| level | the build | the export |
+| --- | --- | --- |
+| `fail`, the default | fails on one hit | fails on one hit |
+| `warn` | prints the count of hits of each rule, and passes | fails on one hit |
+
+A `warn` rule is for a shape that the data on `main` still has, while the research repository removes it. The
+export refuses the shape at once, so no new publish carries it. After the first publish whose build shows no
+warning for the rule, remove its level, so the build fails on the shape too. A rule with a `scope`, for example
+`history.title`, reads only that column.
+
+To check a text before it becomes public, for example the body of a pull request or a comment, scan it:
+
+```bash
+python publish/build.py --scan draft.md
+```
+
+## Parity with the research repository
+
+The research repository has Python twins of `site/worker/text.js`, `rank.js` and `guard.js`.
+[`../site/worker/test/parity.json`](../site/worker/test/parity.json) holds inputs and the output of each JavaScript
+rule. `run.mjs` checks the JavaScript against it in CI. The research CI checks the Python against it, at a commit
+of this repository that the research repository pins.
+
+To change a rule, do these steps in this order:
+
+1. In one pull request here, change the rule, run `node site/worker/test/parity.mjs --write`, and commit the new
+   `parity.json`. Merge it.
+2. In one pull request in the research repository, move the pin to the merge commit and change the Python twin.
+
+Until step 2, the research CI keeps the old pin, so it stays green.
+
+**The parity pin.** After a pull request here that changes `site/worker/` merges, the research repository moves
+`scripts/fshy/public.lock` to its merge commit. It does this in its own pull request, together with any change of
+the Python twin.
 
 ## The contract between export and build
 
@@ -85,12 +128,12 @@ publish:
 | `pages.py` | the HTML pages, the sitemap and `robots.txt` |
 | `llms.py` | `llms.txt`, `llms-full.txt` and the Markdown versions of the pages, for agents ([`../site/README.md`](../site/README.md)) |
 | `test_llms.py` | the selftest of `llms.py`, over the store that `build.py` writes |
-| `test_publish.py` | the selftest of the contract, of the export's refusals, of the lists that are copied by hand, and of the worked queries of the primer |
+| `test_publish.py` | the selftest of the contract and of `files_sha256`, of the export's refusals, of the leak rules and `--scan`, of the lists that are copied by hand, and of the worked queries of the primer |
 | `primer.py` | the text primer of the store: schema, vocabularies, worked queries |
 | `schema.sql` | the store schema, shared by the Worker |
 | `rules/needs.json` | the best-per-need queries |
 | `rules/topics.json` | the one list of topics: id, name and description, in the order of the topic bar. `pages.py` and `llms.py` read it; `app.js` reads the topic bar of the page |
-| `rules/leak.json` | the public leak rules: generic shapes only |
+| `rules/leak.json` | the public leak rules: generic shapes only, each of level `fail` or `warn` (see "The leak rules") |
 
 ## The origin of the site
 

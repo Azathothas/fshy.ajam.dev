@@ -120,3 +120,15 @@ Static files are served without running the Worker. The Worker runs only for `/a
 `/api/v1/records`, `/api/v1/sql`, `/api/v1/need/*`, `/api/v1/worklist/*`, `/api/v1/record/*`,
 `/api/v1/entity-search`, `/mcp` and `/r/*`. It loads the store's Worker copy once per isolate. That copy is the
 public store without record JSON, leaves and evidence quotes, which are served as static files.
+
+**The SQL route and the MCP tool `sql`.** Three checks stop a costly or a writing statement:
+
+1. The guard (`worker/guard.js`) accepts one statement that starts with SELECT, WITH, VALUES or EXPLAIN. It refuses
+   a write or a session keyword outside a literal, and U+FEFF outside a literal. It appends a LIMIT.
+2. The statement budget (`worker/plan.js`) reads `EXPLAIN QUERY PLAN`. It refuses a nested loop of two full scans of
+   tables over 1,000 rows, for example a cross join or a join on `<>`. sql.js has no progress handler, so the plan
+   is the budget. A join with `=` on an indexed column passes.
+3. The rate limits: 30 SQL requests a minute for each address, and `limits.cpu_ms`.
+
+**Headers.** `static/_headers` sets a Content-Security-Policy on every page: scripts, styles, images and requests
+come from the site itself only. `smoke.mjs` checks that `wrangler dev` sends it.

@@ -176,7 +176,7 @@ def leak_scan_covers(dist):
             os.makedirs(os.path.dirname(p), exist_ok=True)
             with open(p, "w", encoding="utf-8") as f:
                 f.write("The Terms of Service apply to this offer.\n")
-        hits = {k.replace(os.sep, "/") for k, _ in build.leak_scan(dist=probe)}
+        hits = {k.replace(os.sep, "/") for k, _, _ in build.leak_scan(dist=probe)}
         check("the build's leak scan reads .md and .txt files", {"p/zz-probe.md", "t/zz/llms-full-usable-1.txt"} <= hits, hits)
         hits = build.leak_scan(dist=dist)
         check("the build's leak scan passes the generated files", not hits, hits[:3])
