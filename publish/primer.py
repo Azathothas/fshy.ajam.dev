@@ -135,7 +135,7 @@ def _text(db):
     if "record" in tables:
         n_doc = db.execute("SELECT count(*) FROM record WHERE doc IS NOT NULL").fetchone()[0]
         if not n_doc:
-            w("  In this copy record.doc, evidence.proved and history.body are NULL: use get for them.")
+            w("  In this copy record.doc and evidence.proved are NULL: use get for them.")
     w("All columns: SELECT name FROM pragma_table_info('record'). Meanings: SELECT * FROM vocab.")
     w("")
     w("VOCABULARIES")
