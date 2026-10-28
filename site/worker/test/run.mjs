@@ -383,6 +383,18 @@ test('MCP: initialize, list, call, errors', async () => {
   assert.equal(pre.res.status, 204);
 });
 
+test('parity fixture: the text, ranking and guard rules give the outputs in parity.json', async () => {
+  const { compute, load } = await import('./parity.mjs');
+  const guardMod = await import('../guard.js');
+  const fx = load();
+  const got = compute(fx, { text, rank, guard: guardMod });
+  for (const k of ['text', 'rank', 'guard']) assert.deepEqual(got[k], fx[k], k + ' differs from parity.json: run node site/worker/test/parity.mjs --write after a deliberate change');
+  const g = Object.fromEntries(fx.guard.map((c) => [c.sql, c.result[0]]));
+  for (const s of ['\uFEFFselect 1', 'SELECT\u00E9INSERT FROM x', 'select 1 where x=\u00E9drop', 'select \u0645delete from record']) {
+    assert.equal(g[s], 'err', 'the stricter side wins: ' + JSON.stringify(s));
+  }
+});
+
 test('a rate limiter that throws fails open', async () => {
   const broken = { ...env, RL_API: throws, RL_SQL: throws };
   const s = await call('/api/v1/search?q=hetzner&limit=1', {}, broken);

@@ -75,6 +75,21 @@ publish:
 2. Increase `SCHEMA_VERSION` in `build.py` to the version of the research store.
 3. Export, build and run the tests.
 
+## Parity with the research repository
+
+The research repository has Python twins of `site/worker/text.js`, `rank.js` and `guard.js`.
+[`../site/worker/test/parity.json`](../site/worker/test/parity.json) holds inputs and the output of each JavaScript
+rule. `run.mjs` checks the JavaScript against it in CI. The research CI checks the Python against it, at a commit
+of this repository that the research repository pins.
+
+To change a rule, do these steps in this order:
+
+1. In one pull request here, change the rule, run `node site/worker/test/parity.mjs --write`, and commit the new
+   `parity.json`. Merge it.
+2. In one pull request in the research repository, move the pin to the merge commit and change the Python twin.
+
+Until step 2, the research CI keeps the old pin, so it stays green.
+
 ## Files
 
 | file | what it does |

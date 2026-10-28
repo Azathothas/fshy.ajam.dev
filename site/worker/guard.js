@@ -19,8 +19,9 @@ export class GuardError extends Error {}
  * Blank out every literal, quoted identifier and comment (same length, so offsets in the result
  * match the original), scanning left to right so a quote inside a comment, or a comment marker
  * inside a string, is handled correctly. Throws on an unterminated literal or comment.
+ * With keepIdents, a quoted identifier ("x", `x` or [x]) keeps its name and loses only its quotes.
  */
-export function strip(sql) {
+export function strip(sql, keepIdents = false) {
   const out = sql.split('');
   const blank = (a, b) => {
     for (let k = a; k < b; k++) if (out[k] !== '\n') out[k] = ' ';
@@ -40,12 +41,14 @@ export function strip(sql) {
         }
         j++;
       }
-      blank(i, j + 1);
+      if (keepIdents && c !== "'") out[i] = out[j] = ' ';
+      else blank(i, j + 1);
       i = j + 1;
     } else if (c === '[') {
       const j = sql.indexOf(']', i + 1);
       if (j < 0) throw new GuardError('unterminated [identifier]');
-      blank(i, j + 1);
+      if (keepIdents) out[i] = out[j] = ' ';
+      else blank(i, j + 1);
       i = j + 1;
     } else if (c === '-' && d === '-') {
       const j = sql.indexOf('\n', i + 2);
@@ -73,6 +76,8 @@ export function guard(sql, limit) {
   if (sql.length > MAX_SQL_CHARS) throw new GuardError('query longer than ' + MAX_SQL_CHARS + ' characters');
   if (sql.includes('\u0000')) throw new GuardError('NUL byte in query');
   const bare = strip(sql);
+  // JavaScript takes U+FEFF as white space and SQLite does not, so the guard and SQLite would read two statements
+  if (bare.includes('\ufeff')) throw new GuardError('U+FEFF (a byte order mark) outside a literal; SQLite does not read it as white space');
   // one statement: a single trailing semicolon is tolerated and removed
   const semi = bare.search(/;\s*$/);
   const body = semi >= 0 ? bare.slice(0, semi) : bare;
