@@ -5,7 +5,7 @@
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
-  // verdict terms in vorder, their short labels (scripts/fshy/pages.py VERDICT_LABEL), topic names (pages.py TOPICS)
+  // verdict terms in vorder, their short labels (publish/pages.py VERDICT_LABEL), topic names (pages.py TOPICS)
   var VT = ['qualifies', 'qualifies-with-caveat', 'trial-only', 'paid-only', 'fails-identity', 'fails-egress', 'fails-quota', 'dead'];
   var VL = ['★ qualifies', 'caveat', 'trial', 'paid', 'fails: identity', 'fails: egress', 'fails: quota', 'dead'];
   var TN = { storage: 'Storage', compute: 'Compute', inference: 'Inference', egress: 'Egress and tunnels', 'ip-proxy': 'IP and proxies',

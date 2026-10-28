@@ -4,6 +4,11 @@
 "Review and merge the research pull requests". Any agent in any tool can be the merge session. It needs a
 checkout of both repositories and `gh` access to both.
 
+⚠ `scripts/rq review RUN`, `scripts/rq merge RUN` and `scripts/rq cleanup RUN` read the state of the run in
+`.tmp/rq/` of the research clone that ran it. On another clone they stop with "no run". Until they can read a
+run from its pull request alone, start the merge session in the research clone that ran the run. A merge session
+in another tool is still a different session, so the rule in the next paragraph holds.
+
 A merge session is the third key. The first key is the research harness's own checks (lint, integrator, gate).
 The second key is the audit, where a second model re-reads a sample of each lane's claims. The third key is a
 session that did not run the research: it reads what no check re-examines, and it decides.
