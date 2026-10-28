@@ -519,7 +519,7 @@ export function worklist(store, p) {
   const db = store.db;
   const kind = str(p.kind, 'kind');
   if (!kind) throw bad('kind is required: stale, drift, changes or unparsed');
-  if (LOCAL_ONLY_KINDS.has(kind)) throw bad('worklist ' + kind + ' is local only (fr worklist ' + kind + ')');
+  if (LOCAL_ONLY_KINDS.has(kind)) throw bad('worklist ' + kind + ' is not in the public store');
   if (!KINDS.has(kind)) throw bad('kind must be stale, drift, changes or unparsed');
   const topic = str(p.topic, 'topic');
   const limit = int(p.limit, 'limit', 50, 1, 200);

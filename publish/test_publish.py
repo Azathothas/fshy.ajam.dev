@@ -288,7 +288,10 @@ def primer_checks(db_path):
         except sqlite3.Error as e:
             check("primer query runs: %s" % what, False, e)
     db.close()
-    check("primer text names every worked query", all(sql in primer.text(db_path) for _, sql in primer.EXAMPLES))
+    text = primer.text(db_path)
+    check("primer text names every worked query", all(sql in text for _, sql in primer.EXAMPLES))
+    private = [w for w in ("dossier", " fr ", "history/", "scripts/", "LOCAL ONLY", "projected", "in git") if w in text]
+    check("the primer names only what a reader of the public data can open", not private, private)
 
 
 def main(argv=None):

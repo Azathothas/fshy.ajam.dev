@@ -1,8 +1,8 @@
 """primer.py: the help text an agent reads before its first query, generated from a store.
 
-text(db_path) -> str. Works on the local store, the public store and the Worker copy:
-every table, column and vocabulary line is read from the database it is given, so a
-table the store lacks is never described. Standard library only.
+text(db_path) -> str. Works on the public store and on the Worker copy: every table, column
+and vocabulary line is read from the database it is given, so a table the store lacks is
+never described. It names only what a reader of the public data can open. Standard library only.
 
 EXAMPLES holds the worked queries; publish/test_publish.py runs each one against the
 store in .tmp/fshy/ so the primer never shows a query that fails.
@@ -13,22 +13,20 @@ import sqlite3
 from urllib.request import pathname2url
 
 PURPOSE = {
-    "record": "one row per record; doc is the projected JSON",
+    "record": "one row per record; doc is the record JSON of data/records/<topic>/<slug>.json",
     "entity": "a vendor; groups records",
     "alias": "kind: name, provider, slug, alias, domain",
     "evidence": "what each source proved",
     "limit_row": "is_binding=1 for the kind named in binding",
     "claim": "parsed numbers; parse ok, partial or unparsed",
     "unknown": "placeholder, default or withheld values",
-    "leaf": "projected JSON leaves; a record is lid BETWEEN lid_min AND lid_max",
+    "leaf": "the leaves of the record JSON; a record is lid BETWEEN lid_min AND lid_max",
     "edge": "kind: duplicate_of, variant_of, successor_of, same_offer_as, same-product, mentions",
     "drift": "records of one product that disagree",
-    "ledger": "one row per amendment (history/ledger.jsonl)",
-    "raw": "LOCAL ONLY: verbatim source JSON",
-    "strip_log": "LOCAL ONLY: what the public projection removed",
+    "ledger": "one row per amendment of a record value: when, which record and field, the rung and the source",
 }
 ORDER = ["record", "entity", "alias", "evidence", "limit_row", "claim", "unknown", "leaf", "edge", "drift",
-         "history", "history_link", "ledger", "raw", "strip_log"]
+         "history", "history_link", "ledger"]
 MINOR = ["fx", "capture", "vocab", "meta"]
 # columns worth naming in the primer; the rest are counted and reachable with pragma_table_info
 KEY_COLS = {
@@ -96,8 +94,9 @@ def _text(db):
       % (target, (meta.get("commit") or "?")[:12], meta.get("commit_time") or "?", meta.get("as_of") or "?",
          counts.get("records", "?"), counts.get("entities", "?"), counts.get("evidence", "?"),
          counts.get("claims", "?")))
-    w("The dossier JSON in git is the truth; this store is derived from it and never edited.")
-    w("Operations: help, search, filter, get, entity, need, sql, worklist (same names in fr, the API and MCP).")
+    w("The record files of data/records/ in the public repository are the source; this store is built from")
+    w("them and never edited. Operations: help, search, filter, get, entity, need, sql, worklist (the same names")
+    w("in the HTTP API and the MCP tools).")
     w("")
     w("IDS")
     w("- rid = topic/slug, stable (storage/hetzner-storage-box). Quote rids; never show or store rno.")

@@ -429,14 +429,14 @@ class Site:
                 '<p class="needs"><b>Ranked by</b>%s &middot; %s ranked%s</p>%s'
                 '<ol class="%s rank">%s</ol>%s'
                 '<details><summary>The query</summary><pre>%s\nORDER BY %s ASC NULLS LAST</pre><p>Run it yourself: '
-                '<code>/api/v1/need/%s</code>, the MCP tool <code>need</code>, or <code>fr need %s</code>.</p></details>') % (
+                '<code>/api/v1/need/%s</code>, or the MCP tool <code>need</code>.</p></details>') % (
             e(x["title"]), e(x["scope"]), e(SORT_LABEL.get(key, key)), num(len(ranked)),
             (' &middot; <a href="#unranked">%s with no parsed number</a>' % num(len(unranked))) if unranked else "",
             self.chips(), self.lane([cards[r[0]] for r in ranked]), items(ranked),
             ('<h2 id="unranked">No parsed number <small>%s</small></h2><p class="lede">These match the filter but no price or quantity '
              'could be parsed from their text yet. They are listed, not dropped.</p><ul class="%s">%s</ul>' % (
                 num(len(unranked)), self.lane([cards[r[0]] for r in unranked]), items(unranked)))
-            if unranked else "", e(x["sql"]), e(key), e(x["id"]), e(x["id"]))
+            if unranked else "", e(x["sql"]), e(key), e(x["id"]))
         self.page("need/%s/index.html" % x["id"], x["title"], body, x["scope"])
 
     def needs_index(self):
