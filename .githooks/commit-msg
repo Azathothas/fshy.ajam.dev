@@ -1,22 +1,56 @@
 #!/bin/sh
 # Refuses a commit message that credits a tool.  The corpus records what changed
 # and who decided it; the instrument that typed it is not part of the record.
+# CI runs this file on every commit of a pull request and on its title and body.
 #
 # Enable once per clone:  git config core.hooksPath .githooks
 
 msg="$1"
 
-if grep -qiE '^(co-authored-by|generated-with|generated-by|signed-off-by:.*(claude|gpt|copilot|kimi|gemini|codex|agent))' "$msg"; then
-    echo "commit-msg: refuses a trailer that credits a tool" >&2
+# the tools and the models that a credit line names; B and E are word boundaries that every grep -E reads
+tools='claude|anthropic|chatgpt|gpt-?[0-9o]|openai|copilot|gemini|codex|kimi|cursor|llm|an? ai|ai (assistant|agent|model)'
+B='(^|[^[:alnum:]])'
+E='([^[:alnum:]]|$)'
+
+refuse() {
+    echo "commit-msg: $1" >&2
+    grep -n -iE "$2" "$msg" | head -3 >&2
+    exit 1
+}
+
+# a co-author or a generator trailer, whoever it names
+lead='^[[:space:]]*(co-authored-by|generated-with|generated-by|made-with)[[:space:]]*:'
+if grep -qiE "$lead" "$msg"; then
+    refuse "refuses a trailer that credits a co-author or a generator" "$lead"
+fi
+
+# any other "...-by:" trailer that names a tool: Assisted-by, Reviewed-by, Signed-off-by, Helped-by
+trailer="^[[:space:]]*[a-z-]+-by[[:space:]]*:.*$B($tools)$E"
+if grep -qiE "$trailer" "$msg"; then
+    refuse "refuses a trailer that names a tool" "$trailer"
+fi
+
+# a credit sentence: a verb of making, then with, by, using, via or through, then a tool within 40 characters
+verbs='generated|written|made|created|built|drafted|authored|co-?authored|produced|assisted|coded|edited|reviewed'
+credit="$B($verbs)[[:space:]]+(with|by|using|via|through)(.{0,40}[^[:alnum:]])?($tools)$E"
+if grep -qiE "$credit" "$msg"; then
+    refuse "refuses a line that credits a tool" "$credit"
+fi
+
+# the addresses and the links that a tool writes in its credit line
+links='claude\.com/claude-code|claude\.ai/code|noreply@anthropic\.com'
+if grep -qiE "$links" "$msg"; then
+    refuse "refuses the address or the link of a tool's credit line" "$links"
+fi
+
+# the robot emoji (U+1F916) that opens a tool's credit line, matched by its UTF-8 bytes
+robot=$(printf '\360\237\244\226')
+if grep -qF "$robot" "$msg"; then
+    echo "commit-msg: refuses the robot emoji of a tool's credit line" >&2
     exit 1
 fi
 
-if grep -qiE '(generated (with|by)|written (with|by)|powered by) (claude|chatgpt|gpt|copilot|kimi|gemini|codex|an? (ai|llm))' "$msg"; then
-    echo "commit-msg: refuses a body that credits a tool" >&2
-    exit 1
-fi
-
-first=$(grep -vE '^\s*(#|$)' "$msg" | head -1)
+first=$(grep -vE '^[[:space:]]*(#|$)' "$msg" | head -1)
 if [ ${#first} -gt 100 ]; then
     echo "commit-msg: the subject is ${#first} characters; keep it under 101" >&2
     exit 1

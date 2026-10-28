@@ -7,7 +7,8 @@
 2. The export refuses a source that is not a research checkout (exit 3), a test export into data/ (exit 2), and a
    --data that is not data/ and not empty (exit 2), and it keeps the files of that directory.
 3. The leak rules, of both levels, match each leak sample and pass each technical sample; the history title rule
-   matches a narrative title and passes a correction; build.py --scan finds a leak in a text file.
+   matches a narrative title and passes a correction; build.py --scan finds a leak in a text file. The commit-msg
+   hook refuses every credit line of a tool and passes a message that only names a provider.
 4. The lists agree. rules/topics.json is the one list of topics: pages.py reads it, app.js holds no copy and
    reads the topic bar, and the New offer form lists the same topics. The verdict labels of pages.py and app.js
    agree. When the store exists, its vocabulary and its topics agree with them.
@@ -176,6 +177,53 @@ def leak_checks(tmp):
           (rc_bad, rc_good, err))
 
 
+ROBOT = chr(0x1F916)
+CREDIT_LINES = [  # each must be refused by .githooks/commit-msg, as the last line of a normal message
+    ROBOT + " Generated with [Claude Code](https://claude.com/claude-code)",
+    "Generated with [Claude Code](https://claude.com/claude-code)",
+    "Generated with Claude Code",
+    "Made with Claude",
+    "Generated using Claude",
+    "Written with the help of Claude Opus",
+    "Assisted-by: Claude",
+    "Reviewed-by: Claude",
+    "Signed-off-by: GPT-5 <bot@example.invalid>",
+    "Co-authored-by: Claude <noreply@anthropic.com>",
+    "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>",
+    "See claude.com/claude-code for the tool.",
+    "Thanks: noreply@anthropic.com",
+    "Built with Copilot.",
+    "Drafted by an AI assistant.",
+    ROBOT,
+]
+CLEAN_MESSAGES = [  # each must pass: a provider is named, nothing is credited
+    "coding-subs: the Claude Pro plan is USD 20 a month",
+    "inference: Gemini free tier rate limit changed",
+    "records: the Copilot quota was reviewed by the merge session",
+    "worker: the plan check reads a cursor of rows once",
+]
+
+
+def hook_checks(tmp):
+    import shutil
+    sh = shutil.which("sh")
+    if not sh:
+        print("skip  the commit-msg hook cases: no sh")
+        return
+    hook = os.path.join(ROOT, ".githooks", "commit-msg")
+
+    def run(text):
+        p = os.path.join(tmp, "msg.txt")
+        with open(p, "w", encoding="utf-8", newline="\n") as f:
+            f.write(text)
+        return subprocess.run([sh, hook, p], capture_output=True).returncode
+    passed = [c for c in CREDIT_LINES if run("site: a change\n\nThe body says why.\n\n" + c + "\n") == 0]
+    check("the commit-msg hook refuses every credit line of a tool (%d lines)" % len(CREDIT_LINES), not passed, passed)
+    refused = [m for m in CLEAN_MESSAGES if run(m + "\n\nThe body says why.\n") != 0]
+    check("the commit-msg hook passes a message that names a provider (%d messages)" % len(CLEAN_MESSAGES), not refused, refused)
+    check("the commit-msg hook refuses a subject that ends in a full stop", run("site: a change.\n") != 0)
+
+
 def js_list(src, name):
     m = re.search(r"var %s = (\[[^\]]*\]|\{[^}]*\});" % name, src)
     if not m:
@@ -231,6 +279,7 @@ def main(argv=None):
         contract_checks(tmp)
         export_checks(tmp)
         leak_checks(tmp)
+        hook_checks(tmp)
     finally:
         export.cleanup(tmp)
     db = a.db if os.path.exists(a.db) else None
