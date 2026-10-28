@@ -1,5 +1,5 @@
 {
-  "about": "The parity fixture of the Worker's text, ranking and SQL guard rules. Each case holds its input and the output of the JavaScript rule in site/worker. run.mjs checks that the rules still give these outputs; the research repository runs its Python twins on the same inputs, at a pinned commit of this repository, and must give the same outputs (a score within 1e-9). A deliberate change of a rule changes this file in the same pull request: node site/worker/test/parity.mjs --write. Where the two languages differed, the stricter side won: the guard refuses U+FEFF outside a literal, and a keyword that touches a non-ASCII letter is still a keyword.",
+  "about": "The parity fixture of the Worker's text, ranking and SQL guard rules. Each case holds its input and the output of the JavaScript rule in site/worker. run.mjs checks that the rules still give these outputs; the research repository runs its Python twins on the same inputs, at a pinned commit of this repository, and must give the same outputs (a score within 1e-9). A deliberate change of a rule changes this file in the same pull request: node site/worker/test/parity.mjs --write. Where the two languages differed, the stricter side won: the guard refuses, outside a literal, every character that JavaScript or Python takes as white space and SQLite does not (U+FEFF, U+0085, U+00A0 and others), and a keyword that touches a non-ASCII letter is still a keyword.",
   "version": 1,
   "text": {
     "normalize": [
@@ -351,6 +351,15 @@
     {"sql":"(SELECT 1)","limit":51,"result":["err"]},
     {"sql":"record","limit":51,"result":["err"]},
     {"sql":"INSERT INTO text_fts(text_fts) VALUES ('optimize')","limit":51,"result":["err"]},
-    {"sql":"SELECT 1; SELECT 2","limit":51,"result":["err"]}
+    {"sql":"SELECT 1; SELECT 2","limit":51,"result":["err"]},
+    {"sql":"\u0085select 1","limit":51,"result":["err"]},
+    {"sql":"select 1;\u0085","limit":51,"result":["err"]},
+    {"sql":"select 1\u0085","limit":51,"result":["err"]},
+    {"sql":"select 1\u0085;","limit":51,"result":["err"]},
+    {"sql":"select\u00a01","limit":51,"result":["err"]},
+    {"sql":"select 1\u3000","limit":51,"result":["err"]},
+    {"sql":"\u001cselect 1","limit":51,"result":["err"]},
+    {"sql":"select 1\u2028","limit":51,"result":["err"]},
+    {"sql":"select '\u0085\u00a0' as kept","limit":51,"result":["ok","select '\u0085\u00a0' as kept\nLIMIT 51",true]}
   ]
 }
