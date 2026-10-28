@@ -1,7 +1,8 @@
 # fshy
 
 fshy is a catalogue of free, nearly free and cheapest-paid technical resources: storage, compute, GPU time,
-model inference, crawling, egress, email, databases, DNS, CI runners, proxies, debrid services and netdisks.
+model inference, crawling, egress, email, databases, DNS, CI runners, proxies, debrid services, netdisks,
+developer services and data APIs.
 Each record states what a service offers, what it costs, what a signup needs, which limit binds first, and the
 evidence for each value.
 

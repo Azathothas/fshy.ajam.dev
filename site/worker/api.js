@@ -584,7 +584,7 @@ export async function help(store, env) {
   const m = store.manifest;
   const text = [
     `fshy: a read-only catalogue of free and cheap capability: storage, compute, GPU time, inference, crawling,`,
-    `egress, email, databases, DNS, CI runners, proxies. Built from commit ${String(m.commit || '').slice(0, 12)} (as of ${m.as_of}).`,
+    `egress, email, databases, DNS, CI runners, proxies, developer services, data APIs. Built from commit ${String(m.commit || '').slice(0, 12)} (as of ${m.as_of}).`,
     ``,
     `Records by topic: ${topics.join(', ')}.`,
     `rid = topic/slug (stable). grp: ${(vocab.grp || []).join(' | ')}. verdict in order (vorder 0..7, lower is better):`,

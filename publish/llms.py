@@ -310,8 +310,8 @@ def cut_note(cap):
 # ---------------------------------------------------------------------------------------------- shared text
 def summary_line(st):
     return ("> A catalogue of free, nearly free and cheapest-paid cloud capacity: storage, compute, GPU time, "
-            "inference, egress, proxies, crawling, debrid, netdisks, databases, email, DNS, CI runners and coding "
-            "subscriptions. %d records from %d providers; each states its quota, the constraint that binds it, the "
+            "inference, egress, proxies, crawling, debrid, netdisks, databases, email, DNS, CI runners, developer "
+            "services, data APIs and coding subscriptions. %d records from %d providers; each states its quota, the constraint that binds it, the "
             "identity it costs (email, phone, card, ID), its evidence and how fresh that evidence is. For research "
             "and education only: it is not legal advice, and it makes no statement about whether a use is permitted."
             % (len(st.cards), len(st.ents)))
@@ -451,10 +451,11 @@ def generate(pub_db, dist):
                  "the rejected and dead records, each with the evidence that rejected it; the usable, trial and "
                  "paid-only ones are on %s/t/%s.md" % (BASE, t))):
             def render(cap, title=title, groups=groups, other=other):
+                full = ("In full: %s/t/%s/llms-full.txt." % (BASE, t)) if rids else "No record is in this topic yet."
                 lines = ["# " + title, "", "> " + (desc or name), "",
                          "%d records: %s. This page lists %s. Each line: provider (its page in Markdown), record id, "
-                         "verdict, identity, card, evidence rung, parsed price, summary. In full: %s/t/%s/llms-full.txt."
-                         % (len(rids), ", ".join("%d %s" % (cnt[g], lbl.lower()) for g, lbl in GROUPS), other, BASE, t),
+                         "verdict, identity, card, evidence rung, parsed price, summary. %s"
+                         % (len(rids), ", ".join("%d %s" % (cnt[g], lbl.lower()) for g, lbl in GROUPS), other, full),
                          ""] + cut_note(cap)
                 if needs and groups == MAIN_GROUPS:
                     lines += ["Best per need: " + ", ".join("[%s](%s/need/%s.md)" % (x["title"], BASE, x["id"]) for x in needs), ""]
@@ -557,6 +558,9 @@ def generate(pub_db, dist):
              "%s/blob/main/LICENSE; a quote from a provider's page stays with its owner." % (REPO, LICENCE, REPO), "",
              "## Topics", ""]
     for t, name, desc, rids, cnt in topic_rows:
+        if not rids:  # a topic of the schema with no record yet: no rejected page to name, no full text
+            lines.append("- [%s](%s/t/%s.md): %sNo record is in this topic yet." % (name, BASE, t, (desc + " ") if desc else ""))
+            continue
         lines.append("- [%s](%s/t/%s.md): %s%d records: %s. Rejected and dead: %s/t/%s/rejected.md; in full: %s/t/%s/llms-full.txt"
                      % (name, BASE, t, (desc + " ") if desc else "", len(rids),
                         ", ".join("%d %s" % (cnt[g], lbl.lower()) for g, lbl in GROUPS), BASE, t, BASE, t))

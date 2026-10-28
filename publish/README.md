@@ -30,7 +30,8 @@ breaks thus shows before a publish does. MiniSearch is not updated there, becaus
    `python CLONE/scripts/fshy/build.py --repo CLONE --public TMP`. The projection and its rules stay in the
    research repository, because they name what they remove.
 4. It checks the contract. The store must have the `schema_version` that `build.py` reads, and the tables and
-   the columns of `schema.sql`. `rules/needs.json` must be the same as the research copy.
+   the columns of `schema.sql`. `rules/needs.json` must be the same as the research copy. Each topic of the
+   research schema must have a line in `rules/topics.json`.
 5. It writes each record as `data/records/<topic>/<slug>.json` and each other table as
    `data/tables/<table>.jsonl`. Rows are sorted and carry no row numbers, so the diff of a publish shows exactly
    which records changed. `data/meta.json` names the commit as `source_commit`.
@@ -63,6 +64,9 @@ refuses data of another version, a table file that `schema.sql` does not have, a
 unknown or missing column. It stops with exit 3 and a message that names the problem. ⚠ Without this check, a load
 through the schema drops an unknown column and leaves a missing column empty, and the build still passes.
 
+If the research repository adds a topic, add a line for it to `rules/topics.json` and an option to the New offer
+form, in one pull request here, before the next publish. `test_publish.py` checks that the form agrees.
+
 If the research repository changes its store schema, do these steps in one pull request here, before the next
 publish:
 
@@ -85,6 +89,7 @@ publish:
 | `primer.py` | the text primer of the store: schema, vocabularies, worked queries |
 | `schema.sql` | the store schema, shared by the Worker |
 | `rules/needs.json` | the best-per-need queries |
+| `rules/topics.json` | the one list of topics: id, name and description, in the order of the topic bar. `pages.py` and `llms.py` read it; `app.js` reads the topic bar of the page |
 | `rules/leak.json` | the public leak rules: generic shapes only |
 
 ## The origin of the site

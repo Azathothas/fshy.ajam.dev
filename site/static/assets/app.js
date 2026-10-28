@@ -5,12 +5,12 @@
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
-  // verdict terms in vorder, their short labels (publish/pages.py VERDICT_LABEL), topic names (pages.py TOPICS)
+  // verdict terms in vorder and their short labels (publish/pages.py VERDICT_LABEL)
   var VT = ['qualifies', 'qualifies-with-caveat', 'trial-only', 'paid-only', 'fails-identity', 'fails-egress', 'fails-quota', 'dead'];
   var VL = ['★ qualifies', 'caveat', 'trial', 'paid', 'fails: identity', 'fails: egress', 'fails: quota', 'dead'];
-  var TN = { storage: 'Storage', compute: 'Compute', inference: 'Inference', egress: 'Egress and tunnels', 'ip-proxy': 'IP and proxies',
-    'crawler-scraper': 'Crawling', debrid: 'Debrid', 'netdisk-pan': 'Netdisk and pan', 'databases-kv': 'Databases and KV', email: 'Email',
-    'domains-dns': 'Domains and DNS', 'ci-cd-runners': 'CI runners', 'coding-subs': 'Coding subscriptions' };
+  // topic names, from the topic bar of the page (publish/rules/topics.json), so this file holds no copy of the list
+  var TN = {};
+  $$('.topics a').forEach(function (a) { var m = /^\/t\/([^/]+)\/$/.exec(a.getAttribute('href')); if (m) TN[m[1]] = a.textContent; });
   function pill(v) { var i = typeof v === 'number' ? v : VT.indexOf(v); return '<span class="v v-' + esc(VT[i] || v) + '">' + esc(VL[i] || v) + '</span>'; }
   function usd(v, sfx) { return v == null ? '' : 'USD ' + (v < 1000 ? String(+(+v).toFixed(2)) : (+v).toFixed(0)) + sfx; }
   function topics(ts) { return (ts || []).map(function (t) { return TN[t] || t; }).join(', '); }

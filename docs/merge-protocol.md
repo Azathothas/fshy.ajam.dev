@@ -124,8 +124,8 @@ scans every file with both sets of leak rules. With one failed check, `data/` do
 `git diff --stat main -- data` before the commit: the changed record files must match the runs you merged.
 Merge the publish pull request after CI is green. The merge session may merge its own publish pull request.
 
-If the export stops with a contract problem (schema version, tables, columns or `needs.json`), the research
-repository changed its store. Do not publish. Change `publish/` first, as [`../publish/README.md`](../publish/README.md)
+If the export stops with a contract problem (schema version, tables, columns, `needs.json` or a topic), the
+research repository changed its store or its topics. Do not publish. Change `publish/` first, as [`../publish/README.md`](../publish/README.md)
 says in "The contract between export and build", in its own pull request.
 
 ## 7. Public reports

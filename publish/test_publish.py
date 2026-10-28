@@ -5,8 +5,9 @@
    file, and an unknown or a missing column, with exit 3 and a message that names the problem.
 2. The export refuses a source that is not a research checkout (exit 3), and a test export into data/ (exit 2).
 3. The leak rules match each leak sample and pass each technical sample.
-4. The lists that are copied by hand agree: the topics and the verdict labels in pages.py, app.js and the New
-   offer form, and, when the store exists, the store's own vocabularies and topics.
+4. The lists agree. rules/topics.json is the one list of topics: pages.py reads it, app.js holds no copy and
+   reads the topic bar, and the New offer form lists the same topics. The verdict labels of pages.py and app.js
+   agree. When the store exists, its vocabulary and its topics agree with them.
 5. When the store exists: each worked query of primer.py runs, so /api/v1/help.txt never shows a query that
    fails.
 
@@ -142,12 +143,15 @@ def list_checks(db_path):
     vt, vl, tn = js_list(js, "VT"), js_list(js, "VL"), js_list(js, "TN")
     check("app.js VL is pages.VERDICT_LABEL in the order of VT", vt is not None and vl == [pages.VERDICT_LABEL.get(v) for v in vt],
           (vt, vl))
-    check("app.js TN is pages.TOPICS", tn == pages.TOPIC_NAME, (tn, pages.TOPIC_NAME))
+    rules = [t["id"] for t in json.load(open(os.path.join(HERE, "rules", "topics.json"), encoding="utf-8"))["topics"]]
+    check("pages.TOPICS is rules/topics.json, in its order (%d topics)" % len(rules), [t for t, _, _ in pages.TOPICS] == rules)
+    check("app.js holds no copy of the topic list and reads the topic bar",
+          tn == {} and "$$('.topics a')" in js and not any("'%s'" % t in js for t in rules if "-" in t), tn)
     check("app.js VT is the verdicts of pages.VERDICT_LABEL", vt is not None and set(vt) == set(pages.VERDICT_LABEL), vt)
     form = open(os.path.join(ROOT, ".github", "ISSUE_TEMPLATE", "new-offer.yml"), encoding="utf-8").read()
     block = re.search(r"label: Topic\n\s+options:\n((?:\s+- .+\n)+)", form)
     opts = re.findall(r"- (\S+)", block.group(1)) if block else []
-    check("the New offer form lists the topics of pages.TOPICS", sorted(opts) == sorted(pages.TOPIC_NAME), opts)
+    check("the New offer form lists the topics of rules/topics.json", sorted(opts) == sorted(rules), opts)
     if not db_path:
         return
     db = sqlite3.connect("file:%s?mode=ro" % db_path, uri=True)
@@ -155,7 +159,7 @@ def list_checks(db_path):
     topics = {t for (t,) in db.execute("SELECT DISTINCT topic FROM record")}
     db.close()
     check("app.js VT is the store's verdict vocabulary, in its order", vt == verdicts, (vt, verdicts))
-    check("every topic of the store has a page in pages.TOPICS", topics <= set(pages.TOPIC_NAME), sorted(topics - set(pages.TOPIC_NAME)))
+    check("every topic of the store is in rules/topics.json", topics <= set(pages.TOPIC_NAME), sorted(topics - set(pages.TOPIC_NAME)))
 
 
 def primer_checks(db_path):

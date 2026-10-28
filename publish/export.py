@@ -156,6 +156,13 @@ def contract(pub_db, tree):
     theirs = json.load(open(os.path.join(tree, "scripts", "fshy", "rules", "needs.json"), encoding="utf-8"))
     if ours != theirs:
         problems.append("publish/rules/needs.json differs from scripts/fshy/rules/needs.json of the research commit")
+    schema_json = os.path.join(tree, "scripts", "dossier", "schema.json")
+    if os.path.exists(schema_json):
+        enum = json.load(open(schema_json, encoding="utf-8")).get("properties", {}).get("topic", {}).get("enum") or []
+        known = {t["id"] for t in json.load(open(os.path.join(HERE, "rules", "topics.json"), encoding="utf-8"))["topics"]}
+        missing = sorted(set(enum) - known)
+        if missing:
+            problems.append("the research schema has the topic(s) %s, and publish/rules/topics.json does not" % missing)
     return problems
 
 

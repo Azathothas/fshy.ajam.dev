@@ -14,21 +14,9 @@ from urllib.parse import quote
 
 import llms
 
-TOPICS = [
-    ("storage", "Storage", "Where bytes can live: object storage, drives, registries, academic repositories, hosts used as storage."),
-    ("compute", "Compute", "Machines, sandboxes, notebooks, GPU time, platform hosts and how long each runs before it is reaped."),
-    ("inference", "Inference", "Model APIs that answer a completion request, keyless or behind a free key."),
-    ("egress", "Egress and tunnels", "Ways to get traffic out or a service in: tunnels, relays, IPv6 brokers, UDP forwards."),
-    ("ip-proxy", "IP and proxies", "Exit addresses: proxy lists, VPN exits, address sources and what the upstream sees."),
-    ("crawler-scraper", "Crawling", "Crawl, search, reader and unblocker APIs for reading the web at scale."),
-    ("debrid", "Debrid", "Multi-hosters, premium-link generators, usenet and retrieval services."),
-    ("netdisk-pan", "Netdisk and pan", "Pan drives and public AList/OpenList instances, and whether they mount."),
-    ("databases-kv", "Databases and KV", "Hosted databases, vector stores and key-value stores."),
-    ("email", "Email", "Sending, receiving, forwarding and inbox APIs."),
-    ("domains-dns", "Domains and DNS", "Managed DNS, free domains and certificate authorities."),
-    ("ci-cd-runners", "CI runners", "Hosted CI runners and registries, and what they will run."),
-    ("coding-subs", "Coding subscriptions", "Coding-agent subscriptions and their price per unit of work."),
-]
+# the topics, their names and descriptions, in the order of the topic bar: rules/topics.json is the one list
+TOPICS = [(t["id"], t["name"], t["description"]) for t in json.load(open(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "rules", "topics.json"), encoding="utf-8"))["topics"]]
 TOPIC_NAME = {t: n for t, n, _ in TOPICS}
 GROUPS = [("usable", "Usable"), ("trial", "Trial"), ("paid", "Paid only"), ("rejected", "Rejected"), ("dead", "Dead")]
 VERDICT_LABEL = {"qualifies": "★ qualifies", "qualifies-with-caveat": "caveat", "trial-only": "trial",
@@ -257,6 +245,8 @@ class Site:
         desc = next((d for x, _, d in TOPICS if x == t), "")
         main, rest = [c for c in cs if c["grp"] in ("usable", "trial", "paid")], [c for c in cs if c["grp"] in ("rejected", "dead")]
         parts = ['<h1>%s</h1><p class="lede">%s</p>' % (e(name), e(desc))]
+        if not cs:
+            parts.append("<p>No record is in this topic yet.</p>")
         sts = self.stats(main, GROUPS[:3], lambda g: "#" + g)
         if rest:
             sts += '<li><a class="st rejected" href="rejected/"><b>%s</b>rejected or dead</a></li>' % num(len(rest))
