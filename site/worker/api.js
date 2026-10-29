@@ -13,7 +13,7 @@ import { clip, ftsMatch } from './text.js';
 export const CARD_COLUMNS = ['rid', 'provider', 'verdict', 'confidence', 'identity', 'card', 'phone',
   'usd_month', 'usd_per_tb_month', 'stale_on', 'summary'];
 const CARD_SELECT = `rid, provider, verdict, confidence,
-  coalesce(identity_kind, '') || CASE WHEN identity_basis = 'defaulted' THEN '?' ELSE '' END AS identity,
+  coalesce(identity_kind, '') || CASE WHEN identity_basis <> 'stated' THEN '?' ELSE '' END AS identity,
   CASE needs_card WHEN 1 THEN 'yes' WHEN 0 THEN 'no' ELSE '?' END AS card,
   CASE needs_phone WHEN 1 THEN 'yes' WHEN 0 THEN 'no' ELSE '?' END AS phone,
   usd_month, usd_per_tb_month, stale_on, summary`;
@@ -657,7 +657,7 @@ export async function help(store, env) {
     `rid = topic/slug (stable). grp: ${(vocab.grp || []).join(' | ')}. verdict in order (vorder 0..7, lower is better):`,
     `  ${(vocab.verdict || []).join(', ')}.`,
     `Unknown is NULL, never "no": card ? means not stated. No card = needs_card=0 AND identity_basis='stated'.`,
-    `identity shows identity_kind, with ? when the requirement was defaulted rather than read.`,
+    `identity shows identity_kind, with ? when the requirement was defaulted or inferred rather than read.`,
     `usd_month and usd_per_tb_month are headline prices, NULL when nothing parsed; a filter or sort on them`,
     `excludes NULL rows and reports how many. stale_on <= today means the record is due for a re-check.`,
     ``,
