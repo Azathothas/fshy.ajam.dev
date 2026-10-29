@@ -1,13 +1,17 @@
 // Remote MCP endpoint: stateless Streamable HTTP, JSON responses only, JSON-RPC 2.0 by hand.
-// POST /mcp carries one message (or a batch); GET and DELETE are 405 because there is no
+// POST /mcp carries one message, or a batch of at most MAX_BATCH; GET and DELETE are 405 because there is no
 // server-initiated stream and no session. Tool results are text: TSV by default, capped near
 // 20,000 tokens with a footer that says what was cut.
+//
+// Cost: each tools/call message counts one unit of the rate limit RL_API, so a batch costs what its calls cost. The
+// protocol revision 2025-06-18 removed batches; only the two oldest versions that this endpoint accepts use them.
 
-import { HttpError } from './db.js';
+import { HttpError, loadNames } from './db.js';
 import { baseHeaders, jsonResponse, rateLimited } from './http.js';
 import * as api from './api.js';
 
 export const PROTOCOL_VERSIONS = ['2025-11-25', '2025-06-18', '2025-03-26', '2024-11-05'];
+export const MAX_BATCH = 5;
 const MAX_TOKENS = 20000;
 // the site's own host (wrangler.jsonc vars.FSHY_HOST), the local hosts of `wrangler dev`, and *.workers.dev previews
 const LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
@@ -18,27 +22,30 @@ const n = (description, extra = {}) => ({ type: 'integer', description, ...extra
 const b = (description) => ({ type: 'boolean', description });
 const obj = (properties, required) => ({ type: 'object', properties, ...(required ? { required } : {}) });
 const FORMAT = s('tsv (default) or json', { enum: ['tsv', 'json'] });
-const TOPIC = s('topic, e.g. storage, compute, inference, egress, email');
+const TOPIC = s('a topic id from the enum; a comma list where the tool takes several');
+const GRP = s('comma list of usable, trial, paid, rejected, dead');
+// every tool reads the store and changes nothing; the same arguments give the same answer until the next publish
+const ANNOTATIONS = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false };
 
 export const TOOLS = [
   {
     name: 'help',
-    description: 'Primer: what the store holds, its tables, vocabularies and conventions (NULL = unknown). Read once first.',
+    description: 'Use once, first: the primer of the store, with its tables, vocabularies and rules. NULL means unknown, never no.',
     inputSchema: obj({}),
   },
   {
     name: 'search',
-    description: 'Find records by provider name, then BM25 full text. Rows are cards plus the fields that matched.',
-    inputSchema: obj({ q: s('words or a name; CJK works'), topic: TOPIC, grp: s('usable|trial|paid|rejected|dead, comma list'), limit: n('<= 50, default 20'), offset: n('skip rows'), format: FORMAT }, ['q']),
+    description: 'Use when you have a provider name or words. It matches names first, then ranks the full text (BM25). Rows are cards plus the fields that matched. For conditions such as no card, a price cap or an interface, use filter.',
+    inputSchema: obj({ q: s('words or a name; CJK works'), topic: TOPIC, grp: GRP, limit: n('<= 50, default 20'), offset: n('skip rows'), format: FORMAT }, ['q']),
   },
   {
     name: 'filter',
-    description: 'List records by structured conditions. A NULL price is never treated as a match; the footer counts rows excluded for it.',
+    description: 'Use for questions such as "which X need no card" or "which X cost less than Y": the records that meet structured conditions, best verdict first. Start here for a ranked answer. A NULL price never matches a price condition, and the footer counts the rows that it excluded.',
     inputSchema: obj({
       topic: TOPIC,
       verdict: s('comma list, e.g. qualifies,qualifies-with-caveat'),
-      grp: s('comma list: usable,trial,paid,rejected,dead'),
-      confidence: s('comma list'),
+      grp: GRP,
+      confidence: s('comma list of measured, documented, reported, inferred, unverified'),
       no_card: b('a card is stated as not required'),
       no_phone: b('a phone is stated as not required'),
       anonymous: b('no account at all'),
@@ -57,7 +64,7 @@ export const TOOLS = [
   },
   {
     name: 'get',
-    description: 'Records by rid (topic/slug). detail=card (<= 50 ids) or full (<= 5 ids: record JSON with claims, unknown, history, drift).',
+    description: 'Use after search or filter to read records in full. ids are rids (topic/slug). detail=card takes up to 50 ids; detail=full takes up to 5 and gives the record JSON with claims, unknown, history and drift.',
     inputSchema: obj({
       ids: { type: 'array', items: { type: 'string' }, description: 'rids, e.g. storage/hetzner-storage-box' },
       detail: s('card (default) or full', { enum: ['card', 'full'] }),
@@ -66,22 +73,22 @@ export const TOOLS = [
   },
   {
     name: 'entity',
-    description: 'A vendor and all its records. Give id (entity id) or name (resolved by name search).',
+    description: 'Use to see every record of one provider. Give id (the entity id) or name (found by name search).',
     inputSchema: obj({ id: s('entity id, e.g. hetzner'), name: s('vendor name') }),
   },
   {
     name: 'need',
-    description: 'Curated best-per-need lists. No id: list them. With id: ranked records, rows with no parsed number listed separately.',
+    description: 'Use first when the question matches a curated best-per-need list. With no id: the lists. With id: the ranked records, then the rows with no parsed number.',
     inputSchema: obj({ id: s('need id, e.g. s3-storage-no-card'), limit: n('<= 200, default 50'), offset: n('skip rows'), format: FORMAT }),
   },
   {
     name: 'sql',
-    description: 'One read-only SELECT, WITH, VALUES or EXPLAIN over the SQLite store (FTS4 table text_fts). Writes, PRAGMA, a function that is not on the list and a costly plan are refused, and the refusal says why; LIMIT is added if absent.',
+    description: 'Use only when filter cannot express the question. One read-only SELECT, WITH, VALUES or EXPLAIN over the SQLite store (FTS4 table text_fts). A write, PRAGMA, a function that is not on the list and a costly plan are refused, and the refusal says why. LIMIT is added if absent. 30 calls a minute.',
     inputSchema: obj({ query: s('the SQL'), limit: n('<= 200, default 100'), format: FORMAT }, ['query']),
   },
   {
     name: 'worklist',
-    description: 'Maintenance lists: stale (stale_on <= as_of + forecast_days), drift, changes (newest first), unparsed claims.',
+    description: 'Use to find records to maintain, not to answer a question about an offer: stale (stale_on <= as_of + forecast_days), drift, changes (newest first), unparsed claims.',
     inputSchema: obj({
       kind: s('stale, drift, changes or unparsed', { enum: ['stale', 'drift', 'changes', 'unparsed'] }),
       topic: TOPIC,
@@ -92,7 +99,26 @@ export const TOOLS = [
       format: FORMAT,
     }, ['kind']),
   },
-];
+].map((t) => ({ ...t, annotations: ANNOTATIONS }));
+const TOOL_NAMES = TOOLS.map((t) => t.name).join(', ');
+
+/** The tools, with the topic ids of the store as the enum of each topic argument. */
+export function toolsFor(store) {
+  const topics = [...api.vocabOf(store).topic];
+  return TOOLS.map((t) => {
+    const props = t.inputSchema.properties;
+    if (!props.topic) return t;
+    return { ...t, inputSchema: { ...t.inputSchema, properties: { ...props, topic: { ...props.topic, enum: topics } } } };
+  });
+}
+
+function instructions(store) {
+  const v = api.vocabOf(store);
+  return 'Read-only catalogue of free and cheap capability: storage, compute, GPU time, inference, crawling, egress, ' +
+    'email, databases, DNS, CI, proxies and more. Call help once. Then use need or filter for a ranked answer, and ' +
+    'search for a name; get with detail=full reads one record. NULL means unknown, never no. Topics: ' +
+    [...v.topic].join(', ') + '. Verdicts, best first: ' + [...v.verdict].join(', ') + '.';
+}
 
 /** Rough token estimate: ASCII at 4 characters a token, anything else at 1. */
 export function estimateTokens(text) {
@@ -154,6 +180,7 @@ async function callTool(name, a, store, env, request) {
     case 'help':
       return await api.help(store, env);
     case 'search':
+      await loadNames(store, env);
       return tableText(api.search(store, a), fmt(a));
     case 'filter':
       return tableText(api.filter(store, a), fmt(a));
@@ -162,6 +189,7 @@ async function callTool(name, a, store, env, request) {
       return r.json ? jsonText(r.json) : tableText(r, 'tsv');
     }
     case 'entity':
+      await loadNames(store, env);
       return tableText(api.entity(store, a), 'tsv');
     case 'need':
       return tableText(await api.need(store, env, a), fmt(a));
@@ -197,17 +225,17 @@ async function dispatch(msg, store, env, request) {
         protocolVersion: version,
         capabilities: { tools: { listChanged: false } },
         serverInfo: { name: 'fshy', version: (store.commit || 'unknown').slice(0, 12) },
-        instructions: 'Read-only catalogue of free and cheap capability (storage, compute, GPU, inference, crawling, egress, email, databases, DNS, CI, proxies). Call help once, then search or filter; get detail=full for one record. NULL means unknown, never no.',
+        instructions: instructions(store),
       });
     }
     case 'ping':
       return rpcResult(id, {});
     case 'tools/list':
-      return rpcResult(id, { tools: TOOLS });
+      return rpcResult(id, { tools: toolsFor(store) });
     case 'tools/call': {
       const name = p.name;
       if (typeof name !== 'string' || !TOOLS.some((t) => t.name === name)) {
-        return rpcError(id, -32602, 'unknown tool: ' + String(name));
+        return rpcError(id, -32602, 'unknown tool: ' + String(name) + '; the tools are ' + TOOL_NAMES);
       }
       try {
         const text = await callTool(name, args(p.arguments), store, env, request);
@@ -231,40 +259,54 @@ function hostAllowed(request, url, env) {
   return host === own || LOCAL_HOSTS.includes(host) || host.endsWith('.workers.dev');
 }
 
-export async function handleMcp(request, env, url, store) {
-  const h = baseHeaders(store, { 'cache-control': 'no-store' });
-  if (!hostAllowed(request, url, env)) return jsonResponse({ error: 'host not allowed' }, 403, h);
+/** The units of the rate limit that a body costs: one for each tools/call message, and at least one. */
+export function units(body) {
+  const msgs = Array.isArray(body) ? body : [body];
+  return Math.max(1, msgs.filter((m) => m && typeof m === 'object' && m.method === 'tools/call').length);
+}
+
+/** POST /mcp. open() loads the store; it runs after the checks and the rate limit, so a refusal costs no load. */
+export async function handleMcp(request, env, url, open) {
+  const h = (store) => baseHeaders(store, { 'cache-control': 'no-store' });
+  if (!hostAllowed(request, url, env)) return jsonResponse({ error: 'host not allowed' }, 403, h(null));
   if (request.method !== 'POST') {
-    h.set('allow', 'POST, OPTIONS');
-    return jsonResponse(rpcError(null, -32000, 'method not allowed: POST JSON-RPC messages to /mcp'), 405, h);
+    const hh = h(null);
+    hh.set('allow', 'POST, OPTIONS');
+    return jsonResponse(rpcError(null, -32000, 'method not allowed: POST JSON-RPC messages to /mcp'), 405, hh);
   }
   const pv = request.headers.get('mcp-protocol-version');
   if (pv && !PROTOCOL_VERSIONS.includes(pv)) {
-    return jsonResponse(rpcError(null, -32600, 'unsupported MCP-Protocol-Version ' + pv), 400, h);
-  }
-  if (await rateLimited(env, 'RL_API', request)) {
-    h.set('retry-after', '60');
-    return jsonResponse(rpcError(null, -32000, 'rate limited: 120 requests a minute'), 429, h);
+    return jsonResponse(rpcError(null, -32600, 'unsupported MCP-Protocol-Version ' + pv), 400, h(null));
   }
   const text = await request.text();
-  if (text.length > 1048576) return jsonResponse(rpcError(null, -32600, 'body too large'), 413, h);
+  if (text.length > 1048576) return jsonResponse(rpcError(null, -32600, 'body too large'), 413, h(null));
   let body;
   try {
     body = JSON.parse(text);
   } catch {
-    return jsonResponse(rpcError(null, -32700, 'parse error'), 400, h);
+    body = undefined;
   }
+  if (Array.isArray(body) && body.length > MAX_BATCH) {
+    return jsonResponse(rpcError(null, -32600, `a batch holds at most ${MAX_BATCH} messages; send the others in more requests`), 400, h(null));
+  }
+  if (await rateLimited(env, 'RL_API', request, body === undefined ? 1 : units(body))) {
+    const hh = h(null);
+    hh.set('retry-after', '60');
+    return jsonResponse(rpcError(null, -32000, 'rate limited: 120 tool calls a minute'), 429, hh);
+  }
+  if (body === undefined) return jsonResponse(rpcError(null, -32700, 'parse error'), 400, h(null));
+  if (Array.isArray(body) && !body.length) return jsonResponse(rpcError(null, -32600, 'empty batch'), 400, h(null));
+  const store = await open();
   if (Array.isArray(body)) {
-    if (!body.length) return jsonResponse(rpcError(null, -32600, 'empty batch'), 400, h);
     const out = [];
-    for (const m of body.slice(0, 50)) {
+    for (const m of body) {
       const r = await dispatch(m, store, env, request);
       if (r) out.push(r);
     }
-    if (!out.length) return new Response(null, { status: 202, headers: h });
-    return jsonResponse(out, 200, h);
+    if (!out.length) return new Response(null, { status: 202, headers: h(store) });
+    return jsonResponse(out, 200, h(store));
   }
   const r = await dispatch(body, store, env, request);
-  if (!r) return new Response(null, { status: 202, headers: h });
-  return jsonResponse(r, 200, h);
+  if (!r) return new Response(null, { status: 202, headers: h(store) });
+  return jsonResponse(r, 200, h(store));
 }

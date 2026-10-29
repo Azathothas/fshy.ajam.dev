@@ -10,6 +10,9 @@
 // Names: an entity scores the best of its aliases: exact 100, alias prefix 60, alias substring 40,
 // else 30 when every query token meets a token of that alias within edit distance 1 (query token
 // length 4-7) or 2 (length >= 8); a query token under 4 characters must equal an alias token.
+// The fuzzy tier counts each distinct query token once, and it runs only for a query of at most
+// MAX_FUZZY_TOKENS distinct tokens: each token is compared with every token of the index, so a long
+// query would cost one full pass for each word (the twin in the research repository follows this).
 
 import { normalize, tokens } from './text.js';
 
@@ -78,6 +81,8 @@ export function fuzzBudget(tok) {
   return 0;
 }
 
+export const MAX_FUZZY_TOKENS = 8;
+
 /**
  * Build the name index from rows of the alias table: [{eid, alias, kind}].
  * Keeps each distinct normalised alias once with its entities, and a token -> aliases map.
@@ -92,7 +97,14 @@ export function buildNameIndex(aliasRows) {
     s.add(r.eid);
   }
   const aliases = [...byNorm.keys()];
-  const eids = aliases.map((k) => [...byNorm.get(k)]);
+  return indexFromNormalized(aliases, aliases.map((k) => [...byNorm.get(k)]));
+}
+
+/**
+ * The name index from aliases that are normalised already, each with its entities. The build writes them (site_gen.py
+ * name_index), so the Worker skips the normalisation of every alias on the first search of an isolate.
+ */
+export function indexFromNormalized(aliases, eids) {
   const tokenMap = new Map(); // token -> alias indexes
   aliases.forEach((k, idx) => {
     for (const t of tokens(k)) {
@@ -127,7 +139,8 @@ export function scoreNames(index, query) {
   // fuzzy tier: every query token meets a token of the same alias within its budget
   // (budget 0 for tokens under 4 characters, so those must match a token exactly)
   let hits = null;
-  for (const qt of tokens(q)) {
+  const qts = [...new Set(tokens(q))];
+  for (const qt of qts.length <= MAX_FUZZY_TOKENS ? qts : []) {
     const max = fuzzBudget(qt);
     const set = new Set();
     if (!max) {
