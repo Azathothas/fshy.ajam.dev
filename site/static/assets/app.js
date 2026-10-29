@@ -255,7 +255,7 @@
         var h = function (s) { return s == null || s === '' ? '' : txt(s).replace(/\n/g, '<br>'); };
         var f = [['verdict', function (x) { return pill(x.card.verdict); }],
           ['evidence rung', function (x) { return h(x.card.confidence); }],
-          ['identity', function (x) { return h(x.card.identity_kind + (x.card.identity_basis === 'defaulted' ? '?' : '')); }],
+          ['identity', function (x) { return h(x.card.identity_kind + (x.card.identity_basis && x.card.identity_basis !== 'stated' ? '?' : '')); }],
           ['card', function (x) { return x.card.needs_card === 1 ? 'yes' : x.card.needs_card === 0 ? 'no' : 'unknown'; }],
           ['free tier', function (x) { return h((x.record.free_tier || {}).stated); }], ['price', function (x) { return h(x.record.price_per_tb_month); }],
           ['USD a month', function (x) { return h(x.card.usd_month); }], ['USD per TB-month', function (x) { return h(x.card.usd_per_tb_month); }],
