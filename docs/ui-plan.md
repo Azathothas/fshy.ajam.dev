@@ -652,6 +652,11 @@ once for each kind of change.
 | a provider page, gzip, except the five largest | 12,000 bytes |
 | a file written by `llms.py` | 300,000 bytes (already enforced) |
 
+Done on 2026-10-29 in `publish/test_weight.py`. The page limits there come from a measurement of the data of that
+day and keep about a third of room, so a publish that adds records passes: a topic page or its paid page 80,000, a
+rejected page 160,000, a need page 40,000, a provider page or a record page 30,000, the graveyard and the changes
+page 40,000, and any file 70 percent of the 25 MiB asset limit. The shared files and the shell keep the limits above.
+
 **Reason.** The only protection against bloat today is a sentence in `site/README.md`. awesome and free-for-dev
 enforce their rules with a checklist and a tool. A number in a test cannot be forgotten.
 
