@@ -472,6 +472,12 @@ async function needs(store, env) {
 
 const NEED_KEYS = new Set(['id', 'limit', 'offset']);
 
+// A need that asks for no card or no phone lists its confirmed rows. The records whose requirement is not stated (NULL, or an
+// identity that no source states) follow in a section of their own, read from the need's SQL without its conditions on the
+// card, the phone and a stated identity. publish/llms.py need_unstated is the same rule.
+const STATED_CONDITION = /\s+AND\s+(?:needs_card=0|needs_phone=0|identity_basis='stated')(?=\s|$)/g;
+export const UNSTATED_HEADING = 'Card or phone requirement not stated';
+
 export async function need(store, env, p) {
   const id = str(p.id, 'id');
   const doc = await needs(store, env);
@@ -494,18 +500,30 @@ export async function need(store, env, p) {
   const tie = (x, y) => x._vorder - y._vorder || ev(x) - ev(y) || later(x, y) || (x.rid < y.rid ? -1 : x.rid > y.rid ? 1 : 0);
   const ranked = hits.filter((h) => h[key] != null).sort((x, y) => x[key] - y[key] || tie(x, y));
   const nulls = hits.filter((h) => h[key] == null).sort(tie);
-  const seq = [...ranked, ...nulls];
+  const flags = ['needs_card', 'needs_phone'].filter((f) => n.sql.includes(f + '=0'));
+  let unstated = [];
+  if (flags.length) {
+    const relaxed = all(store.db, `SELECT h.*, r.vorder AS _vorder, r.confidence AS _conf, r.stale_on AS _stale, r.needs_card AS _card,
+      r.needs_phone AS _phone FROM (${n.sql.replace(STATED_CONDITION, '')}) AS h JOIN record r ON r.rid = h.rid`);
+    const have = new Set(hits.map((h) => h.rid));
+    const rest = relaxed.filter((h) => !have.has(h.rid) && flags.every((f) => (f === 'needs_card' ? h._card : h._phone) !== 1));
+    unstated = [...rest.filter((h) => h[key] != null).sort((x, y) => x[key] - y[key] || tie(x, y)), ...rest.filter((h) => h[key] == null).sort(tie)];
+  }
+  const seq = [...ranked, ...nulls, ...unstated];
   const page = seq.slice(offset, offset + limit);
+  const isUnstated = new Set(unstated.map((h) => h.rid));
   const cards = cardsByRid(store.db, page.map((h) => h.rid));
   const extra = CARD_COLUMNS.includes(key) ? [] : [key];
   const toRow = (h) => [...cards.get(h.rid), ...extra.map((k) => h[k])];
   const inPage = (h) => cards.has(h.rid);
-  const out = page.filter((h) => h[key] != null && inPage(h)).map(toRow);
-  const nullOut = page.filter((h) => h[key] == null && inPage(h)).map(toRow);
+  const out = page.filter((h) => !isUnstated.has(h.rid) && h[key] != null && inPage(h)).map(toRow);
+  const nullOut = page.filter((h) => !isUnstated.has(h.rid) && h[key] == null && inPage(h)).map(toRow);
+  const unstatedOut = page.filter((h) => isUnstated.has(h.rid) && inPage(h)).map(toRow);
   notes.unshift(`${n.title}: ${n.scope}`);
   notes.push(`sorted by ${key} ascending; ${ranked.length} ranked, ${nulls.length} with no parsed ${key}`);
+  if (flags.length) notes.push(`${unstated.length} rows with the card or phone requirement not stated follow the others; they are not counted as no`);
   return table([...CARD_COLUMNS, ...extra], out, {
-    total: seq.length, offset, truncated: offset + page.length < seq.length, notes, nullRows: nullOut, nullKey: key,
+    total: seq.length, offset, truncated: offset + page.length < seq.length, notes, nullRows: nullOut, nullKey: key, unstatedRows: unstatedOut,
     need: { id: n.id, title: n.title, topic: n.topic, sort: key, scope: n.scope, sql: n.sql },
   });
 }
@@ -693,7 +711,7 @@ function cell(v) {
 
 export function footer(t) {
   const lines = [];
-  const shown = t.rows.length + (t.nullRows ? t.nullRows.length : 0);
+  const shown = t.rows.length + (t.nullRows ? t.nullRows.length : 0) + (t.unstatedRows ? t.unstatedRows.length : 0);
   if (t.open) lines.push(`# ${shown} rows; row cap reached, more rows exist`);
   else if (t.truncated) lines.push(`# ${shown} of ${t.total} rows; offset=${t.offset + shown} for more`);
   else lines.push(`# ${shown} of ${t.total} rows`);
@@ -709,6 +727,10 @@ export function toTsv(t) {
     lines.push(`# no parsed ${t.nullKey}: ${t.nullRows.length} rows below, unranked`);
     for (const r of t.nullRows) lines.push(r.map(cell).join('\t'));
   }
+  if (t.unstatedRows && t.unstatedRows.length) {
+    lines.push(`# ${UNSTATED_HEADING.toLowerCase()}: ${t.unstatedRows.length} rows below, not counted as no`);
+    for (const r of t.unstatedRows) lines.push(r.map(cell).join('\t'));
+  }
   return { lines, footer: footer(t) };
 }
 
@@ -717,6 +739,7 @@ export function toJson(t) {
   if (t.offset) o.offset = t.offset;
   if (t.excluded && Object.keys(t.excluded).length) o.excluded_null = t.excluded;
   if (t.nullRows) o.null_rows = t.nullRows;
+  if (t.unstatedRows && t.unstatedRows.length) o.unstated_rows = t.unstatedRows;
   if (t.entity) o.entity = t.entity;
   if (t.need) o.need = t.need;
   return o;

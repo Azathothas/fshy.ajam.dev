@@ -84,7 +84,7 @@ export const TOOLS = [
   },
   {
     name: 'need',
-    description: 'Use first when the question matches a curated best-per-need list. With no id: the lists. With id: the ranked records, then the rows with no parsed number.',
+    description: 'Use first when the question matches a curated best-per-need list. With no id: the lists. With id: the ranked records, then the rows with no parsed number, then, in a list that asks for no card or no phone, the rows whose card or phone requirement is not stated.',
     inputSchema: obj({ id: s('need id, e.g. s3-storage-no-card'), limit: n('<= 200, default 50'), offset: n('skip rows'), format: FORMAT }),
   },
   {

@@ -291,6 +291,29 @@ def site_checks(dist, store):
                     wrong.append((m.group(1), claim, badges[:3]))
     check("an index line says 'free tier' only when the claim has-free-tier is 1, 'no free tier' only when it is 0 (F-05, F-25; %d lines)" % seen,
           seen and not wrong, wrong[:4])
+    for x in st.needs:
+        flags = [f for f in ("needs_card", "needs_phone") if f + "=0" in x["sql"]]
+        page = read(os.path.join(dist, "need", x["id"], "index.html"))
+        if not flags:
+            check("the need %s asks for no card or phone, so it has no section for a requirement that is not stated" % x["id"],
+                  'id="unstated"' not in page and "requirement not stated" not in files["need/%s.md" % x["id"]])
+            continue
+        relaxed_sql = x["sql"]
+        for cond in (" AND needs_card=0", " AND needs_phone=0", " AND identity_basis='stated'"):
+            relaxed_sql = relaxed_sql.replace(cond, "")
+        relaxed = {r[0] for r in st.db.execute(relaxed_sql)}
+        confirmed = {r[0] for r in st.db.execute(x["sql"])}
+        known = {rid for rid in relaxed if any(st.cards[rid][f] == 1 for f in flags)}
+        want = relaxed - confirmed - known
+        sect = page.split('id="unstated"')[1].split("<details>")[0] if 'id="unstated"' in page else ""
+        md = files["need/%s.md" % x["id"]]
+        mdrows = md.split("## Card or phone requirement not stated")[1] if "## Card or phone requirement not stated" in md else ""
+        got = (sect.count('<li class="e"'), len(re.findall(r"^- \[", mdrows, re.M)))
+        check("the need %s lists %d rows whose card or phone requirement is not stated, after the confirmed rows, none of them also confirmed and none dropped (page %d, Markdown %d)"
+              % (x["id"], len(want), got[0], got[1]),
+              want and got == (len(want), len(want)) and not (want & confirmed)
+              and relaxed == confirmed | want | known and 'Card or phone requirement not stated <small>' in page
+              and page.index('id="unstated"') > page.index('class="list'), (len(want), got))
     sitemap = read(os.path.join(dist, "sitemap.xml"))
     bare = [t for t, _, _ in every if t not in have]
     check("a topic with no record has no page, no Markdown file and no line in llms.txt or the sitemap (F-03, W-42)",
