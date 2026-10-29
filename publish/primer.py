@@ -64,6 +64,9 @@ EXAMPLES = [
     ("The binding request-rate limits, and who cites a host",
      "SELECT l.rid, l.value FROM limit_row l WHERE l.is_binding=1 AND l.kind='request-rate' "
      "AND l.rid IN (SELECT rid FROM evidence WHERE url LIKE '%github.com%') LIMIT 10"),
+    ("Compute records that have a free allowance (claim has-free-tier = 1), best verdict first",
+     "SELECT r.rid, r.verdict FROM record r JOIN claim c ON c.rid = r.rid AND c.kind = 'has-free-tier' AND c.num = 1 "
+     "WHERE r.topic = 'compute' AND r.grp IN ('usable','trial') AND r.duplicate_of IS NULL ORDER BY r.vorder LIMIT 10"),
 ]
 
 
@@ -117,6 +120,9 @@ def _text(db):
     w("  filter or sort on them drops for NULL. interfaces: comma list, NULL = unknown.")
     w("- duplicate_of IS NOT NULL marks a duplicate; the API and the MCP tools exclude them unless asked, and")
     w("  the wiki pages list them. So a page can count a few more records than the API.")
+    w("- A free allowance: the claim of the kind has-free-tier. claim.num 1: the record has a free allowance; 0: it has")
+    w("  none; no row: unknown. free_unit is the unit of the headline offer, which can be a price, so it does not say")
+    w("  this. Join: LEFT JOIN claim c ON c.rid = record.rid AND c.kind = 'has-free-tier' (example 8).")
     w("- TSV output ends with lines that start with '#': the row count, the limit, a cut. Read it with")
     w("  comment='#' in pandas, or drop those lines.")
     w("- vorder 0..7 orders verdicts best first; grp groups them.")

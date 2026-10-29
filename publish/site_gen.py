@@ -87,6 +87,7 @@ def emit_data(repo, pub_db, dist):
     """Data files every other layer reads. Returns a context dict for the HTML layer."""
     sys.path.insert(0, HERE)
     import build  # noqa: E402
+    import llms  # noqa: E402
     db = sqlite3.connect("file:%s?mode=ro" % pub_db, uri=True)
     db.row_factory = sqlite3.Row
     meta = {r["key"]: r["value"] for r in db.execute("SELECT key, value FROM meta")}
@@ -120,6 +121,7 @@ def emit_data(repo, pub_db, dist):
         cards[c["rid"]] = c
         by_eid[c["eid"]].append(c)
         docs[c["rid"]] = r["doc"]
+    llms.attach_free_claims(db, cards)  # the cards of the pages carry it; the card of the published JSON does not
     claims = collections.defaultdict(list)
     for r in db.execute("SELECT * FROM claim ORDER BY rid, path"):
         claims[r["rid"]].append({k: r[k] for k in r.keys() if k != "rid"})
@@ -147,7 +149,7 @@ def emit_data(repo, pub_db, dist):
         ents[e["eid"]] = e
         members = sorted(by_eid[e["eid"]], key=lambda c: (c["vorder"], c["rid"]))
         write(os.path.join(dist, "api", "v1", "entity", e["eid"] + ".json"),
-              jdump({**e, "records": [full[c["rid"]] for c in members]}))
+              jdump({**e, "records": [{**full[c["rid"]], "card": {k: c[k] for k in CARD_COLS}} for c in members]}))  # no free_claim
     # name index for MiniSearch: one row per entity
     names = []
     for eid, e in sorted(ents.items()):
