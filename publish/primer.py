@@ -37,8 +37,8 @@ KEY_COLS = {
 }
 VOCAB_ORDER = ["verdict", "grp", "confidence", "binding", "identity_kind", "identity_basis", "verified_basis",
                "unknown_class"]
-# domains whose terms explain themselves: listed without meanings to stay inside the token budget
-TERMS_ONLY = {"binding", "identity_kind", "unknown_class"}
+# domains whose terms explain themselves: listed without meanings, to keep the primer short
+TERMS_ONLY = {"unknown_class"}
 
 EXAMPLES = [
     ("Usable storage with no card, cheapest per TB-month first (NULL price last)",
@@ -90,8 +90,8 @@ def _text(db):
     out = []
     w = out.append
     w("fshy: the fshy corpus as one read-only SQLite store")
-    w("store: %s; commit %s (%s); as_of %s; %s records, %s entities, %s evidence rows, %s parsed claims"
-      % (target, (meta.get("commit") or "?")[:12], meta.get("commit_time") or "?", meta.get("as_of") or "?",
+    w("store: %s; data as of %s, source commit %s; %s records, %s entities, %s evidence rows, %s parsed claims"
+      % (target, meta.get("as_of") or "?", (meta.get("source_commit") or "?")[:12],
          counts.get("records", "?"), counts.get("entities", "?"), counts.get("evidence", "?"),
          counts.get("claims", "?")))
     w("The record files of data/records/ in the public repository are the source; this store is built from")
@@ -146,8 +146,10 @@ def _text(db):
             continue
         if d in TERMS_ONLY:
             w("- %s: %s" % (d, ", ".join(t for t, _ in vocab[d])))
-        else:
-            w("- %s: %s" % (d, "; ".join("%s = %s" % (t, m) for t, m in vocab[d])))
+        else:  # one term a line: a meaning can hold a semicolon
+            w("- %s:" % d)
+            for t, m in vocab[d]:
+                w("    %s = %s" % (t, m))
     w("")
     w("EXAMPLES (each runs as written)")
     for i, (what, sql) in enumerate(EXAMPLES, 1):
