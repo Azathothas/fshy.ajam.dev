@@ -582,7 +582,7 @@ class Site:
             rows.append(self.kv("Limits", "<ul>%s</ul>%s" % (li, ('<div class="sub">%s</div>' % prose(note)) if note else "")))
         if o.get("binding_note") and once("Binding", o.get("binding_note")):
             rows.append(self.kv("Binding", "<b>%s</b> %s" % (e(o.get("binding")), prose(o.get("binding_note")))))
-        rows.append(self.kv("Identity", "<b>%s</b>%s %s" % (e(ic.get("kind")), " (placeholder)" if c["identity_basis"] == "defaulted" else "",
+        rows.append(self.kv("Identity", "<b>%s</b>%s %s" % (e(ic.get("kind")), " (placeholder)" if c["identity_basis"] == "defaulted" else (" (inferred, not read)" if c["identity_basis"] == "inferred" else ""),
                                                            prose(ic.get("detail")))))
         rows.append(self.kv("Egress", prose(eg.get("terms")) + "".join('<div class="sub">%s: %s</div>' % (e(k.replace("_", " ")), prose(eg.get(k)))
                                                                      for k in ("free_allowance", "price_per_tb") if eg.get(k))))
