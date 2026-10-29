@@ -633,7 +633,7 @@ class Site:
         bnote = once("Binding", o.get("binding_note"))
         if bnote:
             rows.append(self.kv("Binding", "<b>%s</b> %s" % (e(o.get("binding")), bnote)))
-        rows.append(self.kv("Identity", "<b>%s</b>%s %s" % (e(ic.get("kind")), " (placeholder)" if c["identity_basis"] == "defaulted" else "",
+        rows.append(self.kv("Identity", "<b>%s</b>%s %s" % (e(ic.get("kind")), " (placeholder)" if c["identity_basis"] == "defaulted" else (" (inferred, not read)" if c["identity_basis"] == "inferred" else ""),
                                                            prose(ic.get("detail")))))
         rows.append(self.kv("Egress", prose(eg.get("terms")) + "".join('<div class="sub">%s: %s</div>' % (e(k.replace("_", " ")), prose(eg.get(k)))
                                                                      for k in ("free_allowance", "price_per_tb") if eg.get(k))))
