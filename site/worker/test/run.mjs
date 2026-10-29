@@ -639,6 +639,102 @@ test('the rate limit runs before the store loads (P-04), and /r/ is limited', as
   assert.ok(assetLog.slice(before).includes('data/manifest.json'), 'the next request loads the store again');
 });
 
+// ------------------------------------------------------------------ a load whose request ended (issue #26)
+
+// The Workers runtime drops the continuations of a request that has ended. A client that goes away cancels its
+// request, and an asset read of that request then never settles. These tests make the same read with an ASSETS binding
+// that does not answer until release(). Each test imports a new copy of db.js, so it starts with no store. The timeout
+// turns the old fault, a request that waits for ever, into a failure. smoke.mjs and strand.mjs test the same on workerd.
+function stalled() {
+  const waiting = [];
+  let open = false;
+  return {
+    ASSETS: {
+      fetch(req) {
+        const path = decodeURIComponent(new URL(req.url).pathname.replace(/^\/+/, ''));
+        if (open) return Promise.resolve(assetResponse(path));
+        return new Promise((resolve) => waiting.push(() => resolve(assetResponse(path))));
+      },
+    },
+    get waiting() { return waiting.length; },
+    release() {
+      open = true;
+      for (const f of waiting.splice(0)) f();
+    },
+  };
+}
+let dbCopies = 0;
+const freshDb = () => import('../db.js?copy=' + ++dbCopies);
+const manifestReads = (from) => assetLog.slice(from).filter((p) => p === 'data/manifest.json').length;
+
+test('a request does not wait for ever on a load that an ended request started (issue #26)', { timeout: 20000 }, async () => {
+  const db = await freshDb();
+  const s = stalled();
+  // the request that starts the load ends: it passes no ctx.waitUntil(), its read never settles, and it never runs
+  // again, which a wait of 1e9 ms stands for
+  const ended = db.getStore({ ...env, ASSETS: s.ASSETS }, globalThis.__fshyWasm, undefined, 1e9);
+  assert.equal(s.waiting, 1, 'the load started with the read of the manifest');
+  const before = assetLog.length;
+  const t0 = performance.now();
+  const [a, b] = await Promise.all([1, 2].map(() => db.getStore(env, globalThis.__fshyWasm, undefined, 300)));
+  const ms = performance.now() - t0;
+  assert.ok(ms >= 250 && ms < 10000, 'the waiters gave up on the old load after 300 ms, then loaded the store: ' + ms);
+  assert.equal(a.store, b.store, 'two waiters share one new load');
+  assert.equal(manifestReads(before), 1, 'one new load, not one for each waiter');
+  assert.ok(a.store.db.exec('SELECT count(*) FROM record')[0].values[0][0] > 0);
+  // the old read answers after all: the old load completes, and the store in use stays
+  s.release();
+  assert.equal((await ended).store, a.store);
+  assert.equal((await db.getStore(env, globalThis.__fshyWasm)).store, a.store);
+  db.discard(a.store);
+});
+
+test('the request that starts a load passes it to ctx.waitUntil(), so the load completes after the request ends', { timeout: 20000 }, async () => {
+  const db = await freshDb();
+  const s = stalled();
+  const kept = [];
+  const ctx = { waitUntil: (p) => kept.push(p) };
+  const ended = db.getStore({ ...env, ASSETS: s.ASSETS }, globalThis.__fshyWasm, ctx, 1e9);
+  assert.equal(kept.length, 1, 'the load is passed to ctx.waitUntil()');
+  s.release();
+  await kept[0];
+  const before = assetLog.length;
+  const next = await db.getStore(env, globalThis.__fshyWasm, undefined, 300);
+  assert.equal(next.cold, false, 'the next request uses the store of that load');
+  assert.equal(manifestReads(before), 0);
+  assert.equal((await ended).store, next.store);
+  db.discard(next.store);
+});
+
+test('a request whose own load is late too gets a 503, and the next request loads the store', { timeout: 20000 }, async () => {
+  const db = await freshDb();
+  const { HttpError } = db;
+  const s = stalled();
+  const t0 = performance.now();
+  await assert.rejects(db.getStore({ ...env, ASSETS: s.ASSETS }, globalThis.__fshyWasm, undefined, 200),
+    (e) => e instanceof HttpError && e.status === 503 && e.late === true && /did not load/.test(e.message));
+  const ms = performance.now() - t0;
+  assert.ok(ms >= 350 && ms < 10000, 'two waits of 200 ms: ' + ms);
+  s.release();
+  const { store } = await db.getStore(env, globalThis.__fshyWasm, undefined, 300);
+  assert.ok(store.db.exec('SELECT count(*) FROM record')[0].values[0][0] > 0);
+  db.discard(store);
+});
+
+test('a name index read that never settles does not stall the name index of another request (issue #26)', { timeout: 20000 }, async (t) => {
+  if (!MANIFEST.name_index) { t.skip('no name index in ' + DIST); return; }
+  const db = await freshDb();
+  const { store } = await db.getStore(env, globalThis.__fshyWasm);
+  const s = stalled();
+  const ended = db.loadNames(store, { ...env, ASSETS: s.ASSETS });
+  const names = await db.loadNames(store, env);
+  assert.equal(store.cache.names, names);
+  s.release();
+  await ended;
+  assert.equal(store.cache.names, names, 'a late read keeps the index in use');
+  db.discard(store);
+});
+
 test('malformed percent-encoding in a path is a 400, not a 500 (P-12)', async () => {
   for (const p of ['/api/v1/need/%E0%A4%A', '/api/v1/worklist/%E0%A4%A', '/api/v1/record/%E0%A4%A/x', '/r/%E0%A4%A/x', '/r/storage/%E0%A4%A']) {
     const r = await call(p);
@@ -667,7 +763,6 @@ test('the name index file of the build equals the index the Worker builds from t
   assert.deepEqual(fromFile.aliases, built.aliases, 'the normalisation of site_gen.py is the one of text.js');
   assert.deepEqual(fromFile.eids, built.eids);
   store.cache.names = null;
-  store.cache.namesPromise = null;
   const t0 = performance.now();
   await loadNames(store, env);
   timings.name_index_from_file_ms = performance.now() - t0;
