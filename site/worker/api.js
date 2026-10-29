@@ -28,6 +28,10 @@ const RECORD_FIELDS = new Set(['rid', 'topic', 'slug', 'eid', 'provider', 'url',
   'n_evidence', 'usd_month', 'usd_per_tb_month', 'summary', 'duplicate_of', 'n_unknown', 'n_withheld',
   'sha256', 'path']);
 
+// the evidence rungs, strongest first: the order of a tie in a ranked list
+const RUNG = { measured: 0, documented: 1, reported: 2, inferred: 3, unverified: 4 };
+const RUNG_UNKNOWN = 5;
+
 const SORTS = new Set(['vorder', 'usd_month', 'usd_per_tb_month', 'stale_on', 'provider', 'verified_at']);
 const PRICE = new Set(['usd_month', 'usd_per_tb_month']);
 const LOCAL_ONLY_KINDS = new Set(['unknown', 'held']);
@@ -60,9 +64,16 @@ function list(v, name) {
   return out;
 }
 
-function bool(v) {
+const TRUE = new Set([true, 1, '1', 'true', 'yes']);
+const FALSE = new Set([false, 0, '0', 'false', 'no', '', null, undefined]);
+
+/** A flag: 1, true or yes; 0, false, no or absent. Any other value is a 400, so a typo never reads as false. */
+function bool(v, name) {
   if (Array.isArray(v)) v = v[v.length - 1];
-  return v === true || v === 1 || v === '1' || v === 'true' || v === 'yes';
+  if (typeof v === 'string') v = v.trim().toLowerCase();
+  if (TRUE.has(v)) return true;
+  if (FALSE.has(v)) return false;
+  throw bad(name + ' must be 1, true or yes, or 0, false or no');
 }
 
 function int(v, name, def, min, max) {
@@ -101,6 +112,37 @@ function unknownParams(p, known) {
   const out = [];
   for (const k of Object.keys(p)) if (!known.has(k) && k !== 'format') out.push('ignored parameter: ' + k);
   return out;
+}
+
+// ------------------------------------------------------------------ vocabularies
+
+/**
+ * The terms a filter may name: {topic, verdict, grp, confidence, binding}, each a Set in display order. The topics are
+ * the ones with records, in the order of the topic bar (data/manifest.json), so a client can offer them as a list.
+ */
+export function vocabOf(store) {
+  if (store.cache.vocab) return store.cache.vocab;
+  const v = { verdict: new Set(), grp: new Set(), confidence: new Set(), binding: new Set() };
+  for (const [d, t] of rows(store.db, 'SELECT domain, term FROM vocab ORDER BY domain, ord')) if (v[d]) v[d].add(t);
+  const have = new Set(rows(store.db, 'SELECT DISTINCT topic FROM record ORDER BY topic').map((r) => r[0]));
+  const order = (store.manifest && store.manifest.topics) || [];
+  v.topic = new Set([...order.filter((t) => have.has(t)), ...[...have].filter((t) => !order.includes(t))]);
+  store.cache.vocab = v;
+  return v;
+}
+
+/**
+ * Check a list of terms against a vocabulary. A closed vocabulary (every one but topic) refuses an unknown term with a
+ * 400; an unknown topic gets a note, because a topic with no records yet is still a topic.
+ */
+function terms(store, domain, vals, notes) {
+  const known = vocabOf(store)[domain];
+  const unknown = vals.filter((x) => !known.has(x));
+  if (!unknown.length) return vals;
+  const msg = 'unknown ' + domain + ' ' + unknown.map((x) => JSON.stringify(x)).join(', ') + '; ' + domain + ' is one of ' + [...known].join(', ');
+  if (domain !== 'topic') throw bad(msg);
+  notes.push(msg);
+  return vals;
 }
 
 // ------------------------------------------------------------------ database helpers
@@ -154,14 +196,14 @@ export function search(store, p) {
   if (!q) throw bad('q is required');
   const limit = int(p.limit, 'limit', 20, 1, 50);
   const offset = int(p.offset, 'offset', 0, 0, 100000);
-  const topics = list(p.topic, 'topic');
-  const grps = list(p.grp, 'grp');
+  const notes = unknownParams(p, SEARCH_KEYS);
+  const topics = terms(store, 'topic', list(p.topic, 'topic'), notes);
+  const grps = terms(store, 'grp', list(p.grp, 'grp'), notes);
   const where = [];
   const args = [];
   if (topics.length) { where.push(`topic IN (${marks(topics.length)})`); args.push(...topics); }
   if (grps.length) { where.push(`grp IN (${marks(grps.length)})`); args.push(...grps); }
-  if (!bool(p.include_duplicates)) where.push('duplicate_of IS NULL');
-  const notes = unknownParams(p, SEARCH_KEYS);
+  if (!bool(p.include_duplicates, 'include_duplicates')) where.push('duplicate_of IS NULL');
 
   // 1. names
   const idx = nameIndex(store);
@@ -268,18 +310,14 @@ export function filter(store, p) {
   const inList = (col, vals) => {
     if (vals.length) { where.push(`${col} IN (${marks(vals.length)})`); args.push(...vals); }
   };
-  inList('topic', list(p.topic, 'topic'));
-  inList('verdict', list(p.verdict, 'verdict'));
-  inList('grp', list(p.grp, 'grp'));
-  inList('confidence', list(p.confidence, 'confidence'));
-  inList('binding', list(p.binding, 'binding'));
-  if (bool(p.no_card)) where.push("needs_card = 0 AND identity_basis = 'stated'");
-  if (bool(p.no_phone)) where.push("needs_phone = 0 AND identity_basis = 'stated'");
-  if (bool(p.anonymous)) where.push("identity_kind = 'anonymous' AND identity_basis = 'stated'");
+  for (const d of ['topic', 'verdict', 'grp', 'confidence', 'binding']) inList(d, terms(store, d, list(p[d], d), notes));
+  if (bool(p.no_card, 'no_card')) where.push("needs_card = 0 AND identity_basis = 'stated'");
+  if (bool(p.no_phone, 'no_phone')) where.push("needs_phone = 0 AND identity_basis = 'stated'");
+  if (bool(p.anonymous, 'anonymous')) where.push("identity_kind = 'anonymous' AND identity_basis = 'stated'");
   const iface = str(p.iface, 'iface');
   if (iface) { where.push('instr(lower(coalesce(interfaces, \'\')), lower(?)) > 0'); args.push(iface); }
-  if (p.crypto != null && p.crypto !== '') where.push(bool(p.crypto) ? 'crypto = 1' : 'crypto IS NOT 1');
-  if (!bool(p.include_duplicates)) where.push('duplicate_of IS NULL');
+  if (p.crypto != null && p.crypto !== '') where.push(bool(p.crypto, 'crypto') ? 'crypto = 1' : 'crypto IS NOT 1');
+  if (!bool(p.include_duplicates, 'include_duplicates')) where.push('duplicate_of IS NULL');
 
   const sort = str(p.sort, 'sort') || 'vorder';
   if (!SORTS.has(sort)) throw bad('sort must be one of ' + [...SORTS].join(', '));
@@ -449,10 +487,14 @@ export async function need(store, env, p) {
   if (!n) throw new HttpError(404, 'unknown need ' + JSON.stringify(id) + '; list them at /api/v1/need/');
   const limit = int(p.limit, 'limit', 50, 1, 200);
   const offset = int(p.offset, 'offset', 0, 0, 100000);
-  // the need's own SQL (shipped with the build), joined to vorder for stable tie-breaking
-  const hits = all(store.db, `SELECT h.*, r.vorder AS _vorder FROM (${n.sql}) AS h JOIN record r ON r.rid = h.rid`);
+  // the need's own SQL (shipped with the build), joined to the record for the order of a tie: the verdict, the
+  // evidence rung, the later stale date, then the record id. publish/llms.py need_key is the same order.
+  const hits = all(store.db, `SELECT h.*, r.vorder AS _vorder, r.confidence AS _conf, r.stale_on AS _stale
+    FROM (${n.sql}) AS h JOIN record r ON r.rid = h.rid`);
   const key = n.sort;
-  const tie = (x, y) => x._vorder - y._vorder || (x.rid < y.rid ? -1 : x.rid > y.rid ? 1 : 0);
+  const ev = (x) => RUNG[x._conf] ?? RUNG_UNKNOWN;
+  const later = (x, y) => ((y._stale || '') < (x._stale || '') ? -1 : (y._stale || '') > (x._stale || '') ? 1 : 0);
+  const tie = (x, y) => x._vorder - y._vorder || ev(x) - ev(y) || later(x, y) || (x.rid < y.rid ? -1 : x.rid > y.rid ? 1 : 0);
   const ranked = hits.filter((h) => h[key] != null).sort((x, y) => x[key] - y[key] || tie(x, y));
   const nulls = hits.filter((h) => h[key] == null).sort(tie);
   const seq = [...ranked, ...nulls];
@@ -538,10 +580,11 @@ export function worklist(store, p) {
   if (!kind) throw bad('kind is required: stale, drift, changes or unparsed');
   if (LOCAL_ONLY_KINDS.has(kind)) throw bad('worklist ' + kind + ' is not in the public store');
   if (!KINDS.has(kind)) throw bad('kind must be stale, drift, changes or unparsed');
+  const notes = unknownParams(p, WORK_KEYS);
   const topic = str(p.topic, 'topic');
+  if (topic) terms(store, 'topic', [topic], notes);
   const limit = int(p.limit, 'limit', 50, 1, 200);
   const offset = int(p.offset, 'offset', 0, 0, 1000000);
-  const notes = unknownParams(p, WORK_KEYS);
   const page = (cols, countSql, sel, args) => {
     const total = scalar(db, countSql, args);
     const out = rows(db, sel + ' LIMIT ? OFFSET ?', [...args, limit, offset]);

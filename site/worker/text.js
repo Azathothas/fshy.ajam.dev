@@ -46,7 +46,8 @@ export function tokens(s) {
 /**
  * FTS4 MATCH string for a free-text query: AND of the words; a word of 3+ characters becomes
  * a prefix term (word*); a word containing punctuation is quoted as a phrase (no prefix).
- * Returns '' when nothing searchable is left.
+ * A term that repeats is kept once: the AND of a term with itself matches the same rows, and each
+ * copy would cost one more pass over the index. Returns '' when nothing searchable is left.
  */
 export function ftsMatch(q) {
   const words = cjkQuery(normalize(q)).split(/\s+/u).filter(Boolean);
@@ -54,8 +55,8 @@ export function ftsMatch(q) {
   for (let w of words) {
     w = w.replace(/"/g, '');
     if (!/[\p{L}\p{N}]/u.test(w)) continue;
-    if (/[^\p{L}\p{N}]/u.test(w)) terms.push('"' + w + '"');
-    else terms.push([...w].length >= 3 ? w + '*' : w);
+    const t = /[^\p{L}\p{N}]/u.test(w) ? '"' + w + '"' : [...w].length >= 3 ? w + '*' : w;
+    if (!terms.includes(t)) terms.push(t);
   }
   return terms.join(' ');
 }

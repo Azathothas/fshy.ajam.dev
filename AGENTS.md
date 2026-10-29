@@ -60,13 +60,15 @@ python publish/build.py --site site/dist
 node site/worker/test/run.mjs
 node site/worker/test/smoke.mjs
 python publish/test_llms.py --site site/dist
+python publish/test_weight.py --site site/dist
 python publish/test_publish.py
 ```
 
 The first command builds the store, the wiki and the Worker copy from `data/` and scans all of it for leaks.
 The second runs the Worker's tests against that build; run `npm ci` in `site/` once before it. The third runs
-the Worker on workerd with `wrangler dev`. The fourth checks the files for agents. The fifth checks the contract
-between export and build, the export's refusals, the leak rules and the lists that are copied by hand.
+the Worker on workerd with `wrangler dev`. The fourth checks the files for agents and the HTML pages. The fifth
+checks the weight of the pages. The sixth checks the contract between export and build, the export's refusals,
+the leak rules and the lists that are copied by hand.
 
-⚠ When `data/` is empty, the first four commands have nothing to read. To test a change with data, export
+⚠ When `data/` is empty, the first five commands have nothing to read. To test a change with data, export
 first, as the merge protocol says. ⛔ Never commit `data/` outside a publish pull request.

@@ -16,6 +16,7 @@ One order everywhere: verdict (usable first, dead last), then provider name, the
 gives the same bytes on every build: no clock and no commit is read, and the one date printed is the data's
 own, the newest verification or evidence date among the records. Standard library only.
 """
+import collections
 import hashlib
 import json
 import math
@@ -40,11 +41,21 @@ BYTES_PER_TOKEN = 3.7
 
 GROUPS = [("usable", "Usable"), ("trial", "Trial"), ("paid", "Paid only"), ("rejected", "Rejected"), ("dead", "Dead")]
 MAIN_GROUPS = ("usable", "trial", "paid")  # /t/<topic>/ lists these; /t/<topic>/rejected/ the other two
-CARD = ("rid", "eid", "topic", "slug", "provider", "verdict", "vorder", "grp", "confidence", "binding",
+CARD = ("rid", "eid", "topic", "slug", "provider", "tier", "verdict", "vorder", "grp", "confidence", "binding",
         "identity_kind", "identity_basis", "needs_card", "needs_phone", "needs_id", "needs_institution",
         "verified_basis", "checked_on", "stale_on", "usd_month", "usd_per_tb_month", "summary", "duplicate_of",
-        "evidence_newest")
+        "evidence_newest", "free_unit")
 URL = re.compile(r"https?://\S+")
+# the separator of the items of one line: ASCII, like every character this module writes that the data does not hold
+SEP = " | "
+# the evidence rungs, strongest first: the order of a tie in a ranked list (site/worker/api.js RUNG is the same)
+RUNG = {"measured": 0, "documented": 1, "reported": 2, "inferred": 3, "unverified": 4}
+# a short phrase for each topic, for the summary line; a topic with no records is not named
+TOPIC_PHRASE = {"storage": "storage", "compute": "compute and GPU time", "inference": "model inference",
+                "egress": "egress and tunnels", "ip-proxy": "proxies", "crawler-scraper": "crawling", "debrid": "debrid",
+                "netdisk-pan": "netdisks", "databases-kv": "databases", "email": "email", "domains-dns": "DNS and domains",
+                "ci-cd-runners": "CI runners", "dev-services": "developer services", "data-apis": "data APIs",
+                "coding-subs": "coding subscriptions"}
 
 # Record fields in print order. A field not named here is printed after these under its own key, so a
 # field the projection starts to publish reaches these files without a change here.
@@ -59,7 +70,7 @@ SUBLABEL = {"metered_on": "metered on", "read_on": "read on", "source_url": "sou
             "price_per_tb": "price per TB", "notes": "note"}
 PROSE = [("interface_detail", "interface detail"), ("endpoint", "endpoint"), ("tooling", "tooling"),
          ("chaining", "composes with"), ("reliability_note", "reliability"), ("notes", "notes"),
-         ("confidence_note", "rung note")]
+         ("confidence_note", "evidence note")]
 DONE = ({"topic", "slug", "provider", "url", "category", "tier", "verdict", "confidence", "binding", "verified_at",
          "price_per_tb_month", "interface", "limits", "limits_note", "binding_note", "evidence", "extras"}
         | {k for k, _, _ in SECTIONS} | {k for k, _ in PROSE})
@@ -84,6 +95,126 @@ def yn(v):
     return {1: "yes", 0: "no"}.get(v, "unknown")
 
 
+def num(n):
+    return "{:,}".format(n)
+
+
+# ---------------------------------------------------------------------------------------------- shared with pages.py
+# A tier that names no plan: it cannot tell two records apart.
+NO_TIER = re.compile(r"^(?:none|n/?a|-|unknown|dead|closed|not stated)\b", re.I)
+TIER_MAX = 40
+
+
+def _tier(c):
+    t = flat(c.get("tier") or "")
+    return t if t and len(t) <= TIER_MAX and not NO_TIER.match(t) else ""
+
+
+def _slug_rest(c):
+    """The part of the slug that the provider name and the entity id do not hold: 'torbox-pro' -> 'pro'."""
+    slug = c["slug"] or ""
+    for pre in (re.sub(r"[^a-z0-9]+", "-", (c["provider"] or "").lower()).strip("-"), c["eid"]):
+        if pre and slug.startswith(pre + "-"):
+            return slug[len(pre) + 1:].replace("-", " ")
+        if pre and slug == pre:
+            return ""
+    return slug.replace("-", " ")
+
+
+def shown(name, fallback):
+    """A name to print: the name, or the fallback when the name holds no letter and no digit (one record is "?")."""
+    n = flat(name or "")
+    return n if re.search(r"\w", n) else flat(fallback or "")
+
+
+def labels(cards, tname=None):
+    """{rid: the name to print}. Records of one provider that share a name get a suffix that tells them apart: the
+    tier when it is short and unique, else the rest of the slug, else the topic. The name alone otherwise."""
+    tname = tname or {}
+    groups = collections.defaultdict(list)
+    for c in cards.values():
+        groups[(c["eid"], flat(c["provider"] or c["slug"]).casefold())].append(c)
+    out = {}
+    for g in groups.values():
+        if len(g) == 1:
+            out[g[0]["rid"]] = shown(g[0]["provider"], g[0]["slug"])
+            continue
+        tiers = collections.Counter(_tier(c).casefold() for c in g)
+        rests = collections.Counter(_slug_rest(c) for c in g)
+        topics = collections.Counter(c["topic"] for c in g)
+        for c in g:
+            name = shown(c["provider"], c["slug"])  # its own spelling: the group ignores case
+            t, r = _tier(c), _slug_rest(c)
+            if t and tiers[t.casefold()] == 1 and t.casefold() not in name.casefold():
+                suffix = t
+            elif r and rests[r] == 1:
+                suffix = r
+            elif topics[c["topic"]] == 1:
+                suffix = tname.get(c["topic"], c["topic"])
+            else:
+                suffix = c["rid"]
+            out[c["rid"]] = "%s (%s)" % (name, suffix)
+    return out
+
+
+FIRST_SENTENCE = re.compile(r"(.{20,}?[.!?])\s+(?=[A-Z0-9(\"'])")
+# a label in front of a quote of the provider: the quotation marks already say that it is a quote
+QUOTE_LABEL = re.compile(r"^(?:Quoted|Verbatim|Quote):\s*", re.I)
+CUT_TAIL = re.compile(r"\s*\S*(?:\.\.\.|\u2026)$")
+
+
+def first_sentence(s):
+    m = FIRST_SENTENCE.match(s or "")
+    return m.group(1) if m else (s or "")
+
+
+def headline(summary, stated=None):
+    """The one line of a row: the summary, or the first sentence of the free tier when the summary was cut and that
+    sentence is shorter. A cut summary loses its last, cut word; the first letter is a capital."""
+    s = QUOTE_LABEL.sub("", flat(summary or ""))
+    if not s:
+        return ""
+    cut = s.endswith("...") or s.endswith("\u2026")
+    if cut and stated:
+        first = first_sentence(flat(stated))
+        if first and len(first) < len(s) and not first.endswith("..."):
+            s, cut = first, False
+    if cut:
+        short = CUT_TAIL.sub("", s).rstrip(" ,;:(-")
+        if len(short) >= 20:
+            s = short + "..."
+    return s[:1].upper() + s[1:]
+
+
+def clip_words(s, cap):
+    """s cut to at most cap characters at a space, with '...' when text was dropped."""
+    if cap is None or len(s) <= cap:
+        return s
+    if cap <= 3:
+        return ""
+    head = s[:cap - 3]
+    if " " in head[cap // 2:]:
+        head = head[:head.rfind(" ")]
+    return head.rstrip(" ,;:(-") + "..."
+
+
+def later_first(d):
+    """A key that sorts a later YYYY-MM-DD first, and no date last."""
+    m = re.fullmatch(r"(\d{4})-(\d{2})-(\d{2})", d or "")
+    return tuple(-int(x) for x in m.groups()) if m else (1,)
+
+
+def tie_key(c):
+    """The order of a tie in a ranked list: verdict, evidence rung, the later stale date, record id."""
+    return (c["vorder"], RUNG.get(c["confidence"], len(RUNG)), later_first(c["stale_on"]), c["rid"])
+
+
+def free_word(c):
+    """'free tier', 'no free tier', or '' when the record does not say."""
+    u = c.get("free_unit")
+    return "" if u is None else ("no free tier" if u == "none" else "free tier")
+
+
 def money(v, suffix):
     if v is None:
         return ""
@@ -91,7 +222,7 @@ def money(v, suffix):
 
 
 def size(n):
-    return "%d KB, about %dK tokens" % (max(1, round(n / 1000)), max(1, round(n / BYTES_PER_TOKEN / 1000)))
+    return "%s KB, about %sK tokens" % (num(max(1, round(n / 1000))), num(max(1, round(n / BYTES_PER_TOKEN / 1000))))
 
 
 # ---------------------------------------------------------------------------------------------- the store
@@ -117,6 +248,7 @@ class Store:
             self.vocab.setdefault(r["domain"], []).append((r["term"], r["meaning"]))
         self.needs = json.load(open(os.path.join(HERE, "rules", "needs.json"), encoding="utf-8"))["needs"]
         self.topics = topics(sorted({c["topic"] for c in self.cards.values()}))
+        self.labels = labels(self.cards, {t: n for t, n, _ in self.topics})
         dates = [c["evidence_newest"] for c in self.cards.values() if c["evidence_newest"]]
         dates += [d["verified_at"][:10] for d in self.docs.values() if isinstance(d.get("verified_at"), str)]
         self.as_of = max(dates) if dates else "unknown"
@@ -127,12 +259,16 @@ class Store:
         return sorted(rids, key=lambda r: (c[r]["vorder"], (c[r]["provider"] or "").casefold(), r))
 
     def need_rows(self, x):
-        """A need's rows as its HTML page ranks them: by the sort value, then verdict and record id."""
-        rows = self.db.execute(x["sql"]).fetchall()
-        c = self.cards
-        ranked = sorted((r for r in rows if r[1] is not None), key=lambda r: (r[1], c[r[0]]["vorder"], r[0]))
-        unranked = sorted((r for r in rows if r[1] is None), key=lambda r: (c[r[0]]["vorder"], r[0]))
-        return ranked, unranked
+        """A need's rows as its HTML page and the API rank them: by the sort value, then tie_key."""
+        return need_rows(self.db, x, self.cards)
+
+
+def need_rows(db, x, cards):
+    """(ranked, unranked) rows of a need: by the sort value, then tie_key; the rows with no value after."""
+    rows = db.execute(x["sql"]).fetchall()
+    ranked = sorted((r for r in rows if r[1] is not None), key=lambda r: (r[1],) + tie_key(cards[r[0]]))
+    unranked = sorted((r for r in rows if r[1] is None), key=lambda r: tie_key(cards[r[0]]))
+    return ranked, unranked
 
 
 def topics(in_data):
@@ -161,21 +297,21 @@ def record_md(st, rid):
             srcs.append(u)
         return "[%d]" % (srcs.index(u) + 1)
 
-    out = ["## " + flat(c["provider"] or c["slug"]), ""]
-    head = ["`%s`" % rid, c["verdict"], "rung %s" % c["confidence"]]
+    out = ["## " + st.labels.get(rid, flat(c["provider"] or c["slug"])), ""]
+    head = ["`%s`" % rid, c["verdict"], "evidence %s" % c["confidence"]]
     head += ["%s %s" % (k, flat(o[k])) for k in ("binding", "category", "tier") if o.get(k) not in EMPTY]
-    out.append("- " + " · ".join(head))
+    out.append("- " + SEP.join(head))
     needs = ("needs card %s, phone %s, ID %s, institution %s" % (
         yn(c["needs_card"]), yn(c["needs_phone"]), yn(c["needs_id"]), yn(c["needs_institution"]))
         if c["identity_basis"] == "stated" else "identity a placeholder: card and phone unknown")
     va = o.get("verified_at")
-    out.append("- %s · verified %s%s (%s) · stale on %s" % (
+    out.append("- %s | verified %s%s (%s) | stale on %s" % (
         needs, scalar(va) if va not in EMPTY else "unknown",
         "" if str(va)[:10] == c["checked_on"] else ", checked %s" % c["checked_on"], c["verified_basis"], c["stale_on"]))
-    out.append("- %spage %s/p/%s.md" % (("url %s · " % flat(o["url"])) if o.get("url") else "", BASE, c["eid"]))
+    out.append("- %spage %s/p/%s.md" % (("url %s | " % flat(o["url"])) if o.get("url") else "", BASE, c["eid"]))
     price = [p for p in (money(c["usd_month"], "/mo"), money(c["usd_per_tb_month"], "/TB-mo")) if p]
     if o.get("price_per_tb_month") not in EMPTY or price:
-        out.append("- price " + " · ".join(([scalar(o["price_per_tb_month"])] if o.get("price_per_tb_month") not in EMPTY else [])
+        out.append("- price " + SEP.join(([scalar(o["price_per_tb_month"])] if o.get("price_per_tb_month") not in EMPTY else [])
                                            + (["parsed " + ", ".join(price)] if price else [])))
     if c["duplicate_of"]:
         out.append("- duplicate of `%s`" % c["duplicate_of"])
@@ -196,7 +332,7 @@ def record_md(st, rid):
             val = src(x) if sk == "source_url" else scalar(x)
             parts.append(val if sk == subs[0] else "%s: %s" % (SUBLABEL.get(sk, sk.replace("_", " ")), val))
         if parts:
-            out.append("- %s: %s" % (label, " · ".join(parts)))
+            out.append("- %s: %s" % (label, SEP.join(parts)))
     if o.get("interface") not in EMPTY:
         out.append("- interface: " + (", ".join(scalar(t) for t in o["interface"]) if isinstance(o["interface"], list)
                                       else scalar(o["interface"])))
@@ -207,20 +343,31 @@ def record_md(st, rid):
             if not isinstance(lm, dict):
                 out.append("  - " + scalar(lm))
                 continue
-            rest = "".join(" · %s: %s" % (k, scalar(lm[k])) for k in lm if k not in ("kind", "value", "source")
+            rest = "".join("%s%s: %s" % (SEP, k, scalar(lm[k])) for k in lm if k not in ("kind", "value", "source")
                            and lm[k] not in EMPTY)
             out.append("  - %s%s: %s%s%s" % (scalar(lm.get("kind") or "limit"),
                                             " (binding)" if lm.get("kind") and lm.get("kind") == o.get("binding") else "",
                                             scalar(lm.get("value") or ""),
                                             (" " + src(lm["source"])) if lm.get("source") not in EMPTY else "", rest))
-    if o.get("limits_note") not in EMPTY:
-        out.append("- limits note: " + scalar(o["limits_note"]))
-    if o.get("binding_note") not in EMPTY:
-        out.append("- binding note: " + ("the same as the limits note" if o["binding_note"] == o.get("limits_note")
-                                         else scalar(o["binding_note"])))
+    # a prose value that an earlier line holds word for word is printed once; the later line names the earlier one
+    said = []
+    ft = o.get("free_tier")
+    if isinstance(ft, dict) and isinstance(ft.get("stated"), str) and flat(ft["stated"]):
+        said.append(("the free tier", flat(ft["stated"])))
+
+    def prose_line(key, label):
+        v = o.get(key)
+        if v in EMPTY:
+            return
+        text = scalar(v)
+        same = next((lbl for lbl, t in said if isinstance(v, str) and text in t), None)
+        out.append("- %s: %s" % (label, ("the same as " + same) if same else text))
+        if not same and isinstance(v, str):
+            said.append((label, text))
+    prose_line("limits_note", "limits note")
+    prose_line("binding_note", "binding note")
     for key, label in PROSE:
-        if o.get(key) not in EMPTY:
-            out.append("- %s: %s" % (label, scalar(o[key])))
+        prose_line(key, label)
     for key in [k for k in o if k not in DONE] + ["extras"]:
         rows = leaf_lines(o.get(key))
         if len(rows) == 1 and rows[0][0] == "":
@@ -235,7 +382,7 @@ def record_md(st, rid):
             if not isinstance(e, dict):
                 out.append("  - " + scalar(e))
                 continue
-            rest = "".join(" · %s: %s" % (k, scalar(e[k])) for k in e if k not in ("url", "date", "proved") and e[k] not in EMPTY)
+            rest = "".join("%s%s: %s" % (SEP, k, scalar(e[k])) for k in e if k not in ("url", "date", "proved") and e[k] not in EMPTY)
             out.append("  - %s%s: %s%s" % (src(e["url"]) if e.get("url") not in EMPTY else "withheld",
                                           (" " + scalar(e["date"])) if e.get("date") not in EMPTY else "",
                                           scalar(e.get("proved") or ""), rest))
@@ -260,30 +407,35 @@ def leaf_lines(v, p=""):
 
 
 def entry_md(st, rid, bullet="- ", cap=None):
-    """One line of an index, with the badges the HTML lists show: verdict, identity, card, phone, rung, price,
-    then the summary, cut to `cap` characters when a cap is given."""
+    """One line of an index, with the badges the HTML lists show: verdict, free tier, identity, card, phone, evidence,
+    price, then the summary, cut at a space to `cap` characters when a cap is given."""
     c = st.cards[rid]
-    s = flat(c["summary"] or "")
-    if cap is not None and len(s) > cap:
-        s = (s[:cap - 3].rstrip() + "...") if cap > 3 else ""
-    b = [c["verdict"], str(c["identity_kind"]) + ("?" if c["identity_basis"] == "defaulted" else "")]
-    if c["needs_card"] == 0 and c["identity_basis"] == "stated":
+    ft = st.docs[rid].get("free_tier")
+    s = clip_words(headline(c["summary"], ft.get("stated") if isinstance(ft, dict) else None), cap)
+    q = c["identity_basis"] != "stated"
+    b = [c["verdict"]] + ([free_word(c)] if free_word(c) else []) + [str(c["identity_kind"]) + ("?" if q else "")]
+    if c["needs_card"] == 0 and not q:
         b.append("no card")
     elif c["needs_card"] == 1:
         if c["identity_kind"] != "card":
             b.append("card")
     else:
         b.append("card?")
-    if c["needs_phone"] == 1 and c["identity_kind"] not in ("any-phone", "country-phone"):
-        b.append("phone")
+    if c["needs_phone"] == 0 and not q:
+        b.append("no phone")
+    elif c["needs_phone"] == 1:
+        if c["identity_kind"] not in ("any-phone", "country-phone"):
+            b.append("phone")
+    else:
+        b.append("phone?")
     b.append(str(c["confidence"]))
-    price = money(c["usd_per_tb_month"], "/TB-mo") or money(c["usd_month"], "/mo")
+    price = money(c["usd_per_tb_month"], "/TB-month") or money(c["usd_month"], "/month")
     if price:
         b.append(price)
     if c["duplicate_of"]:
         b.append("duplicate")
-    return "%s[%s](%s/p/%s.md) `%s`: %s%s" % (bullet, flat(c["provider"] or c["slug"]), BASE, c["eid"], rid, " · ".join(b),
-                                             (". " + s) if s else "")
+    return "%s[%s](%s/p/%s.md) `%s`: %s%s" % (bullet, st.labels.get(rid, flat(c["provider"] or c["slug"])), BASE, c["eid"],
+                                             rid, SEP.join(b), (". " + s) if s else "")
 
 
 def fitted(render):
@@ -308,13 +460,17 @@ def cut_note(cap):
 
 
 # ---------------------------------------------------------------------------------------------- shared text
-def summary_line(st):
-    return ("> A catalogue of free, nearly free and cheapest-paid cloud capacity: storage, compute, GPU time, "
-            "inference, egress, proxies, crawling, debrid, netdisks, databases, email, DNS, CI runners, developer "
-            "services, data APIs and coding subscriptions. %d records from %d providers; each states its quota, the constraint that binds it, the "
-            "identity it costs (email, phone, card, ID), its evidence and how fresh that evidence is. For research "
-            "and education only: it is not legal advice, and it makes no statement about whether a use is permitted."
-            % (len(st.cards), len(st.ents)))
+def summary_line(st, notice=True):
+    """The summary of llms.txt: the topics that have records, the counts, and the one notice (llms.txt only)."""
+    have = {c["topic"] for c in st.cards.values()}
+    words = [TOPIC_PHRASE.get(t, name.lower()) for t, name, _ in st.topics if t in have]
+    listed = ", ".join(words[:-1]) + " and " + words[-1] if len(words) > 1 else "".join(words)
+    return ("> A catalogue of free, nearly free and cheapest-paid cloud capacity: %s. %s records from %s providers. "
+            "Each record states its quota, the limit that runs out first, the identity a signup costs (email, phone, "
+            "card, ID), its evidence and how fresh that evidence is.%s"
+            % (listed, num(len(st.cards)), num(len(st.ents)),
+               " For research and education only. It is not legal advice, and it makes no statement about whether a "
+               "use is permitted." if notice else ""))
 
 
 def stamp(st, version):
@@ -326,30 +482,35 @@ def stamp(st, version):
 def reading_rules(st):
     v = st.vocab
 
-    def terms(d, meanings=True):
-        return "; ".join("`%s` %s" % (t, m) if m and meanings else "`%s`" % t for t, m in v.get(d, []))
+    def terms(d):
+        """One line for each term of a vocabulary, with its meaning: a meaning can hold a semicolon."""
+        return ["  - `%s`: %s" % (t, m) if m else "  - `%s`" % t for t, m in v.get(d, [])]
     return [
         "## How to read a record",
         "",
-        "Each record opens with its id (topic/slug), verdict, evidence rung, binding constraint and category; then what "
-        "it needs to register, when it was verified and when that goes stale; then its URL and its provider page.",
+        "Each record opens with its id (topic/slug), verdict, evidence, binding limit and category. Then it says what "
+        "a signup needs, when the record was verified and when that check goes stale. Then it gives its URL and its "
+        "provider page. Each line of the lists below is one term and its meaning.",
         "",
-        "- verdict: " + terms("verdict") + ".",
-        "- group: " + terms("grp") + ".",
-        "- rung, how a claim is evidenced: " + terms("confidence") + ".",
-        "- binding, the limit that runs out first: " + terms("binding", False) + ".",
-        "- identity, what registration costs: " + terms("identity_kind", False) + ". `needs card, phone, ID, institution` "
-        "are yes, no or unknown, and unknown never means no. In an index, `?` after the identity marks a placeholder that "
-        "was not read from a source.",
-        "- verified: when the record was last verified, with `checked` after it when the check date the staleness "
-        "policy counts from differs; then " + terms("verified_basis") + ". stale on: the date that check's evidence "
-        "window ends; compare it with today.",
+        "- verdict, best first:"] + terms("verdict") + [
+        "- group, the verdicts that a topic page lists together:"] + terms("grp") + [
+        "- evidence, how a claim is backed, strongest first:"] + terms("confidence") + [
+        "- binding, the limit that runs out first:"] + terms("binding") + [
+        "- identity, what a signup costs:"] + terms("identity_kind") + [
+        "- `needs card, phone, ID, institution`: yes, no or unknown. Unknown never means no. In an index, `?` after "
+        "the identity marks a placeholder that no source states, and `card?` or `phone?` an unknown requirement.",
+        "- `free tier` or `no free tier` in an index: the record states a free allowance, or states that it has none. "
+        "Neither word: the record does not say.",
+        "- verified: when the record was last verified, with `checked` after it when the check date of the staleness "
+        "policy differs; then the basis:"] + terms("verified_basis") + [
+        "- stale on: the date that the evidence window of the check ends. Compare it with today.",
         "- price: the price as written, then `parsed` USD figures where a number parsed. No parsed figure means none "
         "parsed, not free.",
-        "- `[n]`: a numbered source; the record's sources list gives each URL once. An evidence line reads: source, "
+        "- `[n]`: a numbered source; the sources list of the record gives each URL once. An evidence line reads: source, "
         "date, what it proved.",
-        "- not stated, not recorded, not applicable: the value was not published, or does not apply. A field a record "
-        "does not show was not published; that is unknown, not absent.",
+        "- not stated, not recorded, not applicable: the value was not published, or does not apply. A field that a "
+        "record does not show was not published: that is unknown, not absent.",
+        "- the same as: the value is in an earlier line of the record, word for word.",
         "",
     ]
 
@@ -368,7 +529,8 @@ def access_lines():
         "- [entity](%s/api/v1/entity/oracle.json): one provider and all its records as JSON, `/api/v1/entity/<id>.json`" % BASE,
         "- [schema.sql](%s/api/v1/schema.sql): the store's schema; [vocab.json](%s/api/v1/vocab.json): its vocabularies"
         % (BASE, BASE),
-        "- [fshy-public.sqlite.gz](%s/data/fshy-public.sqlite.gz): the whole store as one SQLite file" % BASE,
+        "- [fshy-public.sqlite.gz](%s/data/fshy-public.sqlite.gz): the whole store as one SQLite file, gzip; "
+        "data/manifest.json gives its SHA-256" % BASE,
         "",
     ]
 
@@ -429,12 +591,12 @@ def generate(pub_db, dist):
     for eid, e in st.ents.items():
         ts = list(dict.fromkeys(tname.get(st.cards[r]["topic"], st.cards[r]["topic"]) for r in e["members"]))
         n = len(e["members"])
-        self_link = " · page %s/p/%s.md" % (BASE, eid)
+        self_link = " | page %s/p/%s.md" % (BASE, eid)
         w.write("p/%s.md" % eid, "\n".join([
-            "# " + flat(e["name"]), "",
+            "# " + shown(e["name"], e["domain"] or eid), "",
             "> %s%s; %d record%s: free tier, limits, identity cost and evidence." % (
-                (flat(e["domain"]) + " · ") if e["domain"] else "", ", ".join(ts), n, "" if n == 1 else "s"), "",
-            "HTML %s/p/%s/ · JSON %s/api/v1/entity/%s.json · how to read a record: %s/llms-full.txt" % (
+                (flat(e["domain"]) + SEP) if e["domain"] else "", ", ".join(ts), n, "" if n == 1 else "s"), "",
+            "HTML %s/p/%s/ | JSON %s/api/v1/entity/%s.json | how to read a record: %s/llms-full.txt" % (
                 BASE, eid, BASE, eid, BASE), ""] + [blocks[r].replace(self_link, "", 1) for r in e["members"]]))
 
     # t/<topic>.md and t/<topic>/rejected.md: the topic pages; t/<topic>/llms-full*.txt: the topic in full
@@ -453,16 +615,16 @@ def generate(pub_db, dist):
             def render(cap, title=title, groups=groups, other=other):
                 full = ("In full: %s/t/%s/llms-full.txt." % (BASE, t)) if rids else "No record is in this topic yet."
                 lines = ["# " + title, "", "> " + (desc or name), "",
-                         "%d records: %s. This page lists %s. Each line: provider (its page in Markdown), record id, "
-                         "verdict, identity, card, evidence rung, parsed price, summary. %s"
-                         % (len(rids), ", ".join("%d %s" % (cnt[g], lbl.lower()) for g, lbl in GROUPS), other, full),
+                         "%s records: %s. This page lists %s. Each line: provider (its page in Markdown), record id, "
+                         "verdict, free tier, identity, card, phone, evidence, parsed price, summary. %s"
+                         % (num(len(rids)), ", ".join("%s %s" % (num(cnt[g]), lbl.lower()) for g, lbl in GROUPS), other, full),
                          ""] + cut_note(cap)
                 if needs and groups == MAIN_GROUPS:
                     lines += ["Best per need: " + ", ".join("[%s](%s/need/%s.md)" % (x["title"], BASE, x["id"]) for x in needs), ""]
                 for g, lbl in GROUPS:
                     gs = [r for r in rids if st.cards[r]["grp"] == g]
                     if g in groups and gs:
-                        lines += ["## %s (%d)" % (lbl, len(gs)), ""] + [entry_md(st, r, cap=cap) for r in gs] + [""]
+                        lines += ["## %s (%s)" % (lbl, num(len(gs))), ""] + [entry_md(st, r, cap=cap) for r in gs] + [""]
                 return "\n".join(lines)
             w.write(rel, fitted(render))
         if not rids:
@@ -472,7 +634,7 @@ def generate(pub_db, dist):
         body = "\n".join(head) + "\n" + "\n".join(blocks[r] for r in rids)
         if len(body.encode("utf-8")) <= BUDGET:
             n = w.write("t/%s/llms-full.txt" % t, body)
-            parts_index.append("- [%s](%s/t/%s/llms-full.txt): all %d records; %s" % (name, BASE, t, len(rids), size(n)))
+            parts_index.append("- [%s](%s/t/%s/llms-full.txt): all %s records; %s" % (name, BASE, t, num(len(rids)), size(n)))
             continue
         index = head[:4] + [stamp(st, version), "",
                             "This topic is %s in full, more than the %s one file holds, so it is split: by verdict group, "
@@ -495,7 +657,7 @@ def generate(pub_db, dist):
                 at += len(run)
                 rel = "t/%s/llms-full-%s%s.txt" % (t, g, ("-%d" % k) if len(runs) > 1 else "")
                 n = w.write(rel, "\n".join(phead(k, len(runs))) + "\n" + "\n".join(run))
-                what = "%d records" % len(run)
+                what = "%s records" % num(len(run))
                 if len(runs) > 1:
                     what += ", %s (%s) to %s (%s)" % (flat(first["provider"]), first["verdict"], flat(last["provider"]), last["verdict"])
                 label = lbl + ((" part %d of %d" % (k, len(runs))) if len(runs) > 1 else "")
@@ -514,18 +676,18 @@ def generate(pub_db, dist):
                      "list: `%s/api/v1/need/%s`, the MCP tool `need`, or this SQL:" % (key, BASE, x["id"]), "",
                      "```sql", x["sql"], "ORDER BY %s ASC NULLS LAST" % key, "```", ""] + cut_note(cap)
             if ranked:
-                lines += ["## Ranked (%d)" % len(ranked), ""]
+                lines += ["## Ranked (%s)" % num(len(ranked)), ""]
                 for i, r in enumerate(ranked, 1):
-                    val = "" if key == "vorder" else money(r[1], "/TB-mo" if "tb" in key else "/mo")
-                    lines.append(entry_md(st, r[0], "%d. %s" % (i, (val + " · ") if val else ""), cap))
+                    val = "" if key == "vorder" else money(r[1], "/TB-month" if "tb" in key else "/month")
+                    lines.append(entry_md(st, r[0], "%d. %s" % (i, (val + SEP) if val else ""), cap))
                 lines.append("")
             if unranked:
-                lines += ["## No parsed number (%d)" % len(unranked), ""] + [entry_md(st, r[0], cap=cap) for r in unranked] + [""]
+                lines += ["## No parsed number (%s)" % num(len(unranked)), ""] + [entry_md(st, r[0], cap=cap) for r in unranked] + [""]
             return "\n".join(lines)
         w.write("need/%s.md" % x["id"], fitted(render))
 
     # llms-full.txt: the whole corpus when it fits in one file, else the index of the parts
-    head = ["# fshy: the corpus in full", "", summary_line(st), "", stamp(st, version), ""]
+    head = ["# fshy: the corpus in full", "", summary_line(st, notice=False), "", stamp(st, version), ""]
     if total + 8_000 <= BUDGET:
         body = head + reading_rules(st)
         for t, name, _ in st.topics:
@@ -534,18 +696,18 @@ def generate(pub_db, dist):
         w.write("llms-full.txt", "\n".join(body))
     else:
         w.write("llms-full.txt", "\n".join(head + [
-            "All %d records are %s in Markdown, more than any context window holds, so the text is split: one file per "
+            "All %s records are %s in Markdown, more than any context window holds, so the text is split: one file per "
             "topic when the topic fits in %s, else one per verdict group, and a group over that size into balanced "
             "parts. Every record is in exactly one part, in the one order (verdict, provider name, record id). To answer "
             "a question, read the topic's one-line index, %s/t/<topic>.md, then the provider pages it links, "
-            "%s/p/<id>.md; or query the store." % (len(order), size(total), size(BUDGET), BASE, BASE), ""]
+            "%s/p/<id>.md; or query the store." % (num(len(order)), size(total), size(BUDGET), BASE, BASE), ""]
             + reading_rules(st) + ["## Parts", ""] + parts_index + [""] + access_lines()))
 
     # llms.txt: the llmstxt.org index; index.md, the home page's alternate, is the same text
     lines = ["# fshy", "", summary_line(st), "",
              "Every file here is generated from the published records and nothing else. " + stamp(st, version), "",
-             "Start with a topic's index: one line per record with its verdict, identity, card, evidence rung, parsed "
-             "price and summary. Each line links the provider's page in Markdown, `%s/p/<id>.md`, which holds every "
+             "Start with a topic's index: one line per record with its verdict, free tier, identity, card, phone, "
+             "evidence, parsed price and summary. Each line links the provider's page in Markdown, `%s/p/<id>.md`, which holds every "
              "record of that provider in full. Every wiki page that has a Markdown version names it in "
              "`<link rel=\"alternate\" type=\"text/markdown\">`. Before quoting a value, read how to read a record "
              "in %s/llms-full.txt." % (BASE, BASE), "",
@@ -561,9 +723,9 @@ def generate(pub_db, dist):
         if not rids:  # a topic of the schema with no record yet: no rejected page to name, no full text
             lines.append("- [%s](%s/t/%s.md): %sNo record is in this topic yet." % (name, BASE, t, (desc + " ") if desc else ""))
             continue
-        lines.append("- [%s](%s/t/%s.md): %s%d records: %s. Rejected and dead: %s/t/%s/rejected.md; in full: %s/t/%s/llms-full.txt"
-                     % (name, BASE, t, (desc + " ") if desc else "", len(rids),
-                        ", ".join("%d %s" % (cnt[g], lbl.lower()) for g, lbl in GROUPS), BASE, t, BASE, t))
+        lines.append("- [%s](%s/t/%s.md): %s%s records: %s. Rejected and dead: %s/t/%s/rejected.md; in full: %s/t/%s/llms-full.txt"
+                     % (name, BASE, t, (desc + " ") if desc else "", num(len(rids)),
+                        ", ".join("%s %s" % (num(cnt[g]), lbl.lower()) for g, lbl in GROUPS), BASE, t, BASE, t))
     lines += ["", "## Best per need", ""]
     lines += ["- [%s](%s/need/%s.md): %s" % (x["title"], BASE, x["id"], flat(x["scope"])) for x in st.needs]
     lines += [""] + access_lines() + [

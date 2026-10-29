@@ -4,7 +4,7 @@
 // against the manifest's length and SHA-256, then opened with PRAGMA query_only=ON and a hard heap limit.
 
 import initSqlJs from 'sql.js/dist/sql-wasm-browser.js';
-import { buildNameIndex } from './rank.js';
+import { buildNameIndex, indexFromNormalized } from './rank.js';
 
 // The browser build reads self.location.href when it runs inside a worker global scope.
 if (!globalThis.location) globalThis.location = { href: 'https://fshy.invalid/' };
@@ -196,17 +196,46 @@ export function capped(store, sql, cap) {
   }
 }
 
-/** Name index built once per isolate from the alias table. */
+const ENTITY_COLUMNS = ['eid', 'name', 'domain', 'topics', 'n_records', 'best_vorder'];
+
+/**
+ * Name index built once per isolate from the alias table, in the order eid, alias, kind. loadNames() fills it from the
+ * file that the build writes; this is the path when that file is absent.
+ */
 export function nameIndex(store) {
   if (!store.cache.names) {
     // one row per entity: far fewer sql.js round trips than one per alias
-    const res = store.db.exec("SELECT eid, group_concat(alias, char(31)) FROM alias GROUP BY eid");
+    const res = store.db.exec('SELECT eid, group_concat(alias, char(31)) FROM (SELECT eid, alias FROM alias ' +
+      'ORDER BY eid, alias, kind) GROUP BY eid ORDER BY eid');
     const rows = [];
     for (const [eid, joined] of res.length ? res[0].values : []) {
       for (const alias of String(joined).split(String.fromCharCode(31))) rows.push({ eid, alias });
     }
     store.cache.names = buildNameIndex(rows);
-    store.cache.entities = new Map(all(store.db, 'SELECT eid, name, domain, topics, n_records, best_vorder FROM entity').map((e) => [e.eid, e]));
+    store.cache.entities = new Map(all(store.db, `SELECT ${ENTITY_COLUMNS.join(', ')} FROM entity`).map((e) => [e.eid, e]));
   }
   return store.cache.names;
+}
+
+/**
+ * The name index from the file that the manifest names (name_index): the aliases normalised by the build, their
+ * entities, and the entity rows. Parsing it costs a few milliseconds; normalising 14,000 aliases on the first search of
+ * an isolate cost about 80 ms. Without the file, or when it fails, the index is built from the store.
+ */
+export async function loadNames(store, env) {
+  if (store.cache.names) return store.cache.names;
+  const p = store.manifest && store.manifest.name_index;
+  if (p) {
+    if (!store.cache.namesPromise) {
+      store.cache.namesPromise = asset(env, p, 'json').then((j) => {
+        if (store.cache.names) return;
+        store.cache.entities = new Map(j.entities.map((r) => [r[0], Object.fromEntries(ENTITY_COLUMNS.map((c, i) => [c, r[i]]))]));
+        store.cache.names = indexFromNormalized(j.aliases, j.eids);
+      }).catch((e) => {
+        console.error('fshy name index file failed, built from the store:', e && e.stack ? e.stack : String(e));
+      });
+    }
+    await store.cache.namesPromise;
+  }
+  return nameIndex(store);
 }

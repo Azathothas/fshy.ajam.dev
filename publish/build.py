@@ -18,6 +18,7 @@ Exit codes: 0 ok, 1 a check failed, 2 usage, 3 data/ does not match this build (
 """
 import argparse
 import collections
+import concurrent.futures
 import datetime
 import hashlib
 import json
@@ -227,8 +228,9 @@ def build(data, out_db):
         counts[t] = len(trows)
     db.executemany("INSERT INTO text_fts (docid, name, offer, limits, egress, identity, access, notes, evidence, extras)"
                    " VALUES (?,?,?,?,?,?,?,?,?,?)", fts)
-    commit, commit_time = git_info()
-    meta = {"schema_version": SCHEMA_VERSION, "target": "public", "commit": commit, "commit_time": commit_time,
+    # no commit of this repository: the store is the same bytes for the same data/, so a merge that changes only code
+    # changes no page, no store and no Worker copy. data/manifest.json alone names the commit of the build.
+    meta = {"schema_version": SCHEMA_VERSION, "target": "public",
             "as_of": meta_in.get("as_of"), "source_commit": meta_in.get("source_commit"),
             "counts": json.dumps(dict(meta_in.get("counts") or {}, tables=counts), sort_keys=True)}
     db.executemany("INSERT INTO meta VALUES (?,?)", sorted(meta.items()))
@@ -290,6 +292,44 @@ def leak_rx(levels=("fail",)):
     return re.compile("|".join("(?P<%s>%s)" % (p["id"], p["re"]) for p in pats))
 
 
+# The files of a directory are scanned by up to SCAN_JOBS processes when they hold more than SCAN_PARALLEL_BYTES:
+# the scan of a built site is most of the time of the build, and the files are independent.
+SCAN_JOBS = 8
+SCAN_PARALLEL_BYTES = 16 * 1024 * 1024
+
+
+def _scan_paths(job):
+    """(paths, levels, top) -> [(path relative to top, context, rule id)]: the first hit of each text file."""
+    paths, levels, top = job
+    rx, out = leak_rx(levels), []
+    for p in paths:
+        with open(p, "rb") as f:
+            b = f.read()
+        if b"\0" in b[:8192]:  # every text file, whatever its extension; a store or a gzip is binary
+            continue
+        s = b.decode("utf-8", errors="replace")
+        m = rx.search(s)
+        if m:
+            out.append((os.path.relpath(p, top), s[max(0, m.start() - 60): m.end() + 40], m.lastgroup))
+    return out
+
+
+def scan_files(top, levels=("fail",), jobs=None):
+    """The rules without a scope over every file under top, in parallel when the files are large. Sorted by path."""
+    paths = [os.path.join(r, fn) for r, _, fs in os.walk(top) for fn in fs]
+    sizes = {p: os.path.getsize(p) for p in paths}
+    n = min(jobs or SCAN_JOBS, os.cpu_count() or 1)
+    if n > 1 and sum(sizes.values()) > SCAN_PARALLEL_BYTES:
+        paths.sort(key=lambda p: -sizes[p])  # the largest first, dealt in turn, so the parts are of a similar size
+        parts = [(paths[i::4 * n], levels, top) for i in range(4 * n)]
+        try:
+            with concurrent.futures.ProcessPoolExecutor(n) as ex:
+                return sorted(h for hs in ex.map(_scan_paths, parts) for h in hs)
+        except (OSError, concurrent.futures.process.BrokenProcessPool) as e:
+            print("build: the parallel leak scan failed (%s); the scan runs in one process" % e, file=sys.stderr)
+    return sorted(_scan_paths((paths, levels, top)))
+
+
 def leak_scan(db_path=None, dist=None, data=None, levels=("fail",)):
     """Every text value of every table, every text file of the site and of data/.
     -> [(where, context, rule id)]. The rule id "history" is the check of the public history columns."""
@@ -324,13 +364,7 @@ def leak_scan(db_path=None, dist=None, data=None, levels=("fail",)):
                              "history"))
         db.close()
     for top in (d for d in (dist, data) if d):
-        for root, _, files in os.walk(top):
-            for fn in files:
-                p = os.path.join(root, fn)
-                with open(p, "rb") as f:
-                    b = f.read()
-                if b"\0" not in b[:8192]:  # every text file, whatever its extension; a store or a gzip is binary
-                    hit(os.path.relpath(p, top), b.decode("utf-8", errors="replace"))
+        hits += scan_files(top, levels)
     if data:
         for rid, (t, c), srx in scoped:
             for row in read_jsonl(os.path.join(data, "tables", t + ".jsonl")):
