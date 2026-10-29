@@ -5,6 +5,10 @@
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  // runs of a script that is not Latin get their lang, as publish/pages.py lang_wrap does
+  var RUN = /[぀-ヿㇰ-ㇿ㐀-䶿一-鿿豈-﫿가-힯ᄀ-ᇿ㄰-㆏][　-ヿㇰ-ㇿ㐀-䶿一-鿿豈-﫿가-힯ᄀ-ᇿ㄰-㆏＀-￯]*|[Ѐ-ӿ]+(?:[ -][Ѐ-ӿ]+)*|[؀-ۿ]+(?: [؀-ۿ]+)*|[֐-׿]+(?: [֐-׿]+)*|[฀-๿]+/g;
+  function lng(r) { return /[Ѐ-ӿ]/.test(r) ? 'ru' : /[؀-ۿ]/.test(r) ? 'ar' : /[֐-׿]/.test(r) ? 'he' : /[฀-๿]/.test(r) ? 'th' : /[぀-ヿㇰ-ㇿ]/.test(r) ? 'ja' : /[가-힯ᄀ-ᇿ㄰-㆏]/.test(r) ? 'ko' : 'zh'; }
+  function txt(s) { return esc(s).replace(RUN, function (r) { return '<span lang="' + lng(r) + '">' + r + '</span>'; }); }
   // verdict terms in vorder and their short labels (publish/pages.py VERDICT_LABEL)
   var VT = ['qualifies', 'qualifies-with-caveat', 'trial-only', 'paid-only', 'fails-identity', 'fails-egress', 'fails-quota', 'dead'];
   var VL = ['★ qualifies', 'caveat', 'trial', 'paid', 'fails: identity', 'fails: egress', 'fails: quota', 'dead'];
@@ -13,10 +17,16 @@
   $$('.topics a').forEach(function (a) { var m = /^\/t\/([^/]+)\/$/.exec(a.getAttribute('href')); if (m) TN[m[1]] = a.textContent; });
   function pill(v) { var i = typeof v === 'number' ? v : VT.indexOf(v); return '<span class="v v-' + esc(VT[i] || v) + '">' + esc(VL[i] || v) + '</span>'; }
   function usd(v, sfx) { return v == null ? '' : 'USD ' + (v < 1000 ? String(+(+v).toFixed(2)) : (+v).toFixed(0)) + sfx; }
-  function topics(ts) { return (ts || []).map(function (t) { return TN[t] || t; }).join(', '); }
+  function topics(ts) { return (Array.isArray(ts) ? ts : String(ts || '').split(',')).filter(Boolean).map(function (t) { return TN[t] || t; }).join(', '); }
   function lane(vs) { // list class from the longest verdict label, as pages.py lane()
     var w = Math.max.apply(null, vs.map(function (v) { var i = VT.indexOf(v); return (VL[i] || v || '').length; }).concat([0]));
     return 'list' + (w > 11 ? '' : w > 6 ? ' lm' : ' ls');
+  }
+  // the one line of a row, as publish/llms.py headline(): a cut summary loses its cut word; the first letter is a capital
+  function line(s) {
+    s = String(s || '').trim();
+    if (/(\.\.\.|…)$/.test(s)) { var t = s.replace(/\s*\S*(\.\.\.|…)$/, '').replace(/[ ,;:(-]+$/, ''); if (t.length >= 20) { s = t + '...'; } }
+    return s.charAt(0).toUpperCase() + s.slice(1);
   }
 
   // ---------------------------------------------------------------- keep the current topic visible in the scrolling topic bar
@@ -26,14 +36,14 @@
   }
 
   // ---------------------------------------------------------------- freshness, computed against today
+  // The page says "stale on DATE"; this says whether that date is past: "fresh until DATE" or "stale since DATE".
   function fresh(root) {
-    $$('.fr', root).forEach(function (b) {
+    $$('.fr:not(.done)', root).forEach(function (b) {
       var h = b.closest('[data-stale-on]'), so = b.getAttribute('data-stale-on') || (h && h.getAttribute('data-stale-on'));
       if (!so || so === 'None') { return; }
       var stale = so <= today, inh = b.getAttribute('data-basis') === 'inherited';
       b.className = 'fr ' + (stale ? 'stale' : 'fresh');
-      b.textContent = (stale ? 'stale' : 'fresh') + (inh ? ', inherited' : '');
-      b.title = 'checked ' + (b.getAttribute('data-checked') || '?') + (inh ? ' (upper bound)' : '') + '; stale on ' + so;
+      b.textContent = (stale ? 'stale since ' : 'fresh until ') + so + (inh ? ', inherited' : '');
     });
   }
   fresh();
@@ -42,31 +52,68 @@
     if (so && so !== 'None' && so > today) { r.setAttribute('data-f', (r.getAttribute('data-f') + ' fresh').trim()); }
   });
 
-  // ---------------------------------------------------------------- filter chips (class toggles on <html>)
+  // ---------------------------------------------------------------- filter chips (class toggles on <html>), kept in ?f= and ?i=
+  var chips = $('.chips'), ifl = $('.chips .ifilter'), clear = $('.chips .clear');
+  function shown(r) { return r.offsetParent !== null; }
   function recount() {
     var c = $('.chips .count'); if (!c) { return; }
     var rows = $$('.e[data-f]');
-    var vis = rows.filter(function (r) { return r.offsetParent !== null; }).length;
+    var vis = rows.filter(shown).length;
     c.textContent = vis === rows.length ? rows.length + ' shown' : vis + ' of ' + rows.length + ' shown';
+    // a group or a category with no row left is hidden, and a group heading counts the rows that it shows
+    $$('main ul.list, main ol.list').forEach(function (ul) {
+      var n = $$('.e[data-f]', ul).filter(shown).length, h = ul.previousElementSibling;
+      ul.hidden = !n && ul.children.length > 0;
+      if (h && h.tagName === 'H3') { h.hidden = ul.hidden; }
+    });
+    $$('section.grp').forEach(function (s) {
+      var all = $$('.e[data-f]', s), n = all.filter(shown).length, sm = $('h2 small', s);
+      if (!all.length) { return; }
+      s.hidden = !n;
+      if (sm) { sm.textContent = n === all.length ? String(all.length) : n + ' of ' + all.length; }
+    });
+    var on = $$('.chips [aria-pressed=true]').map(function (b) { return b.getAttribute('data-chip'); });
+    if (clear) { clear.hidden = !on.length && !(ifl && ifl.value.trim()); }
+    if (chips) {
+      var u = new URLSearchParams(location.search);
+      if (on.length) { u.set('f', on.join(',')); } else { u.delete('f'); }
+      if (ifl && ifl.value.trim()) { u.set('i', ifl.value.trim()); } else { u.delete('i'); }
+      var qs = u.toString();
+      history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+    }
   }
-  $$('.chips button[data-chip]').forEach(function (b) {
-    b.setAttribute('aria-pressed', 'false');
-    b.addEventListener('click', function () {
-      var on = document.documentElement.classList.toggle('f-' + b.getAttribute('data-chip'));
-      b.setAttribute('aria-pressed', on ? 'true' : 'false'); recount();
+  function press(b, on) {
+    document.documentElement.classList.toggle('f-' + b.getAttribute('data-chip'), on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+  function ifilter() {
+    var q = ifl.value.trim().toLowerCase();
+    $$('[data-f]').forEach(function (r) {
+      var i = (r.getAttribute('data-i') || '').toLowerCase();
+      r.classList.toggle('ihide', !!q && i.indexOf(q) < 0);
     });
-  });
-  $$('.chips .ifilter').forEach(function (inp) {
-    inp.addEventListener('input', function () {
-      var q = inp.value.trim().toLowerCase();
-      $$('[data-f]').forEach(function (r) {
-        var i = (r.getAttribute('data-i') || '').toLowerCase();
-        r.classList.toggle('ihide', !!q && i.indexOf(q) < 0);
+  }
+  if (chips) {
+    chips.hidden = false;
+    var start = new URLSearchParams(location.search), want = (start.get('f') || '').split(',');
+    $$('.chips button[data-chip]').forEach(function (b) {
+      press(b, want.indexOf(b.getAttribute('data-chip')) >= 0);
+      b.addEventListener('click', function () { press(b, b.getAttribute('aria-pressed') !== 'true'); recount(); });
+    });
+    if (ifl) {
+      ifl.value = start.get('i') || '';
+      ifl.addEventListener('input', function () { ifilter(); recount(); });
+      if (ifl.value) { ifilter(); }
+    }
+    if (clear) {
+      clear.addEventListener('click', function () {
+        $$('.chips button[data-chip]').forEach(function (b) { press(b, false); });
+        if (ifl) { ifl.value = ''; ifilter(); }
+        recount();
       });
-      recount();
-    });
-  });
-  recount();
+    }
+    recount();
+  }
 
   // ---------------------------------------------------------------- name search (lazy MiniSearch over names.json)
   var ms = null, names = null, loading = null;
@@ -87,9 +134,10 @@
       var s = document.createElement('script'); s.src = '/assets/minisearch.js'; s.onload = res; s.onerror = rej; document.head.appendChild(s);
     }).then(function () { return fetch('/api/v1/names.json'); }).then(function (r) { return r.json(); }).then(function (rows) {
       names = rows;
+      // a typo is forgiven in a word of five letters or more; a shorter word must match its start
       ms = new window.MiniSearch({ fields: ['name', 'aliases', 'domain'], storeFields: ['i'], tokenize: tokenize,
         processTerm: function (t) { return t; },
-        searchOptions: { boost: { name: 4, aliases: 2, domain: 2 }, fuzzy: 0.2, prefix: true, tokenize: tokenize, processTerm: function (t) { return t; } } });
+        searchOptions: { boost: { name: 4, aliases: 2, domain: 2 }, fuzzy: function (t) { return t.length >= 5 ? 0.2 : false; }, prefix: true, tokenize: tokenize, processTerm: function (t) { return t; } } });
       ms.addAll(rows.map(function (r, i) { return { id: i, i: i, name: r[1], aliases: (r[2] || []).join(' '), domain: r[3] || '' }; }));
     });
     loading.catch(function () { loading = null; });
@@ -106,20 +154,26 @@
   }
   function renderDrop() {
     var q = box.value.trim(); if (!q) { setOpen(false); return; }
+    if (!ms) { // the names are on their way: say so, so a slow phone does not show an empty box
+      drop.setAttribute('aria-busy', 'true');
+      drop.innerHTML = '<p class="busy">Loading names...</p>'; setOpen(true); return;
+    }
+    drop.removeAttribute('aria-busy');
     var hits = nameHits(q, 10);
     drop.innerHTML = hits.map(function (r, i) {
-      return '<a id="qo' + i + '" role="option" href="/p/' + esc(r[0]) + '/">' + esc(r[1]) + pill(r[5]) + '<small>' + esc(topics(r[4])) +
+      return '<a id="qo' + i + '" role="option" href="/p/' + esc(r[0]) + '/">' + txt(r[1]) + pill(r[5]) + '<small>' + esc(topics(r[4])) +
         ' &middot; ' + r[6] + ' record' + (r[6] === 1 ? '' : 's') + '</small></a>';
-    }).join('') + '<a id="qo' + hits.length + '" role="option" class="all" href="/search/?q=' + encodeURIComponent(q) + '">Search all text for “' + esc(q) + '”</a>';
+    }).join('') + '<a id="qo' + hits.length + '" role="option" class="all" href="/search/?q=' + encodeURIComponent(q) + '">Search all text for "' + txt(q) + '"</a>';
     sel = -1; box.removeAttribute('aria-activedescendant'); setOpen(true);
   }
+  function names_then_drop() { renderDrop(); loadNames().then(renderDrop).catch(function () { drop.removeAttribute('aria-busy'); setOpen(false); }); }
   if (box && drop) {
     // the combobox exists only with this script, so its roles and states are set here rather than in every page
     box.setAttribute('role', 'combobox'); box.setAttribute('aria-autocomplete', 'list');
     box.setAttribute('aria-expanded', 'false'); box.setAttribute('aria-controls', 'qr');
     drop.setAttribute('role', 'listbox'); drop.setAttribute('aria-label', 'Matching providers');
     box.addEventListener('focus', function () { loadNames().then(renderDrop).catch(function () {}); });
-    box.addEventListener('input', function () { if (ms) { renderDrop(); } else { loadNames().then(renderDrop).catch(function () {}); } });
+    box.addEventListener('input', function () { if (ms) { renderDrop(); } else { names_then_drop(); } });
     box.addEventListener('keydown', function (ev) {
       var a = $$('a', drop);
       if ((ev.key === 'ArrowDown' || ev.key === 'ArrowUp') && !drop.hidden) {
@@ -137,64 +191,97 @@
   }
 
   // ---------------------------------------------------------------- full-text search page
+  // the columns of the full-text index, in words (site/worker/rank.js FTS_COLUMNS)
+  var COL = { name: 'name', offer: 'free tier and price', limits: 'limits', egress: 'egress', identity: 'identity', access: 'interface',
+    notes: 'notes', evidence: 'evidence', extras: 'other fields' };
+  function matched(m) {
+    var seen = {};
+    return String(m || '').split(',').map(function (c) { return COL[c.replace(/\(.*\)$/, '')] || c.replace(/\(.*\)$/, ''); })
+      .filter(function (w) { return w && !seen[w] && (seen[w] = 1); }).join(', ');
+  }
   var sr = $('#sr');
   if (sr) {
     var q = new URLSearchParams(location.search).get('q') || '';
     if (box) { box.value = q; }
     if (q) {
-      document.title = q + ' - Search - fshy';
-      sr.innerHTML = '<p class="lede">Searching…</p>';
-      loadNames().then(function () {
+      document.title = q + ' | Search | fshy';
+      sr.innerHTML = '<p class="lede">Searching...</p>';
+      var api = fetch('/api/v1/search?limit=50&q=' + encodeURIComponent(q)).then(function (r) { return r.json(); });
+      loadNames().catch(function () {}).then(function () {
         var nh = nameHits(q, 8);
         sr.innerHTML = (nh.length ? '<h2>Providers <small>' + nh.length + '</small></h2><ul class="plain">' + nh.map(function (r) {
-          return '<li><a href="/p/' + esc(r[0]) + '/"><b>' + esc(r[1]) + '</b></a> ' + pill(r[5]) + ' <small>' + esc(topics(r[4])) +
+          return '<li><a href="/p/' + esc(r[0]) + '/"><b>' + txt(r[1]) + '</b></a> ' + pill(r[5]) + ' <small>' + esc(topics(r[4])) +
             ' &middot; ' + r[6] + ' record' + (r[6] === 1 ? '' : 's') + '</small></li>';
-        }).join('') + '</ul>' : '') + '<h2>Full text</h2><div id="ft" aria-live="polite"><p>Loading…</p></div>';
-        return fetch('/api/v1/search?limit=50&q=' + encodeURIComponent(q));
-      }).then(function (r) { return r.json(); }).then(function (d) {
+        }).join('') + '</ul>' : '') + '<h2>Full text</h2><div id="ft" aria-live="polite"><p>Loading...</p></div>';
+        return api;
+      }).then(function (d) {
         var ix = {}; (d.columns || []).forEach(function (c, i) { ix[c] = i; });
         var rows = d.rows || [], ft = $('#ft');
         ft.innerHTML = rows.length ? '<ul class="' + lane(rows.map(function (r) { return r[ix.verdict]; })) + '">' + rows.map(function (r) {
           var rid = r[ix.rid], t = rid.split('/')[0], id = r[ix.identity] || '', def = id.slice(-1) === '?';
-          var price = usd(r[ix.usd_per_tb_month], '/TB-mo') || usd(r[ix.usd_month], '/mo');
+          var price = usd(r[ix.usd_per_tb_month], '/TB-month') || usd(r[ix.usd_month], '/month');
           var card = r[ix.card] === 'no' && !def ? '<span class="ok">no card</span>' : r[ix.card] === 'yes' ? '<span class="w">card</span>' : '<span class="u">card?</span>';
-          var m = ix.matched != null && r[ix.matched] ? '<span class="mt">matched in ' + esc(r[ix.matched]) + '</span>' : '';
+          var m = ix.matched != null && r[ix.matched] ? '<span class="mt"><i>matched in</i> ' + esc(matched(r[ix.matched])) + '</span>' : '';
           return '<li class="e" data-stale-on="' + esc(r[ix.stale_on]) + '">' + pill(r[ix.verdict]) + '<a class="n" href="/r/' + esc(rid) + '">' +
-            esc(r[ix.provider]) + '</a>' + (price ? '<span class="pr">' + esc(price) + '</span>' : '') +
-            (r[ix.summary] ? '<p class="s">' + esc(r[ix.summary]) + '</p>' : '') + '<p class="f"><span class="tp">' + esc(TN[t] || t) +
-            '</span><span class="id">' + esc(id) + '</span>' + card + (r[ix.phone] === 'yes' ? '<span class="w">phone</span>' : '') +
-            '<span class="rg">' + esc(r[ix.confidence]) + '</span><span class="fr"></span>' + m + '</p></li>';
+            txt(r[ix.provider]) + '</a>' + (price ? '<span class="pr">' + esc(price) + '</span>' : '') +
+            (r[ix.summary] ? '<p class="s">' + txt(line(r[ix.summary])) + '</p>' : '') + '<p class="f"><span class="tp">' + esc(TN[t] || t) +
+            '</span><span class="id"><i>identity</i> ' + esc(id) + '</span>' + card + (r[ix.phone] === 'yes' ? '<span class="w">phone</span>' : '') +
+            '<span class="rg"><i>evidence</i> ' + esc(r[ix.confidence]) + '</span><span class="fr"></span>' + m + '</p></li>';
         }).join('') + '</ul>' + (d.total > rows.length ? '<p class="needs">Showing ' + rows.length + ' of ' + d.total + ' matches.</p>' : '')
-          : '<p>No full-text match.</p>';
+          : '<p>No match. Try fewer words, or open a list of <a href="/need/">Best per need</a>.</p>';
         fresh(ft);
-      }).catch(function () { var ft = $('#ft'); if (ft) { ft.innerHTML = '<p>Full-text search is unavailable right now; name matches are above.</p>'; } });
+      }).catch(function () { var ft = $('#ft'); if (ft) { ft.innerHTML = '<p>Full-text search is not available now. The name matches are above.</p>'; } });
     }
   }
 
   // ---------------------------------------------------------------- compare page
   var cmp = $('#cmp');
   if (cmp) {
-    var ids = (new URLSearchParams(location.search).get('r') || '').split(',').filter(Boolean).slice(0, 5);
+    var ids = (new URLSearchParams(location.search).get('r') || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean).slice(0, 5);
+    var go = function (list) { location.search = list.length ? '?r=' + list.map(encodeURIComponent).join(',').replace(/%2F/gi, '/') : ''; };
+    var add = '<form class="add"><label for="cmp-add">Add a record (topic/slug)</label> <input id="cmp-add" placeholder="compute/oracle-cloud" ' +
+      'autocomplete="off"> <button>add</button></form>';
+    var bindAdd = function () {
+      var f = $('form.add', cmp);
+      f.addEventListener('submit', function (ev) {
+        ev.preventDefault();
+        var v = $('#cmp-add').value.trim().replace(/^\/+|\/+$/g, '');
+        if (/^[^/\s]+\/[^/\s]+$/.test(v) && ids.indexOf(v) < 0) { go(ids.concat([v]).slice(0, 5)); }
+      });
+    };
+    if (!ids.length) { cmp.innerHTML = add; bindAdd(); }
     if (ids.length) {
       Promise.all(ids.map(function (id) { return fetch('/api/v1/record/' + id + '.json').then(function (r) { return r.ok ? r.json() : null; }); })).then(function (recs) {
+        var missing = ids.filter(function (id, i) { return !recs[i]; });
         recs = recs.filter(Boolean);
-        if (!recs.length) { cmp.innerHTML = '<p>None of those records exist.</p>'; return; }
-        var h = function (s) { return esc(s).replace(/\n/g, '<br>'); };
-        var f = [['provider', function (x) { return '<a href="/r/' + esc(x.rid) + '"><b>' + esc(x.card.provider) + '</b></a>'; }],
-          ['verdict', function (x) { return pill(x.card.verdict); }],
+        if (!recs.length) { cmp.innerHTML = '<p>None of those records exist.</p>' + add; bindAdd(); return; }
+        var h = function (s) { return s == null || s === '' ? '' : txt(s).replace(/\n/g, '<br>'); };
+        var f = [['verdict', function (x) { return pill(x.card.verdict); }],
           ['evidence rung', function (x) { return h(x.card.confidence); }],
           ['identity', function (x) { return h(x.card.identity_kind + (x.card.identity_basis === 'defaulted' ? '?' : '')); }],
-          ['card', function (x) { return x.card.needs_card === 1 ? 'yes' : x.card.needs_card === 0 ? 'no' : '?'; }],
+          ['card', function (x) { return x.card.needs_card === 1 ? 'yes' : x.card.needs_card === 0 ? 'no' : 'unknown'; }],
           ['free tier', function (x) { return h((x.record.free_tier || {}).stated); }], ['price', function (x) { return h(x.record.price_per_tb_month); }],
-          ['USD/month', function (x) { return h(x.card.usd_month); }], ['USD/TB-month', function (x) { return h(x.card.usd_per_tb_month); }],
+          ['USD a month', function (x) { return h(x.card.usd_month); }], ['USD per TB-month', function (x) { return h(x.card.usd_per_tb_month); }],
           ['per-object cap', function (x) { return h((x.record.per_object_cap || {}).stated); }], ['retention', function (x) { return h((x.record.retention || {}).stated); }],
           ['egress', function (x) { return h((x.record.egress || {}).terms); }], ['binding', function (x) { return h(x.record.binding); }],
           ['limits', function (x) { return h((x.record.limits || []).map(function (l) { return l.kind + ': ' + l.value; }).join('\n')); }],
           ['interface', function (x) { return h((x.record.interface || []).join(', ')); }], ['reliability', function (x) { return h(x.record.reliability_note); }],
           ['checked', function (x) { return h(x.card.checked_on + ' (' + x.card.verified_basis + '), stale on ' + x.card.stale_on); }]];
-        cmp.innerHTML = '<div class="tw"><table class="cmp"><tbody>' + f.map(function (row) {
-          return '<tr><th scope="row">' + esc(row[0]) + '</th>' + recs.map(function (x) { return '<td>' + row[1](x) + '</td>'; }).join('') + '</tr>';
-        }).join('') + '</tbody></table></div>';
+        var head = '<thead><tr><td></td>' + recs.map(function (x) {
+          return '<th scope="col"><a href="/r/' + esc(x.rid) + '">' + txt(x.card.provider) + '</a> <small><code>' + esc(x.rid) + '</code> ' +
+            '<a href="#" data-drop="' + esc(x.rid) + '">remove</a></small></th>';
+        }).join('') + '</tr></thead>';
+        var body = f.map(function (row) {
+          var cells = recs.map(function (x) { return row[1](x); });
+          if (cells.every(function (c) { return !c; })) { return ''; } // a row that no record fills says nothing
+          return '<tr><th scope="row">' + esc(row[0]) + '</th>' + cells.map(function (c) { return '<td>' + (c || '<span class="na">not stated</span>') + '</td>'; }).join('') + '</tr>';
+        }).join('');
+        cmp.innerHTML = '<div class="tw"><table class="cmp">' + head + '<tbody>' + body + '</tbody></table></div>' +
+          (missing.length ? '<p>Not found: ' + esc(missing.join(', ')) + '</p>' : '') + add;
+        $$('[data-drop]', cmp).forEach(function (a) {
+          a.addEventListener('click', function (ev) { ev.preventDefault(); var r = a.getAttribute('data-drop'); go(ids.filter(function (x) { return x !== r; })); });
+        });
+        bindAdd();
       });
     }
   }
