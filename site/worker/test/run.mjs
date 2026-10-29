@@ -388,7 +388,7 @@ test('parity fixture: the text, ranking and guard rules give the outputs in pari
   const guardMod = await import('../guard.js');
   const fx = load();
   const got = compute(fx, { text, rank, guard: guardMod });
-  for (const k of ['text', 'rank', 'guard']) assert.deepEqual(got[k], fx[k], k + ' differs from parity.json: run node site/worker/test/parity.mjs --write after a deliberate change');
+  for (const k of ['text', 'rank', 'guard', 'guard_lists']) assert.deepEqual(got[k], fx[k], k + ' differs from parity.json: run node site/worker/test/parity.mjs --write after a deliberate change');
   const g = Object.fromEntries(fx.guard.map((c) => [c.sql, c.result[0]]));
   for (const s of ['\uFEFFselect 1', 'SELECT\u00E9INSERT FROM x', 'select 1 where x=\u00E9drop', 'select \u0645delete from record']) {
     assert.equal(g[s], 'err', 'the stricter side wins: ' + JSON.stringify(s));
@@ -396,8 +396,20 @@ test('parity fixture: the text, ranking and guard rules give the outputs in pari
 });
 
 test('sql: the statement budget refuses a costly plan, whatever its shape (issue #5)', async () => {
-  // each line: [statement, the start of the refusal]; the first eleven are the bypasses of review round 3
+  // the shapes that the merge review of round 3 found: many cheap chains, a skewed = key, a value that doubles
+  const like = "(SELECT count(*) FROM evidence e, history h WHERE e.url LIKE '%' || h.title || '%')";
+  const verdict = '(SELECT count(*) FROM record a, record b WHERE a.verdict = b.verdict)';
+  const date = 'SELECT count(*) FROM evidence a JOIN evidence b ON a.date = b.date';
+  const hexed = (k) => 'SELECT length(' + 'hex('.repeat(k) + 'group_concat(summary)' + ')'.repeat(k) + ') FROM record';
+  // each line: [statement, the start of the refusal]; the eleven after the merge shapes are the bypasses of review round 3
   const refuse = [
+    ['SELECT ' + Array(40).fill(like).join(' + '), 'the plan reads'],
+    ['SELECT ' + Array(60).fill(verdict).join(' + '), 'the plan reads'],
+    [date, 'the plan reads'],
+    [date + ' UNION ALL ' + date, 'the plan reads'],
+    [hexed(7), 'function not allowed: hex()'],
+    [hexed(10), 'function not allowed: hex()'],
+    [hexed(16), 'function not allowed: hex()'],
     ["SELECT count(*) FROM evidence e WHERE EXISTS (SELECT 1 FROM limit_row l WHERE l.value LIKE '%'||e.proved||'%')", 'the plan reads'],
     ['SELECT count(*) FROM evidence e WHERE NOT EXISTS (SELECT 1 FROM limit_row l WHERE l.value = e.proved)', 'the plan reads'],
     ['SELECT count(*) FROM edge a, edge b, edge c WHERE a.src <> b.src AND b.src <> c.src AND c.dst <> a.dst', 'the plan reads'],
@@ -406,8 +418,8 @@ test('sql: the statement budget refuses a costly plan, whatever its shape (issue
     ['SELECT count(*) FROM record a LEFT JOIN record b ON 1 LEFT JOIN record c ON 1 LEFT JOIN record d ON 1', 'the plan reads'],
     ['WITH x AS (SELECT rno FROM record) SELECT count(*) FROM x a, x b WHERE a.rno < b.rno', 'the plan reads'],
     ['WITH RECURSIVE c(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM c) SELECT count(*) FROM c', 'a recursive CTE'],
-    ['SELECT length(hex(randomblob(50000000)))', 'randomblob()'],
-    ['SELECT length(zeroblob(100000000))', 'zeroblob()'],
+    ['SELECT length(hex(randomblob(50000000)))', 'function not allowed: hex()'],
+    ['SELECT length(zeroblob(100000000))', 'function not allowed: zeroblob()'],
     ["SELECT length(printf('%.*c', 100000000, 'x'))", 'printf() width'],
     ['SELECT count(*) FROM claim a, evidence b WHERE a.rid <> b.rid', 'the plan reads'],
     ['SELECT count(*) FROM record r JOIN claim c ON c.rid <> r.rid', 'the plan reads'],
@@ -417,8 +429,29 @@ test('sql: the statement budget refuses a costly plan, whatever its shape (issue
     ['WITH t AS MATERIALIZED (SELECT * FROM claim) SELECT count(*) FROM t, evidence WHERE t.rid <> evidence.rid', 'the plan reads'],
     ['SELECT count(*) FROM record WHERE rid IN (SELECT a.rid FROM claim a, evidence b WHERE a.rid <> b.rid)', 'the plan reads'],
     ['SELECT count(*) FROM record a, record b, record c WHERE a.topic = b.topic AND b.eid <> c.eid', 'the plan reads'],
-    // an = join on a column with few values reads many rows a key
+    // an = join on a column with few values reads many rows a key: the largest key counts, not the mean
     ['SELECT count(*) FROM record a, record b, record c WHERE a.topic = b.topic AND b.topic = c.topic', 'the plan reads'],
+    ['SELECT count(*) FROM record a, record b WHERE a.topic = b.topic', 'the plan reads'],
+    ['SELECT count(*) FROM record a JOIN record b ON a.grp = b.grp', 'the plan reads'],
+    ["SELECT count(*) FROM record a WHERE EXISTS (SELECT 1 FROM record b WHERE b.topic = a.topic AND b.summary LIKE '%zzz%')", 'the plan reads'],
+    // a full-text match reads every document; a MULTI-INDEX OR reads all its parts; a CTE that shadows a table is sized
+    ["SELECT count(*) FROM text_fts f, record a WHERE f.text_fts MATCH 'a*'", 'the plan reads'],
+    ["SELECT count(*) FROM record a, evidence e WHERE (a.eid = 'x' OR a.topic = 'storage') AND e.url LIKE a.rid", 'the plan reads'],
+    ['WITH history AS MATERIALIZED (SELECT a.rno FROM record a, drift b) SELECT count(*) FROM history x, history y', 'the plan reads'],
+    ['SELECT (SELECT count(*) FROM (SELECT DISTINCT e.url FROM evidence e, history h WHERE e.rid = r.rid AND h.hid <> e.url)) FROM record r', 'the plan reads'],
+    // the weight of a row: the functions and operators that the statement evaluates on it
+    ["SELECT count(printf('%1000s', a.alias)) FROM alias a, drift d", 'the plan reads'],
+    ["SELECT max(strftime('%Y-%m-%d %H:%M:%S %J %s', 'now', '+' || d.rowid || ' days')) FROM alias a, drift d", 'the plan reads'],
+    ["SELECT count(*) FROM alias a, drift d WHERE a.alias LIKE '%' || d.subject || '%'", 'the plan reads'],
+    // the function allowlist of the guard
+    ['SELECT quote(summary) FROM record', 'function not allowed: quote()'],
+    ['SELECT char(65, 66)', 'function not allowed: char()'],
+    ['SELECT json_array(summary) FROM record', 'function not allowed: json_array()'],
+    ["SELECT * FROM json_each('[1,2,3]')", 'function not allowed: json_each()'],
+    ['SELECT "hex"(summary) FROM record', 'function not allowed: hex()'],
+    ['WITH hex(a) AS (SELECT 1) SELECT hex(summary) FROM record', 'function not allowed: hex()'],
+    ["SELECT printf('%q', summary) FROM record", 'printf() conversion %q'],
+    ["SELECT printf('%' || '2000c', 'x')", 'printf() needs a literal format string'],
   ];
   for (const [q, why] of refuse) {
     const r = await call('/api/v1/sql?q=' + encodeURIComponent(q));
@@ -427,8 +460,17 @@ test('sql: the statement budget refuses a costly plan, whatever its shape (issue
   }
   const accept = [
     'SELECT r.rid FROM record r JOIN claim c ON c.rid = r.rid',
-    'SELECT count(*) FROM record a, record b WHERE a.topic = b.topic',
-    'SELECT count(*) FROM record a JOIN record b ON a.grp = b.grp',
+    "SELECT CAST(usd_month AS DECIMAL(10,2)) FROM record",
+    'SELECT name FROM sqlite_master',
+    "SELECT * FROM pragma_table_info('record')",
+    'SELECT * FROM (VALUES (1),(2),(3)) v, record r WHERE r.rno = v.column1',
+    'SELECT length(group_concat(summary)) FROM record',
+    "SELECT json_extract('{\"a\":1}', '$.a')",
+    "SELECT count(*) FROM record WHERE eid = 'x' OR topic = 'storage'",
+    'SELECT count(*) FROM record r WHERE EXISTS (SELECT 1 FROM claim c WHERE c.rid = r.rid)',
+    'SELECT rid, row_number() OVER (PARTITION BY topic ORDER BY vorder) FROM record',
+    "SELECT matchinfo(text_fts, 'pcx') FROM text_fts WHERE text_fts MATCH 'gpu'",
+    "SELECT format('%5.1f%%', usd_month) FROM record",
     'SELECT * FROM record WHERE rid IN (SELECT rid FROM claim)',
     'SELECT * FROM fx a, vocab b',
     "SELECT r.rid FROM text_fts JOIN record r ON r.rno = text_fts.docid WHERE text_fts MATCH 'webdav*'",
@@ -443,6 +485,17 @@ test('sql: the statement budget refuses a costly plan, whatever its shape (issue
     const r = await call('/api/v1/sql?q=' + encodeURIComponent(q));
     assert.equal(r.res.status, 200, q + ': ' + r.body);
   }
+  // the backstops: a result over the cap, and a value over the heap limit, are refused; the store stays usable
+  const big = await call('/api/v1/sql?q=' + encodeURIComponent('SELECT s || s || s || s FROM (SELECT group_concat(summary) AS s FROM record)'));
+  assert.equal(big.res.status, 400, big.body);
+  assert.match(big.json.error, /^refused: the result is over 2,000,000 characters/);
+  let doubled = 'SELECT group_concat(summary) AS s FROM record';
+  for (let i = 0; i < 7; i++) doubled = 'SELECT s || s AS s FROM (' + doubled + ')';
+  const oom = await call('/api/v1/sql?q=' + encodeURIComponent('SELECT length(s) FROM (' + doubled + ')'));
+  assert.equal(oom.res.status, 400, oom.body);
+  assert.match(oom.json.error, /^refused: the statement needs more than the 32 MiB/);
+  const after = await call('/api/v1/sql?q=' + encodeURIComponent('SELECT count(*) FROM record'));
+  assert.equal(after.res.status, 200, after.body);
   const m = await rpc('tools/call', { name: 'sql', arguments: { query: refuse[0][0] } });
   assert.equal(m.json.result.isError, true);
   assert.match(m.json.result.content[0].text, /the plan reads/);
@@ -457,6 +510,17 @@ test('sql: the statement budget refuses a costly plan, whatever its shape (issue
   const worked = readFileSync(help, 'utf8').split('EXAMPLES')[1].split('\n').filter((l) => /^ {3}(SELECT|WITH) /.test(l)).map((l) => l.trim());
   assert.ok(worked.length >= 5, 'the primer has its worked queries');
   for (const q of worked) assert.doesNotThrow(() => checkPlan(store, q), q);
+});
+
+test('sql: a failure of the engine is a 503, and the next request loads the store again', async () => {
+  const api = await import('../api.js');
+  const { engineFailed, HttpError } = await import('../db.js');
+  assert.equal(engineFailed(new WebAssembly.RuntimeError('memory access out of bounds')), true);
+  assert.equal(engineFailed(new Error('no such column: x')), false);
+  const broken = { db: { exec() { throw new WebAssembly.RuntimeError('unreachable executed'); }, close() {} }, cache: {} };
+  assert.throws(() => api.sql(broken, { q: 'SELECT 1' }), (e) => e instanceof HttpError && e.status === 503);
+  const after = await call('/api/v1/sql?q=' + encodeURIComponent('SELECT count(*) FROM record'));
+  assert.equal(after.res.status, 200, after.body);
 });
 
 test('a rate limiter that throws fails open', async () => {
