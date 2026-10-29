@@ -7,7 +7,7 @@ The public wiki, and its read-only API and MCP endpoint. Everything it serves co
 | --- | --- |
 | `wrangler.jsonc` | the Worker `fshy`: static assets from `dist/`, the custom domain `fshy.ajam.dev`, the API and MCP routes |
 | `worker/` | the Worker: sql.js (SQLite in WebAssembly) over the store's Worker copy, the API, the MCP server |
-| `worker/test/` | the Worker's tests: `run.mjs` runs under node with fake bindings; `smoke.mjs` runs the Worker on workerd with `wrangler dev` |
+| `worker/test/` | the Worker's tests: `run.mjs` runs under node with fake bindings; `smoke.mjs` and `strand.mjs` run the Worker on workerd with `wrangler dev`; `live.mjs` asks the live site |
 | `static/` | the stylesheet, the browser script, vendored MiniSearch 7.2.0 (MIT), the favicon, `_headers` |
 | `dist/` | the built site. Generated, never committed |
 
@@ -42,7 +42,9 @@ python publish/test_publish.py
 
 `smoke.mjs` starts `wrangler dev` on port 8791, or on the port in `FSHY_SMOKE_PORT`. It asks the API, the SQL
 route, the MCP endpoint, the route patterns of `wrangler.jsonc` and the download of the store, and it stops
-wrangler by the PID that it started. `test_weight.py` fails when a page or a shared file is over its budget.
+wrangler by the PID that it started. Then it runs `strand.mjs`, which starts `wrangler dev` on port 8792, or on the
+port in `FSHY_STRAND_PORT`. That test ends a request while the store loads, and the next requests must answer. Section
+"What the Worker serves" says why. `test_weight.py` fails when a page or a shared file is over its budget.
 
 ## The pages
 
@@ -143,6 +145,10 @@ merges deploys the new data. A failed build, for example a leak hit, keeps the p
 3. It reads `/data/manifest.json` from the live site until the manifest names the commit, for at most five
    minutes. Then the search API must answer with rows and with the commit in its header `x-fshy-commit`, and the
    MCP endpoint must list its tools. If not, the job fails, and the new version can be live.
+4. `node site/worker/test/live.mjs` abandons 16 requests during the first loads of the store, as clients that time
+   out do. Then it sends 40 requests to the routes that open the store, in bursts and one after another, each on a new
+   connection. A request with no status in `LOAD_WAIT_MS` plus 5 s, or with a status that is not 200 or 429, fails the
+   job. One request of each route cannot find a fault of some isolates only.
 
 | setting | where | what |
 | --- | --- | --- |
@@ -178,6 +184,22 @@ evidence or binding in a filter is a 400 that lists the terms of the vocabulary,
 is the public store without record JSON, leaves and evidence quotes, which are served as static files. The rate
 limit runs before the load, so a request that gets 429 costs no load. The first search of an isolate reads the
 name index that the build writes (`name_index` in `data/manifest.json`) and does not normalise every alias again.
+
+**The store load.** The requests of an isolate that need the store before it is open share one load
+(`worker/db.js`). The load runs in the context of the request that starts it. ⚠ The Workers runtime drops the
+continuations of a request that has ended, and a client that goes away ends its request. Before the fix of issue
+#26, such a load never settled, and every later request of that isolate waited for ever with no byte of answer. Two
+rules stop that now:
+
+1. The request that starts a load passes it to `ctx.waitUntil()`. The runtime then keeps the context for up to 30 s
+   after the client goes away, so the load completes.
+2. A request waits on a load for at most `LOAD_WAIT_MS` (10 s), counted from the start of the load. Then it starts a
+   new load in its own context. When that load is late too, the request gets a 503.
+
+The name index has no shared read: each request that finds no index reads the file itself. On 2026-10-29 a cold
+request took 0.3 to 1.3 s at the edge, of which the reads of the store took 29 to 85 ms, so 10 s is a wide margin.
+`wrangler dev` does not cancel a request when its client goes away. So `strand.mjs` ends a request by an early answer
+instead, through its own entry point `worker/test/strand.js`, and `run.mjs` uses an assets binding that does not answer.
 
 **The download of the store.** The build writes the gzip of the public store in parts of 10 MiB under `data/w/`, and
 `data/manifest.json` names them with the size and the SHA-256 of the whole file. The Worker streams the parts in
