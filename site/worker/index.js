@@ -2,6 +2,7 @@
 // Everything else is a static asset (wrangler.jsonc run_worker_first lists the Worker routes).
 //
 // The rate limit runs before the store loads, so a request that gets 429 never pays for a cold load of the store.
+// workerd reads each named export of this module as an entrypoint, so the module exports the handler only.
 
 import wasmModule from 'sql.js/dist/sql-wasm-browser.wasm';
 import { asset, getStore, HttpError, loadNames } from './db.js';
@@ -9,7 +10,7 @@ import { baseHeaders, CORS, errorResponse, jsonResponse, rateLimited } from './h
 import * as api from './api.js';
 import { handleMcp } from './mcp.js';
 
-export const DOWNLOAD = '/data/fshy-public.sqlite.gz';
+const DOWNLOAD = '/data/fshy-public.sqlite.gz';
 
 // GET /api/v1/: the routes, for a caller that guesses the root of the API
 const ROUTES = [
@@ -43,7 +44,7 @@ function params(url) {
 }
 
 /** decodeURIComponent, with a 400 for malformed percent-encoding instead of a URIError (a 500). */
-export function decode(s) {
+function decode(s) {
   try {
     return decodeURIComponent(s);
   } catch {
@@ -179,7 +180,7 @@ async function permalink(request, env, url, open) {
  * The page of a record. A provider with more than manifest.record_pages_over records has a page for each record
  * (publish/pages.py); the others hold every record on the provider page, under the anchor topic--slug.
  */
-export function recordPath(store, eid, topic, slug) {
+function recordPath(store, eid, topic, slug) {
   const over = store.manifest && store.manifest.record_pages_over;
   const e = encodeURIComponent(eid);
   if (over && store.cache) {

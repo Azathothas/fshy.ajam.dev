@@ -735,6 +735,10 @@ test('the vendored MiniSearch is the npm package of package.json (P-18)', () => 
   assert.equal(vendored.slice(1).join('\n'), npm, 'site/static/assets/minisearch.js is dist/umd/index.js of that version: copy it after an update');
 });
 
+test('the Worker module exports its handler only: workerd reads a named export as an entrypoint', async () => {
+  assert.deepEqual(Object.keys(await import('../index.js')), ['default']);
+});
+
 test('report', () => {
   for (const [k, v] of Object.entries(timings)) console.log('# ' + k + ': ' + (typeof v === 'number' ? v.toFixed(1) : JSON.stringify(v)));
 });
