@@ -87,6 +87,7 @@ def emit_data(repo, pub_db, dist):
     """Data files every other layer reads. Returns a context dict for the HTML layer."""
     sys.path.insert(0, HERE)
     import build  # noqa: E402
+    import llms  # noqa: E402
     db = sqlite3.connect("file:%s?mode=ro" % pub_db, uri=True)
     db.row_factory = sqlite3.Row
     meta = {r["key"]: r["value"] for r in db.execute("SELECT key, value FROM meta")}
@@ -120,6 +121,7 @@ def emit_data(repo, pub_db, dist):
         cards[c["rid"]] = c
         by_eid[c["eid"]].append(c)
         docs[c["rid"]] = r["doc"]
+    llms.attach_free_claims(db, cards)  # the cards of the pages carry it; the card of the published JSON does not
     claims = collections.defaultdict(list)
     for r in db.execute("SELECT * FROM claim ORDER BY rid, path"):
         claims[r["rid"]].append({k: r[k] for k in r.keys() if k != "rid"})
@@ -147,7 +149,7 @@ def emit_data(repo, pub_db, dist):
         ents[e["eid"]] = e
         members = sorted(by_eid[e["eid"]], key=lambda c: (c["self_hosted"], c["vorder"], c["rid"]))  # hosted first
         write(os.path.join(dist, "api", "v1", "entity", e["eid"] + ".json"),
-              jdump({**e, "records": [full[c["rid"]] for c in members]}))
+              jdump({**e, "records": [{**full[c["rid"]], "card": {k: c[k] for k in CARD_COLS}} for c in members]}))  # no free_claim
     # name index for MiniSearch: one row per entity. Its verdict (5) is entity.best_vorder, the best of its hosted records
     # (build.py checks it), so a self-hosted record never stars a provider; a provider whose every record is self-hosted
     # has a ninth item, 1, and app.js lists it after every other provider, with the self-hosted label

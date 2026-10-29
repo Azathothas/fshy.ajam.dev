@@ -50,6 +50,10 @@ EXAMPLES = [
     ("Full text, one column filter plus a prefix term (CJK: query bigrams, e.g. MATCH '百度')",
      "SELECT r.rid, r.verdict FROM text_fts JOIN record r ON r.rno = text_fts.docid "
      "WHERE text_fts MATCH 'offer:gpu* hours' ORDER BY r.self_hosted, r.vorder LIMIT 10"),
+    ("Full text with filters: match in a subquery on record, because a JOIN with filters is refused",
+     "SELECT r.rid, r.verdict FROM record r WHERE r.rno IN (SELECT docid FROM text_fts WHERE text_fts MATCH "
+     "'offer:gpu*') AND r.topic IN ('compute','inference') AND r.grp IN ('usable','trial') "
+     "AND r.duplicate_of IS NULL ORDER BY r.self_hosted, r.vorder LIMIT 10"),
     ("Every record of a vendor, by alias",
      "SELECT rid, topic, verdict FROM record WHERE eid IN "
      "(SELECT eid FROM alias WHERE alias LIKE 'hetzner%') ORDER BY self_hosted, vorder, rid LIMIT 20"),
@@ -62,6 +66,9 @@ EXAMPLES = [
     ("The binding request-rate limits, and who cites a host",
      "SELECT l.rid, l.value FROM limit_row l WHERE l.is_binding=1 AND l.kind='request-rate' "
      "AND l.rid IN (SELECT rid FROM evidence WHERE url LIKE '%github.com%') LIMIT 10"),
+    ("Compute records that have a free allowance (claim has-free-tier = 1), best verdict first",
+     "SELECT r.rid, r.verdict FROM record r JOIN claim c ON c.rid = r.rid AND c.kind = 'has-free-tier' AND c.num = 1 "
+     "WHERE r.topic = 'compute' AND r.grp IN ('usable','trial') AND r.duplicate_of IS NULL ORDER BY r.vorder LIMIT 10"),
 ]
 
 
@@ -97,8 +104,9 @@ def _text(db):
          counts.get("records", "?"), counts.get("entities", "?"), counts.get("evidence", "?"),
          counts.get("claims", "?")))
     w("The record files of data/records/ in the public repository are the source; this store is built from")
-    w("them and never edited. Operations: help, search, filter, get, entity, need, sql, worklist (the same names")
-    w("in the HTTP API and the MCP tools).")
+    w("them and never edited. The MCP tools are help, search, filter, get, entity, need, sql and worklist.")
+    w("The HTTP API has the same operations: /api/v1/search, records (filter), record/TOPIC/SLUG (get),")
+    w("entity-search and entity/ID.json (entity), need/ID, sql and worklist/KIND. The route list is /api/v1/.")
     w("")
     w("IDS")
     w("- rid = topic/slug, stable (storage/hetzner-storage-box). Quote rids; never show or store rno.")
@@ -112,7 +120,15 @@ def _text(db):
     w("  verified_basis='inherited' means checked_on is only an upper bound.")
     w("- usd_month, usd_per_tb_month: headline USD prices, NULL when nothing parsed. Say how many rows a")
     w("  filter or sort on them drops for NULL. interfaces: comma list, NULL = unknown.")
-    w("- duplicate_of IS NOT NULL marks a duplicate; lists exclude them unless asked.")
+    w("- duplicate_of IS NOT NULL marks a duplicate; the API and the MCP tools exclude them unless asked, and")
+    w("  the wiki pages list them. So a page can count a few more records than the API.")
+    w("- A need list that asks for no card or no phone ends with the rows whose card or phone requirement is not stated (NULL, or")
+    w("  an identity that no source states), under the heading 'Card or phone requirement not stated'. They are never counted as no.")
+    w("- A free allowance: the claim of the kind has-free-tier. claim.num 1: the record has a free allowance; 0: it has")
+    w("  none; no row: unknown. free_unit is the unit of the headline offer, which can be a price, so it does not say")
+    w("  this. Join: LEFT JOIN claim c ON c.rid = record.rid AND c.kind = 'has-free-tier' (example 8).")
+    w("- TSV output ends with lines that start with '#': the row count, the limit, a cut. Read it with")
+    w("  comment='#' in pandas, or drop those lines.")
     w("- vorder 0..7 orders verdicts best first; grp groups them.")
     if "self_hosted" in {r[1] for r in db.execute("SELECT * FROM pragma_table_info('record')")}:
         w("- self_hosted=1: the user installs and runs it, the last resort. Self-hosted options are listed last,")
@@ -136,10 +152,16 @@ def _text(db):
         w("  name, offer, limits, egress, identity, access, notes, evidence, extras. Terms are AND-ed;")
         w("  'word*' is a prefix, 'col:word' limits to a column. CJK text is indexed as runs plus")
         w("  overlapping bigrams: query a CJK run as its bigrams separated by spaces.")
+        w("  A word matches anywhere in a column: free also matches 'no free tier'. Use a phrase ('\"always free\"'),")
+        w("  a column (offer:free) or a filter on verdict, free_unit or grp. With filters, put the match in a")
+        w("  subquery on record (example 3): a JOIN of text_fts with filters on record is refused.")
     if "record" in tables:
         n_doc = db.execute("SELECT count(*) FROM record WHERE doc IS NOT NULL").fetchone()[0]
         if not n_doc:
             w("  In this copy record.doc and evidence.proved are NULL: use get for them.")
+        else:
+            w("  The sql route and the sql tool read a smaller copy of this store: it has no leaf table, and record.doc")
+            w("  and evidence.proved are NULL there. Use get, or the download /data/fshy-public.sqlite.gz, for them.")
     w("All columns: SELECT name FROM pragma_table_info('record'). Meanings: SELECT * FROM vocab.")
     w("")
     w("VOCABULARIES")

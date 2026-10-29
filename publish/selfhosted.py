@@ -54,8 +54,9 @@ ROW_RID = re.compile(r'<a class="n" href="/p/[^/"]+/#?([^/"#]+?)/?"')
 # a record section of a provider page or a record page; its anchor is <topic>--<slug>
 SECTION = re.compile(r'<section class="rec[^"]*" id="([^"]+)"')
 VERDICT_PILL = re.compile(r'class="v v-([a-z-]+)"')
-# a line of a Markdown index (a link to the provider page, then the record id) and the head line of a record block
-MD_ENTRY = re.compile(r"^(?:- |\d+\. ).*?/p/[^)\s]+\.md\) `([^`]+)`: (.*)$")
+# a line of a Markdown index (a link to the provider page, then the record id, bare or as a link to its JSON) and the
+# head line of a record block
+MD_ENTRY = re.compile(r"^(?:- |\d+\. ).*?/p/[^)\s]+\.md\) (?:\[`([^`]+)`\]\([^)\s]*\)|`([^`]+)`): (.*)$")
 MD_HEAD = re.compile(r"^- `([^`]+)` \| (.*)$")
 
 _STATE = {"rids": None, "problems": []}
@@ -144,7 +145,7 @@ def md_problems(text, rids):
     for line in text.split("\n"):
         m = MD_ENTRY.match(line)
         if m:
-            entries.append((m.group(1), (line, m.group(2))))
+            entries.append((m.group(1) or m.group(2), (line, m.group(3))))
             continue
         m = MD_HEAD.match(line)
         if m:
