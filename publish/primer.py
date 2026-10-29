@@ -27,7 +27,7 @@ PURPOSE = {
 }
 ORDER = ["record", "entity", "alias", "evidence", "limit_row", "claim", "unknown", "leaf", "edge", "drift",
          "history", "history_link", "ledger"]
-MINOR = ["fx", "capture", "vocab", "meta"]
+MINOR = ["fx", "capture", "vocab", "meta", "keystat"]
 # columns worth naming in the primer; the rest are counted and reachable with pragma_table_info
 KEY_COLS = {
     "record": ["rid", "topic", "slug", "eid", "provider", "url", "category", "verdict", "vorder", "grp",

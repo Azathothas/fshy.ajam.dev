@@ -312,6 +312,28 @@ def primer_checks(db_path):
     check("the primer names only what a reader of the public data can open", not private, private)
 
 
+def keystat_checks(db_path):
+    """keystat holds the largest key of every column of every table, for the statement budget of the Worker."""
+    db = sqlite3.connect(db_path)
+    try:
+        tables = [t for (t,) in db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE "
+                                           "'text_fts%' AND name <> 'keystat'")]
+        want = {(t, c) for t in tables for (c,) in db.execute("SELECT name FROM pragma_table_info(?)", (t,))}
+        have = {(t, c): (n, k) for t, c, n, k in db.execute("SELECT tbl, col, distinct_n, max_key FROM keystat")}
+        check("keystat has a row for each column of each table (%d columns)" % len(want), set(have) == want,
+              sorted(want ^ set(have))[:5])
+        wrong = []
+        for t, c in sorted(want)[::7]:
+            q = 'SELECT count(*), coalesce(max(k), 0) FROM (SELECT count(*) AS k FROM "%s" GROUP BY "%s")' % (t, c)
+            if tuple(db.execute(q).fetchone()) != have.get((t, c)):
+                wrong.append((t, c))
+        check("keystat matches a recount of its columns (every seventh)", not wrong, wrong)
+        schema = open(os.path.join(HERE, "schema.sql"), encoding="utf-8").read()
+        check("keystat is derived by the build, not a table of the data contract", "keystat" not in schema)
+    finally:
+        db.close()
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--db", default=os.path.join(ROOT, ".tmp", "fshy", "public.db"))
@@ -329,6 +351,7 @@ def main(argv=None):
     list_checks(db)
     if db:
         primer_checks(db)
+        keystat_checks(db)
     else:
         print("skip  the store parts: no %s; build it with python publish/build.py --check" % a.db)
     print("%s: %d failed" % ("PASS" if not FAILS else "FAIL", len(FAILS)))
