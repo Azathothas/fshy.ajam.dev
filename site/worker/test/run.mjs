@@ -38,9 +38,15 @@ if (!existsSync(DB)) {
 const dbBytes = readFileSync(DB);
 const half = Math.ceil(dbBytes.length / 2);
 const CHUNKS = { 'data/w/test.000': dbBytes.subarray(0, half), 'data/w/test.001': dbBytes.subarray(half) };
+// the built manifest, when there is one, gives the files that the Worker reads besides its DB: the name index, the
+// parts of the public store, the topic order
+const BUILT = existsSync(join(DIST, 'data', 'manifest.json')) ? JSON.parse(readFileSync(join(DIST, 'data', 'manifest.json'), 'utf8')) : {};
 const MANIFEST = {
   schema_version: '1', commit: 'testcommit0123456789', as_of: '2026-10-27',
   worker_db: { chunks: Object.keys(CHUNKS), bytes: dbBytes.length, sha256: createHash('sha256').update(dbBytes).digest('hex') },
+  ...(BUILT.name_index ? { name_index: BUILT.name_index } : {}),
+  ...(BUILT.public_db ? { public_db: BUILT.public_db } : {}),
+  ...(BUILT.topics ? { topics: BUILT.topics } : {}),
 };
 
 function assetResponse(path) {
@@ -531,6 +537,202 @@ test('a rate limiter that throws fails open', async () => {
   assert.equal(q.res.status, 200, q.body);
   const m = await call('/mcp', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }) }, broken);
   assert.equal(m.res.status, 200, m.body);
+});
+
+// ------------------------------------------------------------------ the findings of the final review (P-*, U-*)
+
+test('MCP: a batch holds at most 5 messages, and each tool call costs one unit of the limit (P-01)', async () => {
+  const call1 = (id) => ({ jsonrpc: '2.0', id, method: 'tools/call', params: { name: 'need', arguments: {} } });
+  const post = (body, e = env) => call('/mcp', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }, e);
+  const six = await post([1, 2, 3, 4, 5, 6].map(call1));
+  assert.equal(six.res.status, 400, six.body);
+  assert.match(six.json.error.message, /at most 5 messages/);
+  let n = 0;
+  const counting = { limit: async () => { n++; return { success: true }; } };
+  const five = await post([1, 2, 3, 4, 5].map(call1), { ...env, RL_API: counting });
+  assert.equal(five.res.status, 200, five.body);
+  assert.equal(five.json.length, 5);
+  assert.equal(n, 5, 'five tool calls are five units');
+  n = 0;
+  const two = await post([{ jsonrpc: '2.0', id: 1, method: 'ping' }, { jsonrpc: '2.0', id: 2, method: 'tools/list' }], { ...env, RL_API: counting });
+  assert.equal(two.res.status, 200);
+  assert.equal(n, 1, 'a request with no tool call is one unit');
+  let left = 3;
+  const three = { limit: async () => ({ success: left-- > 0 }) };
+  const over = await post([1, 2, 3, 4, 5].map(call1), { ...env, RL_API: three });
+  assert.equal(over.res.status, 429, 'a batch over the units left is refused whole');
+  const { MAX_BATCH } = await import('../mcp.js');
+  assert.equal(MAX_BATCH, 5);
+});
+
+test('the rate limit runs before the store loads (P-04), and /r/ is limited', async () => {
+  const { getStore, discard } = await import('../db.js');
+  const { store } = await getStore(env, globalThis.__fshyWasm);
+  discard(store);
+  const before = assetLog.length;
+  for (const p of ['/api/v1/search?q=x', '/api/v1/records', '/r/storage/hetzner-storage-box', '/api/v1/need/free-gpu']) {
+    const r = await call(p, {}, { ...env, RL_API: denyAll });
+    assert.equal(r.res.status, 429, p + ': ' + r.body);
+  }
+  const m = await call('/mcp', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }) }, { ...env, RL_API: denyAll });
+  assert.equal(m.res.status, 429);
+  const s = await call('/api/v1/sql?q=SELECT%201', {}, { ...env, RL_SQL: denyAll });
+  assert.equal(s.res.status, 429);
+  assert.ok(!assetLog.slice(before).includes('data/manifest.json'), 'a refused request loads no store');
+  const ok = await call('/api/v1/records?limit=1');
+  assert.equal(ok.res.status, 200, ok.body);
+  assert.ok(assetLog.slice(before).includes('data/manifest.json'), 'the next request loads the store again');
+});
+
+test('malformed percent-encoding in a path is a 400, not a 500 (P-12)', async () => {
+  for (const p of ['/api/v1/need/%E0%A4%A', '/api/v1/worklist/%E0%A4%A', '/api/v1/record/%E0%A4%A/x', '/r/%E0%A4%A/x', '/r/storage/%E0%A4%A']) {
+    const r = await call(p);
+    assert.equal(r.res.status, 400, p + ': ' + r.body);
+    assert.match(r.json.error, /percent-encoding/);
+  }
+});
+
+test('a repeated query word costs one word, and a long query has no fuzzy pass (P-05)', () => {
+  const idx = rank.buildNameIndex([{ eid: 'hetzner', alias: 'Hetzner Storage Box' }, { eid: 'box', alias: 'Box' }]);
+  const by = (q) => rank.scoreNames(idx, q).map((h) => [h.eid, h.score]).sort();
+  assert.deepEqual(by(Array(40).fill('hetzer').join(' ')), by('hetzer'));
+  assert.deepEqual(by('hetzer storag'), [['hetzner', 30]]);
+  const nine = 'hetzer storag boxx one two three four five six';
+  assert.equal(new Set(text.tokens(text.normalize(nine))).size, rank.MAX_FUZZY_TOKENS + 1);
+  assert.deepEqual(by(nine), [], 'over MAX_FUZZY_TOKENS distinct words, the fuzzy tier does not run');
+});
+
+test('the name index file of the build equals the index the Worker builds from the store (P-16)', async (t) => {
+  if (!MANIFEST.name_index) { t.skip('no name index in ' + DIST); return; }
+  const { getStore, loadNames } = await import('../db.js');
+  const { store } = await getStore(env, globalThis.__fshyWasm);
+  const fromFile = JSON.parse(readFileSync(join(DIST, ...MANIFEST.name_index.split('/')), 'utf8'));
+  const res = store.db.exec('SELECT eid, alias FROM alias ORDER BY eid, alias, kind');
+  const built = rank.buildNameIndex(res[0].values.map(([eid, alias]) => ({ eid, alias })));
+  assert.deepEqual(fromFile.aliases, built.aliases, 'the normalisation of site_gen.py is the one of text.js');
+  assert.deepEqual(fromFile.eids, built.eids);
+  store.cache.names = null;
+  store.cache.namesPromise = null;
+  const t0 = performance.now();
+  await loadNames(store, env);
+  timings.name_index_from_file_ms = performance.now() - t0;
+  assert.ok(assetLog.includes(MANIFEST.name_index), 'the Worker reads the file');
+  assert.deepEqual(store.cache.names.aliases, built.aliases);
+  const s = await call('/api/v1/search?q=hetzner&limit=1');
+  assert.match(s.json.rows[0][0], /hetzner/);
+});
+
+test('a need ranks a tie by evidence, and the API, the page and the Markdown agree (U-13)', async (t) => {
+  const n = await call('/api/v1/need/free-gpu?limit=200');
+  assert.equal(n.res.status, 200, n.body);
+  const ci = n.json.columns.indexOf('confidence');
+  const RUNG = { measured: 0, documented: 1, reported: 2, inferred: 3, unverified: 4 };
+  const vi = n.json.columns.indexOf('verdict');
+  const VO = ['qualifies', 'qualifies-with-caveat', 'trial-only', 'paid-only', 'fails-identity', 'fails-egress', 'fails-quota', 'dead'];
+  const key = (r) => [VO.indexOf(r[vi]), RUNG[r[ci]] ?? 5];
+  for (let i = 1; i < n.json.rows.length; i++) {
+    const [a, b] = [key(n.json.rows[i - 1]), key(n.json.rows[i])];
+    assert.ok(a[0] < b[0] || (a[0] === b[0] && a[1] <= b[1]), 'row ' + i + ' is out of order: ' + n.json.rows[i][0]);
+  }
+  const md = join(DIST, 'need', 'free-gpu.md');
+  if (!existsSync(md)) { t.skip('no ' + md); return; }
+  const page = [...readFileSync(md, 'utf8').matchAll(/^\d+\. .*?`([^`]+)`/gm)].map((m) => m[1]);
+  assert.deepEqual(n.json.rows.map((r) => r[0]).slice(0, page.length), page);
+});
+
+test('the API answers its root, an unknown route, a .tsv suffix and the static files (U-21)', async () => {
+  for (const p of ['/api/v1/', '/api/v1']) {
+    const r = await call(p);
+    assert.equal(r.res.status, 200, p + ': ' + r.body);
+    assert.ok(r.json.routes.length >= 8 && r.json.help === '/api/v1/help.txt');
+  }
+  const u = await call('/api/v1/foo');
+  assert.equal(u.res.status, 404);
+  assert.match(u.json.error, /help\.txt/);
+  const t = await call('/api/v1/records.tsv?limit=2');
+  assert.equal(t.res.status, 200, t.body);
+  assert.match(t.res.headers.get('content-type'), /tab-separated/);
+  if (HAVE_DIST) {
+    const nm = await call('/api/v1/names.json');
+    assert.equal(nm.res.status, 200, 'a static file of /api/v1/ still answers when the Worker sees it');
+    assert.ok(Array.isArray(nm.json));
+  }
+});
+
+test('an unknown term in a filter gets a note or a 400, never a silent empty list (U-22)', async () => {
+  const t = await call('/api/v1/records?topic=stroage');
+  assert.equal(t.res.status, 200);
+  assert.ok(t.json.notes.some((n) => /unknown topic "stroage"; topic is one of storage/.test(n)), t.body);
+  for (const p of ['verdict=bogus', 'grp=bogus', 'confidence=bogus', 'binding=bogus', 'no_card=maybe']) {
+    const r = await call('/api/v1/records?' + p);
+    assert.equal(r.res.status, 400, p + ': ' + r.body);
+  }
+  assert.equal((await call('/api/v1/records?no_card=yes&limit=1')).res.status, 200);
+  assert.equal((await call('/api/v1/search?q=gpu&grp=bogus')).res.status, 400);
+  const s = await call('/api/v1/search?q=gpu&topic=nonexistent');
+  assert.ok(s.json.notes.some((n) => /unknown topic/.test(n)));
+  const m = await rpc('tools/call', { name: 'filter', arguments: { topic: 'zzz' } });
+  assert.match(m.json.result.content[0].text, /# unknown topic "zzz"/);
+});
+
+test('the MCP tools say when to use each, carry read-only annotations and the topic list (U-23)', async () => {
+  const tl = await rpc('tools/list');
+  for (const tool of tl.json.result.tools) {
+    assert.match(tool.description, /^Use /, tool.name);
+    assert.equal(tool.annotations.readOnlyHint, true, tool.name);
+    assert.equal(tool.annotations.destructiveHint, false, tool.name);
+    if (tool.inputSchema.properties.topic) assert.ok(tool.inputSchema.properties.topic.enum.includes('storage'), tool.name);
+  }
+  const init = await rpc('initialize', { protocolVersion: '2025-06-18' });
+  assert.match(init.json.result.instructions, /Topics: storage, compute/);
+  assert.match(init.json.result.instructions, /Verdicts, best first: qualifies/);
+  const unk = await rpc('tools/call', { name: 'nothing' });
+  assert.match(unk.json.error.message, /the tools are help, search, filter/);
+});
+
+test('the public store downloads from one URL that joins its parts (P-08)', async (t) => {
+  if (!MANIFEST.public_db || !MANIFEST.public_db.parts) { t.skip('no parts of the public store in ' + DIST); return; }
+  const pd = MANIFEST.public_db;
+  const res = await worker.fetch(new Request(ORIGIN + '/data/fshy-public.sqlite.gz'), env, { waitUntil() {} });
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get('content-type'), 'application/gzip');
+  assert.equal(res.headers.get('content-length'), String(pd.gzip_bytes));
+  const b = Buffer.from(await res.arrayBuffer());
+  assert.equal(b.length, pd.gzip_bytes);
+  assert.equal(createHash('sha256').update(b).digest('hex'), pd.gzip_sha256);
+  const { gunzipSync } = await import('node:zlib');
+  assert.equal(createHash('sha256').update(gunzipSync(b)).digest('hex'), pd.sha256, 'the joined file is the store');
+  const head = await worker.fetch(new Request(ORIGIN + '/data/fshy-public.sqlite.gz', { method: 'HEAD' }), env);
+  assert.equal(head.status, 200);
+  assert.equal(head.headers.get('content-length'), String(pd.gzip_bytes));
+  for (const p of pd.parts) assert.ok(statSync(join(DIST, ...p.split('/'))).size <= 25 * 1024 * 1024 * 0.7, p + ' is under 70 percent of the asset limit');
+  const limited = await call('/data/fshy-public.sqlite.gz', {}, { ...env, RL_API: denyAll });
+  assert.equal(limited.res.status, 429);
+});
+
+test('a provider with many records has a page for each record, and /r/ goes there', async () => {
+  const { getStore } = await import('../db.js');
+  const { store } = await getStore(env, globalThis.__fshyWasm);
+  const n = store.db.exec("SELECT count(*) FROM record WHERE eid = 'hetzner'")[0].values[0][0];
+  store.manifest.record_pages_over = n - 1;
+  store.cache.recordCounts = null;
+  try {
+    const r = await call('/r/storage/hetzner-storage-box');
+    assert.equal(r.res.status, 301);
+    assert.equal(r.res.headers.get('location'), ORIGIN + '/p/hetzner/storage--hetzner-storage-box/');
+  } finally {
+    delete store.manifest.record_pages_over;
+    store.cache.recordCounts = null;
+  }
+});
+
+test('the vendored MiniSearch is the npm package of package.json (P-18)', () => {
+  const pkg = JSON.parse(readFileSync(join(SITE, 'package.json'), 'utf8'));
+  const vendored = readFileSync(join(SITE, 'static', 'assets', 'minisearch.js'), 'utf8').split('\n');
+  const npm = readFileSync(join(SITE, 'node_modules', 'minisearch', 'dist', 'umd', 'index.js'), 'utf8').replace(/\n\/\/# sourceMappingURL=\S+\n?$/, '\n');
+  assert.match(vendored[0], new RegExp('^/\\* MiniSearch ' + pkg.dependencies.minisearch.replace(/\./g, '\\.') + ', MIT licence'),
+    'the header names the version of package.json');
+  assert.equal(vendored.slice(1).join('\n'), npm, 'site/static/assets/minisearch.js is dist/umd/index.js of that version: copy it after an update');
 });
 
 test('report', () => {

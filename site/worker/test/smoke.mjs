@@ -1,7 +1,7 @@
-// Smoke test of the Worker on workerd: starts `wrangler dev` on the built site, asks the API, the SQL route
-// and the MCP endpoint once each, and stops wrangler by the PID it started. The node tests (run.mjs) fake the
-// bindings; this test runs the real assets binding and the real rate limiting binding together, from an empty
-// local state directory, as on a fresh clone.
+// Smoke test of the Worker on workerd: starts `wrangler dev` on the built site, asks the API, the SQL route, the
+// MCP endpoint, the route patterns of wrangler.jsonc and the download of the public store, and stops wrangler by the
+// PID it started. The node tests (run.mjs) fake the bindings; this test runs the real assets binding and the real
+// rate limiting binding together, from an empty local state directory, as on a fresh clone.
 //
 // When `npx wrangler dev` starts from a console with an empty state, the local rate limiter can throw "internal
 // error". A process that node starts did not show it, so this test can pass where that bug is. run.mjs tests a
@@ -13,7 +13,8 @@
 // wrangler dev runs locally. Exit 0 when every answer is right, 1 when one is wrong, 2 when wrangler does not start.
 
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -129,6 +130,44 @@ const cj = await call.json().catch(() => null);
 check('POST /mcp tools/call search answers 200', call.status === 200 && cj && cj.result && cj.result.isError === false, `${call.status} ${JSON.stringify(cj)}`);
 const perm = await fetch(ORIGIN + '/r/storage/hetzner-storage-box', { redirect: 'manual' });
 check('GET /r/<topic>/<slug> redirects', perm.status === 301, perm.status);
+
+// run_worker_first in wrangler.jsonc: the Worker answers every path of /api/v1/ except the static files of the build
+const root = await fetch(ORIGIN + '/api/v1/');
+const rj = await root.json().catch(() => null);
+check('GET /api/v1/ lists the routes as JSON', root.status === 200 && rj && rj.routes && rj.routes.length > 0, `${root.status} ${JSON.stringify(rj)}`);
+const bare = await fetch(ORIGIN + '/api/v1');
+check('GET /api/v1 lists the routes as JSON', bare.status === 200 && /json/.test(bare.headers.get('content-type') || ''), bare.status);
+const unknown = await fetch(ORIGIN + '/api/v1/foo');
+const uj = await unknown.json().catch(() => null);
+check('GET /api/v1/foo is a JSON 404 that names the help', unknown.status === 404 && uj && /help\.txt/.test(uj.error), `${unknown.status} ${JSON.stringify(uj)}`);
+const tsv = await fetch(ORIGIN + '/api/v1/records.tsv?limit=2');
+check('GET /api/v1/records.tsv answers TSV', tsv.status === 200 && /tab-separated/.test(tsv.headers.get('content-type') || ''), tsv.status);
+for (const p of ['/api/v1/names.json', '/api/v1/entity/hetzner.json', '/api/v1/help.txt']) {
+  const s = await fetch(ORIGIN + p);
+  await s.arrayBuffer();
+  check('GET ' + p + ' is a static file, served without the Worker', s.status === 200 && !s.headers.get('server-timing'), `${s.status} ${s.headers.get('server-timing')}`);
+}
+const bad = await fetch(ORIGIN + '/api/v1/need/%E0%A4%A');
+check('GET /api/v1/need/%E0%A4%A is a 400, not a 500', bad.status === 400, bad.status);
+
+// the public store: one URL joins the parts that the manifest names
+const man = JSON.parse(readFileSync(join(SITE, 'dist', 'data', 'manifest.json'), 'utf8'));
+const dl = await fetch(ORIGIN + '/data/fshy-public.sqlite.gz');
+const db = Buffer.from(await dl.arrayBuffer());
+check('GET /data/fshy-public.sqlite.gz joins the parts into the file of the manifest',
+  dl.status === 200 && db.length === man.public_db.gzip_bytes && createHash('sha256').update(db).digest('hex') === man.public_db.gzip_sha256,
+  `${dl.status} ${db.length} of ${man.public_db.gzip_bytes}`);
+const dh = await fetch(ORIGIN + '/data/fshy-public.sqlite.gz', { method: 'HEAD' });
+check('HEAD /data/fshy-public.sqlite.gz gives the length', dh.status === 200 && dh.headers.get('content-length') === String(man.public_db.gzip_bytes),
+  `${dh.status} ${dh.headers.get('content-length')}`);
+const batch = await fetch(ORIGIN + '/mcp', {
+  method: 'POST',
+  headers: { 'content-type': 'application/json', accept: 'application/json, text/event-stream' },
+  body: JSON.stringify([1, 2, 3, 4, 5, 6].map((id) => ({ jsonrpc: '2.0', id, method: 'tools/call', params: { name: 'help', arguments: {} } }))),
+});
+check('POST /mcp refuses a batch of 6 messages with 400', batch.status === 400, batch.status);
+const icon = await fetch(ORIGIN + '/favicon.ico');
+check('GET /favicon.ico is an icon', icon.status === 200 && (await icon.arrayBuffer()).byteLength < 300, icon.status);
 
 if (/rate limiter \S+ failed/.test(log)) console.log('# note: the local rate limiter threw, and the Worker allowed the request');
 console.log(`${fails.length ? 'FAIL' : 'PASS'}: ${fails.length} failed`);
