@@ -342,12 +342,12 @@ NEED_SPLITS = {
         ("time", "Free allowance counted in time",
          "The record has a free allowance, and it is counted in hours, minutes or seconds."),
         ("other", "Free allowance in credits or another unit",
-         "The record has a free allowance, and it is counted in credits, in storage, or in a mix of units, and not in time."),
+         "The record has a free allowance that is not counted in time: credits, a grant, storage or a mix of units. The data does "
+         "not tell a credit from a grant."),
         ("trial", "One-time trial or credit",
          "The verdict is trial-only: a time-boxed or one-time trial, not a recurring allowance."),
         ("none", "No free allowance in the record",
-         "The record has no free allowance. Grants, programmes and paid offers are here, and the data has no field that "
-         "tells them apart."),
+         "The record has no free allowance. Its offer is paid, a spot price for example."),
         ("unknown", "The record does not say",
          "The data has no claim about a free allowance for these records.")]),
     "inference-no-card-no-phone": (inference_filing, [
