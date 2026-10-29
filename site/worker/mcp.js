@@ -1,10 +1,13 @@
 // Remote MCP endpoint: stateless Streamable HTTP, JSON responses only, JSON-RPC 2.0 by hand.
-// POST /mcp carries one message, or a batch of at most MAX_BATCH; GET and DELETE are 405 because there is no
-// server-initiated stream and no session. Tool results are text: TSV by default, capped near
-// 20,000 tokens with a footer that says what was cut.
+// POST /mcp carries one message, or a batch of at most MAX_BATCH messages, of which at most MAX_BATCH_SQL are sql
+// calls; GET and DELETE are 405 because there is no server-initiated stream and no session. Tool results are text:
+// TSV by default, capped near 20,000 tokens with a footer that says what was cut.
 //
-// Cost: each tools/call message counts one unit of the rate limit RL_API, so a batch costs what its calls cost. The
-// protocol revision 2025-06-18 removed batches; only the two oldest versions that this endpoint accepts use them.
+// Cost: each tools/call message counts one unit of the rate limit RL_API, so a batch costs what its calls cost. A
+// sql call can take 0.6 s of CPU where any other call takes 0.1 s or less, so the batch limit weighs it: with the
+// costliest sql call that site/README.md measures, MAX_BATCH_SQL of them and the other calls of a full batch stay
+// under cpu_ms of wrangler.jsonc. The protocol revision 2025-06-18 removed batches; only the two oldest versions
+// that this endpoint accepts use them.
 
 import { HttpError, loadNames } from './db.js';
 import { baseHeaders, jsonResponse, rateLimited } from './http.js';
@@ -12,6 +15,9 @@ import * as api from './api.js';
 
 export const PROTOCOL_VERSIONS = ['2025-11-25', '2025-06-18', '2025-03-26', '2024-11-05'];
 export const MAX_BATCH = 5;
+// the sql calls that one batch may hold: 2 x 672 ms (the costliest warm statement) + 3 x 75 ms (searches) = 1,569 ms,
+// under the cpu_ms of 2,500 with a margin of 1.6; 3 sql calls would leave 1.15
+export const MAX_BATCH_SQL = 2;
 const MAX_TOKENS = 20000;
 // the site's own host (wrangler.jsonc vars.FSHY_HOST), the local hosts of `wrangler dev`, and *.workers.dev previews
 const LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
@@ -265,6 +271,12 @@ export function units(body) {
   return Math.max(1, msgs.filter((m) => m && typeof m === 'object' && m.method === 'tools/call').length);
 }
 
+/** The tools/call messages of a body that call the tool sql. */
+export function sqlCalls(body) {
+  const msgs = Array.isArray(body) ? body : [body];
+  return msgs.filter((m) => m && typeof m === 'object' && m.method === 'tools/call' && m.params && m.params.name === 'sql').length;
+}
+
 /** POST /mcp. open() loads the store; it runs after the checks and the rate limit, so a refusal costs no load. */
 export async function handleMcp(request, env, url, open) {
   const h = (store) => baseHeaders(store, { 'cache-control': 'no-store' });
@@ -288,6 +300,9 @@ export async function handleMcp(request, env, url, open) {
   }
   if (Array.isArray(body) && body.length > MAX_BATCH) {
     return jsonResponse(rpcError(null, -32600, `a batch holds at most ${MAX_BATCH} messages; send the others in more requests`), 400, h(null));
+  }
+  if (Array.isArray(body) && sqlCalls(body) > MAX_BATCH_SQL) {
+    return jsonResponse(rpcError(null, -32600, `a batch holds at most ${MAX_BATCH_SQL} sql calls; send the others in more requests`), 400, h(null));
   }
   if (await rateLimited(env, 'RL_API', request, body === undefined ? 1 : units(body))) {
     const hh = h(null);

@@ -160,12 +160,38 @@ check('GET /data/fshy-public.sqlite.gz joins the parts into the file of the mani
 const dh = await fetch(ORIGIN + '/data/fshy-public.sqlite.gz', { method: 'HEAD' });
 check('HEAD /data/fshy-public.sqlite.gz gives the length', dh.status === 200 && dh.headers.get('content-length') === String(man.public_db.gzip_bytes),
   `${dh.status} ${dh.headers.get('content-length')}`);
+// a matching If-None-Match is 304 with no body; one Range is 206 with that range of the joined file, also across the
+// border of two parts; a range past the end is 416
+const FILE = ORIGIN + '/data/fshy-public.sqlite.gz';
+const total = man.public_db.gzip_bytes;
+const part = man.public_db.part_bytes;
+const nm = await fetch(FILE, { headers: { 'if-none-match': '"' + man.public_db.gzip_sha256 + '"' } });
+check('GET /data/fshy-public.sqlite.gz with a matching If-None-Match is 304 with no body',
+  nm.status === 304 && (await nm.arrayBuffer()).byteLength === 0, nm.status);
+for (const [header, a, b] of [['bytes=0-99', 0, 99], [`bytes=${part - 10}-${part + 9}`, part - 10, part + 9], ['bytes=-50', total - 50, total - 1]]) {
+  const r = await fetch(FILE, { headers: { range: header } });
+  const bytes = Buffer.from(await r.arrayBuffer());
+  check('GET /data/fshy-public.sqlite.gz with Range ' + header + ' is 206 and the bytes of the file',
+    r.status === 206 && r.headers.get('content-range') === `bytes ${a}-${b}/${total}` && bytes.equals(db.subarray(a, b + 1)),
+    `${r.status} ${r.headers.get('content-range')} ${bytes.length}`);
+}
+const past = await fetch(FILE, { headers: { range: `bytes=${total}-` } });
+check('GET /data/fshy-public.sqlite.gz with a Range past the end is 416', past.status === 416 && past.headers.get('content-range') === `bytes */${total}`, past.status);
 const batch = await fetch(ORIGIN + '/mcp', {
   method: 'POST',
   headers: { 'content-type': 'application/json', accept: 'application/json, text/event-stream' },
   body: JSON.stringify([1, 2, 3, 4, 5, 6].map((id) => ({ jsonrpc: '2.0', id, method: 'tools/call', params: { name: 'help', arguments: {} } }))),
 });
 check('POST /mcp refuses a batch of 6 messages with 400', batch.status === 400, batch.status);
+const sqlBatch = await fetch(ORIGIN + '/mcp', {
+  method: 'POST',
+  headers: { 'content-type': 'application/json', accept: 'application/json, text/event-stream' },
+  body: JSON.stringify([1, 2, 3].map((id) => ({ jsonrpc: '2.0', id, method: 'tools/call', params: { name: 'sql', arguments: { query: 'SELECT 1' } } }))),
+});
+const sqlJson = await sqlBatch.json().catch(() => null);
+check('POST /mcp refuses a batch of 3 sql calls with 400 and a JSON-RPC error',
+  sqlBatch.status === 400 && sqlJson && sqlJson.error && sqlJson.error.code === -32600 && /at most 2 sql calls/.test(sqlJson.error.message),
+  `${sqlBatch.status} ${JSON.stringify(sqlJson)}`);
 const icon = await fetch(ORIGIN + '/favicon.ico');
 check('GET /favicon.ico is an icon', icon.status === 200 && (await icon.arrayBuffer()).byteLength < 300, icon.status);
 

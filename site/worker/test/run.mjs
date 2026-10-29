@@ -402,12 +402,12 @@ test('parity fixture: the text, ranking and guard rules give the outputs in pari
 });
 
 test('sql: the statement budget refuses a costly plan, whatever its shape (issue #5)', async () => {
-  // the shapes that the merge review of round 3 found: many cheap chains, a skewed = key, a value that doubles
+  // the shapes of a costly statement: many cheap chains, a skewed = key, a value that doubles
   const like = "(SELECT count(*) FROM evidence e, history h WHERE e.url LIKE '%' || h.title || '%')";
   const verdict = '(SELECT count(*) FROM record a, record b WHERE a.verdict = b.verdict)';
   const date = 'SELECT count(*) FROM evidence a JOIN evidence b ON a.date = b.date';
   const hexed = (k) => 'SELECT length(' + 'hex('.repeat(k) + 'group_concat(summary)' + ')'.repeat(k) + ') FROM record';
-  // each line: [statement, the start of the refusal]; the eleven after the merge shapes are the bypasses of review round 3
+  // each line: [statement, the start of the refusal]; the eleven after the merge shapes are more shapes to refuse
   const refuse = [
     ['SELECT ' + Array(40).fill(like).join(' + '), 'the plan reads'],
     ['SELECT ' + Array(60).fill(verdict).join(' + '), 'the plan reads'],
@@ -539,7 +539,7 @@ test('a rate limiter that throws fails open', async () => {
   assert.equal(m.res.status, 200, m.body);
 });
 
-// ------------------------------------------------------------------ the findings of the final review (P-*, U-*)
+// ------------------------------------------------------------------ limits, pages and the API (P-nn and U-nn tag the item that a test covers)
 
 test('MCP: a batch holds at most 5 messages, and each tool call costs one unit of the limit (P-01)', async () => {
   const call1 = (id) => ({ jsonrpc: '2.0', id, method: 'tools/call', params: { name: 'need', arguments: {} } });
@@ -563,6 +563,49 @@ test('MCP: a batch holds at most 5 messages, and each tool call costs one unit o
   assert.equal(over.res.status, 429, 'a batch over the units left is refused whole');
   const { MAX_BATCH } = await import('../mcp.js');
   assert.equal(MAX_BATCH, 5);
+});
+
+test('MCP: a batch holds at most 2 sql calls, so no accepted batch passes the CPU limit', async () => {
+  const { MAX_BATCH, MAX_BATCH_SQL } = await import('../mcp.js');
+  const sql = (id) => ({ jsonrpc: '2.0', id, method: 'tools/call', params: { name: 'sql', arguments: { query: 'SELECT 1' } } });
+  const need = (id) => ({ jsonrpc: '2.0', id, method: 'tools/call', params: { name: 'need', arguments: {} } });
+  const post = (body, e = env) => call('/mcp', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }, e);
+  let n = 0;
+  const counting = { limit: async () => { n++; return { success: true }; } };
+  const counted = { ...env, RL_API: counting, RL_SQL: counting };
+
+  // the bound, with the costs that site/README.md measures (CPU ms of a warm request): the costliest sql statement,
+  // and a search of a batch of five. A full batch of the most sql calls that the limit accepts, with searches for
+  // the other calls, keeps a margin of 1.5 under cpu_ms of wrangler.jsonc.
+  const SQL_MS = 672;
+  const SEARCH_MS = 75;
+  const cpuMs = Number(/"cpu_ms":\s*(\d+)/.exec(readFileSync(join(SITE, 'wrangler.jsonc'), 'utf8'))[1]);
+  const worst = MAX_BATCH_SQL * SQL_MS + (MAX_BATCH - MAX_BATCH_SQL) * SEARCH_MS;
+  assert.ok(worst * 1.5 <= cpuMs, `a batch of ${MAX_BATCH_SQL} sql and ${MAX_BATCH - MAX_BATCH_SQL} other calls is ${worst} ms; cpu_ms is ${cpuMs}`);
+  assert.equal(MAX_BATCH_SQL, 2);
+
+  // over the bound: a clear JSON-RPC error and a 400, before the rate limit and the load of the store
+  for (const body of [[1, 2, 3].map(sql), [sql(1), need(2), sql(3), need(4), sql(5)], [1, 2, 3, 4, 5].map(sql)]) {
+    n = 0;
+    const r = await post(body, counted);
+    assert.equal(r.res.status, 400, r.body);
+    assert.equal(r.json.error.code, -32600);
+    assert.equal(r.json.id, null);
+    assert.match(r.json.error.message, /a batch holds at most 2 sql calls; send the others in more requests/);
+    assert.equal(n, 0, 'a refused batch costs no unit of any limit');
+  }
+  // at the bound: answered, with the other calls of a full batch
+  n = 0;
+  const ok = await post([sql(1), need(2), sql(3), need(4), need(5)], counted);
+  assert.equal(ok.res.status, 200, ok.body);
+  assert.equal(ok.json.length, 5);
+  assert.ok(ok.json.every((x) => x.result && x.result.isError === false), ok.body);
+  assert.equal(n, 5 + 2, 'five calls on RL_API and two on RL_SQL');
+  // only a call of the tool sql weighs more: a batch of five other calls, a sql call alone, and a notification are fine
+  assert.equal((await post([1, 2, 3, 4, 5].map(need))).res.status, 200);
+  assert.equal((await post(sql(1))).res.status, 200);
+  const named = { jsonrpc: '2.0', id: 9, method: 'tools/call', params: { name: 'SQL', arguments: {} } };
+  assert.equal((await post([named, named, named])).res.status, 200, 'a call of an unknown tool is cheap and is not a sql call');
 });
 
 test('the rate limit runs before the store loads (P-04), and /r/ is limited', async () => {
@@ -708,6 +751,101 @@ test('the public store downloads from one URL that joins its parts (P-08)', asyn
   for (const p of pd.parts) assert.ok(statSync(join(DIST, ...p.split('/'))).size <= 25 * 1024 * 1024 * 0.7, p + ' is under 70 percent of the asset limit');
   const limited = await call('/data/fshy-public.sqlite.gz', {}, { ...env, RL_API: denyAll });
   assert.equal(limited.res.status, 429);
+});
+
+test('the download answers If-None-Match with 304 and one Range with 206, and sends the whole file otherwise', async (t) => {
+  if (!MANIFEST.public_db || !MANIFEST.public_db.parts) { t.skip('no parts of the public store in ' + DIST); return; }
+  const pd = MANIFEST.public_db;
+  assert.ok(pd.part_bytes > 0, 'the build writes the size of a part into the manifest');
+  const whole = Buffer.concat(pd.parts.map((p) => readFileSync(join(DIST, ...p.split('/')))));
+  assert.equal(whole.length, pd.gzip_bytes);
+  assert.ok(pd.parts.length > 1, 'the range tests cross a part');
+  const URL_ = ORIGIN + '/data/fshy-public.sqlite.gz';
+  const etag = '"' + pd.gzip_sha256 + '"';
+  const get = (headers, method = 'GET') => worker.fetch(new Request(URL_, { method, headers }), env, { waitUntil() {} });
+
+  // If-None-Match: a match is 304 with no body and no length of the file
+  for (const inm of [etag, 'W/' + etag, '"other", ' + etag, '*']) {
+    const r = await get({ 'if-none-match': inm });
+    assert.equal(r.status, 304, inm);
+    assert.equal((await r.arrayBuffer()).byteLength, 0);
+    assert.equal(r.headers.get('etag'), etag);
+    assert.equal(r.headers.get('content-length'), null, 'a 304 names no length of the body');
+    assert.equal(r.headers.get('cache-control'), 'public, max-age=300');
+    assert.equal(r.headers.get('access-control-allow-origin'), '*');
+    assert.equal(r.headers.get('x-fshy-commit'), MANIFEST.commit);
+  }
+  const head304 = await get({ 'if-none-match': etag }, 'HEAD');
+  assert.equal(head304.status, 304);
+  const stale = await get({ 'if-none-match': '"0000"' });
+  assert.equal(stale.status, 200, 'a tag that does not match gets the file');
+  assert.equal(stale.headers.get('accept-ranges'), 'bytes');
+  await stale.body.cancel();
+  // the 304 costs a limit unit, and a refused request is 429 before it
+  assert.equal((await worker.fetch(new Request(URL_, { headers: { 'if-none-match': etag } }), { ...env, RL_API: denyAll })).status, 429);
+
+  // Range: [header, start, end] of the expected bytes
+  const P = pd.part_bytes;
+  const T = pd.gzip_bytes;
+  const cases = [
+    ['bytes=0-99', 0, 99], ['bytes=5-5', 5, 5], ['bytes=100-', 100, T - 1], ['bytes=-50', T - 50, T - 1], ['bytes=-' + (T + 10), 0, T - 1],
+    [`bytes=${P - 10}-${P + 9}`, P - 10, P + 9], [`bytes=${P}-${P + 4}`, P, P + 4], [`bytes=${P - 1}-${P - 1}`, P - 1, P - 1],
+    [`bytes=0-${T + 1000}`, 0, T - 1], [`bytes=${T - 1}-`, T - 1, T - 1],
+  ];
+  for (const [header, a, b] of cases) {
+    const r = await get({ range: header });
+    assert.equal(r.status, 206, header);
+    assert.equal(r.headers.get('content-range'), `bytes ${a}-${b}/${T}`, header);
+    assert.equal(r.headers.get('content-length'), String(b - a + 1), header);
+    assert.equal(r.headers.get('etag'), etag);
+    const body = Buffer.from(await r.arrayBuffer());
+    assert.ok(body.equals(whole.subarray(a, b + 1)), header + ': the bytes are the bytes of the file');
+  }
+  // past the end, and a suffix of nothing: 416 with the length
+  for (const header of [`bytes=${T}-`, `bytes=${T + 5}-${T + 9}`, 'bytes=-0']) {
+    const r = await get({ range: header });
+    assert.equal(r.status, 416, header);
+    assert.equal(r.headers.get('content-range'), `bytes */${T}`);
+    assert.equal((await r.arrayBuffer()).byteLength, 0);
+  }
+  // a list of ranges, another unit, and a range that is not valid are ignored: 200 and the whole length
+  for (const header of ['bytes=0-1,5-9', 'items=0-1', 'bytes=9-1', 'bytes=-', 'bytes=a-b', 'nonsense']) {
+    const r = await get({ range: header });
+    assert.equal(r.status, 200, header);
+    assert.equal(r.headers.get('content-length'), String(T));
+    await r.body.cancel();
+  }
+  // If-Range: the tag of this version keeps the range, any other value gives the whole file
+  const keep = await get({ range: 'bytes=0-9', 'if-range': etag });
+  assert.equal(keep.status, 206);
+  await keep.arrayBuffer();
+  const drop = await get({ range: 'bytes=0-9', 'if-range': '"0000"' });
+  assert.equal(drop.status, 200);
+  await drop.body.cancel();
+  // HEAD names the length and the ranges that it accepts, whatever Range says
+  const head = await get({ range: 'bytes=0-9' }, 'HEAD');
+  assert.equal(head.status, 200);
+  assert.equal(head.headers.get('content-length'), String(T));
+  assert.equal(head.headers.get('accept-ranges'), 'bytes');
+  // a manifest without part_bytes, as an older build wrote it, still sends the whole file
+  const was = pd.part_bytes;
+  delete pd.part_bytes;
+  try {
+    const r = await get({ range: 'bytes=0-9' });
+    assert.equal(r.status, 200);
+    assert.equal(r.headers.get('accept-ranges'), null);
+    await r.body.cancel();
+  } finally {
+    pd.part_bytes = was;
+  }
+  const http = await import('../http.js');
+  assert.deepEqual(http.parseRange('bytes=2-4', 10), { start: 2, end: 4 });
+  assert.deepEqual(http.parseRange('bytes=8-', 10), { start: 8, end: 9 });
+  assert.deepEqual(http.parseRange('bytes=-3', 10), { start: 7, end: 9 });
+  assert.equal(http.parseRange('bytes=10-', 10), 'unsatisfiable');
+  assert.equal(http.parseRange('bytes=1-2,4-5', 10), null);
+  assert.equal(http.etagMatches('"a", W/"b"', '"b"'), true);
+  assert.equal(http.etagMatches('"a"', '"b"'), false);
 });
 
 test('a provider with many records has a page for each record, and /r/ goes there', async () => {
