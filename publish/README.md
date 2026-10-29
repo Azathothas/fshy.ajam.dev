@@ -10,7 +10,9 @@ The tools that write the published corpus and build everything that serves it. S
 
 Each Monday, Dependabot proposes updates of the actions and of the npm packages of `site/` at 04:00 UTC
 ([`../.github/dependabot.yml`](../.github/dependabot.yml)), and CI builds `main` at 06:00 UTC. A toolchain that
-breaks thus shows before a publish does. MiniSearch is not updated there, because the site serves a copy of it.
+breaks thus shows before a publish does. The site serves a copy of MiniSearch, `site/static/assets/minisearch.js`.
+`run.mjs` fails when that copy is not the npm package of `site/package.json`, so an update of MiniSearch fails
+until a person copies its `dist/umd/index.js` there, with the header line.
 
 ## The two stages
 
@@ -59,7 +61,12 @@ title and linked records, so a history row with a body, a supersedes line or a c
 `--site`, it writes the wiki, the API files and the Worker copy, scans every text file of the site, and checks the
 size of each file against the static asset limit of Workers (25 MiB). It warns at 70 percent of that limit. One
 leak hit, or one file over the limit, fails the build. When `data/meta.json` has `files_sha256`, the build
-recomputes it and refuses data that changed after the export, with exit 3.
+recomputes it and refuses data that changed after the export, with exit 3. The scan of a directory runs in up to 8
+processes when its files hold more than 16 MiB.
+
+The store and the site do not name the commit of this repository: the same `data/` gives the same bytes, so a
+merge that changes only code changes no page and no store. Only `data/manifest.json` names the commit of the
+build, for the live check of the deploy and the header `x-fshy-commit` of the Worker.
 
 ## The leak rules
 
@@ -135,11 +142,12 @@ publish:
 | --- | --- |
 | `export.py` | stage one, as above |
 | `build.py` | stage two, as above; also `make_worker_db`, the leak scan and the asset size check |
-| `site_gen.py` | the store to the data files of the site: the Worker copy in chunks, record and entity JSON, names, needs, vocabularies |
+| `site_gen.py` | the store to the data files of the site: the Worker copy in chunks, the public store in parts, the name index of the Worker, record and entity JSON, names, needs, vocabularies |
 | `pages.py` | the HTML pages, the sitemap and `robots.txt` |
 | `llms.py` | `llms.txt`, `llms-full.txt` and the Markdown versions of the pages, for agents ([`../site/README.md`](../site/README.md)) |
 | `test_llms.py` | the selftest of `llms.py`, over the store that `build.py` writes |
-| `test_publish.py` | the selftest of the contract and of `files_sha256`, of the export's refusals, of the leak rules and `--scan`, of the lists that are copied by hand, and of the worked queries of the primer |
+| `test_publish.py` | the selftest of the contract and of `files_sha256`, of the export's refusals, of the leak rules and `--scan`, of the lists that are copied by hand, of the helpers that the pages share, and of the worked queries of the primer |
+| `test_weight.py` | the weight budget of the built site: the shared files, the page shell, and each kind of page |
 | `primer.py` | the text primer of the store: schema, vocabularies, worked queries |
 | `schema.sql` | the store schema, shared by the Worker |
 | `rules/needs.json` | the best-per-need queries |

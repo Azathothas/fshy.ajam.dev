@@ -15,25 +15,32 @@
     "binding": "ASSETS",
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page",
+    // the Worker answers every path of /api/v1/ (the routes, the route list and a JSON 404), except the static files
+    // that the build writes there; site/README.md, section "What the Worker serves"
     "run_worker_first": [
-      "/api/v1/search",
-      "/api/v1/records",
-      "/api/v1/sql",
-      "/api/v1/need/*",
-      "/api/v1/worklist/*",
-      "/api/v1/record/*",
-      "/api/v1/entity-search",
+      "/api/v1",
+      "/api/v1/*",
+      "!/api/v1/entity/*",
+      "!/api/v1/names.json",
+      "!/api/v1/needs.json",
+      "!/api/v1/vocab.json",
+      "!/api/v1/schema.sql",
+      "!/api/v1/help.txt",
       "/mcp",
-      "/r/*"
+      "/r/*",
+      "/data/fshy-public.sqlite.gz"
     ]
   },
   "rules": [{ "type": "CompiledWasm", "globs": ["**/*.wasm"], "fallthrough": false }],
+  // two bindings with one namespace_id share their counters across the Workers of an account, so these are not the
+  // example values of the documentation (1001, 1002)
   "ratelimits": [
-    { "name": "RL_API", "namespace_id": "1001", "simple": { "limit": 120, "period": 60 } },
-    { "name": "RL_SQL", "namespace_id": "1002", "simple": { "limit": 30, "period": 60 } }
+    { "name": "RL_API", "namespace_id": "47201", "simple": { "limit": 120, "period": 60 } },
+    { "name": "RL_SQL", "namespace_id": "47202", "simple": { "limit": 30, "period": 60 } }
   ],
   "observability": { "enabled": true, "head_sampling_rate": 0.1 },
-  // the backstop of the SQL route: the platform stops a request after 2,500 ms of CPU (error 1102). It is 3.5 times
-  // the costliest request that the Worker accepts (718 ms); site/README.md has the measurements
+  // the backstop of the SQL route: the platform stops a request after 2,500 ms of CPU (error 1102). The costliest
+  // request that the Worker accepts took 700 ms (the middle of three runs) and 1,130 ms (the slowest) on wrangler dev;
+  // site/README.md has the measurements
   "limits": { "cpu_ms": 2500 }
 }

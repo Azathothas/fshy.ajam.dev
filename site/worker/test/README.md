@@ -10,4 +10,5 @@ Run from the repository root, after `npm ci` in `site/`:
 `site/dist`, the record file tests are skipped.
 
 `smoke.mjs` runs the Worker on workerd with `wrangler dev` on port 8791 (override with `FSHY_SMOKE_PORT`). It needs
-`site/dist`, asks the API, the SQL route and the MCP endpoint once each, and stops wrangler by its PID.
+`site/dist`, asks the API, the SQL route, the MCP endpoint, the route patterns of `wrangler.jsonc` and the download
+of the store, and stops wrangler by its PID.

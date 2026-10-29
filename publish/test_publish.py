@@ -14,8 +14,12 @@
    agree. When the store exists, its vocabulary and its topics agree with them.
 5. When the store exists: each worked query of primer.py runs, so /api/v1/help.txt never shows a query that
    fails.
+6. The helpers that the pages and the files for agents share: the lang of a run of another script, the label that
+   tells two records of one provider apart, the one line of a row, the order of a tie in a ranked list, the words of
+   a category, the anchor of a history entry, the pictographs that quoted text loses, the parallel leak scan, and
+   the twin of the Worker's name normaliser against site/worker/test/parity.json.
 
-Parts 1 to 4 need no data and run on a fresh clone. The store parts read .tmp/fshy/public.db, which
+Parts 1 to 4 and 6 need no data and run on a fresh clone. The store parts read .tmp/fshy/public.db, which
 `python publish/build.py --check` or `--site` writes; without it, they are skipped with a line that says so.
 
 usage:
@@ -39,8 +43,10 @@ ROOT = os.path.abspath(os.path.join(HERE, ".."))
 sys.path.insert(0, HERE)
 import build  # noqa: E402
 import export  # noqa: E402
+import llms  # noqa: E402
 import pages  # noqa: E402
 import primer  # noqa: E402
+import site_gen  # noqa: E402
 
 FAILS = []
 
@@ -308,6 +314,71 @@ def list_checks(db_path):
     check("every topic of the store is in rules/topics.json", topics <= set(pages.TOPIC_NAME), sorted(topics - set(pages.TOPIC_NAME)))
 
 
+def helper_checks(tmp):
+    """Part 6: the shared helpers, on fixed cases."""
+    lw = [("Alist\u8ffd\u756a", 'Alist<span lang="zh">\u8ffd\u756a</span>'),
+          ("CNB \u4e91\u539f\u751f\u6784\u5efa", 'CNB <span lang="zh">\u4e91\u539f\u751f\u6784\u5efa</span>'),
+          ("\u3053\u3093\u306b\u3061\u306f world", '<span lang="ja">\u3053\u3093\u306b\u3061\u306f</span> world'),
+          ("\uac00\ub098\ub2e4 x", '<span lang="ko">\uac00\ub098\ub2e4</span> x'),
+          ("\u042f\u043d\u0434\u0435\u043a\u0441 \u0414\u0438\u0441\u043a", '<span lang="ru">\u042f\u043d\u0434\u0435\u043a\u0441 \u0414\u0438\u0441\u043a</span>'),
+          ('<a title="\u767e\u5ea6" href="/p/x/">\u767e\u5ea6 Pan</a>', '<a title="\u767e\u5ea6" href="/p/x/"><span lang="zh">\u767e\u5ea6</span> Pan</a>'),
+          ("plain ASCII", "plain ASCII")]
+    bad = [(i, pages.lang_wrap(i)) for i, o in lw if pages.lang_wrap(i) != o]
+    check("lang_wrap marks each run of another script with its lang, and never a tag (U-05)", not bad, bad)
+    out = pages.prose("fast \u2728 and \U0001f422 slow; \u26d4 closed")
+    check("prose drops the pictographs of quoted text (U-37)", not pages.EMOJI_RX.search(out) and "fast" in out, out)
+    card = {"eid": "torbox", "provider": "TorBox", "topic": "debrid", "tier": None}
+    cards = {r: dict(card, rid=r, slug=r.split("/")[1], tier=t) for r, t in (
+        ("debrid/torbox-pro", "pro"), ("debrid/torbox-free", "free"), ("debrid/torbox-standard", None),
+        ("debrid/torbox-essential", "none; the page is gone"))}
+    cards["compute/torbox"] = dict(card, rid="compute/torbox", slug="torbox", topic="compute")
+    cards["debrid/torbox"] = dict(card, rid="debrid/torbox", slug="torbox", topic="debrid")
+    cards["storage/other"] = dict(card, rid="storage/other", eid="other", provider="Other", slug="other", topic="storage")
+    got = llms.labels(cards, {"compute": "Compute"})
+    want = {"debrid/torbox-pro": "TorBox (pro)", "debrid/torbox-free": "TorBox (free)",
+            "debrid/torbox-standard": "TorBox (standard)", "debrid/torbox-essential": "TorBox (essential)",
+            "compute/torbox": "TorBox (Compute)", "debrid/torbox": "TorBox (debrid/torbox)", "storage/other": "Other"}
+    check("labels tell the records of one provider apart: tier, then slug, then topic (U-01)", got == want,
+          sorted(set(got.items()) ^ set(want.items())))
+    hl = [("this free plan gives 10 GB of storage and a public share link for every file that is up...",
+           None, "This free plan gives 10 GB of storage and a public share link for every file that is..."),
+          ("Verbatim: 'new-user trial: join the group, fill in the form and receive CNY 50' a...",
+           "Free tier of 5 GB a month. Then USD 1 per GB.", "Free tier of 5 GB a month."),
+          ("Short line.", None, "Short line."), ("", None, ""),
+          ("Quoted: 'USD 1 in free credits'", None, "'USD 1 in free credits'")]
+    bad = [(a, llms.headline(a, b)) for a, b, w in hl if llms.headline(a, b) != w]
+    check("headline drops a cut word and a quote label, prefers a whole first sentence, starts with a capital (U-09)", not bad, bad)
+    rows = [{"rid": "a/x", "vorder": 0, "confidence": "reported", "stale_on": "2026-12-01"},
+            {"rid": "a/y", "vorder": 0, "confidence": "measured", "stale_on": "2026-11-01"},
+            {"rid": "a/z", "vorder": 0, "confidence": "measured", "stale_on": "2026-12-01"},
+            {"rid": "a/w", "vorder": 0, "confidence": "measured", "stale_on": None},
+            {"rid": "a/v", "vorder": 1, "confidence": "measured", "stale_on": "2027-01-01"}]
+    order = [r["rid"] for r in sorted(rows, key=llms.tie_key)]
+    check("a tie in a ranked list goes by verdict, evidence, the later stale date, then id (U-13)",
+          order == ["a/z", "a/y", "a/w", "a/x", "a/v"], order)
+    cats = {"paas": "PaaS", "ml-hub": "ML hub", "gpu cloud": "GPU cloud", "nat vps": "NAT VPS", "cloud-drive": "Cloud drive",
+            "tunnel software (self-hosted)": "Tunnel software (self hosted)"}
+    bad = [(k, pages.cat_label(k)) for k, w in cats.items() if pages.cat_label(k) != w]
+    check("cat_label writes a category in words and its acronyms in capitals (U-27)", not bad, bad)
+    hid = "2026-10-28T135534Z/operator-rulings-of-2026-10-28"
+    a = pages.hist_anchor(hid)
+    check("the anchor of a history entry is stable and holds no text of its id (U-04)",
+          a == pages.hist_anchor(hid) and re.fullmatch(r"c-[0-9a-f]{10}", a) and "operator" not in a, a)
+    fx = json.load(open(os.path.join(ROOT, "site", "worker", "test", "parity.json"), encoding="utf-8"))
+    bad = [(i, site_gen.js_normalize(i), o) for i, o in fx["text"]["normalize"] if site_gen.js_normalize(i) != o]
+    check("site_gen.js_normalize gives the outputs of text.js normalize in parity.json (P-16, %d cases)"
+          % len(fx["text"]["normalize"]), not bad, bad[:3])
+    big = os.path.join(tmp, "scan")
+    os.makedirs(big)
+    for i in range(24):
+        with open(os.path.join(big, "f%02d.txt" % i), "w", encoding="utf-8") as f:
+            f.write(("technical text about a quota\n" * 30000) + ("The Terms of Service apply.\n" if i % 6 == 0 else ""))
+    serial = build.scan_files(big, jobs=1)
+    parallel = build.scan_files(big, jobs=4)
+    check("the parallel leak scan finds what one process finds, in the same order (P-15, %d hits)" % len(serial),
+          len(serial) == 4 and serial == parallel, (len(serial), len(parallel)))
+
+
 def primer_checks(db_path):
     db = primer.connect(db_path)
     for what, sql in primer.EXAMPLES:
@@ -356,6 +427,7 @@ def main(argv=None):
         export_checks(tmp)
         leak_checks(tmp)
         hook_checks(tmp)
+        helper_checks(tmp)
     finally:
         export.cleanup(tmp)
     db = a.db if os.path.exists(a.db) else None
