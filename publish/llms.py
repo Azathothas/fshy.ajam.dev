@@ -216,17 +216,30 @@ def tie_key(c):
     return (c["vorder"], RUNG.get(c["confidence"], len(RUNG)), later_first(c["stale_on"]), c["rid"])
 
 
-def free_word(c):
-    """'free tier', 'no free tier', or '' when the record does not say.
-
-    The record has a free allowance when its free_tier unit is not 'none'. A paid-only or dead offer has none to
-    offer now, whatever the unit says: its free_tier text is a price or a past allowance. Switch point: when the data
-    carries a field that states the free allowance directly, read that field here, and only here.
-    """
+def legacy_free_claim(c):
+    """The free-allowance claim of a record from its fields, for data that has no claim of the kind has-free-tier: 1
+    unless the free_tier unit is none or the offer is paid-only or dead; None when the record has no unit."""
     u = c.get("free_unit")
     if u is None:
-        return ""
-    return "no free tier" if u == "none" or c.get("verdict") in ("paid-only", "dead") else "free tier"
+        return None
+    return 0 if u == "none" or c.get("verdict") in ("paid-only", "dead") else 1
+
+
+def attach_free_claims(db, cards):
+    """Set cards[rid]["free_claim"] to the value of the claim of the kind has-free-tier: 1 the record has a free
+    allowance, 0 it has none, None when the data has no row for it (unknown). Data from before the claim has no row
+    of that kind at all; then the claim comes from the fields (legacy_free_claim). The card of the published JSON does
+    not carry the key."""
+    rows = {r[0]: int(r[1]) for r in db.execute("SELECT rid, num FROM claim WHERE kind = 'has-free-tier' AND num IS NOT NULL")}
+    for rid, c in cards.items():
+        c["free_claim"] = rows.get(rid) if rows else legacy_free_claim(c)
+
+
+def free_word(c):
+    """'free tier', 'no free tier', or '' when the record does not say. The one place that decides it: the claim
+    has-free-tier of the data (1 free tier, 0 no free tier, none unknown), carried by the card as free_claim."""
+    f = c.get("free_claim")
+    return "" if f is None else ("free tier" if f == 1 else "no free tier")
 
 
 def money(v, suffix):
@@ -249,6 +262,7 @@ class Store:
         for r in db.execute("SELECT %s, doc FROM record ORDER BY rid" % ",".join(CARD)):
             self.cards[r["rid"]] = {k: r[k] for k in CARD}
             self.docs[r["rid"]] = json.loads(r["doc"])
+        attach_free_claims(db, self.cards)
         self.ents = {r["eid"]: {"name": r["name"], "domain": r["domain"], "members": []}
                      for r in db.execute("SELECT eid, name, domain FROM entity ORDER BY eid")}
         for rid in self.order(self.cards):
@@ -289,13 +303,17 @@ def need_rows(db, x, cards):
 
 
 def allowance_kind(c):
-    """The kind of free allowance that the fields of a record give: a one-time trial (the verdict trial-only), an
-    allowance in a unit of time, in another unit, or no unit. The data has no field that says whether a credit is a
-    grant, a trial or a paid discount: the sections say what they hold and what they cannot tell apart."""
+    """The kind of free allowance of a record: a one-time trial (the verdict trial-only); else by the claim
+    has-free-tier: none (0), unknown (no row), or a free allowance (1) counted in time or in another unit. A grant and
+    a paid offer are both none: the data has no field that tells them apart."""
     if c["verdict"] == "trial-only":
         return "trial"
-    u = c.get("free_unit")
-    return "time" if u in ("hours", "minutes", "seconds") else ("none" if u in (None, "none") else "other")
+    f = c.get("free_claim")
+    if f is None:
+        return "unknown"
+    if f == 0:
+        return "none"
+    return "time" if c.get("free_unit") in ("hours", "minutes", "seconds") else "other"
 
 
 def inference_filing(c):
@@ -308,15 +326,16 @@ def inference_filing(c):
 NEED_SPLITS = {
     "free-gpu": (allowance_kind, [
         ("time", "Free allowance counted in time",
-         "The record states a free allowance in hours, minutes or seconds. A record whose free tier is a discount or a paid "
-         "spot price can be here too, because the data has no field that tells a free allowance from a price."),
+         "The record has a free allowance, and it is counted in hours, minutes or seconds."),
         ("other", "Free allowance in credits or another unit",
-         "The record counts its free allowance in credits, in storage, or in a mix of units, and not in time."),
+         "The record has a free allowance, and it is counted in credits, in storage, or in a mix of units, and not in time."),
         ("trial", "One-time trial or credit",
          "The verdict is trial-only: a time-boxed or one-time trial, not a recurring allowance."),
         ("none", "No free allowance in the record",
-         "The record states no unit of free allowance. Grants, programmes and paid offers are here, and the data has no "
-         "field that tells them apart.")]),
+         "The record has no free allowance. Grants, programmes and paid offers are here, and the data has no field that "
+         "tells them apart."),
+        ("unknown", "The record does not say",
+         "The data has no claim about a free allowance for these records.")]),
     "inference-no-card-no-phone": (inference_filing, [
         ("inference", "Filed under Inference", "Records of the topic Inference."),
         ("other", "Filed under another topic, with the category inference",
