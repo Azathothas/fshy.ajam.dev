@@ -331,12 +331,14 @@ async function route(request, env, ctx) {
 
   let store = null;
   let cold = false;
-  // the store loads on the first call, after the route has checked the method and the rate limit
+  // the store loads on the first call, after the route has checked the method and the rate limit; ctx keeps a load
+  // that this request starts alive when its client goes away (db.js)
   const open = async () => {
     if (!store) {
       try {
-        ({ store, cold } = await getStore(env, wasmModule));
+        ({ store, cold } = await getStore(env, wasmModule, ctx));
       } catch (e) {
+        if (e && e.late) throw e;
         console.error('fshy store load failed:', e && e.stack ? e.stack : String(e));
         throw Object.assign(new HttpError(500, 'store unavailable'), { logged: true });
       }
