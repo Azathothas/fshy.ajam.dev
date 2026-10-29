@@ -192,6 +192,22 @@ const sqlJson = await sqlBatch.json().catch(() => null);
 check('POST /mcp refuses a batch of 2 sql calls with 400 and a JSON-RPC error',
   sqlBatch.status === 400 && sqlJson && sqlJson.error && sqlJson.error.code === -32600 && /at most 1 sql call;/.test(sqlJson.error.message),
   `${sqlBatch.status} ${JSON.stringify(sqlJson)}`);
+// _headers: a text file carries its charset, and the immutable data parts get one Cache-Control, not two
+for (const [path, type] of [['/llms.txt', 'text/plain; charset=utf-8'], ['/t/storage.md', 'text/markdown; charset=utf-8'],
+  ['/api/v1/help.txt', 'text/plain; charset=utf-8'], ['/index.md', 'text/markdown; charset=utf-8']]) {
+  const r = await fetch(ORIGIN + path);
+  await r.arrayBuffer();
+  check('GET ' + path + ' is served as ' + type, (r.headers.get('content-type') || '').toLowerCase() === type, r.headers.get('content-type'));
+}
+const dataPart = await fetch(ORIGIN + '/' + man.public_db.parts[0]);
+await dataPart.arrayBuffer();
+check('GET a data part has one Cache-Control of a year', dataPart.headers.get('cache-control') === 'public, max-age=31536000, immutable', dataPart.headers.get('cache-control'));
+const hp = await fetch(ORIGIN + '/');
+await hp.arrayBuffer();
+check('GET / carries Permissions-Policy and Cross-Origin-Opener-Policy', /camera=\(\)/.test(hp.headers.get('permissions-policy') || '') &&
+  hp.headers.get('cross-origin-opener-policy') === 'same-origin', hp.headers.get('permissions-policy'));
+const tp = await fetch(ORIGIN + '/api/v1/records?topic=nope');
+check('GET /api/v1/records with an unknown topic is a 400', tp.status === 400, tp.status);
 const icon = await fetch(ORIGIN + '/favicon.ico');
 check('GET /favicon.ico is an icon', icon.status === 200 && (await icon.arrayBuffer()).byteLength < 300, icon.status);
 

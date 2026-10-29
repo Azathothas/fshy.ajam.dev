@@ -4,7 +4,7 @@ import { HttpError } from './db.js';
 
 export const CORS = {
   'access-control-allow-origin': '*',
-  'access-control-expose-headers': 'x-fshy-commit, server-timing, mcp-protocol-version',
+  'access-control-expose-headers': 'x-fshy-commit, server-timing',
 };
 // the static files get these from static/_headers; a response of the Worker gets them here
 const SAFE = { 'x-content-type-options': 'nosniff', 'referrer-policy': 'no-referrer' };
