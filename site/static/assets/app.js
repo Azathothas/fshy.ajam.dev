@@ -212,11 +212,15 @@
       sr.innerHTML = '<p class="lede">Searching...</p>';
       var api = fetch('/api/v1/search?limit=50&q=' + encodeURIComponent(q)).then(function (r) { return r.json(); });
       loadNames().catch(function () {}).then(function () {
-        var nh = nameHits(q, 8);
-        sr.innerHTML = (nh.length ? '<h2>Providers <small>' + nh.length + '</small></h2><ul class="plain">' + nh.map(function (r) {
-          return '<li><a href="/p/' + esc(r[0]) + '/"><b>' + txt(r[1]) + '</b></a> ' + pill(r[5], r[8]) + ' <small>' + esc(topics(r[4])) +
-            ' &middot; ' + r[6] + ' record' + (r[6] === 1 ? '' : 's') + '</small></li>';
-        }).join('') + '</ul>' : '') + '<h2>Full text</h2><div id="ft" aria-live="polite"><p>Loading...</p></div>';
+        var nh = nameHits(q, 99), ul = function (a) {
+          return '<ul class="plain">' + a.map(function (r) {
+            return '<li><a href="/p/' + esc(r[0]) + '/"><b>' + txt(r[1]) + '</b></a> ' + pill(r[5], r[8]) + ' <small>' + esc(topics(r[4])) +
+              ' &middot; ' + r[6] + ' record' + (r[6] === 1 ? '' : 's') + '</small></li>';
+          }).join('') + '</ul>';
+        };
+        sr.innerHTML = (nh.length ? '<h2>Providers <small>' + nh.length + '</small></h2>' + ul(nh.slice(0, 8)) +
+          (nh.length > 8 ? '<details><summary>' + (nh.length - 8) + ' more providers</summary>' + ul(nh.slice(8)) + '</details>' : '') : '') +
+          '<h2>Full text</h2><div id="ft" aria-live="polite"><p>Loading...</p></div>';
         return api;
       }).then(function (d) {
         if (d.error) { $('#ft').innerHTML = '<p>' + esc(d.error) + '</p>'; return; }
