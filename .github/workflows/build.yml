@@ -168,14 +168,28 @@ jobs:
             exit 1
           }
           get() { curl -fsS --max-time 20 --retry 2 "$@"; }
+          # Right after the deploy, the domain can answer with an error page or with an empty body. A poll that does
+          # not return the manifest prints one short line, and the loop tries again. Only the last try can fail.
+          manifest="$RUNNER_TEMP/manifest.json"
           got=""
+          code=""
           for i in $(seq 1 30); do
-            got=$(get "$FSHY_ORIGIN/data/manifest.json?v=$GITHUB_SHA" |
-              python3 -c 'import json, sys; print(json.load(sys.stdin)["commit"])' || true)
+            rm -f "$manifest"
+            code=$(curl -s --max-time 20 --retry 2 -o "$manifest" -w '%{http_code}' "$FSHY_ORIGIN/data/manifest.json?v=$GITHUB_SHA") ||
+              code="no answer"
+            got=$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["commit"])' "$manifest" 2>/dev/null) || got=""
             [ "$got" = "$GITHUB_SHA" ] && break
+            if [ -n "$got" ]; then
+              echo "poll $i of 30: the manifest names the commit $got"
+            else
+              echo "poll $i of 30: HTTP $code, and the answer is not the manifest"
+            fi
             sleep 10
           done
-          [ "$got" = "$GITHUB_SHA" ] || fail "the live manifest names the commit '$got', not $GITHUB_SHA"
+          if [ "$got" != "$GITHUB_SHA" ]; then
+            [ -z "$got" ] || fail "the live manifest names the commit '$got', not $GITHUB_SHA"
+            fail "the live manifest was not JSON with a commit in 30 tries; the last answer was HTTP $code"
+          fi
           hdr=$(get -D - -o "$RUNNER_TEMP/search.json" "$FSHY_ORIGIN/api/v1/search?q=storage&limit=1" |
             tr -d '\r' | awk -F': ' 'tolower($1) == "x-fshy-commit" { print $2 }')
           [ "$hdr" = "$GITHUB_SHA" ] || fail "the search API answers from the commit '$hdr', not $GITHUB_SHA"

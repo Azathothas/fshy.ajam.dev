@@ -37,6 +37,7 @@ import sqlite3
 import subprocess
 import sys
 import tempfile
+import types
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
@@ -152,13 +153,13 @@ LEAK_SAMPLES = [  # (text, a leak rule must match it)
     # the research process: warn level
     ("Not in dossier/compute (searched: example, no record).", True), ("it is recorded once, in dossier/x/y.json", True),
     ("a number the census did not have", True), ("the compute census stops there", True),
-    ("3 percent of the 1 TB a day serving target", True),
+    ("2 percent of the daily serving target", True),
     ("the US Census Bureau API gives 500 calls a day", False), ("a dossier of the case", True),
     ("data/records/compute/x.json", False), ("results (search: free)", False),
-    # round 3, warn level
+    # L21 to L26
     ("The dossier holds firebase-studio.json", True), ("the existing dossier record says dead", True),
     ("Cr" + chr(0xe9) + "er un dossier partag" + chr(0xe9), False), ("le dossier de partage", False),
-    ("per BRIEF " + chr(0xa7) + "0.3 escalation ladder", True), ("the provider " + chr(0xa7) + "6.1c says", False),
+    ("per PLAN " + chr(0xa7) + "0.3 steps", True), ("the provider " + chr(0xa7) + "6.1c says", False),
     ("Two corrections to batch 1.", True), ("Batch 1 carried the 30-day expiry", True),
     ("Applications for Batch 4 are closed", False), ("Batch 256 MB per request", False),
     ("Candidates: (a) the Entrance plan", True), ("Three readings were considered.", True),
@@ -166,16 +167,16 @@ LEAK_SAMPLES = [  # (text, a leak rule must match it)
     ("https://example.com/evidence/experiments/1", False),
 ]
 HID_SAMPLES = [
-    ("2026-10-28T135534Z/operator-rulings-of-2026-10-28", True), ("2026-10-24T032000Z/review-found-58-defects", True),
-    ("2026-10-22T041230Z/seed-corrections-reverted", True), ("2026-10-22T061500Z/own-the-disk-is-not-an-option", True),
-    ("2026-10-22T030702Z/repod-range-claim-withdrawn", False), ("2026-10-22T144500Z/hetzner-fair-use", False),
-    ("2026-10-22T030705Z", False),
+    ("2026-11-02T101500Z/operator-notes-of-2026-11-02", True), ("2026-11-01T032000Z/review-of-the-parser", True),
+    ("2026-10-31T041230Z/seed-values-restored", True), ("2026-10-31T061500Z/disk-plans-dropped", True),
+    ("2026-10-30T030702Z/range-claim-withdrawn", False), ("2026-10-30T144500Z/provider-fair-use", False),
+    ("2026-10-30T030705Z", False),
 ]
 TITLE_SAMPLES = [
-    ("The operator decided seven open questions", True), ("A review found 58 defects in the three answers", True),
-    ("The rung was the rung we wished it had", True), ("Two seed corrections were reverted", True),
+    ("The operator chose two of five options", True), ("A review found 12 gaps in the first draft", True),
+    ("The first draft was what we expected", True), ("Two seed claims were removed", True),
     ("Hetzner's fair-use threshold is 250 TB/month, not 50 to 100", False),
-    ("Kamatera's trial needs a card, not an email", False), ("The prober's answer rates were right", True),
+    ("Kamatera's trial needs a card, not an email", False), ("The prober's timing was right", True),
 ]
 
 
@@ -192,7 +193,7 @@ def leak_checks(tmp):
     check("the history id rule matches a narrative id and passes a neutral one (%d samples)" % len(HID_SAMPLES),
           hids and not wrong, wrong)
     fails = {p["id"] for p in build.leak_rules() if p.get("level", "fail") == "fail"}
-    check("the rules of the research process of round 2, L15 to L20, fail", {"L15", "L16", "L17", "L18", "L19", "L20"} <= fails,
+    check("the rules L15 to L20, which refuse the shapes of the research process, fail", {"L15", "L16", "L17", "L18", "L19", "L20"} <= fails,
           sorted(fails))
     levels = {p.get("level", "fail") for p in build.leak_rules()}
     check("every leak rule has the level fail or warn", levels <= {"fail", "warn"}, levels)
@@ -254,7 +255,7 @@ CLEAN_MESSAGES = [  # each must pass: a provider or a model is named, nothing is
     "inference: Llama 3.1 8B is free on Groq, and Mistral Small on La Plateforme",
     "inference: the GPT-4o price per million tokens on OpenAI",
     "email: Brevo free tier; domains-dns: OpenAI is not a registrar",
-    # a vendor that made a model is not a credit (the false alarm of the merge review of round 3)
+    # a vendor that made a model is not a credit (a false alarm of the credit rule)
     "inference: the models made by OpenAI and Mistral on the free tier",
     "inference: list the open models built by Mistral",
     "coding-subs: the assistant built by Anthropic costs USD 20 a month",
@@ -356,14 +357,47 @@ def helper_checks(tmp):
     order = [r["rid"] for r in sorted(rows, key=llms.tie_key)]
     check("a tie in a ranked list goes by verdict, evidence, the later stale date, then id (U-13)",
           order == ["a/z", "a/y", "a/w", "a/x", "a/v"], order)
+    said = [("the free tier", "10 gb free, then usd 1 per gb"), ("interface detail", "rest, oai-pmh")]
+    cases = [("10 gb free, then usd 1 per gb", "the same as the free tier"), ("usd 1 per gb", "part of the free tier"),
+             ("rest", "part of interface detail"), ("rest, oai-pmh", "the same as interface detail"),
+             ("restful", "restful"), ("a", "a"), ("10 gb free", "part of the free tier"), ("", "")]
+    bad = [(t, llms.repeat_note(said, t)) for t, w in cases if llms.repeat_note(said, t) != w]
+    check("llms.repeat_note says 'the same as' for an equal text, 'part of' for a part at word boundaries, and nothing else", not bad, bad)
+    first = [("the free tier", "x y"), ("notes", "x")]
+    check("llms.repeat_of names an equal text before an earlier line that only holds it",
+          llms.repeat_of(first, "x") == ("same", "notes") and llms.repeat_of(first, "y") == ("part", "the free tier"), llms.repeat_of(first, "x"))
+    card = {"provider": "Example", "slug": "x", "verdict": "qualifies", "confidence": "documented", "identity_basis": "stated",
+            "needs_card": 0, "needs_phone": 0, "needs_id": 0, "needs_institution": 0, "checked_on": "2026-10-28",
+            "verified_basis": "page", "stale_on": "2027-01-01", "eid": "example", "usd_month": None, "usd_per_tb_month": None,
+            "duplicate_of": None}
+    doc = {"free_tier": {"stated": "10 GB free."}, "limits_note": "10 GB free.", "binding_note": "free",
+           "interface_detail": "REST, OAI-PMH", "tooling": "REST", "reliability_note": "REST, OAI-PMH", "notes": "RESTful clients"}
+    md = llms.record_md(types.SimpleNamespace(cards={"t/x": card}, docs={"t/x": doc}, labels={}, drift={}), "t/x")
+    want = ["- limits note: the same as the free tier", "- binding note: part of the free tier", "- tooling: part of interface detail",
+            "- reliability: the same as interface detail", "- notes: RESTful clients"]
+    check("a record file says 'the same as' for an equal line and 'part of' for a part, and prints a text that no line holds",
+          all(w in md.split("\n") for w in want), md)
+    key = "\n".join(llms.reading_rules(types.SimpleNamespace(vocab={})))
+    check("the key of the files for agents says that 'the same as' is an equal line and 'part of' a part of one",
+          "- the same as: the value equals an earlier line" in key and "- part of: the value is a part of an earlier line" in key)
+    said = []
+    got = [pages.prose_once(said, "Free tier", "10 GB free, then USD 1 per GB."), pages.prose_once(said, "Notes", "10 gb free, then usd 1 per gb"),
+           pages.prose_once(said, "Limits", "USD 1 per GB"), pages.prose_once(said, "Tooling", "per gb of RESTful"), pages.prose_once(said, "Binding", ""),
+           pages.prose_once(said, "Binding", None)]
+    check("a row that repeats an earlier text is left out, a part gets a note that names the row, other text is printed",
+          got == ["10 GB free, then USD 1 per GB.", None, '<span class="na">part of the text of Free tier, above</span>',
+                  "per gb of RESTful", None, None], got)
+    check("an evidence cell says 'the text of' for an equal text and 'part of the text of' for a part",
+          pages.repeat_html(("same", "Notes")) == '<span class="na">the text of Notes, above</span>' and
+          pages.repeat_html(("part", "Notes")) == '<span class="na">part of the text of Notes, above</span>')
     cats = {"paas": "PaaS", "ml-hub": "ML hub", "gpu cloud": "GPU cloud", "nat vps": "NAT VPS", "cloud-drive": "Cloud drive",
             "tunnel software (self-hosted)": "Tunnel software (self hosted)"}
     bad = [(k, pages.cat_label(k)) for k, w in cats.items() if pages.cat_label(k) != w]
     check("cat_label writes a category in words and its acronyms in capitals (U-27)", not bad, bad)
-    hid = "2026-10-28T135534Z/operator-rulings-of-2026-10-28"
+    hid = "2026-11-02T101500Z/example-notes-of-2026-11-02"
     a = pages.hist_anchor(hid)
     check("the anchor of a history entry is stable and holds no text of its id (U-04)",
-          a == pages.hist_anchor(hid) and re.fullmatch(r"c-[0-9a-f]{10}", a) and "operator" not in a, a)
+          a == pages.hist_anchor(hid) and re.fullmatch(r"c-[0-9a-f]{10}", a) and "example" not in a and "notes" not in a, a)
     fx = json.load(open(os.path.join(ROOT, "site", "worker", "test", "parity.json"), encoding="utf-8"))
     bad = [(i, site_gen.js_normalize(i), o) for i, o in fx["text"]["normalize"] if site_gen.js_normalize(i) != o]
     check("site_gen.js_normalize gives the outputs of text.js normalize in parity.json (P-16, %d cases)"

@@ -23,7 +23,7 @@ ASSET_LIMIT = 25 * 1024 * 1024  # the largest static asset of Workers (publish/b
 # reading path, so its limit is the largest. When a publish fails here, a change of pages.py comes first, or a
 # reviewed change of a limit.
 LIMITS = {
-    "shared": ("style.css plus app.js, gzip", 12_000),  # (11,868)
+    "shared": ("style.css plus app.js, gzip", 12_000),  # (11,474)
     "shell": ("the page shell (header, topic bar, footer), raw", 2_200),  # (1,968)
     "topic": ("a topic page or its paid page, gzip", 80_000),  # (58,175: t/compute/)
     "rejected": ("a rejected page, gzip", 160_000),  # (121,007: t/storage/rejected/)
