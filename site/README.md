@@ -111,11 +111,35 @@ hosts with 403.
 
 ## Deploy
 
-⚠ **The site is not deployed.** When it is, the deploy is a Cloudflare Workers Builds trigger on this
-repository's `main`, with root directory `site/`, the build command
-`npm ci --no-audit --no-fund && python3 ../publish/build.py --site dist`, and the deploy command
-`npx wrangler deploy`. A publish pull request that merges then deploys the new data. A failed build, for
-example a leak hit, keeps the previous version live.
+The job `deploy` of [`../.github/workflows/build.yml`](../.github/workflows/build.yml) deploys the site. It runs
+after the job `build` passes, on a push to `main` and on a manual run on `main`. So a publish pull request that
+merges deploys the new data. A failed build, for example a leak hit, keeps the previous version live.
+
+1. The job `build` keeps `site/dist` as the artifact `site-dist` for 7 days. So the deploy uses the files that
+   the checks read.
+2. The job `deploy` installs wrangler with an `npm ci` that runs no package script, and runs `npx wrangler
+   deploy` with the secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
+3. It reads `/data/manifest.json` from the live site until the manifest names the commit, for at most five
+   minutes. Then the search API must answer with rows and with the commit in its header `x-fshy-commit`, and the
+   MCP endpoint must list its tools. If not, the job fails, and the new version can be live.
+
+| setting | where | what |
+| --- | --- | --- |
+| `FSHY_DEPLOY` | repository variable | the job runs only when it is `on`. Set it to `off` to stop deploys |
+| `CLOUDFLARE_API_TOKEN` | secret of the environment `production` | a token for Workers Scripts (edit), Account Settings (read) and Workers Routes (edit) on the zone. It can change every Worker of the account |
+| `CLOUDFLARE_ACCOUNT_ID` | secret of the environment `production` | the Cloudflare account. A secret, so the public log does not show it |
+| `FSHY_ORIGIN` | repository variable, optional | the origin that the job checks; the default is `https://fshy.ajam.dev` |
+| `production` | environment | only `main` can use it, so a pull request never gets the token |
+
+`preview_urls` is `false` in `wrangler.jsonc`, so a deploy makes no public version URL on `workers.dev`.
+
+To deploy again without a change, run the workflow `build` by hand on `main`. To go back to an earlier version:
+
+- revert the commit on `main`, which builds and deploys again;
+- or, for 7 days, re-run the job `deploy` of the run of an earlier commit, which deploys that run's artifact;
+- or run `npx wrangler rollback` in `site/` with a token that can edit Workers.
+
+⚠ Workers Builds in the Cloudflare dashboard must stay off for this Worker, or two deploys race.
 
 ## What the Worker serves
 
