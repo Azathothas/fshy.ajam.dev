@@ -8,7 +8,7 @@ The public wiki, and its read-only API and MCP endpoint. Everything it serves co
 | `wrangler.jsonc` | the Worker `fshy`: static assets from `dist/`, the custom domain `fshy.ajam.dev`, the API and MCP routes |
 | `worker/` | the Worker: sql.js (SQLite in WebAssembly) over the store's Worker copy, the API, the MCP server |
 | `worker/test/` | the Worker's tests: `run.mjs` runs under node with fake bindings; `smoke.mjs` runs the Worker on workerd with `wrangler dev` |
-| `static/` | the stylesheet, the browser script, vendored MiniSearch 7.2.0 (MIT), `_headers` |
+| `static/` | the stylesheet, the browser script, vendored MiniSearch 7.2.0 (MIT), the favicon, `_headers` |
 | `dist/` | the built site. Generated, never committed |
 
 ## Build and preview
@@ -36,11 +36,13 @@ Then test the Worker and the files for agents from the repository root:
 node site/worker/test/run.mjs
 node site/worker/test/smoke.mjs
 python publish/test_llms.py --site site/dist
+python publish/test_weight.py --site site/dist
 python publish/test_publish.py
 ```
 
 `smoke.mjs` starts `wrangler dev` on port 8791, or on the port in `FSHY_SMOKE_PORT`. It asks the API, the SQL
-route and the MCP endpoint, and it stops wrangler by the PID that it started.
+route, the MCP endpoint, the route patterns of `wrangler.jsonc` and the download of the store, and it stops
+wrangler by the PID that it started. `test_weight.py` fails when a page or a shared file is over its budget.
 
 ## The pages
 
@@ -51,15 +53,26 @@ tokens are at the top of the stylesheet.
 
 | what a reader scans | where |
 | --- | --- |
-| verdict, name, parsed price, summary, then identity, card, phone, binding limit, evidence rung and freshness | every offer row: topic pages, rejected pages, best-per-need lists, the graveyard, search results |
-| verdict, parsed price, identity, binding limit, evidence, freshness | the six facts at the top of each record, above the detail table |
+| verdict, name, parsed price, one line, then free tier, identity, card, phone, limit, evidence and the stale date | every offer row: topic pages, paid and rejected pages, best-per-need lists, the graveyard, search results |
+| the free allowance, then verdict, cost, identity, binding limit with its value, evidence, freshness | the facts at the top of each record, above the detail table |
 
-Freshness and the filter chips are computed in the browser against today, so a page built today stays correct
-tomorrow. Both asset URLs carry `?v=` and the first ten hex digits of the file's SHA-256. A deploy that changes
-either file thus reaches a browser that holds the old copy, because `_headers` caches `/assets/*` for a day.
+A name that two records of one provider share gets the tier, the rest of the slug or the topic in parentheses.
+The one line of a row is the summary of the free tier; for a rejected or dead offer, it says why. A topic page
+lists the usable and the trial offers; the paid offers are on `/t/<topic>/paid/`. A provider with more than 12
+records has a page for each record, `/p/<id>/<topic>--<slug>/`, and its own page lists them. Each run of a
+non-Latin script carries its `lang`. The labels of a row are in the markup, so a reader mode, a text browser and
+an agent get them. A key under the filter bar says what each word and mark means.
 
-⚠ The page shell (header, topic bar, footer) repeats on about 2,900 provider pages, so each byte added to it is
-paid on each of them. Keep markup that only the script uses, such as the ARIA state of the search box, in the
+The browser computes freshness and the filter chips against today, so a page built today stays correct tomorrow.
+The page says "stale on" a date; the script turns that into "fresh until" or "stale since". The script keeps the
+pressed chips in `?f=` and the interface text in `?i=`, so a filtered list is a link. Without JavaScript the
+filter bar stays hidden, and the search and compare pages name the API route that answers instead. Both asset
+URLs carry `?v=` and the first ten hex digits of the file's SHA-256. A deploy that changes either file thus
+reaches a browser that holds the old copy, because `_headers` caches `/assets/*` for a day.
+
+⚠ The page shell (header, topic bar, footer) repeats on about 3,300 pages, so each byte added to it is paid on
+each of them. `publish/test_weight.py` holds it under 2,200 bytes, and the shared stylesheet and script under
+12,000 bytes gzip. Keep markup that only the script uses, such as the ARIA state of the search box, in the
 script. The footer links to the licence and to the report section of the about page with relative links, which
 are short. Each record has a "report an error" link that opens the Correction form of the source repository with
 the record filled in.
@@ -143,10 +156,22 @@ To deploy again without a change, run the workflow `build` by hand on `main`. To
 
 ## What the Worker serves
 
-Static files are served without running the Worker. The Worker runs only for `/api/v1/search`,
-`/api/v1/records`, `/api/v1/sql`, `/api/v1/need/*`, `/api/v1/worklist/*`, `/api/v1/record/*`,
-`/api/v1/entity-search`, `/mcp` and `/r/*`. It loads the store's Worker copy once per isolate. That copy is the
-public store without record JSON, leaves and evidence quotes, which are served as static files.
+Static files are served without running the Worker. The Worker runs for every path of `/api/v1/`, except the
+static files that the build writes there (`entity/*`, `names.json`, `needs.json`, `vocab.json`, `schema.sql`,
+`help.txt`), and for `/mcp`, `/r/*` and `/data/fshy-public.sqlite.gz`. `run_worker_first` in `wrangler.jsonc`
+lists them, and `smoke.mjs` checks the exceptions. So `/api/v1/` lists the routes, an unknown route gets a JSON
+404, and a `.tsv` suffix works on every route. The Worker loads the store's Worker copy once per isolate. That copy
+is the public store without record JSON, leaves and evidence quotes, which are served as static files. The rate
+limit runs before the load, so a request that gets 429 costs no load. The first search of an isolate reads the
+name index that the build writes (`name_index` in `data/manifest.json`) and does not normalise every alias again.
+
+**The download of the store.** The build writes the gzip of the public store in parts of 10 MiB under
+`data/w/`, and `data/manifest.json` names them with the size and the SHA-256 of the whole file. The Worker streams
+the parts in order at `/data/fshy-public.sqlite.gz`, so the URL stays one file, and no part nears the 25 MiB
+limit of a static asset as the corpus grows. The route loads no store.
+
+The Worker does not cache an API answer at the edge: Workers Cache would bill the static requests that are free
+now, and its key is the full URL, so a crawler that changes `q` or `offset` would gain nothing from it.
 
 **The SQL route and the MCP tool `sql`.** The first two checks refuse a statement before it runs, with a 400
 that says why. The platform stops what they miss.
@@ -173,28 +198,39 @@ that says why. The platform stops what they miss.
    platform's error page "Error 1102: Worker exceeded resource limits", not JSON. Cloudflare's documentation does
    not give its HTTP status. `wrangler dev` does not enforce `cpu_ms`: a statement of 573 ms ran there with
    `cpu_ms` set to 50.
-4. The rate limits: 30 SQL requests a minute for each address.
+4. The rate limits, for each address: 30 SQL requests a minute, and 120 other requests a minute. Each MCP
+   `tools/call` counts one, and a batch of MCP messages holds at most 5, so one request cannot carry more work
+   than five calls. The namespace ids of `wrangler.jsonc` (47201, 47202) are not the example values of the
+   documentation, because two bindings with one id share their counters across the Workers of an account.
 
-**Why `cpu_ms` is 2,500.** It is at least three times the costliest request that the Worker accepts. Measured on
-2026-10-29 with `wrangler dev` (wrangler 4.154.0, sql.js 1.15.2) on the operator's computer. Each time is the
-wall time of the request at the client, the largest of three. The CPU time is lower, because the cold load waits
-on the assets.
+**Why `cpu_ms` is 2,500.** It is about three times the costliest request that the Worker accepts. Measured on
+2026-10-29 with `wrangler dev` (wrangler 4.154.0, sql.js 1.15.2) on the operator's computer, which ran other jobs at
+the same time. Each time is the wall time of the request at the client, in three runs; a first request ran on a
+new `wrangler dev` each time. The CPU column is `process.cpuUsage()` of the Worker's modules under node, after the
+first request (a warm isolate). The store load comes from the header `Server-Timing` of the first request.
 
-| request | ms |
-| --- | --- |
-| the first request of an isolate, a search: the store load (107 ms) and the search | 260 |
-| the first request, `need` or the MCP `get` of 5 full records | 158 to 165 |
-| the first request, the costliest accepted statement that completes (below) | 574 |
-| the first request, the costliest accepted statement: `count(DISTINCT ...)` over 1.5 million rows, stopped by the heap limit | 718 |
-| a warm statement: `sum(length(printf('%1000s%1000s%1000s', ...)))` over `limit_row` x `fx` | 432 |
-| a warm statement at the budget: `LIKE`, `strftime()`, `lower()`, 20 calls a row, `||` | 146 to 286 |
-| the heaviest warm API request: `search` with offset 1,000 | 41 |
-| every other warm API request and MCP tool (`records`, `need`, `worklist`, `get`, `entity`, `help`) | 22 or less |
-| a refusal of the guard or the budget | 8 or less |
+| request | ms at the client, 3 runs | CPU ms, node |
+| --- | --- | --- |
+| the first request of an isolate, a search: the store load (110 to 121) and the search | 238 to 246 | |
+| the first request, `need` with 200 rows | 185 to 211 | |
+| the first request, an MCP batch of 5 searches of 25 words each | 366 to 493 | |
+| the first request, the costliest accepted statement that completes: `sum(length(printf('%1000s%1000s%1000s', ...)))` over `limit_row` x `fx` | 674 to 1,130 | |
+| the first request, `count(DISTINCT ...)` over 1.5 million rows, stopped by the heap limit | 713 to 1,111 | |
+| a warm statement: the `printf()` statement above | 683 to 702 | 547 to 579 |
+| a warm statement: the `count(DISTINCT ...)` above | 794 to 800 | 594 to 672 |
+| a warm statement at the budget: `strftime()` over `claim` x `capture` | 561 to 659 | |
+| a warm MCP batch of 5 searches for `a`, 50 rows each | 256 to 289 | 360 to 375 |
+| the heaviest warm API request: `search` for `a` | 57 to 63 | |
+| `search` with one word 40 times, after the change that counts it once | 33 to 35 | |
+| every other warm API request and MCP tool (`records`, `need`, `worklist`, `record`, `get`, `entity-search`) | 45 or less | |
+| a refusal of the guard or the budget | 16 or less | |
+| the download of the store, 16.6 MB streamed from 2 parts | 105 to 130 | |
 
-The costliest request is 718 ms, so 2,500 ms is a margin of 3.5. The hardware of the platform can be slower than
-this computer. A statement that the budget accepts can still run longer: the weight does not see a long value
-that a row builds. The platform stops that statement.
+The slowest run of the costliest request took 1,130 ms, and the middle run 700 ms, so 2,500 ms is a margin of 2.2
+over the slowest run and 3.6 over the middle one. A wall time includes the wait on the assets, so the CPU time of
+the same request is lower. A batch of MCP messages holds at most 5 calls, so a batch stays under 500 ms. The
+hardware of the platform can be slower than this computer. A statement that the budget accepts can still run
+longer: the weight does not see a long value that a row builds. The platform stops that statement.
 
 **Headers.** `static/_headers` sets a Content-Security-Policy on every page: scripts, styles, images and requests
 come from the site itself only. `smoke.mjs` checks that `wrangler dev` sends it. A response of the Worker, for
