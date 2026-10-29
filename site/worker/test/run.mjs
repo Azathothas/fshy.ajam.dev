@@ -1069,7 +1069,12 @@ test('self-hosted last: every list of the API, the MCP tools and the static file
   const { store } = await getStore(env, globalThis.__fshyWasm);
   const q = (sql) => (store.db.exec(sql)[0] || { values: [] }).values;
   const sh = new Set(q('SELECT rid FROM record WHERE self_hosted = 1').map((r) => r[0]));
-  if (!sh.size) { t.skip('the store has no self-hosted record (data of schema_version 1)'); return; }
+  if (!sh.size) {
+    // CI runs this file a second time on a copy of data/ with self-hosted records (publish/fixture_selfhosted.py)
+    assert.notEqual(process.env.FSHY_SELF_HOSTED, 'required', 'FSHY_SELF_HOSTED=required, and the store has no self-hosted record');
+    t.skip('the store has no self-hosted record (data of schema_version 1)');
+    return;
+  }
   const after = (rids, what) => {
     let first = null;
     for (const rid of rids) {
@@ -1124,9 +1129,34 @@ test('self-hosted last: every list of the API, the MCP tools and the static file
     }
   }
   // the case that showed the defect: the self-hosted OpenList software ranked its vendor above a hosted public instance
-  if (q("SELECT count(*) FROM entity WHERE eid IN ('chirmyram', 'github-openlistteam')")[0][0] === 2) {
+  if (q("SELECT count(*) FROM entity WHERE eid IN ('chirmyram', 'github-openlistteam')")[0][0] === 2 &&
+    allSelf.has('github-openlistteam') && !allSelf.has('chirmyram')) {
     const ol = (await call('/api/v1/entity-search?limit=50&q=openlist')).json.rows.map((r) => r[0]);
     assert.ok(ol.includes('chirmyram') && ol.indexOf('chirmyram') < ol.indexOf('github-openlistteam'), 'openlist: ' + ol.slice(0, 6).join(', '));
+  }
+  // a name lookup gives one entity: the exact name of a self-hosted vendor wins over a fuzzy or prefix match of a hosted
+  // vendor that the name search lists first (rank.resolveEntity); a hosted entity wins only a tie
+  let lookups = 0;
+  for (const [se, sname] of q('SELECT e.eid, e.name FROM entity e WHERE e.eid IN (SELECT eid FROM record GROUP BY eid ' +
+    'HAVING min(self_hosted) = 1) ORDER BY e.eid LIMIT 400')) {
+    const list = (await call('/api/v1/entity-search?limit=50&q=' + encodeURIComponent(sname))).json;
+    const [sc, mt] = ['score', 'match'].map((c) => list.columns.indexOf(c));
+    const mine = list.rows.find((r) => r[0] === se);
+    if (!mine || mine[mt] !== 'exact' || list.rows[0][0] === se) continue;
+    // the first entity with the best score, in the order of the list: a hosted entity that ties comes first, and wins
+    const top = Math.max(...list.rows.map((r) => r[sc]));
+    if (list.rows.find((r) => r[sc] === top)[0] !== se) continue;
+    const m = await rpc('tools/call', { name: 'entity', arguments: { name: sname } });
+    const lines = m.json.result.content[0].text.split('\n');
+    assert.ok(lines.some((l) => l.startsWith('# entity ' + se + ': ')),
+      `MCP entity ${JSON.stringify(sname)} resolves to ${se}, not to the first of ${list.rows.slice(0, 3).map((r) => r[0]).join(', ')}`);
+    assert.ok(lines.includes('# self-hosted: every record of this entity is self-hosted, so it is the last resort'), lines.join('\n'));
+    lookups++;
+  }
+  assert.ok(lookups > 0, 'a self-hosted vendor whose exact name is listed below a hosted match of the name search');
+  if (allSelf.has('coder')) {
+    const c = await rpc('tools/call', { name: 'entity', arguments: { name: 'coder' } });
+    assert.ok(c.json.result.content[0].text.split('\n').some((l) => l.startsWith('# entity coder: ')), 'MCP entity coder resolves to coder');
   }
   // filter: page by page, a page boundary inside the hosted part included
   const [[topic, grp]] = q('SELECT topic, grp FROM record WHERE duplicate_of IS NULL GROUP BY topic, grp HAVING ' +
@@ -1170,6 +1200,12 @@ test('self-hosted last: every list of the API, the MCP tools and the static file
     const w = await call(base + `&limit=200&offset=${Math.max(0, total - 200)}`);
     assert.ok(after(w.json.rows.map((r) => r[0]), 'worklist ' + kind) > 0, 'worklist ' + kind + ' ends with self-hosted rows');
   }
+  // drift: a pair of records, sorted on the self_hosted of its subject first
+  const drift = [];
+  const dTotal = (await call('/api/v1/worklist/drift?limit=1')).json.total;
+  for (let off = 0; off < dTotal; off += 200) drift.push(...(await call('/api/v1/worklist/drift?limit=200&offset=' + off)).json.rows);
+  assert.equal(drift.length, dTotal);
+  after(drift.map((r) => r[1]), 'worklist drift');
   if (HAVE_DIST) {
     const ef = await call(`/api/v1/entity/${mixed}.json`);
     after(ef.json.records.map((r) => r.rid), 'the entity file of ' + mixed);

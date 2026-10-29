@@ -67,7 +67,9 @@ size of each file against the static asset limit of Workers (25 MiB). It warns a
 checks each page and each file for agents as it writes them, in memory: a list that puts a self-hosted record above
 a hosted one, a self-hosted row with a star or a verdict pill, or a Markdown line of a self-hosted record that does not
 open with its label, is an order problem
-([`selfhosted.py`](selfhosted.py), and `AGENTS.md` rule 8). One leak hit, one file over the limit, or one order
+([`selfhosted.py`](selfhosted.py), and `AGENTS.md` rule 8). A dated changelog is not a list of offers: the page
+`/changes/`, the feed `changes.xml` and the worklist `changes` keep their date order, and their rows carry no verdict
+pill and no star, so the check does not read them. One leak hit, one file over the limit, or one order
 problem fails the build. When `data/meta.json` has `files_sha256`, the build
 recomputes it and refuses data that changed after the export, with exit 3. The scan of a directory runs in up to 8
 processes when its files hold more than 16 MiB.
@@ -115,7 +117,9 @@ of this repository that the research repository pins. Its `guard_lists` holds th
 `rank.entityOrder` hold the cases of the self-hosted rule: the stable split of a list, and the order of the entities
 of a name search. `rank.bestVorder` holds the cases of the best verdict of an entity: of its hosted records, or of all
 its records when every one is self-hosted. A case of `entityOrder` with `members` takes its `best_vorder` from them.
-The twins are `hosted_first()` and `sort_entities()` of `fr.py`, and `entity.best_vorder` of the research `build.py`. The statement budget (`plan.js`) and
+`rank.entityResolve` holds the cases of a name lookup, which gives one entity: the best score wins, and a hosted entity
+wins only a tie. The twins are `hosted_first()`, `sort_entities()`, `resolve_entity()` and `best_vorder()` of `fr.py`,
+and `entity.best_vorder` of the research `build.py`. The statement budget (`plan.js`) and
 the heap limit have no twin: they need the Worker's copy of the store.
 
 To change a rule, do these steps in this order:
@@ -162,6 +166,7 @@ publish:
 | `test_llms.py` | the selftest of `llms.py`, over the store that `build.py` writes |
 | `test_publish.py` | the selftest of the contract and of `files_sha256`, of the export's refusals, of the leak rules and `--scan`, of the lists that are copied by hand, of the helpers that the pages share, of the self-hosted rule and its check, and of the worked queries of the primer |
 | `test_weight.py` | the weight budget of the built site: the shared files, the page shell, and each kind of page |
+| `fixture_selfhosted.py` | for CI: a copy of `data/` at version 2 in which some records are self-hosted, while `data/` has none, so that the build, `run.mjs` and `test_llms.py` test the self-hosted order on every pull request |
 | `primer.py` | the text primer of the store: schema, vocabularies, worked queries |
 | `schema.sql` | the store schema, shared by the Worker |
 | `rules/needs.json` | the best-per-need queries |

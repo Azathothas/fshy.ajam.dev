@@ -451,13 +451,22 @@ def html_checks(dist, man):
     for nid, (_, sections) in llms.NEED_SPLITS.items():
         page = pages.get("need/%s/index.html" % nid, "")
         page = page.split('id="unstated"')[0]  # the section of the requirements that are not stated has its own check
-        got = re.findall(r'<h2 id="([a-z]+)">[^<]*<small>(\d+)</small></h2>', page)
+        got = re.findall(r'<h2 id="([a-z-]+)">[^<]*<small>(\d+)</small></h2>', page)
         rows = len(re.findall(r'<li class="e"', page))
         md = read(os.path.join(dist, "need", nid + ".md"))
+        # the self-hosted rows of a split need are one last section of their own, after every split section; its
+        # Markdown lines are a list, not a ranking
+        split = [(k, n) for k, n in got if k != "self-hosted"]
+        last = [(k, n) for k, n in got if k == "self-hosted"]
+        md_sh = md.split("\n## Self-hosted, the last resort (", 1)[1] if last else ""
+        md_rows = len(re.findall(r"^\d+\. ", md.split("\n## Self-hosted, the last resort (", 1)[0], re.M)) + \
+            len(re.findall(r"^- \[", md_sh, re.M))
         check("the need %s is split into sections that name what they hold, and no row is lost (F-15, F-19)" % nid,
-              got and [k for k, _ in got] == [k for k, _, _ in sections if k in {g for g, _ in got}]
-              and sum(int(n) for _, n in got) == rows == len(re.findall(r"^\d+\. ", md, re.M))
-              and all(("## %s (" % h) in md for k, h, _ in sections if k in {g for g, _ in got}), (got, rows))
+              split and [k for k, _ in split] == [k for k, _, _ in sections if k in {g for g, _ in split}]
+              and got == split + last and len(last) <= 1
+              and sum(int(n) for _, n in got) == rows == md_rows
+              and all(("## %s (" % h) in md for k, h, _ in sections if k in {g for g, _ in split})
+              and all(("## Self-hosted, the last resort (%s)" % n) in md for _, n in last), (got, rows))
     topic = pages.get("t/storage/index.html", "")
     check("the filter bar is hidden until the script shows it, and a key follows it (U-02, U-10)",
           '<div class="chips" role="group" aria-label="filters" hidden>' in topic and '<details class="key">' in topic)
