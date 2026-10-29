@@ -15,6 +15,12 @@ page or file that they write to check(), which reads the text that is already in
 A problem is a hosted row below a self-hosted row of the same page or file, a self-hosted row with a verdict pill or a
 star, or a Markdown line of a self-hosted record that does not open with LABEL. problems() gives them, and the build
 fails on one. Standard library only.
+
+A dated changelog is not a list of offers, so it is not split: the page /changes/ (its ledger and history tables), the
+feed changes.xml and the worklist changes of the API keep their date order, as the worklist changes of fr.py does.
+Their rows name record ids with no verdict pill and no star, and the check reads only offer rows (ROW, SECTION) and the
+Markdown lines of a record (MD_ENTRY, MD_HEAD), so it does not read them. A new list of offers on such a page needs a
+ROW or a SECTION, so that the check reads it.
 """
 import re
 

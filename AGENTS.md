@@ -49,8 +49,13 @@ request. A merge session reviews that pull request, merges it, and exports the p
    - The best verdict of an entity (`entity.best_vorder`, `bestVorder` of `rank.js`) is the best verdict of its hosted
      records, or of all its records only when every one is self-hosted. A self-hosted record never lifts its vendor.
    - Filter: `ORDER BY self_hosted, <sort> IS NULL, <sort> <dir>, vorder, rid`. Entity: `ORDER BY self_hosted,
-     vorder, rid`. The worklists stale and unparsed sort on `self_hosted` first. The worklists drift and changes keep
-     their own order: drift lists pairs of records that disagree, and changes is a log in time order.
+     vorder, rid`. The worklists stale and unparsed sort on `self_hosted` first, and the worklist drift sorts on the
+     `self_hosted` of its subject first.
+   - A name lookup (the operation entity with a name) gives one entity, not a list. The best score wins
+     (`resolveEntity` of `rank.js`), so an exact name is never beaten by a fuzzy match of another vendor. A hosted
+     entity wins only a tie. The other matches keep the order of the name search.
+   - A dated changelog is not a list of offers: `/changes/`, `changes.xml` and the worklist changes keep their date
+     order. Their rows show no verdict pill and no star.
    - Need: the hosted ranked rows, the hosted rows with no number, the hosted rows whose card or phone requirement is
      not stated, then the self-hosted rows in the same order. The API gives the self-hosted rows in
      `self_hosted_rows`.
@@ -59,12 +64,14 @@ request. A merge session reviews that pull request, merges it, and exports the p
    - A Markdown line of a self-hosted record opens with the label, then `verdict <word>`.
    - A count of a topic counts the hosted records of each group, and the self-hosted records of the topic once.
 
-   The rule is in [`publish/selfhosted.py`](publish/selfhosted.py) and in `hostedFirst`, `sortEntities` and
-   `bestVorder` of [`site/worker/rank.js`](site/worker/rank.js). The research repository has the twins
-   `hosted_first` and `sort_entities` in `fr.py`, and `entity.best_vorder` in `build.py`. `build.py` refuses data
-   whose `best_vorder` breaks the rule. `build.py --site` fails when a page or a file puts a self-hosted row above a
-   hosted one, stars it, or gives its verdict before its label. `run.mjs` checks the API and the MCP tools, and
-   `parity.json` holds the cases of the three rules of `rank.js`.
+   The rule is in [`publish/selfhosted.py`](publish/selfhosted.py) and in `hostedFirst`, `sortEntities`,
+   `resolveEntity` and `bestVorder` of [`site/worker/rank.js`](site/worker/rank.js). The research repository has the
+   twins `hosted_first`, `sort_entities`, `resolve_entity` and `best_vorder` in `fr.py`, and `entity.best_vorder` in
+   `build.py`. `build.py` refuses data whose `best_vorder` breaks the rule. `build.py --site` fails when a page or a
+   file puts a self-hosted row above a hosted one, stars it, or gives its verdict before its label. `run.mjs` checks
+   the API and the MCP tools, and `parity.json` holds the cases of the four rules of `rank.js`. CI also runs them on a
+   copy of `data/` at version 2 with some records marked self-hosted (`publish/fixture_selfhosted.py`), while `data/`
+   has no self-hosted record.
 
 ## 3. Which document answers which question
 
