@@ -397,6 +397,15 @@ def html_checks(dist, man):
     search, compare = pages.get("search/index.html", ""), pages.get("compare/index.html", "")
     check("the search and compare pages say what to do without JavaScript (U-02)",
           "<noscript>" in search and "/api/v1/search?q=" in search and "<noscript>" in compare and "/api/v1/record/" in compare)
+    for nid, (_, sections) in llms.NEED_SPLITS.items():
+        page = pages.get("need/%s/index.html" % nid, "")
+        got = re.findall(r'<h2 id="([a-z]+)">[^<]*<small>(\d+)</small></h2>', page)
+        rows = len(re.findall(r'<li class="e"', page))
+        md = read(os.path.join(dist, "need", nid + ".md"))
+        check("the need %s is split into sections that name what they hold, and no row is lost (F-15, F-19)" % nid,
+              got and [k for k, _ in got] == [k for k, _, _ in sections if k in {g for g, _ in got}]
+              and sum(int(n) for _, n in got) == rows == len(re.findall(r"^\d+\. ", md, re.M))
+              and all(("## %s (" % h) in md for k, h, _ in sections if k in {g for g, _ in got}), (got, rows))
     topic = pages.get("t/storage/index.html", "")
     check("the filter bar is hidden until the script shows it, and a key follows it (U-02, U-10)",
           '<div class="chips" role="group" aria-label="filters" hidden>' in topic and '<details class="key">' in topic)

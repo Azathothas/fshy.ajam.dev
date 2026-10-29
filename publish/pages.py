@@ -734,18 +734,27 @@ class Site:
 
         def items(rs):
             return "".join(self.entry(cards[r[0]], wt, shown(cards[r[0]], r[1])) for r in rs)
+        # a list that mixes kinds of offer is split into sections by what the fields say (llms.NEED_SPLITS); each section
+        # keeps the order of the list
+        sections = llms.need_sections(cards, x, ranked + unranked)
+        if sections:
+            lists = '<p class="jump"><b>Sections</b>%s</p>%s' % (
+                "".join('<a href="#%s">%s <small>%s</small></a>' % (e(k), e(h), num(len(rs))) for k, h, _, rs in sections),
+                "".join('<h2 id="%s">%s <small>%s</small></h2><p class="lede">%s</p><ol class="%s rank">%s</ol>' % (
+                    e(k), e(h), num(len(rs)), e(t), self.lane([cards[r[0]] for r in rs]), items(rs)) for k, h, t, rs in sections))
+        else:
+            lists = '<ol class="%s rank">%s</ol>%s' % (
+                self.lane([cards[r[0]] for r in ranked]), items(ranked),
+                ('<h2 id="unranked">No parsed number <small>%s</small></h2><p class="lede">These match the filter, but no '
+                 'price or quantity parsed from their text yet. They are listed, not dropped.</p><ul class="%s">%s</ul>' % (
+                    num(len(unranked)), self.lane([cards[r[0]] for r in unranked]), items(unranked))) if unranked else "")
         body = ('<p class="crumb"><a href="/">Home</a> / <a href="/need/">Best per need</a></p><h1>%s</h1><p class="lede">%s</p>'
-                '<p class="needs"><b>Ranked by</b>%s, then the evidence &middot; %s ranked%s</p>%s'
-                '<ol class="%s rank">%s</ol>%s'
+                '<p class="needs"><b>Ranked by</b>%s, then the evidence &middot; %s ranked%s</p>%s%s'
                 '<details><summary>The query</summary><pre>%s\nORDER BY %s ASC NULLS LAST</pre><p>Run it yourself: '
                 '<a href="/api/v1/need/%s">/api/v1/need/%s</a>, or the MCP tool <code>need</code>.</p></details>') % (
             e(x["title"]), e(x["scope"]), e(SORT_LABEL.get(key, key)), num(len(ranked)),
             (' &middot; <a href="#unranked">%s with no parsed number</a>' % num(len(unranked))) if unranked else "",
-            self.filters(), self.lane([cards[r[0]] for r in ranked]), items(ranked),
-            ('<h2 id="unranked">No parsed number <small>%s</small></h2><p class="lede">These match the filter, but no '
-             'price or quantity parsed from their text yet. They are listed, not dropped.</p><ul class="%s">%s</ul>' % (
-                num(len(unranked)), self.lane([cards[r[0]] for r in unranked]), items(unranked)))
-            if unranked else "", e(x["sql"]), e(key), e(x["id"]), e(x["id"]))
+            self.filters(), lists, e(x["sql"]), e(key), e(x["id"]), e(x["id"]))
         self.page("need/%s/index.html" % x["id"], x["title"], body, x["scope"])
 
     def needs_index(self):

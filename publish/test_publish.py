@@ -354,6 +354,21 @@ def helper_checks(tmp):
           ({"free_unit": "mixed", "verdict": "paid-only"}, "no free tier"), ({"free_unit": "GB", "verdict": "dead"}, "no free tier")]
     badw = [(c, llms.free_word(c)) for c, w in fw if llms.free_word(c) != w]
     check("free_word never says 'free tier' for a paid-only or a dead offer, or for a unit of none (F-05, F-25)", not badw, badw)
+    kinds = [({"verdict": "trial-only", "free_unit": "hours"}, "trial"), ({"verdict": "qualifies", "free_unit": "hours"}, "time"),
+             ({"verdict": "qualifies-with-caveat", "free_unit": "seconds"}, "time"), ({"verdict": "qualifies", "free_unit": "mixed"}, "other"),
+             ({"verdict": "qualifies", "free_unit": "GiB"}, "other"), ({"verdict": "qualifies-with-caveat", "free_unit": "none"}, "none"),
+             ({"verdict": "qualifies", "free_unit": None}, "none")]
+    badk = [(c, llms.allowance_kind(c)) for c, w in kinds if llms.allowance_kind(c) != w]
+    check("allowance_kind puts a trial first, then a unit of time, another unit, and no unit (F-15)", not badk, badk)
+    cards = {"a": {"verdict": "qualifies", "free_unit": "none", "topic": "compute"}, "b": {"verdict": "trial-only", "free_unit": "mixed", "topic": "compute"},
+             "c": {"verdict": "qualifies", "free_unit": "hours", "topic": "compute"}, "d": {"verdict": "qualifies", "free_unit": "hours", "topic": "inference"}}
+    rows = [("a", 0), ("b", 1), ("c", 1), ("d", 2)]
+    sec = llms.need_sections(cards, {"id": "free-gpu"}, rows)
+    inf = llms.need_sections(cards, {"id": "inference-no-card-no-phone"}, rows)
+    check("a need that mixes kinds is split into its sections in order, with the empty ones left out and the order of the list kept (F-15, F-19)",
+          [(k, [r[0] for r in rs]) for k, _, _, rs in sec] == [("time", ["c", "d"]), ("trial", ["b"]), ("none", ["a"])]
+          and [(k, [r[0] for r in rs]) for k, _, _, rs in inf] == [("inference", ["d"]), ("other", ["a", "b", "c"])]
+          and llms.need_sections(cards, {"id": "free-storage-no-card"}, rows) is None, (sec, inf))
     days = [("2026-10-21T00:00:00.000Z", "2026-10-21"), ("2026-10-21", "2026-10-21"), ("2026-10-21T08:30:00Z", "2026-10-21T08:30:00Z")]
     badd = [(v, llms.day(v)) for v, w in days if llms.day(v) != w]
     check("a verified date prints as YYYY-MM-DD when its time is midnight (W-32)", not badd, badd)

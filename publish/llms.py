@@ -288,6 +288,52 @@ def need_rows(db, x, cards):
     return ranked, unranked
 
 
+def allowance_kind(c):
+    """The kind of free allowance that the fields of a record give: a one-time trial (the verdict trial-only), an
+    allowance in a unit of time, in another unit, or no unit. The data has no field that says whether a credit is a
+    grant, a trial or a paid discount: the sections say what they hold and what they cannot tell apart."""
+    if c["verdict"] == "trial-only":
+        return "trial"
+    u = c.get("free_unit")
+    return "time" if u in ("hours", "minutes", "seconds") else ("none" if u in (None, "none") else "other")
+
+
+def inference_filing(c):
+    """Where the catalogue files a record of an inference list: in the topic inference, or in another topic."""
+    return "inference" if c["topic"] == "inference" else "other"
+
+
+# The needs that mix kinds of offer. need id -> (the function that gives the section of a card, [(section, heading,
+# what it holds)] in order). The order inside a section is the order of the list.
+NEED_SPLITS = {
+    "free-gpu": (allowance_kind, [
+        ("time", "Free allowance counted in time",
+         "The record states a free allowance in hours, minutes or seconds. A record whose free tier is a discount or a paid "
+         "spot price can be here too, because the data has no field that tells a free allowance from a price."),
+        ("other", "Free allowance in credits or another unit",
+         "The record counts its free allowance in credits, in storage, or in a mix of units, and not in time."),
+        ("trial", "One-time trial or credit",
+         "The verdict is trial-only: a time-boxed or one-time trial, not a recurring allowance."),
+        ("none", "No free allowance in the record",
+         "The record states no unit of free allowance. Grants, programmes and paid offers are here, and the data has no "
+         "field that tells them apart.")]),
+    "inference-no-card-no-phone": (inference_filing, [
+        ("inference", "Filed under Inference", "Records of the topic Inference."),
+        ("other", "Filed under another topic, with the category inference",
+         "These records are not in the topic Inference. A record here can be a speech, image or other model API, because "
+         "the data has no field for the kind of model API: read the record.")]),
+}
+
+
+def need_sections(cards, x, rows):
+    """[(section, heading, text, rows)] of a need that NEED_SPLITS splits, without the empty sections; None for any other
+    need. rows are the (rid, value) rows of the need in list order."""
+    if x["id"] not in NEED_SPLITS:
+        return None
+    kind, sections = NEED_SPLITS[x["id"]]
+    return [(k, h, t, [r for r in rows if kind(cards[r[0]]) == k]) for k, h, t in sections if any(kind(cards[r[0]]) == k for r in rows)]
+
+
 def topics(in_data):
     """(topic, name, description): the wiki's own list and order, then any topic only the data has."""
     known = []
@@ -704,6 +750,12 @@ def generate(pub_db, dist):
                      "Ranked by `%s`, ascending; the rows with no parsed number follow, listed and not dropped. The same "
                      "list: `%s/api/v1/need/%s`, the MCP tool `need`, or this SQL:" % (key, BASE, x["id"]), "",
                      "```sql", x["sql"], "ORDER BY %s ASC NULLS LAST" % key, "```", ""] + cut_note(cap)
+            sections = need_sections(st.cards, x, ranked + unranked)
+            if sections:
+                for k, h, t, rs in sections:
+                    lines += ["## %s (%s)" % (h, num(len(rs))), "", t, ""]
+                    lines += [entry_md(st, r[0], "%d. " % i, cap) for i, r in enumerate(rs, 1)] + [""]
+                return "\n".join(lines)
             if ranked:
                 lines += ["## Ranked (%s)" % num(len(ranked)), ""]
                 for i, r in enumerate(ranked, 1):
