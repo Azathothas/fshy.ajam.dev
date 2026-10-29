@@ -5,14 +5,15 @@
 import { all, asset, capped, engineFailed, HEAP_LIMIT_MIB, HttpError, nameIndex, reset } from './db.js';
 import { guard, GuardError } from './guard.js';
 import { checkPlan } from './plan.js';
-import { bm25, scoreNames } from './rank.js';
+import { bm25, hostedFirst, scoreNames, sortEntities as orderEntities } from './rank.js';
 import { clip, ftsMatch } from './text.js';
 
 // ------------------------------------------------------------------ shapes
 
-export const CARD_COLUMNS = ['rid', 'provider', 'verdict', 'confidence', 'identity', 'card', 'phone',
+export const CARD_COLUMNS = ['rid', 'provider', 'verdict', 'self_hosted', 'confidence', 'identity', 'card', 'phone',
   'usd_month', 'usd_per_tb_month', 'stale_on', 'summary'];
-const CARD_SELECT = `rid, provider, verdict, confidence,
+// self_hosted is yes for software or a node that the user installs and runs: every list puts it after every hosted row
+const CARD_SELECT = `rid, provider, verdict, CASE self_hosted WHEN 1 THEN 'yes' ELSE 'no' END AS self_hosted, confidence,
   coalesce(identity_kind, '') || CASE WHEN identity_basis = 'defaulted' THEN '?' ELSE '' END AS identity,
   CASE needs_card WHEN 1 THEN 'yes' WHEN 0 THEN 'no' ELSE '?' END AS card,
   CASE needs_phone WHEN 1 THEN 'yes' WHEN 0 THEN 'no' ELSE '?' END AS phone,
@@ -21,7 +22,7 @@ const SUMMARY = CARD_COLUMNS.indexOf('summary');
 
 // record columns a caller may name in get(fields) for card detail (never rno, doc, leaf ranges)
 const RECORD_FIELDS = new Set(['rid', 'topic', 'slug', 'eid', 'provider', 'url', 'domain', 'category', 'tier',
-  'verdict', 'vorder', 'grp', 'confidence', 'binding', 'identity_kind', 'identity_basis', 'needs_card',
+  'verdict', 'vorder', 'grp', 'self_hosted', 'confidence', 'binding', 'identity_kind', 'identity_basis', 'needs_card',
   'needs_phone', 'needs_id', 'needs_institution', 'country', 'crypto', 'free_unit', 'free_metered_on',
   'egress_metered', 'per_object_bytes', 'retention_days', 'interfaces', 'verified_at', 'verified_basis',
   'checked_on', 'stale_on', 'limit_days', 'evidence_budget_days', 'evidence_newest', 'evidence_oldest',
@@ -180,10 +181,26 @@ function cardsByRid(db, rids) {
   return map;
 }
 
+/**
+ * The self-hosted records and entities of the store, once per isolate: {rids, eids}, where eids holds the entities whose
+ * every record is self-hosted. A self-hosted record is the last resort: every list puts it after every hosted one.
+ */
+function selfHosted(store) {
+  if (!store.cache.selfHosted) {
+    store.cache.selfHosted = {
+      rids: new Set(rows(store.db, 'SELECT rid FROM record WHERE self_hosted = 1').map((r) => r[0])),
+      eids: new Set(rows(store.db, 'SELECT eid FROM record GROUP BY eid HAVING min(self_hosted) = 1').map((r) => r[0])),
+    };
+  }
+  return store.cache.selfHosted;
+}
+
+const SELF_HOSTED_NOTE = (n, what) => `self-hosted: ${n} ${what}, listed after every hosted ${what === 'rows' ? 'row' : 'record'}`;
+
 function sortEntities(store, hits) {
   const ents = store.cache.entities;
-  const bv = (e) => (ents.get(e.eid) ? ents.get(e.eid).best_vorder : 99);
-  return hits.sort((a, b) => b.score - a.score || bv(a) - bv(b) || (a.eid < b.eid ? -1 : a.eid > b.eid ? 1 : 0));
+  const sh = selfHosted(store).eids;
+  return orderEntities(hits, (eid) => (ents.get(eid) ? ents.get(eid).best_vorder : 99), (eid) => sh.has(eid));
 }
 
 // ------------------------------------------------------------------ search
@@ -267,12 +284,17 @@ export function search(store, p) {
     }
   }
 
-  const page = order.slice(offset, offset + limit);
+  // 3. hosted first: the whole list, name hits and then text hits, splits in two, and each part keeps its order
+  const sh = selfHosted(store).rids;
+  const all = hostedFirst(order, (rid) => sh.has(rid));
+  const nSelf = all.filter((rid) => sh.has(rid)).length;
+  const page = all.slice(offset, offset + limit);
   const cards = cardsByRid(db, page);
   const out = page.filter((rid) => cards.has(rid)).map((rid) => [...cards.get(rid), matched.get(rid).join(',')]);
   notes.push(`name hits: ${nName} records; text hits: ${nText} more`);
+  if (nSelf) notes.push(SELF_HOSTED_NOTE(nSelf, 'records'));
   return table([...CARD_COLUMNS, 'matched'], out, {
-    total: order.length, offset, truncated: offset + out.length < order.length, notes,
+    total: all.length, offset, truncated: offset + out.length < all.length, notes,
   });
 }
 
@@ -292,8 +314,12 @@ export function entitySearch(store, p) {
     const e = ents.get(h.eid) || {};
     return [h.eid, e.name, e.domain, e.topics, e.n_records, e.best_vorder, h.score, h.how, h.alias];
   });
+  const notes = unknownParams(p, ENTITY_SEARCH_KEYS);
+  const sh = selfHosted(store).eids;
+  const nSelf = hits.filter((h) => sh.has(h.eid)).length;
+  if (nSelf) notes.push(`self-hosted: ${nSelf} entities whose every record is self-hosted, listed after every other entity`);
   return table(['eid', 'name', 'domain', 'topics', 'n_records', 'best_vorder', 'score', 'match', 'alias'], out, {
-    total: hits.length, offset, truncated: offset + out.length < hits.length, notes: unknownParams(p, ENTITY_SEARCH_KEYS),
+    total: hits.length, offset, truncated: offset + out.length < hits.length, notes,
   });
 }
 
@@ -349,8 +375,10 @@ export function filter(store, p) {
   const dir = order.toUpperCase();
   const extra = CARD_COLUMNS.includes(sort) || sort === 'vorder' ? [] : [sort];
   const sql = `SELECT ${CARD_SELECT}${extra.map((c) => ', ' + c).join('')} FROM record WHERE ${W}
-    ORDER BY ${sort} IS NULL, ${sort} ${dir}, vorder, rid LIMIT ? OFFSET ?`;
+    ORDER BY self_hosted, ${sort} IS NULL, ${sort} ${dir}, vorder, rid LIMIT ? OFFSET ?`;
   const out = rows(db, sql, [...fa, limit, offset]).map(fixCard);
+  const nSelf = scalar(db, `SELECT count(*) FROM record WHERE ${W} AND self_hosted = 1`, fa);
+  if (nSelf) notes.push(SELF_HOSTED_NOTE(nSelf, 'records'));
   return table([...CARD_COLUMNS, ...extra], out, {
     total, offset, truncated: offset + out.length < total, notes, excluded,
   });
@@ -460,7 +488,7 @@ export function entity(store, p) {
         (hits.length > 6 ? `, and ${hits.length - 6} more` : ''));
     }
   }
-  const out = rows(db, `SELECT ${CARD_SELECT} FROM record WHERE eid = ? ORDER BY vorder, rid`, [e.eid]).map(fixCard);
+  const out = rows(db, `SELECT ${CARD_SELECT} FROM record WHERE eid = ? ORDER BY self_hosted, vorder, rid`, [e.eid]).map(fixCard);
   notes.unshift(`entity ${e.eid}: ${e.name}` + (e.domain ? ` (${e.domain})` : '') +
     `; topics ${e.topics}; ${e.n_records} records; resolved by ${e.resolved_by}` + (e.review ? '; review: ' + e.review : ''));
   return table(CARD_COLUMNS, out, { notes, entity: e });
@@ -488,28 +516,33 @@ export async function need(store, env, p) {
   const limit = int(p.limit, 'limit', 50, 1, 200);
   const offset = int(p.offset, 'offset', 0, 0, 100000);
   // the need's own SQL (shipped with the build), joined to the record for the order of a tie: the verdict, the
-  // evidence rung, the later stale date, then the record id. publish/llms.py need_key is the same order.
-  const hits = all(store.db, `SELECT h.*, r.vorder AS _vorder, r.confidence AS _conf, r.stale_on AS _stale
-    FROM (${n.sql}) AS h JOIN record r ON r.rid = h.rid`);
+  // evidence rung, the later stale date, then the record id. publish/llms.py need_key is the same order. Self-hosted
+  // rows come after every hosted row: hosted ranked, hosted with no number, self-hosted ranked, self-hosted with none.
+  const hits = all(store.db, `SELECT h.*, r.vorder AS _vorder, r.confidence AS _conf, r.stale_on AS _stale,
+    r.self_hosted AS _sh FROM (${n.sql}) AS h JOIN record r ON r.rid = h.rid`);
   const key = n.sort;
   const ev = (x) => RUNG[x._conf] ?? RUNG_UNKNOWN;
   const later = (x, y) => ((y._stale || '') < (x._stale || '') ? -1 : (y._stale || '') > (x._stale || '') ? 1 : 0);
   const tie = (x, y) => x._vorder - y._vorder || ev(x) - ev(y) || later(x, y) || (x.rid < y.rid ? -1 : x.rid > y.rid ? 1 : 0);
   const ranked = hits.filter((h) => h[key] != null).sort((x, y) => x[key] - y[key] || tie(x, y));
   const nulls = hits.filter((h) => h[key] == null).sort(tie);
-  const seq = [...ranked, ...nulls];
+  const isSelf = (h) => h._sh === 1;
+  const seq = hostedFirst([...ranked, ...nulls], isSelf);
+  const nSelf = seq.filter(isSelf).length;
   const page = seq.slice(offset, offset + limit);
   const cards = cardsByRid(store.db, page.map((h) => h.rid));
   const extra = CARD_COLUMNS.includes(key) ? [] : [key];
   const toRow = (h) => [...cards.get(h.rid), ...extra.map((k) => h[k])];
-  const inPage = (h) => cards.has(h.rid);
-  const out = page.filter((h) => h[key] != null && inPage(h)).map(toRow);
-  const nullOut = page.filter((h) => h[key] == null && inPage(h)).map(toRow);
+  const shown = page.filter((h) => cards.has(h.rid));
+  const out = shown.filter((h) => !isSelf(h) && h[key] != null).map(toRow);
+  const nullOut = shown.filter((h) => !isSelf(h) && h[key] == null).map(toRow);
+  const selfOut = shown.filter(isSelf).map(toRow);
   notes.unshift(`${n.title}: ${n.scope}`);
   notes.push(`sorted by ${key} ascending; ${ranked.length} ranked, ${nulls.length} with no parsed ${key}`);
+  if (nSelf) notes.push(SELF_HOSTED_NOTE(nSelf, 'rows') + `, in self_hosted_rows: ranked, then with no parsed ${key}`);
   return table([...CARD_COLUMNS, ...extra], out, {
     total: seq.length, offset, truncated: offset + page.length < seq.length, notes, nullRows: nullOut, nullKey: key,
-    need: { id: n.id, title: n.title, topic: n.topic, sort: key, scope: n.scope, sql: n.sql },
+    selfRows: selfOut, need: { id: n.id, title: n.title, topic: n.topic, sort: key, scope: n.scope, sql: n.sql },
   });
 }
 
@@ -601,7 +634,7 @@ export function worklist(store, p) {
     notes.push(`as_of ${asOf}, forecast_days ${fd}: stale when stale_on <= ${cutoff}; verified_basis inherited means checked_on is an upper bound`);
     const W = w.join(' AND ');
     const t = page([...CARD_COLUMNS, 'checked_on', 'verified_basis'], `SELECT count(*) FROM record WHERE ${W}`,
-      `SELECT ${CARD_SELECT}, checked_on, verified_basis FROM record WHERE ${W} ORDER BY vorder, stale_on, rid`, a);
+      `SELECT ${CARD_SELECT}, checked_on, verified_basis FROM record WHERE ${W} ORDER BY self_hosted, vorder, stale_on, rid`, a);
     t.rows.forEach(fixCard);
     return t;
   }
@@ -629,7 +662,7 @@ export function worklist(store, p) {
   return page(['rid', 'provider', 'verdict', 'path', 'kind'],
     `SELECT count(*) FROM claim c JOIN record r USING (rid) WHERE ${W}`,
     `SELECT c.rid, r.provider, r.verdict, c.path, c.kind FROM claim c JOIN record r USING (rid) WHERE ${W}
-     ORDER BY r.vorder, c.rid, c.path`, a);
+     ORDER BY r.self_hosted, r.vorder, c.rid, c.path`, a);
 }
 
 // ------------------------------------------------------------------ help
@@ -660,6 +693,8 @@ export async function help(store, env) {
     `identity shows identity_kind, with ? when the requirement was defaulted rather than read.`,
     `usd_month and usd_per_tb_month are headline prices, NULL when nothing parsed; a filter or sort on them`,
     `excludes NULL rows and reports how many. stale_on <= today means the record is due for a re-check.`,
+    `self_hosted = 1 is software or a node that the user installs and runs. Self-hosted options are listed last, because`,
+    `the site is for users with no hardware: every list sorts on self_hosted first.`,
     ``,
     `Operations (HTTP /api/v1/... and MCP tools take the same names):`,
     `  search q [topic grp limit]          names first (exact, prefix, substring, fuzzy), then BM25 full text`,
@@ -695,7 +730,7 @@ function cell(v) {
 
 export function footer(t) {
   const lines = [];
-  const shown = t.rows.length + (t.nullRows ? t.nullRows.length : 0);
+  const shown = t.rows.length + (t.nullRows ? t.nullRows.length : 0) + (t.selfRows ? t.selfRows.length : 0);
   if (t.open) lines.push(`# ${shown} rows; row cap reached, more rows exist`);
   else if (t.truncated) lines.push(`# ${shown} of ${t.total} rows; offset=${t.offset + shown} for more`);
   else lines.push(`# ${shown} of ${t.total} rows`);
@@ -711,6 +746,10 @@ export function toTsv(t) {
     lines.push(`# no parsed ${t.nullKey}: ${t.nullRows.length} rows below, unranked`);
     for (const r of t.nullRows) lines.push(r.map(cell).join('\t'));
   }
+  if (t.selfRows && t.selfRows.length) {
+    lines.push(`# self-hosted, the last resort: ${t.selfRows.length} rows below, after every hosted row`);
+    for (const r of t.selfRows) lines.push(r.map(cell).join('\t'));
+  }
   return { lines, footer: footer(t) };
 }
 
@@ -719,6 +758,7 @@ export function toJson(t) {
   if (t.offset) o.offset = t.offset;
   if (t.excluded && Object.keys(t.excluded).length) o.excluded_null = t.excluded;
   if (t.nullRows) o.null_rows = t.nullRows;
+  if (t.selfRows) o.self_hosted_rows = t.selfRows;
   if (t.entity) o.entity = t.entity;
   if (t.need) o.need = t.need;
   return o;

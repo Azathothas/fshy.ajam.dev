@@ -27,7 +27,7 @@ PUBLIC_PART = 10 * 1024 * 1024
 # a provider with more records than this gets one page for each record (pages.py); the Worker's /r/ follows it
 RECORD_PAGES_OVER = 12
 CARD_COLS = ("rid", "eid", "topic", "slug", "provider", "url", "domain", "category", "tier", "verdict", "vorder", "grp",
-             "confidence", "binding", "identity_kind", "identity_basis", "needs_card", "needs_phone", "needs_id",
+             "self_hosted", "confidence", "binding", "identity_kind", "identity_basis", "needs_card", "needs_phone", "needs_id",
              "needs_institution", "country", "crypto", "interfaces", "egress_metered", "per_object_bytes", "retention_days",
              "verified_at", "verified_basis", "checked_on", "stale_on", "n_evidence", "usd_month", "usd_per_tb_month",
              "summary", "duplicate_of", "n_unknown", "free_unit")
@@ -145,18 +145,21 @@ def emit_data(repo, pub_db, dist):
         e["topics"] = (e["topics"] or "").split(",")
         e["aliases"] = sorted({a for (a,) in db.execute("SELECT alias FROM alias WHERE eid=? AND kind IN ('name','provider','alias','domain')", (e["eid"],))})
         ents[e["eid"]] = e
-        members = sorted(by_eid[e["eid"]], key=lambda c: (c["vorder"], c["rid"]))
+        members = sorted(by_eid[e["eid"]], key=lambda c: (c["self_hosted"], c["vorder"], c["rid"]))  # hosted first
         write(os.path.join(dist, "api", "v1", "entity", e["eid"] + ".json"),
               jdump({**e, "records": [full[c["rid"]] for c in members]}))
-    # name index for MiniSearch: one row per entity
+    # name index for MiniSearch: one row per entity. Its verdict (5) is the best of its hosted records, so a self-hosted
+    # record never stars a provider; a provider whose every record is self-hosted has a ninth item, 1, and app.js lists it
+    # after every other provider, with the self-hosted label
     names = []
     for eid, e in sorted(ents.items()):
         recs = by_eid[eid]
         flags = 0
         for c in recs:
             flags |= 1 << c["vorder"]
+        hosted = [c["vorder"] for c in recs if not c["self_hosted"]]
         names.append([eid, e["name"], [a for a in e["aliases"] if a != e["name"]][:12], e["domain"], e["topics"],
-                      e["best_vorder"], len(recs), flags])
+                      min(hosted) if hosted else e["best_vorder"], len(recs), flags] + ([] if hosted else [1]))
     write(os.path.join(dist, "api", "v1", "names.json"), jdump(names))
     vocab = collections.defaultdict(list)
     for r in db.execute("SELECT domain, term, meaning FROM vocab ORDER BY domain, ord"):

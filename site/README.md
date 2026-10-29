@@ -101,8 +101,9 @@ token, so that is about 81,000 tokens. One file thus fits a 128K-token context w
 and the answer. The whole corpus is about 14 MB, more than any window holds. It is split by topic, then by
 verdict group, then into balanced parts, and a record is never cut.
 
-**Order and determinism.** One order everywhere: topics in the wiki's order, then verdict, provider name and
-record id. The same store gives the same bytes on every build, because no clock and no commit is read. The one
+**Order and determinism.** One order everywhere: topics in the wiki's order, then hosted before self-hosted, then
+verdict, provider name and record id. A self-hosted record is the last resort: each index lists it in a last section,
+with the label `self-hosted, last resort` (`AGENTS.md` rule 8). The same store gives the same bytes on every build, because no clock and no commit is read. The one
 date is the data's own. A version, the first 12 hex digits of the SHA-256 of every record's Markdown, changes
 when a record changes.
 

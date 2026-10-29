@@ -31,7 +31,7 @@ MINOR = ["fx", "capture", "vocab", "meta", "keystat"]
 # columns worth naming in the primer; the rest are counted and reachable with pragma_table_info
 KEY_COLS = {
     "record": ["rid", "topic", "slug", "eid", "provider", "url", "category", "verdict", "vorder", "grp",
-               "confidence", "binding", "identity_kind", "identity_basis", "needs_card", "needs_phone",
+               "self_hosted", "confidence", "binding", "identity_kind", "identity_basis", "needs_card", "needs_phone",
                "needs_id", "needs_institution", "crypto", "interfaces", "usd_month", "usd_per_tb_month",
                "verified_basis", "checked_on", "stale_on", "summary", "duplicate_of", "doc", "rno"],
 }
@@ -39,12 +39,14 @@ VOCAB_ORDER = ["verdict", "grp", "confidence", "binding", "identity_kind", "iden
                "unknown_class"]
 # domains whose terms explain themselves: listed without meanings, to keep the primer short
 TERMS_ONLY = {"unknown_class"}
+# domains that a RULES line explains: not repeated under VOCABULARIES
+RULE_ONLY = {"self_hosted"}
 
 EXAMPLES = [
     ("Usable storage with no card, cheapest per TB-month first (NULL price last)",
      "SELECT rid, provider, usd_per_tb_month FROM record WHERE topic='storage' AND grp='usable' "
      "AND needs_card=0 AND identity_basis='stated' AND duplicate_of IS NULL "
-     "ORDER BY usd_per_tb_month IS NULL, usd_per_tb_month LIMIT 10"),
+     "ORDER BY self_hosted, usd_per_tb_month IS NULL, usd_per_tb_month LIMIT 10"),
     ("Full text, one column filter plus a prefix term (CJK: query bigrams, e.g. MATCH '百度')",
      "SELECT r.rid, r.verdict FROM text_fts JOIN record r ON r.rno = text_fts.docid "
      "WHERE text_fts MATCH 'offer:gpu* hours' ORDER BY r.vorder LIMIT 10"),
@@ -112,6 +114,9 @@ def _text(db):
     w("  filter or sort on them drops for NULL. interfaces: comma list, NULL = unknown.")
     w("- duplicate_of IS NOT NULL marks a duplicate; lists exclude them unless asked.")
     w("- vorder 0..7 orders verdicts best first; grp groups them.")
+    if "self_hosted" in {r[1] for r in db.execute("SELECT * FROM pragma_table_info('record')")}:
+        w("- self_hosted=1: the user installs and runs it, the last resort. Self-hosted options are listed last,")
+        w("  because this site is for users who have no hardware: every list sorts on self_hosted first.")
     w("")
     w("TABLES (key columns)")
     def sig(t):
@@ -142,7 +147,7 @@ def _text(db):
     for d, t, m in db.execute("SELECT domain, term, meaning FROM vocab ORDER BY domain, ord"):
         vocab.setdefault(d, []).append((t, m))
     for d in VOCAB_ORDER + sorted(set(vocab) - set(VOCAB_ORDER)):
-        if d not in vocab:
+        if d not in vocab or d in RULE_ONLY:
             continue
         if d in TERMS_ONLY:
             w("- %s: %s" % (d, ", ".join(t for t, _ in vocab[d])))

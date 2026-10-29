@@ -3,7 +3,7 @@
 
 1. The contract between export and build: build.py refuses data/ of another schema version, an unknown table
    file, an unknown or a missing column, and files that do not match files_sha256, with exit 3 and a message that
-   names the problem.
+   names the problem. It reads data of the older version 1, which has no self_hosted column, as hosted records.
 2. The export refuses a source that is not a research checkout (exit 3), a test export into data/ (exit 2), and a
    --data that is not data/ and not empty (exit 2), and it keeps the files of that directory.
 3. The leak rules, of both levels, match each leak sample and pass each technical sample; the history title rule
@@ -18,8 +18,11 @@
    tells two records of one provider apart, the one line of a row, the order of a tie in a ranked list, the words of
    a category, the anchor of a history entry, the pictographs that quoted text loses, the parallel leak scan, and
    the twin of the Worker's name normaliser against site/worker/test/parity.json.
+7. Self-hosted last (selfhosted.py): the stable split of a list, the rows of a need, and the check of the build, which
+   finds a hosted row below a self-hosted one and a starred self-hosted row in HTML and in Markdown, and passes a
+   list in the right order.
 
-Parts 1 to 4 and 6 need no data and run on a fresh clone. The store parts read .tmp/fshy/public.db, which
+Parts 1 to 4, 6 and 7 need no data and run on a fresh clone. The store parts read .tmp/fshy/public.db, which
 `python publish/build.py --check` or `--site` writes; without it, they are skipped with a line that says so.
 
 usage:
@@ -47,6 +50,7 @@ import export  # noqa: E402
 import llms  # noqa: E402
 import pages  # noqa: E402
 import primer  # noqa: E402
+import selfhosted  # noqa: E402
 import site_gen  # noqa: E402
 
 FAILS = []
@@ -75,8 +79,9 @@ def schema_columns():
     return cols
 
 
-def fake_data(top, version="1", tables=None, record_row=None):
-    """A data/ directory with an empty file per table, except a record row when one is given."""
+def fake_data(top, version=build.SCHEMA_VERSION, tables=None, record_row=None, entity_row=None):
+    """A data/ directory with an empty file per table, except a record row and an entity row when they are given. With
+    an entity row, the record also gets its record file, so the build can load it."""
     os.makedirs(os.path.join(top, "tables"))
     with open(os.path.join(top, "meta.json"), "w", encoding="utf-8") as f:
         json.dump({"schema_version": version, "as_of": "2026-10-28", "source_commit": "0" * 40}, f)
@@ -84,6 +89,13 @@ def fake_data(top, version="1", tables=None, record_row=None):
         with open(os.path.join(top, "tables", t + ".jsonl"), "w", encoding="utf-8") as f:
             if t == "record" and record_row is not None:
                 f.write(json.dumps(record_row) + "\n")
+            if t == "entity" and entity_row is not None:
+                f.write(json.dumps(entity_row) + "\n")
+    if record_row is not None and entity_row is not None:
+        p = os.path.join(top, "records", record_row["rid"] + ".json")
+        os.makedirs(os.path.dirname(p))
+        with open(p, "w", encoding="utf-8") as f:
+            json.dump({"topic": record_row["topic"], "slug": record_row["slug"], "verdict": record_row["verdict"]}, f)
 
 
 def contract_checks(tmp):
@@ -114,6 +126,23 @@ def contract_checks(tmp):
     rc, err = quiet(build.main, ["--data", d, "--db", os.path.join(tmp, "sd.db"), "--check", "--quiet"])
     check("build refuses a hand edit of data/ after the export (files_sha256), with exit 3",
           rc == 3 and "files_sha256" in err, (rc, err))
+    # data of version 1 has no self_hosted column: the build reads it, and each record is hosted
+    rec = dict(row, rid="storage/x", topic="storage", slug="x", eid="x", verdict="qualifies", vorder=0, grp="usable")
+    ent = {c: None for c in cols["entity"]}
+    ent.update(eid="x", name="X")
+    for version, r, want in (("1", {k: v for k, v in rec.items() if k != "self_hosted"}, 0), (build.SCHEMA_VERSION, dict(rec, self_hosted=1), 1)):
+        d = os.path.join(tmp, "data-v%s" % version)
+        fake_data(d, version=version, record_row=r, entity_row=ent)
+        out = os.path.join(tmp, "v%s.db" % version)
+        rc, err = quiet(build.main, ["--data", d, "--db", out, "--check", "--quiet"])
+        got = sqlite3.connect(out).execute("SELECT self_hosted FROM record").fetchall() if rc == 0 else None
+        check("build reads data of schema_version %s, and the record has self_hosted %d" % (version, want),
+              rc == 0 and got == [(want,)], (rc, err, got))
+    d = os.path.join(tmp, "data-v2-lack")
+    fake_data(d, record_row={k: v for k, v in rec.items() if k != "self_hosted"}, entity_row=ent)
+    rc, err = quiet(build.main, ["--data", d, "--db", os.path.join(tmp, "lack.db"), "--check", "--quiet"])
+    check("build refuses data of schema_version %s with no self_hosted column (exit 3)" % build.SCHEMA_VERSION,
+          rc == 3 and "lacks ['self_hosted']" in err, (rc, err))
 
 
 def export_checks(tmp):
@@ -301,6 +330,8 @@ def list_checks(db_path):
     check("app.js holds no copy of the topic list and reads the topic bar",
           tn == {} and "$$('.topics a')" in js and not any("'%s'" % t in js for t in rules if "-" in t), tn)
     check("app.js VT is the verdicts of pages.VERDICT_LABEL", vt is not None and set(vt) == set(pages.VERDICT_LABEL), vt)
+    m = re.search(r"var SH = '([^']*)';", js)
+    check("app.js SH is the self-hosted label of selfhosted.py", m and m.group(1) == selfhosted.LABEL, m and m.group(1))
     form = open(os.path.join(ROOT, ".github", "ISSUE_TEMPLATE", "new-offer.yml"), encoding="utf-8").read()
     block = re.search(r"label: Topic\n\s+options:\n((?:\s+- .+\n)+)", form)
     opts = re.findall(r"- (\S+)", block.group(1)) if block else []
@@ -413,6 +444,55 @@ def helper_checks(tmp):
           len(serial) == 4 and serial == parallel, (len(serial), len(parallel)))
 
 
+def selfhosted_checks():
+    """Part 7: self-hosted last, on fixed cases."""
+    got = selfhosted.hosted_first(["a", "s1", "b", "s2", "c"], lambda x: x.startswith("s"))
+    check("hosted_first keeps every hosted item first and each part in its order", got == ["a", "b", "c", "s1", "s2"], got)
+    fx = json.load(open(os.path.join(ROOT, "site", "worker", "test", "parity.json"), encoding="utf-8"))
+    bad = [c for c in fx["rank"]["hostedFirst"] if selfhosted.hosted_first(c[0], lambda x, sh=c[1]: x in sh) != c[2]]
+    check("hosted_first gives the outputs of rank.js hostedFirst in parity.json (%d cases)" % len(fx["rank"]["hostedFirst"]),
+          not bad, bad[:3])
+    db = sqlite3.connect(":memory:")
+    db.execute("CREATE TABLE n (rid TEXT, v REAL)")
+    db.executemany("INSERT INTO n VALUES (?, ?)", [("t/h1", 3), ("t/s1", 1), ("t/h2", None), ("t/s2", None), ("t/h3", 2)])
+    cards = {r: {"rid": r, "vorder": 0, "confidence": "documented", "stale_on": None, "self_hosted": int("/s" in r)}
+             for (r,) in db.execute("SELECT rid FROM n")}
+    ranked, unranked, last = llms.need_rows(db, {"sql": "SELECT rid, v FROM n"}, cards)
+    got = [[r[0] for r in x] for x in (ranked, unranked, last)]
+    check("a need lists hosted ranked, hosted with no number, then self-hosted ranked and with no number",
+          got == [["t/h3", "t/h1"], ["t/h2"], ["t/s1", "t/s2"]], got)
+    db.close()
+    sh = {"storage/self"}
+
+    def row(rid, pill):
+        t, s = rid.split("/")
+        return '<li class="e" data-f="">%s<a class="n" href="/p/e/#%s--%s">x</a><p class="f"></p></li>' % (pill, t, s)
+    ok_pill, star = selfhosted.PILL, '<span class="v v-qualifies">\u2605 qualifies</span>'
+    good = row("storage/hosted", star) + row("storage/self", ok_pill)
+    cases = [("a hosted row, then the self-hosted row with its label", good, 0),
+             ("a self-hosted row above a hosted row", row("storage/self", ok_pill) + row("storage/hosted", star), 1),
+             ("a self-hosted row with the star of its verdict", row("storage/hosted", star) + row("storage/self", star), 1),
+             ("a record section of a self-hosted record above a hosted one",
+              '<section class="rec" id="storage--self"><dl class="facts">%s</dl></section>'
+              '<section class="rec" id="storage--hosted"><dl class="facts">%s</dl></section>' % (ok_pill, star), 1)]
+    bad = [(what, selfhosted.html_problems(h, sh)) for what, h, n in cases if len(selfhosted.html_problems(h, sh)) != n]
+    check("the check of the build finds a self-hosted row above a hosted one, or starred, in HTML (%d cases)" % len(cases),
+          not bad, bad)
+
+    def md(rid, label=True):
+        return "- [X](https://example.invalid/p/e.md) `%s`: qualifies%s | free tier" % (rid, " | " + selfhosted.LABEL if label else "")
+    cases = [("a hosted line, then the self-hosted line", md("storage/hosted") + "\n" + md("storage/self"), 0),
+             ("a self-hosted line above a hosted line", md("storage/self") + "\n" + md("storage/hosted"), 1),
+             ("a self-hosted line with no label", md("storage/hosted") + "\n" + md("storage/self", False), 1),
+             ("a numbered need line", "1. USD 2/month | " + md("storage/hosted")[2:] + "\n2. " + md("storage/self")[2:], 0),
+             ("a record block of a self-hosted record above a hosted one",
+              "- `storage/self` | qualifies | %s | evidence measured\n- `storage/hosted` | qualifies | evidence measured"
+              % selfhosted.LABEL, 1)]
+    bad = [(what, selfhosted.md_problems(t, sh)) for what, t, n in cases if len(selfhosted.md_problems(t, sh)) != n]
+    check("the check of the build finds a self-hosted line above a hosted one, or with no label, in Markdown (%d cases)"
+          % len(cases), not bad, bad)
+
+
 def primer_checks(db_path):
     db = primer.connect(db_path)
     for what, sql in primer.EXAMPLES:
@@ -462,6 +542,7 @@ def main(argv=None):
         leak_checks(tmp)
         hook_checks(tmp)
         helper_checks(tmp)
+        selfhosted_checks()
     finally:
         export.cleanup(tmp)
     db = a.db if os.path.exists(a.db) else None

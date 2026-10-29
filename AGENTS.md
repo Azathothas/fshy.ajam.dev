@@ -37,6 +37,25 @@ request. A merge session reviews that pull request, merges it, and exports the p
    it against first-party sources.
 7. ⛔ **A session never merges what it wrote**, except the merge session's own publish and intake pull
    requests. See [`docs/merge-protocol.md`](docs/merge-protocol.md).
+8. ⛔ **A self-hosted record is the last resort, in every list.** The site is for users who have no hardware. A
+   self-hosted record has `record.self_hosted = 1`: the user installs, runs and maintains it, on any machine. Every
+   list of the wiki, the API, the MCP tools and the files for agents puts it after every hosted record (free, trial
+   or paid). Never star, highlight or rank first a self-hosted row. It shows the label `self-hosted, last resort` in
+   place of its verdict pill. The rule for a change of the site:
+   - `self_hosted` ascending is the first sort key of every list. Each key after it does not change, so each part
+     keeps the order of the list. A limit and an offset apply after the split.
+   - Search: names first, then BM25, then the split of the whole list. An entity whose every record is self-hosted
+     comes after every other entity. Inside each part, the order stays score, then best verdict, then eid.
+   - Filter: `ORDER BY self_hosted, <sort> IS NULL, <sort> <dir>, vorder, rid`. Entity: `ORDER BY self_hosted,
+     vorder, rid`. A worklist sorts on `self_hosted` first.
+   - Need: the hosted ranked rows, the hosted rows with no number, the self-hosted ranked rows, then the self-hosted
+     rows with no number. The API gives the self-hosted rows in `self_hosted_rows`.
+   - A page or a file lists its self-hosted records at its end. A page with sections gives them one last section.
+
+   The rule is in [`publish/selfhosted.py`](publish/selfhosted.py) and in `hostedFirst` and `sortEntities` of
+   [`site/worker/rank.js`](site/worker/rank.js). The research repository has the twin `hosted_first` in `fr.py`.
+   `build.py --site` fails when a page or a file puts a self-hosted row above a hosted one, or stars it. `run.mjs`
+   checks the API and the MCP tools, and `parity.json` holds the cases of the two rules of `rank.js`.
 
 ## 3. Which document answers which question
 
