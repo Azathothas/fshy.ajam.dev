@@ -620,7 +620,7 @@ class Site:
             for x in ev)
         extras = o.get("extras")
         exh = ('<details><summary>More fields <small>%d</small></summary><pre class="json">%s</pre></details>' % (
-            len(extras), lang_wrap(e(json.dumps(extras, ensure_ascii=False, indent=1))))) if extras else ""
+            len(extras), lang_wrap(e(EMOJI_RX.sub("", json.dumps(extras, ensure_ascii=False, indent=1)))))) if extras else ""
         unk = [(p, cl) for p, cl in f["unknown"] if cl not in HIDDEN_UNKNOWN]
         unh = ('<details><summary>Unknown values <small>%d</small></summary><ul>%s</ul></details>' % (
             len(unk), "".join("<li><code>%s</code> %s</li>" % (e(p), e(self.voc.get(("unknown_class", cl), cl))) for p, cl in unk[:200]))) if unk else ""
