@@ -36,6 +36,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
 sys.path.insert(0, HERE)
 
+import selfhosted  # noqa: E402
+
 SCHEMA_VERSION = "2"  # the version of data/ this build reads and of the store it writes; the export writes the same one
 # Older versions of data/ that this build still reads: {version: {table: the columns that version lacks}}. A missing
 # column gets its default from schema.sql. Version 1 has no record.self_hosted, so each of its records is hosted (0).
@@ -243,6 +245,16 @@ def build(data, out_db):
         counts[t] = len(trows)
     db.executemany("INSERT INTO text_fts (docid, name, offer, limits, egress, identity, access, notes, evidence, extras)"
                    " VALUES (?,?,?,?,?,?,?,?,?,?)", fts)
+    # a vendor ranks by the best verdict of its hosted records; data whose entity table says otherwise would let a
+    # self-hosted record lift its vendor in the name search, the entity files and the Worker
+    bad = selfhosted.best_vorder_problems(db)
+    if bad:
+        db.close()
+        os.remove(out_db)
+        raise DataError("%d entities of data/tables/entity.jsonl have a best_vorder that is not the best verdict of their "
+                        "hosted records (of all their records when every one is self-hosted), for example %s. Export "
+                        "again from a research commit whose build follows that rule." % (
+                            len(bad), ", ".join("%s %s, not %s" % b for b in bad[:5])))
     # no commit of this repository: the store is the same bytes for the same data/, so a merge that changes only code
     # changes no page, no store and no Worker copy. data/manifest.json alone names the commit of the build.
     meta = {"schema_version": SCHEMA_VERSION, "target": "public",
@@ -467,7 +479,6 @@ def main(argv=None):
     if a.site:
         # each page and file of the site is checked in memory as it is written: no list puts a self-hosted record above
         # a hosted one, or stars it (selfhosted.py)
-        import selfhosted  # noqa: E402
         db = sqlite3.connect(a.db)
         selfhosted.start(r for (r,) in db.execute("SELECT rid FROM record WHERE self_hosted = 1"))
         db.close()

@@ -89,7 +89,7 @@ store the HTML comes from. None is written by hand, and the leak scan reads them
 | `/index.md` | the home page's Markdown version: the same text as `/llms.txt` |
 | `/llms-full.txt` | how to read a record, and the index of the parts |
 | `/t/<topic>/llms-full.txt` | one topic in full when it fits in one file, else the index of its parts |
-| `/t/<topic>/llms-full-<group>[-<k>].txt` | a part: one verdict group (usable, trial, paid, rejected, dead), cut into balanced pieces when it is over the budget |
+| `/t/<topic>/llms-full-<group>[-<k>].txt` | a part: the hosted records of one verdict group (usable, trial, paid, rejected, dead), or every self-hosted record of the topic (self-hosted, the last part), cut into balanced pieces when it is over the budget |
 | `/t/<topic>.md`, `/t/<topic>/rejected.md` | the two topic pages: one line per record |
 | `/p/<id>.md` | a provider page: every record of that provider in full |
 | `/need/<id>.md` | a best-per-need ranking, with its SQL |
@@ -103,7 +103,10 @@ verdict group, then into balanced parts, and a record is never cut.
 
 **Order and determinism.** One order everywhere: topics in the wiki's order, then hosted before self-hosted, then
 verdict, provider name and record id. A self-hosted record is the last resort: each index lists it in a last section,
-with the label `self-hosted, last resort` (`AGENTS.md` rule 8). The same store gives the same bytes on every build, because no clock and no commit is read. The one
+and a split topic in a last part. Its line opens with the label `self-hosted, last resort`, before its verdict
+(`AGENTS.md` rule 8). The API and the MCP tools sort each list of records on `self_hosted` first too. The worklists
+drift and changes keep their own order, because drift lists pairs of records that disagree and changes is a log in
+time order. The same store gives the same bytes on every build, because no clock and no commit is read. The one
 date is the data's own. A version, the first 12 hex digits of the SHA-256 of every record's Markdown, changes
 when a record changes.
 

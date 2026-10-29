@@ -5,7 +5,7 @@
 import { all, asset, capped, engineFailed, HEAP_LIMIT_MIB, HttpError, nameIndex, reset } from './db.js';
 import { guard, GuardError } from './guard.js';
 import { checkPlan } from './plan.js';
-import { bm25, hostedFirst, scoreNames, sortEntities as orderEntities } from './rank.js';
+import { bestVorder, bm25, hostedFirst, scoreNames, sortEntities as orderEntities } from './rank.js';
 import { clip, ftsMatch } from './text.js';
 
 // ------------------------------------------------------------------ shapes
@@ -182,15 +182,27 @@ function cardsByRid(db, rids) {
 }
 
 /**
- * The self-hosted records and entities of the store, once per isolate: {rids, eids}, where eids holds the entities whose
- * every record is self-hosted. A self-hosted record is the last resort: every list puts it after every hosted one.
+ * The self-hosted records and entities of the store, once per isolate, from one pass over the records: {rids, eids,
+ * best}. eids holds the entities whose every record is self-hosted; best maps each entity to rank.bestVorder of its
+ * records, the best verdict of its hosted ones, so a self-hosted record never lifts its vendor in a name search. A
+ * self-hosted record is the last resort: every list puts it after every hosted one.
  */
 function selfHosted(store) {
   if (!store.cache.selfHosted) {
-    store.cache.selfHosted = {
-      rids: new Set(rows(store.db, 'SELECT rid FROM record WHERE self_hosted = 1').map((r) => r[0])),
-      eids: new Set(rows(store.db, 'SELECT eid FROM record GROUP BY eid HAVING min(self_hosted) = 1').map((r) => r[0])),
-    };
+    const rids = new Set();
+    const members = new Map();
+    for (const [rid, eid, vorder, sh] of rows(store.db, 'SELECT rid, eid, vorder, self_hosted FROM record')) {
+      if (sh) rids.add(rid);
+      if (!members.has(eid)) members.set(eid, []);
+      members.get(eid).push([vorder, sh]);
+    }
+    const eids = new Set();
+    const best = new Map();
+    for (const [eid, m] of members) {
+      if (m.every(([, sh]) => sh)) eids.add(eid);
+      best.set(eid, bestVorder(m));
+    }
+    store.cache.selfHosted = { rids, eids, best };
   }
   return store.cache.selfHosted;
 }
@@ -198,9 +210,8 @@ function selfHosted(store) {
 const SELF_HOSTED_NOTE = (n, what) => `self-hosted: ${n} ${what}, listed after every hosted ${what === 'rows' ? 'row' : 'record'}`;
 
 function sortEntities(store, hits) {
-  const ents = store.cache.entities;
-  const sh = selfHosted(store).eids;
-  return orderEntities(hits, (eid) => (ents.get(eid) ? ents.get(eid).best_vorder : 99), (eid) => sh.has(eid));
+  const { eids, best } = selfHosted(store);
+  return orderEntities(hits, (eid) => best.get(eid) ?? 99, (eid) => eids.has(eid));
 }
 
 // ------------------------------------------------------------------ search
@@ -310,12 +321,12 @@ export function entitySearch(store, p) {
   nameIndex(store);
   const hits = sortEntities(store, scoreNames(store.cache.names, q));
   const ents = store.cache.entities;
+  const { eids: sh, best } = selfHosted(store);
   const out = hits.slice(offset, offset + limit).map((h) => {
     const e = ents.get(h.eid) || {};
-    return [h.eid, e.name, e.domain, e.topics, e.n_records, e.best_vorder, h.score, h.how, h.alias];
+    return [h.eid, e.name, e.domain, e.topics, e.n_records, best.get(h.eid) ?? e.best_vorder, h.score, h.how, h.alias];
   });
   const notes = unknownParams(p, ENTITY_SEARCH_KEYS);
-  const sh = selfHosted(store).eids;
   const nSelf = hits.filter((h) => sh.has(h.eid)).length;
   if (nSelf) notes.push(`self-hosted: ${nSelf} entities whose every record is self-hosted, listed after every other entity`);
   return table(['eid', 'name', 'domain', 'topics', 'n_records', 'best_vorder', 'score', 'match', 'alias'], out, {
@@ -538,7 +549,11 @@ export async function need(store, env, p) {
   const nullOut = shown.filter((h) => !isSelf(h) && h[key] == null).map(toRow);
   const selfOut = shown.filter(isSelf).map(toRow);
   notes.unshift(`${n.title}: ${n.scope}`);
-  notes.push(`sorted by ${key} ascending; ${ranked.length} ranked, ${nulls.length} with no parsed ${key}`);
+  // one count for each part: the hosted rows ranked and with no number, then the self-hosted rows (pages.py need())
+  const hRanked = ranked.filter((h) => !isSelf(h)).length;
+  const hNulls = nulls.filter((h) => !isSelf(h)).length;
+  notes.push(`sorted by ${key} ascending; ${hRanked} ${nSelf ? 'hosted ' : ''}ranked, ${hNulls} ${nSelf ? 'hosted ' : ''}` +
+    `with no parsed ${key}` + (nSelf ? `, ${nSelf} self-hosted` : ''));
   if (nSelf) notes.push(SELF_HOSTED_NOTE(nSelf, 'rows') + `, in self_hosted_rows: ranked, then with no parsed ${key}`);
   return table([...CARD_COLUMNS, ...extra], out, {
     total: seq.length, offset, truncated: offset + page.length < seq.length, notes, nullRows: nullOut, nullKey: key,

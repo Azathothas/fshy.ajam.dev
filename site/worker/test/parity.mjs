@@ -42,11 +42,20 @@ export function compute(fx, { text, rank, guard }) {
       }),
       // self-hosted last: a stable split of a list, and the order of the entities of a name search
       hostedFirst: fx.rank.hostedFirst.map(([items, sh]) => [items, sh, rank.hostedFirst(items, (x) => sh.includes(x))]),
-      entityOrder: fx.rank.entityOrder.map((c) => ({
-        hits: c.hits, best_vorder: c.best_vorder, self_hosted: c.self_hosted,
-        order: rank.sortEntities(c.hits.map(([eid, score]) => ({ eid, score })), (e) => c.best_vorder[e] ?? 99,
-          (e) => c.self_hosted.includes(e)).map((h) => h.eid),
-      })),
+      // the best verdict of an entity: of its hosted records, of all its records only when every one is self-hosted
+      bestVorder: fx.rank.bestVorder.map(([members]) => [members, rank.bestVorder(members)]),
+      // a case with members ([[vorder, self_hosted]] of each entity's records) derives best_vorder and self_hosted from
+      // them, so it shows that a self-hosted record never lifts its vendor; the twin reads best_vorder and self_hosted
+      entityOrder: fx.rank.entityOrder.map((c) => {
+        const m = c.members;
+        const bv = m ? Object.fromEntries(Object.entries(m).map(([e, r]) => [e, rank.bestVorder(r)])) : c.best_vorder;
+        const sh = m ? Object.keys(m).filter((e) => m[e].every(([, s]) => s)).sort() : c.self_hosted;
+        return {
+          ...(m ? { members: m } : {}), hits: c.hits, best_vorder: bv, self_hosted: sh,
+          order: rank.sortEntities(c.hits.map(([eid, score]) => ({ eid, score })), (e) => bv[e] ?? 99,
+            (e) => sh.includes(e)).map((h) => h.eid),
+        };
+      }),
       names: {
         aliases: fx.rank.names.aliases,
         cases: fx.rank.names.cases.map(([q]) => [q, rank.scoreNames(idx, q).map((h) => [h.eid, h.score]).sort(byScore)]),
@@ -92,7 +101,7 @@ export function format(fx) {
     Object.keys(t).map((k) => '    ' + one(k) + ': ' + arr(t[k], '    ')).join(',\n'),
     '  },',
     '  "rank": {',
-    ['editDistance', 'fuzzBudget', 'bm25', 'hostedFirst', 'entityOrder'].map((k) => '    ' + one(k) + ': ' + arr(r[k], '    ')).join(',\n') + ',',
+    ['editDistance', 'fuzzBudget', 'bm25', 'hostedFirst', 'bestVorder', 'entityOrder'].map((k) => '    ' + one(k) + ': ' + arr(r[k], '    ')).join(',\n') + ',',
     '    "names": {',
     '      "aliases": ' + arr(r.names.aliases, '      ') + ',',
     '      "cases": ' + arr(r.names.cases, '      '),

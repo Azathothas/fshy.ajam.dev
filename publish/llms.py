@@ -7,15 +7,17 @@ built from), never dossier/, so nothing the projection withholds can reach these
   index.md                              the home page's Markdown alternate: the same text as llms.txt
   llms-full.txt                         the whole corpus when it fits in BUDGET, else the index of its parts
   t/<topic>/llms-full.txt               one topic in full when it fits in BUDGET, else the index of its parts
-  t/<topic>/llms-full-<group>[-<k>].txt a part: one verdict group, cut into k pieces when over BUDGET
+  t/<topic>/llms-full-<group>[-<k>].txt a part: the hosted records of one verdict group, or every self-hosted
+                                        record (group self-hosted, the last part), cut into k pieces when over BUDGET
   t/<topic>.md, t/<topic>/rejected.md   the two topic pages: one line per record
   p/<eid>.md                            a provider page: every record of that provider in full
   need/<id>.md                          a best-per-need ranking
 
 One order everywhere: hosted before self-hosted (selfhosted.py), then verdict (usable first, dead last), then
 provider name, then record id. A self-hosted record is the last resort: each index lists it in a last section, and its
-line carries the label of selfhosted.py. One store gives the same bytes on every build: no clock and no commit is read, and the one date printed is the data's
-own, the newest verification or evidence date among the records. Standard library only.
+line opens with the label of selfhosted.py, before its verdict. One store gives the same bytes on every build: no clock
+and no commit is read, and the one date printed is the data's own, the newest verification or evidence date among the
+records. Standard library only.
 """
 import collections
 import hashlib
@@ -304,7 +306,7 @@ def record_md(st, rid):
         return "[%d]" % (srcs.index(u) + 1)
 
     out = ["## " + st.labels.get(rid, flat(c["provider"] or c["slug"])), ""]
-    head = ["`%s`" % rid, c["verdict"]] + ([selfhosted.LABEL] if is_sh(c) else []) + ["evidence %s" % c["confidence"]]
+    head = ["`%s`" % rid] + verdict_words(c) + ["evidence %s" % c["confidence"]]
     head += ["%s %s" % (k, flat(o[k])) for k in ("binding", "category", "tier") if o.get(k) not in EMPTY]
     out.append("- " + SEP.join(head))
     needs = ("needs card %s, phone %s, ID %s, institution %s" % (
@@ -439,6 +441,17 @@ def repeat_note(said, text):
     return ("the same as " if r[0] == "same" else "part of ") + r[1]
 
 
+def verdict_words(c):
+    """The first words of a record's line, after its id: its verdict, or for a self-hosted record the label first and
+    then "verdict <word>", as the HTML row shows the label in place of the pill. A reader meets the label first."""
+    return [selfhosted.LABEL, "verdict " + c["verdict"]] if is_sh(c) else [c["verdict"]]
+
+
+def verdict_of(c):
+    """The verdict of a record in running text: the label first for a self-hosted record."""
+    return "; ".join(verdict_words(c))
+
+
 def entry_md(st, rid, bullet="- ", cap=None):
     """One line of an index, with the badges the HTML lists show: verdict, free tier, identity, card, phone, evidence,
     price, then the summary, cut at a space to `cap` characters when a cap is given."""
@@ -446,8 +459,7 @@ def entry_md(st, rid, bullet="- ", cap=None):
     ft = st.docs[rid].get("free_tier")
     s = clip_words(headline(c["summary"], ft.get("stated") if isinstance(ft, dict) else None), cap)
     q = c["identity_basis"] != "stated"
-    b = ([c["verdict"]] + ([selfhosted.LABEL] if is_sh(c) else []) + ([free_word(c)] if free_word(c) else [])
-         + [str(c["identity_kind"]) + ("?" if q else "")])
+    b = verdict_words(c) + ([free_word(c)] if free_word(c) else []) + [str(c["identity_kind"]) + ("?" if q else "")]
     if c["needs_card"] == 0 and not q:
         b.append("no card")
     elif c["needs_card"] == 1:
@@ -489,17 +501,20 @@ def fitted(render):
 
 
 def counts(cnt):
-    """The counts of a topic: its hosted records by group, then its self-hosted records when it has any."""
-    return ", ".join(["%s %s" % (num(cnt[g]), lbl.lower()) for g, lbl in GROUPS]
-                     + (["%s self-hosted, listed last" % num(cnt["self-hosted"])] if cnt.get("self-hosted") else []))
+    """The counts of a topic, one definition for every page and file (pages.py topic() too): each group counts its
+    hosted records, and the topic's self-hosted records, of any group, are counted once."""
+    return "; ".join([", ".join("%s %s" % (num(cnt[g]), lbl.lower()) for g, lbl in GROUPS)]
+                     + (["%s self-hosted of any group, listed last" % num(cnt["self-hosted"])] if cnt.get("self-hosted") else []))
 
 
-def self_section(st, rids, cap):
-    """The last section of an index: its self-hosted records, the last resort, in the order of the index."""
+def self_section(st, rids, cap, what=None):
+    """The last section of an index: its self-hosted records, the last resort, in the order of the index. what names
+    the groups they come from, when the page lists only some."""
     if not rids:
         return []
     return (["## Self-hosted, the last resort (%s)" % num(len(rids)), "",
-             "%s%s. %s" % (selfhosted.MEANING[:1].upper(), selfhosted.MEANING[1:], selfhosted.NOTE), ""]
+             "%s%s. %s%s" % (selfhosted.MEANING[:1].upper(), selfhosted.MEANING[1:], selfhosted.NOTE,
+                             (" This page lists the self-hosted records that are %s." % what) if what else ""), ""]
             + [entry_md(st, r, cap=cap) for r in rids] + [""])
 
 
@@ -523,6 +538,8 @@ def summary_line(st, notice=True):
 
 
 ONE_ORDER = "hosted before self-hosted, then verdict, provider name, record id"
+# the last group of a split topic: its self-hosted records, after the parts of every hosted group
+SELF_GROUP, SELF_GROUP_LABEL = "self-hosted", "Self-hosted, the last resort"
 
 
 def stamp(st, version):
@@ -560,8 +577,8 @@ def reading_rules(st):
         "parsed, not free.",
         "- `[n]`: a numbered source; the sources list of the record gives each URL once. An evidence line reads: source, "
         "date, what it proved.",
-        "- `%s`: after the verdict, %s. Every list puts it after every hosted record. %s" % (
-            selfhosted.LABEL, selfhosted.MEANING, selfhosted.NOTE),
+        "- `%s`: in place of the verdict, %s; the verdict follows it as `verdict <word>`. Every list puts it after "
+        "every hosted record. %s" % (selfhosted.LABEL, selfhosted.MEANING, selfhosted.NOTE),
         "- not stated, not recorded, not applicable: the value was not published, or does not apply. A field that a "
         "record does not show was not published: that is unknown, not absent.",
         "- the same as: the value equals an earlier line of the record, word for word.",
@@ -663,13 +680,13 @@ def generate(pub_db, dist):
         cnt["self-hosted"] = sum(1 for r in rids if is_sh(st.cards[r]))
         topic_rows.append((t, name, desc, rids, cnt))
         needs = [x for x in st.needs if x.get("topic") == t]
-        for rel, groups, title, other in (
+        for rel, groups, title, other, which in (
                 ("t/%s.md" % t, MAIN_GROUPS, name, "the usable, trial and paid-only records; the rejected and dead "
-                 "ones are on %s/t/%s/rejected.md" % (BASE, t)),
+                 "ones are on %s/t/%s/rejected.md" % (BASE, t), "usable, trial or paid only"),
                 ("t/%s/rejected.md" % t, ("rejected", "dead"), name + ": rejected and dead",
                  "the rejected and dead records, each with the evidence that rejected it; the usable, trial and "
-                 "paid-only ones are on %s/t/%s.md" % (BASE, t))):
-            def render(cap, title=title, groups=groups, other=other):
+                 "paid-only ones are on %s/t/%s.md" % (BASE, t), "rejected or dead")):
+            def render(cap, title=title, groups=groups, other=other, which=which):
                 full = ("In full: %s/t/%s/llms-full.txt." % (BASE, t)) if rids else "No record is in this topic yet."
                 lines = ["# " + title, "", "> " + (desc or name), "",
                          "%s records: %s. This page lists %s. Each line: provider (its page in Markdown), record id, "
@@ -681,7 +698,7 @@ def generate(pub_db, dist):
                     gs = [r for r in rids if st.cards[r]["grp"] == g and not is_sh(st.cards[r])]
                     if g in groups and gs:
                         lines += ["## %s (%s)" % (lbl, num(len(gs))), ""] + [entry_md(st, r, cap=cap) for r in gs] + [""]
-                lines += self_section(st, [r for r in rids if is_sh(st.cards[r]) and st.cards[r]["grp"] in groups], cap)
+                lines += self_section(st, [r for r in rids if is_sh(st.cards[r]) and st.cards[r]["grp"] in groups], cap, which)
                 return "\n".join(lines)
             w.write(rel, fitted(render))
         if not rids:
@@ -694,12 +711,14 @@ def generate(pub_db, dist):
             parts_index.append("- [%s](%s/t/%s/llms-full.txt): all %s records; %s" % (name, BASE, t, num(len(rids)), size(n)))
             continue
         index = head[:4] + [stamp(st, version), "",
-                            "This topic is %s in full, more than the %s one file holds, so it is split: by verdict group, "
-                            "and a group over that size into balanced parts, each in the one order (%s). How to read a "
+                            "This topic is %s in full, more than the %s one file holds, so it is split: its hosted records "
+                            "by verdict group, then its self-hosted records in one last group, and a group over that size "
+                            "into balanced parts. The parts in the order below are the one order (%s). How to read a "
                             "record: %s/llms-full.txt." % (size(len(body.encode("utf-8"))), size(BUDGET), ONE_ORDER, BASE),
                             "", "## Parts", ""]
-        for g, lbl in GROUPS:
-            gs = [r for r in rids if st.cards[r]["grp"] == g]
+        for g, lbl in GROUPS + [(SELF_GROUP, SELF_GROUP_LABEL)]:
+            gs = [r for r in rids if is_sh(st.cards[r])] if g == SELF_GROUP else [
+                r for r in rids if st.cards[r]["grp"] == g and not is_sh(st.cards[r])]
             if not gs:
                 continue
 
@@ -716,7 +735,7 @@ def generate(pub_db, dist):
                 n = w.write(rel, "\n".join(phead(k, len(runs))) + "\n" + "\n".join(run))
                 what = "%s records" % num(len(run))
                 if len(runs) > 1:
-                    what += ", %s (%s) to %s (%s)" % (flat(first["provider"]), first["verdict"], flat(last["provider"]), last["verdict"])
+                    what += ", %s (%s) to %s (%s)" % (flat(first["provider"]), verdict_of(first), flat(last["provider"]), verdict_of(last))
                 label = lbl + ((" part %d of %d" % (k, len(runs))) if len(runs) > 1 else "")
                 index.append("- [%s](%s/%s): %s; %s" % (label, BASE, rel, what, size(n)))
                 parts_index.append("- [%s: %s](%s/%s): %s; %s" % (name, label, BASE, rel, what, size(n)))

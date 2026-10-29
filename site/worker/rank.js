@@ -17,8 +17,9 @@
 // Self-hosted last: a self-hosted offer is software or a node that the user installs and runs (record.self_hosted = 1).
 // The site is for users with no hardware, so it is the last resort. self_hosted ascending is the first sort key of every
 // list of records: every hosted item in its order, then every self-hosted item in its order (hostedFirst). In a name
-// search, an entity whose every record is self-hosted comes after every other entity (sortEntities). The twins in the
-// research repository are hosted_first() and name_scores() of fr.py.
+// search, an entity whose every record is self-hosted comes after every other entity (sortEntities), and an entity ranks
+// by the best verdict of its hosted records (bestVorder), so a self-hosted record never lifts its vendor. The twins in
+// the research repository are hosted_first() and sort_entities() of fr.py, and entity.best_vorder of build.py.
 
 import { normalize, tokens } from './text.js';
 
@@ -169,6 +170,21 @@ export function hostedFirst(items, isSelfHosted) {
   const last = [];
   for (const x of items) (isSelfHosted(x) ? last : hosted).push(x);
   return hosted.concat(last);
+}
+
+/**
+ * The verdict that ranks an entity: the best (lowest) vorder of its hosted records, or of all its records when every one
+ * is self-hosted; null when it has no record. members: [[vorder, selfHosted]]. The store's entity.best_vorder holds the
+ * same value, and publish/build.py refuses data where it does not.
+ */
+export function bestVorder(members) {
+  let hosted = null;
+  let any = null;
+  for (const [v, sh] of members) {
+    if (any === null || v < any) any = v;
+    if (!sh && (hosted === null || v < hosted)) hosted = v;
+  }
+  return hosted === null ? any : hosted;
 }
 
 /**

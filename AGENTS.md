@@ -46,16 +46,24 @@ request. A merge session reviews that pull request, merges it, and exports the p
      keeps the order of the list. A limit and an offset apply after the split.
    - Search: names first, then BM25, then the split of the whole list. An entity whose every record is self-hosted
      comes after every other entity. Inside each part, the order stays score, then best verdict, then eid.
+   - The best verdict of an entity (`entity.best_vorder`, `bestVorder` of `rank.js`) is the best verdict of its hosted
+     records, or of all its records only when every one is self-hosted. A self-hosted record never lifts its vendor.
    - Filter: `ORDER BY self_hosted, <sort> IS NULL, <sort> <dir>, vorder, rid`. Entity: `ORDER BY self_hosted,
-     vorder, rid`. A worklist sorts on `self_hosted` first.
+     vorder, rid`. The worklists stale and unparsed sort on `self_hosted` first. The worklists drift and changes keep
+     their own order: drift lists pairs of records that disagree, and changes is a log in time order.
    - Need: the hosted ranked rows, the hosted rows with no number, the self-hosted ranked rows, then the self-hosted
      rows with no number. The API gives the self-hosted rows in `self_hosted_rows`.
-   - A page or a file lists its self-hosted records at its end. A page with sections gives them one last section.
+   - A page or a file lists its self-hosted records at its end. A page with sections gives them one last section. A
+     topic that the files for agents split into parts gives them one last part, `llms-full-self-hosted`.
+   - A Markdown line of a self-hosted record opens with the label, then `verdict <word>`.
+   - A count of a topic counts the hosted records of each group, and the self-hosted records of the topic once.
 
-   The rule is in [`publish/selfhosted.py`](publish/selfhosted.py) and in `hostedFirst` and `sortEntities` of
-   [`site/worker/rank.js`](site/worker/rank.js). The research repository has the twin `hosted_first` in `fr.py`.
-   `build.py --site` fails when a page or a file puts a self-hosted row above a hosted one, or stars it. `run.mjs`
-   checks the API and the MCP tools, and `parity.json` holds the cases of the two rules of `rank.js`.
+   The rule is in [`publish/selfhosted.py`](publish/selfhosted.py) and in `hostedFirst`, `sortEntities` and
+   `bestVorder` of [`site/worker/rank.js`](site/worker/rank.js). The research repository has the twins
+   `hosted_first` and `sort_entities` in `fr.py`, and `entity.best_vorder` in `build.py`. `build.py` refuses data
+   whose `best_vorder` breaks the rule. `build.py --site` fails when a page or a file puts a self-hosted row above a
+   hosted one, stars it, or gives its verdict before its label. `run.mjs` checks the API and the MCP tools, and
+   `parity.json` holds the cases of the three rules of `rank.js`.
 
 ## 3. Which document answers which question
 

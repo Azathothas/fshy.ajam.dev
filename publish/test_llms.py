@@ -124,7 +124,7 @@ def shape_checks(dist, st):
                 dead.append("%s -> %s" % (rel, u))
     check("every link to a generated Markdown or text file resolves", not dead, dead[:5])
 
-    parts = {k: v for k, v in files.items() if re.fullmatch(r"t/[^/]+/llms-full(-[a-z]+(-\d+)?)?\.txt", k)}
+    parts = {k: v for k, v in files.items() if re.fullmatch(r"t/[^/]+/llms-full(-[a-z]+(-[a-z]+)?(-\d+)?)?\.txt", k)}
     seen = {}
     for rel, text in parts.items():
         for rid in RID_LINE.findall(text):
@@ -220,7 +220,7 @@ def split_checks(db, st, budget, want_cut):
               not over and (bool(cut) or not want_cut), over[:5])
         balanced = {}
         for k, n in parts.items():
-            m = re.fullmatch(r"t/([^/]+)/llms-full-([a-z]+)-\d+\.txt", k)
+            m = re.fullmatch(r"t/([^/]+)/llms-full-([a-z-]+)-\d+\.txt", k)
             if m:
                 balanced.setdefault(m.groups(), []).append(n)
         lop = [(g, ns) for g, ns in balanced.items() if min(ns) < max(ns) / 4]

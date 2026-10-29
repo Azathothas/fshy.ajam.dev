@@ -58,12 +58,15 @@ empty directory. It refuses any other `--data` with exit 2, before it reads the 
 
 **Build.** It loads `data/` into a SQLite store with `schema.sql`, rebuilds the leaf table and the full-text index
 from the record files, and scans every text value of every table. It reads data of `SCHEMA_VERSION` 2 and of the
-older version 1, which has no `record.self_hosted`: each record of version 1 is hosted (0). A public history entry is its date, status,
+older version 1, which has no `record.self_hosted`: each record of version 1 is hosted (0). It refuses data whose
+`entity.best_vorder` is not the best verdict of the entity's hosted records (of all its records when every one is
+self-hosted), with exit 3. A public history entry is its date, status,
 title and linked records, so a history row with a body, a supersedes line or a confidence is a leak hit. With
 `--site`, it writes the wiki, the API files and the Worker copy, scans every text file of the site, and checks the
 size of each file against the static asset limit of Workers (25 MiB). It warns at 70 percent of that limit. It also
 checks each page and each file for agents as it writes them, in memory: a list that puts a self-hosted record above
-a hosted one, or a self-hosted row with a star or a verdict pill, is an order problem
+a hosted one, a self-hosted row with a star or a verdict pill, or a Markdown line of a self-hosted record that does not
+open with its label, is an order problem
 ([`selfhosted.py`](selfhosted.py), and `AGENTS.md` rule 8). One leak hit, one file over the limit, or one order
 problem fails the build. When `data/meta.json` has `files_sha256`, the build
 recomputes it and refuses data that changed after the export, with exit 3. The scan of a directory runs in up to 8
@@ -110,7 +113,9 @@ of this repository that the research repository pins. Its `guard_lists` holds th
 (the write keywords, the white space it refuses, the function allowlist, the words that are not calls, the
 `printf()` width and conversions), so the twin reads them from the fixture. Its `rank.hostedFirst` and
 `rank.entityOrder` hold the cases of the self-hosted rule: the stable split of a list, and the order of the entities
-of a name search. The twins are `hosted_first()` and `name_scores()` of `fr.py`. The statement budget (`plan.js`) and
+of a name search. `rank.bestVorder` holds the cases of the best verdict of an entity: of its hosted records, or of all
+its records when every one is self-hosted. A case of `entityOrder` with `members` takes its `best_vorder` from them.
+The twins are `hosted_first()` and `sort_entities()` of `fr.py`, and `entity.best_vorder` of the research `build.py`. The statement budget (`plan.js`) and
 the heap limit have no twin: they need the Worker's copy of the store.
 
 To change a rule, do these steps in this order:
