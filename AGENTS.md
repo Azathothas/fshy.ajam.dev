@@ -45,6 +45,8 @@ request. A merge session reviews that pull request, merges it, and exports the p
 | How does a reviewed run reach this repository? | [`docs/merge-protocol.md`](docs/merge-protocol.md) |
 | What do the publish tools do, and in which order? | [`publish/README.md`](publish/README.md) |
 | How do I build, preview or serve the site? | [`site/README.md`](site/README.md) |
+| How does the site go live, and how do I stop a deploy? | [`site/README.md`](site/README.md), section Deploy |
+| What is backed up, and how do I restore it? | [`docs/backup.md`](docs/backup.md) |
 | How is a document, a commit or a comment written here? | [`docs/conventions.md`](docs/conventions.md) |
 | How does the public report an error or a missing offer? | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
 | How is a vulnerability or a leak reported? | [`SECURITY.md`](SECURITY.md) |

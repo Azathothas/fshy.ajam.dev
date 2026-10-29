@@ -5,6 +5,8 @@ name: build
 # publish/export.py writes it. Commit messages and the pull request must not credit a tool.
 # The actions are pinned by commit; the comment names the tag. The toolchain versions are in publish/README.md.
 # Every Monday at 06:00 UTC it also builds main, so a broken toolchain shows before a publish does.
+# After a green build of a push to main, or of a manual run on main, the job deploy puts the site live. It runs
+# only when the repository variable FSHY_DEPLOY is "on". site/README.md, section Deploy, has the details.
 
 on:
   pull_request:
@@ -12,6 +14,7 @@ on:
     branches: [main]
   schedule:
     - cron: "0 6 * * 1"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -98,3 +101,62 @@ jobs:
         run: |
           echo "data/meta.json is missing; a pull request must not remove data/, and the build cannot run without it" >&2
           exit 1
+
+  # The token is a secret of the environment production, and only main can use that environment. The install
+  # runs no package script, because the secret is in the same job; wrangler deploy does not need one.
+  deploy:
+    needs: build
+    if: >-
+      github.ref == 'refs/heads/main' && vars.FSHY_DEPLOY == 'on' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: ${{ vars.FSHY_ORIGIN || 'https://fshy.ajam.dev' }}
+    env:
+      FSHY_ORIGIN: ${{ vars.FSHY_ORIGIN || 'https://fshy.ajam.dev' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+
+      - name: install wrangler, with no package scripts
+        run: cd site && npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: build the store and the site, and scan for leaks
+        run: python3 publish/build.py --site site/dist
+
+      - name: deploy
+        working-directory: site
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler deploy
+
+      # the manifest names the commit of the build; the query string skips a cached copy
+      - name: the live site serves this commit
+        run: |
+          got=""
+          for i in $(seq 1 30); do
+            got=$(curl -fsS "$FSHY_ORIGIN/data/manifest.json?v=$GITHUB_SHA" |
+              python3 -c 'import json, sys; print(json.load(sys.stdin)["commit"])' || true)
+            [ "$got" = "$GITHUB_SHA" ] && break
+            sleep 10
+          done
+          if [ "$got" != "$GITHUB_SHA" ]; then
+            echo "the live manifest names the commit '$got', not $GITHUB_SHA" >&2
+            exit 1
+          fi
+          curl -fsS "$FSHY_ORIGIN/api/v1/search?q=storage&limit=1" |
+            python3 -c 'import json, sys; assert json.load(sys.stdin)["rows"], "the search API has no rows"'
+          echo "live: $FSHY_ORIGIN serves $GITHUB_SHA"
