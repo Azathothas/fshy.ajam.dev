@@ -24,7 +24,7 @@
   }
   // the one line of a row, as publish/llms.py headline(): a cut summary loses its cut word; the first letter is a capital
   function line(s) {
-    s = String(s || '').trim();
+    s = String(s || '').trim().replace(/^(?:quoted|verbatim|quote):\s*/i, '');
     if (/(\.\.\.|…)$/.test(s)) { var t = s.replace(/\s*\S*(\.\.\.|…)$/, '').replace(/[ ,;:(-]+$/, ''); if (t.length >= 20) { s = t + '...'; } }
     return s.charAt(0).toUpperCase() + s.slice(1);
   }

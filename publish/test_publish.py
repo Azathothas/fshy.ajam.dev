@@ -344,9 +344,10 @@ def helper_checks(tmp):
            None, "This free plan gives 10 GB of storage and a public share link for every file that is..."),
           ("Verbatim: 'new-user trial: join the group, fill in the form and receive CNY 50' a...",
            "Free tier of 5 GB a month. Then USD 1 per GB.", "Free tier of 5 GB a month."),
-          ("Short line.", None, "Short line."), ("", None, "")]
+          ("Short line.", None, "Short line."), ("", None, ""),
+          ("Quoted: 'USD 1 in free credits'", None, "'USD 1 in free credits'")]
     bad = [(a, llms.headline(a, b)) for a, b, w in hl if llms.headline(a, b) != w]
-    check("headline drops a cut word, prefers a whole first sentence, and starts with a capital (U-09)", not bad, bad)
+    check("headline drops a cut word and a quote label, prefers a whole first sentence, starts with a capital (U-09)", not bad, bad)
     rows = [{"rid": "a/x", "vorder": 0, "confidence": "reported", "stale_on": "2026-12-01"},
             {"rid": "a/y", "vorder": 0, "confidence": "measured", "stale_on": "2026-11-01"},
             {"rid": "a/z", "vorder": 0, "confidence": "measured", "stale_on": "2026-12-01"},
