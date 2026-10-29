@@ -2,9 +2,11 @@ name: backup
 
 # Every Monday at 07:00 UTC, and on a manual run on main, this job writes two files to a private Cloudflare R2
 # bucket: a git bundle of every branch and tag, and the database files of the site (site/dist/data). The bucket
-# keeps a file 91 days, and it refuses to delete or replace a file in its first 28 days. The job fails when the
-# bucket holds more than 4.5 GiB, so the budget of 5 GiB stays free. docs/backup.md says how to restore.
-# A fork has no variable R2_BUCKET, so the job does not run there.
+# keeps a file 365 days, and it refuses to delete or replace a file in its first 28 days. The job fails when the
+# bucket holds more than 4.5 GiB, so the budget of 5 GiB stays free, and when a setting is missing.
+# docs/backup.md says how to restore. The settings are secrets, so the account and the bucket stay out of the
+# public log. GitHub stops the schedules of a public repository after 60 days with no activity; the 365 days
+# keep the last backups long after that.
 
 on:
   schedule:
@@ -20,7 +22,7 @@ concurrency:
 
 jobs:
   backup:
-    if: vars.R2_BUCKET != '' && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-26.04
     timeout-minutes: 20
     environment: backup
@@ -48,7 +50,8 @@ jobs:
 
       - name: upload, and check the budget
         env:
-          R2: https://${{ vars.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com/${{ vars.R2_BUCKET }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
         run: sh .github/r2-backup.sh "$RUNNER_TEMP/repo.bundle" "$RUNNER_TEMP/site-data.tar.gz"

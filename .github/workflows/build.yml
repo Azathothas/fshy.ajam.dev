@@ -20,7 +20,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: build-${{ github.ref }}
+  # a scheduled run has its own group, so it never cancels a waiting run of a push that deploys
+  group: build-${{ github.ref }}${{ github.event_name == 'schedule' && '-schedule' || '' }}
   # a new push cancels the old run of a pull request; every commit of main keeps its run
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
@@ -95,6 +96,18 @@ jobs:
       - name: publish tools
         run: python3 publish/test_publish.py
 
+      # the job deploy deploys these files, so it deploys the bytes that the steps above checked
+      - name: keep the site for the job deploy
+        if: >-
+          github.ref == 'refs/heads/main' && vars.FSHY_DEPLOY == 'on' &&
+          (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: site-dist
+          path: site/dist
+          retention-days: 7
+          if-no-files-found: error
+
       # main holds a publish, so data/ that is missing is a change that removed it, and the build would skip
       - name: data/ exists
         if: hashFiles('data/meta.json') == ''
@@ -102,8 +115,9 @@ jobs:
           echo "data/meta.json is missing; a pull request must not remove data/, and the build cannot run without it" >&2
           exit 1
 
-  # The token is a secret of the environment production, and only main can use that environment. The install
-  # runs no package script, because the secret is in the same job; wrangler deploy does not need one.
+  # The token and the account are secrets of the environment production, and only main can use that environment.
+  # The job deploys the files that the job build checked. The install runs no package script, because the secret
+  # is in the same job; wrangler deploy does not need one.
   deploy:
     needs: build
     if: >-
@@ -119,12 +133,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0
           persist-credentials: false
-
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
-        with:
-          python-version: "3.13"
 
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -133,30 +142,45 @@ jobs:
       - name: install wrangler, with no package scripts
         run: cd site && npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: build the store and the site, and scan for leaks
-        run: python3 publish/build.py --site site/dist
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: site-dist
+          path: site/dist
 
       - name: deploy
         working-directory: site
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npx wrangler deploy
 
-      # the manifest names the commit of the build; the query string skips a cached copy
+      # The manifest, the search API and the MCP endpoint must answer from this commit. The query string of the
+      # manifest skips a cached copy; the API sends the commit of its store in the header x-fshy-commit.
       - name: the live site serves this commit
         run: |
+          fail() {
+            echo "$1" >&2
+            echo "The new version can be live. site/README.md, section Deploy, says how to go back." >&2
+            exit 1
+          }
+          get() { curl -fsS --max-time 20 --retry 2 "$@"; }
           got=""
           for i in $(seq 1 30); do
-            got=$(curl -fsS "$FSHY_ORIGIN/data/manifest.json?v=$GITHUB_SHA" |
+            got=$(get "$FSHY_ORIGIN/data/manifest.json?v=$GITHUB_SHA" |
               python3 -c 'import json, sys; print(json.load(sys.stdin)["commit"])' || true)
             [ "$got" = "$GITHUB_SHA" ] && break
             sleep 10
           done
-          if [ "$got" != "$GITHUB_SHA" ]; then
-            echo "the live manifest names the commit '$got', not $GITHUB_SHA" >&2
-            exit 1
-          fi
-          curl -fsS "$FSHY_ORIGIN/api/v1/search?q=storage&limit=1" |
-            python3 -c 'import json, sys; assert json.load(sys.stdin)["rows"], "the search API has no rows"'
+          [ "$got" = "$GITHUB_SHA" ] || fail "the live manifest names the commit '$got', not $GITHUB_SHA"
+          hdr=$(get -D - -o "$RUNNER_TEMP/search.json" "$FSHY_ORIGIN/api/v1/search?q=storage&limit=1" |
+            tr -d '\r' | awk -F': ' 'tolower($1) == "x-fshy-commit" { print $2 }')
+          [ "$hdr" = "$GITHUB_SHA" ] || fail "the search API answers from the commit '$hdr', not $GITHUB_SHA"
+          python3 -c 'import json, sys; assert json.load(open(sys.argv[1]))["rows"]' "$RUNNER_TEMP/search.json" ||
+            fail "the search API answers with no rows"
+          get -o "$RUNNER_TEMP/mcp.json" -X POST -H 'content-type: application/json' \
+            -H 'accept: application/json, text/event-stream' \
+            -d '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' "$FSHY_ORIGIN/mcp" ||
+            fail "the MCP endpoint does not answer tools/list"
+          python3 -c 'import json, sys; assert json.load(open(sys.argv[1]))["result"]["tools"]' "$RUNNER_TEMP/mcp.json" ||
+            fail "the MCP endpoint lists no tools"
           echo "live: $FSHY_ORIGIN serves $GITHUB_SHA"

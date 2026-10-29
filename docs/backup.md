@@ -1,7 +1,7 @@
 # Backup
 
 Both repositories write a weekly backup to one private Cloudflare R2 bucket. If GitHub or the account goes
-away, the bucket keeps the last 13 weeks of each repository.
+away, the bucket keeps the last 52 weeks of each repository.
 
 ## What is written
 
@@ -22,17 +22,24 @@ same, byte for byte. Each workflow also runs by hand on `main`.
 
 | rule | value |
 | --- | --- |
-| lifecycle | a file is deleted 91 days after it is written; an unfinished upload, after 1 day |
+| lifecycle | a file is deleted 365 days after it is written; an unfinished upload, after 1 day |
 | lock | a file under `fshy.ajam.dev/` or `f-research/` cannot be deleted or replaced for 28 days |
 | budget | 5 GiB. The script fails the job when the bucket holds more than 4.5 GiB |
-| keys | each repository has its own token, for this bucket only, as the secrets `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY`. In `fshy.ajam.dev` they are secrets of the environment `backup`, which only `main` can use |
-| variables | `R2_BUCKET` and `CLOUDFLARE_ACCOUNT_ID`. A fork has no `R2_BUCKET`, so the job does not run there |
+| keys | each repository has its own token, for this bucket only, in `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY` |
+| settings | `CLOUDFLARE_ACCOUNT_ID` and `R2_BUCKET`. In `fshy.ajam.dev` all four are secrets of the environment `backup`, which only `main` can use, so the public log does not show them. In `f-research`, a private repository, the keys are repository secrets and the two settings are repository variables |
 
-A week adds about 65 MB (2026-10-29: 28 MB for `f-research`, 15 MB for `fshy.ajam.dev`, 21 MB for the site
-data), so 13 weeks use about 0.85 GB.
+The script fails the job when a setting is missing or empty, so a backup does not stop without a red run.
+⚠ GitHub stops the scheduled workflows of a public repository after 60 days with no activity, and such a stop
+shows no red run. The 365 days keep the last backups for a year after that. A fork does not run the schedule
+unless its owner turns it on.
+
+A week adds about 65 MB (2026-10-29: about 28 MB for `f-research`, 10 to 15 MB for `fshy.ajam.dev`, 22 MB for
+the site data), so 52 weeks use about 3.4 GB. The repositories grow, so the budget check can fail within the
+year.
 
 **If the budget check fails.** The job log gives the total. Shorten the lifecycle rule in the R2 settings of the
-bucket, for example to 63 days, or delete the oldest folders by hand after their 28 days. Do not remove the lock.
+bucket, for example to 182 days, or delete the oldest folders by hand after their 28 days. Do not remove the
+lock.
 
 ## Restore
 
