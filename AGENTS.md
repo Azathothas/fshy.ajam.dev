@@ -51,8 +51,9 @@ request. A merge session reviews that pull request, merges it, and exports the p
    - Filter: `ORDER BY self_hosted, <sort> IS NULL, <sort> <dir>, vorder, rid`. Entity: `ORDER BY self_hosted,
      vorder, rid`. The worklists stale and unparsed sort on `self_hosted` first. The worklists drift and changes keep
      their own order: drift lists pairs of records that disagree, and changes is a log in time order.
-   - Need: the hosted ranked rows, the hosted rows with no number, the self-hosted ranked rows, then the self-hosted
-     rows with no number. The API gives the self-hosted rows in `self_hosted_rows`.
+   - Need: the hosted ranked rows, the hosted rows with no number, the hosted rows whose card or phone requirement is
+     not stated, then the self-hosted rows in the same order. The API gives the self-hosted rows in
+     `self_hosted_rows`.
    - A page or a file lists its self-hosted records at its end. A page with sections gives them one last section. A
      topic that the files for agents split into parts gives them one last part, `llms-full-self-hosted`.
    - A Markdown line of a self-hosted record opens with the label, then `verdict <word>`.

@@ -85,7 +85,7 @@ store the HTML comes from. None is written by hand, and the leak scan reads them
 
 | path | what it holds |
 | --- | --- |
-| `/llms.txt` | the [llmstxt.org](https://llmstxt.org/) index: summary, how to read the files, every topic, every need, the API and the MCP endpoint |
+| `/llms.txt` | the [llmstxt.org](https://llmstxt.org/) index: summary, how to read the files, every topic that has records, every need, the API and the MCP endpoint |
 | `/index.md` | the home page's Markdown version: the same text as `/llms.txt` |
 | `/llms-full.txt` | how to read a record, and the index of the parts |
 | `/t/<topic>/llms-full.txt` | one topic in full when it fits in one file, else the index of its parts |
@@ -107,12 +107,16 @@ and a split topic in a last part. Its line opens with the label `self-hosted, la
 (`AGENTS.md` rule 8). The API and the MCP tools sort each list of records on `self_hosted` first too. The worklists
 drift and changes keep their own order, because drift lists pairs of records that disagree and changes is a log in
 time order. The same store gives the same bytes on every build, because no clock and no commit is read. The one
-date is the data's own. A version, the first 12 hex digits of the SHA-256 of every record's Markdown, changes
+date is the data's own: `meta.as_of` of the data, the date that the manifest, the pages and `help.txt` give. A
+version, the first 12 hex digits of the SHA-256 of every record's Markdown, changes
 when a record changes.
 
 **Serving.** `.md` is served as `text/markdown; charset=utf-8` and `.txt` as `text/plain; charset=utf-8`, with
 `Cache-Control: public, max-age=300` and `Access-Control-Allow-Origin: *` from `static/_headers`. The paths there
-do not overlap, because a second matching rule appends to a header instead of replacing it.
+do not overlap, because a second matching rule appends to a header instead of replacing it. `test_llms.py` checks
+that no file gets one header from two rules and that every `.md` and `.txt` file has a charset, and `smoke.mjs`
+checks the headers that workerd sends. A topic with no record yet has no page, no Markdown file and no line in
+`llms.txt` or the sitemap. The API still accepts it as a topic, with an empty list.
 
 ## Fork
 
@@ -164,7 +168,13 @@ Static files are served without running the Worker. The Worker runs for every pa
 static files that the build writes there (`entity/*`, `names.json`, `needs.json`, `vocab.json`, `schema.sql`,
 `help.txt`), and for `/mcp`, `/r/*` and `/data/fshy-public.sqlite.gz`. `run_worker_first` in `wrangler.jsonc`
 lists them, and `smoke.mjs` checks the exceptions. So `/api/v1/` lists the routes, an unknown route gets a JSON
-404, and a `.tsv` suffix works on every route. The Worker loads the store's Worker copy once per isolate. That copy
+404, and a `.tsv` suffix works on every route. A file of `entity/*` that does not exist is the exception: the
+assets answer it with the HTML 404 page, because the Worker does not see it. A need that asks for no card or no phone ends with a section "Card or phone requirement not stated": the rows of
+its SQL without the conditions on the card, the phone and a stated identity, minus the confirmed rows and the rows that need
+a card or a phone (`llms.need_unstated`, and the same rule in `api.need`, with `unstated_rows` in the JSON). So
+`rules/needs.json` stays as the research repository has it. An unknown topic, verdict, group,
+evidence or binding in a filter is a 400 that lists the terms of the vocabulary, and the topics are the ones of
+`data/manifest.json`. The Worker loads the store's Worker copy once per isolate. That copy
 is the public store without record JSON, leaves and evidence quotes, which are served as static files. The rate
 limit runs before the load, so a request that gets 429 costs no load. The first search of an isolate reads the
 name index that the build writes (`name_index` in `data/manifest.json`) and does not normalise every alias again.

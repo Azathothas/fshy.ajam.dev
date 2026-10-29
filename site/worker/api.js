@@ -119,30 +119,27 @@ function unknownParams(p, known) {
 
 /**
  * The terms a filter may name: {topic, verdict, grp, confidence, binding}, each a Set in display order. The topics are
- * the ones with records, in the order of the topic bar (data/manifest.json), so a client can offer them as a list.
+ * the ones that data/manifest.json lists, in the order of the topic bar, and then any topic that has records and is not
+ * listed. A topic with no records yet is still a topic: it is valid and its list is empty.
  */
 export function vocabOf(store) {
   if (store.cache.vocab) return store.cache.vocab;
   const v = { verdict: new Set(), grp: new Set(), confidence: new Set(), binding: new Set() };
   for (const [d, t] of rows(store.db, 'SELECT domain, term FROM vocab ORDER BY domain, ord')) if (v[d]) v[d].add(t);
-  const have = new Set(rows(store.db, 'SELECT DISTINCT topic FROM record ORDER BY topic').map((r) => r[0]));
+  const have = rows(store.db, 'SELECT DISTINCT topic FROM record ORDER BY topic').map((r) => r[0]);
   const order = (store.manifest && store.manifest.topics) || [];
-  v.topic = new Set([...order.filter((t) => have.has(t)), ...[...have].filter((t) => !order.includes(t))]);
+  v.topic = new Set([...order, ...have.filter((t) => !order.includes(t))]);
   store.cache.vocab = v;
   return v;
 }
 
-/**
- * Check a list of terms against a vocabulary. A closed vocabulary (every one but topic) refuses an unknown term with a
- * 400; an unknown topic gets a note, because a topic with no records yet is still a topic.
- */
-function terms(store, domain, vals, notes) {
+/** Check a list of terms against a vocabulary. Every vocabulary is closed: an unknown term is a 400 that lists the terms. */
+function terms(store, domain, vals) {
   const known = vocabOf(store)[domain];
   const unknown = vals.filter((x) => !known.has(x));
-  if (!unknown.length) return vals;
-  const msg = 'unknown ' + domain + ' ' + unknown.map((x) => JSON.stringify(x)).join(', ') + '; ' + domain + ' is one of ' + [...known].join(', ');
-  if (domain !== 'topic') throw bad(msg);
-  notes.push(msg);
+  if (unknown.length) {
+    throw bad('unknown ' + domain + ' ' + unknown.map((x) => JSON.stringify(x)).join(', ') + '; ' + domain + ' is one of ' + [...known].join(', '));
+  }
   return vals;
 }
 
@@ -225,8 +222,8 @@ export function search(store, p) {
   const limit = int(p.limit, 'limit', 20, 1, 50);
   const offset = int(p.offset, 'offset', 0, 0, 100000);
   const notes = unknownParams(p, SEARCH_KEYS);
-  const topics = terms(store, 'topic', list(p.topic, 'topic'), notes);
-  const grps = terms(store, 'grp', list(p.grp, 'grp'), notes);
+  const topics = terms(store, 'topic', list(p.topic, 'topic'));
+  const grps = terms(store, 'grp', list(p.grp, 'grp'));
   const where = [];
   const args = [];
   if (topics.length) { where.push(`topic IN (${marks(topics.length)})`); args.push(...topics); }
@@ -347,7 +344,7 @@ export function filter(store, p) {
   const inList = (col, vals) => {
     if (vals.length) { where.push(`${col} IN (${marks(vals.length)})`); args.push(...vals); }
   };
-  for (const d of ['topic', 'verdict', 'grp', 'confidence', 'binding']) inList(d, terms(store, d, list(p[d], d), notes));
+  for (const d of ['topic', 'verdict', 'grp', 'confidence', 'binding']) inList(d, terms(store, d, list(p[d], d)));
   if (bool(p.no_card, 'no_card')) where.push("needs_card = 0 AND identity_basis = 'stated'");
   if (bool(p.no_phone, 'no_phone')) where.push("needs_phone = 0 AND identity_basis = 'stated'");
   if (bool(p.anonymous, 'anonymous')) where.push("identity_kind = 'anonymous' AND identity_basis = 'stated'");
@@ -514,6 +511,12 @@ async function needs(store, env) {
 
 const NEED_KEYS = new Set(['id', 'limit', 'offset']);
 
+// A need that asks for no card or no phone lists its confirmed rows. The records whose requirement is not stated (NULL, or an
+// identity that no source states) follow in a section of their own, read from the need's SQL without its conditions on the
+// card, the phone and a stated identity. publish/llms.py need_unstated is the same rule.
+const STATED_CONDITION = /\s+AND\s+(?:needs_card=0|needs_phone=0|identity_basis='stated')(?=\s|$)/g;
+export const UNSTATED_HEADING = 'Card or phone requirement not stated';
+
 export async function need(store, env, p) {
   const id = str(p.id, 'id');
   const doc = await needs(store, env);
@@ -528,7 +531,8 @@ export async function need(store, env, p) {
   const offset = int(p.offset, 'offset', 0, 0, 100000);
   // the need's own SQL (shipped with the build), joined to the record for the order of a tie: the verdict, the
   // evidence rung, the later stale date, then the record id. publish/llms.py need_key is the same order. Self-hosted
-  // rows come after every hosted row: hosted ranked, hosted with no number, self-hosted ranked, self-hosted with none.
+  // rows come after every hosted row: hosted ranked, with no number and not stated, then the self-hosted rows in the
+  // same order (publish/llms.py need_lists).
   const hits = all(store.db, `SELECT h.*, r.vorder AS _vorder, r.confidence AS _conf, r.stale_on AS _stale,
     r.self_hosted AS _sh FROM (${n.sql}) AS h JOIN record r ON r.rid = h.rid`);
   const key = n.sort;
@@ -537,27 +541,48 @@ export async function need(store, env, p) {
   const tie = (x, y) => x._vorder - y._vorder || ev(x) - ev(y) || later(x, y) || (x.rid < y.rid ? -1 : x.rid > y.rid ? 1 : 0);
   const ranked = hits.filter((h) => h[key] != null).sort((x, y) => x[key] - y[key] || tie(x, y));
   const nulls = hits.filter((h) => h[key] == null).sort(tie);
+  const flags = ['needs_card', 'needs_phone'].filter((f) => n.sql.includes(f + '=0'));
+  let unstated = [];
+  if (flags.length) {
+    const relaxed = all(store.db, `SELECT h.*, r.vorder AS _vorder, r.confidence AS _conf, r.stale_on AS _stale, r.needs_card AS _card,
+      r.needs_phone AS _phone, r.self_hosted AS _sh FROM (${n.sql.replace(STATED_CONDITION, '')}) AS h JOIN record r ON r.rid = h.rid`);
+    const have = new Set(hits.map((h) => h.rid));
+    const rest = relaxed.filter((h) => !have.has(h.rid) && flags.every((f) => (f === 'needs_card' ? h._card : h._phone) !== 1));
+    unstated = [...rest.filter((h) => h[key] != null).sort((x, y) => x[key] - y[key] || tie(x, y)), ...rest.filter((h) => h[key] == null).sort(tie)];
+  }
+  // hosted first: the whole list (ranked, with no number, not stated) splits in two, and each part keeps its order
   const isSelf = (h) => h._sh === 1;
-  const seq = hostedFirst([...ranked, ...nulls], isSelf);
+  const seq = hostedFirst([...ranked, ...nulls, ...unstated], isSelf);
   const nSelf = seq.filter(isSelf).length;
   const page = seq.slice(offset, offset + limit);
+  const isUnstated = new Set(unstated.map((h) => h.rid));
   const cards = cardsByRid(store.db, page.map((h) => h.rid));
   const extra = CARD_COLUMNS.includes(key) ? [] : [key];
   const toRow = (h) => [...cards.get(h.rid), ...extra.map((k) => h[k])];
-  const shown = page.filter((h) => cards.has(h.rid));
-  const out = shown.filter((h) => !isSelf(h) && h[key] != null).map(toRow);
-  const nullOut = shown.filter((h) => !isSelf(h) && h[key] == null).map(toRow);
-  const selfOut = shown.filter(isSelf).map(toRow);
+  const inPage = (h) => cards.has(h.rid);
+  const hosted = (h) => !isSelf(h) && inPage(h);
+  const out = page.filter((h) => hosted(h) && !isUnstated.has(h.rid) && h[key] != null).map(toRow);
+  const nullOut = page.filter((h) => hosted(h) && !isUnstated.has(h.rid) && h[key] == null).map(toRow);
+  const unstatedOut = page.filter((h) => hosted(h) && isUnstated.has(h.rid)).map(toRow);
+  const selfOut = page.filter((h) => isSelf(h) && inPage(h)).map(toRow);
   notes.unshift(`${n.title}: ${n.scope}`);
-  // one count for each part: the hosted rows ranked and with no number, then the self-hosted rows (pages.py need())
-  const hRanked = ranked.filter((h) => !isSelf(h)).length;
-  const hNulls = nulls.filter((h) => !isSelf(h)).length;
-  notes.push(`sorted by ${key} ascending; ${hRanked} ${nSelf ? 'hosted ' : ''}ranked, ${hNulls} ${nSelf ? 'hosted ' : ''}` +
-    `with no parsed ${key}` + (nSelf ? `, ${nSelf} self-hosted` : ''));
-  if (nSelf) notes.push(SELF_HOSTED_NOTE(nSelf, 'rows') + `, in self_hosted_rows: ranked, then with no parsed ${key}`);
+  // one count for each part: the hosted rows ranked, with no number and not stated, then the self-hosted rows
+  // (pages.py need())
+  const nHosted = (xs) => xs.filter((h) => !isSelf(h)).length;
+  const hw = nSelf ? 'hosted ' : '';
+  notes.push(`sorted by ${key} ascending; ${nHosted(ranked)} ${hw}ranked, ${nHosted(nulls)} ${hw}with no parsed ${key}` +
+    (nSelf ? `, ${nSelf} self-hosted` : ''));
+  if (flags.length) {
+    notes.push(`${nHosted(unstated)} ${hw}rows with the card or phone requirement not stated follow the others; they are not counted as no`);
+  }
+  if (nSelf) {
+    notes.push(SELF_HOSTED_NOTE(nSelf, 'rows') + `, in self_hosted_rows: ranked, then with no parsed ${key}` +
+      (flags.length ? ', then with the card or phone requirement not stated' : ''));
+  }
   return table([...CARD_COLUMNS, ...extra], out, {
     total: seq.length, offset, truncated: offset + page.length < seq.length, notes, nullRows: nullOut, nullKey: key,
-    selfRows: selfOut, need: { id: n.id, title: n.title, topic: n.topic, sort: key, scope: n.scope, sql: n.sql },
+    unstatedRows: unstatedOut, selfRows: selfOut,
+    need: { id: n.id, title: n.title, topic: n.topic, sort: key, scope: n.scope, sql: n.sql },
   });
 }
 
@@ -630,7 +655,7 @@ export function worklist(store, p) {
   if (!KINDS.has(kind)) throw bad('kind must be stale, drift, changes or unparsed');
   const notes = unknownParams(p, WORK_KEYS);
   const topic = str(p.topic, 'topic');
-  if (topic) terms(store, 'topic', [topic], notes);
+  if (topic) terms(store, 'topic', [topic]);
   const limit = int(p.limit, 'limit', 50, 1, 200);
   const offset = int(p.offset, 'offset', 0, 0, 1000000);
   const page = (cols, countSql, sel, args) => {
@@ -666,7 +691,8 @@ export function worklist(store, p) {
     const body = `SELECT h.when_utc AS at, 'history' AS source, h.hid AS ref, h.status AS status, h.title AS title,
         (SELECT group_concat(rid, ' ') FROM history_link l WHERE l.hid = h.hid) AS rids FROM history h ${hw}
       UNION ALL
-      SELECT at, 'ledger', path, rung, coalesce(old, '') || ' -> ' || coalesce(new, ''), rid FROM ledger ${lw}`;
+      SELECT at, 'ledger', path, rung, CASE WHEN old IS NULL AND new IS NULL THEN 'amended; the old and the new value are not published'
+        ELSE coalesce(old, '') || ' -> ' || coalesce(new, '') END, rid FROM ledger ${lw}`;
     return page(['at', 'source', 'ref', 'status', 'title', 'rids'], `SELECT count(*) FROM (${body})`,
       `SELECT * FROM (${body}) ORDER BY at DESC, ref`, a);
   }
@@ -745,7 +771,8 @@ function cell(v) {
 
 export function footer(t) {
   const lines = [];
-  const shown = t.rows.length + (t.nullRows ? t.nullRows.length : 0) + (t.selfRows ? t.selfRows.length : 0);
+  const shown = t.rows.length + (t.nullRows ? t.nullRows.length : 0) + (t.unstatedRows ? t.unstatedRows.length : 0) +
+    (t.selfRows ? t.selfRows.length : 0);
   if (t.open) lines.push(`# ${shown} rows; row cap reached, more rows exist`);
   else if (t.truncated) lines.push(`# ${shown} of ${t.total} rows; offset=${t.offset + shown} for more`);
   else lines.push(`# ${shown} of ${t.total} rows`);
@@ -761,6 +788,10 @@ export function toTsv(t) {
     lines.push(`# no parsed ${t.nullKey}: ${t.nullRows.length} rows below, unranked`);
     for (const r of t.nullRows) lines.push(r.map(cell).join('\t'));
   }
+  if (t.unstatedRows && t.unstatedRows.length) {
+    lines.push(`# ${UNSTATED_HEADING.toLowerCase()}: ${t.unstatedRows.length} rows below, not counted as no`);
+    for (const r of t.unstatedRows) lines.push(r.map(cell).join('\t'));
+  }
   if (t.selfRows && t.selfRows.length) {
     lines.push(`# self-hosted, the last resort: ${t.selfRows.length} rows below, after every hosted row`);
     for (const r of t.selfRows) lines.push(r.map(cell).join('\t'));
@@ -773,6 +804,7 @@ export function toJson(t) {
   if (t.offset) o.offset = t.offset;
   if (t.excluded && Object.keys(t.excluded).length) o.excluded_null = t.excluded;
   if (t.nullRows) o.null_rows = t.nullRows;
+  if (t.unstatedRows && t.unstatedRows.length) o.unstated_rows = t.unstatedRows;
   if (t.selfRows) o.self_hosted_rows = t.selfRows;
   if (t.entity) o.entity = t.entity;
   if (t.need) o.need = t.need;
