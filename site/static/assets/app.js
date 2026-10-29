@@ -5,14 +5,14 @@
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
-  // runs of a script that is not Latin get their lang, as publish/pages.py lang_wrap does
+  // lang on a run of a non-Latin script (pages.py lang_wrap)
   var RUN = /[぀-ヿㇰ-ㇿ㐀-䶿一-鿿豈-﫿가-힯ᄀ-ᇿ㄰-㆏][　-ヿㇰ-ㇿ㐀-䶿一-鿿豈-﫿가-힯ᄀ-ᇿ㄰-㆏＀-￯]*|[Ѐ-ӿ]+(?:[ -][Ѐ-ӿ]+)*|[؀-ۿ]+(?: [؀-ۿ]+)*|[֐-׿]+(?: [֐-׿]+)*|[฀-๿]+/g;
-  function lng(r) { return /[Ѐ-ӿ]/.test(r) ? 'ru' : /[؀-ۿ]/.test(r) ? 'ar' : /[֐-׿]/.test(r) ? 'he' : /[฀-๿]/.test(r) ? 'th' : /[぀-ヿㇰ-ㇿ]/.test(r) ? 'ja' : /[가-힯ᄀ-ᇿ㄰-㆏]/.test(r) ? 'ko' : 'zh'; }
+  function lng(r) { var c = r.charCodeAt(0); return c < 1280 ? 'ru' : c < 1536 ? 'he' : c < 2048 ? 'ar' : c < 3712 ? 'th' : /[぀-ヿㇰ-ㇿ]/.test(r) ? 'ja' : /[가-힯ᄀ-ᇿ㄰-㆏]/.test(r) ? 'ko' : 'zh'; }
   function txt(s) { return esc(s).replace(RUN, function (r) { return '<span lang="' + lng(r) + '">' + r + '</span>'; }); }
   // verdict terms in vorder and their short labels (publish/pages.py VERDICT_LABEL)
   var VT = ['qualifies', 'qualifies-with-caveat', 'trial-only', 'paid-only', 'fails-identity', 'fails-egress', 'fails-quota', 'dead'];
   var VL = ['★ qualifies', 'caveat', 'trial', 'paid', 'fails: identity', 'fails: egress', 'fails: quota', 'dead'];
-  // topic names, from the topic bar of the page (publish/rules/topics.json), so this file holds no copy of the list
+  // topic names from the topic bar, so this file holds no copy of the list
   var TN = {};
   $$('.topics a').forEach(function (a) { var m = /^\/t\/([^/]+)\/$/.exec(a.getAttribute('href')); if (m) TN[m[1]] = a.textContent; });
   function pill(v) { var i = typeof v === 'number' ? v : VT.indexOf(v); return '<span class="v v-' + esc(VT[i] || v) + '">' + esc(VL[i] || v) + '</span>'; }
@@ -22,7 +22,7 @@
     var w = Math.max.apply(null, vs.map(function (v) { var i = VT.indexOf(v); return (VL[i] || v || '').length; }).concat([0]));
     return 'list' + (w > 11 ? '' : w > 6 ? ' lm' : ' ls');
   }
-  // the one line of a row, as publish/llms.py headline(): a cut summary loses its cut word; the first letter is a capital
+  // the line of a row, as llms.py headline()
   function line(s) {
     s = String(s || '').trim().replace(/^(?:quoted|verbatim|quote):\s*/i, '');
     if (/(\.\.\.|…)$/.test(s)) { var t = s.replace(/\s*\S*(\.\.\.|…)$/, '').replace(/[ ,;:(-]+$/, ''); if (t.length >= 20) { s = t + '...'; } }
@@ -36,7 +36,6 @@
   }
 
   // ---------------------------------------------------------------- freshness, computed against today
-  // The page says "stale on DATE"; this says whether that date is past: "fresh until DATE" or "stale since DATE".
   function fresh(root) {
     $$('.fr:not(.done)', root).forEach(function (b) {
       var h = b.closest('[data-stale-on]'), so = b.getAttribute('data-stale-on') || (h && h.getAttribute('data-stale-on'));
@@ -54,8 +53,7 @@
 
   // ---------------------------------------------------------------- filter chips (class toggles on <html>), kept in ?f= and ?i=
   var chips = $('.chips'), ifl = $('.chips .ifilter'), clear = $('.chips .clear');
-  // a row is shown when it has every pressed flag and the interface text; computed from the attributes, so the
-  // count reads no layout, and the writes below come after every read
+  // shown rows come from the attributes, so the count reads no layout; the writes follow the reads
   function recount() {
     var c = $('.chips .count'); if (!c) { return; }
     var on = $$('.chips [aria-pressed=true]').map(function (b) { return b.getAttribute('data-chip'); });
@@ -66,7 +64,6 @@
     });
     var count = function (el) { var all = $$('.e[data-f]', el); return [all.filter(function (r) { return seen.has(r); }).length, all.length]; };
     c.textContent = vis === rows.length ? rows.length + ' shown' : vis + ' of ' + rows.length + ' shown';
-    // a group or a category with no row left is hidden, and a group heading counts the rows that it shows
     var lists = $$('main ul.list, main ol.list').map(function (ul) { return [ul, count(ul)]; });
     var grps = $$('section.grp').map(function (g) { return [g, count(g)]; });
     lists.forEach(function (x) {
@@ -141,7 +138,7 @@
       var s = document.createElement('script'); s.src = '/assets/minisearch.js'; s.onload = res; s.onerror = rej; document.head.appendChild(s);
     }).then(function () { return fetch('/api/v1/names.json'); }).then(function (r) { return r.json(); }).then(function (rows) {
       names = rows;
-      // a typo is forgiven in a word of five letters or more; a shorter word must match its start
+      // a typo only in a word of five letters or more
       ms = new window.MiniSearch({ fields: ['name', 'aliases', 'domain'], storeFields: ['i'], tokenize: tokenize,
         processTerm: function (t) { return t; },
         searchOptions: { boost: { name: 4, aliases: 2, domain: 2 }, fuzzy: function (t) { return t.length >= 5 ? 0.2 : false; }, prefix: true, tokenize: tokenize, processTerm: function (t) { return t; } } });
@@ -175,7 +172,7 @@
   }
   function names_then_drop() { renderDrop(); loadNames().then(renderDrop).catch(function () { drop.removeAttribute('aria-busy'); setOpen(false); }); }
   if (box && drop) {
-    // the combobox exists only with this script, so its roles and states are set here rather than in every page
+    // the combobox exists only with this script, so its roles are set here
     box.setAttribute('role', 'combobox'); box.setAttribute('aria-autocomplete', 'list');
     box.setAttribute('aria-expanded', 'false'); box.setAttribute('aria-controls', 'qr');
     drop.setAttribute('role', 'listbox'); drop.setAttribute('aria-label', 'Matching providers');
