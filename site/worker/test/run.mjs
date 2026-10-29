@@ -649,7 +649,13 @@ test('a need ranks a tie by evidence, and the API, the page and the Markdown agr
   const md = join(DIST, 'need', 'free-gpu.md');
   if (!existsSync(md)) { t.skip('no ' + md); return; }
   const page = [...readFileSync(md, 'utf8').matchAll(/^\d+\. .*?`([^`]+)`/gm)].map((m) => m[1]);
-  assert.deepEqual(n.json.rows.map((r) => r[0]).slice(0, page.length), page);
+  // the page splits the list into sections (llms.NEED_SPLITS: 4 for this need) and keeps the order of the API inside each, so
+  // the page holds the same rows, and it goes back in the order of the API at most once between two sections
+  const api = n.json.rows.map((r) => r[0]);
+  assert.deepEqual([...page].sort(), [...api].sort());
+  let back = 0;
+  for (let i = 1; i < page.length; i++) if (api.indexOf(page[i]) < api.indexOf(page[i - 1])) back++;
+  assert.ok(back <= 3, 'the Markdown goes back in the order of the API ' + back + ' times');
 });
 
 test('the API answers its root, an unknown route, a .tsv suffix and the static files (U-21)', async () => {
