@@ -1,4 +1,4 @@
-/* fshy wiki: freshness, filter chips, name search (MiniSearch), full-text search page, compare page. No framework. */
+/* fshy wiki: freshness, filter chips, name search, search page, compare page. No framework. */
 (function () {
   'use strict';
   var today = new Date().toISOString().slice(0, 10);
@@ -9,17 +9,17 @@
   var RUN = /[぀-ヿㇰ-ㇿ㐀-䶿一-鿿豈-﫿가-힯ᄀ-ᇿ㄰-㆏][　-ヿㇰ-ㇿ㐀-䶿一-鿿豈-﫿가-힯ᄀ-ᇿ㄰-㆏＀-￯]*|[Ѐ-ӿ]+(?:[ -][Ѐ-ӿ]+)*|[؀-ۿ]+(?: [؀-ۿ]+)*|[֐-׿]+(?: [֐-׿]+)*|[฀-๿]+/g;
   function lng(r) { var c = r.charCodeAt(0); return c < 1280 ? 'ru' : c < 1536 ? 'he' : c < 2048 ? 'ar' : c < 3712 ? 'th' : /[぀-ヿㇰ-ㇿ]/.test(r) ? 'ja' : /[가-힯ᄀ-ᇿ㄰-㆏]/.test(r) ? 'ko' : 'zh'; }
   function txt(s) { return esc(s).replace(RUN, function (r) { return '<span lang="' + lng(r) + '">' + r + '</span>'; }); }
-  // verdict terms in vorder and their short labels (publish/pages.py VERDICT_LABEL)
+  // verdicts in vorder, with short labels (pages.py VERDICT_LABEL)
   var VT = ['qualifies', 'qualifies-with-caveat', 'trial-only', 'paid-only', 'fails-identity', 'fails-egress', 'fails-quota', 'dead'];
   var VL = ['★ qualifies', 'caveat', 'trial', 'paid', 'fails: identity', 'fails: egress', 'fails: quota', 'dead'];
-  // topic names from the topic bar, so this file holds no copy of the list
+  // topic names, read from the topic bar
   var TN = {};
   $$('.topics a').forEach(function (a) { var m = /^\/t\/([^/]+)\/$/.exec(a.getAttribute('href')); if (m) TN[m[1]] = a.textContent; });
   function pill(v) { var i = typeof v === 'number' ? v : VT.indexOf(v); return '<span class="v v-' + esc(VT[i] || v) + '">' + esc(VL[i] || v) + '</span>'; }
   function usd(v, sfx) { return v == null ? '' : 'USD ' + (v < 1000 ? String(+(+v).toFixed(2)) : (+v).toFixed(0)) + sfx; }
-  function topics(ts) { return (Array.isArray(ts) ? ts : String(ts || '').split(',')).filter(Boolean).map(function (t) { return TN[t] || t; }).join(', '); }
-  function lane(vs) { // list class from the longest verdict label, as pages.py lane()
-    var w = Math.max.apply(null, vs.map(function (v) { var i = VT.indexOf(v); return (VL[i] || v || '').length; }).concat([0]));
+  function topics(ts) { return ts.map(function (t) { return TN[t] || t; }).join(', '); }
+  function lane(vs) { // as pages.py lane()
+    var w = Math.max.apply(null, vs.map(function (v) { var i = VT.indexOf(v); return (VL[i] || v || '').length; }));
     return 'list' + (w > 11 ? '' : w > 6 ? ' lm' : ' ls');
   }
   // the line of a row, as llms.py headline()
@@ -29,17 +29,17 @@
     return /^none:/i.test(s) ? s : s.charAt(0).toUpperCase() + s.slice(1);
   }
 
-  // ---------------------------------------------------------------- keep the current topic visible in the scrolling topic bar
-  var tn = $('.topics'), tc = tn && $('[aria-current]', tn);
+  // topic bar
+  var tn = $('.topics'), tc = $('[aria-current]', tn);
   if (tc && tn.scrollWidth > tn.clientWidth) {
     tn.scrollLeft += tc.getBoundingClientRect().left - tn.getBoundingClientRect().left - (tn.clientWidth - tc.offsetWidth) / 2;
   }
 
-  // ---------------------------------------------------------------- freshness, computed against today
+  // freshness
   function fresh(root) {
     $$('.fr:not(.done)', root).forEach(function (b) {
-      var h = b.closest('[data-stale-on]'), so = b.getAttribute('data-stale-on') || (h && h.getAttribute('data-stale-on'));
-      if (!so || so === 'None') { return; }
+      var h = b.closest('[data-stale-on]'), so = h && h.getAttribute('data-stale-on');
+      if (!so) { return; }
       var stale = so <= today, inh = b.getAttribute('data-basis') === 'inherited';
       b.className = 'fr ' + (stale ? 'stale' : 'fresh');
       b.textContent = (stale ? 'stale since ' : 'fresh until ') + so + (inh ? ', inherited' : '');
@@ -48,14 +48,14 @@
   fresh();
   $$('[data-f]').forEach(function (r) {
     var so = r.getAttribute('data-stale-on');
-    if (so && so !== 'None' && so > today) { r.setAttribute('data-f', (r.getAttribute('data-f') + ' fresh').trim()); }
+    if (so && so > today) { r.setAttribute('data-f', (r.getAttribute('data-f') + ' fresh').trim()); }
   });
 
-  // ---------------------------------------------------------------- filter chips (class toggles on <html>), kept in ?f= and ?i=
+  // filter chips, kept in ?f= and ?i=
   var chips = $('.chips'), ifl = $('.chips .ifilter'), clear = $('.chips .clear');
-  // shown rows come from the attributes, so the count reads no layout; the writes follow the reads
+  // counts come from attributes, not layout; writes follow reads
   function recount() {
-    var c = $('.chips .count'); if (!c) { return; }
+    var c = $('.chips .count');
     var on = $$('.chips [aria-pressed=true]').map(function (b) { return b.getAttribute('data-chip'); });
     var rows = $$('.e[data-f]'), seen = new Set(), vis = 0;
     rows.forEach(function (r) {
@@ -77,14 +77,12 @@
       x[0].hidden = !n;
       if (sm) { sm.textContent = n === all ? String(all) : n + ' of ' + all; }
     });
-    if (clear) { clear.hidden = !on.length && !(ifl && ifl.value.trim()); }
-    if (chips) {
-      var u = new URLSearchParams(location.search);
-      if (on.length) { u.set('f', on.join(',')); } else { u.delete('f'); }
-      if (ifl && ifl.value.trim()) { u.set('i', ifl.value.trim()); } else { u.delete('i'); }
-      var qs = u.toString();
-      if ((qs ? '?' + qs : '') !== location.search) { history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash); }
-    }
+    clear.hidden = !on.length && !ifl.value.trim();
+    var u = new URLSearchParams(location.search);
+    if (on.length) { u.set('f', on.join(',')); } else { u.delete('f'); }
+    if (ifl.value.trim()) { u.set('i', ifl.value.trim()); } else { u.delete('i'); }
+    var qs = u.toString();
+    if ((qs ? '?' + qs : '') !== location.search) { history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash); }
   }
   function press(b, on) {
     document.documentElement.classList.toggle('f-' + b.getAttribute('data-chip'), on);
@@ -104,22 +102,18 @@
       press(b, want.indexOf(b.getAttribute('data-chip')) >= 0);
       b.addEventListener('click', function () { press(b, b.getAttribute('aria-pressed') !== 'true'); recount(); });
     });
-    if (ifl) {
-      ifl.value = start.get('i') || '';
-      ifl.addEventListener('input', function () { ifilter(); recount(); });
-      if (ifl.value) { ifilter(); }
-    }
-    if (clear) {
-      clear.addEventListener('click', function () {
-        $$('.chips button[data-chip]').forEach(function (b) { press(b, false); });
-        if (ifl) { ifl.value = ''; ifilter(); }
-        recount();
-      });
-    }
+    ifl.value = start.get('i') || '';
+    ifl.addEventListener('input', function () { ifilter(); recount(); });
+    if (ifl.value) { ifilter(); }
+    clear.addEventListener('click', function () {
+      $$('.chips button[data-chip]').forEach(function (b) { press(b, false); });
+      ifl.value = ''; ifilter();
+      recount();
+    });
     recount();
   }
 
-  // ---------------------------------------------------------------- name search (lazy MiniSearch over names.json)
+  // name search
   var ms = null, names = null, loading = null;
   function norm(s) { return String(s || '').normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
   function tokenize(s) {
@@ -139,17 +133,17 @@
     }).then(function () { return fetch('/api/v1/names.json'); }).then(function (r) { return r.json(); }).then(function (rows) {
       names = rows;
       // a typo only in a word of five letters or more
-      ms = new window.MiniSearch({ fields: ['name', 'aliases', 'domain'], storeFields: ['i'], tokenize: tokenize,
+      ms = new window.MiniSearch({ fields: ['name', 'aliases', 'domain'], tokenize: tokenize,
         processTerm: function (t) { return t; },
-        searchOptions: { boost: { name: 4, aliases: 2, domain: 2 }, fuzzy: function (t) { return t.length >= 5 ? 0.2 : false; }, prefix: true, tokenize: tokenize, processTerm: function (t) { return t; } } });
-      ms.addAll(rows.map(function (r, i) { return { id: i, i: i, name: r[1], aliases: (r[2] || []).join(' '), domain: r[3] || '' }; }));
+        searchOptions: { boost: { name: 4, aliases: 2, domain: 2 }, fuzzy: function (t) { return t.length >= 5 ? 0.2 : false; }, prefix: true } });
+      ms.addAll(rows.map(function (r, i) { return { id: i, name: r[1], aliases: r[2].join(' '), domain: r[3] || '' }; }));
     });
     loading.catch(function () { loading = null; });
     return loading;
   }
   function nameHits(q, n) {
     if (!ms || !q) { return []; }
-    return ms.search(q).slice(0, n || 12).map(function (h) { return names[h.i]; });
+    return ms.search(q).slice(0, n).map(function (h) { return names[h.id]; });
   }
   var box = $('#q'), drop = $('#qr'), sel = -1;
   function setOpen(on) {
@@ -158,7 +152,7 @@
   }
   function renderDrop() {
     var q = box.value.trim(); if (!q) { setOpen(false); return; }
-    if (!ms) { // the names are on their way: say so, so a slow phone does not show an empty box
+    if (!ms) { // names are loading: say so
       drop.setAttribute('aria-busy', 'true');
       drop.innerHTML = '<p class="busy">Loading names...</p>'; setOpen(true); return;
     }
@@ -172,7 +166,7 @@
   }
   function names_then_drop() { renderDrop(); loadNames().then(renderDrop).catch(function () { drop.removeAttribute('aria-busy'); setOpen(false); }); }
   if (box && drop) {
-    // the combobox exists only with this script, so its roles are set here
+    // no script, no combobox: roles are set here
     box.setAttribute('role', 'combobox'); box.setAttribute('aria-autocomplete', 'list');
     box.setAttribute('aria-expanded', 'false'); box.setAttribute('aria-controls', 'qr');
     drop.setAttribute('role', 'listbox'); drop.setAttribute('aria-label', 'Matching providers');
@@ -194,10 +188,9 @@
     });
   }
 
-  // ---------------------------------------------------------------- full-text search page
-  // the columns of the full-text index, in words (site/worker/rank.js FTS_COLUMNS)
-  var COL = { name: 'name', offer: 'free tier and price', limits: 'limits', egress: 'egress', identity: 'identity', access: 'interface',
-    notes: 'notes', evidence: 'evidence', extras: 'other fields' };
+  // full-text search page
+  // the full-text columns of worker/rank.js FTS_COLUMNS that have another name; the others are shown as they are
+  var COL = { offer: 'free tier and price', access: 'interface', extras: 'other fields' };
   function matched(m) {
     var seen = {};
     return String(m || '').split(',').map(function (c) { return COL[c.replace(/\(.*\)$/, '')] || c.replace(/\(.*\)$/, ''); })
@@ -239,7 +232,7 @@
     }
   }
 
-  // ---------------------------------------------------------------- compare page
+  // compare page
   var cmp = $('#cmp');
   if (cmp) {
     var ids = (new URLSearchParams(location.search).get('r') || '').split(',').map(function (x) { return x.trim(); }).filter(function (x, i, a) { return x && a.indexOf(x) === i; }).slice(0, 5);
