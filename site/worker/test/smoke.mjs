@@ -1,7 +1,8 @@
 // Smoke test of the Worker on workerd: starts `wrangler dev` on the built site, asks the API, the SQL route, the
 // MCP endpoint, the route patterns of wrangler.jsonc and the download of the public store, and stops wrangler by the
-// PID it started. The node tests (run.mjs) fake the bindings; this test runs the real assets binding and the real
-// rate limiting binding together, from an empty local state directory, as on a fresh clone.
+// PID it started. Then it runs strand.mjs, which tests a load of the store whose request ended. The node tests
+// (run.mjs) fake the bindings; this test runs the real assets binding and the real rate limiting binding together,
+// from an empty local state directory, as on a fresh clone.
 //
 // When `npx wrangler dev` starts from a console with an empty state, the local rate limiter can throw "internal
 // error". A process that node starts did not show it, so this test can pass where that bug is. run.mjs tests a
@@ -212,5 +213,11 @@ const icon = await fetch(ORIGIN + '/favicon.ico');
 check('GET /favicon.ico is an icon', icon.status === 200 && (await icon.arrayBuffer()).byteLength < 300, icon.status);
 
 if (/rate limiter \S+ failed/.test(log)) console.log('# note: the local rate limiter threw, and the Worker allowed the request');
+
+// a load of the store whose request ended (issue #26): strand.mjs starts its own wrangler dev with another entry point
+stop();
+console.log('# strand.mjs');
+const strand = spawnSync(process.execPath, [join(SITE, 'worker', 'test', 'strand.mjs')], { stdio: 'inherit' });
+check('strand.mjs: a load whose request ended leaves no request without an answer', strand.status === 0, 'exit ' + strand.status);
 console.log(`${fails.length ? 'FAIL' : 'PASS'}: ${fails.length} failed`);
 await finish(fails.length ? 1 : 0);
