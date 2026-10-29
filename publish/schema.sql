@@ -15,7 +15,7 @@ CREATE TABLE entity (eid TEXT PRIMARY KEY, name TEXT NOT NULL, domain TEXT, reso
 CREATE TABLE alias (eid TEXT NOT NULL, alias TEXT NOT NULL, kind TEXT NOT NULL,
   PRIMARY KEY (eid, alias, kind)) WITHOUT ROWID;
 
--- one row per dossier record (topic/slug); card columns are derived, doc is the projected JSON
+-- one row per record (topic/slug); card columns are derived, doc is the projected JSON
 CREATE TABLE record (
   rid TEXT PRIMARY KEY,            -- topic/slug, stable
   rno INTEGER NOT NULL UNIQUE,     -- build-local number: text_fts docid and leaf key; never quote it
