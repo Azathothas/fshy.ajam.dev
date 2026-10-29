@@ -124,20 +124,53 @@ Static files are served without running the Worker. The Worker runs only for `/a
 `/api/v1/entity-search`, `/mcp` and `/r/*`. It loads the store's Worker copy once per isolate. That copy is the
 public store without record JSON, leaves and evidence quotes, which are served as static files.
 
-**The SQL route and the MCP tool `sql`.** Three checks stop a costly or a writing statement:
+**The SQL route and the MCP tool `sql`.** The first two checks refuse a statement before it runs, with a 400
+that says why. The platform stops what they miss.
 
 1. The guard (`worker/guard.js`) accepts one statement that starts with SELECT, WITH, VALUES or EXPLAIN. It refuses
-   a write or a session keyword outside a literal. It also refuses, outside a literal, a character that JavaScript
-   or Python reads as white space and SQLite does not, for example U+FEFF or U+0085. It appends a LIMIT.
+   a write or a session keyword outside a literal, a recursive CTE, and a function that is not on
+   `ALLOWED_FUNCTIONS`. The functions left out build a value larger than their input (`hex()`, `quote()`, `char()`,
+   `zeroblob()`, `randomblob()`, the JSON builders), make rows that the budget cannot size (`json_each()`), or need
+   text that the store does not hold (`snippet()`). `printf()` and `format()` need a literal format string, a
+   width or a precision of at most 1,000, and no `%q`, `%Q` or `%w`. The guard also refuses, outside a literal, a
+   character that JavaScript or Python reads as white space and SQLite does not, for example U+FEFF or U+0085. It
+   appends a LIMIT.
 2. The statement budget (`worker/plan.js`) reads `EXPLAIN QUERY PLAN`, because sql.js has no progress handler. A
-   scan is a plan line that reads a whole table, whatever words follow the name, or a SEARCH with only a range
-   constraint. A SEARCH with `=` reads the rows of one key: the table's rows divided by the distinct values of the
-   column. The steps of one loop chain run nested. The budget refuses a chain with two steps that read over 1,000
-   rows each, or with a product of rows over 5,000,000. A subquery that is not correlated, a MATERIALIZE
-   step, a CO-ROUTINE step and each part of a compound SELECT run once, so each is a chain of its own. A recursive
-   CTE, `randomblob()`, `zeroblob()` and a `printf()` width over 1,000 are refused too. A join with `=` on an
-   indexed column passes.
-3. The rate limits: 30 SQL requests a minute for each address, and `limits.cpu_ms`.
+   scan reads a whole table, whatever words follow the name; so does a SEARCH with only a range constraint. A
+   SEARCH with `=` reads the rows of the largest key of the column: the build writes it to the `keystat` table of
+   the store. A full-text match reads every document. The steps of one loop chain run nested, and the rows of all
+   the chains of a statement add up. Each row is weighted by the functions and operators that the statement
+   evaluates. The budget refuses a chain with two steps that read over 1,000 rows each, or a statement whose
+   weighted rows are over 5,000,000. A join with `=` on a column with small keys passes.
+3. The backstops. SQLite may allocate 32 MiB (`PRAGMA hard_heap_limit`, with temporary tables in that memory): a
+   statement that needs more gets a 400, and the store stays open. A result over 2,000,000 characters gets a 400.
+   A failure of the WebAssembly engine gets a 503, and the next request loads the store again. `limits.cpu_ms`
+   in `wrangler.jsonc` stops a request after 2,500 ms of CPU. Then the Worker cannot answer: the caller gets the
+   platform's error page "Error 1102: Worker exceeded resource limits", not JSON. Cloudflare's documentation does
+   not give its HTTP status. `wrangler dev` does not enforce `cpu_ms`: a statement of 573 ms ran there with
+   `cpu_ms` set to 50.
+4. The rate limits: 30 SQL requests a minute for each address.
+
+**Why `cpu_ms` is 2,500.** It is at least three times the costliest request that the Worker accepts. Measured on
+2026-10-29 with `wrangler dev` (wrangler 4.154.0, sql.js 1.15.2) on the operator's computer. Each time is the
+wall time of the request at the client, the largest of three. The CPU time is lower, because the cold load waits
+on the assets.
+
+| request | ms |
+| --- | --- |
+| the first request of an isolate, a search: the store load (107 ms) and the search | 260 |
+| the first request, `need` or the MCP `get` of 5 full records | 158 to 165 |
+| the first request, the costliest accepted statement that completes (below) | 574 |
+| the first request, the costliest accepted statement: `count(DISTINCT ...)` over 1.5 million rows, stopped by the heap limit | 718 |
+| a warm statement: `sum(length(printf('%1000s%1000s%1000s', ...)))` over `limit_row` x `fx` | 432 |
+| a warm statement at the budget: `LIKE`, `strftime()`, `lower()`, 20 calls a row, `||` | 146 to 286 |
+| the heaviest warm API request: `search` with offset 1,000 | 41 |
+| every other warm API request and MCP tool (`records`, `need`, `worklist`, `get`, `entity`, `help`) | 22 or less |
+| a refusal of the guard or the budget | 8 or less |
+
+The costliest request is 718 ms, so 2,500 ms is a margin of 3.5. The hardware of the platform can be slower than
+this computer. A statement that the budget accepts can still run longer: the weight does not see a long value
+that a row builds. The platform stops that statement.
 
 **Headers.** `static/_headers` sets a Content-Security-Policy on every page: scripts, styles, images and requests
 come from the site itself only. `smoke.mjs` checks that `wrangler dev` sends it. A response of the Worker, for
