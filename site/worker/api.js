@@ -14,7 +14,7 @@ export const CARD_COLUMNS = ['rid', 'provider', 'verdict', 'self_hosted', 'confi
   'usd_month', 'usd_per_tb_month', 'stale_on', 'summary'];
 // self_hosted is yes for software or a node that the user installs and runs: every list puts it after every hosted row
 const CARD_SELECT = `rid, provider, verdict, CASE self_hosted WHEN 1 THEN 'yes' ELSE 'no' END AS self_hosted, confidence,
-  coalesce(identity_kind, '') || CASE WHEN identity_basis = 'defaulted' THEN '?' ELSE '' END AS identity,
+  coalesce(identity_kind, '') || CASE WHEN identity_basis <> 'stated' THEN '?' ELSE '' END AS identity,
   CASE needs_card WHEN 1 THEN 'yes' WHEN 0 THEN 'no' ELSE '?' END AS card,
   CASE needs_phone WHEN 1 THEN 'yes' WHEN 0 THEN 'no' ELSE '?' END AS phone,
   usd_month, usd_per_tb_month, stale_on, summary`;
@@ -690,7 +690,7 @@ export async function help(store, env) {
     `rid = topic/slug (stable). grp: ${(vocab.grp || []).join(' | ')}. verdict in order (vorder 0..7, lower is better):`,
     `  ${(vocab.verdict || []).join(', ')}.`,
     `Unknown is NULL, never "no": card ? means not stated. No card = needs_card=0 AND identity_basis='stated'.`,
-    `identity shows identity_kind, with ? when the requirement was defaulted rather than read.`,
+    `identity shows identity_kind, with ? when the requirement was defaulted or inferred rather than read.`,
     `usd_month and usd_per_tb_month are headline prices, NULL when nothing parsed; a filter or sort on them`,
     `excludes NULL rows and reports how many. stale_on <= today means the record is due for a re-check.`,
     `self_hosted = 1 is software or a node that the user installs and runs. Self-hosted options are listed last, because`,
