@@ -2,11 +2,12 @@
 """Selftest for llms.py: llms.txt, llms-full.txt and the Markdown alternates of the wiki pages.
 
 It reads the public store that publish/build.py writes from data/, generates the files into a temporary
-directory, and checks that they exist, follow the llmstxt.org shape, hold every published value, match no leak
-rule, split within the budget, and come out byte-identical under another hash seed. With --site it also checks a
-built site: every alternate link, the real budgets, the leak scan, _headers, and that the site's files equal a
-fresh generation from the store. What the projection withholds is tested in the research repository, where the
-projection runs.
+directory, and checks that they exist, follow the llmstxt.org shape, hold every published value, split within the
+budget, and come out byte-identical under another hash seed. The build's own leak scan reads them (build.py); this
+test checks once that the scan covers them. With --site it also checks a built site: every alternate link, the real
+budgets, _headers, that the site's files equal a fresh generation from the store, and the HTML pages: the language of
+each run of another script, a description, unique ids, the internal links, the pages without JavaScript, the feed,
+and no build commit. What the projection withholds is tested in the research repository, where the projection runs.
 
 usage:
   python publish/build.py --check && python publish/test_llms.py
@@ -15,6 +16,8 @@ usage:
 Exit codes: 0 every check passed, 1 a check failed.
 """
 import argparse
+import collections
+import email.utils
 import glob
 import json
 import math
@@ -33,7 +36,7 @@ import llms  # noqa: E402
 project = build  # leaves() and jpath() are in build.py here
 
 FAILS = []
-LEAK = build.leak_rx()
+RID_LINE = re.compile(r"^- `([^`]+)`" + re.escape(llms.SEP), re.M)
 LINK = re.compile(r"\]\((" + re.escape(llms.BASE) + r"/[^)\s]*)\)")
 ITEM = re.compile(r"^- \[[^\]]+\]\(" + re.escape(llms.BASE) + r"/[^)\s]*\)(?:: \S.*)?$")
 DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
@@ -124,19 +127,19 @@ def shape_checks(dist, st):
     parts = {k: v for k, v in files.items() if re.fullmatch(r"t/[^/]+/llms-full(-[a-z]+(-\d+)?)?\.txt", k)}
     seen = {}
     for rel, text in parts.items():
-        for rid in re.findall(r"^- `([^`]+)` · ", text, re.M):
+        for rid in RID_LINE.findall(text):
             seen.setdefault(rid, []).append(rel)
     once = [r for r in st.cards if len(seen.get(r, [])) != 1]
     check("every record is in exactly one llms-full part (%d records, %d files)" % (len(st.cards), len(parts)), not once,
           [(r, seen.get(r)) for r in once[:5]])
-    off = [r for r, c in st.cards.items() if "- `%s` · " % r not in files.get("p/%s.md" % c["eid"], "")]
+    off = [r for r, c in st.cards.items() if "- `%s`%s" % (r, llms.SEP) not in files.get("p/%s.md" % c["eid"], "")]
     check("every record is on its provider page", not off, off[:5])
     root = files.get("llms-full.txt", "")
     listed = set(LINK.findall(root))
     split_topics = [k for k, v in parts.items() if k.endswith("/llms-full.txt") and "## Parts" in v]
     unlisted = [k for k in parts if "%s/%s" % (llms.BASE, k) not in listed and k not in split_topics]
     check("the root llms-full.txt lists every part, or holds every record itself",
-          not unlisted or all("- `%s` · " % r in root for r in st.cards), unlisted[:5])
+          not unlisted or all("- `%s`%s" % (r, llms.SEP) in root for r in st.cards), unlisted[:5])
     dates = set(DATE.findall(files.get("llms.txt", ""))) | set(DATE.findall(root.split("## How to read")[0]))
     check("the only date in llms.txt and the head of llms-full.txt is the data's own (%s)" % st.as_of, dates == {st.as_of}, dates)
     return files
@@ -164,8 +167,12 @@ def published_check(files, st):
 def lossless_checks(dist, st):
     files = generated(dist)
     published_check(files, st)
-    hits = [k for k, v in files.items() if LEAK.search(v)]
-    check("the leak patterns match nothing in the generated files", not hits, hits[:3])
+    sep = [k for k, v in files.items() if re.search(r"^- `[^`]+` \u00b7 ", v, re.M)]
+    check("the files separate the items of a line with %r, which is ASCII (U-39)" % llms.SEP, not sep, sep[:3])
+    index = {k: v for k, v in files.items() if k.startswith(("t/", "need/")) and k.endswith(".md")}
+    unknown = [k for k, v in index.items() for ln in v.split("\n") if ln.startswith("- [") and
+               not re.search(r"\| (no phone|phone|phone\?|any-phone\??|country-phone\??)( \||$|\.)", ln)]
+    check("every index line says no phone, phone or phone? (U-24)", not unknown, unknown[:3])
 
 
 def leak_scan_covers(dist):
@@ -195,7 +202,7 @@ def split_checks(db, st, budget, want_cut):
         over = [(k, n) for k, n in parts.items() if n > budget and text[k].count("\n## ") > 1]
         check("at a %d-byte budget the corpus splits into %d files, none over it unless one record alone is"
               % (budget, len(parts)), parts and not over, over[:5])
-        seen = [r for k in parts for r in re.findall(r"^- `([^`]+)` · ", text[k], re.M)]
+        seen = [r for k in parts for r in RID_LINE.findall(text[k])]
         check("at %d bytes, every record is still in exactly one file" % budget, sorted(seen) == sorted(st.cards),
               (len(seen), len(st.cards)))
         root = read(os.path.join(out, "llms-full.txt"))
@@ -260,11 +267,17 @@ def site_checks(dist, store):
     check("every llms-full part, index and need page is within %d bytes" % llms.BUDGET, not over, over[:5])
     big = sorted(((len(v.encode("utf-8")), k) for k, v in files.items() if k.startswith("p/")), reverse=True)[:1]
     print("     largest provider page: %s" % big)
-    hits = [k for k, v in files.items() if LEAK.search(v)]
-    check("the leak patterns match nothing in the site's generated files", not hits, hits[:5])
     man = json.load(open(os.path.join(dist, "data", "manifest.json"), encoding="utf-8"))
     commit = man.get("commit") or ""
     check("no generated file names the build's commit", not commit or not [k for k, v in files.items() if commit[:10] in v])
+    lt = files.get("llms.txt", "")
+    empty = [n for t, n, _ in st.topics if not any(c["topic"] == t for c in st.cards.values())]
+    summary = lt.split("\n")[2] if lt.count("\n") > 2 else ""
+    check("the summary of llms.txt names no topic without records (U-14)",
+          not [n for n in empty if llms.TOPIC_PHRASE.get(dict((x[1], x[0]) for x in st.topics)[n], n.lower()) in summary], empty)
+    check("the notice is in llms.txt and not in llms-full.txt (U-36)", "research and education" in lt and
+          "research and education" not in files.get("llms-full.txt", ""))
+    html_checks(dist, man)
     hdr = read(os.path.join(dist, "_headers"))
     check("_headers sets caching and CORS for every new path",
           all(p in hdr.split("\n") for p in ("/llms.txt", "/llms-full.txt", "/index.md", "/t/*.md", "/t/*.txt", "/p/*.md", "/need/*.md")))
@@ -277,6 +290,77 @@ def site_checks(dist, store):
         shutil.rmtree(fresh, ignore_errors=True)
     total = sum(len(v.encode("utf-8")) for v in files.values())
     print("     %d generated files, %d bytes" % (len(files), total))
+
+
+# a run of a script that is not Latin: pages.py marks each with lang (WCAG 3.1.2)
+NON_LATIN = re.compile("[\u0400-\u04ff\u0590-\u05ff\u0600-\u06ff\u0e00-\u0e7f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]")
+LANG_SPAN = re.compile(r'<span lang="[a-z]{2}">[^<]*</span>')
+# the verdict mark U+2605 of the label "qualifies" is the one symbol of the chrome
+PICTOGRAPH = re.compile("[\U0001F000-\U0001FAFF\u2600-\u2604\u2606-\u26FF\u2B50\u2728\u274C\u2764]")
+RFC822 = re.compile(r"^[A-Z][a-z]{2}, \d{2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}:\d{2} GMT$")
+WORKER = ("/api/v1/search", "/api/v1/records", "/api/v1/sql", "/api/v1/need", "/api/v1/worklist", "/api/v1/record/",
+          "/api/v1/entity-search", "/mcp", "/r/", "/data/fshy-public.sqlite.gz")
+
+
+def html_checks(dist, man):
+    """The HTML pages that pages.py writes: what the review of the wiki found, checked on every page."""
+    pages = {}
+    for root, _, fs in os.walk(dist):
+        for fn in fs:
+            if fn.endswith(".html"):
+                pages[os.path.relpath(os.path.join(root, fn), dist).replace("\\", "/")] = read(os.path.join(root, fn))
+    nolang, nodesc, dupid, emoji, commit, dead, labels = [], [], [], [], [], set(), []
+    have = set()
+    for root, _, fs in os.walk(dist):
+        for fn in fs:
+            have.add("/" + os.path.relpath(os.path.join(root, fn), dist).replace("\\", "/"))
+    for rel, h in pages.items():
+        body = h.split("<body>", 1)[-1]
+        if not h.isascii():
+            bare = re.sub(r"<[^>]*>", " ", LANG_SPAN.sub(" ", body))
+            if NON_LATIN.search(bare):
+                nolang.append((rel, NON_LATIN.search(bare).group(0)))
+            if PICTOGRAPH.search(body):
+                emoji.append((rel, PICTOGRAPH.search(body).group(0)))
+        if not re.search(r'<meta name="description" content="[^"]+">', h):
+            nodesc.append(rel)
+        ids = collections.Counter(re.findall(r'\sid="([^"]+)"', body))
+        if any(n > 1 for n in ids.values()):
+            dupid.append((rel, [i for i, n in ids.items() if n > 1][:3]))
+        if man.get("commit") and man["commit"][:10] in h:
+            commit.append(rel)
+        for href in re.findall(r'href="(/[^"#?]*)', h):
+            if href.startswith(WORKER) or href in ("/api/v1/",):
+                continue
+            want = href + "index.html" if href.endswith("/") else href
+            if want not in have and want + "/index.html" not in have:
+                dead.add((rel, href))
+        if rel.startswith("p/"):
+            heads = re.findall(r'<h2><a href="#[^"]+">(.*?)</a></h2>', h)
+            if len(heads) != len(set(heads)):
+                labels.append(rel)
+    check("every run of another script on %d pages has its lang (U-05)" % len(pages), not nolang, nolang[:5])
+    check("no pictograph of quoted text is on a page (U-37)", not emoji, emoji[:5])
+    check("every page has a meta description (U-29)", not nodesc, nodesc[:5])
+    check("no id repeats on a page (U-28)", not dupid, dupid[:5])
+    check("no page names the build's commit (P-03)", not commit, commit[:5])
+    check("every internal link of every page resolves to a file (%d pages)" % len(pages), not dead, sorted(dead)[:5])
+    check("no two records of a provider page share a heading (U-01)", not labels, labels[:5])
+    search, compare = pages.get("search/index.html", ""), pages.get("compare/index.html", "")
+    check("the search and compare pages say what to do without JavaScript (U-02)",
+          "<noscript>" in search and "/api/v1/search?q=" in search and "<noscript>" in compare and "/api/v1/record/" in compare)
+    topic = pages.get("t/storage/index.html", "")
+    check("the filter bar is hidden until the script shows it, and a key follows it (U-02, U-10)",
+          '<div class="chips" role="group" aria-label="filters" hidden>' in topic and '<details class="key">' in topic)
+    check("a topic page carries no paid row; the paid group has its own page (U-25)",
+          not re.search(r'<li class="e"[^>]*><span class="v v-paid-only">', topic) and os.path.exists(os.path.join(dist, "t", "storage", "paid", "index.html")))
+    feed = read(os.path.join(dist, "changes.xml"))
+    dates = re.findall(r"<pubDate>([^<]*)</pubDate>", feed)
+    check("the feed dates are RFC 822, each guid is not a link, and the feed names itself (U-31)",
+          dates and all(RFC822.match(d) and email.utils.parsedate_to_datetime(d) for d in dates)
+          and feed.count('<guid isPermaLink="false">') == feed.count("<item>") and 'rel="self"' in feed, dates[:2])
+    check("the feed and the changes page carry no history id as text (U-04)",
+          not re.search(r"#\d{4}-\d{2}-\d{2}t", feed + pages.get("changes/index.html", "")))
 
 
 def token_ratio(dist):
