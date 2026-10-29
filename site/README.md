@@ -203,7 +203,7 @@ that says why. The platform stops what they miss.
    not give its HTTP status. `wrangler dev` does not enforce `cpu_ms`: a statement of 573 ms ran there with
    `cpu_ms` set to 50.
 4. The rate limits, for each address: 30 SQL requests a minute, and 120 other requests a minute. Each MCP
-   `tools/call` counts one. A batch of MCP messages holds at most 5 messages, and at most 2 of them are `sql` calls.
+   `tools/call` counts one. A batch of MCP messages holds at most 5 messages, and at most 1 of them is a `sql` call.
    A batch over either limit gets a 400 and the JSON-RPC error -32600, before the rate limit counts it. The
    namespace ids of `wrangler.jsonc` (47201, 47202) are not the example values of the documentation, because two
    bindings with one id share their counters across the Workers of an account.
@@ -236,10 +236,10 @@ over the slowest run and 3.6 over the middle one. A wall time includes the wait 
 the same request is lower.
 
 A `sql` call takes up to 672 ms of CPU and a search of a batch takes 75 ms, which is 360 to 375 ms for 5. A batch
-holds at most 5 messages, and at most 2 of them are `sql` calls. So the costliest batch that the Worker accepts
-takes 2 x 672 + 3 x 75 = 1,569 ms, and `cpu_ms` is 1.6 times that. The sum is derived from the table, and `run.mjs`
-checks it with a margin of 1.5. Five `sql` calls would take 2.7 to 3.4 s, which is over `cpu_ms`, so the Worker
-refuses a third `sql` call in a batch.
+holds at most 5 messages, and at most 1 of them is a `sql` call. So the costliest batch that the Worker accepts
+takes 1 x 672 + 4 x 75 = 972 ms, and `cpu_ms` is 2.6 times that. The sum is derived from the table, and `run.mjs`
+checks it with a margin of 2. Two `sql` calls would take 1,569 ms and leave 1.6, and five would take 2.7 to 3.4 s,
+which is over `cpu_ms`, so the Worker refuses a second `sql` call in a batch.
 
 The hardware of the platform can be slower than this computer. A statement that the budget accepts can still run
 longer: the weight does not see a long value that a row builds. The platform stops that statement.

@@ -15,9 +15,9 @@ import * as api from './api.js';
 
 export const PROTOCOL_VERSIONS = ['2025-11-25', '2025-06-18', '2025-03-26', '2024-11-05'];
 export const MAX_BATCH = 5;
-// the sql calls that one batch may hold: 2 x 672 ms (the costliest warm statement) + 3 x 75 ms (searches) = 1,569 ms,
-// under the cpu_ms of 2,500 with a margin of 1.6; 3 sql calls would leave 1.15
-export const MAX_BATCH_SQL = 2;
+// the sql calls that one batch may hold: 1 x 672 ms (the costliest warm statement) + 4 x 75 ms (searches) = 972 ms,
+// under the cpu_ms of 2,500 with a margin of 2.6; 2 sql calls would be 1,569 ms and leave 1.6
+export const MAX_BATCH_SQL = 1;
 const MAX_TOKENS = 20000;
 // the site's own host (wrangler.jsonc vars.FSHY_HOST), the local hosts of `wrangler dev`, and *.workers.dev previews
 const LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
@@ -302,7 +302,7 @@ export async function handleMcp(request, env, url, open) {
     return jsonResponse(rpcError(null, -32600, `a batch holds at most ${MAX_BATCH} messages; send the others in more requests`), 400, h(null));
   }
   if (Array.isArray(body) && sqlCalls(body) > MAX_BATCH_SQL) {
-    return jsonResponse(rpcError(null, -32600, `a batch holds at most ${MAX_BATCH_SQL} sql calls; send the others in more requests`), 400, h(null));
+    return jsonResponse(rpcError(null, -32600, `a batch holds at most ${MAX_BATCH_SQL} sql call${MAX_BATCH_SQL === 1 ? '' : 's'}; send the others in more requests`), 400, h(null));
   }
   if (await rateLimited(env, 'RL_API', request, body === undefined ? 1 : units(body))) {
     const hh = h(null);
