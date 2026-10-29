@@ -13,6 +13,12 @@
 // The fuzzy tier counts each distinct query token once, and it runs only for a query of at most
 // MAX_FUZZY_TOKENS distinct tokens: each token is compared with every token of the index, so a long
 // query would cost one full pass for each word (the twin in the research repository follows this).
+//
+// Self-hosted last: a self-hosted offer is software or a node that the user installs and runs (record.self_hosted = 1).
+// The site is for users with no hardware, so it is the last resort. self_hosted ascending is the first sort key of every
+// list of records: every hosted item in its order, then every self-hosted item in its order (hostedFirst). In a name
+// search, an entity whose every record is self-hosted comes after every other entity (sortEntities). The twins in the
+// research repository are hosted_first() and name_scores() of fr.py.
 
 import { normalize, tokens } from './text.js';
 
@@ -155,4 +161,22 @@ export function scoreNames(index, query) {
   }
   if (hits) for (const idx of hits) put(idx, 30);
   return [...best.values()];
+}
+
+/** Every hosted item, then every self-hosted one; each part keeps the order it had (a stable partition). */
+export function hostedFirst(items, isSelfHosted) {
+  const hosted = [];
+  const last = [];
+  for (const x of items) (isSelfHosted(x) ? last : hosted).push(x);
+  return hosted.concat(last);
+}
+
+/**
+ * The entities of a name search, best first: score, then best verdict (bestVorder(eid), lower is better), then eid; then
+ * every entity whose every record is self-hosted (allSelfHosted(eid)) after every other entity. hits: [{eid, score}].
+ */
+export function sortEntities(hits, bestVorder, allSelfHosted) {
+  const ranked = [...hits].sort((a, b) => b.score - a.score || bestVorder(a.eid) - bestVorder(b.eid) ||
+    (a.eid < b.eid ? -1 : a.eid > b.eid ? 1 : 0));
+  return hostedFirst(ranked, (h) => allSelfHosted(h.eid));
 }

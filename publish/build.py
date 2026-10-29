@@ -4,14 +4,16 @@ and the Worker copy.
 
 usage:
   python publish/build.py --check               build the store into .tmp/fshy/, verify it, exit 0 or 1
-  python publish/build.py --site site/dist      the store, the Worker copy, the wiki and the API files
+  python publish/build.py --site site/dist      the store, the Worker copy, the wiki and the API files; it fails when a
+                                                list of the site puts a self-hosted record above a hosted one, or stars it
   python publish/build.py --scan FILE...        the leak rules over text files, for example a pull request body
 
 The only input is data/. Every file in it is written by publish/export.py from the projection of the research
 corpus; nothing in data/ is edited by hand. The store is derived and never committed. Standard library only.
 
 The contract with the export: data/meta.json names the schema_version of the data, and data/tables/ holds one
-file per table of schema.sql with exactly its columns. This build reads SCHEMA_VERSION only. It refuses data of
+file per table of schema.sql with exactly its columns. This build reads SCHEMA_VERSION, and the older versions of
+OLDER, which lack the columns that OLDER names: each of those gets its default from schema.sql. It refuses data of
 another version, an unknown table file and an unknown or missing column, because a load through the schema would
 drop or blank that value without a message.
 Exit codes: 0 ok, 1 a check failed, 2 usage, 3 data/ does not match this build (version, tables or columns).
@@ -34,7 +36,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
 sys.path.insert(0, HERE)
 
-SCHEMA_VERSION = "1"  # the version of data/ this build reads; publish/export.py writes the same one
+SCHEMA_VERSION = "2"  # the version of data/ this build reads and of the store it writes; the export writes the same one
+# Older versions of data/ that this build still reads: {version: {table: the columns that version lacks}}. A missing
+# column gets its default from schema.sql. Version 1 has no record.self_hosted, so each of its records is hosted (0).
+OLDER = {"1": {"record": ("self_hosted",)}}
 DERIVED = ("rno", "lid_min", "lid_max", "doc", "sha256", "path")  # record columns build() makes, never in data/
 TABLES = ("entity", "alias", "evidence", "limit_row", "claim", "fx", "unknown", "edge", "drift", "history",
           "history_link", "ledger", "capture", "vocab")
@@ -131,10 +136,10 @@ def read_meta(data):
     """data/meta.json, after the version and the set of table files are checked."""
     meta = json.load(open(os.path.join(data, "meta.json"), encoding="utf-8"))
     v = meta.get("schema_version")
-    if v != SCHEMA_VERSION:
-        raise DataError("data/meta.json has schema_version %r, and this build reads schema_version %r only. The export "
-                        "and publish/ disagree: update publish/ (schema.sql, build.py) to the version of the data, or "
-                        "export again with this publish/." % (v, SCHEMA_VERSION))
+    if v != SCHEMA_VERSION and v not in OLDER:
+        raise DataError("data/meta.json has schema_version %r, and this build reads schema_version %r and %s only. The "
+                        "export and publish/ disagree: update publish/ (schema.sql, build.py) to the version of the data, "
+                        "or export again with this publish/." % (v, SCHEMA_VERSION, ", ".join(map(repr, sorted(OLDER)))))
     tdir = os.path.join(data, "tables")
     have = {f[:-len(".jsonl")] for f in os.listdir(tdir) if f.endswith(".jsonl")} if os.path.isdir(tdir) else set()
     want = {"record"} | set(TABLES)
@@ -147,9 +152,14 @@ def read_meta(data):
     return meta
 
 
-def table_rows(data, t, cols):
-    """The rows of data/tables/<t>.jsonl, refused when their keys are not exactly `cols`."""
+def table_rows(data, t, cols, defaults=None):
+    """The rows of data/tables/<t>.jsonl, refused when their keys are not exactly `cols`. A column of `defaults`, which
+    an older version of the data lacks, may be absent: each row gets its default value."""
+    defaults = defaults or {}
     rows = read_jsonl(os.path.join(data, "tables", t + ".jsonl"))
+    for r in rows:
+        for c, v in defaults.items():
+            r.setdefault(c, v)
     keys = set().union(*rows) if rows else set()
     extra, lack = keys - set(cols), (set(cols) - keys) if rows else set()
     if extra or lack:
@@ -177,10 +187,15 @@ def build(data, out_db):
     schema = sqlite3.connect(":memory:")
     schema.executescript(open(os.path.join(HERE, "schema.sql"), encoding="utf-8").read())
     tcols = {t: [c[1] for c in schema.execute("PRAGMA table_info(%s)" % t)] for t in ("record",) + TABLES}
+    # the columns that this version of the data lacks, each with the default of schema.sql (a literal)
+    lacks = {t: {c[1]: schema.execute("SELECT %s" % c[4]).fetchone()[0]
+                 for c in schema.execute("PRAGMA table_info(%s)" % t) if c[1] in cs}
+             for t, cs in OLDER.get(meta_in.get("schema_version"), {}).items()}
     schema.close()
     cols = tcols["record"]
-    tables = {t: table_rows(data, t, tcols[t]) for t in TABLES}
-    rows = sorted(table_rows(data, "record", [c for c in cols if c not in DERIVED]), key=lambda r: r["rid"])
+    tables = {t: table_rows(data, t, tcols[t], lacks.get(t)) for t in TABLES}
+    rows = sorted(table_rows(data, "record", [c for c in cols if c not in DERIVED], lacks.get("record")),
+                  key=lambda r: r["rid"])
     ents = {e["eid"]: e for e in tables["entity"]}
     aliases = collections.defaultdict(set)
     for a in tables["alias"]:
@@ -448,12 +463,19 @@ def main(argv=None):
         print("build: warning: %d match(es) of the warn rule %s (%s); the export refuses them. First: %s: ...%s..."
               % (n, rid, why[rid], first[0], first[1].replace("\n", " ")), file=sys.stderr)
     report_warn = dict(warned)
-    over = []
+    over, order = [], []
     if a.site:
+        # each page and file of the site is checked in memory as it is written: no list puts a self-hosted record above
+        # a hosted one, or stars it (selfhosted.py)
+        import selfhosted  # noqa: E402
+        db = sqlite3.connect(a.db)
+        selfhosted.start(r for (r,) in db.execute("SELECT rid FROM record WHERE self_hosted = 1"))
+        db.close()
         import site_gen  # noqa: E402
         report["files"] = site_gen.generate(ROOT, a.db, os.path.abspath(a.site), TIMES, lap)
         import llms  # noqa: E402
         llms.generate(a.db, os.path.abspath(a.site))
+        order = selfhosted.problems()
         lap("site-llms")
         hits += leak_scan(dist=os.path.abspath(a.site))
         lap("leak-scan")
@@ -464,13 +486,16 @@ def main(argv=None):
         for rel, n in over:
             print("build: %s is %d bytes; a static asset holds at most %d" % (rel, n, ASSET_MAX_BYTES), file=sys.stderr)
     report["leaks"] = len(hits)
+    report["order"] = len(order)
     report["warnings"] = report_warn
     report["times"] = TIMES
     for where, ctx, rid in hits[:40]:
         print("LEAK %s %s: ...%s..." % (where, rid, ctx.replace("\n", " ")), file=sys.stderr)
+    for rel, what in order[:40]:
+        print("ORDER %s: %s" % (rel, what), file=sys.stderr)
     if not a.quiet:
         print(json.dumps(report))
-    return 1 if hits or over else 0
+    return 1 if hits or over or order else 0
 
 
 if __name__ == "__main__":

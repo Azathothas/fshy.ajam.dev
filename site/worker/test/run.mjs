@@ -864,6 +864,97 @@ test('a provider with many records has a page for each record, and /r/ goes ther
   }
 });
 
+test('self-hosted last: every list of the API, the MCP tools and the static files puts each self-hosted row after every hosted row', async (t) => {
+  const { getStore } = await import('../db.js');
+  const { store } = await getStore(env, globalThis.__fshyWasm);
+  const q = (sql) => (store.db.exec(sql)[0] || { values: [] }).values;
+  const sh = new Set(q('SELECT rid FROM record WHERE self_hosted = 1').map((r) => r[0]));
+  if (!sh.size) { t.skip('the store has no self-hosted record (data of schema_version 1)'); return; }
+  const after = (rids, what) => {
+    let first = null;
+    for (const rid of rids) {
+      if (sh.has(rid)) first = first || rid;
+      else assert.equal(first, null, `${what}: the hosted row ${rid} is below the self-hosted row ${first}`);
+    }
+    return rids.filter((r) => sh.has(r)).length;
+  };
+  // search: the whole list splits, name hits and text hits alike; the card says yes or no
+  const s = await call('/api/v1/search?q=self-hosted&limit=50');
+  assert.equal(s.res.status, 200, s.body);
+  const si = s.json.columns.indexOf('self_hosted');
+  assert.equal(si, s.json.columns.indexOf('verdict') + 1, 'self_hosted follows verdict in a card');
+  for (const r of s.json.rows) assert.equal(r[si], sh.has(r[0]) ? 'yes' : 'no', r[0]);
+  const all = [];
+  for (let off = 0; off < s.json.total && off < 400; off += 50) {
+    all.push(...(await call('/api/v1/search?q=self-hosted&limit=50&offset=' + off)).json.rows.map((r) => r[0]));
+  }
+  assert.ok(after(all, 'search') > 0 && all.length > after(all, 'search'), 'the query finds hosted and self-hosted records');
+  assert.ok(s.json.notes.some((n) => /^self-hosted: \d+ records, listed after every hosted record$/.test(n)), s.json.notes.join('; '));
+  // a name hit of a provider whose every record is self-hosted is below every hosted text hit
+  const [[eid, name]] = q('SELECT e.eid, e.name FROM entity e WHERE e.eid IN (SELECT eid FROM record GROUP BY eid ' +
+    'HAVING min(self_hosted) = 1) ORDER BY e.n_records DESC, e.eid LIMIT 1');
+  const byName = await call('/api/v1/search?limit=50&q=' + encodeURIComponent(name));
+  after(byName.json.rows.map((r) => r[0]), 'search by the name ' + name);
+  const es = await call('/api/v1/entity-search?limit=50&q=' + encodeURIComponent(name));
+  const allSelf = new Set(q('SELECT eid FROM record GROUP BY eid HAVING min(self_hosted) = 1').map((r) => r[0]));
+  let seen = false;
+  for (const r of es.json.rows) {
+    if (allSelf.has(r[0])) seen = true;
+    else assert.ok(!seen, 'entity-search: the entity ' + r[0] + ' is below an entity whose every record is self-hosted');
+  }
+  assert.ok(es.json.rows.some((r) => r[0] === eid), 'entity-search finds ' + eid);
+  // filter: page by page, a page boundary inside the hosted part included
+  const [[topic, grp]] = q('SELECT topic, grp FROM record WHERE duplicate_of IS NULL GROUP BY topic, grp HAVING ' +
+    'sum(self_hosted) > 0 AND sum(self_hosted) < count(*) AND count(*) <= 200 ORDER BY sum(self_hosted) DESC, topic, grp LIMIT 1');
+  const f = await call(`/api/v1/records?topic=${topic}&grp=${grp}&limit=200`);
+  const fr = f.json.rows.map((r) => r[0]);
+  assert.ok(after(fr, 'filter') > 0);
+  const nh = fr.length - fr.filter((r) => sh.has(r)).length;
+  const p2 = await call(`/api/v1/records?topic=${topic}&grp=${grp}&limit=4&offset=${nh - 2}`);
+  assert.deepEqual(p2.json.rows.map((r) => r[0]), fr.slice(nh - 2, nh + 2), 'a page that spans the split keeps the order');
+  const desc = await call(`/api/v1/records?topic=${topic}&grp=${grp}&limit=200&sort=usd_month&order=desc`);
+  after(desc.json.rows.map((r) => r[0]), 'filter by usd_month descending');
+  assert.ok(f.json.notes.some((n) => /^self-hosted: \d+ records/.test(n)));
+  // need: hosted ranked, hosted with no number, then the self-hosted rows apart
+  const needs = JSON.parse(readFileSync(join(REPO, 'publish', 'rules', 'needs.json'), 'utf8')).needs;
+  let withSelf = 0;
+  for (const x of needs) {
+    const n = await call(`/api/v1/need/${x.id}?limit=200`);
+    assert.equal(n.res.status, 200, n.body);
+    for (const r of [...n.json.rows, ...n.json.null_rows]) assert.ok(!sh.has(r[0]), x.id + ': ' + r[0] + ' is self-hosted');
+    for (const r of n.json.self_hosted_rows) assert.ok(sh.has(r[0]), x.id + ': ' + r[0] + ' is hosted');
+    if (n.json.self_hosted_rows.length) {
+      withSelf++;
+      const tsv = await call(`/api/v1/need/${x.id}.tsv?limit=200`);
+      assert.match(tsv.body, /\n# self-hosted, the last resort: \d+ rows below, after every hosted row\n/);
+      assert.match(tsv.body, new RegExp(`# ${n.json.rows.length + n.json.null_rows.length + n.json.self_hosted_rows.length} of `));
+    }
+  }
+  assert.ok(withSelf > 0, 'a need lists self-hosted rows');
+  // entity (MCP), worklists, and the static entity file
+  const [[mixed]] = q('SELECT eid FROM record GROUP BY eid HAVING min(self_hosted) = 0 AND max(self_hosted) = 1 ORDER BY eid LIMIT 1');
+  const e = await rpc('tools/call', { name: 'entity', arguments: { id: mixed } });
+  after(e.json.result.content[0].text.split('\n').filter((l) => l && !l.startsWith('#')).slice(1).map((l) => l.split('\t')[0]), 'entity ' + mixed);
+  for (const kind of ['stale', 'unparsed']) {
+    const base = `/api/v1/worklist/${kind}?topic=${topic}&as_of=2099-01-01`;
+    const total = (await call(base + '&limit=1')).json.total;
+    const w = await call(base + `&limit=200&offset=${Math.max(0, total - 200)}`);
+    assert.ok(after(w.json.rows.map((r) => r[0]), 'worklist ' + kind) > 0, 'worklist ' + kind + ' ends with self-hosted rows');
+  }
+  if (HAVE_DIST) {
+    const ef = await call(`/api/v1/entity/${mixed}.json`);
+    after(ef.json.records.map((r) => r.rid), 'the entity file of ' + mixed);
+    const nm = (await call('/api/v1/names.json')).json;
+    const row = nm.find((r) => r[0] === eid);
+    assert.equal(row[8], 1, 'names.json marks a provider whose every record is self-hosted');
+    const best = q(`SELECT min(vorder) FROM record WHERE eid = '${mixed}' AND self_hosted = 0`)[0][0];
+    assert.equal(nm.find((r) => r[0] === mixed)[5], best, 'names.json gives a mixed provider the verdict of its hosted records');
+    assert.equal(nm.find((r) => r[0] === mixed).length, 8);
+  }
+  const ins = await rpc('initialize', { protocolVersion: '2025-06-18' });
+  assert.match(ins.json.result.instructions, /self-hosted record .* is the last resort/);
+});
+
 test('the vendored MiniSearch is the npm package of package.json (P-18)', () => {
   const pkg = JSON.parse(readFileSync(join(SITE, 'package.json'), 'utf8'));
   const vendored = readFileSync(join(SITE, 'static', 'assets', 'minisearch.js'), 'utf8').split('\n');
