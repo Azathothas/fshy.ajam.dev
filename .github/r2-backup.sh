@@ -1,10 +1,14 @@
 #!/bin/sh
-# Uploads each file named on the command line to the R2 bucket at $R2, under <repository>/<UTC time>/, reads the
-# size back, and then fails when the bucket holds more than 4.5 GiB. Both repositories have this file, byte for
-# byte; docs/backup.md in fshy.ajam.dev describes the bucket and the restore. The keys come from the environment
-# and never go on a command line.
+# Uploads each file named on the command line to the R2 bucket R2_BUCKET of the account CLOUDFLARE_ACCOUNT_ID,
+# under <repository>/<UTC time>/, reads the size back, and then fails when the bucket holds more than 4.5 GiB.
+# A missing or empty setting fails the job, so a backup never stops without a red run. Both repositories have
+# this file, byte for byte; docs/backup.md in fshy.ajam.dev describes the bucket and the restore. The keys come
+# from the environment and never go on a command line.
 set -eu
-: "${R2:?}" "${R2_ACCESS_KEY_ID:?}" "${R2_SECRET_ACCESS_KEY:?}" "${GITHUB_REPOSITORY:?}"
+for v in CLOUDFLARE_ACCOUNT_ID R2_BUCKET R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY GITHUB_REPOSITORY; do
+  eval "test -n \"\${$v:-}\"" || { echo "the setting $v is missing or empty; docs/backup.md lists them" >&2; exit 1; }
+done
+R2="https://$CLOUDFLARE_ACCOUNT_ID.r2.cloudflarestorage.com/$R2_BUCKET"
 LIMIT=4831838208
 
 r2() {
