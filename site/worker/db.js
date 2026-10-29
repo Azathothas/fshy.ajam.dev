@@ -1,7 +1,14 @@
 // The Worker's SQLite: sql.js over the read-only Worker DB that the build ships as static assets.
-// One load per isolate, shared by concurrent cold requests through a module-level promise.
-// The chunks named in data/manifest.json are streamed into one preallocated buffer, checked
-// against the manifest's length and SHA-256, then opened with PRAGMA query_only=ON and a hard heap limit.
+// One load per isolate, shared by concurrent cold requests. The chunks named in data/manifest.json are streamed into one
+// preallocated buffer, checked against the manifest's length and SHA-256, then opened with PRAGMA query_only=ON and a
+// hard heap limit.
+//
+// A load runs in the context of the request that starts it, and the Workers runtime drops the continuations of a
+// request that has ended: a client that goes away cancels its request, and a load of that request then never settles.
+// So the request that starts a load passes it to ctx.waitUntil(), which keeps the context for up to 30 s after the
+// client goes away, and no request waits on a load for more than LOAD_WAIT_MS after the load started: a request that
+// finds an older load starts a new one in its own context. Without these, one request that was cancelled during the load
+// left every later request of its isolate without an answer (issue #26).
 
 import initSqlJs from 'sql.js/dist/sql-wasm-browser.js';
 import { buildNameIndex, indexFromNormalized } from './rank.js';
@@ -16,8 +23,13 @@ const ORIGIN = 'https://assets.invalid/';
 export const HEAP_LIMIT_MIB = 32;
 // The characters that one SQL result may carry, summed over its values. A larger result is refused (400).
 export const MAX_RESULT_CHARS = 2000000;
+// The time that a request waits on a load of the store, counted from the start of the load. A cold load took 0.3 to 1.3 s
+// at the edge (site/README.md, section "What the Worker serves"), so a load that is older than this has stopped.
+export const LOAD_WAIT_MS = 10000;
 let sqlPromise = null;
-let storePromise = null;
+// the open store of this isolate, and the load in flight: {promise, started}
+let current = null;
+let loading = null;
 
 export class HttpError extends Error {
   constructor(status, message) {
@@ -28,11 +40,20 @@ export class HttpError extends Error {
 
 function sqlJs(wasmModule) {
   if (!sqlPromise) {
-    sqlPromise = initSqlJs({
-      instantiateWasm(imports, ok) {
-        WebAssembly.instantiate(wasmModule, imports).then((inst) => ok(inst, wasmModule));
-        return {};
-      },
+    // The module is compiled already, so it is instantiated synchronously: sql.js then settles in microtasks, with no
+    // step that a cancelled request can drop. sql.js keeps the first promise of initSqlJs() for the life of the isolate,
+    // and that promise never settles when the instantiation fails, so a failure rejects this promise instead.
+    sqlPromise = new Promise((resolve, reject) => {
+      initSqlJs({
+        instantiateWasm(imports, ok) {
+          try {
+            ok(new WebAssembly.Instance(wasmModule, imports), wasmModule);
+          } catch (e) {
+            reject(e);
+          }
+          return {};
+        },
+      }).then(resolve, reject);
     }).catch((e) => {
       sqlPromise = null;
       throw e;
@@ -103,29 +124,71 @@ async function load(env, wasmModule) {
   };
 }
 
+/** Start a load in the context of this request. ctx.waitUntil() keeps that context when the client goes away. */
+function startLoad(env, wasmModule, ctx) {
+  const job = { started: Date.now() };
+  job.promise = load(env, wasmModule).then((store) => {
+    if (loading === job) loading = null;
+    if (!current) {
+      current = store;
+    } else if (current !== store) {
+      // a load that a later request gave up on completed after all: keep the store that is in use
+      try { store.db.close(); } catch { /* already closed */ }
+    }
+    return current;
+  }, (e) => {
+    if (loading === job) loading = null;
+    throw e;
+  });
+  // a load that no request waits on any more fails quietly; the next request starts a new one
+  const settled = job.promise.catch(() => {});
+  if (ctx && typeof ctx.waitUntil === 'function') ctx.waitUntil(settled);
+  loading = job;
+  return job;
+}
+
+const LATE = Symbol('late');
+
+/** The value of `promise`, or LATE when it has not settled after `ms`. The timer belongs to this request. */
+function within(promise, ms) {
+  let timer;
+  const late = new Promise((resolve) => { timer = setTimeout(resolve, Math.max(0, ms), LATE); });
+  return Promise.race([promise, late]).finally(() => clearTimeout(timer));
+}
+
 /**
- * The store for this isolate: {db, manifest, commit, stats, cache}. `cold` is true for the
- * request(s) that waited on the load.
+ * The store for this isolate: {db, manifest, commit, stats, cache}. `cold` is true for the request that started the
+ * load. `ctx` is the ExecutionContext of the request. A request waits on a load for at most `waitMs` after the load
+ * started. Then it starts a new load in its own context, and waits on that one for at most `waitMs`; when that one is
+ * late too, the request gets a 503.
  */
-export async function getStore(env, wasmModule) {
+export async function getStore(env, wasmModule, ctx, waitMs = LOAD_WAIT_MS) {
+  if (current) return { store: current, cold: false };
   let cold = false;
-  if (!storePromise) {
-    cold = true;
-    storePromise = load(env, wasmModule).catch((e) => {
-      storePromise = null;
-      throw e;
-    });
+  for (let attempt = 0; ; attempt++) {
+    if (!loading) {
+      startLoad(env, wasmModule, ctx);
+      cold = true;
+    }
+    const job = loading;
+    const store = await within(job.promise, job.started + waitMs - Date.now());
+    if (store !== LATE) return { store, cold };
+    if (loading === job) {
+      // the request that started the load has ended, and the runtime dropped the rest of the load
+      loading = null;
+      console.error('fshy store load did not settle in ' + waitMs + ' ms; a new load starts');
+    }
+    if (attempt) {
+      const late = new HttpError(503, 'the store did not load in ' + Math.round(waitMs / 1000) + ' s; try again');
+      throw Object.assign(late, { late: true });
+    }
   }
-  const store = await storePromise;
-  return { store, cold };
 }
 
 /** Throw away the handle (after an unexpected change) so the next request reopens a clean copy. */
 export function discard(store) {
-  if (storePromise) {
-    storePromise = null;
-    try { store.db.close(); } catch { /* already closed */ }
-  }
+  if (current === store) current = null;
+  try { store.db.close(); } catch { /* already closed */ }
 }
 
 /** Throw away the handle and the sql.js module (after the engine itself failed) so the next request starts both again. */
@@ -221,21 +284,23 @@ export function nameIndex(store) {
  * The name index from the file that the manifest names (name_index): the aliases normalised by the build, their
  * entities, and the entity rows. Parsing it costs a few milliseconds; normalising 14,000 aliases on the first search of
  * an isolate cost about 80 ms. Without the file, or when it fails, the index is built from the store.
+ *
+ * Each request that finds no index reads the file in its own context. A read that requests share would never settle
+ * when the request that started it ended first, as a load of the store would not (see the top of this file).
  */
 export async function loadNames(store, env) {
   if (store.cache.names) return store.cache.names;
   const p = store.manifest && store.manifest.name_index;
   if (p) {
-    if (!store.cache.namesPromise) {
-      store.cache.namesPromise = asset(env, p, 'json').then((j) => {
-        if (store.cache.names) return;
+    try {
+      const j = await asset(env, p, 'json');
+      if (!store.cache.names) {
         store.cache.entities = new Map(j.entities.map((r) => [r[0], Object.fromEntries(ENTITY_COLUMNS.map((c, i) => [c, r[i]]))]));
         store.cache.names = indexFromNormalized(j.aliases, j.eids);
-      }).catch((e) => {
-        console.error('fshy name index file failed, built from the store:', e && e.stack ? e.stack : String(e));
-      });
+      }
+    } catch (e) {
+      console.error('fshy name index file failed, built from the store:', e && e.stack ? e.stack : String(e));
     }
-    await store.cache.namesPromise;
   }
   return nameIndex(store);
 }

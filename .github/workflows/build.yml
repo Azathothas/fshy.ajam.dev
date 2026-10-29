@@ -202,3 +202,13 @@ jobs:
           python3 -c 'import json, sys; assert json.load(open(sys.argv[1]))["result"]["tools"]' "$RUNNER_TEMP/mcp.json" ||
             fail "the MCP endpoint lists no tools"
           echo "live: $FSHY_ORIGIN serves $GITHUB_SHA"
+
+      # One request of each route proves little: a fault of some isolates hangs some requests only (issue #26). This
+      # step abandons 16 requests during the first loads of the store, as clients that time out do, then sends 40
+      # requests to the routes that open the store. A request with no answer in LOAD_WAIT_MS plus 5 s fails the job.
+      - name: the store routes answer a burst of requests, and none hangs
+        run: |
+          node site/worker/test/live.mjs "$FSHY_ORIGIN" || {
+            echo "The new version can be live. site/README.md, section Deploy, says how to go back." >&2
+            exit 1
+          }
