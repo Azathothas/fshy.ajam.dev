@@ -87,8 +87,9 @@ L15 to L20 (paths and search notes of the research process, its census, the work
 narrative history titles) fail since the publish of 2026-10-28 had no hit. L21 to L26 fail since the publish of
 2026-10-29 had no hit: the word for the private record store, a section of an internal document, an earlier
 batch of the research, its reasoning steps, a path into a private experiments folder, and a narrative history
-id. A name that only the research repository knows, for example the name of a private project, never goes in
-this public file; the research repository's own rules hold it.
+id. L27 is `warn`: a phone number with an international prefix. It loses its level after the first publish whose
+build shows no warning for it. A name that only the research repository knows, for example the name of a private
+project, never goes in this public file; the research repository's own rules hold it.
 
 To check a text before it becomes public, for example the body of a pull request or a comment, scan it:
 
