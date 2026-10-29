@@ -216,23 +216,13 @@ def tie_key(c):
     return (c["vorder"], RUNG.get(c["confidence"], len(RUNG)), later_first(c["stale_on"]), c["rid"])
 
 
-def legacy_free_claim(c):
-    """The free-allowance claim of a record from its fields, for data that has no claim of the kind has-free-tier: 1
-    unless the free_tier unit is none or the offer is paid-only or dead; None when the record has no unit."""
-    u = c.get("free_unit")
-    if u is None:
-        return None
-    return 0 if u == "none" or c.get("verdict") in ("paid-only", "dead") else 1
-
-
 def attach_free_claims(db, cards):
     """Set cards[rid]["free_claim"] to the value of the claim of the kind has-free-tier: 1 the record has a free
-    allowance, 0 it has none, None when the data has no row for it (unknown). Data from before the claim has no row
-    of that kind at all; then the claim comes from the fields (legacy_free_claim). The card of the published JSON does
-    not carry the key."""
+    allowance, 0 it has none, None when the data has no row for it (unknown). The card of the published JSON does not
+    carry the key."""
     rows = {r[0]: int(r[1]) for r in db.execute("SELECT rid, num FROM claim WHERE kind = 'has-free-tier' AND num IS NOT NULL")}
     for rid, c in cards.items():
-        c["free_claim"] = rows.get(rid) if rows else legacy_free_claim(c)
+        c["free_claim"] = rows.get(rid)
 
 
 def free_word(c):

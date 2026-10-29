@@ -354,21 +354,15 @@ def helper_checks(tmp):
           ({"free_claim": 1, "free_unit": "none", "verdict": "paid-only"}, "free tier")]
     badw = [(c, llms.free_word(c)) for c, w in fw if llms.free_word(c) != w]
     check("free_word prints 'free tier' only for the claim 1, 'no free tier' for 0, and nothing for no claim (F-05, F-25)", not badw, badw)
-    legacy = [({"free_unit": None, "verdict": "qualifies"}, None), ({"free_unit": "none", "verdict": "qualifies"}, 0),
-              ({"free_unit": "hours", "verdict": "qualifies"}, 1), ({"free_unit": "mixed", "verdict": "paid-only"}, 0),
-              ({"free_unit": "GB", "verdict": "dead"}, 0)]
-    badl = [(c, llms.legacy_free_claim(c)) for c, w in legacy if llms.legacy_free_claim(c) != w]
     db = sqlite3.connect(":memory:")
     db.execute("CREATE TABLE claim (rid TEXT, path TEXT, kind TEXT, num REAL)")
-    cs = {"a": {"free_unit": "hours", "verdict": "qualifies"}, "b": {"free_unit": "hours", "verdict": "qualifies"}, "c": {"free_unit": None, "verdict": "qualifies"}}
-    llms.attach_free_claims(db, cs)  # no claim of the kind in the data: the claim comes from the fields
-    before = {k: v["free_claim"] for k, v in cs.items()}
+    cs = {"a": {}, "b": {}, "c": {}}
     db.executemany("INSERT INTO claim VALUES (?, ?, ?, ?)", [("a", "$.free_tier", "has-free-tier", 1.0), ("b", "$.free_tier", "has-free-tier", 0.0),
-                                                              ("a", "$.price", "price-per-tb", 3.0)])
-    llms.attach_free_claims(db, cs)  # the data has the claim: a row of 1 or 0, and no row is unknown
-    after = {k: v["free_claim"] for k, v in cs.items()}
-    check("a record's free claim is the claim has-free-tier of the data, and comes from the fields only for data without one (F-05)",
-          not badl and before == {"a": 1, "b": 1, "c": None} and after == {"a": 1, "b": 0, "c": None}, (badl, before, after))
+                                                              ("a", "$.price", "price-per-tb", 3.0), ("c", "$.price", "price-per-tb", 0.0)])
+    llms.attach_free_claims(db, cs)
+    got = {k: v["free_claim"] for k, v in cs.items()}
+    check("a record's free claim is the claim has-free-tier of the data: 1, 0, or none for a record with no such row (F-05)",
+          got == {"a": 1, "b": 0, "c": None}, got)
     kinds = [({"verdict": "trial-only", "free_claim": 1, "free_unit": "hours"}, "trial"), ({"verdict": "qualifies", "free_claim": 1, "free_unit": "hours"}, "time"),
              ({"verdict": "qualifies-with-caveat", "free_claim": 1, "free_unit": "seconds"}, "time"), ({"verdict": "qualifies", "free_claim": 1, "free_unit": "mixed"}, "other"),
              ({"verdict": "qualifies", "free_claim": 1, "free_unit": "GiB"}, "other"), ({"verdict": "qualifies", "free_claim": 0, "free_unit": "hours"}, "none"),
