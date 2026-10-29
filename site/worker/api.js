@@ -5,7 +5,7 @@
 import { all, asset, capped, engineFailed, HEAP_LIMIT_MIB, HttpError, nameIndex, reset } from './db.js';
 import { guard, GuardError } from './guard.js';
 import { checkPlan } from './plan.js';
-import { bestVorder, bm25, hostedFirst, scoreNames, sortEntities as orderEntities } from './rank.js';
+import { bestVorder, bm25, hostedFirst, resolveEntity, scoreNames, sortEntities as orderEntities } from './rank.js';
 import { clip, ftsMatch } from './text.js';
 
 // ------------------------------------------------------------------ shapes
@@ -487,15 +487,20 @@ export function entity(store, p) {
   let e = id ? all(db, 'SELECT * FROM entity WHERE eid = ?', [id])[0] : null;
   if (!e) {
     nameIndex(store);
+    // one answer, not a list: the best score wins, so an exact name is never beaten by a fuzzy match of another vendor
+    // (rank.resolveEntity); the other matches keep the hosted-first order of sortEntities
     const hits = sortEntities(store, scoreNames(store.cache.names, name || id));
-    if (!hits.length) throw new HttpError(404, 'no entity matches ' + JSON.stringify(name || id));
-    e = all(db, 'SELECT * FROM entity WHERE eid = ?', [hits[0].eid])[0];
-    notes.push(`resolved by name (${hits[0].how}: ${hits[0].alias})`);
-    if (hits.length > 1) {
-      notes.push('other matches: ' + hits.slice(1, 6).map((h) => `${h.eid} (${h.how})`).join(', ') +
-        (hits.length > 6 ? `, and ${hits.length - 6} more` : ''));
+    const hit = resolveEntity(hits);
+    if (!hit) throw new HttpError(404, 'no entity matches ' + JSON.stringify(name || id));
+    e = all(db, 'SELECT * FROM entity WHERE eid = ?', [hit.eid])[0];
+    notes.push(`resolved by name (${hit.how}: ${hit.alias})`);
+    const others = hits.filter((h) => h !== hit);
+    if (others.length) {
+      notes.push('other matches: ' + others.slice(0, 5).map((h) => `${h.eid} (${h.how})`).join(', ') +
+        (others.length > 5 ? `, and ${others.length - 5} more` : ''));
     }
   }
+  if (selfHosted(store).eids.has(e.eid)) notes.push('self-hosted: every record of this entity is self-hosted, so it is the last resort');
   const out = rows(db, `SELECT ${CARD_SELECT} FROM record WHERE eid = ? ORDER BY self_hosted, vorder, rid`, [e.eid]).map(fixCard);
   notes.unshift(`entity ${e.eid}: ${e.name}` + (e.domain ? ` (${e.domain})` : '') +
     `; topics ${e.topics}; ${e.n_records} records; resolved by ${e.resolved_by}` + (e.review ? '; review: ' + e.review : ''));
@@ -679,10 +684,12 @@ export function worklist(store, p) {
     return t;
   }
   if (kind === 'drift') {
-    const W = topic ? 'WHERE subject LIKE ? OR other LIKE ?' : '';
+    const W = topic ? 'WHERE d.subject LIKE ? OR d.other LIKE ?' : '';
     const a = topic ? [topic + '/%', topic + '/%'] : [];
-    return page(['kind', 'subject', 'other', 'field', 'a', 'b', 'detail'], `SELECT count(*) FROM drift ${W}`,
-      `SELECT kind, subject, other, field, a, b, detail FROM drift ${W} ORDER BY kind, subject, other`, a);
+    // a pair of records: the self_hosted of its subject is the first key (fr.py worklist drift)
+    return page(['kind', 'subject', 'other', 'field', 'a', 'b', 'detail'], `SELECT count(*) FROM drift d ${W}`,
+      `SELECT d.kind, d.subject, d.other, d.field, d.a, d.b, d.detail FROM drift d LEFT JOIN record r ON r.rid = d.subject
+       ${W} ORDER BY coalesce(r.self_hosted, 0), d.kind, d.subject, d.other`, a);
   }
   if (kind === 'changes') {
     const hw = topic ? 'WHERE h.hid IN (SELECT hid FROM history_link WHERE rid LIKE ?)' : '';

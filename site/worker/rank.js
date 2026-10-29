@@ -18,8 +18,10 @@
 // The site is for users with no hardware, so it is the last resort. self_hosted ascending is the first sort key of every
 // list of records: every hosted item in its order, then every self-hosted item in its order (hostedFirst). In a name
 // search, an entity whose every record is self-hosted comes after every other entity (sortEntities), and an entity ranks
-// by the best verdict of its hosted records (bestVorder), so a self-hosted record never lifts its vendor. The twins in
-// the research repository are hosted_first() and sort_entities() of fr.py, and entity.best_vorder of build.py.
+// by the best verdict of its hosted records (bestVorder), so a self-hosted record never lifts its vendor. A name lookup
+// gives one entity, not a list: it resolves to the best score first (resolveEntity), and a hosted entity wins only a tie.
+// The twins in the research repository are hosted_first(), sort_entities(), resolve_entity() and best_vorder() of fr.py,
+// and entity.best_vorder of build.py.
 
 import { normalize, tokens } from './text.js';
 
@@ -195,4 +197,17 @@ export function sortEntities(hits, bestVorder, allSelfHosted) {
   const ranked = [...hits].sort((a, b) => b.score - a.score || bestVorder(a.eid) - bestVorder(b.eid) ||
     (a.eid < b.eid ? -1 : a.eid > b.eid ? 1 : 0));
   return hostedFirst(ranked, (h) => allSelfHosted(h.eid));
+}
+
+/**
+ * The one entity that a name lookup (the operation entity with a name) resolves to, from the list of sortEntities: the
+ * first entity with the best score. A lookup is one answer, not a list, so an exact name is never beaten by a fuzzy or
+ * substring match of another vendor. Among entities with the best score, the list order wins: a hosted entity before a
+ * wholly self-hosted one, then the better verdict, then the eid. null when nothing matched. The other matches keep the
+ * order of sortEntities. The twin in the research repository is resolve_entity() of fr.py.
+ */
+export function resolveEntity(sorted) {
+  let top = null;
+  for (const h of sorted) if (top === null || h.score > top) top = h.score;
+  return top === null ? null : sorted.find((h) => h.score === top);
 }
