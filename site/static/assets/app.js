@@ -54,32 +54,39 @@
 
   // ---------------------------------------------------------------- filter chips (class toggles on <html>), kept in ?f= and ?i=
   var chips = $('.chips'), ifl = $('.chips .ifilter'), clear = $('.chips .clear');
-  function shown(r) { return r.offsetParent !== null; }
+  // a row is shown when it has every pressed flag and the interface text; computed from the attributes, so the
+  // count reads no layout, and the writes below come after every read
   function recount() {
     var c = $('.chips .count'); if (!c) { return; }
-    var rows = $$('.e[data-f]');
-    var vis = rows.filter(shown).length;
+    var on = $$('.chips [aria-pressed=true]').map(function (b) { return b.getAttribute('data-chip'); });
+    var rows = $$('.e[data-f]'), seen = new Set(), vis = 0;
+    rows.forEach(function (r) {
+      var f = ' ' + r.getAttribute('data-f') + ' ';
+      if (!r.classList.contains('ihide') && on.every(function (k) { return f.indexOf(' ' + k + ' ') >= 0; })) { seen.add(r); vis++; }
+    });
+    var count = function (el) { var all = $$('.e[data-f]', el); return [all.filter(function (r) { return seen.has(r); }).length, all.length]; };
     c.textContent = vis === rows.length ? rows.length + ' shown' : vis + ' of ' + rows.length + ' shown';
     // a group or a category with no row left is hidden, and a group heading counts the rows that it shows
-    $$('main ul.list, main ol.list').forEach(function (ul) {
-      var n = $$('.e[data-f]', ul).filter(shown).length, h = ul.previousElementSibling;
-      ul.hidden = !n && ul.children.length > 0;
+    var lists = $$('main ul.list, main ol.list').map(function (ul) { return [ul, count(ul)]; });
+    var grps = $$('section.grp').map(function (g) { return [g, count(g)]; });
+    lists.forEach(function (x) {
+      var ul = x[0], h = ul.previousElementSibling;
+      ul.hidden = !x[1][0] && x[1][1] > 0;
       if (h && h.tagName === 'H3') { h.hidden = ul.hidden; }
     });
-    $$('section.grp').forEach(function (s) {
-      var all = $$('.e[data-f]', s), n = all.filter(shown).length, sm = $('h2 small', s);
-      if (!all.length) { return; }
-      s.hidden = !n;
-      if (sm) { sm.textContent = n === all.length ? String(all.length) : n + ' of ' + all.length; }
+    grps.forEach(function (x) {
+      var n = x[1][0], all = x[1][1], sm = $('h2 small', x[0]);
+      if (!all) { return; }
+      x[0].hidden = !n;
+      if (sm) { sm.textContent = n === all ? String(all) : n + ' of ' + all; }
     });
-    var on = $$('.chips [aria-pressed=true]').map(function (b) { return b.getAttribute('data-chip'); });
     if (clear) { clear.hidden = !on.length && !(ifl && ifl.value.trim()); }
     if (chips) {
       var u = new URLSearchParams(location.search);
       if (on.length) { u.set('f', on.join(',')); } else { u.delete('f'); }
       if (ifl && ifl.value.trim()) { u.set('i', ifl.value.trim()); } else { u.delete('i'); }
       var qs = u.toString();
-      history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+      if ((qs ? '?' + qs : '') !== location.search) { history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash); }
     }
   }
   function press(b, on) {
