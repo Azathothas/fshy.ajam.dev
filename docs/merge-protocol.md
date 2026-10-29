@@ -132,6 +132,8 @@ that you close without a merge, run `scripts/rq cleanup RUN` after the close.
 
 A pull request that is not a run (code, documents, rules) gets a code review: read the diff, run the checks it
 names, and confirm CI is green. Then merge it with `gh pr merge <number> --merge`. ⛔ Do not merge your own.
+⚠ A pull request runs the workflow, the hook and the leak rules of its own head. Read a change of `.github/`,
+`.githooks/` or `publish/rules/leak.json` as a change of the checks that judge it.
 In `f-research`, also do step 7 of section 3, the baseline.
 
 A Dependabot pull request in `fshy.ajam.dev` is not the merge session's own work, so the merge session may merge

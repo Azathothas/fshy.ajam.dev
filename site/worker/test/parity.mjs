@@ -10,6 +10,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ODD_SPACE_CODES } from '../guard.js';
 
 export const FIXTURE = join(dirname(fileURLToPath(import.meta.url)), 'parity.json');
 
@@ -44,6 +45,16 @@ export function compute(fx, { text, rank, guard }) {
         cases: fx.rank.names.cases.map(([q]) => [q, rank.scoreNames(idx, q).map((h) => [h.eid, h.score]).sort(byScore)]),
       },
     },
+    // the lists that the guard's twin copies: a change of a list shows here, and in the cases below
+    guard_lists: {
+      banned: guard.BANNED,
+      odd_space_codes: guard.ODD_SPACE_CODES,
+      max_sql_chars: guard.MAX_SQL_CHARS,
+      allowed_functions: guard.ALLOWED_FUNCTIONS,
+      not_functions: guard.NOT_FUNCTIONS,
+      max_width: guard.MAX_WIDTH,
+      printf_refused: guard.PRINTF_REFUSED,
+    },
     guard: fx.guard.map((c) => {
       try {
         const r = guard.guard(c.sql, c.limit);
@@ -56,10 +67,11 @@ export function compute(fx, { text, rank, guard }) {
   };
 }
 
-const INVISIBLE = new RegExp('[' + String.fromCharCode(0x2000) + '-' + String.fromCharCode(0x200f, 0x2028, 0x2029, 0xfeff) + ']', 'g');
+// the characters that the guard refuses, and the zero-width ones, are written as escapes
+const INVISIBLE = new RegExp('[' + ODD_SPACE_CODES.concat([0x200b, 0x200c, 0x200d, 0x200e, 0x200f])
+  .map((c) => String.fromCharCode(c)).join('') + ']', 'g');
 
-/** JSON with one case on each line, so the diff of a rule change shows the cases it moved. Invisible characters
- * (U+2000 to U+200F, U+2028, U+2029, U+FEFF) are written as escapes. */
+/** JSON with one case on each line, so the diff of a rule change shows the cases it moved. */
 export function format(fx) {
   const one = (x) => JSON.stringify(x).replace(INVISIBLE, (c) => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'));
   const arr = (a, ind) => '[\n' + a.map((x) => ind + '  ' + one(x)).join(',\n') + '\n' + ind + ']';
@@ -78,6 +90,9 @@ export function format(fx) {
     '      "aliases": ' + arr(r.names.aliases, '      ') + ',',
     '      "cases": ' + arr(r.names.cases, '      '),
     '    }',
+    '  },',
+    '  "guard_lists": {',
+    Object.keys(fx.guard_lists).map((k) => '    ' + one(k) + ': ' + one(fx.guard_lists[k])).join(',\n'),
     '  },',
     '  "guard": ' + arr(fx.guard, '  '),
     '}',

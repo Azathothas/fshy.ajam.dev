@@ -44,6 +44,19 @@ def prose(s):
     return t
 
 
+def source_text(url):
+    """The source cell of an evidence row that has no web URL: a probe, a probe whose output is not published, or
+    a source that the record does not publish."""
+    if not url:
+        return '<span class="na">source not published</span>'
+    if url.startswith("probe:"):
+        what = url[len("probe:"):].strip()
+        if not what or what == "kept-privately":
+            return '<span class="na">a probe; its output is not published</span>'
+        return 'probe: <code>%s</code>' % e(what)
+    return e(url)
+
+
 def money(v, suffix):
     if v is None:
         return ""
@@ -353,7 +366,7 @@ class Site:
         ev = [x for x in (o.get("evidence") or []) if isinstance(x, dict)]
         evh = "".join('<tr><td>%s</td><td>%s</td><td>%s</td></tr>' % (
             e(x.get("date")), ('<a href="%s" rel="nofollow noopener">%s</a>' % (e(x["url"]), e(re.sub(r"^https?://", "", x["url"])[:60])))
-            if str(x.get("url") or "").startswith("http") else e(x.get("url") or "withheld"), prose(x.get("proved")))
+            if str(x.get("url") or "").startswith("http") else source_text(x.get("url")), prose(x.get("proved")))
             for x in ev)
         extras = o.get("extras")
         exh = ('<details><summary>More fields <small>%d</small></summary><pre class="json">%s</pre></details>' % (
@@ -429,14 +442,14 @@ class Site:
                 '<p class="needs"><b>Ranked by</b>%s &middot; %s ranked%s</p>%s'
                 '<ol class="%s rank">%s</ol>%s'
                 '<details><summary>The query</summary><pre>%s\nORDER BY %s ASC NULLS LAST</pre><p>Run it yourself: '
-                '<code>/api/v1/need/%s</code>, the MCP tool <code>need</code>, or <code>fr need %s</code>.</p></details>') % (
+                '<code>/api/v1/need/%s</code>, or the MCP tool <code>need</code>.</p></details>') % (
             e(x["title"]), e(x["scope"]), e(SORT_LABEL.get(key, key)), num(len(ranked)),
             (' &middot; <a href="#unranked">%s with no parsed number</a>' % num(len(unranked))) if unranked else "",
             self.chips(), self.lane([cards[r[0]] for r in ranked]), items(ranked),
             ('<h2 id="unranked">No parsed number <small>%s</small></h2><p class="lede">These match the filter but no price or quantity '
              'could be parsed from their text yet. They are listed, not dropped.</p><ul class="%s">%s</ul>' % (
                 num(len(unranked)), self.lane([cards[r[0]] for r in unranked]), items(unranked)))
-            if unranked else "", e(x["sql"]), e(key), e(x["id"]), e(x["id"]))
+            if unranked else "", e(x["sql"]), e(key), e(x["id"]))
         self.page("need/%s/index.html" % x["id"], x["title"], body, x["scope"])
 
     def needs_index(self):
@@ -465,10 +478,11 @@ class Site:
 
     def changes(self):
         db = self.ctx["db"]
-        items, rss = [], []
+        items, rss, n_corr = [], [], 0
         for hid, when, status, conf, title, sup, body in db.execute(
                 "SELECT hid, when_utc, status, confidence, title, supersedes, body FROM history ORDER BY when_utc DESC, hid"):
             anchor = re.sub(r"[^a-z0-9]+", "-", hid.lower())
+            n_corr += status in ("corrected", "superseded")
             links = [r for (r,) in db.execute("SELECT rid FROM history_link WHERE hid=? ORDER BY rid", (hid,))]
             meta = "".join("<span>%s</span>" % e(x) for x in ((when or "")[:10], status, conf) if x)
             items.append('<article class="chg" id="%s"><h3>%s</h3><p class="meta">%s%s</p>%s</article>' % (
@@ -481,11 +495,13 @@ class Site:
         led = db.execute("SELECT at, rid, path, rung, url FROM ledger ORDER BY at DESC LIMIT 500").fetchall()
         lh = "".join('<tr><td>%s</td><td><a href="/r/%s">%s</a></td><td><code>%s</code></td><td>%s</td><td>%s</td></tr>' % (
             e((a or "")[:10]), e(r), e(r), e(p or ""), e(g or ""), prose(u)) for a, r, p, g, u in led)
-        body = ('<h1>Changes</h1><p class="lede">Corrections to earlier claims, newest first, and every mechanical '
-                'amendment from the change ledger. RSS: <a href="/changes.xml">/changes.xml</a>.</p>'
-                '<ul class="stats"><li><a class="st" href="#corrections"><b>%s</b>corrections</a></li>%s</ul>'
-                '<h2 id="corrections">Corrections <small>%s</small></h2>%s%s') % (
-            num(len(items)), ('<li><a class="st" href="#ledger"><b>%s</b>ledger rows</a></li>' % num(len(led))) if lh else "",
+        other = len(items) - n_corr
+        body = ('<h1>Changes</h1><p class="lede">Dated entries, newest first: corrections to earlier claims and the other '
+                'changes of state, and every mechanical amendment from the change ledger. RSS: <a href="/changes.xml">/changes.xml</a>.</p>'
+                '<ul class="stats"><li><a class="st" href="#corrections"><b>%s</b>corrections</a></li>%s%s</ul>'
+                '<h2 id="corrections">Entries <small>%s</small></h2>%s%s') % (
+            num(n_corr), ('<li><a class="st" href="#corrections"><b>%s</b>other entries</a></li>' % num(other)) if other else "",
+            ('<li><a class="st" href="#ledger"><b>%s</b>ledger rows</a></li>' % num(len(led))) if lh else "",
             num(len(items)), "".join(items),
             ('<h2 id="ledger">Ledger <small>%s</small></h2><div class="tw"><table class="ev led"><thead><tr><th>date</th><th>record</th><th>field</th>'
              '<th>rung</th><th>source</th></tr></thead><tbody>%s</tbody></table></div>' % (num(len(led)), lh)) if lh else "")

@@ -2,7 +2,7 @@
 // over the Worker DB, plus their JSON and TSV renderings. The HTTP API (index.js) and the MCP
 // tools (mcp.js) both call these functions, so the two surfaces return the same rows.
 
-import { all, asset, capped, HttpError, nameIndex } from './db.js';
+import { all, asset, capped, engineFailed, HEAP_LIMIT_MIB, HttpError, nameIndex, reset } from './db.js';
 import { guard, GuardError } from './guard.js';
 import { checkPlan } from './plan.js';
 import { bm25, scoreNames } from './rank.js';
@@ -485,23 +485,40 @@ export function sql(store, p) {
     if (e instanceof GuardError) throw bad('refused: ' + e.message);
     throw e;
   }
-  try {
-    checkPlan(store, g.sql); // the statement budget: no nested loop of two large full scans (issue #5)
-  } catch (e) {
-    if (e instanceof GuardError) throw bad('refused: ' + e.message);
-    throw bad('SQL error: ' + String(e.message || e));
-  }
   let r;
   try {
+    checkPlan(store, g.sql); // the statement budget: the rows that the plan reads (issue #5)
     r = capped(store, g.sql, limit);
   } catch (e) {
-    throw bad('SQL error: ' + String(e.message || e));
+    throw sqlFailure(store, e);
   }
   const out = r.rows.map((row) => row.map((v) => (v instanceof Uint8Array ? blobText(v) : v)));
   const notes = [];
   if (g.appendedLimit) notes.push('LIMIT ' + limit + ' applied');
   if (r.truncated) notes.push('row cap ' + limit + ' reached; more rows exist');
   return table(r.columns, out, { truncated: r.truncated, total: out.length, notes, open: r.truncated });
+}
+
+/**
+ * The error that the caller sees for a statement that failed: a refusal of the guard, the budget or the result cap,
+ * an "out of memory" of the heap limit (400), a failure of the engine itself (503, and the next request starts the
+ * engine again), else the SQLite error (400). A statement that the platform stops at limits.cpu_ms never gets here:
+ * the caller sees the error page of the platform (error 1102, HTTP 503).
+ */
+function sqlFailure(store, e) {
+  if (e instanceof HttpError) return e;
+  if (e instanceof GuardError) return bad('refused: ' + e.message);
+  const m = String((e && e.message) || e);
+  if (/out of memory|string or blob too big/i.test(m)) {
+    return bad('refused: the statement needs more than the ' + HEAP_LIMIT_MIB + ' MiB that one statement may use; ' +
+      'select fewer rows or shorter values');
+  }
+  if (engineFailed(e)) {
+    reset(store);
+    console.error('fshy sql engine failed:', m);
+    return new HttpError(503, 'the SQL engine failed on this statement and restarts; send a smaller statement');
+  }
+  return bad('SQL error: ' + m);
 }
 
 function blobText(b) {
@@ -519,7 +536,7 @@ export function worklist(store, p) {
   const db = store.db;
   const kind = str(p.kind, 'kind');
   if (!kind) throw bad('kind is required: stale, drift, changes or unparsed');
-  if (LOCAL_ONLY_KINDS.has(kind)) throw bad('worklist ' + kind + ' is local only (fr worklist ' + kind + ')');
+  if (LOCAL_ONLY_KINDS.has(kind)) throw bad('worklist ' + kind + ' is not in the public store');
   if (!KINDS.has(kind)) throw bad('kind must be stale, drift, changes or unparsed');
   const topic = str(p.topic, 'topic');
   const limit = int(p.limit, 'limit', 50, 1, 200);
@@ -608,7 +625,7 @@ export async function help(store, env) {
     `  get ids [detail=card|full fields]   full = the record JSON with claims, unknown, history, drift`,
     `  entity id|name                      a vendor and its records`,
     `  need [id]                           curated best-per-need lists`,
-    `  sql q [limit]                       one read-only SELECT/WITH/VALUES/EXPLAIN; LIMIT added if absent`,
+    `  sql q [limit]                       one read-only SELECT/WITH/VALUES/EXPLAIN; LIMIT added if absent; a costly plan is refused`,
     `  worklist stale|drift|changes|unparsed [topic as_of forecast_days]`,
     ``,
     `Tables: ${tables.join(', ')}.`,

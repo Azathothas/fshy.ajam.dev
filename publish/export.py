@@ -133,6 +133,29 @@ def tables_of(db):
             for (t,) in db.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")}
 
 
+def drift(tree):
+    """Copies that should be equal in both repositories, and whose difference does not change data/: the worked
+    queries of the primer and the commit-msg hook. -> [warning]; the export prints them and goes on."""
+    import importlib.util
+    warnings = []
+    ours = os.path.join(ROOT, ".githooks", "commit-msg")
+    theirs = os.path.join(tree, ".githooks", "commit-msg")
+    if os.path.exists(theirs) and open(ours, "rb").read() != open(theirs, "rb").read():
+        warnings.append(".githooks/commit-msg differs from the research copy; copy the newer one to the other repository")
+    path = os.path.join(tree, "scripts", "fshy", "primer.py")
+    if os.path.exists(path):
+        spec = importlib.util.spec_from_file_location("research_primer", path)
+        mod = importlib.util.module_from_spec(spec)
+        try:
+            spec.loader.exec_module(mod)
+            import primer
+            if getattr(mod, "EXAMPLES", None) != primer.EXAMPLES:
+                warnings.append("the worked queries (EXAMPLES) of publish/primer.py differ from the research primer")
+        except Exception as e:  # a primer that does not load is a warning too, never a stop
+            warnings.append("the research primer does not load: %s" % e)
+    return warnings
+
+
 def contract(pub_db, tree):
     """The research store and its rules against this repository's schema and rules. -> [problem]"""
     problems = []
@@ -324,6 +347,8 @@ def run(a):
         problems = contract(pub, tree)
         if problems:
             raise Refused("the research store does not match this repository:\n  " + "\n  ".join(problems))
+        for w in drift(tree):
+            print("export: warning: %s" % w, file=sys.stderr)
         out = os.path.join(tmp, "data")
         counts = export(pub, out, commit)
         problems = roundtrip(pub, out, tmp)
