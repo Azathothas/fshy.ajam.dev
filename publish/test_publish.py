@@ -12,8 +12,8 @@
 4. The lists agree. rules/topics.json is the one list of topics: pages.py reads it, app.js holds no copy and
    reads the topic bar, and the New offer form lists the same topics. The verdict labels of pages.py and app.js
    agree. When the store exists, its vocabulary and its topics agree with them.
-5. When the store exists: each worked query of primer.py runs, so /api/v1/help.txt never shows a query that
-   fails.
+5. Each worked query of primer.py that lists record ids sorts on self_hosted first. When the store exists: each one
+   runs, so /api/v1/help.txt never shows a query that fails, and without its LIMIT it lists every hosted row first.
 6. The helpers that the pages and the files for agents share: the lang of a run of another script, the label that
    tells two records of one provider apart, the one line of a row, the order of a tie in a ranked list, the words of
    a category, the anchor of a history entry, the pictographs that quoted text loses, the parallel leak scan, and
@@ -575,12 +575,33 @@ def selfhosted_checks():
           not bad, bad)
 
 
+# a worked query that lists record ids, and the first key of its ORDER BY
+LISTS_RIDS = re.compile(r"^SELECT (?:\w+\.)?rid\b")
+SELF_HOSTED_FIRST = re.compile(r"\bORDER BY (?:\w+\.)?self_hosted\b")
+LIMIT_TAIL = re.compile(r"\s+LIMIT \d+\s*$")
+
+
+def primer_order_checks():
+    """Every worked query of the primer that lists record ids sorts on self_hosted first, so a reader who pages it or
+    raises its LIMIT still gets every hosted row before a self-hosted one."""
+    lists = [(what, sql) for what, sql in primer.EXAMPLES if LISTS_RIDS.match(sql)]
+    bad = [what for what, sql in lists if not SELF_HOSTED_FIRST.search(sql)]
+    check("each worked query of the primer that lists record ids sorts on self_hosted first (%d queries)" % len(lists),
+          lists and not bad, bad)
+
+
 def primer_checks(db_path):
     db = primer.connect(db_path)
+    sh = {r for (r,) in db.execute("SELECT rid FROM record WHERE self_hosted = 1")}
     for what, sql in primer.EXAMPLES:
         try:
             n = len(db.execute(sql).fetchall())
             check("primer query runs (%d rows): %s" % (n, what), True)
+            if LISTS_RIDS.match(sql):
+                # the whole list, without its LIMIT: a hosted row is never below a self-hosted one
+                flags = [r[0] in sh for r in db.execute(LIMIT_TAIL.sub("", sql))]
+                check("primer query lists every hosted row first, without its LIMIT (%d rows, %d self-hosted): %s"
+                      % (len(flags), sum(flags), what), flags == sorted(flags))
         except sqlite3.Error as e:
             check("primer query runs: %s" % what, False, e)
     db.close()
@@ -625,6 +646,7 @@ def main(argv=None):
         hook_checks(tmp)
         helper_checks(tmp)
         selfhosted_checks()
+        primer_order_checks()
     finally:
         export.cleanup(tmp)
     db = a.db if os.path.exists(a.db) else None
