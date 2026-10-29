@@ -96,6 +96,28 @@ def prose(s):
     return lang_wrap(t)
 
 
+def repeat_html(r):
+    """The note of a cell whose text an earlier row holds. r is the (kind, label) of llms.repeat_of: the earlier row has
+    the same text, or holds the text as a part."""
+    return '<span class="na">%s, above</span>' % (("the text of %s" if r[0] == "same" else "part of the text of %s") % e(r[1]))
+
+
+def prose_once(said, label, value):
+    """The HTML of the prose `value` of the row `label`, or None when the row is left out: the value is empty, or an
+    earlier row has the same text. When an earlier row holds the value as a part, the cell is the note that names that
+    row. `said` is a list of (label, normalised text), one for each value printed in full; this call adds to it."""
+    if not isinstance(value, str):
+        return prose(value) if value else None
+    n = norm_text(value)
+    if not n:
+        return None
+    r = llms.repeat_of(said, n)
+    if r is None:
+        said.append((label, n))
+        return prose(value)
+    return None if r[0] == "same" else repeat_html(r)
+
+
 EPOCH = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
 LEDGER_FEED = 30  # the newest ledger rows that the feed carries, next to the history entries
 
@@ -583,16 +605,10 @@ class Site:
         c, o = f["card"], f["record"]
         rid = c["rid"]
         ft, pc, rt, eg, ic = (o.get(k) or {} for k in ("free_tier", "per_object_cap", "retention", "egress", "identity_cost"))
-        said = []  # (label, normalised text) of the prose rows printed so far: a later row that repeats one is left out
+        said = []  # (label, normalised text) of the prose rows printed so far
 
         def once(label, value):
-            if not isinstance(value, str) or not value.strip():
-                return True
-            n = norm_text(value)
-            if any(n in t for _, t in said):
-                return False
-            said.append((label, n))
-            return True
+            return prose_once(said, label, value)
 
         def applies(v):
             return v is not None and norm_text(v) not in ("not applicable", "not recorded", "n/a")
@@ -612,10 +628,11 @@ class Site:
             for lm in lims:
                 if isinstance(lm, dict):
                     once("Limits", lm.get("value"))
-            note = o.get("limits_note") if once("Limits", o.get("limits_note")) else None
-            rows.append(self.kv("Limits", "<ul>%s</ul>%s" % (li, ('<div class="sub">%s</div>' % prose(note)) if note else "")))
-        if o.get("binding_note") and once("Binding", o.get("binding_note")):
-            rows.append(self.kv("Binding", "<b>%s</b> %s" % (e(o.get("binding")), prose(o.get("binding_note")))))
+            note = once("Limits", o.get("limits_note"))
+            rows.append(self.kv("Limits", "<ul>%s</ul>%s" % (li, ('<div class="sub">%s</div>' % note) if note else "")))
+        bnote = once("Binding", o.get("binding_note"))
+        if bnote:
+            rows.append(self.kv("Binding", "<b>%s</b> %s" % (e(o.get("binding")), bnote)))
         rows.append(self.kv("Identity", "<b>%s</b>%s %s" % (e(ic.get("kind")), " (placeholder)" if c["identity_basis"] == "defaulted" else "",
                                                            prose(ic.get("detail")))))
         rows.append(self.kv("Egress", prose(eg.get("terms")) + "".join('<div class="sub">%s: %s</div>' % (e(k.replace("_", " ")), prose(eg.get(k)))
@@ -624,14 +641,16 @@ class Site:
             rows.append(self.kv("Per-object cap", prose(pc.get("stated")) + ((" (%s bytes)" % e(pc.get("bytes"))) if pc.get("bytes") else "")))
         if applies(rt.get("stated")):
             rows.append(self.kv("Retention", prose(rt.get("stated")) + ((" (%s days)" % e(rt.get("days"))) if rt.get("days") else "")))
-        idet = o.get("interface_detail") if once("Interface", o.get("interface_detail")) else None
-        rows.append(self.kv("Interface", e(", ".join(o.get("interface") or [])) + (" " + prose(idet) if idet else "")
+        idet = once("Interface", o.get("interface_detail"))
+        rows.append(self.kv("Interface", e(", ".join(o.get("interface") or [])) + (" " + idet if idet else "")
                             + ('<div class="sub">endpoint: %s</div>' % prose(o.get("endpoint")) if o.get("endpoint") else "")))
         for k, lbl in (("tooling", "Tooling"), ("chaining", "Composes with"), ("reliability_note", "Reliability"), ("notes", "Notes")):
-            if o.get(k) and once(lbl, o.get(k)):
-                rows.append(self.kv(lbl, prose(o.get(k))))
-        if o.get("confidence_note") and once("Evidence note", o.get("confidence_note")):
-            rows.append(self.kv("Evidence note", "<b>%s</b> %s" % (e(o.get("confidence")), prose(o.get("confidence_note")))))
+            cell = once(lbl, o.get(k))
+            if cell:
+                rows.append(self.kv(lbl, cell))
+        enote = once("Evidence note", o.get("confidence_note"))
+        if enote:
+            rows.append(self.kv("Evidence note", "<b>%s</b> %s" % (e(o.get("confidence")), enote)))
         claims = [x for x in f["claims"] if x.get("parse") == "ok" and x.get("num") is not None and x["kind"] != "free-quota"]
         if claims:
             rows.append(self.kv("Parsed numbers", "<ul>%s</ul>" % "".join(
@@ -643,11 +662,8 @@ class Site:
 
         def proved(x):
             p = x.get("proved")
-            if isinstance(p, str) and p.strip():
-                same = next((lbl for lbl, t in said if norm_text(p) and norm_text(p) in t), None)
-                if same:
-                    return '<span class="na">the text of %s, above</span>' % e(same)
-            return prose(p)
+            r = llms.repeat_of(said, norm_text(p)) if isinstance(p, str) and norm_text(p) else None
+            return repeat_html(r) if r else prose(p)
         evh = "".join('<tr><td>%s</td><td>%s</td><td>%s</td></tr>' % (
             e(x.get("date")), ('<a href="%s" rel="nofollow noopener">%s</a>' % (e(x["url"]), text(re.sub(r"^https?://", "", x["url"])[:60])))
             if str(x.get("url") or "").startswith("http") else source_text(x.get("url")), proved(x))
@@ -880,7 +896,8 @@ class Site:
             'provider publishes for its service apply to its use.</p>'
             '<div class="prose"><h2 id="api">Query it</h2><ul>'
             '<li>Remote MCP for agents: <code>claude mcp add --transport http fshy %s/mcp</code>. '
-            'The tools are help, search, filter, get, entity, need, sql and worklist. A batch holds at most 5 messages.</li>'
+            'The tools are help, search, filter, get, entity, need, sql and worklist. A batch holds at most 5 messages, '
+            'and at most 1 of them calls sql.</li>'
             '<li>HTTP, JSON by default and TSV with <code>.tsv</code>:<ul>%s</ul>The API and the MCP tools leave out the records '
             'that are marked as duplicates unless you ask for them. The pages list them, so a page can count a few more '
             'records than the API.</li>'

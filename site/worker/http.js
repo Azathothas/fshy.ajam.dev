@@ -29,6 +29,32 @@ export function errorResponse(e, store) {
   return jsonResponse({ error: msg }, status, h);
 }
 
+/** True when the value of an If-None-Match header holds the entity tag: a list of tags, `*`, or a weak copy of the tag. */
+export function etagMatches(header, etag) {
+  return header.split(',').some((t) => {
+    const tag = t.trim();
+    return tag === '*' || tag.replace(/^W\//, '') === etag;
+  });
+}
+
+/**
+ * The byte range that a Range header asks of a file of `total` bytes: {start, end}, both inclusive; the string
+ * 'unsatisfiable' when it lies past the end; null when the header is to be ignored, so the whole file is sent. That is
+ * a unit other than bytes, a list of ranges, and a range that is not valid.
+ */
+export function parseRange(header, total) {
+  const m = /^bytes=(\d*)-(\d*)$/i.exec(header.trim());
+  if (!m || (m[1] === '' && m[2] === '')) return null;
+  if (m[1] === '') {
+    const last = Number(m[2]);
+    return last === 0 ? 'unsatisfiable' : { start: Math.max(0, total - last), end: total - 1 };
+  }
+  const start = Number(m[1]);
+  if (m[2] !== '' && Number(m[2]) < start) return null;
+  if (start >= total) return 'unsatisfiable';
+  return { start, end: m[2] === '' ? total - 1 : Math.min(Number(m[2]), total - 1) };
+}
+
 /**
  * Workers rate limiting binding. Absent in the node tests, and `limit()` throws in some local `wrangler dev`
  * runs: both fail open, because the store is read-only and the Worker has a CPU limit. A thrown error is
