@@ -186,11 +186,11 @@ check('POST /mcp refuses a batch of 6 messages with 400', batch.status === 400, 
 const sqlBatch = await fetch(ORIGIN + '/mcp', {
   method: 'POST',
   headers: { 'content-type': 'application/json', accept: 'application/json, text/event-stream' },
-  body: JSON.stringify([1, 2, 3].map((id) => ({ jsonrpc: '2.0', id, method: 'tools/call', params: { name: 'sql', arguments: { query: 'SELECT 1' } } }))),
+  body: JSON.stringify([1, 2].map((id) => ({ jsonrpc: '2.0', id, method: 'tools/call', params: { name: 'sql', arguments: { query: 'SELECT 1' } } }))),
 });
 const sqlJson = await sqlBatch.json().catch(() => null);
-check('POST /mcp refuses a batch of 3 sql calls with 400 and a JSON-RPC error',
-  sqlBatch.status === 400 && sqlJson && sqlJson.error && sqlJson.error.code === -32600 && /at most 2 sql calls/.test(sqlJson.error.message),
+check('POST /mcp refuses a batch of 2 sql calls with 400 and a JSON-RPC error',
+  sqlBatch.status === 400 && sqlJson && sqlJson.error && sqlJson.error.code === -32600 && /at most 1 sql call;/.test(sqlJson.error.message),
   `${sqlBatch.status} ${JSON.stringify(sqlJson)}`);
 const icon = await fetch(ORIGIN + '/favicon.ico');
 check('GET /favicon.ico is an icon', icon.status === 200 && (await icon.arrayBuffer()).byteLength < 300, icon.status);

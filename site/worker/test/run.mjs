@@ -565,7 +565,7 @@ test('MCP: a batch holds at most 5 messages, and each tool call costs one unit o
   assert.equal(MAX_BATCH, 5);
 });
 
-test('MCP: a batch holds at most 2 sql calls, so no accepted batch passes the CPU limit', async () => {
+test('MCP: a batch holds at most 1 sql call, so no accepted batch passes the CPU limit', async () => {
   const { MAX_BATCH, MAX_BATCH_SQL } = await import('../mcp.js');
   const sql = (id) => ({ jsonrpc: '2.0', id, method: 'tools/call', params: { name: 'sql', arguments: { query: 'SELECT 1' } } });
   const need = (id) => ({ jsonrpc: '2.0', id, method: 'tools/call', params: { name: 'need', arguments: {} } });
@@ -576,31 +576,31 @@ test('MCP: a batch holds at most 2 sql calls, so no accepted batch passes the CP
 
   // the bound, with the costs that site/README.md measures (CPU ms of a warm request): the costliest sql statement,
   // and a search of a batch of five. A full batch of the most sql calls that the limit accepts, with searches for
-  // the other calls, keeps a margin of 1.5 under cpu_ms of wrangler.jsonc.
+  // the other calls, keeps a margin of 2 under cpu_ms of wrangler.jsonc.
   const SQL_MS = 672;
   const SEARCH_MS = 75;
   const cpuMs = Number(/"cpu_ms":\s*(\d+)/.exec(readFileSync(join(SITE, 'wrangler.jsonc'), 'utf8'))[1]);
   const worst = MAX_BATCH_SQL * SQL_MS + (MAX_BATCH - MAX_BATCH_SQL) * SEARCH_MS;
-  assert.ok(worst * 1.5 <= cpuMs, `a batch of ${MAX_BATCH_SQL} sql and ${MAX_BATCH - MAX_BATCH_SQL} other calls is ${worst} ms; cpu_ms is ${cpuMs}`);
-  assert.equal(MAX_BATCH_SQL, 2);
+  assert.ok(worst * 2 <= cpuMs, `a batch of ${MAX_BATCH_SQL} sql and ${MAX_BATCH - MAX_BATCH_SQL} other calls is ${worst} ms; cpu_ms is ${cpuMs}`);
+  assert.equal(MAX_BATCH_SQL, 1);
 
   // over the bound: a clear JSON-RPC error and a 400, before the rate limit and the load of the store
-  for (const body of [[1, 2, 3].map(sql), [sql(1), need(2), sql(3), need(4), sql(5)], [1, 2, 3, 4, 5].map(sql)]) {
+  for (const body of [[1, 2].map(sql), [1, 2, 3].map(sql), [sql(1), need(2), sql(3), need(4), sql(5)], [1, 2, 3, 4, 5].map(sql)]) {
     n = 0;
     const r = await post(body, counted);
     assert.equal(r.res.status, 400, r.body);
     assert.equal(r.json.error.code, -32600);
     assert.equal(r.json.id, null);
-    assert.match(r.json.error.message, /a batch holds at most 2 sql calls; send the others in more requests/);
+    assert.match(r.json.error.message, /a batch holds at most 1 sql call; send the others in more requests/);
     assert.equal(n, 0, 'a refused batch costs no unit of any limit');
   }
   // at the bound: answered, with the other calls of a full batch
   n = 0;
-  const ok = await post([sql(1), need(2), sql(3), need(4), need(5)], counted);
+  const ok = await post([sql(1), need(2), need(3), need(4), need(5)], counted);
   assert.equal(ok.res.status, 200, ok.body);
   assert.equal(ok.json.length, 5);
   assert.ok(ok.json.every((x) => x.result && x.result.isError === false), ok.body);
-  assert.equal(n, 5 + 2, 'five calls on RL_API and two on RL_SQL');
+  assert.equal(n, 5 + 1, 'five calls on RL_API and one on RL_SQL');
   // only a call of the tool sql weighs more: a batch of five other calls, a sql call alone, and a notification are fine
   assert.equal((await post([1, 2, 3, 4, 5].map(need))).res.status, 200);
   assert.equal((await post(sql(1))).res.status, 200);
