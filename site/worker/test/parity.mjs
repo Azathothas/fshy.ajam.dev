@@ -45,6 +45,16 @@ export function compute(fx, { text, rank, guard }) {
         cases: fx.rank.names.cases.map(([q]) => [q, rank.scoreNames(idx, q).map((h) => [h.eid, h.score]).sort(byScore)]),
       },
     },
+    // the lists that the guard's twin copies: a change of a list shows here, and in the cases below
+    guard_lists: {
+      banned: guard.BANNED,
+      odd_space_codes: guard.ODD_SPACE_CODES,
+      max_sql_chars: guard.MAX_SQL_CHARS,
+      allowed_functions: guard.ALLOWED_FUNCTIONS,
+      not_functions: guard.NOT_FUNCTIONS,
+      max_width: guard.MAX_WIDTH,
+      printf_refused: guard.PRINTF_REFUSED,
+    },
     guard: fx.guard.map((c) => {
       try {
         const r = guard.guard(c.sql, c.limit);
@@ -80,6 +90,9 @@ export function format(fx) {
     '      "aliases": ' + arr(r.names.aliases, '      ') + ',',
     '      "cases": ' + arr(r.names.cases, '      '),
     '    }',
+    '  },',
+    '  "guard_lists": {',
+    Object.keys(fx.guard_lists).map((k) => '    ' + one(k) + ': ' + one(fx.guard_lists[k])).join(',\n'),
     '  },',
     '  "guard": ' + arr(fx.guard, '  '),
     '}',

@@ -93,7 +93,10 @@ python publish/build.py --scan draft.md
 The research repository has Python twins of `site/worker/text.js`, `rank.js` and `guard.js`.
 [`../site/worker/test/parity.json`](../site/worker/test/parity.json) holds inputs and the output of each JavaScript
 rule. `run.mjs` checks the JavaScript against it in CI. The research CI checks the Python against it, at a commit
-of this repository that the research repository pins.
+of this repository that the research repository pins. Its `guard_lists` holds the lists and the caps of `guard.js`
+(the write keywords, the white space it refuses, the function allowlist, the words that are not calls, the
+`printf()` width and conversions), so the twin reads them from the fixture. The statement budget (`plan.js`) and
+the heap limit have no twin: they need the Worker's copy of the store.
 
 To change a rule, do these steps in this order:
 
