@@ -797,7 +797,7 @@ test('a need that asks for no card or no phone lists the rows whose requirement 
   // and that are not confirmed
   const sql = "SELECT count(*) FROM record WHERE (topic='inference' OR category LIKE '%inference%') AND grp='usable' AND duplicate_of IS NULL " +
     "AND coalesce(summary,'') NOT LIKE 'no free %' AND coalesce(summary,'') NOT LIKE 'no published free %' AND coalesce(summary,'') NOT LIKE 'no perpetual free %' " +
-    "AND coalesce(needs_card,0) <> 1 AND coalesce(needs_phone,0) <> 1 AND NOT (needs_card=0 AND needs_phone=0 AND identity_basis='stated')";
+    "AND coalesce(needs_card,0) <> 1 AND coalesce(needs_phone,0) <> 1 AND NOT (coalesce(needs_card,9)=0 AND coalesce(needs_phone,9)=0 AND identity_basis='stated')";
   const c = await call('/api/v1/sql?q=' + encodeURIComponent(sql));
   assert.equal(c.json.rows[0][0], unstated.length, 'the section holds every row of the need that is not confirmed and not known to need a card or a phone');
   // the rows of the section have NULL somewhere: a card or a phone that is not stated, or an identity that is a placeholder

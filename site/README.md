@@ -164,7 +164,10 @@ static files that the build writes there (`entity/*`, `names.json`, `needs.json`
 `help.txt`), and for `/mcp`, `/r/*` and `/data/fshy-public.sqlite.gz`. `run_worker_first` in `wrangler.jsonc`
 lists them, and `smoke.mjs` checks the exceptions. So `/api/v1/` lists the routes, an unknown route gets a JSON
 404, and a `.tsv` suffix works on every route. A file of `entity/*` that does not exist is the exception: the
-assets answer it with the HTML 404 page, because the Worker does not see it. An unknown topic, verdict, group,
+assets answer it with the HTML 404 page, because the Worker does not see it. A need that asks for no card or no phone ends with a section "Card or phone requirement not stated": the rows of
+its SQL without the conditions on the card, the phone and a stated identity, minus the confirmed rows and the rows that need
+a card or a phone (`llms.need_unstated`, and the same rule in `api.need`, with `unstated_rows` in the JSON). So
+`rules/needs.json` stays as the research repository has it. An unknown topic, verdict, group,
 evidence or binding in a filter is a 400 that lists the terms of the vocabulary, and the topics are the ones of
 `data/manifest.json`. The Worker loads the store's Worker copy once per isolate. That copy
 is the public store without record JSON, leaves and evidence quotes, which are served as static files. The rate

@@ -444,6 +444,7 @@ def html_checks(dist, man):
           "<noscript>" in search and "/api/v1/search?q=" in search and "<noscript>" in compare and "/api/v1/record/" in compare)
     for nid, (_, sections) in llms.NEED_SPLITS.items():
         page = pages.get("need/%s/index.html" % nid, "")
+        page = page.split('id="unstated"')[0]  # the section of the requirements that are not stated has its own check
         got = re.findall(r'<h2 id="([a-z]+)">[^<]*<small>(\d+)</small></h2>', page)
         rows = len(re.findall(r'<li class="e"', page))
         md = read(os.path.join(dist, "need", nid + ".md"))

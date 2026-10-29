@@ -772,7 +772,7 @@ class Site:
             rows_u = []
             for r in unstated:
                 c = cards[r[0]]
-                row = self.entry(c, wt, shown(c, r[1]))
+                row = self.entry(c, wt, shown(c, r[1]), summary=False)  # no summary: the section is long
                 if phone and c["needs_phone"] is None and c["identity_basis"] == "stated":
                     row = row[:-len("</p></li>")] + '<span class="u">phone?</span></p></li>'
                 rows_u.append(row)
