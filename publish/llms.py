@@ -152,6 +152,8 @@ def labels(cards, tname=None):
 
 
 FIRST_SENTENCE = re.compile(r"(.{20,}?[.!?])\s+(?=[A-Z0-9(\"'])")
+# a label in front of a quote of the provider: the quotation marks already say that it is a quote
+QUOTE_LABEL = re.compile(r"^(?:Quoted|Verbatim|Quote):\s*", re.I)
 CUT_TAIL = re.compile(r"\s*\S*(?:\.\.\.|\u2026)$")
 
 
@@ -163,7 +165,7 @@ def first_sentence(s):
 def headline(summary, stated=None):
     """The one line of a row: the summary, or the first sentence of the free tier when the summary was cut and that
     sentence is shorter. A cut summary loses its last, cut word; the first letter is a capital."""
-    s = flat(summary or "")
+    s = QUOTE_LABEL.sub("", flat(summary or ""))
     if not s:
         return ""
     cut = s.endswith("...") or s.endswith("\u2026")
