@@ -49,13 +49,13 @@ EXAMPLES = [
      "ORDER BY self_hosted, usd_per_tb_month IS NULL, usd_per_tb_month LIMIT 10"),
     ("Full text, one column filter plus a prefix term (CJK: query bigrams, e.g. MATCH '百度')",
      "SELECT r.rid, r.verdict FROM text_fts JOIN record r ON r.rno = text_fts.docid "
-     "WHERE text_fts MATCH 'offer:gpu* hours' ORDER BY r.vorder LIMIT 10"),
+     "WHERE text_fts MATCH 'offer:gpu* hours' ORDER BY r.self_hosted, r.vorder LIMIT 10"),
     ("Every record of a vendor, by alias",
      "SELECT rid, topic, verdict FROM record WHERE eid IN "
-     "(SELECT eid FROM alias WHERE alias LIKE 'hetzner%') ORDER BY vorder, rid LIMIT 20"),
+     "(SELECT eid FROM alias WHERE alias LIKE 'hetzner%') ORDER BY self_hosted, vorder, rid LIMIT 20"),
     ("What goes stale in the next 30 days",
      "SELECT rid, stale_on, verified_basis FROM record WHERE stale_on <= date('now','+30 days') "
-     "AND grp <> 'dead' ORDER BY vorder, stale_on LIMIT 20"),
+     "AND grp <> 'dead' ORDER BY self_hosted, vorder, stale_on LIMIT 20"),
     ("Parsed prices per TB in USD, with the FX date used",
      "SELECT rid, num, currency, usd, fx_date FROM claim WHERE kind='price-per-tb' "
      "AND usd IS NOT NULL ORDER BY usd LIMIT 10"),

@@ -3,13 +3,18 @@
 A self-hosted record (record.self_hosted = 1) is software or a node that the user installs, runs and maintains. The
 site is for users who have no hardware, so a self-hosted record is the last resort. In every list, self_hosted
 ascending is the first sort key: every hosted record in the list's own order, then every self-hosted record in the
-same order. A self-hosted row is never starred or highlighted: its label is LABEL, not its verdict pill. The Worker
-(site/worker/rank.js hostedFirst, sortEntities) and the research repository (fr.py hosted_first) follow the same rule.
+same order. A self-hosted row is never starred or highlighted: its label is LABEL, not its verdict pill, and a Markdown
+line opens with LABEL, before its verdict. The Worker (site/worker/rank.js hostedFirst, sortEntities, bestVorder) and
+the research repository (fr.py hosted_first, sort_entities) follow the same rule.
+
+An entity ranks by the best verdict of its hosted records (entity.best_vorder), so a self-hosted record never lifts its
+vendor in a name search; build.py refuses data where best_vorder breaks that rule (best_vorder_problems).
 
 The check: build.py --site calls start() with the self-hosted records of the store. Then pages.py and llms.py give each
 page or file that they write to check(), which reads the text that is already in memory, so the check reads no file.
-A problem is a hosted row below a self-hosted row of the same page or file, or a self-hosted row with a verdict pill or
-a star. problems() gives them, and the build fails on one. Standard library only.
+A problem is a hosted row below a self-hosted row of the same page or file, a self-hosted row with a verdict pill or a
+star, or a Markdown line of a self-hosted record that does not open with LABEL. problems() gives them, and the build
+fails on one. Standard library only.
 """
 import re
 
@@ -23,6 +28,19 @@ STAR = "★"
 def hosted_first(items, is_self_hosted):
     """Every hosted item, then every self-hosted one; each part keeps the order it had (a stable partition)."""
     return [x for x in items if not is_self_hosted(x)] + [x for x in items if is_self_hosted(x)]
+
+
+# entities whose best_vorder is not the best verdict of their hosted records, or of all their records when every one is
+# self-hosted (site/worker/rank.js bestVorder; entity.best_vorder of the research build)
+BEST_VORDER_BAD = ("SELECT e.eid, e.best_vorder, (SELECT coalesce(min(CASE WHEN r.self_hosted = 0 THEN r.vorder END), "
+                   "min(r.vorder)) FROM record r WHERE r.eid = e.eid) AS want FROM entity e WHERE e.best_vorder IS NOT "
+                   "(SELECT coalesce(min(CASE WHEN r.self_hosted = 0 THEN r.vorder END), min(r.vorder)) FROM record r "
+                   "WHERE r.eid = e.eid) ORDER BY e.eid")
+
+
+def best_vorder_problems(db):
+    """[(eid, best_vorder, the value of the rule)] of the store: empty when every entity ranks by its hosted records."""
+    return db.execute(BEST_VORDER_BAD).fetchall()
 
 
 def is_sh(card):
@@ -110,11 +128,14 @@ def html_problems(text, rids):
     return _order(rows, rids, _html_mark) + _order(secs, rids, _html_mark)
 
 
-def _md_mark(line):
+def _md_mark(row):
+    """row: (the line, the text after its record id). The label opens that text, before any verdict word, as the HTML
+    row shows the label in place of the pill."""
+    line, rest = row
     if STAR in line:
         return "carries a star"
-    if LABEL not in line:
-        return "has no label %r" % LABEL
+    if not rest.startswith(LABEL):
+        return "does not open with the label %r before its verdict" % LABEL
     return ""
 
 
@@ -123,9 +144,9 @@ def md_problems(text, rids):
     for line in text.split("\n"):
         m = MD_ENTRY.match(line)
         if m:
-            entries.append((m.group(1), line))
+            entries.append((m.group(1), (line, m.group(2))))
             continue
         m = MD_HEAD.match(line)
         if m:
-            heads.append((m.group(1), line))
+            heads.append((m.group(1), (line, m.group(2))))
     return _order(entries, rids, _md_mark) + _order(heads, rids, _md_mark)

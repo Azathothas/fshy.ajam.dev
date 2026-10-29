@@ -19,8 +19,8 @@
    a category, the anchor of a history entry, the pictographs that quoted text loses, the parallel leak scan, and
    the twin of the Worker's name normaliser against site/worker/test/parity.json.
 7. Self-hosted last (selfhosted.py): the stable split of a list, the rows of a need, and the check of the build, which
-   finds a hosted row below a self-hosted one and a starred self-hosted row in HTML and in Markdown, and passes a
-   list in the right order.
+   finds a hosted row below a self-hosted one, a starred self-hosted row, and a Markdown line whose verdict comes
+   before the label, and passes a list in the right order; and the rule of entity.best_vorder against rank.js.
 
 Parts 1 to 4, 6 and 7 need no data and run on a fresh clone. The store parts read .tmp/fshy/public.db, which
 `python publish/build.py --check` or `--site` writes; without it, they are skipped with a line that says so.
@@ -129,7 +129,7 @@ def contract_checks(tmp):
     # data of version 1 has no self_hosted column: the build reads it, and each record is hosted
     rec = dict(row, rid="storage/x", topic="storage", slug="x", eid="x", verdict="qualifies", vorder=0, grp="usable")
     ent = {c: None for c in cols["entity"]}
-    ent.update(eid="x", name="X")
+    ent.update(eid="x", name="X", best_vorder=0)
     for version, r, want in (("1", {k: v for k, v in rec.items() if k != "self_hosted"}, 0), (build.SCHEMA_VERSION, dict(rec, self_hosted=1), 1)):
         d = os.path.join(tmp, "data-v%s" % version)
         fake_data(d, version=version, record_row=r, entity_row=ent)
@@ -479,18 +479,43 @@ def selfhosted_checks():
     check("the check of the build finds a self-hosted row above a hosted one, or starred, in HTML (%d cases)" % len(cases),
           not bad, bad)
 
-    def md(rid, label=True):
-        return "- [X](https://example.invalid/p/e.md) `%s`: qualifies%s | free tier" % (rid, " | " + selfhosted.LABEL if label else "")
+    def md(rid, label="first"):
+        words = {"first": selfhosted.LABEL + " | verdict qualifies", "after": "qualifies | " + selfhosted.LABEL,
+                 None: "qualifies"}[label if rid == "storage/self" else None]
+        return "- [X](https://example.invalid/p/e.md) `%s`: %s | free tier" % (rid, words)
     cases = [("a hosted line, then the self-hosted line", md("storage/hosted") + "\n" + md("storage/self"), 0),
              ("a self-hosted line above a hosted line", md("storage/self") + "\n" + md("storage/hosted"), 1),
-             ("a self-hosted line with no label", md("storage/hosted") + "\n" + md("storage/self", False), 1),
+             ("a self-hosted line with no label", md("storage/hosted") + "\n" + md("storage/self", None), 1),
+             ("a self-hosted line with its verdict before the label", md("storage/hosted") + "\n" + md("storage/self", "after"), 1),
              ("a numbered need line", "1. USD 2/month | " + md("storage/hosted")[2:] + "\n2. " + md("storage/self")[2:], 0),
              ("a record block of a self-hosted record above a hosted one",
-              "- `storage/self` | qualifies | %s | evidence measured\n- `storage/hosted` | qualifies | evidence measured"
+              "- `storage/self` | %s | verdict qualifies | evidence measured\n- `storage/hosted` | qualifies | evidence "
+              "measured" % selfhosted.LABEL, 1),
+             ("a record block of a self-hosted record with its verdict first",
+              "- `storage/hosted` | qualifies | evidence measured\n- `storage/self` | qualifies | %s | evidence measured"
               % selfhosted.LABEL, 1)]
     bad = [(what, selfhosted.md_problems(t, sh)) for what, t, n in cases if len(selfhosted.md_problems(t, sh)) != n]
-    check("the check of the build finds a self-hosted line above a hosted one, or with no label, in Markdown (%d cases)"
-          % len(cases), not bad, bad)
+    check("the check of the build finds a self-hosted line above a hosted one, or with no label first, in Markdown (%d "
+          "cases)" % len(cases), not bad, bad)
+    c = {"verdict": "qualifies", "self_hosted": 1}
+    check("a self-hosted record's Markdown line opens with the label, then its verdict",
+          llms.verdict_words(c) == [selfhosted.LABEL, "verdict qualifies"] and llms.verdict_words(dict(c, self_hosted=0)) ==
+          ["qualifies"], llms.verdict_words(c))
+    # entity.best_vorder: the SQL rule of the build gives the outputs of rank.js bestVorder in parity.json
+    rows = []
+    for members, want in fx["rank"]["bestVorder"]:
+        db = sqlite3.connect(":memory:")
+        db.execute("CREATE TABLE record (rid TEXT, eid TEXT, vorder INTEGER, self_hosted INTEGER)")
+        db.execute("CREATE TABLE entity (eid TEXT, best_vorder INTEGER)")
+        db.executemany("INSERT INTO record VALUES (?, 'e', ?, ?)", [("t/%d" % i, v, s) for i, (v, s) in enumerate(members)])
+        db.execute("INSERT INTO entity VALUES ('e', ?)", (want,))
+        ok = not selfhosted.best_vorder_problems(db)
+        db.execute("UPDATE entity SET best_vorder = coalesce(best_vorder, 0) + 1")
+        rows.append((ok and len(selfhosted.best_vorder_problems(db)) == 1, members, want))
+        db.close()
+    bad = [r[1:] for r in rows if not r[0]]
+    check("best_vorder_problems follows rank.js bestVorder in parity.json (%d cases), and finds a wrong value" % len(rows),
+          not bad, bad)
 
 
 def primer_checks(db_path):

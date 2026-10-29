@@ -148,18 +148,18 @@ def emit_data(repo, pub_db, dist):
         members = sorted(by_eid[e["eid"]], key=lambda c: (c["self_hosted"], c["vorder"], c["rid"]))  # hosted first
         write(os.path.join(dist, "api", "v1", "entity", e["eid"] + ".json"),
               jdump({**e, "records": [full[c["rid"]] for c in members]}))
-    # name index for MiniSearch: one row per entity. Its verdict (5) is the best of its hosted records, so a self-hosted
-    # record never stars a provider; a provider whose every record is self-hosted has a ninth item, 1, and app.js lists it
-    # after every other provider, with the self-hosted label
+    # name index for MiniSearch: one row per entity. Its verdict (5) is entity.best_vorder, the best of its hosted records
+    # (build.py checks it), so a self-hosted record never stars a provider; a provider whose every record is self-hosted
+    # has a ninth item, 1, and app.js lists it after every other provider, with the self-hosted label
     names = []
     for eid, e in sorted(ents.items()):
         recs = by_eid[eid]
         flags = 0
         for c in recs:
             flags |= 1 << c["vorder"]
-        hosted = [c["vorder"] for c in recs if not c["self_hosted"]]
+        hosted = any(not c["self_hosted"] for c in recs)
         names.append([eid, e["name"], [a for a in e["aliases"] if a != e["name"]][:12], e["domain"], e["topics"],
-                      min(hosted) if hosted else e["best_vorder"], len(recs), flags] + ([] if hosted else [1]))
+                      e["best_vorder"], len(recs), flags] + ([] if hosted else [1]))
     write(os.path.join(dist, "api", "v1", "names.json"), jdump(names))
     vocab = collections.defaultdict(list)
     for r in db.execute("SELECT domain, term, meaning FROM vocab ORDER BY domain, ord"):

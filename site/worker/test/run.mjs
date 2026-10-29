@@ -903,6 +903,31 @@ test('self-hosted last: every list of the API, the MCP tools and the static file
     else assert.ok(!seen, 'entity-search: the entity ' + r[0] + ' is below an entity whose every record is self-hosted');
   }
   assert.ok(es.json.rows.some((r) => r[0] === eid), 'entity-search finds ' + eid);
+  // a vendor ranks by the best verdict of its hosted records: its self-hosted record never lifts it (rank.bestVorder)
+  const bestRule = '(SELECT coalesce(min(CASE WHEN r.self_hosted = 0 THEN r.vorder END), min(r.vorder)) FROM record r WHERE r.eid = e.eid)';
+  assert.deepEqual(q(`SELECT e.eid FROM entity e WHERE e.best_vorder IS NOT ${bestRule}`), [], 'entity.best_vorder follows the hosted records');
+  const lifted = q('SELECT eid, min(CASE WHEN self_hosted = 0 THEN vorder END) AS h FROM record GROUP BY eid HAVING ' +
+    'min(self_hosted) = 0 AND min(CASE WHEN self_hosted = 1 THEN vorder END) < min(CASE WHEN self_hosted = 0 THEN vorder END) ORDER BY eid');
+  assert.ok(lifted.length > 0, 'the store has a vendor whose self-hosted record has a better verdict than its hosted ones');
+  for (const [le, h] of lifted) {
+    const [[lname]] = q(`SELECT name FROM entity WHERE eid = '${le}'`);
+    const r = await call('/api/v1/entity-search?limit=50&q=' + encodeURIComponent(lname));
+    const [bi, sci] = ['best_vorder', 'score'].map((c) => r.json.columns.indexOf(c));
+    const row = r.json.rows.find((x) => x[0] === le);
+    assert.ok(row, 'entity-search ' + lname + ' finds ' + le);
+    assert.equal(row[bi], h, 'entity-search gives ' + le + ' the best verdict of its hosted records');
+    for (let i = 1; i < r.json.rows.length; i++) {
+      const [a, b] = [r.json.rows[i - 1], r.json.rows[i]];
+      if (a[sci] === b[sci] && allSelf.has(a[0]) === allSelf.has(b[0])) {
+        assert.ok(a[bi] <= b[bi], `entity-search ${lname}: ${a[0]} (${a[bi]}) is above ${b[0]} (${b[bi]}) with the same score`);
+      }
+    }
+  }
+  // the case that showed the defect: the self-hosted OpenList software ranked its vendor above a hosted public instance
+  if (q("SELECT count(*) FROM entity WHERE eid IN ('chirmyram', 'github-openlistteam')")[0][0] === 2) {
+    const ol = (await call('/api/v1/entity-search?limit=50&q=openlist')).json.rows.map((r) => r[0]);
+    assert.ok(ol.includes('chirmyram') && ol.indexOf('chirmyram') < ol.indexOf('github-openlistteam'), 'openlist: ' + ol.slice(0, 6).join(', '));
+  }
   // filter: page by page, a page boundary inside the hosted part included
   const [[topic, grp]] = q('SELECT topic, grp FROM record WHERE duplicate_of IS NULL GROUP BY topic, grp HAVING ' +
     'sum(self_hosted) > 0 AND sum(self_hosted) < count(*) AND count(*) <= 200 ORDER BY sum(self_hosted) DESC, topic, grp LIMIT 1');

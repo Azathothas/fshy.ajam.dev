@@ -507,18 +507,19 @@ class Site:
         out.append("</section>")
         return "".join(out)
 
-    def self_section(self, cs, with_topic=False):
-        """The last section of a list page: its self-hosted records, in the order of the page, under their own heading."""
+    def self_section(self, cs, with_topic=False, more=""):
+        """The last section of a list page: its self-hosted records, in the order of the page, under their own heading.
+        more: HTML that says where the topic's other self-hosted records are."""
         if not cs:
             return ""
         return ('<section class="grp" aria-labelledby="self-hosted"><h2 id="self-hosted">Self-hosted, the last resort '
-                '<small>%s</small></h2><p class="lede">%s. %s</p><ul class="%s">%s</ul></section>') % (
+                '<small>%s</small></h2><p class="lede">%s. %s%s</p><ul class="%s">%s</ul></section>') % (
             num(len(cs)), e(selfhosted.MEANING[:1].upper() + selfhosted.MEANING[1:]), e(selfhosted.NOTE),
-            self.lane(cs), "".join(self.entry(c, with_topic) for c in cs))
+            (" " + more) if more else "", self.lane(cs), "".join(self.entry(c, with_topic) for c in cs))
 
     @staticmethod
-    def self_stat(cs):
-        return ('<li><a class="st" href="#self-hosted"><b>%s</b>self-hosted, listed last</a></li>' % num(len(cs))) if cs else ""
+    def self_stat(n, href="#self-hosted"):
+        return ('<li><a class="st" href="%s"><b>%s</b>self-hosted, listed last</a></li>' % (href, num(n))) if n else ""
 
     def topic(self, t, cs):
         name = TOPIC_NAME.get(t, t)
@@ -534,13 +535,21 @@ class Site:
         parts = ['<h1>%s</h1><p class="lede">%s</p>' % (e(name), e(desc))]
         if not cs:
             parts.append("<p>No record is in this topic yet.</p>")
+        # the counts of the topic, as llms.counts() gives them: each group counts its hosted records, and the topic's
+        # self-hosted records of any group are counted once
         sts = self.stats(main, GROUPS[:2], lambda g: "#" + g)
-        if n_paid:
-            sts += '<li><a class="st paid" href="paid/"><b>%s</b>paid only</a></li>' % num(n_paid)
-        if n_rest:
-            sts += '<li><a class="st rejected" href="rejected/"><b>%s</b>rejected or dead</a></li>' % num(n_rest)
-        sts += self.self_stat(sh_main)
+        if paid:
+            sts += '<li><a class="st paid" href="paid/"><b>%s</b>paid only</a></li>' % num(len(paid))
+        if rest:
+            sts += '<li><a class="st rejected" href="rejected/"><b>%s</b>rejected or dead</a></li>' % num(len(rest))
+        n_sh = len(sh_main) + len(sh_paid) + len(sh_rest)
+        sts += self.self_stat(n_sh, "#self-hosted" if sh_main else "paid/#self-hosted" if sh_paid else "rejected/#self-hosted")
         parts.append('<ul class="stats">%s</ul>' % sts)
+        elsewhere = [('<a href="paid/#self-hosted">%s paid-only</a>' % num(len(sh_paid))) if sh_paid else "",
+                     ('<a href="rejected/#self-hosted">%s rejected or dead</a>' % num(len(sh_rest))) if sh_rest else ""]
+        elsewhere = " and ".join(x for x in elsewhere if x)
+        more = ("This page lists the usable and trial ones; the %s ones are at the end of their pages." % elsewhere
+                if elsewhere else "")
         tn = [x for x in self.ctx["needs"]["needs"] if x.get("topic") == t]
         if tn:
             parts.append('<p class="needs"><b>Best per need</b>%s</p>' % "".join('<a href="/need/%s/">%s</a>' % (e(x["id"]), e(x["title"])) for x in tn))
@@ -552,9 +561,11 @@ class Site:
         if n_paid:
             # the paid group has its own page: a reader who looks for free capacity does not load it
             secs.append('<section class="grp" aria-labelledby="paid"><h2 id="paid">Paid only <small>%s</small></h2>'
-                        '<p>%s offers have no free allowance and are listed for their price, on '
-                        '<a href="paid/">%s: paid only</a>.</p></section>' % (num(n_paid), num(n_paid), e(name)))
-        secs.append(self.self_section(sh_main))
+                        '<p>%s hosted offers have no free allowance and are listed for their price, on '
+                        '<a href="paid/">%s: paid only</a>%s.</p></section>' % (
+                            num(len(paid)), num(len(paid)), e(name),
+                            (", with %s self-hosted at its end" % num(len(sh_paid))) if sh_paid else ""))
+        secs.append(self.self_section(sh_main, more=more))
         if jump:
             parts.append('<nav aria-label="On this page">%s</nav>' % "".join(jump))
         if main or sh_main:
@@ -589,7 +600,7 @@ class Site:
                         e(v), e(VERDICT_LABEL.get(v, v)), num(len(by_v[v])), self.lane(by_v[v]), "".join(self.entry(c) for c in by_v[v])))
                 rsecs.append("</section>")
         if rjump or sh_rest:
-            rp.append('<ul class="stats">%s%s</ul>' % ("".join("<li>%s</li>" % x for x in rjump), self.self_stat(sh_rest)))
+            rp.append('<ul class="stats">%s%s</ul>' % ("".join("<li>%s</li>" % x for x in rjump), self.self_stat(len(sh_rest))))
         rp.append(self.filters())
         rp.extend(rsecs)
         rp.append(self.self_section(sh_rest))
@@ -750,11 +761,11 @@ class Site:
         def items(rs):
             return "".join(self.entry(cards[r[0]], wt, shown(cards[r[0]], r[1])) for r in rs)
         body = ('<p class="crumb"><a href="/">Home</a> / <a href="/need/">Best per need</a></p><h1>%s</h1><p class="lede">%s</p>'
-                '<p class="needs"><b>Ranked by</b>%s, then the evidence &middot; %s ranked%s%s</p>%s'
+                '<p class="needs"><b>Ranked by</b>%s, then the evidence &middot; %s %sranked%s%s</p>%s'
                 '<ol class="%s rank">%s</ol>%s%s'
                 '<details><summary>The query</summary><pre>%s\nORDER BY self_hosted, %s ASC NULLS LAST</pre><p>Run it yourself: '
                 '<a href="/api/v1/need/%s">/api/v1/need/%s</a>, or the MCP tool <code>need</code>.</p></details>') % (
-            e(x["title"]), e(x["scope"]), e(SORT_LABEL.get(key, key)), num(len(ranked)),
+            e(x["title"]), e(x["scope"]), e(SORT_LABEL.get(key, key)), num(len(ranked)), "hosted " if last else "",
             (' &middot; <a href="#unranked">%s with no parsed number</a>' % num(len(unranked))) if unranked else "",
             (' &middot; <a href="#self-hosted">%s self-hosted, listed last</a>' % num(len(last))) if last else "",
             self.filters(), self.lane([cards[r[0]] for r in ranked]), items(ranked),
@@ -789,7 +800,7 @@ class Site:
         parts = ['<h1>Graveyard</h1><p class="lede">%s offers that no longer exist, with the evidence of their end. '
                  'The rejected offers that still exist are on the <i>rejected</i> page of each topic.</p>' % num(len(dead))]
         parts.append('<ul class="stats">%s%s</ul>' % ("".join('<li><a class="st dead" href="#%s"><b>%s</b>%s</a></li>' % (
-            t, num(len(by_t[t])), e(TOPIC_NAME[t])) for t, _, _ in TOPICS if by_t.get(t)), self.self_stat(last)))
+            t, num(len(by_t[t])), e(TOPIC_NAME[t])) for t, _, _ in TOPICS if by_t.get(t)), self.self_stat(len(last))))
         for t, _, _ in TOPICS:
             if by_t.get(t):
                 parts.append('<h2 id="%s">%s <small>%s</small></h2><ul class="list ls">%s</ul>' % (
