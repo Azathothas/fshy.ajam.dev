@@ -56,6 +56,12 @@ export function compute(fx, { text, rank, guard }) {
             (e) => sh.includes(e)).map((h) => h.eid),
         };
       }),
+      // a name lookup gives one entity: the best score wins, and a hosted entity wins only a tie (rank.resolveEntity)
+      entityResolve: (fx.rank.entityResolve || []).map((c) => {
+        const hit = rank.resolveEntity(rank.sortEntities(c.hits.map(([eid, score]) => ({ eid, score })),
+          (e) => c.best_vorder[e] ?? 99, (e) => c.self_hosted.includes(e)));
+        return { hits: c.hits, best_vorder: c.best_vorder, self_hosted: c.self_hosted, eid: hit ? hit.eid : null };
+      }),
       names: {
         aliases: fx.rank.names.aliases,
         cases: fx.rank.names.cases.map(([q]) => [q, rank.scoreNames(idx, q).map((h) => [h.eid, h.score]).sort(byScore)]),
@@ -101,7 +107,7 @@ export function format(fx) {
     Object.keys(t).map((k) => '    ' + one(k) + ': ' + arr(t[k], '    ')).join(',\n'),
     '  },',
     '  "rank": {',
-    ['editDistance', 'fuzzBudget', 'bm25', 'hostedFirst', 'bestVorder', 'entityOrder'].map((k) => '    ' + one(k) + ': ' + arr(r[k], '    ')).join(',\n') + ',',
+    ['editDistance', 'fuzzBudget', 'bm25', 'hostedFirst', 'bestVorder', 'entityOrder', 'entityResolve'].map((k) => '    ' + one(k) + ': ' + arr(r[k], '    ')).join(',\n') + ',',
     '    "names": {',
     '      "aliases": ' + arr(r.names.aliases, '      ') + ',',
     '      "cases": ' + arr(r.names.cases, '      '),
