@@ -165,10 +165,14 @@ is the public store without record JSON, leaves and evidence quotes, which are s
 limit runs before the load, so a request that gets 429 costs no load. The first search of an isolate reads the
 name index that the build writes (`name_index` in `data/manifest.json`) and does not normalise every alias again.
 
-**The download of the store.** The build writes the gzip of the public store in parts of 10 MiB under
-`data/w/`, and `data/manifest.json` names them with the size and the SHA-256 of the whole file. The Worker streams
-the parts in order at `/data/fshy-public.sqlite.gz`, so the URL stays one file, and no part nears the 25 MiB
-limit of a static asset as the corpus grows. The route loads no store.
+**The download of the store.** The build writes the gzip of the public store in parts of 10 MiB under `data/w/`, and
+`data/manifest.json` names them with the size and the SHA-256 of the whole file. The Worker streams the parts in
+order at `/data/fshy-public.sqlite.gz`, so the URL stays one file, and no part nears the 25 MiB limit of a static
+asset as the corpus grows. The route loads no store. The answer carries an ETag, the SHA-256 of the file. A request
+with a matching `If-None-Match` gets 304 and no body. A request with one `Range` gets 206 and that range of the
+joined file, so a client can resume. The route reads only the parts that the range touches, and `part_bytes` in the
+manifest gives their size. A list of ranges, another unit and an invalid range are ignored, and the whole file is
+sent.
 
 The Worker does not cache an API answer at the edge: Workers Cache would bill the static requests that are free
 now, and its key is the full URL, so a crawler that changes `q` or `offset` would gain nothing from it.
@@ -199,12 +203,13 @@ that says why. The platform stops what they miss.
    not give its HTTP status. `wrangler dev` does not enforce `cpu_ms`: a statement of 573 ms ran there with
    `cpu_ms` set to 50.
 4. The rate limits, for each address: 30 SQL requests a minute, and 120 other requests a minute. Each MCP
-   `tools/call` counts one, and a batch of MCP messages holds at most 5, so one request cannot carry more work
-   than five calls. The namespace ids of `wrangler.jsonc` (47201, 47202) are not the example values of the
-   documentation, because two bindings with one id share their counters across the Workers of an account.
+   `tools/call` counts one. A batch of MCP messages holds at most 5 messages, and at most 2 of them are `sql` calls.
+   A batch over either limit gets a 400 and the JSON-RPC error -32600, before the rate limit counts it. The
+   namespace ids of `wrangler.jsonc` (47201, 47202) are not the example values of the documentation, because two
+   bindings with one id share their counters across the Workers of an account.
 
 **Why `cpu_ms` is 2,500.** It is about three times the costliest request that the Worker accepts. Measured on
-2026-10-29 with `wrangler dev` (wrangler 4.154.0, sql.js 1.15.2) on the operator's computer, which ran other jobs at
+2026-10-29 with `wrangler dev` (wrangler 4.154.0, sql.js 1.15.2) on one computer, which ran other jobs at
 the same time. Each time is the wall time of the request at the client, in three runs; a first request ran on a
 new `wrangler dev` each time. The CPU column is `process.cpuUsage()` of the Worker's modules under node, after the
 first request (a warm isolate). The store load comes from the header `Server-Timing` of the first request.
@@ -228,8 +233,15 @@ first request (a warm isolate). The store load comes from the header `Server-Tim
 
 The slowest run of the costliest request took 1,130 ms, and the middle run 700 ms, so 2,500 ms is a margin of 2.2
 over the slowest run and 3.6 over the middle one. A wall time includes the wait on the assets, so the CPU time of
-the same request is lower. A batch of MCP messages holds at most 5 calls, so a batch stays under 500 ms. The
-hardware of the platform can be slower than this computer. A statement that the budget accepts can still run
+the same request is lower.
+
+A `sql` call takes up to 672 ms of CPU and a search of a batch takes 75 ms, which is 360 to 375 ms for 5. A batch
+holds at most 5 messages, and at most 2 of them are `sql` calls. So the costliest batch that the Worker accepts
+takes 2 x 672 + 3 x 75 = 1,569 ms, and `cpu_ms` is 1.6 times that. The sum is derived from the table, and `run.mjs`
+checks it with a margin of 1.5. Five `sql` calls would take 2.7 to 3.4 s, which is over `cpu_ms`, so the Worker
+refuses a third `sql` call in a batch.
+
+The hardware of the platform can be slower than this computer. A statement that the budget accepts can still run
 longer: the weight does not see a long value that a row builds. The platform stops that statement.
 
 **Headers.** `static/_headers` sets a Content-Security-Policy on every page: scripts, styles, images and requests
