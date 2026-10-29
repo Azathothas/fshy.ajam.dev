@@ -120,6 +120,8 @@ def _text(db):
     w("  filter or sort on them drops for NULL. interfaces: comma list, NULL = unknown.")
     w("- duplicate_of IS NOT NULL marks a duplicate; the API and the MCP tools exclude them unless asked, and")
     w("  the wiki pages list them. So a page can count a few more records than the API.")
+    w("- A need list that asks for no card or no phone ends with the rows whose card or phone requirement is not stated (NULL, or")
+    w("  an identity that no source states), under the heading 'Card or phone requirement not stated'. They are never counted as no.")
     w("- A free allowance: the claim of the kind has-free-tier. claim.num 1: the record has a free allowance; 0: it has")
     w("  none; no row: unknown. free_unit is the unit of the headline offer, which can be a price, so it does not say")
     w("  this. Join: LEFT JOIN claim c ON c.rid = record.rid AND c.kind = 'has-free-tier' (example 8).")
