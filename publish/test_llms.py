@@ -277,6 +277,20 @@ def site_checks(dist, store):
     summary = lt.split("\n")[2] if lt.count("\n") > 2 else ""
     check("the summary of llms.txt names no topic without records (U-14)",
           not [n for n in empty if llms.TOPIC_PHRASE.get(dict((x[1], x[0]) for x in every)[n], n.lower()) in summary], empty)
+    wrong, seen = [], 0
+    for rel, text in files.items():
+        if not (rel.startswith("t/") and rel.endswith(".md") and rel.count("/") == 1):
+            continue
+        for line in text.split("\n"):
+            m = re.match(r"^- \[[^\]]*\]\([^)]*\) \[`([^`]+)`\]\([^)]*\): (.*)$", line) or re.match(r"^- \[[^\]]*\]\([^)]*\) `([^`]+)`: (.*)$", line)
+            if m and m.group(1) in st.cards:
+                seen += 1
+                badges = m.group(2).split(llms.SEP)
+                claim = st.cards[m.group(1)].get("free_claim")
+                if ("free tier" in badges) != (claim == 1) or ("no free tier" in badges) != (claim == 0):
+                    wrong.append((m.group(1), claim, badges[:3]))
+    check("an index line says 'free tier' only when the claim has-free-tier is 1, 'no free tier' only when it is 0 (F-05, F-25; %d lines)" % seen,
+          seen and not wrong, wrong[:4])
     sitemap = read(os.path.join(dist, "sitemap.xml"))
     bare = [t for t, _, _ in every if t not in have]
     check("a topic with no record has no page, no Markdown file and no line in llms.txt or the sitemap (F-03, W-42)",
