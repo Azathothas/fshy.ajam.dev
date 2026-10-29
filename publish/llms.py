@@ -292,6 +292,30 @@ def need_rows(db, x, cards):
     return ranked, unranked
 
 
+# A need that asks for no card or no phone (needs_card=0, needs_phone=0 in its SQL) lists the confirmed rows. The records
+# whose requirement is not stated (NULL, or an identity that no source states) are not in its SQL, and are not no: they
+# follow in a section of their own. The site reads them from the need's own SQL without these conditions, so
+# rules/needs.json, which is shared with the research repository, stays as it is.
+STATED_CONDITION = re.compile(r"\s+AND\s+(?:needs_card=0|needs_phone=0|identity_basis='stated')(?=\s|$)")
+UNSTATED_HEADING = "Card or phone requirement not stated"
+
+
+def need_unstated(db, x, cards, shown):
+    """(rows, text) of the section "Card or phone requirement not stated" of a need: the rows of the need without its
+    conditions on the card, the phone and a stated identity, that are not in `shown` (the rows of the need) and that
+    no known requirement rules out (a flag of 1). Rows have the order of the need. ([], "") for a need with no such
+    condition."""
+    flags = [f for f in ("needs_card", "needs_phone") if f + "=0" in x["sql"]]
+    if not flags:
+        return [], ""
+    ranked, unranked = need_rows(db, dict(x, sql=STATED_CONDITION.sub("", x["sql"])), cards)
+    have = {r[0] for r in shown}
+    rows = [r for r in ranked + unranked if r[0] not in have and all(cards[r[0]][f] != 1 for f in flags)]
+    what = "payment card" if flags == ["needs_card"] else "payment card or a phone"
+    return rows, ("The data does not state whether a %s is needed, or the identity is a placeholder that no source states. "
+                  "These records are listed, not dropped, and none of them is counted as no." % what)
+
+
 def allowance_kind(c):
     """The kind of free allowance of a record: a one-time trial (the verdict trial-only); else by the claim
     has-free-tier: none (0), unknown (no row), or a free allowance (1) counted in time or in another unit. A grant and
@@ -782,7 +806,9 @@ def generate(pub_db, dist):
         ranked, unranked = st.need_rows(x)
         key = x["sort"]
 
-        def render(cap, x=x, ranked=ranked, unranked=unranked, key=key):
+        unstated, unstated_text = need_unstated(st.db, x, st.cards, ranked + unranked)
+
+        def render(cap, x=x, ranked=ranked, unranked=unranked, key=key, unstated=unstated, unstated_text=unstated_text):
             lines = ["# " + x["title"], "", "> " + flat(x["scope"]), "",
                      "Ranked by `%s`, ascending; the rows with no parsed number follow, listed and not dropped. The same "
                      "list: `%s/api/v1/need/%s`, the MCP tool `need`, or this SQL:" % (key, BASE, x["id"]), "",
@@ -792,15 +818,18 @@ def generate(pub_db, dist):
                 for k, h, t, rs in sections:
                     lines += ["## %s (%s)" % (h, num(len(rs))), "", t, ""]
                     lines += [entry_md(st, r[0], "%d. " % i, cap) for i, r in enumerate(rs, 1)] + [""]
-                return "\n".join(lines)
-            if ranked:
-                lines += ["## Ranked (%s)" % num(len(ranked)), ""]
-                for i, r in enumerate(ranked, 1):
-                    val = "" if key == "vorder" else money(r[1], "/TB-month" if "tb" in key else "/month")
-                    lines.append(entry_md(st, r[0], "%d. %s" % (i, (val + SEP) if val else ""), cap))
-                lines.append("")
-            if unranked:
-                lines += ["## No parsed number (%s)" % num(len(unranked)), ""] + [entry_md(st, r[0], cap=cap) for r in unranked] + [""]
+            else:
+                if ranked:
+                    lines += ["## Ranked (%s)" % num(len(ranked)), ""]
+                    for i, r in enumerate(ranked, 1):
+                        val = "" if key == "vorder" else money(r[1], "/TB-month" if "tb" in key else "/month")
+                        lines.append(entry_md(st, r[0], "%d. %s" % (i, (val + SEP) if val else ""), cap))
+                    lines.append("")
+                if unranked:
+                    lines += ["## No parsed number (%s)" % num(len(unranked)), ""] + [entry_md(st, r[0], cap=cap) for r in unranked] + [""]
+            if unstated:
+                lines += ["## %s (%s)" % (UNSTATED_HEADING, num(len(unstated))), "", unstated_text, ""]
+                lines += [entry_md(st, r[0], "- ", cap) for r in unstated] + [""]
             return "\n".join(lines)
         w.write("need/%s.md" % x["id"], fitted(render))
 

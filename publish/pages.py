@@ -764,12 +764,27 @@ class Site:
                 ('<h2 id="unranked">No parsed number <small>%s</small></h2><p class="lede">These match the filter, but no '
                  'price or quantity parsed from their text yet. They are listed, not dropped.</p><ul class="%s">%s</ul>' % (
                     num(len(unranked)), self.lane([cards[r[0]] for r in unranked]), items(unranked))) if unranked else "")
+        # a need that asks for no card or no phone: the records whose requirement is not stated follow, in a section of
+        # their own, never counted as no and never dropped (llms.need_unstated)
+        unstated, unstated_text = llms.need_unstated(self.ctx["db"], x, cards, ranked + unranked)
+        if unstated:
+            phone = "needs_phone=0" in x["sql"]
+            rows_u = []
+            for r in unstated:
+                c = cards[r[0]]
+                row = self.entry(c, wt, shown(c, r[1]))
+                if phone and c["needs_phone"] is None and c["identity_basis"] == "stated":
+                    row = row[:-len("</p></li>")] + '<span class="u">phone?</span></p></li>'
+                rows_u.append(row)
+            lists += '<h2 id="unstated">%s <small>%s</small></h2><p class="lede">%s</p><ul class="%s">%s</ul>' % (
+                e(llms.UNSTATED_HEADING), num(len(unstated)), e(unstated_text), self.lane([cards[r[0]] for r in unstated]), "".join(rows_u))
         body = ('<p class="crumb"><a href="/">Home</a> / <a href="/need/">Best per need</a></p><h1>%s</h1><p class="lede">%s</p>'
                 '<p class="needs"><b>Ranked by</b>%s, then the evidence &middot; %s ranked%s</p>%s%s'
                 '<details><summary>The query</summary><pre>%s\nORDER BY %s ASC NULLS LAST</pre><p>Run it yourself: '
                 '<a href="/api/v1/need/%s">/api/v1/need/%s</a>, or the MCP tool <code>need</code>.</p></details>') % (
             e(x["title"]), e(x["scope"]), e(SORT_LABEL.get(key, key)), num(len(ranked)),
-            (' &middot; <a href="#unranked">%s with no parsed number</a>' % num(len(unranked))) if unranked else "",
+            ((' &middot; <a href="#unranked">%s with no parsed number</a>' % num(len(unranked))) if unranked else "") +
+            ((' &middot; <a href="#unstated">%s with the card or phone not stated</a>' % num(len(unstated))) if unstated else ""),
             self.filters(), lists, e(x["sql"]), e(key), e(x["id"]), e(x["id"]))
         self.page("need/%s/index.html" % x["id"], x["title"], body, x["scope"])
 

@@ -783,6 +783,47 @@ test('MCP: a call with no tool name, a request with a null id, and the batch lim
   assert.ok(!/mcp-protocol-version/i.test(cors.res.headers.get('access-control-expose-headers')), 'the Worker sends no such header, so it does not expose one');
 });
 
+test('a need that asks for no card or no phone lists the rows whose requirement is not stated in a section of their own', async (t) => {
+  const NEED = 'inference-no-card-no-phone';
+  const n = await call('/api/v1/need/' + NEED + '?limit=200');
+  assert.equal(n.res.status, 200, n.body);
+  const ids = (rows) => rows.map((r) => r[0]);
+  const confirmed = [...ids(n.json.rows), ...ids(n.json.null_rows || [])];
+  const unstated = ids(n.json.unstated_rows || []);
+  assert.ok(unstated.length > 0, 'the list has rows whose card or phone requirement is not stated');
+  assert.ok(confirmed.length > 0 && !unstated.some((r) => confirmed.includes(r)), 'no row is in both sections');
+  assert.equal(n.json.total, confirmed.length + unstated.length, 'the total counts both');
+  // an independent count with plain SQL: the rows of the need without its conditions that need no known card or phone,
+  // and that are not confirmed
+  const sql = "SELECT count(*) FROM record WHERE (topic='inference' OR category LIKE '%inference%') AND grp='usable' AND duplicate_of IS NULL " +
+    "AND coalesce(summary,'') NOT LIKE 'no free %' AND coalesce(summary,'') NOT LIKE 'no published free %' AND coalesce(summary,'') NOT LIKE 'no perpetual free %' " +
+    "AND coalesce(needs_card,0) <> 1 AND coalesce(needs_phone,0) <> 1 AND NOT (needs_card=0 AND needs_phone=0 AND identity_basis='stated')";
+  const c = await call('/api/v1/sql?q=' + encodeURIComponent(sql));
+  assert.equal(c.json.rows[0][0], unstated.length, 'the section holds every row of the need that is not confirmed and not known to need a card or a phone');
+  // the rows of the section have NULL somewhere: a card or a phone that is not stated, or an identity that is a placeholder
+  const cols = n.json.columns;
+  for (const r of n.json.unstated_rows) {
+    const card = r[cols.indexOf('card')];
+    const phone = r[cols.indexOf('phone')];
+    assert.ok(card !== 'yes' && phone !== 'yes', r[0] + ' needs a card or a phone');
+  }
+  const tsv = await call('/api/v1/need/' + NEED + '.tsv?limit=200');
+  assert.match(tsv.body, /# card or phone requirement not stated: \d+ rows below, not counted as no/);
+  assert.ok(n.json.notes.some((x) => /rows with the card or phone requirement not stated follow the others/.test(x)));
+  // a need that asks for neither has no such section
+  const free = await call('/api/v1/need/free-gpu?limit=200');
+  assert.equal(free.json.unstated_rows, undefined);
+  const mcp = await rpc('tools/call', { name: 'need', arguments: { id: NEED, limit: 200 } });
+  assert.match(mcp.json.result.content[0].text, /# card or phone requirement not stated: \d+ rows below/);
+  // the page and the Markdown list the same rows
+  const md = join(DIST, 'need', NEED + '.md');
+  if (!existsSync(md)) { t.skip('no ' + md); return; }
+  const text = readFileSync(md, 'utf8');
+  const part = text.split('## Card or phone requirement not stated')[1] || '';
+  const listed = [...part.matchAll(/^- \[[^\]]*\]\([^)]*\) \[`([^`]+)`\]/gm)].map((m) => m[1]);
+  assert.deepEqual([...listed].sort(), [...unstated].sort(), 'the Markdown page and the API hold the same rows');
+});
+
 test('the changes worklist says which field of which record was amended and never prints an empty old -> new (W-13)', async () => {
   const w = await call('/api/v1/worklist/changes?limit=200');
   assert.equal(w.res.status, 200, w.body);
