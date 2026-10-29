@@ -12,7 +12,8 @@ Each Monday, Dependabot proposes updates of the actions and of the npm packages 
 ([`../.github/dependabot.yml`](../.github/dependabot.yml)), and CI builds `main` at 06:00 UTC. A toolchain that
 breaks thus shows before a publish does. The site serves a copy of MiniSearch, `site/static/assets/minisearch.js`.
 `run.mjs` fails when that copy is not the npm package of `site/package.json`, so an update of MiniSearch fails
-until a person copies its `dist/umd/index.js` there, with the header line.
+until a person copies its `dist/umd/index.js` there, with the header line. That update is a pull request of its own,
+so its failed check holds no other update.
 
 ## The two stages
 
@@ -86,9 +87,9 @@ L15 to L20 (paths and search notes of the research process, its census, the work
 narrative history titles) fail since the publish of 2026-10-28 had no hit. L21 to L26 fail since the publish of
 2026-10-29 had no hit: the word for the private record store, a section of an internal document, an earlier
 batch of the research, its reasoning steps, a path into a private experiments folder, and a narrative history
-id. A name that only the research repository
-knows, for example the name of a seed corpus, never goes in this public file; the research repository's own
-rules hold it.
+id. L27 is `warn`: a phone number with an international prefix. It loses its level after the first publish whose
+build shows no warning for it. A name that only the research repository knows, for example the name of a private
+project, never goes in this public file; the research repository's own rules hold it.
 
 To check a text before it becomes public, for example the body of a pull request or a comment, scan it:
 

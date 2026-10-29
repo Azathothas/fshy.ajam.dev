@@ -303,13 +303,13 @@ WORKER = ("/api/v1/search", "/api/v1/records", "/api/v1/sql", "/api/v1/need", "/
 
 
 def html_checks(dist, man):
-    """The HTML pages that pages.py writes: what the review of the wiki found, checked on every page."""
+    """The HTML pages that pages.py writes, checked on every page."""
     pages = {}
     for root, _, fs in os.walk(dist):
         for fn in fs:
             if fn.endswith(".html"):
                 pages[os.path.relpath(os.path.join(root, fn), dist).replace("\\", "/")] = read(os.path.join(root, fn))
-    nolang, nodesc, dupid, emoji, commit, dead, labels = [], [], [], [], [], set(), []
+    nolang, nodesc, dupid, emoji, commit, dead, labels, shell, chips = [], [], [], [], [], set(), [], [], []
     have = set()
     for root, _, fs in os.walk(dist):
         for fn in fs:
@@ -335,6 +335,12 @@ def html_checks(dist, man):
             want = href + "index.html" if href.endswith("/") else href
             if want not in have and want + "/index.html" not in have:
                 dead.add((rel, href))
+        # app.js reads these elements without a test for each: the topic bar and the search box on every page, and the
+        # three parts of the filter bar
+        if not all(x in body for x in ('class="topics"', 'id="q"', 'id="qr"')):
+            shell.append(rel)
+        if 'class="chips"' in body and not all(x in body for x in ('class="ifilter"', 'class="clear"', 'class="count"')):
+            chips.append(rel)
         if rel.startswith("p/"):
             heads = re.findall(r'<h2><a href="#[^"]+">(.*?)</a></h2>', h)
             if len(heads) != len(set(heads)):
@@ -346,6 +352,8 @@ def html_checks(dist, man):
     check("no page names the build's commit (P-03)", not commit, commit[:5])
     check("every internal link of every page resolves to a file (%d pages)" % len(pages), not dead, sorted(dead)[:5])
     check("no two records of a provider page share a heading (U-01)", not labels, labels[:5])
+    check("every page has the topic bar and the search box that app.js reads (%d pages)" % len(pages), not shell, shell[:5])
+    check("every filter bar has the interface box, the clear button and the count that app.js reads", not chips, chips[:5])
     search, compare = pages.get("search/index.html", ""), pages.get("compare/index.html", "")
     check("the search and compare pages say what to do without JavaScript (U-02)",
           "<noscript>" in search and "/api/v1/search?q=" in search and "<noscript>" in compare and "/api/v1/record/" in compare)
