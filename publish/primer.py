@@ -61,15 +61,19 @@ EXAMPLES = [
      "SELECT rid, stale_on, verified_basis FROM record WHERE stale_on <= date('now','+30 days') "
      "AND grp <> 'dead' ORDER BY self_hosted, vorder, stale_on LIMIT 20"),
     ("Parsed prices per TB in USD, with the FX date used",
-     "SELECT rid, num, currency, usd, fx_date FROM claim WHERE kind='price-per-tb' "
-     "AND usd IS NOT NULL ORDER BY usd LIMIT 10"),
+     "SELECT c.rid, c.num, c.currency, c.usd, c.fx_date FROM claim c JOIN record r ON r.rid = c.rid "
+     "WHERE c.kind='price-per-tb' AND c.usd IS NOT NULL ORDER BY r.self_hosted, c.usd LIMIT 10"),
     ("The binding request-rate limits, and who cites a host",
-     "SELECT l.rid, l.value FROM limit_row l WHERE l.is_binding=1 AND l.kind='request-rate' "
-     "AND l.rid IN (SELECT rid FROM evidence WHERE url LIKE '%github.com%') LIMIT 10"),
+     "SELECT l.rid, l.value FROM limit_row l JOIN record r ON r.rid = l.rid WHERE l.is_binding=1 "
+     "AND l.kind='request-rate' AND l.rid IN (SELECT rid FROM evidence WHERE url LIKE '%github.com%') "
+     "ORDER BY r.self_hosted, r.vorder, l.rid LIMIT 10"),
     ("Compute records that have a free allowance (claim has-free-tier = 1), best verdict first",
      "SELECT r.rid, r.verdict FROM record r JOIN claim c ON c.rid = r.rid AND c.kind = 'has-free-tier' AND c.num = 1 "
-     "WHERE r.topic = 'compute' AND r.grp IN ('usable','trial') AND r.duplicate_of IS NULL ORDER BY r.vorder LIMIT 10"),
+     "WHERE r.topic = 'compute' AND r.grp IN ('usable','trial') AND r.duplicate_of IS NULL "
+     "ORDER BY r.self_hosted, r.vorder LIMIT 10"),
 ]
+# Every worked query lists record ids, so each one sorts on self_hosted first: a reader who pages it, or raises its
+# LIMIT, still gets every hosted row before a self-hosted one. publish/test_publish.py checks it on the store.
 
 
 def connect(db_path):
