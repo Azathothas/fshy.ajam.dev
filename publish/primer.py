@@ -110,7 +110,7 @@ def _text(db):
     w("")
     w("RULES")
     w("- needs_card, needs_phone, needs_id, needs_institution: 1 yes, 0 no, NULL UNKNOWN (never 'no').")
-    w("  'No card' is needs_card=0 AND identity_basis='stated'. identity_basis='defaulted' means unknown.")
+    w("  'No card' is needs_card=0 AND identity_basis='stated'. identity_basis='defaulted' or 'inferred' means unknown.")
     w("- Freshness: stale on day D when stale_on <= D (today UTC unless you pick as_of).")
     w("  verified_basis='inherited' means checked_on is only an upper bound.")
     w("- usd_month, usd_per_tb_month: headline USD prices, NULL when nothing parsed. Say how many rows a")
