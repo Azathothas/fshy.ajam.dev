@@ -345,8 +345,18 @@ def helper_checks(tmp):
           ("Verbatim: 'new-user trial: join the group, fill in the form and receive CNY 50' a...",
            "Free tier of 5 GB a month. Then USD 1 per GB.", "Free tier of 5 GB a month."),
           ("Short line.", None, "Short line."), ("", None, ""),
-          ("Quoted: 'USD 1 in free credits'", None, "'USD 1 in free credits'")]
+          ("Quoted: 'USD 1 in free credits'", None, "'USD 1 in free credits'"),
+          ("none: Compute Engine is billed pay-as-you-go.", None, "none: Compute Engine is billed pay-as-you-go."),
+          ("None of the plans is free.", None, "None of the plans is free.")]
     bad = [(a, llms.headline(a, b)) for a, b, w in hl if llms.headline(a, b) != w]
+    fw = [({"free_unit": None, "verdict": "qualifies"}, ""), ({"free_unit": "none", "verdict": "qualifies"}, "no free tier"),
+          ({"free_unit": "hours", "verdict": "qualifies"}, "free tier"), ({"free_unit": "mixed", "verdict": "trial-only"}, "free tier"),
+          ({"free_unit": "mixed", "verdict": "paid-only"}, "no free tier"), ({"free_unit": "GB", "verdict": "dead"}, "no free tier")]
+    badw = [(c, llms.free_word(c)) for c, w in fw if llms.free_word(c) != w]
+    check("free_word never says 'free tier' for a paid-only or a dead offer, or for a unit of none (F-05, F-25)", not badw, badw)
+    days = [("2026-10-21T00:00:00.000Z", "2026-10-21"), ("2026-10-21", "2026-10-21"), ("2026-10-21T08:30:00Z", "2026-10-21T08:30:00Z")]
+    badd = [(v, llms.day(v)) for v, w in days if llms.day(v) != w]
+    check("a verified date prints as YYYY-MM-DD when its time is midnight (W-32)", not badd, badd)
     check("headline drops a cut word and a quote label, prefers a whole first sentence, starts with a capital (U-09)", not bad, bad)
     rows = [{"rid": "a/x", "vorder": 0, "confidence": "reported", "stale_on": "2026-12-01"},
             {"rid": "a/y", "vorder": 0, "confidence": "measured", "stale_on": "2026-11-01"},

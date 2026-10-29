@@ -166,6 +166,22 @@ const batch = await fetch(ORIGIN + '/mcp', {
   body: JSON.stringify([1, 2, 3, 4, 5, 6].map((id) => ({ jsonrpc: '2.0', id, method: 'tools/call', params: { name: 'help', arguments: {} } }))),
 });
 check('POST /mcp refuses a batch of 6 messages with 400', batch.status === 400, batch.status);
+// _headers: a text file carries its charset, and the immutable data parts get one Cache-Control, not two
+for (const [path, type] of [['/llms.txt', 'text/plain; charset=utf-8'], ['/t/storage.md', 'text/markdown; charset=utf-8'],
+  ['/api/v1/help.txt', 'text/plain; charset=utf-8'], ['/index.md', 'text/markdown; charset=utf-8']]) {
+  const r = await fetch(ORIGIN + path);
+  await r.arrayBuffer();
+  check('GET ' + path + ' is served as ' + type, (r.headers.get('content-type') || '').toLowerCase() === type, r.headers.get('content-type'));
+}
+const part = await fetch(ORIGIN + '/' + man.public_db.parts[0]);
+await part.arrayBuffer();
+check('GET a data part has one Cache-Control of a year', part.headers.get('cache-control') === 'public, max-age=31536000, immutable', part.headers.get('cache-control'));
+const hp = await fetch(ORIGIN + '/');
+await hp.arrayBuffer();
+check('GET / carries Permissions-Policy and Cross-Origin-Opener-Policy', /camera=\(\)/.test(hp.headers.get('permissions-policy') || '') &&
+  hp.headers.get('cross-origin-opener-policy') === 'same-origin', hp.headers.get('permissions-policy'));
+const tp = await fetch(ORIGIN + '/api/v1/records?topic=nope');
+check('GET /api/v1/records with an unknown topic is a 400', tp.status === 400, tp.status);
 const icon = await fetch(ORIGIN + '/favicon.ico');
 check('GET /favicon.ico is an icon', icon.status === 200 && (await icon.arrayBuffer()).byteLength < 300, icon.status);
 

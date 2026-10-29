@@ -14,7 +14,7 @@ built from), never dossier/, so nothing the projection withholds can reach these
 
 One order everywhere: verdict (usable first, dead last), then provider name, then record id. One store
 gives the same bytes on every build: no clock and no commit is read, and the one date printed is the data's
-own, the newest verification or evidence date among the records. Standard library only.
+own, the date that data/meta.json gives. Standard library only.
 """
 import collections
 import hashlib
@@ -79,6 +79,12 @@ EMPTY = (None, "", [], {})
 
 def flat(s):
     return " ".join(str(s).split())
+
+
+def day(v):
+    """A date or a date-time as YYYY-MM-DD when its time is midnight, else as it is."""
+    s = scalar(v)
+    return s[:10] if re.fullmatch(r"\d{4}-\d{2}-\d{2}T00:00:00(?:\.0+)?Z?", s) else s
 
 
 def scalar(v):
@@ -161,6 +167,7 @@ FIRST_SENTENCE = re.compile(r"(.{20,}?[.!?])\s+(?=[A-Z0-9(\"'])")
 # a label in front of a quote of the provider: the quotation marks already say that it is a quote
 QUOTE_LABEL = re.compile(r"^(?:Quoted|Verbatim|Quote):\s*", re.I)
 CUT_TAIL = re.compile(r"\s*\S*(?:\.\.\.|\u2026)$")
+NONE_LABEL = re.compile(r"none:", re.I)  # a source that opens with the label "none:" keeps its lowercase: a capital reads as a null
 
 
 def first_sentence(s):
@@ -183,7 +190,7 @@ def headline(summary, stated=None):
         short = CUT_TAIL.sub("", s).rstrip(" ,;:(-")
         if len(short) >= 20:
             s = short + "..."
-    return s[:1].upper() + s[1:]
+    return s if NONE_LABEL.match(s) else s[:1].upper() + s[1:]
 
 
 def clip_words(s, cap):
@@ -210,9 +217,16 @@ def tie_key(c):
 
 
 def free_word(c):
-    """'free tier', 'no free tier', or '' when the record does not say."""
+    """'free tier', 'no free tier', or '' when the record does not say.
+
+    The record has a free allowance when its free_tier unit is not 'none'. A paid-only or dead offer has none to
+    offer now, whatever the unit says: its free_tier text is a price or a past allowance. Switch point: when the data
+    carries a field that states the free allowance directly, read that field here, and only here.
+    """
     u = c.get("free_unit")
-    return "" if u is None else ("no free tier" if u == "none" else "free tier")
+    if u is None:
+        return ""
+    return "no free tier" if u == "none" or c.get("verdict") in ("paid-only", "dead") else "free tier"
 
 
 def money(v, suffix):
@@ -247,11 +261,14 @@ class Store:
         for r in db.execute("SELECT domain, term, meaning FROM vocab ORDER BY domain, ord, term"):
             self.vocab.setdefault(r["domain"], []).append((r["term"], r["meaning"]))
         self.needs = json.load(open(os.path.join(HERE, "rules", "needs.json"), encoding="utf-8"))["needs"]
-        self.topics = topics(sorted({c["topic"] for c in self.cards.values()}))
+        have = {c["topic"] for c in self.cards.values()}
+        self.topics = [x for x in topics(sorted(have)) if x[0] in have]  # a topic with no record yet is not listed
         self.labels = labels(self.cards, {t: n for t, n, _ in self.topics})
+        # the one data date of every surface: the manifest, the pages, help.txt and these files read meta.as_of
         dates = [c["evidence_newest"] for c in self.cards.values() if c["evidence_newest"]]
         dates += [d["verified_at"][:10] for d in self.docs.values() if isinstance(d.get("verified_at"), str)]
-        self.as_of = max(dates) if dates else "unknown"
+        meta = dict(db.execute("SELECT key, value FROM meta"))
+        self.as_of = meta.get("as_of") or (max(dates) if dates else "unknown")
 
     def order(self, rids):
         """The one order: verdict, provider name, record id."""
@@ -306,7 +323,7 @@ def record_md(st, rid):
         if c["identity_basis"] == "stated" else "identity a placeholder: card and phone unknown")
     va = o.get("verified_at")
     out.append("- %s | verified %s%s (%s) | stale on %s" % (
-        needs, scalar(va) if va not in EMPTY else "unknown",
+        needs, day(va) if va not in EMPTY else "unknown",
         "" if str(va)[:10] == c["checked_on"] else ", checked %s" % c["checked_on"], c["verified_basis"], c["stale_on"]))
     out.append("- %spage %s/p/%s.md" % (("url %s | " % flat(o["url"])) if o.get("url") else "", BASE, c["eid"]))
     price = [p for p in (money(c["usd_month"], "/mo"), money(c["usd_per_tb_month"], "/TB-mo")) if p]
@@ -434,24 +451,37 @@ def entry_md(st, rid, bullet="- ", cap=None):
         b.append(price)
     if c["duplicate_of"]:
         b.append("duplicate")
-    return "%s[%s](%s/p/%s.md) `%s`: %s%s" % (bullet, st.labels.get(rid, flat(c["provider"] or c["slug"])), BASE, c["eid"],
-                                             rid, SEP.join(b), (". " + s) if s else "")
+    code = ("[`%s`](%s/api/v1/record/%s)" % (rid, BASE, rid)) if LINK_RECORDS else "`%s`" % rid
+    return "%s[%s](%s/p/%s.md) %s: %s%s" % (
+        bullet, st.labels.get(rid, flat(c["provider"] or c["slug"])), BASE, c["eid"], code, SEP.join(b), (". " + s) if s else "")
+
+
+LINK_RECORDS = True  # a line of an index links the JSON of its record; `fitted` drops the links of a page that is still too big
 
 
 def fitted(render):
     """render(cap) -> page text. The page with whole summaries when it fits in BUDGET, else with every summary
-    cut to the longest length that fits; the provider pages keep them whole."""
-    text = render(None)
-    if len(text.encode("utf-8")) <= BUDGET:
+    cut to the longest length that fits; the provider pages keep them whole. When even a page with no summary does not
+    fit, the lines lose the links to their records, which the page header explains."""
+    global LINK_RECORDS
+    try:
+        for LINK_RECORDS in (True, False):
+            text = render(None)
+            if len(text.encode("utf-8")) <= BUDGET:
+                return text
+            lo, hi = 0, 400
+            while lo < hi:
+                mid = (lo + hi + 1) // 2
+                if len(render(mid).encode("utf-8")) <= BUDGET:
+                    lo = mid
+                else:
+                    hi = mid - 1
+            text = render(lo)
+            if len(text.encode("utf-8")) <= BUDGET:
+                return text
         return text
-    lo, hi = 0, 400
-    while lo < hi:
-        mid = (lo + hi + 1) // 2
-        if len(render(mid).encode("utf-8")) <= BUDGET:
-            lo = mid
-        else:
-            hi = mid - 1
-    return render(lo)
+    finally:
+        LINK_RECORDS = True
 
 
 def cut_note(cap):
@@ -474,7 +504,7 @@ def summary_line(st, notice=True):
 
 
 def stamp(st, version):
-    return ("Data as of %s, the newest verification or evidence date in the records. Version `%s`: the first 12 hex "
+    return ("Data as of %s, the date of the published data. Version `%s`: the first 12 hex "
             "digits of the SHA-256 of every record's Markdown, topic by topic in the one order (verdict, provider name, "
             "record id); it changes whenever a record does." % (st.as_of, version))
 
@@ -529,8 +559,9 @@ def access_lines():
         "- [entity](%s/api/v1/entity/oracle.json): one provider and all its records as JSON, `/api/v1/entity/<id>.json`" % BASE,
         "- [schema.sql](%s/api/v1/schema.sql): the store's schema; [vocab.json](%s/api/v1/vocab.json): its vocabularies"
         % (BASE, BASE),
-        "- [fshy-public.sqlite.gz](%s/data/fshy-public.sqlite.gz): the whole store as one SQLite file, gzip; "
-        "data/manifest.json gives its SHA-256" % BASE,
+        "- [fshy-public.sqlite.gz](%s/data/fshy-public.sqlite.gz): the whole store as one SQLite file, gzip. "
+        "data/manifest.json gives public_db.gzip_sha256, the SHA-256 of this download, and public_db.sha256, the SHA-256 "
+        "of the SQLite file after gunzip" % BASE,
         "",
     ]
 
@@ -613,11 +644,11 @@ def generate(pub_db, dist):
                  "the rejected and dead records, each with the evidence that rejected it; the usable, trial and "
                  "paid-only ones are on %s/t/%s.md" % (BASE, t))):
             def render(cap, title=title, groups=groups, other=other):
-                full = ("In full: %s/t/%s/llms-full.txt." % (BASE, t)) if rids else "No record is in this topic yet."
+                full = "In full: %s/t/%s/llms-full.txt." % (BASE, t)
                 lines = ["# " + title, "", "> " + (desc or name), "",
-                         "%s records: %s. This page lists %s. Each line: provider (its page in Markdown), record id, "
+                         "%s records: %s. This page lists %s. Each line: provider (its page in Markdown), record id (its JSON is %s/api/v1/record/<id>), "
                          "verdict, free tier, identity, card, phone, evidence, parsed price, summary. %s"
-                         % (num(len(rids)), ", ".join("%s %s" % (num(cnt[g]), lbl.lower()) for g, lbl in GROUPS), other, full),
+                         % (num(len(rids)), ", ".join("%s %s" % (num(cnt[g]), lbl.lower()) for g, lbl in GROUPS), other, BASE, full),
                          ""] + cut_note(cap)
                 if needs and groups == MAIN_GROUPS:
                     lines += ["Best per need: " + ", ".join("[%s](%s/need/%s.md)" % (x["title"], BASE, x["id"]) for x in needs), ""]
@@ -627,8 +658,6 @@ def generate(pub_db, dist):
                         lines += ["## %s (%s)" % (lbl, num(len(gs))), ""] + [entry_md(st, r, cap=cap) for r in gs] + [""]
                 return "\n".join(lines)
             w.write(rel, fitted(render))
-        if not rids:
-            continue
         head = ["# fshy: %s in full" % name, "", "> " + (desc or name), "", stamp(st, version), "",
                 "How to read a record, and the other topics: %s/llms-full.txt. One line per record: %s/t/%s.md." % (BASE, BASE, t), ""]
         body = "\n".join(head) + "\n" + "\n".join(blocks[r] for r in rids)
@@ -688,7 +717,8 @@ def generate(pub_db, dist):
 
     # llms-full.txt: the whole corpus when it fits in one file, else the index of the parts
     head = ["# fshy: the corpus in full", "", summary_line(st, notice=False), "", stamp(st, version), ""]
-    if total + 8_000 <= BUDGET:
+    whole = total + 8_000 <= BUDGET
+    if whole:
         body = head + reading_rules(st)
         for t, name, _ in st.topics:
             if by_topic[t]:
@@ -720,9 +750,6 @@ def generate(pub_db, dist):
              "%s/blob/main/LICENSE; a quote from a provider's page stays with its owner." % (REPO, LICENCE, REPO), "",
              "## Topics", ""]
     for t, name, desc, rids, cnt in topic_rows:
-        if not rids:  # a topic of the schema with no record yet: no rejected page to name, no full text
-            lines.append("- [%s](%s/t/%s.md): %sNo record is in this topic yet." % (name, BASE, t, (desc + " ") if desc else ""))
-            continue
         lines.append("- [%s](%s/t/%s.md): %s%s records: %s. Rejected and dead: %s/t/%s/rejected.md; in full: %s/t/%s/llms-full.txt"
                      % (name, BASE, t, (desc + " ") if desc else "", num(len(rids)),
                         ", ".join("%s %s" % (num(cnt[g]), lbl.lower()) for g, lbl in GROUPS), BASE, t, BASE, t))
@@ -730,8 +757,9 @@ def generate(pub_db, dist):
     lines += ["- [%s](%s/need/%s.md): %s" % (x["title"], BASE, x["id"], flat(x["scope"])) for x in st.needs]
     lines += [""] + access_lines() + [
         "## Optional", "",
-        "- [llms-full.txt](%s/llms-full.txt): every record in full, %s, split by topic and verdict group; how to read a record"
-        % (BASE, size(total)),
+        ("- [llms-full.txt](%s/llms-full.txt): every record in full, %s; how to read a record" % (BASE, size(total))) if whole else
+        ("- [llms-full.txt](%s/llms-full.txt): how to read a record, and the index of the parts that hold every record in full "
+         "(%s in all, split by topic and verdict group)" % (BASE, size(total))),
         "- [Graveyard](%s/graveyard/): offers that no longer exist, with the evidence of their end" % BASE,
         "- [Changes](%s/changes/): corrections to earlier claims, newest first" % BASE,
         ""]

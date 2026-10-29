@@ -118,30 +118,27 @@ function unknownParams(p, known) {
 
 /**
  * The terms a filter may name: {topic, verdict, grp, confidence, binding}, each a Set in display order. The topics are
- * the ones with records, in the order of the topic bar (data/manifest.json), so a client can offer them as a list.
+ * the ones that data/manifest.json lists, in the order of the topic bar, and then any topic that has records and is not
+ * listed. A topic with no records yet is still a topic: it is valid and its list is empty.
  */
 export function vocabOf(store) {
   if (store.cache.vocab) return store.cache.vocab;
   const v = { verdict: new Set(), grp: new Set(), confidence: new Set(), binding: new Set() };
   for (const [d, t] of rows(store.db, 'SELECT domain, term FROM vocab ORDER BY domain, ord')) if (v[d]) v[d].add(t);
-  const have = new Set(rows(store.db, 'SELECT DISTINCT topic FROM record ORDER BY topic').map((r) => r[0]));
+  const have = rows(store.db, 'SELECT DISTINCT topic FROM record ORDER BY topic').map((r) => r[0]);
   const order = (store.manifest && store.manifest.topics) || [];
-  v.topic = new Set([...order.filter((t) => have.has(t)), ...[...have].filter((t) => !order.includes(t))]);
+  v.topic = new Set([...order, ...have.filter((t) => !order.includes(t))]);
   store.cache.vocab = v;
   return v;
 }
 
-/**
- * Check a list of terms against a vocabulary. A closed vocabulary (every one but topic) refuses an unknown term with a
- * 400; an unknown topic gets a note, because a topic with no records yet is still a topic.
- */
-function terms(store, domain, vals, notes) {
+/** Check a list of terms against a vocabulary. Every vocabulary is closed: an unknown term is a 400 that lists the terms. */
+function terms(store, domain, vals) {
   const known = vocabOf(store)[domain];
   const unknown = vals.filter((x) => !known.has(x));
-  if (!unknown.length) return vals;
-  const msg = 'unknown ' + domain + ' ' + unknown.map((x) => JSON.stringify(x)).join(', ') + '; ' + domain + ' is one of ' + [...known].join(', ');
-  if (domain !== 'topic') throw bad(msg);
-  notes.push(msg);
+  if (unknown.length) {
+    throw bad('unknown ' + domain + ' ' + unknown.map((x) => JSON.stringify(x)).join(', ') + '; ' + domain + ' is one of ' + [...known].join(', '));
+  }
   return vals;
 }
 
@@ -197,8 +194,8 @@ export function search(store, p) {
   const limit = int(p.limit, 'limit', 20, 1, 50);
   const offset = int(p.offset, 'offset', 0, 0, 100000);
   const notes = unknownParams(p, SEARCH_KEYS);
-  const topics = terms(store, 'topic', list(p.topic, 'topic'), notes);
-  const grps = terms(store, 'grp', list(p.grp, 'grp'), notes);
+  const topics = terms(store, 'topic', list(p.topic, 'topic'));
+  const grps = terms(store, 'grp', list(p.grp, 'grp'));
   const where = [];
   const args = [];
   if (topics.length) { where.push(`topic IN (${marks(topics.length)})`); args.push(...topics); }
@@ -310,7 +307,7 @@ export function filter(store, p) {
   const inList = (col, vals) => {
     if (vals.length) { where.push(`${col} IN (${marks(vals.length)})`); args.push(...vals); }
   };
-  for (const d of ['topic', 'verdict', 'grp', 'confidence', 'binding']) inList(d, terms(store, d, list(p[d], d), notes));
+  for (const d of ['topic', 'verdict', 'grp', 'confidence', 'binding']) inList(d, terms(store, d, list(p[d], d)));
   if (bool(p.no_card, 'no_card')) where.push("needs_card = 0 AND identity_basis = 'stated'");
   if (bool(p.no_phone, 'no_phone')) where.push("needs_phone = 0 AND identity_basis = 'stated'");
   if (bool(p.anonymous, 'anonymous')) where.push("identity_kind = 'anonymous' AND identity_basis = 'stated'");
@@ -582,7 +579,7 @@ export function worklist(store, p) {
   if (!KINDS.has(kind)) throw bad('kind must be stale, drift, changes or unparsed');
   const notes = unknownParams(p, WORK_KEYS);
   const topic = str(p.topic, 'topic');
-  if (topic) terms(store, 'topic', [topic], notes);
+  if (topic) terms(store, 'topic', [topic]);
   const limit = int(p.limit, 'limit', 50, 1, 200);
   const offset = int(p.offset, 'offset', 0, 0, 1000000);
   const page = (cols, countSql, sel, args) => {
@@ -618,7 +615,8 @@ export function worklist(store, p) {
     const body = `SELECT h.when_utc AS at, 'history' AS source, h.hid AS ref, h.status AS status, h.title AS title,
         (SELECT group_concat(rid, ' ') FROM history_link l WHERE l.hid = h.hid) AS rids FROM history h ${hw}
       UNION ALL
-      SELECT at, 'ledger', path, rung, coalesce(old, '') || ' -> ' || coalesce(new, ''), rid FROM ledger ${lw}`;
+      SELECT at, 'ledger', path, rung, CASE WHEN old IS NULL AND new IS NULL THEN 'amended; the old and the new value are not published'
+        ELSE coalesce(old, '') || ' -> ' || coalesce(new, '') END, rid FROM ledger ${lw}`;
     return page(['at', 'source', 'ref', 'status', 'title', 'rids'], `SELECT count(*) FROM (${body})`,
       `SELECT * FROM (${body}) ORDER BY at DESC, ref`, a);
   }

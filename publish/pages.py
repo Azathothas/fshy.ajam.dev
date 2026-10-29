@@ -96,6 +96,38 @@ def prose(s):
     return lang_wrap(t)
 
 
+EPOCH = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
+LEDGER_FEED = 30  # the newest ledger rows that the feed carries, next to the history entries
+
+
+def rfc822(when):
+    """(datetime in UTC, the date as RSS 2.0 wants it, RFC 822) of an ISO date-time, or None when it does not parse."""
+    try:
+        t = datetime.datetime.fromisoformat(str(when).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    t = (t if t.tzinfo else t.replace(tzinfo=datetime.timezone.utc)).astimezone(datetime.timezone.utc)
+    return t, email.utils.format_datetime(t, usegmt=True)
+
+
+def ledger_field(path):
+    """The field of a ledger row in words: the JSON path without its root, or 'not named' when the row names none."""
+    p = str(path or "")
+    return p[2:] if p.startswith("$.") else (p.lstrip("$") or "not named")
+
+
+def extra_html(v):
+    """The cell of a field that the record holds outside its schema: text as prose, a flag as yes or no, a number as it
+    is, and a list or a table as compact JSON."""
+    if isinstance(v, bool):
+        return "yes" if v else "no"
+    if isinstance(v, (int, float)):
+        return e(str(v))
+    if isinstance(v, str):
+        return prose(v)
+    return "<code>%s</code>" % lang_wrap(e(EMOJI_RX.sub("", json.dumps(v, ensure_ascii=False, separators=(",", ": ")))))
+
+
 def source_text(url):
     """The source cell of an evidence row that has no web URL: a probe, a probe whose output is not published, or
     a source that the record does not publish."""
@@ -315,6 +347,8 @@ class Site:
             flags.append("verified")
         if llms.free_word(c) == "free tier":
             flags.append("free")
+        if c["verified_basis"] == "live":
+            flags.append("live")
         stale = "" if c["grp"] == "dead" or not c["stale_on"] else ' data-stale-on="%s"' % e(c["stale_on"])
         return ' data-f="%s" data-i="%s"%s' % (" ".join(flags), e(c["interfaces"] or ""), stale)
 
@@ -386,6 +420,7 @@ class Site:
                 '<button data-chip="free">free tier</button><button data-chip="nocard">no card</button>'
                 '<button data-chip="nophone">no phone</button><button data-chip="anon">anonymous</button>'
                 '<button data-chip="verified">measured or documented</button><button data-chip="fresh">fresh</button>'
+                '<button data-chip="live">checked live</button>'
                 '<input class="ifilter" placeholder="interface: s3, webdav, ssh..." aria-label="interface filter">'
                 '<button class="clear" hidden>clear</button><span class="count" aria-live="polite"></span></div>')
 
@@ -399,7 +434,8 @@ class Site:
             ("limit", "the limit that runs out first, for example request-rate or volume-quota"),
             ("evidence", "how the record is backed, strongest first: measured, documented, reported, inferred, unverified"),
             ("fresh until, stale since", "the check is inside its window, or past it, on today's date"),
-            ("inherited", "the record was carried from an earlier source; its check date is an upper bound"),
+            ("inherited, checked live", "inherited: the record was carried from an earlier source, and its check date is an upper bound. Checked live: the record was checked against the service. The chip filters on it"),
+            ("verdict", "a judgement of the whole offer for the need of its topic. The data holds no number as a cut-off. Read the free allowance and the limits of the record, and decide for your own need"),
             ("duplicate, disagrees", "another record holds the same offer, or a sibling record states another value"),
         ]
         return ('<details class="key"><summary>Key</summary><dl class="legend">%s%s</dl>'
@@ -480,8 +516,6 @@ class Site:
         paid = [c for c in cs if c["grp"] == "paid"]
         rest = [c for c in cs if c["grp"] in ("rejected", "dead")]
         parts = ['<h1>%s</h1><p class="lede">%s</p>' % (e(name), e(desc))]
-        if not cs:
-            parts.append("<p>No record is in this topic yet.</p>")
         sts = self.stats(main, GROUPS[:2], lambda g: "#" + g)
         if paid:
             sts += '<li><a class="st paid" href="paid/"><b>%s</b>paid only</a></li>' % num(len(paid))
@@ -618,9 +652,10 @@ class Site:
             e(x.get("date")), ('<a href="%s" rel="nofollow noopener">%s</a>' % (e(x["url"]), text(re.sub(r"^https?://", "", x["url"])[:60])))
             if str(x.get("url") or "").startswith("http") else source_text(x.get("url")), proved(x))
             for x in ev)
-        extras = o.get("extras")
-        exh = ('<details><summary>More fields <small>%d</small></summary><pre class="json">%s</pre></details>' % (
-            len(extras), lang_wrap(e(EMOJI_RX.sub("", json.dumps(extras, ensure_ascii=False, indent=1)))))) if extras else ""
+        extras = {k: v for k, v in (o.get("extras") if isinstance(o.get("extras"), dict) else {}).items() if v not in (None, "", [], {})}
+        exh = ('<details><summary>More fields <small>%d</small></summary><table class="kv">%s</table></details>' % (
+            len(extras), "".join("<tr><th>%s</th><td>%s</td></tr>" % (text(k.replace("_", " ")), extra_html(v))
+                                 for k, v in extras.items()))) if extras else ""
         unk = [(p, cl) for p, cl in f["unknown"] if cl not in HIDDEN_UNKNOWN]
         unh = ('<details><summary>Unknown values <small>%d</small></summary><ul>%s</ul></details>' % (
             len(unk), "".join("<li><code>%s</code> %s</li>" % (e(p), e(self.voc.get(("unknown_class", cl), cl))) for p, cl in unk[:200]))) if unk else ""
@@ -765,22 +800,30 @@ class Site:
                 hist_anchor(hid), e(title), meta,
                 ("<span>records: " + ", ".join('<a href="/r/%s">%s</a>' % (e(r), e(r)) for r in links[:12]) + "</span>") if links else "")
             (corr if st in ("corrected", "superseded") else other).append(art)
-            try:  # RFC 822, as RSS 2.0 wants it
-                t = datetime.datetime.fromisoformat(str(when).replace("Z", "+00:00"))
-                pub = email.utils.format_datetime((t if t.tzinfo else t.replace(tzinfo=datetime.timezone.utc)).astimezone(datetime.timezone.utc), usegmt=True)
-            except ValueError:
-                pub = ""
+            t = rfc822(when)
             desc = "%s%s" % (st or "changed", (": " + ", ".join(links)) if links else "")
-            rss.append('<item><title>%s</title><link>%s/changes/#%s</link><guid isPermaLink="false">%s</guid>'
-                       '<description>%s</description>%s</item>' % (
-                           e(title), e(llms.BASE), hist_anchor(hid), hist_anchor(hid), e(desc), ("<pubDate>%s</pubDate>" % pub) if pub else ""))
-        # the published ledger says when, which record and field, the evidence and the source; the values are on the record
+            rss.append((t[0] if t else EPOCH, '<item><title>%s</title><link>%s/changes/#%s</link><guid isPermaLink="false">%s</guid>'
+                        '<description>%s</description>%s</item>' % (
+                            e(title), e(llms.BASE), hist_anchor(hid), hist_anchor(hid), e(desc), ("<pubDate>%s</pubDate>" % t[1]) if t else "")))
+        # the published ledger says when, which record and field, the evidence and the source. It holds no old or new
+        # value, so the page says so and sends the reader to the record, where the current value is
         n_led = db.execute("SELECT count(*) FROM ledger").fetchone()[0]
         led = db.execute("SELECT at, rid, path, rung, url FROM ledger ORDER BY at DESC LIMIT 500").fetchall()
         lh = "".join('<tr><td>%s</td><td><a href="/r/%s">%s</a></td><td><code>%s</code></td><td>%s</td><td>%s</td></tr>' % (
-            e((a or "")[:10]), e(r), e(r), e(p or ""), e(g or ""), prose(u)) for a, r, p, g, u in led)
+            e((a or "")[:10]), e(r), e(r), e(ledger_field(p)), e(g or ""), prose(u)) for a, r, p, g, u in led)
+        for a, r, p, g, u in led[:LEDGER_FEED]:
+            t = rfc822(a)
+            if t:
+                rss.append((t[0], '<item><title>%s</title><link>%s/r/%s</link><guid isPermaLink="false">%s</guid>'
+                            '<description>%s</description><pubDate>%s</pubDate></item>' % (
+                                e("%s: %s amended" % (r, ledger_field(p))), e(llms.BASE), e(r), hist_anchor("ledger|%s|%s|%s" % (a, r, p)),
+                                e("The field %s of the record %s was amended on %s%s. The old and the new value are not published: "
+                                  "open the record to read the current value." % (ledger_field(p), r, (a or "")[:10],
+                                                                                  (", source " + u) if u else "")), t[1])))
         body = ('<h1>Changes</h1><p class="lede">Dated entries, newest first: the corrections of earlier claims, the other '
-                'changes of state, and the newest amendments of the change ledger. RSS: <a href="/changes.xml">/changes.xml</a>.</p>'
+                'changes of state, and the newest amendments of the change ledger. A ledger row says which field of which record '
+                'was amended, on which date and on which source. It holds no old or new value, so open the record to read the '
+                'current one. RSS: <a href="/changes.xml">/changes.xml</a>.</p>'
                 '<ul class="stats"><li><a class="st" href="#corrections"><b>%s</b>corrections</a></li>%s%s</ul>'
                 '<h2 id="corrections">Corrections <small>%s</small></h2>%s%s%s') % (
             num(len(corr)), ('<li><a class="st" href="#other"><b>%s</b>other entries</a></li>' % num(len(other))) if other else "",
@@ -794,7 +837,7 @@ class Site:
         self.write("changes.xml", '<?xml version="1.0" encoding="utf-8"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">'
                    '<channel><title>fshy changes</title><link>%s/changes/</link><description>Corrections to the fshy corpus</description>'
                    '<atom:link href="%s/changes.xml" rel="self" type="application/rss+xml"/>%s</channel></rss>' % (
-                       e(llms.BASE), e(llms.BASE), "".join(rss[:100])))
+                       e(llms.BASE), e(llms.BASE), "".join(x for _, x in sorted(rss, key=lambda y: y[0], reverse=True)[:100])))
 
     def about(self, counts):
         v = self.ctx["vocab"]
@@ -828,13 +871,18 @@ class Site:
             'provider publishes for its service apply to its use.</p>'
             '<div class="prose"><h2 id="api">Query it</h2><ul>'
             '<li>Remote MCP for agents: <code>claude mcp add --transport http fshy %s/mcp</code>. '
-            'The tools are help, search, filter, get, entity, need, sql and worklist.</li>'
-            '<li>HTTP, JSON by default and TSV with <code>.tsv</code>:<ul>%s</ul></li>'
+            'The tools are help, search, filter, get, entity, need, sql and worklist. A batch holds at most 5 messages.</li>'
+            '<li>HTTP, JSON by default and TSV with <code>.tsv</code>:<ul>%s</ul>The API and the MCP tools leave out the records '
+            'that are marked as duplicates unless you ask for them. The pages list them, so a page can count a few more '
+            'records than the API.</li>'
             '<li>The whole store as SQLite: <a href="/data/fshy-public.sqlite.gz">fshy-public.sqlite.gz</a> (%s MB), '
             'SHA-256 of the file after gunzip: <code>%s</code>.</li>'
             '<li>Files for agents: <a href="/llms.txt">/llms.txt</a>, and a Markdown version of each topic and provider page.</li>'
             '<li>Permalinks: <code>/r/&lt;topic&gt;/&lt;slug&gt;</code> opens the page of a record.</li></ul>'
-            '<h2 id="read">How to read a record</h2><h3>Verdict</h3>%s<h3>Evidence</h3>%s<h3>Binding constraint</h3>%s'
+            '<h2 id="read">How to read a record</h2><h3>Verdict</h3><p>A verdict is a judgement of the whole offer for the need of its topic. The data holds no '
+            'number as a cut-off. A quota is too small (<code>fails-quota</code>) or enough by the judgement of the record. '
+            'A trial (<code>trial-only</code>) is time-boxed or one-time. Read the free allowance and the limits of the '
+            'record, and decide for your own need.</p>%s<h3>Evidence</h3>%s<h3>Binding constraint</h3>%s'
             '<h3>Identity</h3>%s%s<p>A question mark after an identity value means that the identity kind is a placeholder. '
             'Then the card and phone requirements are unknown, not absent.</p><h3>Freshness</h3><p>Each record has the date '
             'of its last check and the date when its staleness window ends. Your browser compares the second date with '
@@ -899,7 +947,8 @@ def render(repo, dist, ctx):
     counts = ctx["manifest"]["counts"]
     s.home(by_topic, counts)
     for t, _, _ in TOPICS:
-        s.topic(t, by_topic.get(t, []))
+        if t in by_topic:  # a topic with no record yet has no page, no sitemap line and no Markdown file
+            s.topic(t, by_topic[t])
     for eid, ent in ctx["ents"].items():
         members = sorted(ctx["by_eid"][eid], key=lambda c: (c["vorder"], c["rid"]))
         s.entity(eid, ent, [ctx["full"][c["rid"]] for c in members])
