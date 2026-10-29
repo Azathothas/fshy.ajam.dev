@@ -19,7 +19,7 @@ publishes for its service apply to its use.
 | `data/meta.json` | the schema version of the data, the date the data is valid for, the source commit, and the counts |
 | `publish/` | the tools that write `data/` and build the store and the site from it ([`publish/README.md`](publish/README.md)) |
 | `site/` | the static wiki, the read-only HTTP API and the MCP endpoint ([`site/README.md`](site/README.md)) |
-| `docs/` | how a reviewed change reaches this repository, and how to write here |
+| `docs/` | how a reviewed change reaches this repository, how to write here, and the backup |
 
 ⛔ **Nothing in `data/` is edited by hand.** `publish/export.py` writes it. To correct a record, open an issue
 (below).

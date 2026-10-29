@@ -1,0 +1,57 @@
+name: backup
+
+# Every Monday at 07:00 UTC, and on a manual run on main, this job writes two files to a private Cloudflare R2
+# bucket: a git bundle of every branch and tag, and the database files of the site (site/dist/data). The bucket
+# keeps a file 365 days, and it refuses to delete or replace a file in its first 28 days. The job fails when the
+# bucket holds more than 4.5 GiB, so the budget of 5 GiB stays free, and when a setting is missing.
+# docs/backup.md says how to restore. The settings are secrets, so the account and the bucket stay out of the
+# public log. GitHub stops the schedules of a public repository after 60 days with no activity; the 365 days
+# keep the last backups long after that.
+
+on:
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    environment: backup
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+
+      - name: bundle every branch and tag
+        run: |
+          git for-each-ref --format='%(refname:strip=3)' refs/remotes/origin | grep -vx HEAD |
+            while read -r b; do git update-ref "refs/heads/$b" "refs/remotes/origin/$b"; done
+          git bundle create "$RUNNER_TEMP/repo.bundle" --branches --tags
+          git bundle verify "$RUNNER_TEMP/repo.bundle"
+
+      - name: build the database files of the site
+        run: |
+          python3 publish/build.py --site site/dist
+          tar -czf "$RUNNER_TEMP/site-data.tar.gz" -C site/dist data
+
+      - name: upload, and check the budget
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: sh .github/r2-backup.sh "$RUNNER_TEMP/repo.bundle" "$RUNNER_TEMP/site-data.tar.gz"
