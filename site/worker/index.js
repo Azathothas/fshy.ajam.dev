@@ -6,7 +6,7 @@
 
 import wasmModule from 'sql.js/dist/sql-wasm-browser.wasm';
 import { asset, getStore, HttpError, loadNames } from './db.js';
-import { baseHeaders, CORS, errorResponse, jsonResponse, rateLimited } from './http.js';
+import { baseHeaders, CORS, errorResponse, etagMatches, jsonResponse, parseRange, rateLimited } from './http.js';
 import * as api from './api.js';
 import { handleMcp } from './mcp.js';
 
@@ -199,10 +199,40 @@ function recordPath(store, eid, topic, slug) {
   return '/p/' + e + '/#' + topic + '--' + slug;
 }
 
+/** Write `take` bytes of the body of a part to the writer, after the first `skip` bytes, and cancel the rest of the body. */
+async function writeSlice(body, writer, skip, take) {
+  const reader = body.getReader();
+  try {
+    while (take > 0) {
+      const { done, value } = await reader.read();
+      if (done) throw new Error('a part of the public store is shorter than the manifest says');
+      let chunk = value;
+      if (skip >= chunk.byteLength) {
+        skip -= chunk.byteLength;
+        continue;
+      }
+      if (skip) {
+        chunk = chunk.subarray(skip);
+        skip = 0;
+      }
+      if (chunk.byteLength > take) chunk = chunk.subarray(0, take);
+      take -= chunk.byteLength;
+      await writer.write(chunk);
+    }
+  } finally {
+    await reader.cancel().catch(() => {});
+  }
+}
+
 /**
  * GET /data/fshy-public.sqlite.gz: the parts that the manifest names, streamed in order as one gzip file. One file
  * would pass the 25 MiB limit of a static asset as the corpus grows, so the build writes parts and this route joins
  * them. The store is not loaded.
+ *
+ * The answer carries an ETag, which is the SHA-256 of the file. A request with a matching If-None-Match gets 304 and
+ * no body. One byte range (Range: bytes=a-b, a-, or -n) gets 206 with that range of the joined file: the parts all
+ * have the size manifest.public_db.part_bytes but the last, so the route reads only the parts that the range
+ * touches. A list of ranges, another unit and an invalid range are ignored, and the whole file is sent.
  */
 async function download(request, env, ctx) {
   if (request.method !== 'GET' && request.method !== 'HEAD') throw notAllowed('GET, HEAD, OPTIONS');
@@ -210,29 +240,71 @@ async function download(request, env, ctx) {
   const man = await asset(env, 'data/manifest.json', 'json');
   const pd = man && man.public_db;
   if (!pd || !Array.isArray(pd.parts) || !pd.parts.length) throw new HttpError(500, 'the manifest names no parts of the public store');
+  const total = pd.gzip_bytes;
+  const size = pd.part_bytes > 0 ? pd.part_bytes : 0;
+  const etag = '"' + pd.gzip_sha256 + '"';
   const h = baseHeaders(null, {
     'content-type': 'application/gzip',
-    'content-length': String(pd.gzip_bytes),
+    'content-length': String(total),
     'content-disposition': 'attachment; filename="fshy-public.sqlite.gz"',
     'cache-control': 'public, max-age=300',
-    etag: '"' + pd.gzip_sha256 + '"',
+    etag,
   });
+  if (size) h.set('accept-ranges', 'bytes');
   if (man.commit) h.set('x-fshy-commit', man.commit);
+  // an answer with no body names none of the properties of the body
+  const bodiless = (status) => {
+    for (const k of ['content-length', 'content-type', 'content-disposition']) h.delete(k);
+    return new Response(null, { status, headers: h });
+  };
+  const inm = request.headers.get('if-none-match');
+  if (inm && etagMatches(inm, etag)) return bodiless(304);
   if (request.method === 'HEAD') return new Response(null, { status: 200, headers: h });
+
+  // a range applies to this version of the file only
+  const asked = request.headers.get('range');
+  const ifRange = request.headers.get('if-range');
+  const range = asked && size && (!ifRange || ifRange.trim() === etag) ? parseRange(asked, total) : null;
+  if (range === 'unsatisfiable') {
+    h.set('content-range', 'bytes */' + total);
+    return bodiless(416);
+  }
+  const start = range ? range.start : 0;
+  const length = range ? range.end - range.start + 1 : total;
+  if (range) h.set('content-range', `bytes ${range.start}-${range.end}/${total}`);
+  h.set('content-length', String(length));
+
   // FixedLengthStream keeps the Content-Length on workerd; node has no such class
-  const { readable, writable } = typeof FixedLengthStream === 'function' ? new FixedLengthStream(pd.gzip_bytes) : new TransformStream();
+  const { readable, writable } = typeof FixedLengthStream === 'function' ? new FixedLengthStream(length) : new TransformStream();
   const pump = (async () => {
-    for (const p of pd.parts) {
-      const res = await asset(env, p, 'response');
-      await res.body.pipeTo(writable, { preventClose: true });
+    if (!range) {
+      for (const p of pd.parts) {
+        const res = await asset(env, p, 'response');
+        await res.body.pipeTo(writable, { preventClose: true });
+      }
+      await writable.close();
+      return;
     }
-    await writable.close();
+    const writer = writable.getWriter();
+    try {
+      for (let i = Math.floor(range.start / size); i <= Math.floor(range.end / size); i++) {
+        const from = Math.max(range.start, i * size);
+        const to = Math.min(range.end + 1, (i + 1) * size);
+        const res = await asset(env, pd.parts[i], 'response');
+        await writeSlice(res.body, writer, from - i * size, to - from);
+      }
+      await writer.close();
+    } catch (e) {
+      await writer.abort(e).catch(() => {});
+      throw e;
+    }
   })().catch((e) => {
-    console.error('fshy download failed:', e && e.stack ? e.stack : String(e));
+    // a client that cancels the body ends the stream with no reason: that is no failure of the route
+    if (e != null) console.error('fshy download failed:', e && e.stack ? e.stack : String(e));
     return writable.abort(e).catch(() => {});
   });
   if (ctx && typeof ctx.waitUntil === 'function') ctx.waitUntil(pump);
-  return new Response(readable, { status: 200, headers: h });
+  return new Response(readable, { status: range ? 206 : 200, headers: h });
 }
 
 function isWorkerRoute(path) {

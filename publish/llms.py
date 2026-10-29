@@ -349,7 +349,8 @@ def record_md(st, rid):
                                             " (binding)" if lm.get("kind") and lm.get("kind") == o.get("binding") else "",
                                             scalar(lm.get("value") or ""),
                                             (" " + src(lm["source"])) if lm.get("source") not in EMPTY else "", rest))
-    # a prose value that an earlier line holds word for word is printed once; the later line names the earlier one
+    # a prose value that an earlier line holds is not printed again: the later line names the earlier one, as
+    # "the same as" when the two are equal and as "part of" when the earlier line holds more
     said = []
     ft = o.get("free_tier")
     if isinstance(ft, dict) and isinstance(ft.get("stated"), str) and flat(ft["stated"]):
@@ -360,9 +361,8 @@ def record_md(st, rid):
         if v in EMPTY:
             return
         text = scalar(v)
-        same = next((lbl for lbl, t in said if isinstance(v, str) and text in t), None)
-        out.append("- %s: %s" % (label, ("the same as " + same) if same else text))
-        if not same and isinstance(v, str):
+        out.append("- %s: %s" % (label, repeat_note(said, text) if isinstance(v, str) else text))
+        if isinstance(v, str) and repeat_of(said, text) is None:
             said.append((label, text))
     prose_line("limits_note", "limits note")
     prose_line("binding_note", "binding note")
@@ -404,6 +404,33 @@ def leaf_lines(v, p=""):
             return [(p, "; ".join(vals))] if vals else []
         return [row for i, x in enumerate(v) for row in leaf_lines(x, "%s[%d]" % (p, i))]
     return [(p, scalar(v))]
+
+
+def repeat_of(said, text):
+    """How the earlier prose values hold `text`. `said` is a list of (label, text) in the order of the lines.
+    -> ("same", label) of the first value that equals it, else ("part", label) of the first value that holds it as a
+    strict part, else None. A part starts and ends at a word boundary: "REST" is a part of "REST, OAI-PMH" and not
+    of "RESTful"."""
+    if not text:
+        return None
+    part = None
+    rx = None
+    for label, t in said:
+        if text == t:
+            return "same", label
+        if part is None and text in t:
+            rx = rx or re.compile(r"(?<!\w)" + re.escape(text) + r"(?!\w)")
+            if rx.search(t):
+                part = label
+    return ("part", part) if part is not None else None
+
+
+def repeat_note(said, text):
+    """The words that a line prints in place of a value that an earlier line holds; the value itself when none does."""
+    r = repeat_of(said, text)
+    if r is None:
+        return text
+    return ("the same as " if r[0] == "same" else "part of ") + r[1]
 
 
 def entry_md(st, rid, bullet="- ", cap=None):
@@ -510,7 +537,8 @@ def reading_rules(st):
         "date, what it proved.",
         "- not stated, not recorded, not applicable: the value was not published, or does not apply. A field that a "
         "record does not show was not published: that is unknown, not absent.",
-        "- the same as: the value is in an earlier line of the record, word for word.",
+        "- the same as: the value equals an earlier line of the record, word for word.",
+        "- part of: the value is a part of an earlier line of the record. That line holds it in full.",
         "",
     ]
 

@@ -263,10 +263,9 @@ usable group is 308,729 bytes raw and 45,193 gzip. The trial group is 76,310 raw
 
 ### 3.5 An observation outside this plan
 
-The changes page lists 108 history items. The title of one is "Research runs now have one writer and a second key,
-and the first four runs found ten defects in the harness". It describes the research process. `AGENTS.md` section
-2 says the published corpus is technical. A merge session should check whether the projection should drop
-process entries. This plan does not change that.
+The changes page lists 108 history items. The title of one tells how the research is run, not a fact about an offer.
+`AGENTS.md` section 2 says the published corpus is technical. A merge session should check whether the projection
+should drop such entries. This plan does not change that.
 
 ## 4. Recommendations
 

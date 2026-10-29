@@ -176,7 +176,7 @@ def emit_data(repo, pub_db, dist):
                 "commit_time": commit_time, "as_of": meta.get("as_of"), "source_commit": meta.get("source_commit"),
                 "worker_db": {"chunks": chunks, "bytes": len(blob), "sha256": h},
                 "public_db": {"path": "data/fshy-public.sqlite.gz", "parts": parts, "bytes": len(pub), "gzip_bytes": len(gz),
-                              "sha256": sha(pub), "gzip_sha256": gh},
+                              "part_bytes": PUBLIC_PART, "sha256": sha(pub), "gzip_sha256": gh},
                 "name_index": names_rel,
                 "topics": [t["id"] for t in json.load(open(os.path.join(HERE, "rules", "topics.json"), encoding="utf-8"))["topics"]],
                 "record_pages_over": RECORD_PAGES_OVER,
