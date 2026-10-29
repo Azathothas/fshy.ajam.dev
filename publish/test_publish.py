@@ -7,7 +7,8 @@
 2. The export refuses a source that is not a research checkout (exit 3), a test export into data/ (exit 2), and a
    --data that is not data/ and not empty (exit 2), and it keeps the files of that directory.
 3. The leak rules, of both levels, match each leak sample and pass each technical sample; the history title rule
-   matches a narrative title and passes a correction; build.py --scan finds a leak in a text file.
+   matches a narrative title and passes a correction; build.py --scan finds a leak in a text file. The commit-msg
+   hook refuses every credit line of a tool and passes a message that only names a provider.
 4. The lists agree. rules/topics.json is the one list of topics: pages.py reads it, app.js holds no copy and
    reads the topic bar, and the New offer form lists the same topics. The verdict labels of pages.py and app.js
    agree. When the store exists, its vocabulary and its topics agree with them.
@@ -146,8 +147,23 @@ LEAK_SAMPLES = [  # (text, a leak rule must match it)
     ("Not in dossier/compute (searched: example, no record).", True), ("it is recorded once, in dossier/x/y.json", True),
     ("a number the census did not have", True), ("the compute census stops there", True),
     ("3 percent of the 1 TB a day serving target", True),
-    ("the US Census Bureau API gives 500 calls a day", False), ("a dossier of the case", False),
+    ("the US Census Bureau API gives 500 calls a day", False), ("a dossier of the case", True),
     ("data/records/compute/x.json", False), ("results (search: free)", False),
+    # round 3, warn level
+    ("The dossier holds firebase-studio.json", True), ("the existing dossier record says dead", True),
+    ("Cr" + chr(0xe9) + "er un dossier partag" + chr(0xe9), False), ("le dossier de partage", False),
+    ("per BRIEF " + chr(0xa7) + "0.3 escalation ladder", True), ("the provider " + chr(0xa7) + "6.1c says", False),
+    ("Two corrections to batch 1.", True), ("Batch 1 carried the 30-day expiry", True),
+    ("Applications for Batch 4 are closed", False), ("Batch 256 MB per request", False),
+    ("Candidates: (a) the Entrance plan", True), ("Three readings were considered.", True),
+    ("Log x-project/evidence/experiments/05-worker/logs/final.json", True),
+    ("https://example.com/evidence/experiments/1", False),
+]
+HID_SAMPLES = [
+    ("2026-10-28T135534Z/operator-rulings-of-2026-10-28", True), ("2026-10-24T032000Z/review-found-58-defects", True),
+    ("2026-10-22T041230Z/seed-corrections-reverted", True), ("2026-10-22T061500Z/own-the-disk-is-not-an-option", True),
+    ("2026-10-22T030702Z/repod-range-claim-withdrawn", False), ("2026-10-22T144500Z/hetzner-fair-use", False),
+    ("2026-10-22T030705Z", False),
 ]
 TITLE_SAMPLES = [
     ("The operator decided seven open questions", True), ("A review found 58 defects in the three answers", True),
@@ -165,6 +181,13 @@ def leak_checks(tmp):
     wrong = [(s, want) for s, want in TITLE_SAMPLES if any(r.search(s) for r in titles) != want]
     check("the history title rule matches a narrative title and passes a correction (%d samples)" % len(TITLE_SAMPLES),
           titles and not wrong, wrong)
+    hids = [re.compile(p["re"]) for p in build.leak_rules() if p.get("scope") == "history.hid"]
+    wrong = [(s, want) for s, want in HID_SAMPLES if any(r.search(s) for r in hids) != want]
+    check("the history id rule matches a narrative id and passes a neutral one (%d samples)" % len(HID_SAMPLES),
+          hids and not wrong, wrong)
+    fails = {p["id"] for p in build.leak_rules() if p.get("level", "fail") == "fail"}
+    check("the rules of the research process of round 2, L15 to L20, fail", {"L15", "L16", "L17", "L18", "L19", "L20"} <= fails,
+          sorted(fails))
     levels = {p.get("level", "fail") for p in build.leak_rules()}
     check("every leak rule has the level fail or warn", levels <= {"fail", "warn"}, levels)
     bad, good = os.path.join(tmp, "body-bad.md"), os.path.join(tmp, "body-good.md")
@@ -174,6 +197,82 @@ def leak_checks(tmp):
     rc_good, _ = quiet(build.main, ["--scan", good])
     check("build.py --scan exits 1 on a leak in a text file and 0 on clean text", rc_bad == 1 and "LEAK" in err and rc_good == 0,
           (rc_bad, rc_good, err))
+
+
+ROBOT = chr(0x1F916)
+CREDIT_LINES = [  # each must be refused by .githooks/commit-msg, as the last line of a normal message
+    ROBOT + " Generated with [Claude Code](https://claude.com/claude-code)",
+    "Generated with [Claude Code](https://claude.com/claude-code)",
+    "Generated with Claude Code",
+    "Made with Claude",
+    "Generated using Claude",
+    "Written with the help of Claude Opus",
+    "Assisted-by: Claude",
+    "Reviewed-by: Claude",
+    "Signed-off-by: GPT-5 <bot@example.invalid>",
+    "Co-authored-by: Claude <noreply@anthropic.com>",
+    "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>",
+    "See claude.com/claude-code for the tool.",
+    "Thanks: noreply@anthropic.com",
+    "Built with Copilot.",
+    "Drafted by an AI assistant.",
+    ROBOT,
+    # a model or an assistant by name or by family, a version included
+    "Built using GPT-4o",
+    "Powered by Gemini",
+    "Powered by OpenAI",
+    "Created with ChatGPT",
+    "Written by an LLM",
+    "Generated by Llama 3.1 70B",
+    "Made using Mistral Large",
+    "Assisted by Bard",
+    "Made with Codex",
+    "Built with Cursor",
+    "Written by an AI.",
+    "Model: GPT-4o",
+    "AI-Assistant: Copilot",
+    "Assisted-by: Gemini 2.5 Pro",
+    # a credit in the middle of a line: after a punctuation mark, or with the change as its subject
+    "This commit was generated by Claude",
+    "Code written by ChatGPT",
+    "Parts of this change were written with Copilot",
+    "docs: the page (generated with Claude)",
+    "- partially generated with Gemini",
+    "This PR was drafted via Llama 3.1",
+]
+CLEAN_MESSAGES = [  # each must pass: a provider or a model is named, nothing is credited
+    "coding-subs: the Claude Pro plan is USD 20 a month",
+    "inference: Gemini free tier rate limit changed",
+    "records: the Copilot quota was reviewed by the merge session",
+    "worker: the plan check reads a cursor of rows once",
+    "inference: Llama 3.1 8B is free on Groq, and Mistral Small on La Plateforme",
+    "inference: the GPT-4o price per million tokens on OpenAI",
+    "email: Brevo free tier; domains-dns: OpenAI is not a registrar",
+    # a vendor that made a model is not a credit (the false alarm of the merge review of round 3)
+    "inference: the models made by OpenAI and Mistral on the free tier",
+    "inference: list the open models built by Mistral",
+    "coding-subs: the assistant built by Anthropic costs USD 20 a month",
+]
+
+
+def hook_checks(tmp):
+    import shutil
+    sh = shutil.which("sh")
+    if not sh:
+        print("skip  the commit-msg hook cases: no sh")
+        return
+    hook = os.path.join(ROOT, ".githooks", "commit-msg")
+
+    def run(text):
+        p = os.path.join(tmp, "msg.txt")
+        with open(p, "w", encoding="utf-8", newline="\n") as f:
+            f.write(text)
+        return subprocess.run([sh, hook, p], capture_output=True).returncode
+    passed = [c for c in CREDIT_LINES if run("site: a change\n\nThe body says why.\n\n" + c + "\n") == 0]
+    check("the commit-msg hook refuses every credit line of a tool (%d lines)" % len(CREDIT_LINES), not passed, passed)
+    refused = [m for m in CLEAN_MESSAGES if run(m + "\n\nThe body says why.\n") != 0]
+    check("the commit-msg hook passes a message that names a provider (%d messages)" % len(CLEAN_MESSAGES), not refused, refused)
+    check("the commit-msg hook refuses a subject that ends in a full stop", run("site: a change.\n") != 0)
 
 
 def js_list(src, name):
@@ -218,7 +317,32 @@ def primer_checks(db_path):
         except sqlite3.Error as e:
             check("primer query runs: %s" % what, False, e)
     db.close()
-    check("primer text names every worked query", all(sql in primer.text(db_path) for _, sql in primer.EXAMPLES))
+    text = primer.text(db_path)
+    check("primer text names every worked query", all(sql in text for _, sql in primer.EXAMPLES))
+    private = [w for w in ("dossier", " fr ", "history/", "scripts/", "LOCAL ONLY", "projected", "in git") if w in text]
+    check("the primer names only what a reader of the public data can open", not private, private)
+
+
+def keystat_checks(db_path):
+    """keystat holds the largest key of every column of every table, for the statement budget of the Worker."""
+    db = sqlite3.connect(db_path)
+    try:
+        tables = [t for (t,) in db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE "
+                                           "'text_fts%' AND name <> 'keystat'")]
+        want = {(t, c) for t in tables for (c,) in db.execute("SELECT name FROM pragma_table_info(?)", (t,))}
+        have = {(t, c): (n, k) for t, c, n, k in db.execute("SELECT tbl, col, distinct_n, max_key FROM keystat")}
+        check("keystat has a row for each column of each table (%d columns)" % len(want), set(have) == want,
+              sorted(want ^ set(have))[:5])
+        wrong = []
+        for t, c in sorted(want)[::7]:
+            q = 'SELECT count(*), coalesce(max(k), 0) FROM (SELECT count(*) AS k FROM "%s" GROUP BY "%s")' % (t, c)
+            if tuple(db.execute(q).fetchone()) != have.get((t, c)):
+                wrong.append((t, c))
+        check("keystat matches a recount of its columns (every seventh)", not wrong, wrong)
+        schema = open(os.path.join(HERE, "schema.sql"), encoding="utf-8").read()
+        check("keystat is derived by the build, not a table of the data contract", "keystat" not in schema)
+    finally:
+        db.close()
 
 
 def main(argv=None):
@@ -231,12 +355,14 @@ def main(argv=None):
         contract_checks(tmp)
         export_checks(tmp)
         leak_checks(tmp)
+        hook_checks(tmp)
     finally:
         export.cleanup(tmp)
     db = a.db if os.path.exists(a.db) else None
     list_checks(db)
     if db:
         primer_checks(db)
+        keystat_checks(db)
     else:
         print("skip  the store parts: no %s; build it with python publish/build.py --check" % a.db)
     print("%s: %d failed" % ("PASS" if not FAILS else "FAIL", len(FAILS)))

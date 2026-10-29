@@ -96,8 +96,17 @@ const page = await fetch(ORIGIN + '/');
 check('GET / is a static page', page.status === 200);
 check('GET / carries the Content-Security-Policy of _headers', /default-src 'self'/.test(page.headers.get('content-security-policy') || ''),
   page.headers.get('content-security-policy'));
-const plan = await fetch(ORIGIN + '/api/v1/sql?q=' + encodeURIComponent('SELECT count(*) FROM claim a, evidence b WHERE a.rid <> b.rid'));
-check('GET /api/v1/sql refuses a nested loop of two large scans with 400', plan.status === 400, plan.status);
+const plan = await fetch(ORIGIN + '/api/v1/sql?q=' + encodeURIComponent('SELECT count(*) FROM record a LEFT JOIN record b ON a.rno <> b.rno'));
+check('GET /api/v1/sql refuses a LEFT JOIN of two large scans with 400', plan.status === 400, plan.status);
+const hexed = await fetch(ORIGIN + '/api/v1/sql?q=' + encodeURIComponent('SELECT length(hex(hex(group_concat(summary)))) FROM record'));
+check('GET /api/v1/sql refuses a function that is not on the list with 400', hexed.status === 400, hexed.status);
+// the heap limit of db.js on workerd: a value that doubles past it is refused, and the store answers after it
+let doubled = 'SELECT group_concat(summary) AS s FROM record';
+for (let i = 0; i < 7; i++) doubled = 'SELECT s || s AS s FROM (' + doubled + ')';
+const oom = await fetch(ORIGIN + '/api/v1/sql?q=' + encodeURIComponent('SELECT length(s) FROM (' + doubled + ')'));
+const oj = await oom.json().catch(() => null);
+check('GET /api/v1/sql refuses a value over the heap limit with 400', oom.status === 400 && oj && /needs more than/.test(oj.error),
+  `${oom.status} ${JSON.stringify(oj)}`);
 const search = await fetch(ORIGIN + '/api/v1/search?q=hetzner&limit=3');
 const sj = await search.json().catch(() => null);
 check('GET /api/v1/search answers 200 with rows', search.status === 200 && sj && sj.rows && sj.rows.length > 0, `${search.status} ${JSON.stringify(sj)}`);

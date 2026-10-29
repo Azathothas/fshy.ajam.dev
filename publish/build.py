@@ -232,6 +232,7 @@ def build(data, out_db):
             "as_of": meta_in.get("as_of"), "source_commit": meta_in.get("source_commit"),
             "counts": json.dumps(dict(meta_in.get("counts") or {}, tables=counts), sort_keys=True)}
     db.executemany("INSERT INTO meta VALUES (?,?)", sorted(meta.items()))
+    key_stats(db)
     db.commit()
     db.execute("INSERT INTO text_fts(text_fts) VALUES('optimize')")
     db.commit()
@@ -239,6 +240,25 @@ def build(data, out_db):
     db.close()
     lap("store")
     return counts
+
+
+def key_stats(db):
+    """The keystat table: for each column of each table, the number of distinct values and the rows of the largest
+    key (NULL counts as a key, because IS matches it). The statement budget of the Worker (site/worker/plan.js)
+    takes the largest key as the rows that an = step reads. It is derived, so it is not in schema.sql."""
+    db.execute("DROP TABLE IF EXISTS keystat")
+    db.execute("CREATE TABLE keystat (tbl TEXT NOT NULL, col TEXT NOT NULL, distinct_n INTEGER NOT NULL, "
+               "max_key INTEGER NOT NULL, PRIMARY KEY (tbl, col)) WITHOUT ROWID")
+    stats = []
+    tables = [t for (t,) in db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'text_fts%' "
+                                       "AND name <> 'keystat' ORDER BY name")]
+    for t in tables:
+        for (c,) in db.execute("SELECT name FROM pragma_table_info(?)", (t,)).fetchall():
+            n, most = db.execute('SELECT count(*), coalesce(max(k), 0) FROM (SELECT count(*) AS k FROM "%s" GROUP BY "%s")'
+                                 % (t.replace('"', '""'), c.replace('"', '""'))).fetchone()
+            stats.append((t, c, n, most))
+    db.executemany("INSERT INTO keystat VALUES (?,?,?,?)", stats)
+    return len(stats)
 
 
 def make_worker_db(public_db, out_db):
@@ -249,6 +269,7 @@ def make_worker_db(public_db, out_db):
     db.executescript("DROP TABLE leaf; DROP TABLE unknown; UPDATE record SET doc = NULL;"
                      "UPDATE evidence SET proved = NULL; UPDATE history SET body = NULL;")
     db.execute("INSERT OR REPLACE INTO meta VALUES ('target', 'worker')")
+    key_stats(db)
     db.commit()
     db.execute("VACUUM")
     db.close()

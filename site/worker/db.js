@@ -1,7 +1,7 @@
 // The Worker's SQLite: sql.js over the read-only Worker DB that the build ships as static assets.
 // One load per isolate, shared by concurrent cold requests through a module-level promise.
 // The chunks named in data/manifest.json are streamed into one preallocated buffer, checked
-// against the manifest's length and SHA-256, then opened with PRAGMA query_only=ON.
+// against the manifest's length and SHA-256, then opened with PRAGMA query_only=ON and a hard heap limit.
 
 import initSqlJs from 'sql.js/dist/sql-wasm-browser.js';
 import { buildNameIndex } from './rank.js';
@@ -10,6 +10,12 @@ import { buildNameIndex } from './rank.js';
 if (!globalThis.location) globalThis.location = { href: 'https://fshy.invalid/' };
 
 const ORIGIN = 'https://assets.invalid/';
+// The memory that SQLite may allocate (PRAGMA hard_heap_limit). A statement that needs more fails with "out of memory",
+// which the SQL route returns as a refusal (400); the handle stays usable. It bounds the size of any value that a
+// statement builds, whatever the functions, and keeps the isolate under its 128 MB.
+export const HEAP_LIMIT_MIB = 32;
+// The characters that one SQL result may carry, summed over its values. A larger result is refused (400).
+export const MAX_RESULT_CHARS = 2000000;
 let sqlPromise = null;
 let storePromise = null;
 
@@ -81,6 +87,10 @@ async function load(env, wasmModule) {
   const t3 = performance.now();
   const db = new SQL.Database(buf);
   db.exec('PRAGMA query_only=ON');
+  // temporary tables and sorts stay in SQLite's memory, so the heap limit bounds them too (a temporary file would
+  // grow in the isolate's memory, outside the limit)
+  db.exec('PRAGMA temp_store=MEMORY');
+  db.exec('PRAGMA hard_heap_limit=' + HEAP_LIMIT_MIB * 1024 * 1024);
   const t4 = performance.now();
   const r = (x) => Math.round(x * 10) / 10;
   return {
@@ -118,6 +128,18 @@ export function discard(store) {
   }
 }
 
+/** Throw away the handle and the sql.js module (after the engine itself failed) so the next request starts both again. */
+export function reset(store) {
+  discard(store);
+  sqlPromise = null;
+}
+
+/** True for an error of the WebAssembly engine itself, after which sql.js cannot be used again. */
+export function engineFailed(e) {
+  return (typeof WebAssembly !== 'undefined' && e instanceof WebAssembly.RuntimeError) ||
+    /^(?:Aborted|RuntimeError)\b|memory access out of bounds|unreachable executed/.test(String((e && e.message) || e));
+}
+
 /** Rows as objects. Parameters are bound, never interpolated. */
 export function all(db, sql, params = []) {
   const st = db.prepare(sql);
@@ -143,8 +165,8 @@ export function one(db, sql, params = []) {
 }
 
 /**
- * Run caller SQL with a row cap: {columns, rows (arrays), truncated}. Checks total_changes()
- * afterwards and discards the handle if anything changed.
+ * Run caller SQL with a row cap: {columns, rows (arrays), truncated}. A result over MAX_RESULT_CHARS is refused with
+ * HttpError 400. Checks total_changes() afterwards and discards the handle if anything changed.
  */
 export function capped(store, sql, cap) {
   const db = store.db;
@@ -154,9 +176,16 @@ export function capped(store, sql, cap) {
     const columns = st.getColumnNames();
     const rows = [];
     let truncated = false;
+    let chars = 0;
     while (st.step()) {
       if (rows.length >= cap) { truncated = true; break; }
-      rows.push(st.get());
+      const row = st.get();
+      for (const v of row) chars += v == null ? 0 : typeof v === 'string' || v instanceof Uint8Array ? v.length : 8;
+      if (chars > MAX_RESULT_CHARS) {
+        throw new HttpError(400, 'refused: the result is over ' + MAX_RESULT_CHARS.toLocaleString('en-US') +
+          ' characters; select fewer rows or shorter values');
+      }
+      rows.push(row);
     }
     return { columns, rows, truncated };
   } finally {

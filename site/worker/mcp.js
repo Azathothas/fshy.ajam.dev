@@ -76,7 +76,7 @@ export const TOOLS = [
   },
   {
     name: 'sql',
-    description: 'One read-only SELECT, WITH, VALUES or EXPLAIN over the SQLite store (FTS4 table text_fts). Writes and PRAGMA are refused; LIMIT is added if absent.',
+    description: 'One read-only SELECT, WITH, VALUES or EXPLAIN over the SQLite store (FTS4 table text_fts). Writes, PRAGMA, a function that is not on the list and a costly plan are refused, and the refusal says why; LIMIT is added if absent.',
     inputSchema: obj({ query: s('the SQL'), limit: n('<= 200, default 100'), format: FORMAT }, ['query']),
   },
   {
