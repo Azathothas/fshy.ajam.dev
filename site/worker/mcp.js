@@ -117,7 +117,8 @@ function instructions(store) {
   return 'Read-only catalogue of free and cheap capability: storage, compute, GPU time, inference, crawling, egress, ' +
     'email, databases, DNS, CI, proxies and more. Call help once. Then use need or filter for a ranked answer, and ' +
     'search for a name; get with detail=full reads one record. NULL means unknown, never no. Topics: ' +
-    [...v.topic].join(', ') + '. Verdicts, best first: ' + [...v.verdict].join(', ') + '.';
+    [...v.topic].join(', ') + '. Verdicts, best first: ' + [...v.verdict].join(', ') + '. A batch holds at most ' +
+    MAX_BATCH + ' messages.';
 }
 
 /** Rough token estimate: ASCII at 4 characters a token, anything else at 1. */
@@ -194,6 +195,7 @@ async function callTool(name, a, store, env, request) {
     case 'need':
       return tableText(await api.need(store, env, a), fmt(a));
     case 'sql': {
+      if (a.query == null && a.q == null) throw new HttpError(400, 'query (the SQL text) is required');
       if (await rateLimited(env, 'RL_SQL', request)) throw new HttpError(429, 'rate limited: 30 SQL calls a minute');
       return tableText(api.sql(store, { q: a.query ?? a.q, limit: a.limit }), fmt(a));
     }
@@ -215,6 +217,10 @@ async function dispatch(msg, store, env, request) {
   }
   const isNote = !('id' in msg);
   const id = msg.id;
+  // MCP asks for a string or a number: null is no id, and a reply to it could not be matched to the request
+  if (!isNote && (id === null || (typeof id !== 'string' && typeof id !== 'number'))) {
+    return rpcError(null, -32600, 'invalid request: id must be a string or a number');
+  }
   const p = msg.params || {};
   if (isNote) return null; // notifications/initialized, notifications/cancelled, ...
   switch (msg.method) {
@@ -235,7 +241,8 @@ async function dispatch(msg, store, env, request) {
     case 'tools/call': {
       const name = p.name;
       if (typeof name !== 'string' || !TOOLS.some((t) => t.name === name)) {
-        return rpcError(id, -32602, 'unknown tool: ' + String(name) + '; the tools are ' + TOOL_NAMES);
+        const what = typeof name === 'string' ? 'unknown tool: ' + name : 'tools/call needs the name of a tool in params.name';
+        return rpcError(id, -32602, what + '; the tools are ' + TOOL_NAMES);
       }
       try {
         const text = await callTool(name, args(p.arguments), store, env, request);
