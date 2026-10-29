@@ -346,8 +346,44 @@ def helper_checks(tmp):
           ("Verbatim: 'new-user trial: join the group, fill in the form and receive CNY 50' a...",
            "Free tier of 5 GB a month. Then USD 1 per GB.", "Free tier of 5 GB a month."),
           ("Short line.", None, "Short line."), ("", None, ""),
-          ("Quoted: 'USD 1 in free credits'", None, "'USD 1 in free credits'")]
+          ("Quoted: 'USD 1 in free credits'", None, "'USD 1 in free credits'"),
+          ("none: Compute Engine is billed pay-as-you-go.", None, "none: Compute Engine is billed pay-as-you-go."),
+          ("None of the plans is free.", None, "None of the plans is free.")]
     bad = [(a, llms.headline(a, b)) for a, b, w in hl if llms.headline(a, b) != w]
+    fw = [({"free_claim": None}, ""), ({"free_claim": 0}, "no free tier"), ({"free_claim": 1}, "free tier"), ({}, ""),
+          ({"free_claim": 1, "free_unit": "none", "verdict": "paid-only"}, "free tier")]
+    badw = [(c, llms.free_word(c)) for c, w in fw if llms.free_word(c) != w]
+    check("free_word prints 'free tier' only for the claim 1, 'no free tier' for 0, and nothing for no claim (F-05, F-25)", not badw, badw)
+    db = sqlite3.connect(":memory:")
+    db.execute("CREATE TABLE claim (rid TEXT, path TEXT, kind TEXT, num REAL)")
+    cs = {"a": {}, "b": {}, "c": {}}
+    db.executemany("INSERT INTO claim VALUES (?, ?, ?, ?)", [("a", "$.free_tier", "has-free-tier", 1.0), ("b", "$.free_tier", "has-free-tier", 0.0),
+                                                              ("a", "$.price", "price-per-tb", 3.0), ("c", "$.price", "price-per-tb", 0.0)])
+    llms.attach_free_claims(db, cs)
+    got = {k: v["free_claim"] for k, v in cs.items()}
+    check("a record's free claim is the claim has-free-tier of the data: 1, 0, or none for a record with no such row (F-05)",
+          got == {"a": 1, "b": 0, "c": None}, got)
+    kinds = [({"verdict": "trial-only", "free_claim": 1, "free_unit": "hours"}, "trial"), ({"verdict": "qualifies", "free_claim": 1, "free_unit": "hours"}, "time"),
+             ({"verdict": "qualifies-with-caveat", "free_claim": 1, "free_unit": "seconds"}, "time"), ({"verdict": "qualifies", "free_claim": 1, "free_unit": "mixed"}, "other"),
+             ({"verdict": "qualifies", "free_claim": 1, "free_unit": "GiB"}, "other"), ({"verdict": "qualifies", "free_claim": 0, "free_unit": "hours"}, "none"),
+             ({"verdict": "qualifies", "free_claim": None, "free_unit": "hours"}, "unknown")]
+    badk = [(c, llms.allowance_kind(c)) for c, w in kinds if llms.allowance_kind(c) != w]
+    check("allowance_kind puts a trial first; then only a claim of 1 gives a free allowance, in time or in another unit (F-15)", not badk, badk)
+    cards = {"a": {"verdict": "qualifies", "free_claim": 0, "free_unit": "hours", "topic": "compute"},
+             "b": {"verdict": "trial-only", "free_claim": 1, "free_unit": "mixed", "topic": "compute"},
+             "c": {"verdict": "qualifies", "free_claim": 1, "free_unit": "hours", "topic": "compute"},
+             "d": {"verdict": "qualifies", "free_claim": 1, "free_unit": "hours", "topic": "inference"},
+             "e": {"verdict": "qualifies", "free_claim": None, "free_unit": "none", "topic": "compute"}}
+    rows = [("a", 0), ("b", 1), ("c", 1), ("d", 2), ("e", 3)]
+    sec = llms.need_sections(cards, {"id": "free-gpu"}, rows)
+    inf = llms.need_sections(cards, {"id": "inference-no-card-no-phone"}, rows)
+    check("a need that mixes kinds is split into its sections in order, with the empty ones left out and the order of the list kept (F-15, F-19)",
+          [(k, [r[0] for r in rs]) for k, _, _, rs in sec] == [("time", ["c", "d"]), ("trial", ["b"]), ("none", ["a"]), ("unknown", ["e"])]
+          and [(k, [r[0] for r in rs]) for k, _, _, rs in inf] == [("inference", ["d"]), ("other", ["a", "b", "c", "e"])]
+          and llms.need_sections(cards, {"id": "free-storage-no-card"}, rows) is None, (sec, inf))
+    days = [("2026-10-21T00:00:00.000Z", "2026-10-21"), ("2026-10-21", "2026-10-21"), ("2026-10-21T08:30:00Z", "2026-10-21T08:30:00Z")]
+    badd = [(v, llms.day(v)) for v, w in days if llms.day(v) != w]
+    check("a verified date prints as YYYY-MM-DD when its time is midnight (W-32)", not badd, badd)
     check("headline drops a cut word and a quote label, prefers a whole first sentence, starts with a capital (U-09)", not bad, bad)
     rows = [{"rid": "a/x", "vorder": 0, "confidence": "reported", "stale_on": "2026-12-01"},
             {"rid": "a/y", "vorder": 0, "confidence": "measured", "stale_on": "2026-11-01"},

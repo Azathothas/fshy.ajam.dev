@@ -154,7 +154,7 @@ def published_check(files, st):
             if isinstance(v, str) and flat(v):
                 n += 1
                 public.add(flat(v))
-                if flat(v) not in page:
+                if flat(v) not in page and llms.day(flat(v)) not in page:  # a midnight date-time is printed as its day
                     missing.append((rid, project.jpath(p), v[:80]))
             elif isinstance(v, (int, float)) and not isinstance(v, bool):
                 n += 1
@@ -271,16 +271,84 @@ def site_checks(dist, store):
     commit = man.get("commit") or ""
     check("no generated file names the build's commit", not commit or not [k for k, v in files.items() if commit[:10] in v])
     lt = files.get("llms.txt", "")
-    empty = [n for t, n, _ in st.topics if not any(c["topic"] == t for c in st.cards.values())]
+    have = {c["topic"] for c in st.cards.values()}
+    every = llms.topics([])
+    empty = [n for t, n, _ in every if t not in have]
     summary = lt.split("\n")[2] if lt.count("\n") > 2 else ""
     check("the summary of llms.txt names no topic without records (U-14)",
-          not [n for n in empty if llms.TOPIC_PHRASE.get(dict((x[1], x[0]) for x in st.topics)[n], n.lower()) in summary], empty)
+          not [n for n in empty if llms.TOPIC_PHRASE.get(dict((x[1], x[0]) for x in every)[n], n.lower()) in summary], empty)
+    wrong, seen = [], 0
+    for rel, text in files.items():
+        if not (rel.startswith("t/") and rel.endswith(".md") and rel.count("/") == 1):
+            continue
+        for line in text.split("\n"):
+            m = re.match(r"^- \[[^\]]*\]\([^)]*\) \[`([^`]+)`\]\([^)]*\): (.*)$", line) or re.match(r"^- \[[^\]]*\]\([^)]*\) `([^`]+)`: (.*)$", line)
+            if m and m.group(1) in st.cards:
+                seen += 1
+                badges = m.group(2).split(llms.SEP)
+                claim = st.cards[m.group(1)].get("free_claim")
+                if ("free tier" in badges) != (claim == 1) or ("no free tier" in badges) != (claim == 0):
+                    wrong.append((m.group(1), claim, badges[:3]))
+    check("an index line says 'free tier' only when the claim has-free-tier is 1, 'no free tier' only when it is 0 (F-05, F-25; %d lines)" % seen,
+          seen and not wrong, wrong[:4])
+    for x in st.needs:
+        flags = [f for f in ("needs_card", "needs_phone") if f + "=0" in x["sql"]]
+        page = read(os.path.join(dist, "need", x["id"], "index.html"))
+        if not flags:
+            check("the need %s asks for no card or phone, so it has no section for a requirement that is not stated" % x["id"],
+                  'id="unstated"' not in page and "requirement not stated" not in files["need/%s.md" % x["id"]])
+            continue
+        relaxed_sql = x["sql"]
+        for cond in (" AND needs_card=0", " AND needs_phone=0", " AND identity_basis='stated'"):
+            relaxed_sql = relaxed_sql.replace(cond, "")
+        relaxed = {r[0] for r in st.db.execute(relaxed_sql)}
+        confirmed = {r[0] for r in st.db.execute(x["sql"])}
+        known = {rid for rid in relaxed if any(st.cards[rid][f] == 1 for f in flags)}
+        want = relaxed - confirmed - known
+        sect = page.split('id="unstated"')[1].split("<details>")[0] if 'id="unstated"' in page else ""
+        md = files["need/%s.md" % x["id"]]
+        mdrows = md.split("## Card or phone requirement not stated")[1] if "## Card or phone requirement not stated" in md else ""
+        got = (sect.count('<li class="e"'), len(re.findall(r"^- \[", mdrows, re.M)))
+        check("the need %s lists %d rows whose card or phone requirement is not stated, after the confirmed rows, none of them also confirmed and none dropped (page %d, Markdown %d)"
+              % (x["id"], len(want), got[0], got[1]),
+              want and got == (len(want), len(want)) and not (want & confirmed)
+              and relaxed == confirmed | want | known and 'Card or phone requirement not stated <small>' in page
+              and page.index('id="unstated"') > page.index('class="list'), (len(want), got))
+    sitemap = read(os.path.join(dist, "sitemap.xml"))
+    bare = [t for t, _, _ in every if t not in have]
+    check("a topic with no record has no page, no Markdown file and no line in llms.txt or the sitemap (F-03, W-42)",
+          bare and all(("t/%s.md" % t) not in files and ("/t/%s.md" % t) not in lt and ("/t/%s/" % t) not in sitemap
+                       and not os.path.exists(os.path.join(dist, "t", t)) for t in bare) or not bare, bare)
+    listed = [x for x in lt.split("## Topics")[1].split("## Best per need")[0].split("\n") if x.startswith("- [")]
+    tiles = re.findall(r'class="tile" href="/t/', read(os.path.join(dist, "index.html")))
+    check("the home page and llms.txt list the same topics, and each has records (F-03)", len(listed) == len(tiles) == len(have),
+          (len(listed), len(tiles), len(have)))
+    as_of = json.load(open(os.path.join(dist, "data", "manifest.json"), encoding="utf-8")).get("as_of")
+    check("one data date on every surface: the manifest, llms.txt, the home page and help.txt (F-01)",
+          st.as_of == as_of and ("as of %s" % as_of) in lt and as_of in read(os.path.join(dist, "index.html"))
+          and as_of in read(os.path.join(dist, "api", "v1", "help.txt")), (st.as_of, as_of))
     check("the notice is in llms.txt and not in llms-full.txt (U-36)", "research and education" in lt and
           "research and education" not in files.get("llms-full.txt", ""))
     html_checks(dist, man)
     hdr = read(os.path.join(dist, "_headers"))
     check("_headers sets caching and CORS for every new path",
           all(p in hdr.split("\n") for p in ("/llms.txt", "/llms-full.txt", "/index.md", "/t/*.md", "/t/*.txt", "/p/*.md", "/need/*.md")))
+    rules = header_rules(hdr)
+    twice, nocharset, files_seen = [], [], 0
+    for root, _, fs in os.walk(dist):
+        for fn in fs:
+            path = "/" + os.path.relpath(os.path.join(root, fn), dist).replace("\\", "/")
+            hs = headers_of(rules, path)
+            files_seen += 1
+            names = [n for n, _ in hs]
+            if len(names) != len(set(names)):
+                twice.append((path, sorted(n for n in set(names) if names.count(n) > 1)))
+            if path.endswith((".md", ".txt")) and not any(n == "content-type" and v.endswith("charset=utf-8") for n, v in hs):
+                nocharset.append(path)
+    check("no file gets one header from two rules of _headers: a second rule appends, it does not replace (W-23, %d files)" % files_seen,
+          not twice, twice[:5])
+    check("every .md and .txt file is served with a charset, so a client that reads text/* as Latin-1 reads UTF-8 (W-19)",
+          not nocharset, nocharset[:5])
     fresh = tempfile.mkdtemp(prefix="llms-fresh-")
     try:
         code, err = generate_in_subprocess(store, fresh, 7)
@@ -300,6 +368,23 @@ PICTOGRAPH = re.compile("[\U0001F000-\U0001FAFF\u2600-\u2604\u2606-\u26FF\u2B50\
 RFC822 = re.compile(r"^[A-Z][a-z]{2}, \d{2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}:\d{2} GMT$")
 WORKER = ("/api/v1/search", "/api/v1/records", "/api/v1/sql", "/api/v1/need", "/api/v1/worklist", "/api/v1/record/",
           "/api/v1/entity-search", "/mcp", "/r/", "/data/fshy-public.sqlite.gz")
+
+
+def header_rules(text):
+    """[(path pattern, [(header name in lower case, value)])] of a Cloudflare _headers file."""
+    rules = []
+    for line in text.split("\n"):
+        if line.strip() and not line[0].isspace():
+            rules.append((line.strip(), []))
+        elif line.strip() and rules:
+            name, _, value = line.strip().partition(":")
+            rules[-1][1].append((name.strip().lower(), value.strip()))
+    return rules
+
+
+def headers_of(rules, path):
+    """The headers that the rules of a _headers file give a path; a * matches any run of characters, slashes too."""
+    return [h for pat, hs in rules if re.fullmatch(re.escape(pat).replace(r"\*", ".*"), path) for h in hs]
 
 
 def html_checks(dist, man):
@@ -357,6 +442,16 @@ def html_checks(dist, man):
     search, compare = pages.get("search/index.html", ""), pages.get("compare/index.html", "")
     check("the search and compare pages say what to do without JavaScript (U-02)",
           "<noscript>" in search and "/api/v1/search?q=" in search and "<noscript>" in compare and "/api/v1/record/" in compare)
+    for nid, (_, sections) in llms.NEED_SPLITS.items():
+        page = pages.get("need/%s/index.html" % nid, "")
+        page = page.split('id="unstated"')[0]  # the section of the requirements that are not stated has its own check
+        got = re.findall(r'<h2 id="([a-z]+)">[^<]*<small>(\d+)</small></h2>', page)
+        rows = len(re.findall(r'<li class="e"', page))
+        md = read(os.path.join(dist, "need", nid + ".md"))
+        check("the need %s is split into sections that name what they hold, and no row is lost (F-15, F-19)" % nid,
+              got and [k for k, _ in got] == [k for k, _, _ in sections if k in {g for g, _ in got}]
+              and sum(int(n) for _, n in got) == rows == len(re.findall(r"^\d+\. ", md, re.M))
+              and all(("## %s (" % h) in md for k, h, _ in sections if k in {g for g, _ in got}), (got, rows))
     topic = pages.get("t/storage/index.html", "")
     check("the filter bar is hidden until the script shows it, and a key follows it (U-02, U-10)",
           '<div class="chips" role="group" aria-label="filters" hidden>' in topic and '<details class="key">' in topic)
@@ -367,6 +462,11 @@ def html_checks(dist, man):
     check("the feed dates are RFC 822, each guid is not a link, and the feed names itself (U-31)",
           dates and all(RFC822.match(d) and email.utils.parsedate_to_datetime(d) for d in dates)
           and feed.count('<guid isPermaLink="false">') == feed.count("<item>") and 'rel="self"' in feed, dates[:2])
+    changes = pages.get("changes/index.html", "")
+    check("the Changes page and the feed say which field of which record was amended, and that no old or new value is published (W-13)",
+          "holds no old or new value" in changes and re.search(r"<td><code>[a-z_.\[\]0-9]+</code></td>", changes)
+          and "<code>$." not in changes and re.search(r"<title>[a-z-]+/[^<]+: [^<]+ amended</title>", feed)
+          and "The old and the new value are not published" in feed, changes[:0])
     check("the feed and the changes page carry no history id as text (U-04)",
           not re.search(r"#\d{4}-\d{2}-\d{2}t", feed + pages.get("changes/index.html", "")))
 

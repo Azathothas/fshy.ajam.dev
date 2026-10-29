@@ -518,6 +518,18 @@ test('sql: the statement budget refuses a costly plan, whatever its shape (issue
   for (const q of worked) assert.doesNotThrow(() => checkPlan(store, q), q);
 });
 
+test('sql: a full-text match with filters is refused as a join, the refusal names the recipe, and the recipe runs (F-09)', async () => {
+  const q = (sql) => call('/api/v1/sql?q=' + encodeURIComponent(sql));
+  const join = await q("SELECT r.rid FROM text_fts f JOIN record r ON r.rno = f.docid WHERE f.text_fts MATCH 'gpu' AND r.topic IN ('compute') AND r.grp IN ('usable') AND r.duplicate_of IS NULL LIMIT 5");
+  assert.equal(join.res.status, 400, join.body);
+  assert.match(join.json.error, /For a full-text match with filters, select from record WHERE rno IN \(SELECT docid FROM text_fts/);
+  const ok = await q("SELECT r.rid, r.verdict FROM record r WHERE r.rno IN (SELECT docid FROM text_fts WHERE text_fts MATCH 'offer:gpu*') AND r.topic IN ('compute','inference') AND r.grp IN ('usable','trial') AND r.duplicate_of IS NULL ORDER BY r.vorder LIMIT 10");
+  assert.equal(ok.res.status, 200, ok.body);
+  assert.ok(ok.json.rows.length > 0);
+  const other = await q('SELECT count(*) FROM claim a, evidence b WHERE a.rid <> b.rid');
+  assert.ok(!/full-text/.test(other.json.error), 'the recipe is named for a full-text statement only');
+});
+
 test('sql: a failure of the engine is a 503, and the next request loads the store again', async () => {
   const api = await import('../api.js');
   const { engineFailed, HttpError } = await import('../db.js');
@@ -680,7 +692,13 @@ test('a need ranks a tie by evidence, and the API, the page and the Markdown agr
   const md = join(DIST, 'need', 'free-gpu.md');
   if (!existsSync(md)) { t.skip('no ' + md); return; }
   const page = [...readFileSync(md, 'utf8').matchAll(/^\d+\. .*?`([^`]+)`/gm)].map((m) => m[1]);
-  assert.deepEqual(n.json.rows.map((r) => r[0]).slice(0, page.length), page);
+  // the page splits the list into sections (llms.NEED_SPLITS: 4 for this need) and keeps the order of the API inside each, so
+  // the page holds the same rows, and it goes back in the order of the API at most once between two sections
+  const api = n.json.rows.map((r) => r[0]);
+  assert.deepEqual([...page].sort(), [...api].sort());
+  let back = 0;
+  for (let i = 1; i < page.length; i++) if (api.indexOf(page[i]) < api.indexOf(page[i - 1])) back++;
+  assert.ok(back <= 3, 'the Markdown goes back in the order of the API ' + back + ' times');
 });
 
 test('the API answers its root, an unknown route, a .tsv suffix and the static files (U-21)', async () => {
@@ -702,10 +720,19 @@ test('the API answers its root, an unknown route, a .tsv suffix and the static f
   }
 });
 
-test('an unknown term in a filter gets a note or a 400, never a silent empty list (U-22)', async () => {
+test('an unknown term in a filter is a 400, never a silent empty list; a topic with no records is valid (U-22, W-20)', async () => {
   const t = await call('/api/v1/records?topic=stroage');
-  assert.equal(t.res.status, 200);
-  assert.ok(t.json.notes.some((n) => /unknown topic "stroage"; topic is one of storage/.test(n)), t.body);
+  assert.equal(t.res.status, 400, t.body);
+  assert.match(t.json.error, /unknown topic "stroage"; topic is one of storage, compute/);
+  // the topics of the manifest are valid when they have no record yet, and the 400 lists them
+  const empty = (MANIFEST.topics || []).filter((x) => !/^(storage|compute)$/.test(x));
+  assert.ok(empty.length, 'the manifest lists topics');
+  for (const topic of ['dev-services', 'data-apis'].filter((x) => (MANIFEST.topics || []).includes(x))) {
+    const r = await call('/api/v1/records?topic=' + topic + '&limit=1');
+    assert.equal(r.res.status, 200, topic + ': ' + r.body);
+    assert.ok(!(r.json.notes || []).some((n) => /unknown topic/.test(n)), r.body);
+    assert.ok(t.json.error.includes(topic), 'the 400 lists ' + topic);
+  }
   for (const p of ['verdict=bogus', 'grp=bogus', 'confidence=bogus', 'binding=bogus', 'no_card=maybe']) {
     const r = await call('/api/v1/records?' + p);
     assert.equal(r.res.status, 400, p + ': ' + r.body);
@@ -713,9 +740,11 @@ test('an unknown term in a filter gets a note or a 400, never a silent empty lis
   assert.equal((await call('/api/v1/records?no_card=yes&limit=1')).res.status, 200);
   assert.equal((await call('/api/v1/search?q=gpu&grp=bogus')).res.status, 400);
   const s = await call('/api/v1/search?q=gpu&topic=nonexistent');
-  assert.ok(s.json.notes.some((n) => /unknown topic/.test(n)));
+  assert.equal(s.res.status, 400, s.body);
+  assert.equal((await call('/api/v1/worklist/stale?topic=nonexistent')).res.status, 400);
   const m = await rpc('tools/call', { name: 'filter', arguments: { topic: 'zzz' } });
-  assert.match(m.json.result.content[0].text, /# unknown topic "zzz"/);
+  assert.equal(m.json.result.isError, true);
+  assert.match(m.json.result.content[0].text, /error: unknown topic "zzz"; topic is one of storage/);
 });
 
 test('the MCP tools say when to use each, carry read-only annotations and the topic list (U-23)', async () => {
@@ -731,6 +760,80 @@ test('the MCP tools say when to use each, carry read-only annotations and the to
   assert.match(init.json.result.instructions, /Verdicts, best first: qualifies/);
   const unk = await rpc('tools/call', { name: 'nothing' });
   assert.match(unk.json.error.message, /the tools are help, search, filter/);
+});
+
+test('MCP: a call with no tool name, a request with a null id, and the batch limit get clear answers (W-25)', async () => {
+  const post = (body) => call('/mcp', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  const noName = await post({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: {} });
+  assert.equal(noName.json.error.code, -32602);
+  assert.match(noName.json.error.message, /^tools\/call needs the name of a tool in params\.name; the tools are help, search/);
+  assert.ok(!/undefined/.test(noName.body), 'no JavaScript value leaks into the text');
+  const named = await post({ jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name: 'nope' } });
+  assert.match(named.json.error.message, /^unknown tool: nope; the tools are/);
+  const noQuery = await post({ jsonrpc: '2.0', id: 4, method: 'tools/call', params: { name: 'sql', arguments: {} } });
+  assert.equal(noQuery.json.result.isError, true);
+  assert.equal(noQuery.json.result.content[0].text, 'error: query (the SQL text) is required');
+  const nullId = await post({ jsonrpc: '2.0', id: null, method: 'ping' });
+  assert.equal(nullId.json.error.code, -32600);
+  assert.match(nullId.json.error.message, /id must be a string or a number/);
+  assert.deepEqual((await post({ jsonrpc: '2.0', id: 'a', method: 'ping' })).json.result, {});
+  const init = await rpc('initialize', { protocolVersion: '2025-06-18' });
+  assert.match(init.json.result.instructions, /A batch holds at most 5 messages, and at most 1 of them calls sql\./);
+  const cors = await call('/mcp', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 3, method: 'ping' }) });
+  assert.ok(!/mcp-protocol-version/i.test(cors.res.headers.get('access-control-expose-headers')), 'the Worker sends no such header, so it does not expose one');
+});
+
+test('a need that asks for no card or no phone lists the rows whose requirement is not stated in a section of their own', async (t) => {
+  const NEED = 'inference-no-card-no-phone';
+  const n = await call('/api/v1/need/' + NEED + '?limit=200');
+  assert.equal(n.res.status, 200, n.body);
+  const ids = (rows) => rows.map((r) => r[0]);
+  const confirmed = [...ids(n.json.rows), ...ids(n.json.null_rows || [])];
+  const unstated = ids(n.json.unstated_rows || []);
+  assert.ok(unstated.length > 0, 'the list has rows whose card or phone requirement is not stated');
+  assert.ok(confirmed.length > 0 && !unstated.some((r) => confirmed.includes(r)), 'no row is in both sections');
+  assert.equal(n.json.total, confirmed.length + unstated.length, 'the total counts both');
+  // an independent count with plain SQL: the rows of the need without its conditions that need no known card or phone,
+  // and that are not confirmed
+  const sql = "SELECT count(*) FROM record WHERE (topic='inference' OR category LIKE '%inference%') AND grp='usable' AND duplicate_of IS NULL " +
+    "AND coalesce(summary,'') NOT LIKE 'no free %' AND coalesce(summary,'') NOT LIKE 'no published free %' AND coalesce(summary,'') NOT LIKE 'no perpetual free %' " +
+    "AND coalesce(needs_card,0) <> 1 AND coalesce(needs_phone,0) <> 1 AND NOT (coalesce(needs_card,9)=0 AND coalesce(needs_phone,9)=0 AND identity_basis='stated')";
+  const c = await call('/api/v1/sql?q=' + encodeURIComponent(sql));
+  assert.equal(c.json.rows[0][0], unstated.length, 'the section holds every row of the need that is not confirmed and not known to need a card or a phone');
+  // the rows of the section have NULL somewhere: a card or a phone that is not stated, or an identity that is a placeholder
+  const cols = n.json.columns;
+  for (const r of n.json.unstated_rows) {
+    const card = r[cols.indexOf('card')];
+    const phone = r[cols.indexOf('phone')];
+    assert.ok(card !== 'yes' && phone !== 'yes', r[0] + ' needs a card or a phone');
+  }
+  const tsv = await call('/api/v1/need/' + NEED + '.tsv?limit=200');
+  assert.match(tsv.body, /# card or phone requirement not stated: \d+ rows below, not counted as no/);
+  assert.ok(n.json.notes.some((x) => /rows with the card or phone requirement not stated follow the others/.test(x)));
+  // a need that asks for neither has no such section
+  const free = await call('/api/v1/need/free-gpu?limit=200');
+  assert.equal(free.json.unstated_rows, undefined);
+  const mcp = await rpc('tools/call', { name: 'need', arguments: { id: NEED, limit: 200 } });
+  assert.match(mcp.json.result.content[0].text, /# card or phone requirement not stated: \d+ rows below/);
+  // the page and the Markdown list the same rows
+  const md = join(DIST, 'need', NEED + '.md');
+  if (!existsSync(md)) { t.skip('no ' + md); return; }
+  const text = readFileSync(md, 'utf8');
+  const part = text.split('## Card or phone requirement not stated')[1] || '';
+  const listed = [...part.matchAll(/^- \[[^\]]*\]\([^)]*\) \[`([^`]+)`\]/gm)].map((m) => m[1]);
+  assert.deepEqual([...listed].sort(), [...unstated].sort(), 'the Markdown page and the API hold the same rows');
+});
+
+test('the changes worklist says which field of which record was amended and never prints an empty old -> new (W-13)', async () => {
+  const w = await call('/api/v1/worklist/changes?limit=200');
+  assert.equal(w.res.status, 200, w.body);
+  const ledger = w.json.rows.filter((r) => r[1] === 'ledger');
+  assert.ok(ledger.length > 0, 'the newest rows are ledger rows');
+  for (const r of ledger) {
+    assert.ok(!/^ -> $/.test(r[4]), r.join(' | '));
+    assert.match(r[4], /^amended; the old and the new value are not published$| -> /);
+    assert.ok(r[5].includes('/'), 'the record id is the last column');
+  }
 });
 
 test('the public store downloads from one URL that joins its parts (P-08)', async (t) => {

@@ -246,7 +246,8 @@ export function checkPlan(store, sql) {
   }
   const rows = tableRows(store);
   const { total, worst, twoBig } = planCost(plan, rows, aliases(sql, rows), store);
-  const hint = '. Join on an indexed column with =, filter one side first, or split the statement';
+  let hint = '. Join on an indexed column with =, filter one side first, or split the statement';
+  if (/text_fts/i.test(bare)) hint += '. For a full-text match with filters, select from record WHERE rno IN (SELECT docid FROM text_fts WHERE text_fts MATCH ...), as in help.txt';
   if (twoBig) throw new GuardError('the plan reads ' + twoBig.map(size).join(', then for each row ') + hint);
   const weight = rowWeight(sql);
   if (total * weight > MAX_WORK) {

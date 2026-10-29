@@ -14,7 +14,7 @@ built from), never dossier/, so nothing the projection withholds can reach these
 
 One order everywhere: verdict (usable first, dead last), then provider name, then record id. One store
 gives the same bytes on every build: no clock and no commit is read, and the one date printed is the data's
-own, the newest verification or evidence date among the records. Standard library only.
+own, the date that data/meta.json gives. Standard library only.
 """
 import collections
 import hashlib
@@ -79,6 +79,12 @@ EMPTY = (None, "", [], {})
 
 def flat(s):
     return " ".join(str(s).split())
+
+
+def day(v):
+    """A date or a date-time as YYYY-MM-DD when its time is midnight, else as it is."""
+    s = scalar(v)
+    return s[:10] if re.fullmatch(r"\d{4}-\d{2}-\d{2}T00:00:00(?:\.0+)?Z?", s) else s
 
 
 def scalar(v):
@@ -161,6 +167,7 @@ FIRST_SENTENCE = re.compile(r"(.{20,}?[.!?])\s+(?=[A-Z0-9(\"'])")
 # a label in front of a quote of the provider: the quotation marks already say that it is a quote
 QUOTE_LABEL = re.compile(r"^(?:Quoted|Verbatim|Quote):\s*", re.I)
 CUT_TAIL = re.compile(r"\s*\S*(?:\.\.\.|\u2026)$")
+NONE_LABEL = re.compile(r"none:", re.I)  # a source that opens with the label "none:" keeps its lowercase: a capital reads as a null
 
 
 def first_sentence(s):
@@ -183,7 +190,7 @@ def headline(summary, stated=None):
         short = CUT_TAIL.sub("", s).rstrip(" ,;:(-")
         if len(short) >= 20:
             s = short + "..."
-    return s[:1].upper() + s[1:]
+    return s if NONE_LABEL.match(s) else s[:1].upper() + s[1:]
 
 
 def clip_words(s, cap):
@@ -209,10 +216,20 @@ def tie_key(c):
     return (c["vorder"], RUNG.get(c["confidence"], len(RUNG)), later_first(c["stale_on"]), c["rid"])
 
 
+def attach_free_claims(db, cards):
+    """Set cards[rid]["free_claim"] to the value of the claim of the kind has-free-tier: 1 the record has a free
+    allowance, 0 it has none, None when the data has no row for it (unknown). The card of the published JSON does not
+    carry the key."""
+    rows = {r[0]: int(r[1]) for r in db.execute("SELECT rid, num FROM claim WHERE kind = 'has-free-tier' AND num IS NOT NULL")}
+    for rid, c in cards.items():
+        c["free_claim"] = rows.get(rid)
+
+
 def free_word(c):
-    """'free tier', 'no free tier', or '' when the record does not say."""
-    u = c.get("free_unit")
-    return "" if u is None else ("no free tier" if u == "none" else "free tier")
+    """'free tier', 'no free tier', or '' when the record does not say. The one place that decides it: the claim
+    has-free-tier of the data (1 free tier, 0 no free tier, none unknown), carried by the card as free_claim."""
+    f = c.get("free_claim")
+    return "" if f is None else ("free tier" if f == 1 else "no free tier")
 
 
 def money(v, suffix):
@@ -235,6 +252,7 @@ class Store:
         for r in db.execute("SELECT %s, doc FROM record ORDER BY rid" % ",".join(CARD)):
             self.cards[r["rid"]] = {k: r[k] for k in CARD}
             self.docs[r["rid"]] = json.loads(r["doc"])
+        attach_free_claims(db, self.cards)
         self.ents = {r["eid"]: {"name": r["name"], "domain": r["domain"], "members": []}
                      for r in db.execute("SELECT eid, name, domain FROM entity ORDER BY eid")}
         for rid in self.order(self.cards):
@@ -247,11 +265,14 @@ class Store:
         for r in db.execute("SELECT domain, term, meaning FROM vocab ORDER BY domain, ord, term"):
             self.vocab.setdefault(r["domain"], []).append((r["term"], r["meaning"]))
         self.needs = json.load(open(os.path.join(HERE, "rules", "needs.json"), encoding="utf-8"))["needs"]
-        self.topics = topics(sorted({c["topic"] for c in self.cards.values()}))
+        have = {c["topic"] for c in self.cards.values()}
+        self.topics = [x for x in topics(sorted(have)) if x[0] in have]  # a topic with no record yet is not listed
         self.labels = labels(self.cards, {t: n for t, n, _ in self.topics})
+        # the one data date of every surface: the manifest, the pages, help.txt and these files read meta.as_of
         dates = [c["evidence_newest"] for c in self.cards.values() if c["evidence_newest"]]
         dates += [d["verified_at"][:10] for d in self.docs.values() if isinstance(d.get("verified_at"), str)]
-        self.as_of = max(dates) if dates else "unknown"
+        meta = dict(db.execute("SELECT key, value FROM meta"))
+        self.as_of = meta.get("as_of") or (max(dates) if dates else "unknown")
 
     def order(self, rids):
         """The one order: verdict, provider name, record id."""
@@ -269,6 +290,81 @@ def need_rows(db, x, cards):
     ranked = sorted((r for r in rows if r[1] is not None), key=lambda r: (r[1],) + tie_key(cards[r[0]]))
     unranked = sorted((r for r in rows if r[1] is None), key=lambda r: tie_key(cards[r[0]]))
     return ranked, unranked
+
+
+# A need that asks for no card or no phone (needs_card=0, needs_phone=0 in its SQL) lists the confirmed rows. The records
+# whose requirement is not stated (NULL, or an identity that no source states) are not in its SQL, and are not no: they
+# follow in a section of their own. The site reads them from the need's own SQL without these conditions, so
+# rules/needs.json, which is shared with the research repository, stays as it is.
+STATED_CONDITION = re.compile(r"\s+AND\s+(?:needs_card=0|needs_phone=0|identity_basis='stated')(?=\s|$)")
+UNSTATED_HEADING = "Card or phone requirement not stated"
+
+
+def need_unstated(db, x, cards, shown):
+    """(rows, text) of the section "Card or phone requirement not stated" of a need: the rows of the need without its
+    conditions on the card, the phone and a stated identity, that are not in `shown` (the rows of the need) and that
+    no known requirement rules out (a flag of 1). Rows have the order of the need. ([], "") for a need with no such
+    condition."""
+    flags = [f for f in ("needs_card", "needs_phone") if f + "=0" in x["sql"]]
+    if not flags:
+        return [], ""
+    ranked, unranked = need_rows(db, dict(x, sql=STATED_CONDITION.sub("", x["sql"])), cards)
+    have = {r[0] for r in shown}
+    rows = [r for r in ranked + unranked if r[0] not in have and all(cards[r[0]][f] != 1 for f in flags)]
+    what = "payment card" if flags == ["needs_card"] else "payment card or a phone"
+    return rows, ("The data does not state whether a %s is needed, or the identity is a placeholder that no source states. "
+                  "These records are listed, not dropped, and none of them is counted as no." % what)
+
+
+def allowance_kind(c):
+    """The kind of free allowance of a record: a one-time trial (the verdict trial-only); else by the claim
+    has-free-tier: none (0), unknown (no row), or a free allowance (1) counted in time or in another unit. A grant and
+    a paid offer are both none: the data has no field that tells them apart."""
+    if c["verdict"] == "trial-only":
+        return "trial"
+    f = c.get("free_claim")
+    if f is None:
+        return "unknown"
+    if f == 0:
+        return "none"
+    return "time" if c.get("free_unit") in ("hours", "minutes", "seconds") else "other"
+
+
+def inference_filing(c):
+    """Where the catalogue files a record of an inference list: in the topic inference, or in another topic."""
+    return "inference" if c["topic"] == "inference" else "other"
+
+
+# The needs that mix kinds of offer. need id -> (the function that gives the section of a card, [(section, heading,
+# what it holds)] in order). The order inside a section is the order of the list.
+NEED_SPLITS = {
+    "free-gpu": (allowance_kind, [
+        ("time", "Free allowance counted in time",
+         "The record has a free allowance, and it is counted in hours, minutes or seconds."),
+        ("other", "Free allowance in credits or another unit",
+         "The record has a free allowance that is not counted in time: credits, a grant, storage or a mix of units. The data does "
+         "not tell a credit from a grant."),
+        ("trial", "One-time trial or credit",
+         "The verdict is trial-only: a time-boxed or one-time trial, not a recurring allowance."),
+        ("none", "No free allowance in the record",
+         "The record has no free allowance. Its offer is paid, a spot price for example."),
+        ("unknown", "The record does not say",
+         "The data has no claim about a free allowance for these records.")]),
+    "inference-no-card-no-phone": (inference_filing, [
+        ("inference", "Filed under Inference", "Records of the topic Inference."),
+        ("other", "Filed under another topic, with the category inference",
+         "These records are not in the topic Inference. A record here can be a speech, image or other model API, because "
+         "the data has no field for the kind of model API: read the record.")]),
+}
+
+
+def need_sections(cards, x, rows):
+    """[(section, heading, text, rows)] of a need that NEED_SPLITS splits, without the empty sections; None for any other
+    need. rows are the (rid, value) rows of the need in list order."""
+    if x["id"] not in NEED_SPLITS:
+        return None
+    kind, sections = NEED_SPLITS[x["id"]]
+    return [(k, h, t, [r for r in rows if kind(cards[r[0]]) == k]) for k, h, t in sections if any(kind(cards[r[0]]) == k for r in rows)]
 
 
 def topics(in_data):
@@ -306,7 +402,7 @@ def record_md(st, rid):
         if c["identity_basis"] == "stated" else "identity a placeholder: card and phone unknown")
     va = o.get("verified_at")
     out.append("- %s | verified %s%s (%s) | stale on %s" % (
-        needs, scalar(va) if va not in EMPTY else "unknown",
+        needs, day(va) if va not in EMPTY else "unknown",
         "" if str(va)[:10] == c["checked_on"] else ", checked %s" % c["checked_on"], c["verified_basis"], c["stale_on"]))
     out.append("- %spage %s/p/%s.md" % (("url %s | " % flat(o["url"])) if o.get("url") else "", BASE, c["eid"]))
     price = [p for p in (money(c["usd_month"], "/mo"), money(c["usd_per_tb_month"], "/TB-mo")) if p]
@@ -461,24 +557,37 @@ def entry_md(st, rid, bullet="- ", cap=None):
         b.append(price)
     if c["duplicate_of"]:
         b.append("duplicate")
-    return "%s[%s](%s/p/%s.md) `%s`: %s%s" % (bullet, st.labels.get(rid, flat(c["provider"] or c["slug"])), BASE, c["eid"],
-                                             rid, SEP.join(b), (". " + s) if s else "")
+    code = ("[`%s`](%s/api/v1/record/%s)" % (rid, BASE, rid)) if LINK_RECORDS else "`%s`" % rid
+    return "%s[%s](%s/p/%s.md) %s: %s%s" % (
+        bullet, st.labels.get(rid, flat(c["provider"] or c["slug"])), BASE, c["eid"], code, SEP.join(b), (". " + s) if s else "")
+
+
+LINK_RECORDS = True  # a line of an index links the JSON of its record; `fitted` drops the links of a page that is still too big
 
 
 def fitted(render):
     """render(cap) -> page text. The page with whole summaries when it fits in BUDGET, else with every summary
-    cut to the longest length that fits; the provider pages keep them whole."""
-    text = render(None)
-    if len(text.encode("utf-8")) <= BUDGET:
+    cut to the longest length that fits; the provider pages keep them whole. When even a page with no summary does not
+    fit, the lines lose the links to their records, which the page header explains."""
+    global LINK_RECORDS
+    try:
+        for LINK_RECORDS in (True, False):
+            text = render(None)
+            if len(text.encode("utf-8")) <= BUDGET:
+                return text
+            lo, hi = 0, 400
+            while lo < hi:
+                mid = (lo + hi + 1) // 2
+                if len(render(mid).encode("utf-8")) <= BUDGET:
+                    lo = mid
+                else:
+                    hi = mid - 1
+            text = render(lo)
+            if len(text.encode("utf-8")) <= BUDGET:
+                return text
         return text
-    lo, hi = 0, 400
-    while lo < hi:
-        mid = (lo + hi + 1) // 2
-        if len(render(mid).encode("utf-8")) <= BUDGET:
-            lo = mid
-        else:
-            hi = mid - 1
-    return render(lo)
+    finally:
+        LINK_RECORDS = True
 
 
 def cut_note(cap):
@@ -501,7 +610,7 @@ def summary_line(st, notice=True):
 
 
 def stamp(st, version):
-    return ("Data as of %s, the newest verification or evidence date in the records. Version `%s`: the first 12 hex "
+    return ("Data as of %s, the date of the published data. Version `%s`: the first 12 hex "
             "digits of the SHA-256 of every record's Markdown, topic by topic in the one order (verdict, provider name, "
             "record id); it changes whenever a record does." % (st.as_of, version))
 
@@ -557,8 +666,9 @@ def access_lines():
         "- [entity](%s/api/v1/entity/oracle.json): one provider and all its records as JSON, `/api/v1/entity/<id>.json`" % BASE,
         "- [schema.sql](%s/api/v1/schema.sql): the store's schema; [vocab.json](%s/api/v1/vocab.json): its vocabularies"
         % (BASE, BASE),
-        "- [fshy-public.sqlite.gz](%s/data/fshy-public.sqlite.gz): the whole store as one SQLite file, gzip; "
-        "data/manifest.json gives its SHA-256" % BASE,
+        "- [fshy-public.sqlite.gz](%s/data/fshy-public.sqlite.gz): the whole store as one SQLite file, gzip. "
+        "data/manifest.json gives public_db.gzip_sha256, the SHA-256 of this download, and public_db.sha256, the SHA-256 "
+        "of the SQLite file after gunzip" % BASE,
         "",
     ]
 
@@ -641,11 +751,11 @@ def generate(pub_db, dist):
                  "the rejected and dead records, each with the evidence that rejected it; the usable, trial and "
                  "paid-only ones are on %s/t/%s.md" % (BASE, t))):
             def render(cap, title=title, groups=groups, other=other):
-                full = ("In full: %s/t/%s/llms-full.txt." % (BASE, t)) if rids else "No record is in this topic yet."
+                full = "In full: %s/t/%s/llms-full.txt." % (BASE, t)
                 lines = ["# " + title, "", "> " + (desc or name), "",
-                         "%s records: %s. This page lists %s. Each line: provider (its page in Markdown), record id, "
+                         "%s records: %s. This page lists %s. Each line: provider (its page in Markdown), record id (its JSON is %s/api/v1/record/<id>), "
                          "verdict, free tier, identity, card, phone, evidence, parsed price, summary. %s"
-                         % (num(len(rids)), ", ".join("%s %s" % (num(cnt[g]), lbl.lower()) for g, lbl in GROUPS), other, full),
+                         % (num(len(rids)), ", ".join("%s %s" % (num(cnt[g]), lbl.lower()) for g, lbl in GROUPS), other, BASE, full),
                          ""] + cut_note(cap)
                 if needs and groups == MAIN_GROUPS:
                     lines += ["Best per need: " + ", ".join("[%s](%s/need/%s.md)" % (x["title"], BASE, x["id"]) for x in needs), ""]
@@ -655,8 +765,6 @@ def generate(pub_db, dist):
                         lines += ["## %s (%s)" % (lbl, num(len(gs))), ""] + [entry_md(st, r, cap=cap) for r in gs] + [""]
                 return "\n".join(lines)
             w.write(rel, fitted(render))
-        if not rids:
-            continue
         head = ["# fshy: %s in full" % name, "", "> " + (desc or name), "", stamp(st, version), "",
                 "How to read a record, and the other topics: %s/llms-full.txt. One line per record: %s/t/%s.md." % (BASE, BASE, t), ""]
         body = "\n".join(head) + "\n" + "\n".join(blocks[r] for r in rids)
@@ -698,25 +806,37 @@ def generate(pub_db, dist):
         ranked, unranked = st.need_rows(x)
         key = x["sort"]
 
-        def render(cap, x=x, ranked=ranked, unranked=unranked, key=key):
+        unstated, unstated_text = need_unstated(st.db, x, st.cards, ranked + unranked)
+
+        def render(cap, x=x, ranked=ranked, unranked=unranked, key=key, unstated=unstated, unstated_text=unstated_text):
             lines = ["# " + x["title"], "", "> " + flat(x["scope"]), "",
                      "Ranked by `%s`, ascending; the rows with no parsed number follow, listed and not dropped. The same "
                      "list: `%s/api/v1/need/%s`, the MCP tool `need`, or this SQL:" % (key, BASE, x["id"]), "",
                      "```sql", x["sql"], "ORDER BY %s ASC NULLS LAST" % key, "```", ""] + cut_note(cap)
-            if ranked:
-                lines += ["## Ranked (%s)" % num(len(ranked)), ""]
-                for i, r in enumerate(ranked, 1):
-                    val = "" if key == "vorder" else money(r[1], "/TB-month" if "tb" in key else "/month")
-                    lines.append(entry_md(st, r[0], "%d. %s" % (i, (val + SEP) if val else ""), cap))
-                lines.append("")
-            if unranked:
-                lines += ["## No parsed number (%s)" % num(len(unranked)), ""] + [entry_md(st, r[0], cap=cap) for r in unranked] + [""]
+            sections = need_sections(st.cards, x, ranked + unranked)
+            if sections:
+                for k, h, t, rs in sections:
+                    lines += ["## %s (%s)" % (h, num(len(rs))), "", t, ""]
+                    lines += [entry_md(st, r[0], "%d. " % i, cap) for i, r in enumerate(rs, 1)] + [""]
+            else:
+                if ranked:
+                    lines += ["## Ranked (%s)" % num(len(ranked)), ""]
+                    for i, r in enumerate(ranked, 1):
+                        val = "" if key == "vorder" else money(r[1], "/TB-month" if "tb" in key else "/month")
+                        lines.append(entry_md(st, r[0], "%d. %s" % (i, (val + SEP) if val else ""), cap))
+                    lines.append("")
+                if unranked:
+                    lines += ["## No parsed number (%s)" % num(len(unranked)), ""] + [entry_md(st, r[0], cap=cap) for r in unranked] + [""]
+            if unstated:
+                lines += ["## %s (%s)" % (UNSTATED_HEADING, num(len(unstated))), "", unstated_text, ""]
+                lines += [entry_md(st, r[0], "- ", cap) for r in unstated] + [""]
             return "\n".join(lines)
         w.write("need/%s.md" % x["id"], fitted(render))
 
     # llms-full.txt: the whole corpus when it fits in one file, else the index of the parts
     head = ["# fshy: the corpus in full", "", summary_line(st, notice=False), "", stamp(st, version), ""]
-    if total + 8_000 <= BUDGET:
+    whole = total + 8_000 <= BUDGET
+    if whole:
         body = head + reading_rules(st)
         for t, name, _ in st.topics:
             if by_topic[t]:
@@ -748,9 +868,6 @@ def generate(pub_db, dist):
              "%s/blob/main/LICENSE; a quote from a provider's page stays with its owner." % (REPO, LICENCE, REPO), "",
              "## Topics", ""]
     for t, name, desc, rids, cnt in topic_rows:
-        if not rids:  # a topic of the schema with no record yet: no rejected page to name, no full text
-            lines.append("- [%s](%s/t/%s.md): %sNo record is in this topic yet." % (name, BASE, t, (desc + " ") if desc else ""))
-            continue
         lines.append("- [%s](%s/t/%s.md): %s%s records: %s. Rejected and dead: %s/t/%s/rejected.md; in full: %s/t/%s/llms-full.txt"
                      % (name, BASE, t, (desc + " ") if desc else "", num(len(rids)),
                         ", ".join("%s %s" % (num(cnt[g]), lbl.lower()) for g, lbl in GROUPS), BASE, t, BASE, t))
@@ -758,8 +875,9 @@ def generate(pub_db, dist):
     lines += ["- [%s](%s/need/%s.md): %s" % (x["title"], BASE, x["id"], flat(x["scope"])) for x in st.needs]
     lines += [""] + access_lines() + [
         "## Optional", "",
-        "- [llms-full.txt](%s/llms-full.txt): every record in full, %s, split by topic and verdict group; how to read a record"
-        % (BASE, size(total)),
+        ("- [llms-full.txt](%s/llms-full.txt): every record in full, %s; how to read a record" % (BASE, size(total))) if whole else
+        ("- [llms-full.txt](%s/llms-full.txt): how to read a record, and the index of the parts that hold every record in full "
+         "(%s in all, split by topic and verdict group)" % (BASE, size(total))),
         "- [Graveyard](%s/graveyard/): offers that no longer exist, with the evidence of their end" % BASE,
         "- [Changes](%s/changes/): corrections to earlier claims, newest first" % BASE,
         ""]

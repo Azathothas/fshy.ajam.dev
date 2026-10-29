@@ -26,7 +26,7 @@
   function line(s) {
     s = String(s || '').trim().replace(/^(?:quoted|verbatim|quote):\s*/i, '');
     if (/(\.\.\.|…)$/.test(s)) { var t = s.replace(/\s*\S*(\.\.\.|…)$/, '').replace(/[ ,;:(-]+$/, ''); if (t.length >= 20) { s = t + '...'; } }
-    return s.charAt(0).toUpperCase() + s.slice(1);
+    return /^none:/i.test(s) ? s : s.charAt(0).toUpperCase() + s.slice(1);
   }
 
   // topic bar
@@ -212,6 +212,7 @@
         }).join('') + '</ul>' : '') + '<h2>Full text</h2><div id="ft" aria-live="polite"><p>Loading...</p></div>';
         return api;
       }).then(function (d) {
+        if (d.error) { $('#ft').innerHTML = '<p>' + esc(d.error) + '</p>'; return; }
         var ix = {}; (d.columns || []).forEach(function (c, i) { ix[c] = i; });
         var rows = d.rows || [], ft = $('#ft');
         ft.innerHTML = rows.length ? '<ul class="' + lane(rows.map(function (r) { return r[ix.verdict]; })) + '">' + rows.map(function (r) {
@@ -234,7 +235,7 @@
   // compare page
   var cmp = $('#cmp');
   if (cmp) {
-    var ids = (new URLSearchParams(location.search).get('r') || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean).slice(0, 5);
+    var ids = (new URLSearchParams(location.search).get('r') || '').split(',').map(function (x) { return x.trim(); }).filter(function (x, i, a) { return x && a.indexOf(x) === i; }).slice(0, 5);
     var go = function (list) { location.search = list.length ? '?r=' + list.map(encodeURIComponent).join(',').replace(/%2F/gi, '/') : ''; };
     var add = '<form class="add"><label for="cmp-add">Add a record (topic/slug)</label> <input id="cmp-add" placeholder="compute/oracle-cloud" ' +
       'autocomplete="off"> <button>add</button></form>';

@@ -145,7 +145,7 @@ async function handleApi(request, env, url, open) {
     return { response: new Response(method === 'HEAD' ? null : res.body, { status: 200, headers: h }) };
   }
   if (res.body) await res.body.cancel();
-  throw new HttpError(404, 'no such API route; routes and parameters: /api/v1/help.txt, and the route list: /api/v1/');
+  throw new HttpError(404, 'no such route; the route list is at /api/v1/ and the parameters are in /api/v1/help.txt');
 }
 
 async function permalink(request, env, url, open) {
