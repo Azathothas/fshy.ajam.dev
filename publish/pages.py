@@ -655,6 +655,7 @@ class Site:
              ('<%s>Corrections</%s><ul>%s</ul>' % ("h2" if solo else "h3", "h2" if solo else "h3", hs)) if hs else "")
 
     def entity(self, eid, ent, recs):
+        ent = dict(ent, name=llms.shown(ent["name"], ent.get("domain") or eid))
         topics = sorted({f["card"]["topic"] for f in recs})
         tl = ", ".join('<a href="/t/%s/">%s</a>' % (t, e(TOPIC_NAME.get(t, t))) for t in topics)
         crumb = '<p class="crumb"><a href="/">Home</a>%s</p>' % ((" / " + tl) if len(topics) == 1 else "")

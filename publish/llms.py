@@ -121,6 +121,12 @@ def _slug_rest(c):
     return slug.replace("-", " ")
 
 
+def shown(name, fallback):
+    """A name to print: the name, or the fallback when the name holds no letter and no digit (one record is "?")."""
+    n = flat(name or "")
+    return n if re.search(r"\w", n) else flat(fallback or "")
+
+
 def labels(cards, tname=None):
     """{rid: the name to print}. Records of one provider that share a name get a suffix that tells them apart: the
     tier when it is short and unique, else the rest of the slug, else the topic. The name alone otherwise."""
@@ -131,13 +137,13 @@ def labels(cards, tname=None):
     out = {}
     for g in groups.values():
         if len(g) == 1:
-            out[g[0]["rid"]] = flat(g[0]["provider"] or g[0]["slug"])
+            out[g[0]["rid"]] = shown(g[0]["provider"], g[0]["slug"])
             continue
         tiers = collections.Counter(_tier(c).casefold() for c in g)
         rests = collections.Counter(_slug_rest(c) for c in g)
         topics = collections.Counter(c["topic"] for c in g)
         for c in g:
-            name = flat(c["provider"] or c["slug"])  # its own spelling: the group ignores case
+            name = shown(c["provider"], c["slug"])  # its own spelling: the group ignores case
             t, r = _tier(c), _slug_rest(c)
             if t and tiers[t.casefold()] == 1 and t.casefold() not in name.casefold():
                 suffix = t
@@ -587,7 +593,7 @@ def generate(pub_db, dist):
         n = len(e["members"])
         self_link = " | page %s/p/%s.md" % (BASE, eid)
         w.write("p/%s.md" % eid, "\n".join([
-            "# " + flat(e["name"]), "",
+            "# " + shown(e["name"], e["domain"] or eid), "",
             "> %s%s; %d record%s: free tier, limits, identity cost and evidence." % (
                 (flat(e["domain"]) + SEP) if e["domain"] else "", ", ".join(ts), n, "" if n == 1 else "s"), "",
             "HTML %s/p/%s/ | JSON %s/api/v1/entity/%s.json | how to read a record: %s/llms-full.txt" % (
