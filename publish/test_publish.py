@@ -508,10 +508,10 @@ def selfhosted_checks():
     cards = {r: {"rid": r, "vorder": 0, "confidence": "documented", "stale_on": None, "self_hosted": int("/s" in r),
                  "needs_card": c} for r, c in db.execute("SELECT rid, needs_card FROM n")}
     x = {"sql": "SELECT rid, v FROM n WHERE v IS NOT NULL AND needs_card=0 AND identity_basis='stated'"}
-    ranked, unranked, unstated, text, last = llms.need_lists(db, x, cards)
-    got = [[r[0] for r in y] for y in (ranked, unranked, unstated, last)]
-    check("a need that asks for no card lists hosted ranked, hosted not stated, then every self-hosted row",
-          got == [["t/h1"], [], ["t/hu"], ["t/s1", "t/su"]] and text, got)
+    ranked, unranked, unstated, text, last, last_unstated = llms.need_lists(db, x, cards)
+    got = [[r[0] for r in y] for y in (ranked, unranked, unstated, last, last_unstated)]
+    check("a need that asks for no card lists hosted ranked, hosted not stated, then the self-hosted rows, those whose card "
+          "is not stated apart", got == [["t/h1"], [], ["t/hu"], ["t/s1"], ["t/su"]] and text, got)
     db.close()
     sh = {"storage/self"}
 

@@ -270,7 +270,8 @@ def link_checks():
              ("t/storage/rejected/index.html", "/t/storage/rejected.md"), ("p/oracle/index.html", "/p/oracle.md"),
              ("p\\oracle\\index.html", "/p/oracle.md"), ("need/free-gpu/index.html", "/need/free-gpu.md"),
              ("about/index.html", None), ("need/index.html", None), ("graveyard/index.html", None), ("404.html", None),
-             ("changes/index.html", None), ("t/storage/x/index.html", None)]
+             ("changes/index.html", None), ("t/storage/x/index.html", None),
+             ("p/amazon/storage--amazon-sqs/index.html", "/p/amazon.md")]
     bad = []
     for rel, href in cases:
         got = llms.alternate_link(rel)
