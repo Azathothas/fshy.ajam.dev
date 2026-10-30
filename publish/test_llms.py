@@ -141,7 +141,7 @@ def shape_checks(dist, st):
     check("the root llms-full.txt lists every part, or holds every record itself",
           not unlisted or all("- `%s`%s" % (r, llms.SEP) in root for r in st.cards), unlisted[:5])
     root_order_check(root, st, "")
-    dates =set(DATE.findall(files.get("llms.txt", ""))) | set(DATE.findall(root.split("## How to read")[0]))
+    dates = set(DATE.findall(files.get("llms.txt", ""))) | set(DATE.findall(root.split("## How to read")[0]))
     check("the only date in llms.txt and the head of llms-full.txt is the data's own (%s)" % st.as_of, dates == {st.as_of}, dates)
     return files
 

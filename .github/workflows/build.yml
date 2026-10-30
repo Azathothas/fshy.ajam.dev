@@ -208,10 +208,32 @@ jobs:
             [ -z "$got" ] || fail "the live manifest names the commit '$got', not $GITHUB_SHA"
             fail "the live manifest was not JSON with a commit in 30 tries; the last answer was HTTP $code"
           fi
-          hdr=$(get -D - -o "$RUNNER_TEMP/search.json" "$FSHY_ORIGIN/api/v1/search?q=storage&limit=1" |
-            tr -d '\r' | awk -F': ' 'tolower($1) == "x-fshy-commit" { print $2 }')
-          [ "$hdr" = "$GITHUB_SHA" ] || fail "the search API answers from the commit '$hdr', not $GITHUB_SHA"
-          python3 -c 'import json, sys; assert json.load(open(sys.argv[1]))["rows"]' "$RUNNER_TEMP/search.json" ||
+          # The static files and the Worker do not change at the same moment (issue #31). For a few seconds the manifest
+          # can name this commit while the Worker still answers from the one before. So the Worker is polled as well:
+          # its answer carries the commit of its store in the header x-fshy-commit. The bound is the same as above,
+          # and again only the last try can fail. The next step runs a burst of requests, so it must find the new Worker.
+          search="$RUNNER_TEMP/search.json"
+          headers="$RUNNER_TEMP/search.headers"
+          hdr=""
+          for i in $(seq 1 30); do
+            rm -f "$search" "$headers"
+            code=$(curl -s --max-time 20 --retry 2 -D "$headers" -o "$search" -w '%{http_code}' "$FSHY_ORIGIN/api/v1/search?q=storage&limit=1") ||
+              code="no answer"
+            hdr=$(awk -F': ' '{ sub(/\r$/, "") } tolower($1) == "x-fshy-commit" { v = $2 } END { print v }' "$headers" 2>/dev/null) || hdr=""
+            [ "$hdr" = "$GITHUB_SHA" ] && break
+            if [ -n "$hdr" ]; then
+              echo "poll $i of 30: the search API answers from the commit $hdr"
+            else
+              echo "poll $i of 30: HTTP $code, and the answer has no x-fshy-commit header"
+            fi
+            sleep 10
+          done
+          if [ "$hdr" != "$GITHUB_SHA" ]; then
+            [ -z "$hdr" ] || fail "the search API answers from the commit '$hdr', not $GITHUB_SHA"
+            fail "the search API sent no x-fshy-commit header in 30 tries; the last answer was HTTP $code"
+          fi
+          [ "$code" = 200 ] || fail "the search API answered HTTP $code"
+          python3 -c 'import json, sys; assert json.load(open(sys.argv[1]))["rows"]' "$search" ||
             fail "the search API answers with no rows"
           get -o "$RUNNER_TEMP/mcp.json" -X POST -H 'content-type: application/json' \
             -H 'accept: application/json, text/event-stream' \

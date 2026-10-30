@@ -530,15 +530,34 @@ test('sql: a full-text match with filters is refused as a join, the refusal name
   assert.ok(!/full-text/.test(other.json.error), 'the recipe is named for a full-text statement only');
 });
 
-test('sql: a failure of the engine is a 503, and the next request loads the store again', async () => {
+test('sql: a failure of the engine is a 503, and the next request opens a new copy of the store on the same engine', async () => {
   const api = await import('../api.js');
-  const { engineFailed, HttpError } = await import('../db.js');
+  const { engineFailed, getStore, HttpError } = await import('../db.js');
   assert.equal(engineFailed(new WebAssembly.RuntimeError('memory access out of bounds')), true);
   assert.equal(engineFailed(new Error('no such column: x')), false);
-  const broken = { db: { exec() { throw new WebAssembly.RuntimeError('unreachable executed'); }, close() {} }, cache: {} };
-  assert.throws(() => api.sql(broken, { q: 'SELECT 1' }), (e) => e instanceof HttpError && e.status === 503);
-  const after = await call('/api/v1/sql?q=' + encodeURIComponent('SELECT count(*) FROM record'));
-  assert.equal(after.res.status, 200, after.body);
+  // the open store fails as a broken engine does
+  const { store } = await getStore(env, globalThis.__fshyWasm);
+  const real = store.db;
+  const trap = () => { throw new WebAssembly.RuntimeError('unreachable executed'); };
+  store.db = { exec: trap, prepare: trap, close: () => real.close() };
+  assert.throws(() => api.sql(store, { q: 'SELECT 1' }), (e) => e instanceof HttpError && e.status === 503 && /opened again/.test(e.message));
+  // sql.js keeps its first engine for the life of the isolate, so no second engine can start: the comment of
+  // discard() says so, and this counts the instances that the next request makes
+  const Instance = WebAssembly.Instance;
+  let started = 0;
+  WebAssembly.Instance = new Proxy(Instance, { construct(target, args, newTarget) { started++; return Reflect.construct(target, args, newTarget); } });
+  try {
+    const before = assetLog.length;
+    const after = await call('/api/v1/sql?q=' + encodeURIComponent('SELECT count(*) FROM record'));
+    assert.equal(after.res.status, 200, after.body);
+    assert.ok(assetLog.slice(before).includes('data/manifest.json'), 'the next request loaded a new copy of the store');
+    assert.equal(started, 0, 'and made no new engine');
+    const next = (await getStore(env, globalThis.__fshyWasm)).store;
+    assert.notEqual(next, store);
+    assert.equal(Object.getPrototypeOf(next.db), Object.getPrototypeOf(real), 'the new copy belongs to the engine of the old one');
+  } finally {
+    WebAssembly.Instance = Instance;
+  }
 });
 
 test('a rate limiter that throws fails open', async () => {
