@@ -124,7 +124,7 @@ def shape_checks(dist, st):
                 dead.append("%s -> %s" % (rel, u))
     check("every link to a generated Markdown or text file resolves", not dead, dead[:5])
 
-    parts = {k: v for k, v in files.items() if re.fullmatch(r"t/[^/]+/llms-full(-[a-z]+(-\d+)?)?\.txt", k)}
+    parts = {k: v for k, v in files.items() if re.fullmatch(r"t/[^/]+/llms-full(-[a-z]+(-[a-z]+)?(-\d+)?)?\.txt", k)}
     seen = {}
     for rel, text in parts.items():
         for rid in RID_LINE.findall(text):
@@ -140,9 +140,43 @@ def shape_checks(dist, st):
     unlisted = [k for k in parts if "%s/%s" % (llms.BASE, k) not in listed and k not in split_topics]
     check("the root llms-full.txt lists every part, or holds every record itself",
           not unlisted or all("- `%s`%s" % (r, llms.SEP) in root for r in st.cards), unlisted[:5])
-    dates = set(DATE.findall(files.get("llms.txt", ""))) | set(DATE.findall(root.split("## How to read")[0]))
+    root_order_check(root, st, "")
+    dates =set(DATE.findall(files.get("llms.txt", ""))) | set(DATE.findall(root.split("## How to read")[0]))
     check("the only date in llms.txt and the head of llms-full.txt is the data's own (%s)" % st.as_of, dates == {st.as_of}, dates)
     return files
+
+
+def root_order_check(root, st, where):
+    """The root llms-full.txt reads hosted first: as an index, every self-hosted part after every other file; as the
+    whole corpus, every self-hosted record after every hosted one."""
+    if "## Parts" in root:
+        items = [ln for ln in root.split("\n## Parts\n", 1)[1].split("\n## ", 1)[0].split("\n") if ln.startswith("- [")]
+        marks = ["/llms-full-%s" % llms.SELF_GROUP in ln for ln in items]
+        what = "every self-hosted part after every other file of its Parts list (%d of %d)" % (sum(marks), len(items))
+    else:
+        items = RID_LINE.findall(root)
+        marks = [llms.is_sh(st.cards[r]) for r in items]
+        what = "every self-hosted record after every hosted one (%d of %d)" % (sum(marks), len(items))
+    first = marks.index(True) if True in marks else len(marks)
+    above = [items[i][:120] for i in range(first, len(marks)) if not marks[i]]
+    check("%sthe root llms-full.txt lists %s" % (where, what), not above, above[:3])
+
+
+def whole_check(db, st):
+    """A budget that holds the whole corpus: llms-full.txt is every record in one file, the self-hosted ones last."""
+    old = llms.BUDGET
+    out = tempfile.mkdtemp(prefix="llms-whole-")
+    try:
+        llms.BUDGET = 10 ** 10
+        llms.generate(db, out)
+        root = read(os.path.join(out, "llms-full.txt"))
+        seen = RID_LINE.findall(root)
+        check("at a budget over the corpus, the root llms-full.txt holds every record once",
+              sorted(seen) == sorted(st.cards), (len(seen), len(st.cards)))
+        root_order_check(root, st, "at a budget over the corpus, ")
+    finally:
+        llms.BUDGET = old
+        shutil.rmtree(out, ignore_errors=True)
 
 
 def published_check(files, st):
@@ -208,6 +242,7 @@ def split_checks(db, st, budget, want_cut):
         root = read(os.path.join(out, "llms-full.txt"))
         check("at %d bytes, the root llms-full.txt indexes every file" % budget,
               all("%s/%s" % (llms.BASE, k) in root for k in parts))
+        root_order_check(root, st, "at %d bytes, " % budget)
         idx = [k for k, v in text.items() if "## Parts" in v]
         unindexed = [p for p in parts if re.search(r"llms-full-", p) and not any(
             "%s/%s" % (llms.BASE, p) in text[k] for k in idx if k.split("/")[1] == p.split("/")[1])]
@@ -220,7 +255,7 @@ def split_checks(db, st, budget, want_cut):
               not over and (bool(cut) or not want_cut), over[:5])
         balanced = {}
         for k, n in parts.items():
-            m = re.fullmatch(r"t/([^/]+)/llms-full-([a-z]+)-\d+\.txt", k)
+            m = re.fullmatch(r"t/([^/]+)/llms-full-([a-z-]+)-\d+\.txt", k)
             if m:
                 balanced.setdefault(m.groups(), []).append(n)
         lop = [(g, ns) for g, ns in balanced.items() if min(ns) < max(ns) / 4]
@@ -305,15 +340,21 @@ def site_checks(dist, store):
         confirmed = {r[0] for r in st.db.execute(x["sql"])}
         known = {rid for rid in relaxed if any(st.cards[rid][f] == 1 for f in flags)}
         want = relaxed - confirmed - known
-        sect = page.split('id="unstated"')[1].split("<details>")[0] if 'id="unstated"' in page else ""
+        # a self-hosted row is in the last section, after every hosted row, the not stated ones included
+        last = {rid for rid in want if st.cards[rid]["self_hosted"]}
+        want -= last
+        sect = page.split('id="unstated"')[1].split("<details>")[0].split('<h2 id="self-hosted"')[0] if 'id="unstated"' in page else ""
         md = files["need/%s.md" % x["id"]]
-        mdrows = md.split("## Card or phone requirement not stated")[1] if "## Card or phone requirement not stated" in md else ""
+        mdrows = (md.split("## Card or phone requirement not stated")[1].split("\n## Self-hosted, the last resort")[0]
+                  if "## Card or phone requirement not stated" in md else "")
         got = (sect.count('<li class="e"'), len(re.findall(r"^- \[", mdrows, re.M)))
+        mdlast = md.split("\n## Self-hosted, the last resort")[1] if last else ""
         check("the need %s lists %d rows whose card or phone requirement is not stated, after the confirmed rows, none of them also confirmed and none dropped (page %d, Markdown %d)"
               % (x["id"], len(want), got[0], got[1]),
               want and got == (len(want), len(want)) and not (want & confirmed)
-              and relaxed == confirmed | want | known and 'Card or phone requirement not stated <small>' in page
-              and page.index('id="unstated"') > page.index('class="list'), (len(want), got))
+              and relaxed == confirmed | want | known | last and 'Card or phone requirement not stated <small>' in page
+              and page.index('id="unstated"') > page.index('class="list')
+              and all("`%s`" % r in mdlast for r in last), (len(want), got, sorted(last)[:3]))
     sitemap = read(os.path.join(dist, "sitemap.xml"))
     bare = [t for t, _, _ in every if t not in have]
     check("a topic with no record has no page, no Markdown file and no line in llms.txt or the sitemap (F-03, W-42)",
@@ -445,13 +486,22 @@ def html_checks(dist, man):
     for nid, (_, sections) in llms.NEED_SPLITS.items():
         page = pages.get("need/%s/index.html" % nid, "")
         page = page.split('id="unstated"')[0]  # the section of the requirements that are not stated has its own check
-        got = re.findall(r'<h2 id="([a-z]+)">[^<]*<small>(\d+)</small></h2>', page)
+        got = re.findall(r'<h2 id="([a-z-]+)">[^<]*<small>(\d+)</small></h2>', page)
         rows = len(re.findall(r'<li class="e"', page))
         md = read(os.path.join(dist, "need", nid + ".md"))
+        # the self-hosted rows of a split need are one last section of their own, after every split section; its
+        # Markdown lines are a list, not a ranking
+        split = [(k, n) for k, n in got if k != "self-hosted"]
+        last = [(k, n) for k, n in got if k == "self-hosted"]
+        md_sh = md.split("\n## Self-hosted, the last resort (", 1)[1] if last else ""
+        md_rows = len(re.findall(r"^\d+\. ", md.split("\n## Self-hosted, the last resort (", 1)[0], re.M)) + \
+            len(re.findall(r"^- \[", md_sh, re.M))
         check("the need %s is split into sections that name what they hold, and no row is lost (F-15, F-19)" % nid,
-              got and [k for k, _ in got] == [k for k, _, _ in sections if k in {g for g, _ in got}]
-              and sum(int(n) for _, n in got) == rows == len(re.findall(r"^\d+\. ", md, re.M))
-              and all(("## %s (" % h) in md for k, h, _ in sections if k in {g for g, _ in got}), (got, rows))
+              split and [k for k, _ in split] == [k for k, _, _ in sections if k in {g for g, _ in split}]
+              and got == split + last and len(last) <= 1
+              and sum(int(n) for _, n in got) == rows == md_rows
+              and all(("## %s (" % h) in md for k, h, _ in sections if k in {g for g, _ in split})
+              and all(("## Self-hosted, the last resort (%s)" % n) in md for _, n in last), (got, rows))
     topic = pages.get("t/storage/index.html", "")
     check("the filter bar is hidden until the script shows it, and a key follows it (U-02, U-10)",
           '<div class="chips" role="group" aria-label="filters" hidden>' in topic and '<details class="key">' in topic)
@@ -512,6 +562,7 @@ def main():
         ok, diff = same_tree(d1, d2)
         check("a second generation under another hash seed is byte-identical", code == 0 and ok, (err[-300:], diff))
         split_checks(a.store, st, 120000, False)
+        whole_check(a.store, st)
         r = token_ratio(d1)
         check("BYTES_PER_TOKEN (%.2f) is within 10%% of the estimate on this text (%.2f)" % (llms.BYTES_PER_TOKEN, r),
               abs(r - llms.BYTES_PER_TOKEN) <= 0.1 * llms.BYTES_PER_TOKEN)

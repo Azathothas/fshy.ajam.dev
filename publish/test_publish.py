@@ -3,7 +3,7 @@
 
 1. The contract between export and build: build.py refuses data/ of another schema version, an unknown table
    file, an unknown or a missing column, and files that do not match files_sha256, with exit 3 and a message that
-   names the problem.
+   names the problem. It reads data of the older version 1, which has no self_hosted column, as hosted records.
 2. The export refuses a source that is not a research checkout (exit 3), a test export into data/ (exit 2), and a
    --data that is not data/ and not empty (exit 2), and it keeps the files of that directory.
 3. The leak rules, of both levels, match each leak sample and pass each technical sample; the history title rule
@@ -12,14 +12,17 @@
 4. The lists agree. rules/topics.json is the one list of topics: pages.py reads it, app.js holds no copy and
    reads the topic bar, and the New offer form lists the same topics. The verdict labels of pages.py and app.js
    agree. When the store exists, its vocabulary and its topics agree with them.
-5. When the store exists: each worked query of primer.py runs, so /api/v1/help.txt never shows a query that
-   fails.
+5. Each worked query of primer.py that lists record ids sorts on self_hosted first. When the store exists: each one
+   runs, so /api/v1/help.txt never shows a query that fails, and without its LIMIT it lists every hosted row first.
 6. The helpers that the pages and the files for agents share: the lang of a run of another script, the label that
    tells two records of one provider apart, the one line of a row, the order of a tie in a ranked list, the words of
    a category, the anchor of a history entry, the pictographs that quoted text loses, the parallel leak scan, and
    the twin of the Worker's name normaliser against site/worker/test/parity.json.
+7. Self-hosted last (selfhosted.py): the stable split of a list, the rows of a need, and the check of the build, which
+   finds a hosted row below a self-hosted one, a starred self-hosted row, and a Markdown line whose verdict comes
+   before the label, and passes a list in the right order; and the rule of entity.best_vorder against rank.js.
 
-Parts 1 to 4 and 6 need no data and run on a fresh clone. The store parts read .tmp/fshy/public.db, which
+Parts 1 to 4, 6 and 7 need no data and run on a fresh clone. The store parts read .tmp/fshy/public.db, which
 `python publish/build.py --check` or `--site` writes; without it, they are skipped with a line that says so.
 
 usage:
@@ -47,6 +50,7 @@ import export  # noqa: E402
 import llms  # noqa: E402
 import pages  # noqa: E402
 import primer  # noqa: E402
+import selfhosted  # noqa: E402
 import site_gen  # noqa: E402
 
 FAILS = []
@@ -75,8 +79,9 @@ def schema_columns():
     return cols
 
 
-def fake_data(top, version="1", tables=None, record_row=None):
-    """A data/ directory with an empty file per table, except a record row when one is given."""
+def fake_data(top, version=build.SCHEMA_VERSION, tables=None, record_row=None, entity_row=None):
+    """A data/ directory with an empty file per table, except a record row and an entity row when they are given. With
+    an entity row, the record also gets its record file, so the build can load it."""
     os.makedirs(os.path.join(top, "tables"))
     with open(os.path.join(top, "meta.json"), "w", encoding="utf-8") as f:
         json.dump({"schema_version": version, "as_of": "2026-10-28", "source_commit": "0" * 40}, f)
@@ -84,6 +89,13 @@ def fake_data(top, version="1", tables=None, record_row=None):
         with open(os.path.join(top, "tables", t + ".jsonl"), "w", encoding="utf-8") as f:
             if t == "record" and record_row is not None:
                 f.write(json.dumps(record_row) + "\n")
+            if t == "entity" and entity_row is not None:
+                f.write(json.dumps(entity_row) + "\n")
+    if record_row is not None and entity_row is not None:
+        p = os.path.join(top, "records", record_row["rid"] + ".json")
+        os.makedirs(os.path.dirname(p))
+        with open(p, "w", encoding="utf-8") as f:
+            json.dump({"topic": record_row["topic"], "slug": record_row["slug"], "verdict": record_row["verdict"]}, f)
 
 
 def contract_checks(tmp):
@@ -114,6 +126,23 @@ def contract_checks(tmp):
     rc, err = quiet(build.main, ["--data", d, "--db", os.path.join(tmp, "sd.db"), "--check", "--quiet"])
     check("build refuses a hand edit of data/ after the export (files_sha256), with exit 3",
           rc == 3 and "files_sha256" in err, (rc, err))
+    # data of version 1 has no self_hosted column: the build reads it, and each record is hosted
+    rec = dict(row, rid="storage/x", topic="storage", slug="x", eid="x", verdict="qualifies", vorder=0, grp="usable")
+    ent = {c: None for c in cols["entity"]}
+    ent.update(eid="x", name="X", best_vorder=0)
+    for version, r, want in (("1", {k: v for k, v in rec.items() if k != "self_hosted"}, 0), (build.SCHEMA_VERSION, dict(rec, self_hosted=1), 1)):
+        d = os.path.join(tmp, "data-v%s" % version)
+        fake_data(d, version=version, record_row=r, entity_row=ent)
+        out = os.path.join(tmp, "v%s.db" % version)
+        rc, err = quiet(build.main, ["--data", d, "--db", out, "--check", "--quiet"])
+        got = sqlite3.connect(out).execute("SELECT self_hosted FROM record").fetchall() if rc == 0 else None
+        check("build reads data of schema_version %s, and the record has self_hosted %d" % (version, want),
+              rc == 0 and got == [(want,)], (rc, err, got))
+    d = os.path.join(tmp, "data-v2-lack")
+    fake_data(d, record_row={k: v for k, v in rec.items() if k != "self_hosted"}, entity_row=ent)
+    rc, err = quiet(build.main, ["--data", d, "--db", os.path.join(tmp, "lack.db"), "--check", "--quiet"])
+    check("build refuses data of schema_version %s with no self_hosted column (exit 3)" % build.SCHEMA_VERSION,
+          rc == 3 and "lacks ['self_hosted']" in err, (rc, err))
 
 
 def export_checks(tmp):
@@ -301,6 +330,8 @@ def list_checks(db_path):
     check("app.js holds no copy of the topic list and reads the topic bar",
           tn == {} and "$$('.topics a')" in js and not any("'%s'" % t in js for t in rules if "-" in t), tn)
     check("app.js VT is the verdicts of pages.VERDICT_LABEL", vt is not None and set(vt) == set(pages.VERDICT_LABEL), vt)
+    m = re.search(r"var SH = '([^']*)';", js)
+    check("app.js SH is the self-hosted label of selfhosted.py", m and m.group(1) == selfhosted.LABEL, m and m.group(1))
     form = open(os.path.join(ROOT, ".github", "ISSUE_TEMPLATE", "new-offer.yml"), encoding="utf-8").read()
     block = re.search(r"label: Topic\n\s+options:\n((?:\s+- .+\n)+)", form)
     opts = re.findall(r"- (\S+)", block.group(1)) if block else []
@@ -449,12 +480,128 @@ def helper_checks(tmp):
           len(serial) == 4 and serial == parallel, (len(serial), len(parallel)))
 
 
+def selfhosted_checks():
+    """Part 7: self-hosted last, on fixed cases."""
+    got = selfhosted.hosted_first(["a", "s1", "b", "s2", "c"], lambda x: x.startswith("s"))
+    check("hosted_first keeps every hosted item first and each part in its order", got == ["a", "b", "c", "s1", "s2"], got)
+    fx = json.load(open(os.path.join(ROOT, "site", "worker", "test", "parity.json"), encoding="utf-8"))
+    bad = [c for c in fx["rank"]["hostedFirst"] if selfhosted.hosted_first(c[0], lambda x, sh=c[1]: x in sh) != c[2]]
+    check("hosted_first gives the outputs of rank.js hostedFirst in parity.json (%d cases)" % len(fx["rank"]["hostedFirst"]),
+          not bad, bad[:3])
+    db = sqlite3.connect(":memory:")
+    db.execute("CREATE TABLE n (rid TEXT, v REAL)")
+    db.executemany("INSERT INTO n VALUES (?, ?)", [("t/h1", 3), ("t/s1", 1), ("t/h2", None), ("t/s2", None), ("t/h3", 2)])
+    cards = {r: {"rid": r, "vorder": 0, "confidence": "documented", "stale_on": None, "self_hosted": int("/s" in r)}
+             for (r,) in db.execute("SELECT rid FROM n")}
+    ranked, unranked, last = llms.need_rows(db, {"sql": "SELECT rid, v FROM n"}, cards)
+    got = [[r[0] for r in x] for x in (ranked, unranked, last)]
+    check("a need lists hosted ranked, hosted with no number, then self-hosted ranked and with no number",
+          got == [["t/h3", "t/h1"], ["t/h2"], ["t/s1", "t/s2"]], got)
+    db.close()
+    # a need that asks for no card: the hosted rows whose card is not stated follow the hosted rows, and every
+    # self-hosted row, the one whose card is not stated too, comes after them
+    db = sqlite3.connect(":memory:")
+    db.execute("CREATE TABLE n (rid TEXT, v REAL, needs_card INTEGER, identity_basis TEXT)")
+    db.executemany("INSERT INTO n VALUES (?, ?, ?, ?)", [("t/h1", 1, 0, "stated"), ("t/s1", 0, 0, "stated"),
+                                                        ("t/hu", 2, None, "stated"), ("t/su", 3, None, "defaulted"),
+                                                        ("t/hx", 0, 1, "stated")])
+    cards = {r: {"rid": r, "vorder": 0, "confidence": "documented", "stale_on": None, "self_hosted": int("/s" in r),
+                 "needs_card": c} for r, c in db.execute("SELECT rid, needs_card FROM n")}
+    x = {"sql": "SELECT rid, v FROM n WHERE v IS NOT NULL AND needs_card=0 AND identity_basis='stated'"}
+    ranked, unranked, unstated, text, last = llms.need_lists(db, x, cards)
+    got = [[r[0] for r in y] for y in (ranked, unranked, unstated, last)]
+    check("a need that asks for no card lists hosted ranked, hosted not stated, then every self-hosted row",
+          got == [["t/h1"], [], ["t/hu"], ["t/s1", "t/su"]] and text, got)
+    db.close()
+    sh = {"storage/self"}
+
+    def row(rid, pill):
+        t, s = rid.split("/")
+        return '<li class="e" data-f="">%s<a class="n" href="/p/e/#%s--%s">x</a><p class="f"></p></li>' % (pill, t, s)
+    ok_pill, star = selfhosted.PILL, '<span class="v v-qualifies">\u2605 qualifies</span>'
+    good = row("storage/hosted", star) + row("storage/self", ok_pill)
+    cases = [("a hosted row, then the self-hosted row with its label", good, 0),
+             ("a self-hosted row above a hosted row", row("storage/self", ok_pill) + row("storage/hosted", star), 1),
+             ("a self-hosted row with the star of its verdict", row("storage/hosted", star) + row("storage/self", star), 1),
+             ("a record section of a self-hosted record above a hosted one",
+              '<section class="rec" id="storage--self"><dl class="facts">%s</dl></section>'
+              '<section class="rec" id="storage--hosted"><dl class="facts">%s</dl></section>' % (ok_pill, star), 1)]
+    bad = [(what, selfhosted.html_problems(h, sh)) for what, h, n in cases if len(selfhosted.html_problems(h, sh)) != n]
+    check("the check of the build finds a self-hosted row above a hosted one, or starred, in HTML (%d cases)" % len(cases),
+          not bad, bad)
+
+    def md(rid, label="first", link=False):
+        words = {"first": selfhosted.LABEL + " | verdict qualifies", "after": "qualifies | " + selfhosted.LABEL,
+                 None: "qualifies"}[label if rid == "storage/self" else None]
+        code = ("[`%s`](https://example.invalid/api/v1/record/%s)" % (rid, rid)) if link else "`%s`" % rid
+        return "- [X](https://example.invalid/p/e.md) %s: %s | free tier" % (code, words)
+    cases = [("a hosted line, then the self-hosted line", md("storage/hosted") + "\n" + md("storage/self"), 0),
+             ("a self-hosted line above a hosted line", md("storage/self") + "\n" + md("storage/hosted"), 1),
+             ("a self-hosted line with no label", md("storage/hosted") + "\n" + md("storage/self", None), 1),
+             ("a self-hosted line with its verdict before the label", md("storage/hosted") + "\n" + md("storage/self", "after"), 1),
+             ("lines that link the JSON of their record, a self-hosted one above a hosted one",
+              md("storage/self", link=True) + "\n" + md("storage/hosted", link=True), 1),
+             ("a linked self-hosted line with its verdict before the label",
+              md("storage/hosted", link=True) + "\n" + md("storage/self", "after", link=True), 1),
+             ("linked lines in order", md("storage/hosted", link=True) + "\n" + md("storage/self", link=True), 0),
+             ("a numbered need line", "1. USD 2/month | " + md("storage/hosted")[2:] + "\n2. " + md("storage/self")[2:], 0),
+             ("a record block of a self-hosted record above a hosted one",
+              "- `storage/self` | %s | verdict qualifies | evidence measured\n- `storage/hosted` | qualifies | evidence "
+              "measured" % selfhosted.LABEL, 1),
+             ("a record block of a self-hosted record with its verdict first",
+              "- `storage/hosted` | qualifies | evidence measured\n- `storage/self` | qualifies | %s | evidence measured"
+              % selfhosted.LABEL, 1)]
+    bad = [(what, selfhosted.md_problems(t, sh)) for what, t, n in cases if len(selfhosted.md_problems(t, sh)) != n]
+    check("the check of the build finds a self-hosted line above a hosted one, or with no label first, in Markdown (%d "
+          "cases)" % len(cases), not bad, bad)
+    c = {"verdict": "qualifies", "self_hosted": 1}
+    check("a self-hosted record's Markdown line opens with the label, then its verdict",
+          llms.verdict_words(c) == [selfhosted.LABEL, "verdict qualifies"] and llms.verdict_words(dict(c, self_hosted=0)) ==
+          ["qualifies"], llms.verdict_words(c))
+    # entity.best_vorder: the SQL rule of the build gives the outputs of rank.js bestVorder in parity.json
+    rows = []
+    for members, want in fx["rank"]["bestVorder"]:
+        db = sqlite3.connect(":memory:")
+        db.execute("CREATE TABLE record (rid TEXT, eid TEXT, vorder INTEGER, self_hosted INTEGER)")
+        db.execute("CREATE TABLE entity (eid TEXT, best_vorder INTEGER)")
+        db.executemany("INSERT INTO record VALUES (?, 'e', ?, ?)", [("t/%d" % i, v, s) for i, (v, s) in enumerate(members)])
+        db.execute("INSERT INTO entity VALUES ('e', ?)", (want,))
+        ok = not selfhosted.best_vorder_problems(db)
+        db.execute("UPDATE entity SET best_vorder = coalesce(best_vorder, 0) + 1")
+        rows.append((ok and len(selfhosted.best_vorder_problems(db)) == 1, members, want))
+        db.close()
+    bad = [r[1:] for r in rows if not r[0]]
+    check("best_vorder_problems follows rank.js bestVorder in parity.json (%d cases), and finds a wrong value" % len(rows),
+          not bad, bad)
+
+
+# a worked query that lists record ids, and the first key of its ORDER BY
+LISTS_RIDS = re.compile(r"^SELECT (?:\w+\.)?rid\b")
+SELF_HOSTED_FIRST = re.compile(r"\bORDER BY (?:\w+\.)?self_hosted\b")
+LIMIT_TAIL = re.compile(r"\s+LIMIT \d+\s*$")
+
+
+def primer_order_checks():
+    """Every worked query of the primer that lists record ids sorts on self_hosted first, so a reader who pages it or
+    raises its LIMIT still gets every hosted row before a self-hosted one."""
+    lists = [(what, sql) for what, sql in primer.EXAMPLES if LISTS_RIDS.match(sql)]
+    bad = [what for what, sql in lists if not SELF_HOSTED_FIRST.search(sql)]
+    check("each worked query of the primer that lists record ids sorts on self_hosted first (%d queries)" % len(lists),
+          lists and not bad, bad)
+
+
 def primer_checks(db_path):
     db = primer.connect(db_path)
+    sh = {r for (r,) in db.execute("SELECT rid FROM record WHERE self_hosted = 1")}
     for what, sql in primer.EXAMPLES:
         try:
             n = len(db.execute(sql).fetchall())
             check("primer query runs (%d rows): %s" % (n, what), True)
+            if LISTS_RIDS.match(sql):
+                # the whole list, without its LIMIT: a hosted row is never below a self-hosted one
+                flags = [r[0] in sh for r in db.execute(LIMIT_TAIL.sub("", sql))]
+                check("primer query lists every hosted row first, without its LIMIT (%d rows, %d self-hosted): %s"
+                      % (len(flags), sum(flags), what), flags == sorted(flags))
         except sqlite3.Error as e:
             check("primer query runs: %s" % what, False, e)
     db.close()
@@ -498,6 +645,8 @@ def main(argv=None):
         leak_checks(tmp)
         hook_checks(tmp)
         helper_checks(tmp)
+        selfhosted_checks()
+        primer_order_checks()
     finally:
         export.cleanup(tmp)
     db = a.db if os.path.exists(a.db) else None

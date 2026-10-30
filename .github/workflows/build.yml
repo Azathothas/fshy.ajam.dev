@@ -100,6 +100,24 @@ jobs:
       - name: publish tools
         run: python3 publish/test_publish.py
 
+      # data/ of version 1 has no self-hosted record, so the self-hosted tests above skip, and the order check of the
+      # build has no self-hosted row to find. This step marks some records of a copy of data/ as self-hosted, at
+      # version 2, and runs the build, the Worker tests, the files for agents, the weight budget and the store checks
+      # on that copy. When data/ has self-hosted records, the tool writes no copy and the step stops there. smoke.mjs
+      # does not run here: it serves site/dist, the files that the job deploy ships, so the copy must not replace them.
+      - name: self-hosted last, on a copy of data/ at version 2
+        if: hashFiles('data/meta.json') != ''
+        run: |
+          fx="$RUNNER_TEMP/fx"
+          python3 publish/fixture_selfhosted.py --data data --out "$fx/data"
+          if [ -f "$fx/data/meta.json" ]; then
+            python3 publish/build.py --data "$fx/data" --db "$fx/public.db" --site "$fx/dist" --quiet
+            FSHY_DB="$fx/worker.db" FSHY_DIST="$fx/dist" FSHY_SELF_HOSTED=required node site/worker/test/run.mjs
+            python3 publish/test_llms.py --site "$fx/dist" --store "$fx/public.db"
+            python3 publish/test_weight.py --site "$fx/dist"
+            python3 publish/test_publish.py --db "$fx/public.db"
+          fi
+
       # the job deploy deploys these files, so it deploys the bytes that the steps above checked
       - name: keep the site for the job deploy
         if: >-

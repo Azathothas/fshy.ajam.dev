@@ -13,6 +13,15 @@
 // The fuzzy tier counts each distinct query token once, and it runs only for a query of at most
 // MAX_FUZZY_TOKENS distinct tokens: each token is compared with every token of the index, so a long
 // query would cost one full pass for each word (the twin in the research repository follows this).
+//
+// Self-hosted last: a self-hosted offer is software or a node that the user installs and runs (record.self_hosted = 1).
+// The site is for users with no hardware, so it is the last resort. self_hosted ascending is the first sort key of every
+// list of records: every hosted item in its order, then every self-hosted item in its order (hostedFirst). In a name
+// search, an entity whose every record is self-hosted comes after every other entity (sortEntities), and an entity ranks
+// by the best verdict of its hosted records (bestVorder), so a self-hosted record never lifts its vendor. A name lookup
+// gives one entity, not a list: it resolves to the best score first (resolveEntity), and a hosted entity wins only a tie.
+// The twins in the research repository are hosted_first(), sort_entities(), resolve_entity() and best_vorder() of fr.py,
+// and entity.best_vorder of build.py.
 
 import { normalize, tokens } from './text.js';
 
@@ -155,4 +164,50 @@ export function scoreNames(index, query) {
   }
   if (hits) for (const idx of hits) put(idx, 30);
   return [...best.values()];
+}
+
+/** Every hosted item, then every self-hosted one; each part keeps the order it had (a stable partition). */
+export function hostedFirst(items, isSelfHosted) {
+  const hosted = [];
+  const last = [];
+  for (const x of items) (isSelfHosted(x) ? last : hosted).push(x);
+  return hosted.concat(last);
+}
+
+/**
+ * The verdict that ranks an entity: the best (lowest) vorder of its hosted records, or of all its records when every one
+ * is self-hosted; null when it has no record. members: [[vorder, selfHosted]]. The store's entity.best_vorder holds the
+ * same value, and publish/build.py refuses data where it does not.
+ */
+export function bestVorder(members) {
+  let hosted = null;
+  let any = null;
+  for (const [v, sh] of members) {
+    if (any === null || v < any) any = v;
+    if (!sh && (hosted === null || v < hosted)) hosted = v;
+  }
+  return hosted === null ? any : hosted;
+}
+
+/**
+ * The entities of a name search, best first: score, then best verdict (bestVorder(eid), lower is better), then eid; then
+ * every entity whose every record is self-hosted (allSelfHosted(eid)) after every other entity. hits: [{eid, score}].
+ */
+export function sortEntities(hits, bestVorder, allSelfHosted) {
+  const ranked = [...hits].sort((a, b) => b.score - a.score || bestVorder(a.eid) - bestVorder(b.eid) ||
+    (a.eid < b.eid ? -1 : a.eid > b.eid ? 1 : 0));
+  return hostedFirst(ranked, (h) => allSelfHosted(h.eid));
+}
+
+/**
+ * The one entity that a name lookup (the operation entity with a name) resolves to, from the list of sortEntities: the
+ * first entity with the best score. A lookup is one answer, not a list, so an exact name is never beaten by a fuzzy or
+ * substring match of another vendor. Among entities with the best score, the list order wins: a hosted entity before a
+ * wholly self-hosted one, then the better verdict, then the eid. null when nothing matched. The other matches keep the
+ * order of sortEntities. The twin in the research repository is resolve_entity() of fr.py.
+ */
+export function resolveEntity(sorted) {
+  let top = null;
+  for (const h of sorted) if (top === null || h.score > top) top = h.score;
+  return top === null ? null : sorted.find((h) => h.score === top);
 }
