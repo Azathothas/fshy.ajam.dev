@@ -5,7 +5,7 @@
 import { all, asset, capped, discard, engineFailed, HEAP_LIMIT_MIB, HttpError, nameIndex } from './db.js';
 import { guard, GuardError } from './guard.js';
 import { checkPlan } from './plan.js';
-import { bestVorder, bm25, hostedFirst, resolveEntity, scoreNames, sortEntities as orderEntities } from './rank.js';
+import { bestVorder, bm25, buildNameIndex, hostedFirst, resolveEntity, scoreNames, sortEntities as orderEntities } from './rank.js';
 import { clip, ftsMatch } from './text.js';
 
 // ------------------------------------------------------------------ shapes
@@ -240,15 +240,16 @@ export function search(store, p) {
     const eids = named.map((e) => e.eid);
     for (let i = 0; i < eids.length; i += 400) {
       const part = eids.slice(i, i + 400);
-      const sql = `SELECT eid, rid FROM record WHERE eid IN (${marks(part.length)})` +
+      const sql = `SELECT eid, rid, provider, slug FROM record WHERE eid IN (${marks(part.length)})` +
         (where.length ? ' AND ' + where.join(' AND ') : '') + ' ORDER BY vorder, rid';
-      for (const [eid, rid] of rows(db, sql, [...part, ...args])) {
+      for (const [eid, rid, provider, slug] of rows(db, sql, [...part, ...args])) {
         if (!byEid.has(eid)) byEid.set(eid, []);
-        byEid.get(eid).push(rid);
+        byEid.get(eid).push([rid, provider, slug]);
       }
     }
+    const ents = store.cache.entities || new Map();
     for (const e of named) {
-      for (const rid of byEid.get(e.eid) || []) {
+      for (const rid of nameHitRecords(q, e, ents.get(e.eid), byEid.get(e.eid) || [])) {
         if (matched.has(rid)) continue;
         matched.set(rid, ['name(' + e.how + ')']);
         order.push(rid);
@@ -304,6 +305,25 @@ export function search(store, p) {
   return table([...CARD_COLUMNS, 'matched'], out, {
     total: all.length, offset, truncated: offset + out.length < all.length, notes,
   });
+}
+
+/** The best score of a few names against a query, by the rules of rank.scoreNames; 0 when none matches. */
+function ownScore(q, names) {
+  const hits = scoreNames(buildNameIndex(names.filter(Boolean).map((alias) => ({ eid: '-', alias }))), q);
+  return hits.length ? hits[0].score : 0;
+}
+
+/**
+ * The records that a name hit of an entity lifts to the top of a search. When the vendor's own name or domain scores as
+ * well as the alias that matched, every record of the vendor; else the records whose own name (provider or slug) scores
+ * that well, so one record's name ("Google Cloud Storage Always Free tier") does not lift every other record of its
+ * vendor above the records whose text matches. A hit through an alias that no record's name carries (a record's
+ * extras.aliases) keeps every record. recs: [[rid, provider, slug]] in list order. fr.py op_search is the twin.
+ */
+function nameHitRecords(q, hit, ent, recs) {
+  if (!ent || ownScore(q, [ent.name, ent.domain]) >= hit.score) return recs.map((r) => r[0]);
+  const mine = recs.filter(([, provider, slug]) => ownScore(q, [provider, slug]) >= hit.score);
+  return (mine.length ? mine : recs).map((r) => r[0]);
 }
 
 // ------------------------------------------------------------------ entity search (names only)
@@ -476,7 +496,7 @@ export async function get(store, env, p) {
 
 // ------------------------------------------------------------------ entity
 
-const ENTITY_KEYS = new Set(['id', 'name', 'q']);
+const ENTITY_KEYS = new Set(['id', 'name', 'q', 'include_duplicates']);
 
 export function entity(store, p) {
   const db = store.db;
@@ -501,7 +521,15 @@ export function entity(store, p) {
     }
   }
   if (selfHosted(store).eids.has(e.eid)) notes.push('self-hosted: every record of this entity is self-hosted, so it is the last resort');
-  const out = rows(db, `SELECT ${CARD_SELECT} FROM record WHERE eid = ? ORDER BY self_hosted, vorder, rid`, [e.eid]).map(fixCard);
+  // a duplicate (record.duplicate_of) is left out, as in every other list, unless asked for; the footer counts it
+  const dups = rows(db, 'SELECT rid, duplicate_of FROM record WHERE eid = ? AND duplicate_of IS NOT NULL ORDER BY rid', [e.eid]);
+  const withDups = bool(p.include_duplicates, 'include_duplicates');
+  const out = rows(db, `SELECT ${CARD_SELECT} FROM record WHERE eid = ?` + (withDups ? '' : ' AND duplicate_of IS NULL') +
+    ' ORDER BY self_hosted, vorder, rid', [e.eid]).map(fixCard);
+  if (dups.length) {
+    notes.push((withDups ? `${dups.length} duplicates listed: ` : `${dups.length} duplicates left out (include_duplicates=1 lists them): `) +
+      dups.slice(0, 5).map(([rid, of]) => `${rid} of ${of}`).join(', ') + (dups.length > 5 ? `, and ${dups.length - 5} more` : ''));
+  }
   notes.unshift(`entity ${e.eid}: ${e.name}` + (e.domain ? ` (${e.domain})` : '') +
     `; topics ${e.topics}; ${e.n_records} records; resolved by ${e.resolved_by}` + (e.review ? '; review: ' + e.review : ''));
   return table(CARD_COLUMNS, out, { notes, entity: e });
@@ -531,7 +559,8 @@ export async function need(store, env, p) {
     return table(['id', 'title', 'topic', 'sort', 'scope'], out, { notes });
   }
   const n = doc.needs.find((x) => x.id === id);
-  if (!n) throw new HttpError(404, 'unknown need ' + JSON.stringify(id) + '; list them at /api/v1/need/');
+  // the ids themselves, not a route: the HTTP API and the MCP tool give the same answer
+  if (!n) throw new HttpError(404, 'unknown need ' + JSON.stringify(id) + '; the needs are ' + doc.needs.map((x) => x.id).join(', '));
   const limit = int(p.limit, 'limit', 50, 1, 200);
   const offset = int(p.offset, 'offset', 0, 0, 100000);
   // the need's own SQL (shipped with the build), joined to the record for the order of a tie: the verdict, the
@@ -569,7 +598,8 @@ export async function need(store, env, p) {
   const out = page.filter((h) => hosted(h) && !isUnstated.has(h.rid) && h[key] != null).map(toRow);
   const nullOut = page.filter((h) => hosted(h) && !isUnstated.has(h.rid) && h[key] == null).map(toRow);
   const unstatedOut = page.filter((h) => hosted(h) && isUnstated.has(h.rid)).map(toRow);
-  const selfOut = page.filter((h) => isSelf(h) && inPage(h)).map(toRow);
+  const selfOut = page.filter((h) => isSelf(h) && inPage(h) && !isUnstated.has(h.rid)).map(toRow);
+  const selfUnstatedOut = page.filter((h) => isSelf(h) && inPage(h) && isUnstated.has(h.rid)).map(toRow);
   notes.unshift(`${n.title}: ${n.scope}`);
   // one count for each part: the hosted rows ranked, with no number and not stated, then the self-hosted rows
   // (pages.py need())
@@ -581,12 +611,13 @@ export async function need(store, env, p) {
     notes.push(`${nHosted(unstated)} ${hw}rows with the card or phone requirement not stated follow the others; they are not counted as no`);
   }
   if (nSelf) {
+    const nSelfUnstated = unstated.filter(isSelf).length;
     notes.push(SELF_HOSTED_NOTE(nSelf, 'rows') + `, in self_hosted_rows: ranked, then with no parsed ${key}` +
-      (flags.length ? ', then with the card or phone requirement not stated' : ''));
+      (nSelfUnstated ? `; ${nSelfUnstated} of them with the card or phone requirement not stated, in self_hosted_unstated_rows` : ''));
   }
   return table([...CARD_COLUMNS, ...extra], out, {
     total: seq.length, offset, truncated: offset + page.length < seq.length, notes, nullRows: nullOut, nullKey: key,
-    unstatedRows: unstatedOut, selfRows: selfOut,
+    unstatedRows: unstatedOut, selfRows: selfOut, selfUnstatedRows: selfUnstatedOut,
     need: { id: n.id, title: n.title, topic: n.topic, sort: key, scope: n.scope, sql: n.sql },
   });
 }
@@ -698,7 +729,7 @@ export function worklist(store, p) {
     const body = `SELECT h.when_utc AS at, 'history' AS source, h.hid AS ref, h.status AS status, h.title AS title,
         (SELECT group_concat(rid, ' ') FROM history_link l WHERE l.hid = h.hid) AS rids FROM history h ${hw}
       UNION ALL
-      SELECT at, 'ledger', path, rung, CASE WHEN old IS NULL AND new IS NULL THEN 'amended; the old and the new value are not published'
+      SELECT at, 'ledger', CASE WHEN path LIKE '$.%' THEN substr(path, 3) ELSE path END, rung, CASE WHEN old IS NULL AND new IS NULL THEN 'amended; the old and the new value are not published'
         ELSE coalesce(old, '') || ' -> ' || coalesce(new, '') END, rid FROM ledger ${lw}`;
     return page(['at', 'source', 'ref', 'status', 'title', 'rids'], `SELECT count(*) FROM (${body})`,
       `SELECT * FROM (${body}) ORDER BY at DESC, ref`, a);
@@ -749,7 +780,7 @@ export async function help(store, env) {
     `  filter topic verdict grp confidence no_card no_phone anonymous iface binding crypto`,
     `         max_usd_month max_usd_tb include_duplicates sort order limit offset`,
     `  get ids [detail=card|full fields]   full = the record JSON with claims, unknown, history, drift`,
-    `  entity id|name                      a vendor and its records`,
+    `  entity id|name [include_duplicates] a vendor and its records; a duplicate is left out unless asked`,
     `  need [id]                           curated best-per-need lists`,
     `  sql q [limit]                       one read-only SELECT/WITH/VALUES/EXPLAIN; LIMIT added if absent; a costly plan is refused`,
     `  worklist stale|drift|changes|unparsed [topic as_of forecast_days]`,
@@ -779,8 +810,9 @@ function cell(v) {
 export function footer(t) {
   const lines = [];
   const shown = t.rows.length + (t.nullRows ? t.nullRows.length : 0) + (t.unstatedRows ? t.unstatedRows.length : 0) +
-    (t.selfRows ? t.selfRows.length : 0);
-  if (t.open) lines.push(`# ${shown} rows; row cap reached, more rows exist`);
+    (t.selfRows ? t.selfRows.length : 0) + (t.selfUnstatedRows ? t.selfUnstatedRows.length : 0);
+  // a capped result (sql) says the cap in its own note, so the first line counts the rows only
+  if (t.open) lines.push(`# ${shown} rows`);
   else if (t.truncated) lines.push(`# ${shown} of ${t.total} rows; offset=${t.offset + shown} for more`);
   else lines.push(`# ${shown} of ${t.total} rows`);
   for (const [col, n] of Object.entries(t.excluded || {})) lines.push(`# excluded for NULL ${col}: ${n}`);
@@ -803,6 +835,10 @@ export function toTsv(t) {
     lines.push(`# self-hosted, the last resort: ${t.selfRows.length} rows below, after every hosted row`);
     for (const r of t.selfRows) lines.push(r.map(cell).join('\t'));
   }
+  if (t.selfUnstatedRows && t.selfUnstatedRows.length) {
+    lines.push(`# self-hosted, ${UNSTATED_HEADING.toLowerCase()}: ${t.selfUnstatedRows.length} rows below, not counted as no`);
+    for (const r of t.selfUnstatedRows) lines.push(r.map(cell).join('\t'));
+  }
   return { lines, footer: footer(t) };
 }
 
@@ -813,6 +849,7 @@ export function toJson(t) {
   if (t.nullRows) o.null_rows = t.nullRows;
   if (t.unstatedRows && t.unstatedRows.length) o.unstated_rows = t.unstatedRows;
   if (t.selfRows) o.self_hosted_rows = t.selfRows;
+  if (t.selfUnstatedRows && t.selfUnstatedRows.length) o.self_hosted_unstated_rows = t.selfUnstatedRows;
   if (t.entity) o.entity = t.entity;
   if (t.need) o.need = t.need;
   return o;

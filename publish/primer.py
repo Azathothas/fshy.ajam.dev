@@ -102,7 +102,7 @@ def _text(db):
     target = meta.get("target", "?")
     out = []
     w = out.append
-    w("fshy: the fshy corpus as one read-only SQLite store")
+    w("fshy: every published record as one read-only SQLite store")
     w("store: %s; data as of %s, source commit %s; %s records, %s entities, %s evidence rows, %s parsed claims"
       % (target, meta.get("as_of") or "?", (meta.get("source_commit") or "?")[:12],
          counts.get("records", "?"), counts.get("entities", "?"), counts.get("evidence", "?"),

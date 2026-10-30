@@ -200,6 +200,22 @@ for (const [path, type] of [['/llms.txt', 'text/plain; charset=utf-8'], ['/t/sto
   await r.arrayBuffer();
   check('GET ' + path + ' is served as ' + type, (r.headers.get('content-type') || '').toLowerCase() === type, r.headers.get('content-type'));
 }
+// live walk 2: a missing Markdown page is a Markdown 404 (W2-14), the not-found page says 404 at its own URL (W-28), and
+// the security contact of RFC 9116 is served as text (W2-16)
+const mdMiss = await fetch(ORIGIN + '/p/nope-nope.md');
+const mdBody = await mdMiss.text();
+check('GET /p/nope-nope.md is a Markdown 404', mdMiss.status === 404 && mdMiss.headers.get('content-type') === 'text/markdown; charset=utf-8' &&
+  /^# Not found/.test(mdBody), `${mdMiss.status} ${mdMiss.headers.get('content-type')} ${mdBody.slice(0, 40)}`);
+for (const p of ['/404', '/404.html']) {
+  const r = await fetch(ORIGIN + p, { redirect: 'manual' });
+  await r.arrayBuffer();
+  check('GET ' + p + ' answers 404', r.status === 404, r.status);
+}
+const sec = await fetch(ORIGIN + '/.well-known/security.txt');
+const secBody = await sec.text();
+check('GET /.well-known/security.txt is text with a Contact and an Expires line', sec.status === 200 &&
+  sec.headers.get('content-type') === 'text/plain; charset=utf-8' && /^Contact: https:\/\//m.test(secBody) && /^Expires: \d{4}-/m.test(secBody),
+  `${sec.status} ${sec.headers.get('content-type')}`);
 const dataPart = await fetch(ORIGIN + '/' + man.public_db.parts[0]);
 await dataPart.arrayBuffer();
 check('GET a data part has one Cache-Control of a year', dataPart.headers.get('cache-control') === 'public, max-age=31536000, immutable', dataPart.headers.get('cache-control'));
