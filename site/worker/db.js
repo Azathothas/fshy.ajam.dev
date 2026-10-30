@@ -185,19 +185,18 @@ export async function getStore(env, wasmModule, ctx, waitMs = LOAD_WAIT_MS) {
   }
 }
 
-/** Throw away the handle (after an unexpected change) so the next request reopens a clean copy. */
+/**
+ * Throw away the handle (after an unexpected change, or after an error of the engine) so the next request opens a new
+ * copy of the store. The engine stays. sql.js starts one engine for the life of the isolate and returns that same engine
+ * to every later call, so a new engine is not possible. When the engine cannot run any more, each statement fails with
+ * the same 503 until the platform replaces the isolate.
+ */
 export function discard(store) {
   if (current === store) current = null;
   try { store.db.close(); } catch { /* already closed */ }
 }
 
-/** Throw away the handle and the sql.js module (after the engine itself failed) so the next request starts both again. */
-export function reset(store) {
-  discard(store);
-  sqlPromise = null;
-}
-
-/** True for an error of the WebAssembly engine itself, after which sql.js cannot be used again. */
+/** True for an error of the WebAssembly engine itself, such as a trap or an abort. The state of the engine is then not known. */
 export function engineFailed(e) {
   return (typeof WebAssembly !== 'undefined' && e instanceof WebAssembly.RuntimeError) ||
     /^(?:Aborted|RuntimeError)\b|memory access out of bounds|unreachable executed/.test(String((e && e.message) || e));
