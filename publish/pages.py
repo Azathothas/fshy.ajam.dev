@@ -36,7 +36,15 @@ CODE_RX = re.compile(r"`([^`]+)`")
 ASSETS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "site", "static", "assets")
 # the classes of unknown values that are bookkeeping of the projection, not a fact about the offer: a record page
 # does not list them (the JSON keeps them)
-HIDDEN_UNKNOWN = {"process", "withheld", "partly-held", "private-url", "defaulted", "identity-defaulted"}
+HIDDEN_UNKNOWN = {"process", "withheld", "partly-held", "private-url", "defaulted", "identity-defaulted", "boilerplate"}
+
+
+def field_label(path):
+    """The words of a JSON path of a record: $.egress.terms -> egress terms, $.limits[0].value -> limits 1 value."""
+    p = re.sub(r'^\$\.?', "", path or "")
+    p = re.sub(r"\[(\d+)\]", lambda m: " %d" % (int(m.group(1)) + 1), p)
+    p = re.sub(r'"([^"]*)"', r"\1", p)
+    return re.sub(r"\s+", " ", p.replace(".", " ").replace("_", " ")).strip() or path
 # a category written in capitals or as an acronym; the rest is lower case with spaces
 CAT_WORDS = {"paas": "PaaS", "iaas": "IaaS", "saas": "SaaS", "cdn": "CDN", "p2p": "P2P", "vps": "VPS", "gpu": "GPU",
              "ml": "ML", "nat": "NAT", "api": "API", "apis": "APIs", "ci": "CI", "ipv6": "IPv6", "ipv4": "IPv4",
@@ -719,7 +727,8 @@ class Site:
                                  for k, v in extras.items()))) if extras else ""
         unk = [(p, cl) for p, cl in f["unknown"] if cl not in HIDDEN_UNKNOWN]
         unh = ('<details><summary>Unknown values <small>%d</small></summary><ul>%s</ul></details>' % (
-            len(unk), "".join("<li><code>%s</code> %s</li>" % (e(p), e(self.voc.get(("unknown_class", cl), cl))) for p, cl in unk[:200]))) if unk else ""
+            len(unk), "".join('<li><b>%s</b>: %s</li>' % (e(field_label(p)), e(self.voc.get(("unknown_class", cl), cl)))
+                              for p, cl in unk[:200]))) if unk else ""
         hs = "".join('<li><a href="/changes/#%s">%s</a> %s</li>' % (hist_anchor(h["hid"]), e((h["when"] or "")[:10]), e(h["title"]))
                      for h in f["history"])
         dr = "".join('<li>%s: <code>%s</code> says %s, <a href="/r/%s">%s</a> says %s</li>' % (
@@ -784,7 +793,7 @@ class Site:
         key = x["sort"]
         # the parts of the list: the hosted rows ranked, with no number and with the card or phone not stated, then
         # every self-hosted row in the same order, the last resort (llms.need_lists)
-        ranked, unranked, unstated, unstated_text, last = llms.need_lists(self.ctx["db"], x, cards)
+        ranked, unranked, unstated, unstated_text, last, last_unstated = llms.need_lists(self.ctx["db"], x, cards)
         show_val = key not in ("vorder",)
         wt = x.get("topic") is None
 
@@ -812,32 +821,43 @@ class Site:
                  'price or quantity parsed from their text yet. They are listed, not dropped.</p><ul class="%s">%s</ul>' % (
                     num(len(unranked)), self.lane([cards[r[0]] for r in unranked]), items(unranked))) if unranked else "")
         # a need that asks for no card or no phone: the records whose requirement is not stated follow, in a section of
-        # their own, never counted as no and never dropped (llms.need_unstated)
-        if unstated:
-            phone = "needs_phone=0" in x["sql"]
-            rows_u = []
-            for r in unstated:
+        # their own, never counted as no and never dropped (llms.need_unstated); the self-hosted ones close the
+        # self-hosted section under the same heading
+        phone = "needs_phone=0" in x["sql"]
+
+        def unstated_rows(rs):
+            out = []
+            for r in rs:
                 c = cards[r[0]]
                 row = self.entry(c, wt, shown(c, r[1]), summary=False)  # no summary: the section is long
                 if phone and c["needs_phone"] is None and c["identity_basis"] == "stated":
                     row = row[:-len("</p></li>")] + '<span class="u">phone?</span></p></li>'
-                rows_u.append(row)
+                out.append(row)
+            return "".join(out)
+        if unstated:
             lists += '<h2 id="unstated">%s <small>%s</small></h2><p class="lede">%s</p><ul class="%s">%s</ul>' % (
-                e(llms.UNSTATED_HEADING), num(len(unstated)), e(unstated_text), self.lane([cards[r[0]] for r in unstated]), "".join(rows_u))
-        if last:
+                e(llms.UNSTATED_HEADING), num(len(unstated)), e(unstated_text), self.lane([cards[r[0]] for r in unstated]),
+                unstated_rows(unstated))
+        if last or last_unstated:
             lists += ('<h2 id="self-hosted">Self-hosted, the last resort <small>%s</small></h2><p class="lede">%s. %s They '
-                      'follow the same order: ranked, then with no parsed number%s.</p><ul class="%s">%s</ul>' % (
-                          num(len(last)), e(selfhosted.MEANING[:1].upper() + selfhosted.MEANING[1:]), e(selfhosted.NOTE),
-                          ", then with the card or phone not stated" if unstated_text else "",
-                          self.lane([cards[r[0]] for r in last]), items(last)))
+                      'follow the same order: ranked, then with no parsed number%s.</p>' % (
+                          num(len(last) + len(last_unstated)), e(selfhosted.MEANING[:1].upper() + selfhosted.MEANING[1:]),
+                          e(selfhosted.NOTE), ", then, under their own heading, with the card or phone not stated" if last_unstated else ""))
+            if last:
+                lists += '<ul class="%s">%s</ul>' % (self.lane([cards[r[0]] for r in last]), items(last))
+            if last_unstated:
+                lists += '<h3 id="self-hosted-unstated">%s <small>%s</small></h3><p class="lede">%s</p><ul class="%s">%s</ul>' % (
+                    e(llms.UNSTATED_HEADING), num(len(last_unstated)), e(unstated_text),
+                    self.lane([cards[r[0]] for r in last_unstated]), unstated_rows(last_unstated))
         body = ('<p class="crumb"><a href="/">Home</a> / <a href="/need/">Best per need</a></p><h1>%s</h1><p class="lede">%s</p>'
                 '<p class="needs"><b>Ranked by</b>%s, then the evidence &middot; %s %sranked%s</p>%s%s'
                 '<details><summary>The query</summary><pre>%s\nORDER BY self_hosted, %s ASC NULLS LAST</pre><p>Run it yourself: '
                 '<a href="/api/v1/need/%s">/api/v1/need/%s</a>, or the MCP tool <code>need</code>.</p></details>') % (
-            e(x["title"]), e(x["scope"]), e(SORT_LABEL.get(key, key)), num(len(ranked)), "hosted " if last else "",
+            e(x["title"]), e(x["scope"]), e(SORT_LABEL.get(key, key)), num(len(ranked)), "hosted " if last or last_unstated else "",
             ((' &middot; <a href="#unranked">%s with no parsed number</a>' % num(len(unranked))) if unranked else "") +
             ((' &middot; <a href="#unstated">%s with the card or phone not stated</a>' % num(len(unstated))) if unstated else "") +
-            ((' &middot; <a href="#self-hosted">%s self-hosted, listed last</a>' % num(len(last))) if last else ""),
+            ((' &middot; <a href="#self-hosted">%s self-hosted, listed last</a>' % num(len(last) + len(last_unstated)))
+             if last or last_unstated else ""),
             self.filters(), lists, e(x["sql"]), e(key), e(x["id"]), e(x["id"]))
         self.page("need/%s/index.html" % x["id"], x["title"], body, x["scope"])
 
@@ -931,7 +951,7 @@ class Site:
              '<th>evidence</th><th>source</th></tr></thead><tbody>%s</tbody></table></div>' % (num(len(led)), num(n_led), num(len(led)), lh)) if lh else "")
         self.page("changes/index.html", "Changes", body, "Corrections and other dated changes of the fshy catalogue, newest first.")
         self.write("changes.xml", '<?xml version="1.0" encoding="utf-8"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">'
-                   '<channel><title>fshy changes</title><link>%s/changes/</link><description>Corrections to the fshy corpus</description>'
+                   '<channel><title>fshy changes</title><link>%s/changes/</link><description>Corrections to the fshy records</description>'
                    '<atom:link href="%s/changes.xml" rel="self" type="application/rss+xml"/>%s</channel></rss>' % (
                        e(llms.BASE), e(llms.BASE), "".join(x for _, x in sorted(rss, key=lambda y: y[0], reverse=True)[:100])))
 
@@ -996,13 +1016,13 @@ class Site:
             '<h2 id="report">Report an error or a missing offer</h2><p>Each record has a <i>report an error</i> link. It '
             'opens the <a href="%s/issues/new?template=correction.yml">Correction form</a> with the record filled in. For an '
             'offer that the catalogue does not have, use the <a href="%s/issues/new?template=new-offer.yml">New offer form</a>. '
-            'A report is a lead: a research lane checks it against the pages of the provider before a record changes. The issue '
+            'A report is checked against the pages of the provider before a record changes. The issue '
             'closes when a publish carries the result.</p><p>Do not report a leaked secret, a personal detail or a vulnerability '
             'in a public issue. Read the <a href="%s/security/policy">security policy</a> first.</p>'
             '<h2 id="contribute">Contribute</h2><p>The site, the API, the MCP endpoint and the publish tools are in '
             '<a href="%s">the source repository</a>. A pull request that improves them is welcome: read '
             '<a href="%s/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> first. A pull request that changes <code>data/</code> '
-            'is not merged, because the export writes <code>data/</code> from the research corpus. Report a correction '
+            'is not merged, because <code>data/</code> is generated by the export and never edited by hand. Report a correction '
             'with an issue.</p>'
             '<h2 id="licence">Licence</h2><p>The code and the records are under the <a href="%s/blob/main/LICENSE">%s licence</a>. '
             'A record restates public facts in its own words and cites each source by URL. A short quote from the page of a '
@@ -1021,7 +1041,10 @@ class Site:
 
     def simple(self):
         self.page("search/index.html", "Search", '<h1>Search</h1><div id="search-page"><p class="lede">Type in the box above. '
-                  'Names match as you type. Press Enter to search every published field.</p><div id="sr"><noscript>'
+                  'Names match as you type. Press Enter to search every published field. A word matches anywhere in a '
+                  'record, so <q>no card</q> also finds a record that says a card is needed: for offers with no card, no '
+                  'phone or no account, use the lists of <a href="/need/">Best per need</a> or the filters of a topic '
+                  'page.</p><div id="sr"><noscript>'
                   '<p>This page needs JavaScript. Without it, ask the API: <a href="/api/v1/search?q=gpu">/api/v1/search?q=gpu</a> '
                   '(put your words after <code>q=</code>), or read <a href="/llms.txt">/llms.txt</a> and the topic pages.</p>'
                   '</noscript></div></div>', "Search the names and the text of every fshy record.")
@@ -1064,4 +1087,16 @@ def render(repo, dist, ctx):
     s.write("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">%s</urlset>'
             % "".join("<url><loc>%s%s</loc></url>" % (base, u) for u in sorted(set(s.urls) - skip, key=lambda u: (u.count("/"), u))))
     s.write("robots.txt", "User-agent: *\nAllow: /\nSitemap: %s/sitemap.xml\n" % base)
+    s.write(".well-known/security.txt", security_txt(s.meta.get("as_of"), base))
     return s.n
+
+
+def security_txt(as_of, base):
+    """RFC 9116: where to report a vulnerability, which the about page asks a reader to read first. It expires a year after
+    the data date, so a site that stops being built says that its file is out of date; the build reads no clock."""
+    try:
+        exp = datetime.date.fromisoformat(str(as_of)[:10]) + datetime.timedelta(days=365)
+    except ValueError:
+        exp = datetime.date(2000, 1, 1)
+    return ("Contact: %s/security/advisories/new\nExpires: %sT00:00:00Z\nPolicy: %s/security/policy\n"
+            "Preferred-Languages: en\nCanonical: %s/.well-known/security.txt\n" % (llms.REPO, exp.isoformat(), llms.REPO, base))

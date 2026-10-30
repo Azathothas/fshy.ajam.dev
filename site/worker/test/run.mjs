@@ -867,7 +867,9 @@ test('the MCP tools say when to use each, carry read-only annotations and the to
     assert.match(tool.description, /^Use /, tool.name);
     assert.equal(tool.annotations.readOnlyHint, true, tool.name);
     assert.equal(tool.annotations.destructiveHint, false, tool.name);
-    if (tool.inputSchema.properties.topic) assert.ok(tool.inputSchema.properties.topic.enum.includes('storage'), tool.name);
+    const topic = tool.inputSchema.properties.topic;
+    // a tool that takes one topic has an enum; one that takes a comma list has a pattern a validating client accepts (W2-15)
+    if (topic) assert.ok((topic.enum || []).includes('storage') || new RegExp(topic.pattern).test('storage,compute'), tool.name);
   }
   const init = await rpc('initialize', { protocolVersion: '2025-06-18' });
   assert.match(init.json.result.instructions, /Topics: storage, compute/);
@@ -1250,6 +1252,90 @@ test('the vendored MiniSearch is the npm package of package.json (P-18)', () => 
 
 test('the Worker module exports its handler only: workerd reads a named export as an entrypoint', async () => {
   assert.deepEqual(Object.keys(await import('../index.js')), ['default']);
+});
+
+// ------------------------------------------------------------------ live walk 2
+
+test('a no-card need lists its self-hosted rows whose card is not stated apart, in every surface (W2-10)', async () => {
+  const NEED = 's3-storage-no-card';
+  const n = await call('/api/v1/need/' + NEED + '?limit=200');
+  assert.equal(n.res.status, 200, n.body);
+  const ids = (rows) => (rows || []).map((r) => r[0]);
+  const self = ids(n.json.self_hosted_rows);
+  const selfU = ids(n.json.self_hosted_unstated_rows);
+  const cols = n.json.columns;
+  for (const r of n.json.self_hosted_rows || []) assert.equal(r[cols.indexOf('card')], 'no', r[0] + ' is in the confirmed self-hosted part');
+  for (const r of n.json.self_hosted_unstated_rows || []) assert.notEqual(r[cols.indexOf('card')], 'no', r[0] + ' has a stated card');
+  assert.ok(!self.some((r) => selfU.includes(r)), 'no self-hosted row is in both parts');
+  assert.equal(n.json.total, ids(n.json.rows).length + ids(n.json.null_rows).length + ids(n.json.unstated_rows).length + self.length + selfU.length);
+  if (selfU.length) {
+    const tsv = await call('/api/v1/need/' + NEED + '.tsv?limit=200');
+    assert.match(tsv.body, /# self-hosted, card or phone requirement not stated: \d+ rows below, not counted as no/);
+    const page = join(DIST, 'need', NEED, 'index.html');
+    if (existsSync(page)) assert.match(readFileSync(page, 'utf8'), /<h3 id="self-hosted-unstated">Card or phone requirement not stated/);
+    const md = join(DIST, 'need', NEED + '.md');
+    if (existsSync(md)) assert.match(readFileSync(md, 'utf8'), /\n### Card or phone requirement not stated \(\d+\)\n/);
+  }
+});
+
+test('the entity tool leaves out a duplicate unless asked, and says so (W2-09)', async () => {
+  const sql = await call('/api/v1/sql?q=' + encodeURIComponent('SELECT eid, count(*) FROM record WHERE duplicate_of IS NOT NULL GROUP BY eid ORDER BY 2 DESC, 1 LIMIT 1'));
+  if (!sql.json.rows.length) return;
+  const [eid, nDup] = sql.json.rows[0];
+  const all = await call('/api/v1/sql?q=' + encodeURIComponent(`SELECT count(*) FROM record WHERE eid = '${eid}'`));
+  // the tool answers TSV: a header, the rows, then footer lines that start with #
+  const rowsOf = (text) => text.split('\n').filter((l) => l && !l.startsWith('#')).length - 1;
+  const plain = (await rpc('tools/call', { name: 'entity', arguments: { id: eid } })).json.result.content[0].text;
+  assert.equal(rowsOf(plain), all.json.rows[0][0] - nDup, 'the duplicates are left out');
+  assert.match(plain, /# \d+ duplicates left out \(include_duplicates=1 lists them\): /);
+  const withDups = (await rpc('tools/call', { name: 'entity', arguments: { id: eid, include_duplicates: true } })).json.result.content[0].text;
+  assert.equal(rowsOf(withDups), all.json.rows[0][0]);
+});
+
+test('a name hit of one record does not lift every record of its vendor (W2-11)', async () => {
+  const s = await call('/api/v1/search?q=' + encodeURIComponent('always free') + '&limit=50');
+  assert.equal(s.res.status, 200, s.body);
+  const ids = s.json.rows.map((r) => r[0]);
+  const nameHits = s.json.rows.filter((r) => /name\(/.test(r[r.length - 1])).map((r) => r[0]);
+  assert.ok(nameHits.length < 10, 'a few records carry the name hit: ' + nameHits.length);
+  const oracle = await call('/api/v1/sql?q=' + encodeURIComponent("SELECT rid FROM record WHERE provider = 'Oracle Cloud Always Free' AND duplicate_of IS NULL"));
+  for (const [rid] of oracle.json.rows) assert.ok(ids.slice(0, 10).includes(rid), rid + ' is in the first ten rows');
+  // the vendor's own name still lifts every record of the vendor
+  const h = await call('/api/v1/search?q=hetzner&limit=50');
+  const ent = await call('/api/v1/sql?q=' + encodeURIComponent("SELECT count(*) FROM record WHERE eid = 'hetzner' AND duplicate_of IS NULL"));
+  assert.ok(h.json.rows.filter((r) => /name\(exact\)/.test(r[r.length - 1])).length >= Math.min(ent.json.rows[0][0], 50) - 1);
+});
+
+test('small API and MCP answers: the sql cap once, a ledger path without $., a need id list (W2-15)', async () => {
+  const q = await rpc('tools/call', { name: 'sql', arguments: { query: 'SELECT rid FROM record', limit: 5 } });
+  const text = q.json.result.content[0].text;
+  assert.equal((text.match(/row cap/g) || []).length, 1, text.split('\n').slice(-4).join(' | '));
+  const w = await call('/api/v1/worklist/changes?limit=200');
+  for (const r of w.json.rows.filter((x) => x[1] === 'ledger')) assert.ok(!r[2].startsWith('$.'), r[2]);
+  const n = await rpc('tools/call', { name: 'need', arguments: { id: 'nope' } });
+  assert.equal(n.json.result.isError, true);
+  assert.match(n.json.result.content[0].text, /unknown need "nope"; the needs are s3-storage-no-card, /);
+  assert.ok(!/\/api\/v1\/need\//.test(n.json.result.content[0].text), 'the MCP answer names no HTTP route');
+});
+
+test('a missing Markdown page is a Markdown 404, and the not-found page says 404 (W2-14, W-28)', async () => {
+  const miss = await call('/p/nope-nope.md');
+  assert.equal(miss.res.status, 404);
+  assert.equal(miss.res.headers.get('content-type'), 'text/markdown; charset=utf-8');
+  assert.match(miss.body, /^# Not found\n/);
+  assert.ok(!/<html|<!doctype/i.test(miss.body), 'no HTML under a Markdown type');
+  const head = await call('/t/nope.md', { method: 'HEAD' });
+  assert.equal(head.res.status, 404);
+  if (existsSync(join(DIST, 't', 'storage.md'))) {
+    const ok = await call('/t/storage.md');
+    assert.equal(ok.res.status, 200);
+    assert.equal(ok.res.headers.get('content-type'), 'text/markdown; charset=utf-8');
+    assert.equal(ok.res.headers.get('access-control-allow-origin'), '*');
+    assert.match(ok.body, /^# /);
+  }
+  if (existsSync(join(DIST, '404.html'))) {
+    for (const p of ['/404', '/404.html']) assert.equal((await call(p)).res.status, 404, p);
+  }
 });
 
 test('report', () => {

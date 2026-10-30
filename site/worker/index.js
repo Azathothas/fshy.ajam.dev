@@ -311,10 +311,42 @@ function isWorkerRoute(path) {
   return path === '/api/v1' || path.startsWith('/api/v1/') || path === '/mcp' || path.startsWith('/r/') || path === DOWNLOAD;
 }
 
+// the Markdown alternates and the not-found page, which wrangler.jsonc run_worker_first sends here. A Markdown file is
+// served with the headers that static/_headers gives it; a missing one is a short Markdown 404, not the HTML not-found
+// page under a Markdown type. /404 and /404.html are the not-found page with the status 404, not 200.
+const MARKDOWN = { 'content-type': 'text/markdown; charset=utf-8', 'cache-control': 'public, max-age=300', 'access-control-allow-origin': '*' };
+
+function isPagePath(path) {
+  return path.endsWith('.md') || path === '/404' || path === '/404.html';
+}
+
+async function pageAsset(request, env, url) {
+  if (request.method !== 'GET' && request.method !== 'HEAD') return env.ASSETS.fetch(request);
+  const head = request.method === 'HEAD';
+  if (url.pathname.endsWith('.md')) {
+    const res = await env.ASSETS.fetch(new Request(url.href, { method: 'GET' }));
+    if (res.status === 200) {
+      const h = new Headers(res.headers);
+      for (const [k, v] of Object.entries({ ...MARKDOWN, 'x-content-type-options': 'nosniff', 'referrer-policy': 'no-referrer' })) h.set(k, v);
+      return new Response(head ? null : res.body, { status: 200, headers: h });
+    }
+    if (res.body) await res.body.cancel();
+    if (res.status !== 404) return new Response(null, { status: res.status, headers: res.headers });
+    const body = '# Not found\n\nThere is no Markdown page at ' + url.pathname + '. The pages for agents are listed in ' +
+      url.origin + '/llms.txt.\n';
+    return new Response(head ? null : body, { status: 404, headers: baseHeaders(null, MARKDOWN) });
+  }
+  // the not-found page is served at /404 (html_handling); its own URL answers with its status
+  const res = await env.ASSETS.fetch(new Request(new URL('/404', url).href, { method: 'GET' }));
+  if (head && res.body) await res.body.cancel();
+  return new Response(head ? null : res.body, { status: 404, headers: new Headers(res.headers) });
+}
+
 async function route(request, env, ctx) {
   const t0 = performance.now();
   const url = new URL(request.url);
   const path = url.pathname;
+  if (isPagePath(path)) return pageAsset(request, env, url);
   if (!isWorkerRoute(path)) return env.ASSETS.fetch(request);
 
   if (request.method === 'OPTIONS') {
