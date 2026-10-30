@@ -3,7 +3,7 @@
   "slug": "printables",
   "provider": "Printables (Prusa Research)",
   "url": "https://www.printables.com",
-  "category": "3D model repository / maker marketplace — the strongest find in this niche",
+  "category": "3D model repository / maker marketplace",
   "free_tier": {
     "stated": "No published account quota and no published upload cap. Verified live object: a single 1,036,822,737 B (1.037 GB) STL served from files.printables.com. Also verified a model holding 29 files totalling 404.3 MB, and one holding six ZIPs of 62.5/167.5/208.5/65.0/98.8/118.6 MB. 'Other files' accepts ZIP, so arbitrary payloads ride inside an archive; and a single model accepts 1335+ files (forum report of a user hitting UI limits, not a storage limit).",
     "unit": "objects",
@@ -32,7 +32,7 @@
   ],
   "interface_detail": "Undocumented but stable public GraphQL: POST https://api.printables.com/graphql/ with no auth. `print(id:N){ name stls{id name fileSize} otherFiles{id name fileSize} downloadPacks{...} }` to enumerate; then mutation `getDownloadLink(id, printId, source:\"model_detail\", fileType:\"stl\"|\"other\")` returns `{ok, output:{link}}`.",
   "tooling": "Plain HTTP + JSON. No SDK needed. gid/uid path component is an opaque UUID, not a signature.",
-  "chaining": "The returned link is a plain GCS object URL with NO signature and NO expiry field that is enforced (headers showed `expires: Fri, 06 Mar 2026` — a date already in the past — and the object still served on 2026-10-21, i.e. rule 9: the signature field is not a gate). Hot-linkable behind Cloudflare with zero origin egress cost. Object keys are enumerable per model, so a shard-and-replicate writer can treat each model as a bucket.",
+  "chaining": "The returned link is a plain GCS object URL with NO signature and NO expiry field that is enforced (headers showed `expires: Fri, 06 Mar 2026` — a date already in the past — and the object still served on 2026-10-21, i.e. the signature field is not a gate). Hot-linkable behind Cloudflare with zero origin egress cost. Object keys are enumerable per model, so a shard-and-replicate writer can treat each model as a bucket.",
   "limits": [
     {
       "kind": "write-gated",
