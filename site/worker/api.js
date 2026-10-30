@@ -2,7 +2,7 @@
 // over the Worker DB, plus their JSON and TSV renderings. The HTTP API (index.js) and the MCP
 // tools (mcp.js) both call these functions, so the two surfaces return the same rows.
 
-import { all, asset, capped, engineFailed, HEAP_LIMIT_MIB, HttpError, nameIndex, reset } from './db.js';
+import { all, asset, capped, discard, engineFailed, HEAP_LIMIT_MIB, HttpError, nameIndex } from './db.js';
 import { guard, GuardError } from './guard.js';
 import { checkPlan } from './plan.js';
 import { bestVorder, bm25, hostedFirst, resolveEntity, scoreNames, sortEntities as orderEntities } from './rank.js';
@@ -621,9 +621,9 @@ export function sql(store, p) {
 
 /**
  * The error that the caller sees for a statement that failed: a refusal of the guard, the budget or the result cap,
- * an "out of memory" of the heap limit (400), a failure of the engine itself (503, and the next request starts the
- * engine again), else the SQLite error (400). A statement that the platform stops at limits.cpu_ms never gets here:
- * the caller sees the error page of the platform (error 1102, HTTP 503).
+ * an "out of memory" of the heap limit (400), a failure of the engine itself (503, and the next request opens a new
+ * copy of the store on the same engine), else the SQLite error (400). A statement that the platform stops at
+ * limits.cpu_ms never gets here: the caller sees the error page of the platform (error 1102, HTTP 503).
  */
 function sqlFailure(store, e) {
   if (e instanceof HttpError) return e;
@@ -634,9 +634,9 @@ function sqlFailure(store, e) {
       'select fewer rows or shorter values');
   }
   if (engineFailed(e)) {
-    reset(store);
+    discard(store);
     console.error('fshy sql engine failed:', m);
-    return new HttpError(503, 'the SQL engine failed on this statement and restarts; send a smaller statement');
+    return new HttpError(503, 'the SQL engine failed on this statement and the store is opened again; send a smaller statement');
   }
   return bad('SQL error: ' + m);
 }
