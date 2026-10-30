@@ -46,7 +46,7 @@ export const TOOLS = [
   },
   {
     name: 'filter',
-    description: 'Use for questions such as "which X need no card" or "which X cost less than Y": the records that meet structured conditions, best verdict first. Start here for a ranked answer. A NULL price never matches a price condition, and the footer counts the rows that it excluded.',
+    description: 'Use for questions such as "which X need no card" or "which X cost less than Y": the records that meet structured conditions, hosted first, then best verdict first. Start here for a ranked answer. A NULL price never matches a price condition, and the footer counts the rows that it excluded.',
     inputSchema: obj({
       topic: TOPIC,
       verdict: s('comma list, e.g. qualifies,qualifies-with-caveat'),
@@ -84,7 +84,7 @@ export const TOOLS = [
   },
   {
     name: 'need',
-    description: 'Use first when the question matches a curated best-per-need list. With no id: the lists. With id: the ranked records, then the rows with no parsed number, then, in a list that asks for no card or no phone, the rows whose card or phone requirement is not stated.',
+    description: 'Use first when the question matches a curated best-per-need list. With no id: the lists. With id: the ranked records, then the rows with no parsed number, then, in a list that asks for no card or no phone, the rows whose card or phone requirement is not stated, then the self-hosted rows.',
     inputSchema: obj({ id: s('need id, e.g. s3-storage-no-card'), limit: n('<= 200, default 50'), offset: n('skip rows'), format: FORMAT }),
   },
   {
@@ -122,7 +122,8 @@ function instructions(store) {
   const v = api.vocabOf(store);
   return 'Read-only catalogue of free and cheap capability: storage, compute, GPU time, inference, crawling, egress, ' +
     'email, databases, DNS, CI, proxies and more. Call help once. Then use need or filter for a ranked answer, and ' +
-    'search for a name; get with detail=full reads one record. NULL means unknown, never no. Topics: ' +
+    'search for a name; get with detail=full reads one record. NULL means unknown, never no. A self-hosted record ' +
+    '(self_hosted yes: the user installs and runs it) is the last resort, after every hosted record of a list. Topics: ' +
     [...v.topic].join(', ') + '. Verdicts, best first: ' + [...v.verdict].join(', ') + '. A batch holds at most ' +
     MAX_BATCH + ' messages, and at most ' + MAX_BATCH_SQL + (MAX_BATCH_SQL === 1 ? ' of them calls' : ' of them call') + ' sql.';
 }

@@ -12,10 +12,17 @@
   // verdicts in vorder, with short labels (pages.py VERDICT_LABEL)
   var VT = ['qualifies', 'qualifies-with-caveat', 'trial-only', 'paid-only', 'fails-identity', 'fails-egress', 'fails-quota', 'dead'];
   var VL = ['★ qualifies', 'caveat', 'trial', 'paid', 'fails: identity', 'fails: egress', 'fails: quota', 'dead'];
+  // a self-hosted row shows this label, never its verdict, and every list puts it last (publish/selfhosted.py)
+  var SH = 'self-hosted, last resort';
+  // hosted first: every item for which sh(x) is false, then the others, each part in its order
+  function last(a, sh) { return a.filter(function (x) { return !sh(x); }).concat(a.filter(sh)); }
   // topic names, read from the topic bar
   var TN = {};
   $$('.topics a').forEach(function (a) { var m = /^\/t\/([^/]+)\/$/.exec(a.getAttribute('href')); if (m) TN[m[1]] = a.textContent; });
-  function pill(v) { var i = typeof v === 'number' ? v : VT.indexOf(v); return '<span class="v v-' + esc(VT[i] || v) + '">' + esc(VL[i] || v) + '</span>'; }
+  function pill(v, sh) {
+    if (sh) { return '<span class="v v-self-hosted">' + SH + '</span>'; }
+    var i = typeof v === 'number' ? v : VT.indexOf(v); return '<span class="v v-' + esc(VT[i] || v) + '">' + esc(VL[i] || v) + '</span>';
+  }
   function usd(v, sfx) { return v == null ? '' : 'USD ' + (v < 1000 ? String(+(+v).toFixed(2)) : (+v).toFixed(0)) + sfx; }
   function topics(ts) { return ts.map(function (t) { return TN[t] || t; }).join(', '); }
   function lane(vs) { // as pages.py lane()
@@ -143,7 +150,7 @@
   }
   function nameHits(q, n) {
     if (!ms || !q) { return []; }
-    return ms.search(q).slice(0, n).map(function (h) { return names[h.id]; });
+    return last(ms.search(q).map(function (h) { return names[h.id]; }), function (r) { return r[8]; }).slice(0, n);
   }
   var box = $('#q'), drop = $('#qr'), sel = -1;
   function setOpen(on) {
@@ -159,7 +166,7 @@
     drop.removeAttribute('aria-busy');
     var hits = nameHits(q, 10);
     drop.innerHTML = hits.map(function (r, i) {
-      return '<a id="qo' + i + '" role="option" href="/p/' + esc(r[0]) + '/">' + txt(r[1]) + pill(r[5]) + '<small>' + esc(topics(r[4])) +
+      return '<a id="qo' + i + '" role="option" href="/p/' + esc(r[0]) + '/">' + txt(r[1]) + pill(r[5], r[8]) + '<small>' + esc(topics(r[4])) +
         ' &middot; ' + r[6] + ' record' + (r[6] === 1 ? '' : 's') + '</small></a>';
     }).join('') + '<a id="qo' + hits.length + '" role="option" class="all" href="/search/?q=' + encodeURIComponent(q) + '">Search all text for "' + txt(q) + '"</a>';
     sel = -1; box.removeAttribute('aria-activedescendant'); setOpen(true);
@@ -205,25 +212,29 @@
       sr.innerHTML = '<p class="lede">Searching...</p>';
       var api = fetch('/api/v1/search?limit=50&q=' + encodeURIComponent(q)).then(function (r) { return r.json(); });
       loadNames().catch(function () {}).then(function () {
-        var nh = nameHits(q, 8);
-        sr.innerHTML = (nh.length ? '<h2>Providers <small>' + nh.length + '</small></h2><ul class="plain">' + nh.map(function (r) {
-          return '<li><a href="/p/' + esc(r[0]) + '/"><b>' + txt(r[1]) + '</b></a> ' + pill(r[5]) + ' <small>' + esc(topics(r[4])) +
-            ' &middot; ' + r[6] + ' record' + (r[6] === 1 ? '' : 's') + '</small></li>';
-        }).join('') + '</ul>' : '') + '<h2>Full text</h2><div id="ft" aria-live="polite"><p>Loading...</p></div>';
+        var nh = nameHits(q, 99), ul = function (a) {
+          return '<ul class="plain">' + a.map(function (r) {
+            return '<li><a href="/p/' + esc(r[0]) + '/"><b>' + txt(r[1]) + '</b></a> ' + pill(r[5], r[8]) + ' <small>' + esc(topics(r[4])) +
+              ' &middot; ' + r[6] + ' record' + (r[6] === 1 ? '' : 's') + '</small></li>';
+          }).join('') + '</ul>';
+        };
+        sr.innerHTML = (nh.length ? '<h2>Providers <small>' + nh.length + '</small></h2>' + ul(nh.slice(0, 8)) +
+          (nh.length > 8 ? '<details><summary>' + (nh.length - 8) + ' more providers</summary>' + ul(nh.slice(8)) + '</details>' : '') : '') +
+          '<h2>Full text</h2><div id="ft" aria-live="polite"><p>Loading...</p></div>';
         return api;
       }).then(function (d) {
         if (d.error) { $('#ft').innerHTML = '<p>' + esc(d.error) + '</p>'; return; }
         var ix = {}; (d.columns || []).forEach(function (c, i) { ix[c] = i; });
         var rows = d.rows || [], ft = $('#ft');
-        ft.innerHTML = rows.length ? '<ul class="' + lane(rows.map(function (r) { return r[ix.verdict]; })) + '">' + rows.map(function (r) {
-          var rid = r[ix.rid], t = rid.split('/')[0], id = r[ix.identity] || '', def = id.slice(-1) === '?';
+        ft.innerHTML = rows.length ? '<ul class="' + lane(rows.map(function (r) { return r[ix.self_hosted] === 'yes' ? SH : r[ix.verdict]; })) + '">' + rows.map(function (r) {
+          var rid = r[ix.rid], t = rid.split('/')[0], id = r[ix.identity] || '', def = id.slice(-1) === '?', sh = r[ix.self_hosted] === 'yes';
           var price = usd(r[ix.usd_per_tb_month], '/TB-month') || usd(r[ix.usd_month], '/month');
           var card = r[ix.card] === 'no' && !def ? '<span class="ok">no card</span>' : r[ix.card] === 'yes' ? '<span class="w">card</span>' : '<span class="u">card?</span>';
           var m = ix.matched != null && r[ix.matched] ? '<span class="mt"><i>matched in</i> ' + esc(matched(r[ix.matched])) + '</span>' : '';
-          return '<li class="e" data-stale-on="' + esc(r[ix.stale_on]) + '">' + pill(r[ix.verdict]) + '<a class="n" href="/r/' + esc(rid) + '">' +
+          return '<li class="e" data-stale-on="' + esc(r[ix.stale_on]) + '">' + pill(r[ix.verdict], sh) + '<a class="n" href="/r/' + esc(rid) + '">' +
             txt(r[ix.provider]) + '</a>' + (price ? '<span class="pr">' + esc(price) + '</span>' : '') +
             (r[ix.summary] ? '<p class="s">' + txt(line(r[ix.summary])) + '</p>' : '') + '<p class="f"><span class="tp">' + esc(TN[t] || t) +
-            '</span><span class="id"><i>identity</i> ' + esc(id) + '</span>' + card + (r[ix.phone] === 'yes' ? '<span class="w">phone</span>' : '') +
+            '</span>' + (sh ? '<span><i>verdict</i> ' + esc(r[ix.verdict]) + '</span>' : '') + '<span class="id"><i>identity</i> ' + esc(id) + '</span>' + card + (r[ix.phone] === 'yes' ? '<span class="w">phone</span>' : '') +
             '<span class="rg"><i>evidence</i> ' + esc(r[ix.confidence]) + '</span><span class="fr"></span>' + m + '</p></li>';
         }).join('') + '</ul>' + (d.total > rows.length ? '<p class="needs">Showing ' + rows.length + ' of ' + d.total + ' matches.</p>' : '')
           : '<p>No match. Try fewer words, or open a list of <a href="/need/">Best per need</a>.</p>';
@@ -251,10 +262,10 @@
     if (ids.length) {
       Promise.all(ids.map(function (id) { return fetch('/api/v1/record/' + id + '.json').then(function (r) { return r.ok ? r.json() : null; }); })).then(function (recs) {
         var missing = ids.filter(function (id, i) { return !recs[i]; });
-        recs = recs.filter(Boolean);
+        recs = last(recs.filter(Boolean), function (x) { return x.card.self_hosted; });
         if (!recs.length) { cmp.innerHTML = '<p>None of those records exist.</p>' + add; bindAdd(); return; }
         var h = function (s) { return s == null || s === '' ? '' : txt(s).replace(/\n/g, '<br>'); };
-        var f = [['verdict', function (x) { return pill(x.card.verdict); }],
+        var f = [['verdict', function (x) { return pill(x.card.verdict, x.card.self_hosted) + (x.card.self_hosted ? ' ' + esc(x.card.verdict) : ''); }],
           ['evidence rung', function (x) { return h(x.card.confidence); }],
           ['identity', function (x) { return h(x.card.identity_kind + (x.card.identity_basis && x.card.identity_basis !== 'stated' ? '?' : '')); }],
           ['card', function (x) { return x.card.needs_card === 1 ? 'yes' : x.card.needs_card === 0 ? 'no' : 'unknown'; }],

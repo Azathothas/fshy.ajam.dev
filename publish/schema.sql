@@ -23,6 +23,7 @@ CREATE TABLE record (
   provider TEXT, url TEXT, domain TEXT, category TEXT, tier TEXT,
   verdict TEXT NOT NULL, vorder INTEGER NOT NULL,
   grp TEXT NOT NULL,               -- usable | trial | paid | rejected | dead
+  self_hosted INTEGER NOT NULL DEFAULT 0,  -- 1 = the user installs and runs it: listed after every hosted (0) record
   confidence TEXT, binding TEXT,
   identity_kind TEXT, identity_basis TEXT,   -- stated | defaulted
   needs_card INTEGER, needs_phone INTEGER, needs_id INTEGER, needs_institution INTEGER,  -- 1 / 0 / NULL = unknown

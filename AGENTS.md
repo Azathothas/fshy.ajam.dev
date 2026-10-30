@@ -37,6 +37,42 @@ request. A merge session reviews that pull request, merges it, and exports the p
    it against first-party sources.
 7. ⛔ **A session never merges what it wrote**, except the merge session's own publish and intake pull
    requests. See [`docs/merge-protocol.md`](docs/merge-protocol.md).
+8. ⛔ **A self-hosted record is the last resort, in every list.** The site is for users who have no hardware. A
+   self-hosted record has `record.self_hosted = 1`: the user installs, runs and maintains it, on any machine. Every
+   list of the wiki, the API, the MCP tools and the files for agents puts it after every hosted record (free, trial
+   or paid). Never star, highlight or rank first a self-hosted row. It shows the label `self-hosted, last resort` in
+   place of its verdict pill. The rule for a change of the site:
+   - `self_hosted` ascending is the first sort key of every list. Each key after it does not change, so each part
+     keeps the order of the list. A limit and an offset apply after the split.
+   - Search: names first, then BM25, then the split of the whole list. An entity whose every record is self-hosted
+     comes after every other entity. Inside each part, the order stays score, then best verdict, then eid.
+   - The best verdict of an entity (`entity.best_vorder`, `bestVorder` of `rank.js`) is the best verdict of its hosted
+     records, or of all its records only when every one is self-hosted. A self-hosted record never lifts its vendor.
+   - Filter: `ORDER BY self_hosted, <sort> IS NULL, <sort> <dir>, vorder, rid`. Entity: `ORDER BY self_hosted,
+     vorder, rid`. The worklists stale and unparsed sort on `self_hosted` first, and the worklist drift sorts on the
+     `self_hosted` of its subject first.
+   - A name lookup (the operation entity with a name) gives one entity, not a list. The best score wins
+     (`resolveEntity` of `rank.js`), so an exact name is never beaten by a fuzzy match of another vendor. A hosted
+     entity wins only a tie. The other matches keep the order of the name search.
+   - A dated changelog is not a list of offers: `/changes/`, `changes.xml` and the worklist changes keep their date
+     order. Their rows show no verdict pill and no star.
+   - Need: the hosted ranked rows, the hosted rows with no number, the hosted rows whose card or phone requirement is
+     not stated, then the self-hosted rows in the same order. The API gives the self-hosted rows in
+     `self_hosted_rows`.
+   - A page or a file lists its self-hosted records at its end. A page with sections gives them one last section. A
+     topic that the files for agents split into parts gives them one last part, `llms-full-self-hosted`. The Parts
+     list of the root `llms-full.txt` gives every topic's hosted files first, then every self-hosted part.
+   - A Markdown line of a self-hosted record opens with the label, then `verdict <word>`.
+   - A count of a topic counts the hosted records of each group, and the self-hosted records of the topic once.
+
+   The rule is in [`publish/selfhosted.py`](publish/selfhosted.py) and in `hostedFirst`, `sortEntities`,
+   `resolveEntity` and `bestVorder` of [`site/worker/rank.js`](site/worker/rank.js). The research repository has the
+   twins `hosted_first`, `sort_entities`, `resolve_entity` and `best_vorder` in `fr.py`, and `entity.best_vorder` in
+   `build.py`. `build.py` refuses data whose `best_vorder` breaks the rule. `build.py --site` fails when a page or a
+   file puts a self-hosted row above a hosted one, stars it, or gives its verdict before its label. `run.mjs` checks
+   the API and the MCP tools, and `parity.json` holds the cases of the four rules of `rank.js`. CI also runs them on a
+   copy of `data/` at version 2 with some records marked self-hosted (`publish/fixture_selfhosted.py`), while `data/`
+   has no self-hosted record.
 
 ## 3. Which document answers which question
 

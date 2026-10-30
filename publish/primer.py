@@ -31,7 +31,7 @@ MINOR = ["fx", "capture", "vocab", "meta", "keystat"]
 # columns worth naming in the primer; the rest are counted and reachable with pragma_table_info
 KEY_COLS = {
     "record": ["rid", "topic", "slug", "eid", "provider", "url", "category", "verdict", "vorder", "grp",
-               "confidence", "binding", "identity_kind", "identity_basis", "needs_card", "needs_phone",
+               "self_hosted", "confidence", "binding", "identity_kind", "identity_basis", "needs_card", "needs_phone",
                "needs_id", "needs_institution", "crypto", "interfaces", "usd_month", "usd_per_tb_month",
                "verified_basis", "checked_on", "stale_on", "summary", "duplicate_of", "doc", "rno"],
 }
@@ -39,35 +39,41 @@ VOCAB_ORDER = ["verdict", "grp", "confidence", "binding", "identity_kind", "iden
                "unknown_class"]
 # domains whose terms explain themselves: listed without meanings, to keep the primer short
 TERMS_ONLY = {"unknown_class"}
+# domains that a RULES line explains: not repeated under VOCABULARIES
+RULE_ONLY = {"self_hosted"}
 
 EXAMPLES = [
     ("Usable storage with no card, cheapest per TB-month first (NULL price last)",
      "SELECT rid, provider, usd_per_tb_month FROM record WHERE topic='storage' AND grp='usable' "
      "AND needs_card=0 AND identity_basis='stated' AND duplicate_of IS NULL "
-     "ORDER BY usd_per_tb_month IS NULL, usd_per_tb_month LIMIT 10"),
+     "ORDER BY self_hosted, usd_per_tb_month IS NULL, usd_per_tb_month LIMIT 10"),
     ("Full text, one column filter plus a prefix term (CJK: query bigrams, e.g. MATCH '百度')",
      "SELECT r.rid, r.verdict FROM text_fts JOIN record r ON r.rno = text_fts.docid "
-     "WHERE text_fts MATCH 'offer:gpu* hours' ORDER BY r.vorder LIMIT 10"),
+     "WHERE text_fts MATCH 'offer:gpu* hours' ORDER BY r.self_hosted, r.vorder LIMIT 10"),
     ("Full text with filters: match in a subquery on record, because a JOIN with filters is refused",
      "SELECT r.rid, r.verdict FROM record r WHERE r.rno IN (SELECT docid FROM text_fts WHERE text_fts MATCH "
      "'offer:gpu*') AND r.topic IN ('compute','inference') AND r.grp IN ('usable','trial') "
-     "AND r.duplicate_of IS NULL ORDER BY r.vorder LIMIT 10"),
+     "AND r.duplicate_of IS NULL ORDER BY r.self_hosted, r.vorder LIMIT 10"),
     ("Every record of a vendor, by alias",
      "SELECT rid, topic, verdict FROM record WHERE eid IN "
-     "(SELECT eid FROM alias WHERE alias LIKE 'hetzner%') ORDER BY vorder, rid LIMIT 20"),
+     "(SELECT eid FROM alias WHERE alias LIKE 'hetzner%') ORDER BY self_hosted, vorder, rid LIMIT 20"),
     ("What goes stale in the next 30 days",
      "SELECT rid, stale_on, verified_basis FROM record WHERE stale_on <= date('now','+30 days') "
-     "AND grp <> 'dead' ORDER BY vorder, stale_on LIMIT 20"),
+     "AND grp <> 'dead' ORDER BY self_hosted, vorder, stale_on LIMIT 20"),
     ("Parsed prices per TB in USD, with the FX date used",
-     "SELECT rid, num, currency, usd, fx_date FROM claim WHERE kind='price-per-tb' "
-     "AND usd IS NOT NULL ORDER BY usd LIMIT 10"),
+     "SELECT c.rid, c.num, c.currency, c.usd, c.fx_date FROM claim c JOIN record r ON r.rid = c.rid "
+     "WHERE c.kind='price-per-tb' AND c.usd IS NOT NULL ORDER BY r.self_hosted, c.usd LIMIT 10"),
     ("The binding request-rate limits, and who cites a host",
-     "SELECT l.rid, l.value FROM limit_row l WHERE l.is_binding=1 AND l.kind='request-rate' "
-     "AND l.rid IN (SELECT rid FROM evidence WHERE url LIKE '%github.com%') LIMIT 10"),
+     "SELECT l.rid, l.value FROM limit_row l JOIN record r ON r.rid = l.rid WHERE l.is_binding=1 "
+     "AND l.kind='request-rate' AND l.rid IN (SELECT rid FROM evidence WHERE url LIKE '%github.com%') "
+     "ORDER BY r.self_hosted, r.vorder, l.rid LIMIT 10"),
     ("Compute records that have a free allowance (claim has-free-tier = 1), best verdict first",
      "SELECT r.rid, r.verdict FROM record r JOIN claim c ON c.rid = r.rid AND c.kind = 'has-free-tier' AND c.num = 1 "
-     "WHERE r.topic = 'compute' AND r.grp IN ('usable','trial') AND r.duplicate_of IS NULL ORDER BY r.vorder LIMIT 10"),
+     "WHERE r.topic = 'compute' AND r.grp IN ('usable','trial') AND r.duplicate_of IS NULL "
+     "ORDER BY r.self_hosted, r.vorder LIMIT 10"),
 ]
+# Every worked query lists record ids, so each one sorts on self_hosted first: a reader who pages it, or raises its
+# LIMIT, still gets every hosted row before a self-hosted one. publish/test_publish.py checks it on the store.
 
 
 def connect(db_path):
@@ -128,6 +134,9 @@ def _text(db):
     w("- TSV output ends with lines that start with '#': the row count, the limit, a cut. Read it with")
     w("  comment='#' in pandas, or drop those lines.")
     w("- vorder 0..7 orders verdicts best first; grp groups them.")
+    if "self_hosted" in {r[1] for r in db.execute("SELECT * FROM pragma_table_info('record')")}:
+        w("- self_hosted=1: the user installs and runs it, the last resort. Self-hosted options are listed last,")
+        w("  because this site is for users who have no hardware: every list sorts on self_hosted first.")
     w("")
     w("TABLES (key columns)")
     def sig(t):
@@ -164,7 +173,7 @@ def _text(db):
     for d, t, m in db.execute("SELECT domain, term, meaning FROM vocab ORDER BY domain, ord"):
         vocab.setdefault(d, []).append((t, m))
     for d in VOCAB_ORDER + sorted(set(vocab) - set(VOCAB_ORDER)):
-        if d not in vocab:
+        if d not in vocab or d in RULE_ONLY:
             continue
         if d in TERMS_ONLY:
             w("- %s: %s" % (d, ", ".join(t for t, _ in vocab[d])))

@@ -3,7 +3,8 @@
 Pages: / , /t/<topic>/ , /t/<topic>/paid/ , /t/<topic>/rejected/ , /p/<eid>/ (and /p/<eid>/<topic>--<slug>/ for a
 provider with many records), /need/<id>/ , /graveyard/ , /changes/ (+ changes.xml), /compare/ , /search/ , /about/ ,
 404.html. Plain HTML, one stylesheet, one script; no framework.
-Everything shown comes from the public store; nothing here adds a fact.
+Everything shown comes from the public store; nothing here adds a fact. Every list puts the self-hosted records after
+every hosted one, under their own label (selfhosted.py).
 """
 import collections
 import datetime
@@ -16,6 +17,8 @@ import re
 from urllib.parse import quote
 
 import llms
+import selfhosted
+from selfhosted import is_sh
 
 # the topics, their names and descriptions, in the order of the topic bar: rules/topics.json is the one list
 TOPICS = [(t["id"], t["name"], t["description"]) for t in json.load(open(
@@ -262,6 +265,7 @@ class Site:
         os.makedirs(os.path.dirname(p), exist_ok=True)
         with open(p, "w", encoding="utf-8", newline="\n") as f:
             f.write(body)
+        selfhosted.check(rel, body)
         self.n += 1
 
     def page(self, rel, title, body, desc, extra_head=""):
@@ -321,6 +325,8 @@ class Site:
         b = []
         if with_topic:
             b.append('<span class="tp">%s</span>' % e(TOPIC_NAME.get(c["topic"], c["topic"])))
+        if is_sh(c):  # the lane holds the self-hosted label, so the verdict is a plain word here
+            b.append('<span><i>verdict</i> %s</span>' % e(c["verdict"]))
         fw = llms.free_word(c)
         if fw and c["grp"] not in ("paid", "dead"):
             b.append('<span class="%s">%s</span>' % ("w" if fw == "no free tier" else "ok", fw))
@@ -348,12 +354,15 @@ class Site:
         return "".join(b)
 
     def verdict(self, c):
+        """The pill of a row: the verdict, or for a self-hosted record the plain label of the last resort, never a star."""
+        if is_sh(c):
+            return selfhosted.PILL
         return '<span class="v v-%s">%s</span>' % (e(c["verdict"]), e(VERDICT_LABEL.get(c["verdict"], c["verdict"])))
 
     @staticmethod
     def lane(cs):
         """Width class for a list's verdict lane, from its longest label: rows align without a page-wide grid."""
-        w = max((len(VERDICT_LABEL.get(c["verdict"], c["verdict"])) for c in cs), default=15)
+        w = max((len(selfhosted.LABEL if is_sh(c) else VERDICT_LABEL.get(c["verdict"], c["verdict"])) for c in cs), default=15)
         return "list" + ("" if w > 11 else " lm" if w > 6 else " ls")
 
     def row_attrs(self, c):
@@ -427,7 +436,8 @@ class Site:
             fsub = "checked %s (%s); stale on %s" % (e(c["checked_on"]), e(c["verified_basis"]), e(c["stale_on"]))
         return '<dl class="facts">%s</dl>' % "".join((
             cell("Free allowance", allowance, wide=True),
-            cell("Verdict", self.verdict(c), e(self.voc.get(("verdict", c["verdict"]), ""))),
+            cell("Verdict", self.verdict(c), e(("verdict %s: %s. %s" % (c["verdict"], self.voc.get(("verdict", c["verdict"]), ""),
+                                                                    selfhosted.NOTE)) if is_sh(c) else self.voc.get(("verdict", c["verdict"]), ""))),
             cell("Cost", cost, sub),
             cell("Identity", e(c["identity_kind"]) + ("?" if q else ""),
                  ("placeholder, not evidence; " if q else "") + card + ", " + phone),
@@ -449,6 +459,7 @@ class Site:
     def key(self):
         """What each word and mark of a row means, under the filter bar of every list page."""
         vs = "".join('<dt>%s</dt><dd>%s</dd>' % (self.verdict({"verdict": v}), e(m)) for v, m in self.ctx["vocab"].get("verdict", []))
+        vs += '<dt>%s</dt><dd>%s. %s</dd>' % (selfhosted.PILL, e(selfhosted.MEANING), e(selfhosted.NOTE))
         rows = [
             ("free tier, no free tier", "the record states a free allowance, or states that it has none"),
             ("identity email", "what a signup asks for. A question mark after it: a placeholder, not read from a source"),
@@ -474,7 +485,7 @@ class Site:
             cs = by_topic.get(t, [])
             if not cs:
                 continue
-            u = sum(1 for c in cs if c["grp"] == "usable")
+            u = sum(1 for c in cs if c["grp"] == "usable" and not is_sh(c))
             tiles.append('<a class="tile" href="/t/%s/"><b>%s</b><span class="m">%s usable of %s</span>'
                          '<i class="bar"><i style="width:%d%%"></i></i><span>%s</span></a>' % (
                              t, e(n), num(u), num(len(cs)), round(100 * u / len(cs)), e(d)))
@@ -484,8 +495,9 @@ class Site:
                      for h, w, t in [x for x in self.history_items() if x[0] in linked][:8])
         legend = "".join('<dt><span class="v v-%s">%s</span></dt><dd>%s</dd>' % (e(v), e(VERDICT_LABEL.get(v, v)), e(m))
                          for v, m in self.ctx["vocab"].get("verdict", []))
+        legend += '<dt>%s</dt><dd>%s. %s</dd>' % (selfhosted.PILL, e(selfhosted.MEANING), e(selfhosted.NOTE))
         total = sum(len(v) for v in by_topic.values())
-        usable = sum(1 for v in by_topic.values() for c in v if c["grp"] == "usable")
+        usable = sum(1 for v in by_topic.values() for c in v if c["grp"] == "usable" and not is_sh(c))
         body = (
             '<section class="hero"><h1>Free, nearly free and cheapest-paid capacity</h1>'
             '<p class="lede">Storage, compute, GPU time, inference, egress, crawling, email, databases, DNS, CI and more. '
@@ -531,19 +543,47 @@ class Site:
         out.append("</section>")
         return "".join(out)
 
+    def self_section(self, cs, with_topic=False, more=""):
+        """The last section of a list page: its self-hosted records, in the order of the page, under their own heading.
+        more: HTML that says where the topic's other self-hosted records are."""
+        if not cs:
+            return ""
+        return ('<section class="grp" aria-labelledby="self-hosted"><h2 id="self-hosted">Self-hosted, the last resort '
+                '<small>%s</small></h2><p class="lede">%s. %s%s</p><ul class="%s">%s</ul></section>') % (
+            num(len(cs)), e(selfhosted.MEANING[:1].upper() + selfhosted.MEANING[1:]), e(selfhosted.NOTE),
+            (" " + more) if more else "", self.lane(cs), "".join(self.entry(c, with_topic) for c in cs))
+
+    @staticmethod
+    def self_stat(n, href="#self-hosted"):
+        return ('<li><a class="st" href="%s"><b>%s</b>self-hosted, listed last</a></li>' % (href, num(n))) if n else ""
+
     def topic(self, t, cs):
         name = TOPIC_NAME.get(t, t)
         desc = next((d for x, _, d in TOPICS if x == t), "")
-        main = [c for c in cs if c["grp"] in ("usable", "trial")]
-        paid = [c for c in cs if c["grp"] == "paid"]
-        rest = [c for c in cs if c["grp"] in ("rejected", "dead")]
+        # each page lists its hosted records by group, then its self-hosted records in one last section
+        main = [c for c in cs if c["grp"] in ("usable", "trial") and not is_sh(c)]
+        paid = [c for c in cs if c["grp"] == "paid" and not is_sh(c)]
+        rest = [c for c in cs if c["grp"] in ("rejected", "dead") and not is_sh(c)]
+        sh_main = [c for c in cs if c["grp"] in ("usable", "trial") and is_sh(c)]
+        sh_paid = [c for c in cs if c["grp"] == "paid" and is_sh(c)]
+        sh_rest = [c for c in cs if c["grp"] in ("rejected", "dead") and is_sh(c)]
+        n_paid, n_rest = len(paid) + len(sh_paid), len(rest) + len(sh_rest)
         parts = ['<h1>%s</h1><p class="lede">%s</p>' % (e(name), e(desc))]
+        # the counts of the topic, as llms.counts() gives them: each group counts its hosted records, and the topic's
+        # self-hosted records of any group are counted once
         sts = self.stats(main, GROUPS[:2], lambda g: "#" + g)
         if paid:
             sts += '<li><a class="st paid" href="paid/"><b>%s</b>paid only</a></li>' % num(len(paid))
         if rest:
             sts += '<li><a class="st rejected" href="rejected/"><b>%s</b>rejected or dead</a></li>' % num(len(rest))
+        n_sh = len(sh_main) + len(sh_paid) + len(sh_rest)
+        sts += self.self_stat(n_sh, "#self-hosted" if sh_main else "paid/#self-hosted" if sh_paid else "rejected/#self-hosted")
         parts.append('<ul class="stats">%s</ul>' % sts)
+        elsewhere = [('<a href="paid/#self-hosted">%s paid-only</a>' % num(len(sh_paid))) if sh_paid else "",
+                     ('<a href="rejected/#self-hosted">%s rejected or dead</a>' % num(len(sh_rest))) if sh_rest else ""]
+        elsewhere = " and ".join(x for x in elsewhere if x)
+        more = ("This page lists the usable and trial ones; the %s ones are at the end of their pages." % elsewhere
+                if elsewhere else "")
         tn = [x for x in self.ctx["needs"]["needs"] if x.get("topic") == t]
         if tn:
             parts.append('<p class="needs"><b>Best per need</b>%s</p>' % "".join('<a href="/need/%s/">%s</a>' % (e(x["id"]), e(x["title"])) for x in tn))
@@ -552,27 +592,31 @@ class Site:
             gs = [c for c in main if c["grp"] == g]
             if gs:
                 secs.append(self.group_section(g, lbl, gs, jump))
-        if paid:
+        if n_paid:
             # the paid group has its own page: a reader who looks for free capacity does not load it
             secs.append('<section class="grp" aria-labelledby="paid"><h2 id="paid">Paid only <small>%s</small></h2>'
-                        '<p>%s offers have no free allowance and are listed for their price, on '
-                        '<a href="paid/">%s: paid only</a>.</p></section>' % (num(len(paid)), num(len(paid)), e(name)))
+                        '<p>%s hosted offers have no free allowance and are listed for their price, on '
+                        '<a href="paid/">%s: paid only</a>%s.</p></section>' % (
+                            num(len(paid)), num(len(paid)), e(name),
+                            (", with %s self-hosted at its end" % num(len(sh_paid))) if sh_paid else ""))
+        secs.append(self.self_section(sh_main, more=more))
         if jump:
             parts.append('<nav aria-label="On this page">%s</nav>' % "".join(jump))
-        if main:
+        if main or sh_main:
             parts.append(self.filters())
         parts.extend(secs)
         self.page("t/%s/index.html" % t, name, "".join(parts), desc)
         crumb = '<p class="crumb"><a href="/">Home</a> / <a href="/t/%s/">%s</a></p>' % (t, e(name))
-        if paid:
+        if n_paid:
             pj = []
-            sec = self.group_section("paid", "Paid only", paid, pj)
+            sec = self.group_section("paid", "Paid only", paid, pj) if paid else ""
             self.page("t/%s/paid/index.html" % t, name + ": paid only", crumb + (
                 '<h1>%s: paid only</h1><p class="lede">Offers with no free allowance, listed for their price. The usable '
-                'and trial offers are on <a href="/t/%s/">%s</a>.</p>%s%s%s') % (
-                e(name), t, e(name), ('<nav aria-label="On this page">%s</nav>' % "".join(pj)) if pj else "", self.filters(), sec),
-                "%s offers of %s with no free allowance, listed for their price." % (num(len(paid)), name))
-        if not rest:
+                'and trial offers are on <a href="/t/%s/">%s</a>.</p>%s%s%s%s') % (
+                e(name), t, e(name), ('<nav aria-label="On this page">%s</nav>' % "".join(pj)) if pj else "", self.filters(), sec,
+                self.self_section(sh_paid)),
+                "%s offers of %s with no free allowance, listed for their price." % (num(n_paid), name))
+        if not n_rest:
             return
         rp = [crumb + '<h1>%s: rejected and dead</h1><p class="lede">Offers that fail on identity, egress or quota, and '
               'services that no longer exist. Each keeps its evidence, because a dead end is a finding.</p>' % e(name)]
@@ -589,12 +633,13 @@ class Site:
                     rsecs.append('<h3 id="v-%s">%s <small>%s</small></h3><ul class="%s">%s</ul>' % (
                         e(v), e(VERDICT_LABEL.get(v, v)), num(len(by_v[v])), self.lane(by_v[v]), "".join(self.entry(c) for c in by_v[v])))
                 rsecs.append("</section>")
-        if rjump:
-            rp.append('<ul class="stats">%s</ul>' % "".join("<li>%s</li>" % x for x in rjump))
+        if rjump or sh_rest:
+            rp.append('<ul class="stats">%s%s</ul>' % ("".join("<li>%s</li>" % x for x in rjump), self.self_stat(len(sh_rest))))
         rp.append(self.filters())
         rp.extend(rsecs)
+        rp.append(self.self_section(sh_rest))
         self.page("t/%s/rejected/index.html" % t, name + ": rejected and dead", "".join(rp),
-                  "%s offers of %s that fail on identity, egress or quota, or no longer exist, with the evidence." % (num(len(rest)), name))
+                  "%s offers of %s that fail on identity, egress or quota, or no longer exist, with the evidence." % (num(n_rest), name))
 
     def kv(self, label, val):
         return "<tr><th>%s</th><td>%s</td></tr>" % (e(label), val)
@@ -737,7 +782,9 @@ class Site:
 
     def need(self, x, cards):
         key = x["sort"]
-        ranked, unranked = llms.need_rows(self.ctx["db"], x, cards)
+        # the parts of the list: the hosted rows ranked, with no number and with the card or phone not stated, then
+        # every self-hosted row in the same order, the last resort (llms.need_lists)
+        ranked, unranked, unstated, unstated_text, last = llms.need_lists(self.ctx["db"], x, cards)
         show_val = key not in ("vorder",)
         wt = x.get("topic") is None
 
@@ -766,7 +813,6 @@ class Site:
                     num(len(unranked)), self.lane([cards[r[0]] for r in unranked]), items(unranked))) if unranked else "")
         # a need that asks for no card or no phone: the records whose requirement is not stated follow, in a section of
         # their own, never counted as no and never dropped (llms.need_unstated)
-        unstated, unstated_text = llms.need_unstated(self.ctx["db"], x, cards, ranked + unranked)
         if unstated:
             phone = "needs_phone=0" in x["sql"]
             rows_u = []
@@ -778,13 +824,20 @@ class Site:
                 rows_u.append(row)
             lists += '<h2 id="unstated">%s <small>%s</small></h2><p class="lede">%s</p><ul class="%s">%s</ul>' % (
                 e(llms.UNSTATED_HEADING), num(len(unstated)), e(unstated_text), self.lane([cards[r[0]] for r in unstated]), "".join(rows_u))
+        if last:
+            lists += ('<h2 id="self-hosted">Self-hosted, the last resort <small>%s</small></h2><p class="lede">%s. %s They '
+                      'follow the same order: ranked, then with no parsed number%s.</p><ul class="%s">%s</ul>' % (
+                          num(len(last)), e(selfhosted.MEANING[:1].upper() + selfhosted.MEANING[1:]), e(selfhosted.NOTE),
+                          ", then with the card or phone not stated" if unstated_text else "",
+                          self.lane([cards[r[0]] for r in last]), items(last)))
         body = ('<p class="crumb"><a href="/">Home</a> / <a href="/need/">Best per need</a></p><h1>%s</h1><p class="lede">%s</p>'
-                '<p class="needs"><b>Ranked by</b>%s, then the evidence &middot; %s ranked%s</p>%s%s'
-                '<details><summary>The query</summary><pre>%s\nORDER BY %s ASC NULLS LAST</pre><p>Run it yourself: '
+                '<p class="needs"><b>Ranked by</b>%s, then the evidence &middot; %s %sranked%s</p>%s%s'
+                '<details><summary>The query</summary><pre>%s\nORDER BY self_hosted, %s ASC NULLS LAST</pre><p>Run it yourself: '
                 '<a href="/api/v1/need/%s">/api/v1/need/%s</a>, or the MCP tool <code>need</code>.</p></details>') % (
-            e(x["title"]), e(x["scope"]), e(SORT_LABEL.get(key, key)), num(len(ranked)),
+            e(x["title"]), e(x["scope"]), e(SORT_LABEL.get(key, key)), num(len(ranked)), "hosted " if last else "",
             ((' &middot; <a href="#unranked">%s with no parsed number</a>' % num(len(unranked))) if unranked else "") +
-            ((' &middot; <a href="#unstated">%s with the card or phone not stated</a>' % num(len(unstated))) if unstated else ""),
+            ((' &middot; <a href="#unstated">%s with the card or phone not stated</a>' % num(len(unstated))) if unstated else "") +
+            ((' &middot; <a href="#self-hosted">%s self-hosted, listed last</a>' % num(len(last))) if last else ""),
             self.filters(), lists, e(x["sql"]), e(key), e(x["id"]), e(x["id"]))
         self.page("need/%s/index.html" % x["id"], x["title"], body, x["scope"])
 
@@ -794,23 +847,26 @@ class Site:
             ('<span class="m">%s</span>' % e(TOPIC_NAME.get(x["topic"], x["topic"]))) if x.get("topic") else '<span class="m">all topics</span>')
             for x in self.ctx["needs"]["needs"])
         self.page("need/index.html", "Best per need", '<h1>Best per need</h1><p class="lede">Each list is one query over '
-                  'the store, and its page shows the query. Rows with no parsed number come after the ranked rows. No row '
-                  'is dropped.</p><nav class="tiles" aria-label="Needs">%s</nav>' % items,
+                  'the store, and its page shows the query. Rows with no parsed number come after the ranked rows, and '
+                  'self-hosted rows come last. No row is dropped.</p><nav class="tiles" aria-label="Needs">%s</nav>' % items,
                   "Ranked lists of free and cheap offers for one need each, with the query of each list.")
 
     def graveyard(self, cards):
         dead = sorted((c for c in cards.values() if c["grp"] == "dead"), key=lambda c: (c["topic"], c["provider"] or ""))
         by_t = collections.defaultdict(list)
         for c in dead:
-            by_t[c["topic"]].append(c)
+            if not is_sh(c):
+                by_t[c["topic"]].append(c)
+        last = [c for c in dead if is_sh(c)]
         parts = ['<h1>Graveyard</h1><p class="lede">%s offers that no longer exist, with the evidence of their end. '
                  'The rejected offers that still exist are on the <i>rejected</i> page of each topic.</p>' % num(len(dead))]
-        parts.append('<ul class="stats">%s</ul>' % "".join('<li><a class="st dead" href="#%s"><b>%s</b>%s</a></li>' % (
-            t, num(len(by_t[t])), e(TOPIC_NAME[t])) for t, _, _ in TOPICS if by_t.get(t)))
+        parts.append('<ul class="stats">%s%s</ul>' % ("".join('<li><a class="st dead" href="#%s"><b>%s</b>%s</a></li>' % (
+            t, num(len(by_t[t])), e(TOPIC_NAME[t])) for t, _, _ in TOPICS if by_t.get(t)), self.self_stat(len(last))))
         for t, _, _ in TOPICS:
             if by_t.get(t):
                 parts.append('<h2 id="%s">%s <small>%s</small></h2><ul class="list ls">%s</ul>' % (
                     t, e(TOPIC_NAME[t]), num(len(by_t[t])), "".join(self.entry(c) for c in by_t[t])))
+        parts.append(self.self_section(last, with_topic=True))
         self.page("graveyard/index.html", "Graveyard", "".join(parts),
                   "Offers that no longer exist, with the evidence of their end.")
 
@@ -884,8 +940,10 @@ class Site:
 
         def tbl(d, skip=()):
             if d == "verdict":
-                return "<table class=\"kv\">%s</table>" % "".join('<tr><th><span class="v v-%s">%s</span></th><td><code>%s</code> %s</td></tr>' % (
-                    e(t), e(VERDICT_LABEL.get(t, t)), e(t), e(m)) for t, m in v.get(d, []))
+                return "<table class=\"kv\">%s%s</table>" % ("".join('<tr><th><span class="v v-%s">%s</span></th><td><code>%s</code> %s</td></tr>' % (
+                    e(t), e(VERDICT_LABEL.get(t, t)), e(t), e(m)) for t, m in v.get(d, [])),
+                    '<tr><th>%s</th><td><code>self_hosted = 1</code> %s. %s Its row shows this label in place of its verdict.</td></tr>' % (
+                        selfhosted.PILL, e(selfhosted.MEANING), e(selfhosted.NOTE)))
             return "<table class=\"kv\">%s</table>" % "".join("<tr><th><code>%s</code></th><td>%s</td></tr>" % (e(t), e(m))
                                                               for t, m in v.get(d, []) if t not in skip)
         disp = counts.get("dispositions", {})
@@ -984,14 +1042,15 @@ def render(repo, dist, ctx):
     for c in cards.values():
         by_topic[c["topic"]].append(c)
     for t in by_topic:
-        by_topic[t].sort(key=lambda c: (c["vorder"], llms.RUNG.get(c["confidence"], len(llms.RUNG)), (c["provider"] or "").lower(), c["rid"]))
+        by_topic[t].sort(key=lambda c: (is_sh(c), c["vorder"], llms.RUNG.get(c["confidence"], len(llms.RUNG)),
+                                        (c["provider"] or "").lower(), c["rid"]))
     counts = ctx["manifest"]["counts"]
     s.home(by_topic, counts)
     for t, _, _ in TOPICS:
         if t in by_topic:  # a topic with no record yet has no page, no sitemap line and no Markdown file
             s.topic(t, by_topic[t])
     for eid, ent in ctx["ents"].items():
-        members = sorted(ctx["by_eid"][eid], key=lambda c: (c["vorder"], c["rid"]))
+        members = sorted(ctx["by_eid"][eid], key=lambda c: (is_sh(c), c["vorder"], c["rid"]))
         s.entity(eid, ent, [ctx["full"][c["rid"]] for c in members])
     for x in ctx["needs"]["needs"]:
         s.need(x, cards)
