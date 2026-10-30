@@ -118,7 +118,8 @@ jobs:
             python3 publish/test_publish.py --db "$fx/public.db"
           fi
 
-      # the job deploy deploys these files, so it deploys the bytes that the steps above checked
+      # the job deploy deploys these files, so it deploys the bytes that the steps above checked. The upload leaves out
+      # a path that starts with a dot unless told otherwise, and .well-known/security.txt is one (issue #36)
       - name: keep the site for the job deploy
         if: >-
           github.ref == 'refs/heads/main' && vars.FSHY_DEPLOY == 'on' &&
@@ -127,6 +128,7 @@ jobs:
         with:
           name: site-dist
           path: site/dist
+          include-hidden-files: true
           retention-days: 7
           if-no-files-found: error
 
@@ -241,6 +243,10 @@ jobs:
             fail "the MCP endpoint does not answer tools/list"
           python3 -c 'import json, sys; assert json.load(open(sys.argv[1]))["result"]["tools"]' "$RUNNER_TEMP/mcp.json" ||
             fail "the MCP endpoint lists no tools"
+          # a file under a path that starts with a dot reaches the deploy only when the upload includes it (issue #36)
+          get -o "$RUNNER_TEMP/security.txt" "$FSHY_ORIGIN/.well-known/security.txt" ||
+            fail "/.well-known/security.txt does not answer"
+          grep -q '^Contact: ' "$RUNNER_TEMP/security.txt" || fail "/.well-known/security.txt has no Contact line"
           echo "live: $FSHY_ORIGIN serves $GITHUB_SHA"
 
       # One request of each route proves little: a fault of some isolates hangs some requests only (issue #26). This
