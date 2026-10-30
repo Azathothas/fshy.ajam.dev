@@ -166,7 +166,9 @@ def labels(cards, tname=None):
                 suffix = tname.get(c["topic"], c["topic"])
             else:
                 suffix = c["rid"]
-            out[c["rid"]] = "%s (%s)" % (name, suffix)
+            # a suffix with its own parentheses, or a name that ends in one, is joined with a comma, so a title never
+            # reads "Fly.io (Pay as you go (no free tier))"
+            out[c["rid"]] = ("%s, %s" if "(" in suffix or name.endswith(")") else "%s (%s)") % (name, suffix)
     return out
 
 
@@ -326,13 +328,15 @@ def need_unstated(db, x, cards, shown):
 
 
 def need_lists(db, x, cards):
-    """The parts of a need in list order: (ranked, unranked, unstated, unstated_text, last). The hosted rows ranked by
-    the sort value, the hosted rows with no value, the hosted rows whose card or phone requirement is not stated
-    (need_unstated), then every self-hosted row in the same order, the last resort (site/worker/api.js need)."""
+    """The parts of a need in list order: (ranked, unranked, unstated, unstated_text, last, last_unstated). The hosted rows
+    ranked by the sort value, the hosted rows with no value, the hosted rows whose card or phone requirement is not
+    stated (need_unstated), then the self-hosted rows in the same order, the last resort: ranked and with no value
+    (last), then those whose requirement is not stated (last_unstated), which a page lists under their own heading, as
+    it lists the hosted ones (site/worker/api.js need, self_hosted_unstated_rows)."""
     ranked, unranked, last = need_rows(db, x, cards)
     unstated, text = need_unstated(db, x, cards, ranked + unranked + last)
     return (ranked, unranked, [r for r in unstated if not is_sh(cards[r[0]])], text,
-            last + [r for r in unstated if is_sh(cards[r[0]])])
+            last, [r for r in unstated if is_sh(cards[r[0]])])
 
 
 def allowance_kind(c):
@@ -627,15 +631,20 @@ def counts(cnt):
                      + (["%s self-hosted of any group, listed last" % num(cnt["self-hosted"])] if cnt.get("self-hosted") else []))
 
 
-def self_section(st, rids, cap, what=None):
+def self_section(st, rids, cap, what=None, unstated=(), unstated_text=""):
     """The last section of an index: its self-hosted records, the last resort, in the order of the index. what names
-    the groups they come from, when the page lists only some."""
-    if not rids:
+    the groups they come from, when the page lists only some. unstated are the self-hosted records of a need whose card
+    or phone requirement is not stated: they close the section under their own heading, as the hosted ones do."""
+    if not rids and not unstated:
         return []
-    return (["## Self-hosted, the last resort (%s)" % num(len(rids)), "",
-             "%s%s. %s%s" % (selfhosted.MEANING[:1].upper(), selfhosted.MEANING[1:], selfhosted.NOTE,
-                             (" This page lists the self-hosted records that are %s." % what) if what else ""), ""]
-            + [entry_md(st, r, cap=cap) for r in rids] + [""])
+    out = (["## Self-hosted, the last resort (%s)" % num(len(rids) + len(unstated)), "",
+            "%s%s. %s%s" % (selfhosted.MEANING[:1].upper(), selfhosted.MEANING[1:], selfhosted.NOTE,
+                            (" This page lists the self-hosted records that are %s." % what) if what else ""), ""]
+           + [entry_md(st, r, cap=cap) for r in rids] + ([""] if rids else []))
+    if unstated:
+        out += ["### %s (%s)" % (UNSTATED_HEADING, num(len(unstated))), "", unstated_text, ""]
+        out += [entry_md(st, r, "- ", cap) for r in unstated] + [""]
+    return out
 
 
 def cut_note(cap):
@@ -711,8 +720,9 @@ def access_lines():
     return [
         "## Query it",
         "",
-        "- [MCP endpoint](%s/mcp): Streamable HTTP, stateless and read-only; tools help, search, filter, get, entity, "
-        "need, sql, worklist. Connect: `claude mcp add --transport http fshy %s/mcp`" % (BASE, BASE),
+        "- [MCP endpoint](%s/about/#api): POST JSON-RPC 2.0 to `%s/mcp` (Streamable HTTP; a GET there answers 405), "
+        "stateless and read-only; tools help, search, filter, get, entity, need, sql, worklist. Connect: "
+        "`claude mcp add --transport http fshy %s/mcp`" % (BASE, BASE, BASE),
         "- [help.txt](%s/api/v1/help.txt): the query primer: tables, columns, vocabularies and worked SQL; read it first" % BASE,
         "- [search](%s/api/v1/search?q=gpu+hours&topic=compute): full-text search; `q` words, optional `topic`" % BASE,
         "- [records](%s/api/v1/records?topic=storage&no_card=1&sort=usd_per_tb_month): filter and sort record cards" % BASE,
@@ -867,11 +877,11 @@ def generate(pub_db, dist):
     # need/<id>.md: a best-per-need ranking, as its HTML page ranks it
     for x in st.needs:
         # the hosted parts (ranked, no number, not stated), then every self-hosted row: the last resort
-        ranked, unranked, unstated, unstated_text, last = st.need_lists(x)
+        ranked, unranked, unstated, unstated_text, last, last_unstated = st.need_lists(x)
         key = x["sort"]
 
         def render(cap, x=x, ranked=ranked, unranked=unranked, key=key, unstated=unstated, unstated_text=unstated_text,
-                   last=last):
+                   last=last, last_unstated=last_unstated):
             lines = ["# " + x["title"], "", "> " + flat(x["scope"]), "",
                      "Ranked by `%s`, ascending; the rows with no parsed number follow, listed and not dropped, and the "
                      "self-hosted rows come last. The same list: `%s/api/v1/need/%s`, the MCP tool `need`, or this SQL:"
@@ -894,12 +904,12 @@ def generate(pub_db, dist):
             if unstated:
                 lines += ["## %s (%s)" % (UNSTATED_HEADING, num(len(unstated))), "", unstated_text, ""]
                 lines += [entry_md(st, r[0], "- ", cap) for r in unstated] + [""]
-            lines += self_section(st, [r[0] for r in last], cap)
+            lines += self_section(st, [r[0] for r in last], cap, unstated=[r[0] for r in last_unstated], unstated_text=unstated_text)
             return "\n".join(lines)
         w.write("need/%s.md" % x["id"], fitted(render))
 
     # llms-full.txt: the whole corpus when it fits in one file, else the index of the parts
-    head = ["# fshy: the corpus in full", "", summary_line(st, notice=False), "", stamp(st, version), ""]
+    head = ["# fshy: every record in full", "", summary_line(st, notice=False), "", stamp(st, version), ""]
     whole = total + 8_000 <= BUDGET
     if whole:
         # every topic's hosted records topic by topic, then every topic's self-hosted records: the last resort
@@ -943,7 +953,7 @@ def generate(pub_db, dist):
              "record (`self_hosted`, labelled `%s`) is %s, and every list puts it after every hosted record. %s"
              % (selfhosted.LABEL, selfhosted.MEANING, selfhosted.NOTE), "",
              "To report an error in a record or an offer that is missing, open an issue with the Correction form or "
-             "the New offer form: %s/issues/new/choose. A report is a lead: a research lane checks it against the "
+             "the New offer form: %s/issues/new/choose. A report is checked against the "
              "provider's own pages before a record changes. The code and the records are under the %s licence, "
              "%s/blob/main/LICENSE; a quote from a provider's page stays with its owner." % (REPO, LICENCE, REPO), "",
              "## Topics", ""]
@@ -967,8 +977,10 @@ def generate(pub_db, dist):
 
 
 def alternate_link(rel):
-    """The <link> a wiki page at output path `rel` carries to its Markdown version; '' for a page with none."""
+    """The <link> a wiki page at output path `rel` carries to its Markdown version; '' for a page with none. The page of
+    one record of a large provider (p/<id>/<topic>--<slug>/) names the provider's Markdown page, which holds the record."""
     rel = rel.replace("\\", "/")
+    rel = re.sub(r"^(p/[^/]+)/[^/]+--[^/]+/index\.html$", r"\1/index.html", rel)
     m = re.fullmatch(r"(p|need)/([^/]+)/index\.html|t/([^/]+)(/rejected)?/index\.html|index\.html", rel)
     if not m:
         return ""

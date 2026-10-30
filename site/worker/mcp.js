@@ -28,7 +28,10 @@ const n = (description, extra = {}) => ({ type: 'integer', description, ...extra
 const b = (description) => ({ type: 'boolean', description });
 const obj = (properties, required) => ({ type: 'object', properties, ...(required ? { required } : {}) });
 const FORMAT = s('tsv (default) or json', { enum: ['tsv', 'json'] });
-const TOPIC = s('a topic id from the enum; a comma list where the tool takes several');
+// a tool that takes several topics (search, filter) reads a comma list, so its schema is a pattern over the topic ids, which
+// a validating client accepts for "storage,compute"; a tool that takes one (worklist) has an enum (toolsFor fills both)
+const TOPICS = s('one topic id, or a comma list of them');
+const TOPIC = s('one topic id');
 const GRP = s('comma list of usable, trial, paid, rejected, dead');
 // every tool reads the store and changes nothing; the same arguments give the same answer until the next publish
 const ANNOTATIONS = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false };
@@ -42,13 +45,13 @@ export const TOOLS = [
   {
     name: 'search',
     description: 'Use when you have a provider name or words. It matches names first, then ranks the full text (BM25). Rows are cards plus the fields that matched. For conditions such as no card, a price cap or an interface, use filter.',
-    inputSchema: obj({ q: s('words or a name; CJK works'), topic: TOPIC, grp: GRP, limit: n('<= 50, default 20'), offset: n('skip rows'), format: FORMAT }, ['q']),
+    inputSchema: obj({ q: s('words or a name; CJK works'), topic: TOPICS, grp: GRP, limit: n('<= 50, default 20'), offset: n('skip rows'), format: FORMAT }, ['q']),
   },
   {
     name: 'filter',
     description: 'Use for questions such as "which X need no card" or "which X cost less than Y": the records that meet structured conditions, hosted first, then best verdict first. Start here for a ranked answer. A NULL price never matches a price condition, and the footer counts the rows that it excluded.',
     inputSchema: obj({
-      topic: TOPIC,
+      topic: TOPICS,
       verdict: s('comma list, e.g. qualifies,qualifies-with-caveat'),
       grp: GRP,
       confidence: s('comma list of measured, documented, reported, inferred, unverified'),
@@ -79,8 +82,8 @@ export const TOOLS = [
   },
   {
     name: 'entity',
-    description: 'Use to see every record of one provider. Give id (the entity id) or name (found by name search).',
-    inputSchema: obj({ id: s('entity id, e.g. hetzner'), name: s('vendor name') }),
+    description: 'Use to see every record of one provider. Give id (the entity id) or name (found by name search). A duplicate record (duplicate_of) is left out unless include_duplicates is true; a note names it.',
+    inputSchema: obj({ id: s('entity id, e.g. hetzner'), name: s('vendor name'), include_duplicates: b('keep records marked duplicate_of') }),
   },
   {
     name: 'need',
@@ -114,7 +117,11 @@ export function toolsFor(store) {
   return TOOLS.map((t) => {
     const props = t.inputSchema.properties;
     if (!props.topic) return t;
-    return { ...t, inputSchema: { ...t.inputSchema, properties: { ...props, topic: { ...props.topic, enum: topics } } } };
+    const one = '(?:' + topics.map((x) => x.replace(/[^a-z0-9-]/g, '')).join('|') + ')';
+    const topic = props.topic === TOPICS
+      ? { ...props.topic, pattern: '^' + one + '(?:,' + one + ')*$', description: props.topic.description + ': ' + topics.join(', ') }
+      : { ...props.topic, enum: topics };
+    return { ...t, inputSchema: { ...t.inputSchema, properties: { ...props, topic } } };
   });
 }
 
