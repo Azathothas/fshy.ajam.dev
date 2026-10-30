@@ -5,7 +5,8 @@ built from), never dossier/, so nothing the projection withholds can reach these
 
   llms.txt                              llmstxt.org index: topics, needs, the full text, the API and MCP
   index.md                              the home page's Markdown alternate: the same text as llms.txt
-  llms-full.txt                         the whole corpus when it fits in BUDGET, else the index of its parts
+  llms-full.txt                         the whole corpus when it fits in BUDGET, else the index of its parts:
+                                        the hosted files topic by topic, then every self-hosted part
   t/<topic>/llms-full.txt               one topic in full when it fits in BUDGET, else the index of its parts
   t/<topic>/llms-full-<group>[-<k>].txt a part: the hosted records of one verdict group, or every self-hosted
                                         record (group self-hosted, the last part), cut into k pieces when over BUDGET
@@ -792,8 +793,9 @@ def generate(pub_db, dist):
             "HTML %s/p/%s/ | JSON %s/api/v1/entity/%s.json | how to read a record: %s/llms-full.txt" % (
                 BASE, eid, BASE, eid, BASE), ""] + [blocks[r].replace(self_link, "", 1) for r in e["members"]]))
 
-    # t/<topic>.md and t/<topic>/rejected.md: the topic pages; t/<topic>/llms-full*.txt: the topic in full
-    topic_rows, parts_index = [], []
+    # t/<topic>.md and t/<topic>/rejected.md: the topic pages; t/<topic>/llms-full*.txt: the topic in full.
+    # parts_index lists the hosted files topic by topic; parts_last lists every self-hosted part after them
+    topic_rows, parts_index, parts_last = [], [], []
     for t, name, desc in st.topics:
         rids = by_topic[t]
         cnt = {g: sum(1 for r in rids if st.cards[r]["grp"] == g and not is_sh(st.cards[r])) for g, _ in GROUPS}
@@ -826,7 +828,9 @@ def generate(pub_db, dist):
         body = "\n".join(head) + "\n" + "\n".join(blocks[r] for r in rids)
         if len(body.encode("utf-8")) <= BUDGET:
             n = w.write("t/%s/llms-full.txt" % t, body)
-            parts_index.append("- [%s](%s/t/%s/llms-full.txt): all %s records; %s" % (name, BASE, t, num(len(rids)), size(n)))
+            sh = cnt["self-hosted"]
+            parts_index.append("- [%s](%s/t/%s/llms-full.txt): all %s records%s; %s" % (
+                name, BASE, t, num(len(rids)), (", %s self-hosted at its end" % num(sh)) if sh else "", size(n)))
             continue
         index = head[:4] + [stamp(st, version), "",
                             "This topic is %s in full, more than the %s one file holds, so it is split: its hosted records "
@@ -856,7 +860,8 @@ def generate(pub_db, dist):
                     what += ", %s (%s) to %s (%s)" % (flat(first["provider"]), verdict_of(first), flat(last["provider"]), verdict_of(last))
                 label = lbl + ((" part %d of %d" % (k, len(runs))) if len(runs) > 1 else "")
                 index.append("- [%s](%s/%s): %s; %s" % (label, BASE, rel, what, size(n)))
-                parts_index.append("- [%s: %s](%s/%s): %s; %s" % (name, label, BASE, rel, what, size(n)))
+                (parts_last if g == SELF_GROUP else parts_index).append(
+                    "- [%s: %s](%s/%s): %s; %s" % (name, label, BASE, rel, what, size(n)))
         w.write("t/%s/llms-full.txt" % t, "\n".join(index) + "\n")
 
     # need/<id>.md: a best-per-need ranking, as its HTML page ranks it
@@ -897,19 +902,32 @@ def generate(pub_db, dist):
     head = ["# fshy: the corpus in full", "", summary_line(st, notice=False), "", stamp(st, version), ""]
     whole = total + 8_000 <= BUDGET
     if whole:
+        # every topic's hosted records topic by topic, then every topic's self-hosted records: the last resort
         body = head + reading_rules(st)
         for t, name, _ in st.topics:
-            if by_topic[t]:
-                body += ["# " + name, ""] + [blocks[r] for r in by_topic[t]]
+            hosted = [r for r in by_topic[t] if not is_sh(st.cards[r])]
+            if hosted:
+                body += ["# " + name, ""] + [blocks[r] for r in hosted]
+        for t, name, _ in st.topics:
+            last = [r for r in by_topic[t] if is_sh(st.cards[r])]
+            if last:
+                body += ["# %s: %s" % (name, SELF_GROUP_LABEL.lower()), ""] + [blocks[r] for r in last]
         w.write("llms-full.txt", "\n".join(body))
     else:
         w.write("llms-full.txt", "\n".join(head + [
             "All %s records are %s in Markdown, more than any context window holds, so the text is split: one file per "
-            "topic when the topic fits in %s, else one per verdict group, and a group over that size into balanced "
-            "parts. Every record is in exactly one part, in the one order (%s). To answer "
+            "topic when the topic fits in %s, else one per verdict group with the topic's self-hosted records in one "
+            "last group, and a group over that size into balanced parts. Every record is in exactly one part. The "
+            "parts below come topic by topic, each topic in the one order (%s), and every self-hosted part comes after "
+            "all of them, in the last group, '%s'; a topic in one file holds its self-hosted records at its end. To answer "
             "a question, read the topic's one-line index, %s/t/<topic>.md, then the provider pages it links, "
-            "%s/p/<id>.md; or query the store." % (num(len(order)), size(total), size(BUDGET), ONE_ORDER, BASE, BASE), ""]
-            + reading_rules(st) + ["## Parts", ""] + parts_index + [""] + access_lines()))
+            "%s/p/<id>.md; or query the store." % (num(len(order)), size(total), size(BUDGET), ONE_ORDER,
+                                                    SELF_GROUP_LABEL, BASE, BASE), ""]
+            + reading_rules(st) + ["## Parts", ""] + parts_index + [""]
+            + (["### " + SELF_GROUP_LABEL, "", "%s%s. %s" % (selfhosted.MEANING[:1].upper(), selfhosted.MEANING[1:],
+                                                               selfhosted.NOTE), ""] + parts_last + [""]
+               if parts_last else [])
+            + access_lines()))
 
     # llms.txt: the llmstxt.org index; index.md, the home page's alternate, is the same text
     lines = ["# fshy", "", summary_line(st), "",

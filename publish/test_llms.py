@@ -140,9 +140,43 @@ def shape_checks(dist, st):
     unlisted = [k for k in parts if "%s/%s" % (llms.BASE, k) not in listed and k not in split_topics]
     check("the root llms-full.txt lists every part, or holds every record itself",
           not unlisted or all("- `%s`%s" % (r, llms.SEP) in root for r in st.cards), unlisted[:5])
-    dates = set(DATE.findall(files.get("llms.txt", ""))) | set(DATE.findall(root.split("## How to read")[0]))
+    root_order_check(root, st, "")
+    dates =set(DATE.findall(files.get("llms.txt", ""))) | set(DATE.findall(root.split("## How to read")[0]))
     check("the only date in llms.txt and the head of llms-full.txt is the data's own (%s)" % st.as_of, dates == {st.as_of}, dates)
     return files
+
+
+def root_order_check(root, st, where):
+    """The root llms-full.txt reads hosted first: as an index, every self-hosted part after every other file; as the
+    whole corpus, every self-hosted record after every hosted one."""
+    if "## Parts" in root:
+        items = [ln for ln in root.split("\n## Parts\n", 1)[1].split("\n## ", 1)[0].split("\n") if ln.startswith("- [")]
+        marks = ["/llms-full-%s" % llms.SELF_GROUP in ln for ln in items]
+        what = "every self-hosted part after every other file of its Parts list (%d of %d)" % (sum(marks), len(items))
+    else:
+        items = RID_LINE.findall(root)
+        marks = [llms.is_sh(st.cards[r]) for r in items]
+        what = "every self-hosted record after every hosted one (%d of %d)" % (sum(marks), len(items))
+    first = marks.index(True) if True in marks else len(marks)
+    above = [items[i][:120] for i in range(first, len(marks)) if not marks[i]]
+    check("%sthe root llms-full.txt lists %s" % (where, what), not above, above[:3])
+
+
+def whole_check(db, st):
+    """A budget that holds the whole corpus: llms-full.txt is every record in one file, the self-hosted ones last."""
+    old = llms.BUDGET
+    out = tempfile.mkdtemp(prefix="llms-whole-")
+    try:
+        llms.BUDGET = 10 ** 10
+        llms.generate(db, out)
+        root = read(os.path.join(out, "llms-full.txt"))
+        seen = RID_LINE.findall(root)
+        check("at a budget over the corpus, the root llms-full.txt holds every record once",
+              sorted(seen) == sorted(st.cards), (len(seen), len(st.cards)))
+        root_order_check(root, st, "at a budget over the corpus, ")
+    finally:
+        llms.BUDGET = old
+        shutil.rmtree(out, ignore_errors=True)
 
 
 def published_check(files, st):
@@ -208,6 +242,7 @@ def split_checks(db, st, budget, want_cut):
         root = read(os.path.join(out, "llms-full.txt"))
         check("at %d bytes, the root llms-full.txt indexes every file" % budget,
               all("%s/%s" % (llms.BASE, k) in root for k in parts))
+        root_order_check(root, st, "at %d bytes, " % budget)
         idx = [k for k, v in text.items() if "## Parts" in v]
         unindexed = [p for p in parts if re.search(r"llms-full-", p) and not any(
             "%s/%s" % (llms.BASE, p) in text[k] for k in idx if k.split("/")[1] == p.split("/")[1])]
@@ -527,6 +562,7 @@ def main():
         ok, diff = same_tree(d1, d2)
         check("a second generation under another hash seed is byte-identical", code == 0 and ok, (err[-300:], diff))
         split_checks(a.store, st, 120000, False)
+        whole_check(a.store, st)
         r = token_ratio(d1)
         check("BYTES_PER_TOKEN (%.2f) is within 10%% of the estimate on this text (%.2f)" % (llms.BYTES_PER_TOKEN, r),
               abs(r - llms.BYTES_PER_TOKEN) <= 0.1 * llms.BYTES_PER_TOKEN)

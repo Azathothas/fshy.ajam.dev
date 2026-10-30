@@ -60,7 +60,8 @@ request. A merge session reviews that pull request, merges it, and exports the p
      not stated, then the self-hosted rows in the same order. The API gives the self-hosted rows in
      `self_hosted_rows`.
    - A page or a file lists its self-hosted records at its end. A page with sections gives them one last section. A
-     topic that the files for agents split into parts gives them one last part, `llms-full-self-hosted`.
+     topic that the files for agents split into parts gives them one last part, `llms-full-self-hosted`. The Parts
+     list of the root `llms-full.txt` gives every topic's hosted files first, then every self-hosted part.
    - A Markdown line of a self-hosted record opens with the label, then `verdict <word>`.
    - A count of a topic counts the hosted records of each group, and the self-hosted records of the topic once.
 
