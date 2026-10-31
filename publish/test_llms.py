@@ -283,6 +283,14 @@ def link_checks():
     check("alternate_link maps each page to its Markdown version, and no other page", not bad, bad)
 
 
+def price_checks():
+    """A parsed price keeps cents from 1 and four significant figures under 1, so it is never USD 0 (F-19)."""
+    prices = [(0.004, "USD 0.004"), (0.00003873, "USD 0.00003873"), (0.1247, "USD 0.1247"), (0.5, "USD 0.5"),
+              (0.99996, "USD 1"), (4.999, "USD 5"), (12.3456, "USD 12.35"), (1234.4, "USD 1234"), (0, "USD 0")]
+    bad = [(v, llms.money(v, ""), w) for v, w in prices if llms.money(v, "") != w]
+    check("a price under 1 keeps four significant figures and is never USD 0 (F-19)", not bad, bad)
+
+
 def site_checks(dist, store):
     st = llms.Store(store)
     files = generated(dist)
@@ -557,6 +565,7 @@ def main():
         except (AttributeError, ValueError):
             pass
     link_checks()
+    price_checks()
     if not os.path.exists(a.store):
         print("no store at %s: run python publish/build.py --check first" % a.store)
         return 1

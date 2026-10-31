@@ -829,9 +829,20 @@ export async function help(store, env) {
 
 // ------------------------------------------------------------------ rendering
 
+/**
+ * A number as text: an integer as it is; else four decimals, or four significant figures when that keeps more, so a
+ * small value such as an exchange rate of 0.00003873 is never 0 and keeps the digits that tell it from its neighbours.
+ * publish/llms.py decimal() is the twin.
+ */
+export function numberText(v) {
+  if (Number.isInteger(v) || !Number.isFinite(v)) return String(v);
+  return String(Math.abs(v) >= 1 ? +v.toFixed(4) : +v.toPrecision(4));
+}
+
+/** One cell of a TSV row: a number by numberText, a text with no tab or line break, cut to 200 characters. */
 export function cell(v) {
   if (v == null) return '';
-  if (typeof v === 'number') return Number.isInteger(v) ? String(v) : String(+v.toFixed(4));
+  if (typeof v === 'number') return numberText(v);
   const s = String(v).replace(/[\t\r\n]+/g, ' ');
   return clip(s, 200);
 }

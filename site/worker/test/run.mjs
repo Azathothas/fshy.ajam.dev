@@ -1474,6 +1474,25 @@ function rows(store, sql) {
   try { while (st.step()) out.push(st.get()); } finally { st.free(); }
   return out;
 }
+
+test('TSV keeps the significant digits of a small number, and never prints 0 for one (F-19)', async () => {
+  const api = await import('../api.js');
+  const want = [[0, '0'], [2, '2'], [-3, '-3'], [1.1193, '1.1193'], [1234.56789, '1234.5679'], [0.5, '0.5'],
+    [0.00003873, '0.00003873'], [0.00005528, '0.00005528'], [0.1983009573970223, '0.1983'], [-0.0000123456, '-0.00001235'],
+    [1.2345e-9, '1.235e-9'], [0.99996, '1']];
+  for (const [v, s] of want) assert.equal(api.numberText(v), s, String(v));
+  for (let e = -12; e < 0; e++) assert.notEqual(Number(api.numberText(3.3 * 10 ** e)), 0, 'nonzero at 1e' + e);
+  const t = await call('/api/v1/sql.tsv?q=' + encodeURIComponent("SELECT ccy, usd_per_unit FROM fx WHERE ccy IN ('VND', 'IDR') ORDER BY ccy"));
+  assert.equal(t.res.status, 200, t.body);
+  const j = await call('/api/v1/sql?q=' + encodeURIComponent("SELECT ccy, usd_per_unit FROM fx WHERE ccy IN ('VND', 'IDR') ORDER BY ccy"));
+  const lines = t.body.split('\n').filter((l) => l && !l.startsWith('#')).slice(1);
+  assert.equal(lines.length, j.json.rows.length);
+  for (const [i, [ccy, rate]] of j.json.rows.entries()) {
+    const cell = lines[i].split('\t');
+    assert.equal(cell[0], ccy);
+    assert.ok(Number(cell[1]) !== 0 && Math.abs(Number(cell[1]) - rate) / rate < 1e-3, `${ccy}: TSV ${cell[1]}, JSON ${rate}`);
+  }
+});
 test('report', () => {
   for (const [k, v] of Object.entries(timings)) console.log('# ' + k + ': ' + (typeof v === 'number' ? v.toFixed(1) : JSON.stringify(v)));
 });

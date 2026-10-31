@@ -242,9 +242,17 @@ def free_word(c):
 
 
 def money(v, suffix):
+    """A parsed price: whole dollars from 1,000, cents from 1, and four significant figures under 1, so a price under a
+    cent is never USD 0 and a price such as 0.1247 keeps its digits. site/static/assets/app.js usd() is the twin."""
     if v is None:
         return ""
-    return "USD %s%s" % (("%.2f" % v).rstrip("0").rstrip(".") if v < 1000 else "%.0f" % v, suffix)
+    if v >= 1000:
+        t = "%.0f" % v
+    elif v >= 1 or v <= 0:
+        t = ("%.2f" % v).rstrip("0").rstrip(".")
+    else:
+        t = ("%.*f" % (3 - math.floor(math.log10(v)), v)).rstrip("0").rstrip(".")
+    return "USD %s%s" % (t, suffix)
 
 
 def size(n):
