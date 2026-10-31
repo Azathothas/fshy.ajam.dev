@@ -1,0 +1,241 @@
+{
+  "topic": "data-apis",
+  "slug": "gnews",
+  "provider": "GNews API",
+  "url": "https://gnews.io/pricing",
+  "category": "news search API",
+  "tier": "Free",
+  "free_tier": {
+    "stated": "Free plan, EUR 0: 100 requests a day, up to 10 articles a request, articles 12 hours late, 30 days of history.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://gnews.io/pricing",
+    "read_on": "2026-10-31",
+    "notes": "The counter resets at 00:00 UTC and unused requests do not carry over. Article content is truncated to a short excerpt on the Free plan, and pagination stops at 1,000 articles a query. CORS allows only localhost. The next plan up is Essential at EUR 49.99 a month for 1,000 requests a day. A free education plan built on Essential (1,000 requests a day, 25 articles a request, history back to 2020, full content) is granted after a manual review to students, researchers and teaching staff at a recognised institution."
+  },
+  "per_object_cap": {
+    "stated": "10 articles a request on the Free plan; content truncated to a short excerpt",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": "search reaches the last 30 days, and articles appear after a 12-hour delay",
+    "days": null,
+    "notes": "",
+    "source_url": "https://gnews.io/pricing"
+  },
+  "egress": {
+    "terms": "not applicable",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://gnews.io/pricing"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "REST over HTTPS: GET /api/v4/search and /api/v4/top-headlines, with the key in the apikey parameter",
+  "endpoint": "https://gnews.io/api/v4/search",
+  "tooling": "any HTTP client; official Python, JavaScript and PHP packages",
+  "chaining": "Headline and article-metadata search with the article URL in each result; the full page is fetched separately by a crawler.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "100 requests a day on the Free plan, reset at 00:00 UTC; over it the API answers 403",
+      "source": "https://gnews.io/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "1 request a second on the Free plan; over it the API answers 429",
+      "source": "https://gnews.io/faq"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "10 articles a request on the Free plan; pagination stops at 1,000 articles a query",
+      "source": "https://gnews.io/faq"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "100 requests a day is the first ceiling; at 10 articles a request that is at most 1,000 articles a day.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The sign-up form asks for an email and a password, or Google sign-in, and the email is verified; the Free plan never asks for payment details. A trial of a paid plan asks for a payment method.",
+    "country": null
+  },
+  "reliability_note": "Over the daily quota the API answers 403 until 00:00 UTC, and over 1 request a second it answers 429; the 99.95% uptime commitment covers only the Business and Enterprise plans.",
+  "confidence": "documented",
+  "confidence_note": "Quota, delay, history window, rate and sign-up fields are read from first-party pages; a call with no key answered HTTP 400 'You did not provide an API key.', so the free key was not exercised. A call with a free key would move this to measured.",
+  "evidence": [
+    {
+      "url": "https://gnews.io/pricing",
+      "date": "2026-10-31",
+      "proved": "the Free plan allows 100 requests a day",
+      "capture": "sha256:71a8bb44351f01065f79767b9c0bf6897dffb5602cd70e6d928e2fd166d7a9d4",
+      "quote": "100 requests per day"
+    },
+    {
+      "url": "https://gnews.io/pricing",
+      "date": "2026-10-31",
+      "proved": "the Free plan returns up to 10 articles a request",
+      "capture": "sha256:71a8bb44351f01065f79767b9c0bf6897dffb5602cd70e6d928e2fd166d7a9d4",
+      "quote": "Up to 10 articles returned per request"
+    },
+    {
+      "url": "https://gnews.io/pricing",
+      "date": "2026-10-31",
+      "proved": "Free plan articles are delayed 12 hours and history reaches 30 days",
+      "capture": "sha256:71a8bb44351f01065f79767b9c0bf6897dffb5602cd70e6d928e2fd166d7a9d4",
+      "quote": "Free gives 100 requests/day and 10 articles per request, with a 12-hour delay and 30 days of history."
+    },
+    {
+      "url": "https://gnews.io/pricing",
+      "date": "2026-10-31",
+      "proved": null,
+      "capture": "sha256:71a8bb44351f01065f79767b9c0bf6897dffb5602cd70e6d928e2fd166d7a9d4",
+      "quote": null
+    },
+    {
+      "url": "https://gnews.io/pricing",
+      "date": "2026-10-31",
+      "proved": "the Free plan asks for no payment details",
+      "capture": "sha256:71a8bb44351f01065f79767b9c0bf6897dffb5602cd70e6d928e2fd166d7a9d4",
+      "quote": "The Free plan is available as soon as your account is activated and never asks for payment details."
+    },
+    {
+      "url": "https://gnews.io/pricing",
+      "date": "2026-10-31",
+      "proved": "a paid-plan trial asks for a payment method",
+      "capture": "sha256:71a8bb44351f01065f79767b9c0bf6897dffb5602cd70e6d928e2fd166d7a9d4",
+      "quote": "A card is only needed when you start a paid plan or a free trial of one."
+    },
+    {
+      "url": "https://gnews.io/pricing",
+      "date": "2026-10-31",
+      "proved": "over the daily quota the API answers 403 until the 00:00 UTC reset",
+      "capture": "sha256:71a8bb44351f01065f79767b9c0bf6897dffb5602cd70e6d928e2fd166d7a9d4",
+      "quote": "returns no more data until the counter resets, which happens every day at 00:00 UTC"
+    },
+    {
+      "url": "https://gnews.io/pricing",
+      "date": "2026-10-31",
+      "proved": "unused requests do not carry over",
+      "capture": "sha256:71a8bb44351f01065f79767b9c0bf6897dffb5602cd70e6d928e2fd166d7a9d4",
+      "quote": "Unused requests do not carry over to the next day."
+    },
+    {
+      "url": "https://gnews.io/pricing",
+      "date": "2026-10-31",
+      "proved": "Free plan content is truncated to a short excerpt",
+      "capture": "sha256:71a8bb44351f01065f79767b9c0bf6897dffb5602cd70e6d928e2fd166d7a9d4",
+      "quote": "On the Free plan the content is truncated to a short excerpt."
+    },
+    {
+      "url": "https://gnews.io/pricing",
+      "date": "2026-10-31",
+      "proved": "Essential, the next plan up, gives 1,000 requests a day and 25 articles a request",
+      "capture": "sha256:71a8bb44351f01065f79767b9c0bf6897dffb5602cd70e6d928e2fd166d7a9d4",
+      "quote": "Essential gives 1,000 requests/day and 25 articles, Business 5,000 requests/day and 50 articles, Enterprise 25,000 requests/day and 100 articles."
+    },
+    {
+      "url": "https://gnews.io/faq",
+      "date": "2026-10-31",
+      "proved": "paid plans start at EUR 49.99 a month",
+      "capture": "sha256:4d99964c1c6f77614b5561e97cb44fcb33c68f7f48a0fe0cf35d01fd9ab378f8",
+      "quote": "Paid plans start at €49.99 per month"
+    },
+    {
+      "url": "https://gnews.io/faq",
+      "date": "2026-10-31",
+      "proved": "the Free plan allows 1 request a second, and over it the API answers 429",
+      "capture": "sha256:4d99964c1c6f77614b5561e97cb44fcb33c68f7f48a0fe0cf35d01fd9ab378f8",
+      "quote": "Yes: 1 request per second on the Free plan and 10 requests per second on every paid plan."
+    },
+    {
+      "url": "https://gnews.io/faq",
+      "date": "2026-10-31",
+      "proved": "pagination stops at 1,000 articles a query",
+      "capture": "sha256:4d99964c1c6f77614b5561e97cb44fcb33c68f7f48a0fe0cf35d01fd9ab378f8",
+      "quote": "Pagination stops at 1,000 articles per query, so narrow the query with filters or a date range to go deeper."
+    },
+    {
+      "url": "https://gnews.io/faq",
+      "date": "2026-10-31",
+      "proved": "CORS on the Free plan allows only localhost",
+      "capture": "sha256:4d99964c1c6f77614b5561e97cb44fcb33c68f7f48a0fe0cf35d01fd9ab378f8",
+      "quote": "On the Free plan, CORS only allows `localhost`, so browser requests from a deployed site are blocked."
+    },
+    {
+      "url": "https://gnews.io/faq",
+      "date": "2026-10-31",
+      "proved": "the education plan is built on Essential: 1,000 requests a day, 25 articles, history back to 2020, full content",
+      "capture": "sha256:4d99964c1c6f77614b5561e97cb44fcb33c68f7f48a0fe0cf35d01fd9ab378f8",
+      "quote": "Free access to a plan built on our Essential tier: 1,000 requests per day, up to 25 articles per request, real-time article availability, historical data back to 2020, full article content"
+    },
+    {
+      "url": "https://gnews.io/faq",
+      "date": "2026-10-31",
+      "proved": "the education plan is for students, researchers and teaching staff at a recognised institution, reviewed one by one",
+      "capture": "sha256:4d99964c1c6f77614b5561e97cb44fcb33c68f7f48a0fe0cf35d01fd9ab378f8",
+      "quote": "Students, researchers and teaching staff working on an academic project, a thesis or coursework at a recognised institution. Requests are reviewed individually"
+    },
+    {
+      "url": "https://docs.gnews.io/",
+      "date": "2026-10-31",
+      "proved": "sign-up verifies the email before the dashboard gives the key",
+      "capture": "sha256:5ee47832dac43293203ccfe5eb959a30502de27611d0f115e9148e50a146abc8",
+      "quote": "Verify your email"
+    },
+    {
+      "url": "https://docs.gnews.io/",
+      "date": "2026-10-31",
+      "proved": "the request pattern is GET /api/v4/{endpoint} with the key in the apikey parameter",
+      "capture": "sha256:5ee47832dac43293203ccfe5eb959a30502de27611d0f115e9148e50a146abc8",
+      "quote": "GEThttps://gnews.io/api/v4/{endpoint}?{parameters}&apikey=YOUR_API_KEY"
+    },
+    {
+      "url": "https://gnews.io/register",
+      "date": "2026-10-31",
+      "proved": "the sign-up form takes an email and a password, or Google sign-in",
+      "capture": "sha256:793164a145aab37864011988b1f2b018f486cfd0f3c3912c6237a927e85fc970",
+      "quote": "Sign up with Google"
+    },
+    {
+      "url": "https://gnews.io/legal/terms-of-service",
+      "date": "2026-10-31",
+      "proved": null,
+      "capture": "sha256:d642e2f0a6f86f716d563bc449d139403c9b2ef4942fe1b328c1589745a5bacc",
+      "quote": null
+    },
+    {
+      "url": "https://gnews.io/legal/terms-of-service",
+      "date": "2026-10-31",
+      "proved": null,
+      "capture": "sha256:d642e2f0a6f86f716d563bc449d139403c9b2ef4942fe1b328c1589745a5bacc",
+      "quote": null
+    },
+    {
+      "url": "https://gnews.io/legal/terms-of-service",
+      "date": "2026-10-31",
+      "proved": "the 99.95% monthly uptime commitment covers only the Business and Enterprise plans",
+      "capture": "sha256:d642e2f0a6f86f716d563bc449d139403c9b2ef4942fe1b328c1589745a5bacc",
+      "quote": "If you are on a paid Business or Enterprise plan, we commit to a monthly uptime of at least 99.95% for the API."
+    },
+    {
+      "url": "probe:https://gnews.io/api/v4/search?q=test&lang=en&max=1",
+      "date": "2026-10-31",
+      "proved": "a search call with no key answers HTTP 400",
+      "capture": "sha256:3c23f2953427a7e81194ac6025927e9f4e41dfd7853bfcb0588a0c9d0d876160",
+      "quote": "\"status\": 400"
+    },
+    {
+      "url": "probe:https://gnews.io/api/v4/search",
+      "date": "2026-10-31",
+      "proved": "the keyless answer names the missing key",
+      "capture": "sha256:63c071ea422c63298508e4cd75844983ba9641ab97e397799b1d2d37da5cc68e",
+      "quote": "You did not provide an API key."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-31T06:24:18.866Z",
+  "notes": "Bulk path: none; the API pages up to 1,000 articles a query."
+}

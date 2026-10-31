@@ -1,0 +1,342 @@
+{
+  "topic": "dev-services",
+  "slug": "cloudamqp-loyal-lemming",
+  "provider": "CloudAMQP",
+  "tier": "Loyal Lemming",
+  "url": "https://www.cloudamqp.com/plans.html",
+  "category": "message queue broker: a vhost on a shared LavinMQ broker",
+  "free_tier": {
+    "stated": "Loyal Lemming: 2 M messages a month, 40 connections, max 200 queues and max 20 000 queued messages on a shared LavinMQ broker, free for as long as the instance is used, no card",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://www.cloudamqp.com/plans.html",
+    "read_on": "2026-10-31",
+    "notes": "The quota counts messages: a message counts once when it is published and once when it is consumed, so 2 M a month is about 1,000,000 messages that are both published and consumed. The monthly count of shared instances resets on the first day of each month, and warning emails go out at 70 and 100 percent. At the connection limit new connections are refused and existing ones stay up. Shared plans allow 200 channels per connection. An account may hold up to 49 free instances (650 once it has a paid instance), Little Lemur and Loyal Lemming together."
+  },
+  "per_object_cap": {
+    "stated": "128 MB per message on LavinMQ (written 128mb), configurable",
+    "bytes": null,
+    "source_url": "https://www.cloudamqp.com/blog/what-is-the-message-size-limit-in-rabbitmq/",
+    "notes": "The page writes 128mb without saying whether it means MB or MiB, so no byte count is recorded."
+  },
+  "retention": {
+    "stated": "A free instance with no message published or consumed during the latest two months is deleted after a warning email; the plans page lists no idle-queue limit for Loyal Lemming",
+    "days": null,
+    "source_url": "https://www.cloudamqp.com/plans.html",
+    "notes": "Activity-based: an instance survives as long as messages move, and the warning email offers to wake the instance up. Whether the 28-day idle-queue deletion of the shared RabbitMQ plans also applies on shared LavinMQ is unverified: the plans page lists it only for the RabbitMQ plans."
+  },
+  "egress": {
+    "terms": "Data transfer is included within a fair-use allowance equal to 30% of the team's monthly spend; usage above it may be charged after a 30-day grace period",
+    "metered": true,
+    "free_allowance": "unverified: the allowance is stated as 30% of team spend, and no page states a figure for a team that holds only free instances",
+    "price_per_tb": null,
+    "source_url": "https://www.cloudamqp.com/plans.html"
+  },
+  "interface": [
+    "rest",
+    "unknown"
+  ],
+  "interface_detail": "Broker protocols AMQP 0-9-1, MQTT, HTTP and WebSockets; LavinMQ supports neither AMQP 1.0 nor STOMP. The interface vocabulary has no term for AMQP, MQTT or WebSocket, so they are listed here. The shared plans include streams, webhooks (push-queues) and the built-in delayed message exchange of LavinMQ. Instances, teams and keys are managed through the CloudAMQP Customer API at https://customer.cloudamqp.com/api, which answers 401 without an API key.",
+  "endpoint": "https://customer.cloudamqp.com/api",
+  "tooling": "Any AMQP 0-9-1 client library, many RabbitMQ-compatible ones included, an MQTT client, the CloudAMQP Customer API with an API key as the HTTP basic password and an empty username, and the cloudamqp Terraform provider, which names the plan lemming.",
+  "chaining": "A durable work queue between a scheduler that publishes jobs and free compute workers that consume them, sized for about 66,667 message events a day; the larger of the two free CloudAMQP shared plans.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "2 M messages per month, counted on publish and on consume, reset on the first day of the month",
+      "source": "https://www.cloudamqp.com/plans.html"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "128 MB per message (written 128mb), configurable",
+      "source": "https://www.cloudamqp.com/blog/what-is-the-message-size-limit-in-rabbitmq/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "instance deleted after two months with no message published or consumed",
+      "source": "https://www.cloudamqp.com/docs/faq/"
+    }
+  ],
+  "limits_note": "40 concurrent connections, max 200 queues and max 20 000 queued messages per instance, and 200 channels per connection. At the connection limit new connections are refused. The vocabulary has no kind for a concurrency or a backlog cap.",
+  "binding": "request-rate",
+  "binding_note": "2 M messages a month is about 66,667 a day (2,000,000 / 30), and a message that is published and consumed counts twice, so a steady job queue meets the monthly count before the 40-connection or 20 000-message backlog caps.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The signup page asks for an email address, or a GitHub or Google sign-in, and an email signup is confirmed by a link sent to the inbox; the plans page states no credit card is required for the free shared plans. Whether a later step asks for a phone number is unverified: behind a sign-up.",
+    "country": null
+  },
+  "reliability_note": "A free instance with no message published or consumed for two months is deleted after a warning email; a Lemming instance is a vhost on a multi-tenant LavinMQ broker that shares hardware with other instances, and the vendor lists the shared plans as not recommended for production because of variable performance.",
+  "confidence": "documented",
+  "confidence_note": "Every limit is quoted from a first-party page; the management API host was probed and answered 401 without a key. No broker connection was made, because a broker URL exists only inside an account. A probe of an AMQPS connection with an account's URL would move it to measured.",
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-31T13:36:24.401Z",
+  "notes": "The other free CloudAMQP shared plan, Little Lemur on RabbitMQ, has half the quota and is a separate record. Paid shared LavinMQ (Elegant Ermine) is USD 19 a month for 20 M messages, 200 connections, max 2000 queues and max 200 000 queued messages. A shared LavinMQ instance can move to a single-node dedicated LavinMQ plan from the console, and it gets a new hostname.",
+  "evidence": [
+    {
+      "url": "https://www.cloudamqp.com/plans.html",
+      "date": "2026-10-31",
+      "proved": "Little Lemur and Loyal Lemming are free with no time limit and no credit card",
+      "capture": null,
+      "quote": "Yes. Our free shared plans, Little Lemur (RabbitMQ) and Loyal Lemming (LavinMQ), are free to use for as long as you like — no credit card required to get started."
+    },
+    {
+      "url": "https://www.cloudamqp.com/plans.html",
+      "date": "2026-10-31",
+      "proved": "Loyal Lemming is a vhost on a shared LavinMQ broker",
+      "capture": null,
+      "quote": "A vhost on a shared LavinMQ broker. For development, prototypes and small hobby projects."
+    },
+    {
+      "url": "https://www.cloudamqp.com/plans.html",
+      "date": "2026-10-31",
+      "proved": "Loyal Lemming gives 2 M messages a month and 40 connections at no cost",
+      "capture": null,
+      "quote": "Message quota/month 2 M Connection limit 40 Free"
+    },
+    {
+      "url": "https://www.cloudamqp.com/plans.html",
+      "date": "2026-10-31",
+      "proved": "Loyal Lemming holds at most 200 queues",
+      "capture": null,
+      "quote": "Max 200 queues"
+    },
+    {
+      "url": "https://www.cloudamqp.com/plans.html",
+      "date": "2026-10-31",
+      "proved": "Loyal Lemming holds at most 20 000 queued messages",
+      "capture": null,
+      "quote": "Max 20 000 queued messages"
+    },
+    {
+      "url": "https://www.cloudamqp.com/plans.html",
+      "date": "2026-10-31",
+      "proved": "a free instance with no traffic in two months is deleted after a warning email",
+      "capture": null,
+      "quote": "Free instances that have not published or consumed a single message during the latest two months are deleted, after a warning email."
+    },
+    {
+      "url": "https://www.cloudamqp.com/plans.html",
+      "date": "2026-10-31",
+      "proved": "the idle-queue limit of 28 days is listed for the shared RabbitMQ plans",
+      "capture": null,
+      "quote": "Max idle queue time 28 days"
+    },
+    {
+      "url": "https://www.cloudamqp.com/plans.html",
+      "date": "2026-10-31",
+      "proved": "data transfer is a fair-use allowance of 30% of team spend",
+      "capture": null,
+      "quote": "Each plan includes free data transfer equal to 30% of your team's spend each month."
+    },
+    {
+      "url": "https://www.cloudamqp.com/plans.html",
+      "date": "2026-10-31",
+      "proved": "traffic above the fair-use allowance may be charged after 30 days",
+      "capture": null,
+      "quote": "Teams that use more may be subject to additional charges: after an overage you have 30 days to resolve it before traffic charges are added to later invoices."
+    },
+    {
+      "url": "https://www.cloudamqp.com/plans.html",
+      "date": "2026-10-31",
+      "proved": "LavinMQ supports neither AMQP 1.0 nor STOMP",
+      "capture": null,
+      "quote": "RabbitMQ also supports AMQP 1.0 and STOMP on shared and dedicated plans; LavinMQ supports neither."
+    },
+    {
+      "url": "https://www.cloudamqp.com/plans.html",
+      "date": "2026-10-31",
+      "proved": "the shared plans include streams",
+      "capture": null,
+      "quote": "| Streams | Included | Included | Included |"
+    },
+    {
+      "url": "https://www.cloudamqp.com/plans.html",
+      "date": "2026-10-31",
+      "proved": "the shared plans include webhooks (push-queues)",
+      "capture": null,
+      "quote": "| Webhooks (Push-Queues) | Included | Included | Included |"
+    },
+    {
+      "url": "https://www.cloudamqp.com/plans.html",
+      "date": "2026-10-31",
+      "proved": "the shared LavinMQ plans include the built-in delayed message exchange",
+      "capture": null,
+      "quote": "| Delayed Message Exchange (built-in) | Included (LavinMQ) | Included | – |"
+    },
+    {
+      "url": "https://www.cloudamqp.com/plans.html",
+      "date": "2026-10-31",
+      "proved": "the paid shared LavinMQ plan Elegant Ermine is USD 19 a month for 20 M messages and 200 connections",
+      "capture": null,
+      "quote": "Message quota/month 20 M Connection limit 200 $19/mo"
+    },
+    {
+      "url": "https://www.cloudamqp.com/plans.html",
+      "date": "2026-10-31",
+      "proved": "Elegant Ermine holds at most 2000 queues",
+      "capture": null,
+      "quote": "Max 2000 queues"
+    },
+    {
+      "url": "https://www.cloudamqp.com/plans.html",
+      "date": "2026-10-31",
+      "proved": "Elegant Ermine holds at most 200 000 queued messages",
+      "capture": null,
+      "quote": "Max 200 000 queued messages"
+    },
+    {
+      "url": "https://www.cloudamqp.com/docs/faq-lavinmq.html",
+      "date": "2026-10-31",
+      "proved": "shared LavinMQ supports AMQP 0-9-1, HTTP, MQTT and WebSockets",
+      "capture": "sha256:1379f348f0338c4eddcf5127ea71d7f60fe2f933338a5e22ab71d22638c08d83",
+      "quote": "LavinMQ supports AMQP 0-9-1, HTTP, MQTT, and WebSockets on both shared and dedicated CloudAMQP plans."
+    },
+    {
+      "url": "https://www.cloudamqp.com/docs/faq-lavinmq.html",
+      "date": "2026-10-31",
+      "proved": "RabbitMQ-compatible AMQP 0-9-1 client libraries work with LavinMQ",
+      "capture": "sha256:1379f348f0338c4eddcf5127ea71d7f60fe2f933338a5e22ab71d22638c08d83",
+      "quote": "Yes. LavinMQ implements AMQP 0-9-1, allowing applications to use many existing RabbitMQ-compatible client libraries."
+    },
+    {
+      "url": "https://www.cloudamqp.com/docs/faq/",
+      "date": "2026-10-31",
+      "proved": "the monthly quota counts a message on publish and again on consume",
+      "capture": "sha256:b5ee62c7f162f75d94135f7376c2df66f7fcad74838801bd2eea2b8209aa9c8d",
+      "quote": "One message is counted as consumed when a message is published from your service to the broker (RabbitMQ or LavinMQ) or when one message is consumed from the broker."
+    },
+    {
+      "url": "https://www.cloudamqp.com/docs/faq/",
+      "date": "2026-10-31",
+      "proved": "the message quota of shared instances resets on the first day of the month",
+      "capture": "sha256:b5ee62c7f162f75d94135f7376c2df66f7fcad74838801bd2eea2b8209aa9c8d",
+      "quote": "The reset is performed the first day every month."
+    },
+    {
+      "url": "https://www.cloudamqp.com/docs/faq/",
+      "date": "2026-10-31",
+      "proved": "warning emails at 70 and 100 percent of the quota",
+      "capture": "sha256:b5ee62c7f162f75d94135f7376c2df66f7fcad74838801bd2eea2b8209aa9c8d",
+      "quote": "You will get warnings via email when you have used 70 and 100 percent of your allowed usage."
+    },
+    {
+      "url": "https://www.cloudamqp.com/docs/faq/",
+      "date": "2026-10-31",
+      "proved": "at the connection limit new connections are refused and existing ones are kept",
+      "capture": "sha256:b5ee62c7f162f75d94135f7376c2df66f7fcad74838801bd2eea2b8209aa9c8d",
+      "quote": "With max connections you will be unable to establish new connections, existing connections are not affected."
+    },
+    {
+      "url": "https://www.cloudamqp.com/docs/faq/",
+      "date": "2026-10-31",
+      "proved": "an account may hold up to 49 free instances, 650 once it has a paid instance",
+      "capture": "sha256:b5ee62c7f162f75d94135f7376c2df66f7fcad74838801bd2eea2b8209aa9c8d",
+      "quote": "You are allowed a maximum of 49 free instances. If you need more instances, please upgrade to one of our paid plans. Customers with at least one paid instance are allowed a maximum of 650 free instances."
+    },
+    {
+      "url": "https://www.cloudamqp.com/docs/faq/",
+      "date": "2026-10-31",
+      "proved": "shared plans allow 200 channels per connection",
+      "capture": "sha256:b5ee62c7f162f75d94135f7376c2df66f7fcad74838801bd2eea2b8209aa9c8d",
+      "quote": "We limit all shared plans to 200 channels per connection."
+    },
+    {
+      "url": "https://www.cloudamqp.com/docs/faq/",
+      "date": "2026-10-31",
+      "proved": "an abandoned Loyal Lemming instance is deleted after two months without traffic",
+      "capture": "sha256:b5ee62c7f162f75d94135f7376c2df66f7fcad74838801bd2eea2b8209aa9c8d",
+      "quote": "Little Lemur (RabbitMQ) and Loyal Lemming (LavinMQ) instances that are abandoned/not used during the latest two months will be deleted."
+    },
+    {
+      "url": "https://www.cloudamqp.com/docs/faq/",
+      "date": "2026-10-31",
+      "proved": "the deletion warning email offers to wake the instance up",
+      "capture": "sha256:b5ee62c7f162f75d94135f7376c2df66f7fcad74838801bd2eea2b8209aa9c8d",
+      "quote": "You will receive a warning email before the instance is deleted, from where you have the option to wake up the instance."
+    },
+    {
+      "url": "https://www.cloudamqp.com/docs/faq/",
+      "date": "2026-10-31",
+      "proved": "a shared LavinMQ plan can be moved to a single-node dedicated plan from the console",
+      "capture": "sha256:b5ee62c7f162f75d94135f7376c2df66f7fcad74838801bd2eea2b8209aa9c8d",
+      "quote": "You can migrate directly from a shared plan to a single-node dedicated plan via the CloudAMQP console"
+    },
+    {
+      "url": "https://www.cloudamqp.com/docs/faq/",
+      "date": "2026-10-31",
+      "proved": "the migrated instance gets a new hostname",
+      "capture": "sha256:b5ee62c7f162f75d94135f7376c2df66f7fcad74838801bd2eea2b8209aa9c8d",
+      "quote": "Your cluster will receive a new hostname after the migration."
+    },
+    {
+      "url": "https://www.cloudamqp.com/blog/what-is-the-message-size-limit-in-rabbitmq/",
+      "date": "2026-10-31",
+      "proved": "LavinMQ caps a message at 128mb, configurable",
+      "capture": "sha256:39a9f98d47522283888e44f6dbec7c742e6ad7f578669fe58afbd373bebf82f0",
+      "quote": "For LavinMQ max message size is 128mb. Max message is configurable."
+    },
+    {
+      "url": "https://lavinmq.com/cloudamqp",
+      "date": "2026-10-31",
+      "proved": "the shared plans are not recommended for production because of variable performance",
+      "capture": "sha256:febacc6f4850a0ef61a3df69122b50aa810c0ce0621a092cc0e2929a62fcb99b",
+      "quote": "For development or small hobby projects. Not recommended for production due to variable performance."
+    },
+    {
+      "url": "https://lavinmq.com/cloudamqp",
+      "date": "2026-10-31",
+      "proved": "an email signup is confirmed by a link sent to the inbox",
+      "capture": "sha256:febacc6f4850a0ef61a3df69122b50aa810c0ce0621a092cc0e2929a62fcb99b",
+      "quote": "In case you signed up with email address you need to verify your account by clicking the link sent to your inbox."
+    },
+    {
+      "url": "https://registry.terraform.io/providers/cloudamqp/cloudamqp/latest/docs/guides/info_plan",
+      "date": "2026-10-31",
+      "proved": "the Lemming plan shares underlying hardware with other instances",
+      "capture": "sha256:8173de0da1cb561acfdb08886feb1337d9189cd06b673cbd3c1f4c7a5d9d01e0",
+      "quote": "`Lemming`and `Ermine` are shared instances and share underlying hardware with other instances."
+    },
+    {
+      "url": "https://registry.terraform.io/providers/cloudamqp/cloudamqp/latest/docs/guides/info_plan",
+      "date": "2026-10-31",
+      "proved": "the Terraform provider names the Loyal Lemming plan lemming, type shared",
+      "capture": "sha256:8173de0da1cb561acfdb08886feb1337d9189cd06b673cbd3c1f4c7a5d9d01e0",
+      "quote": "| Loyal Lemming | lemming | shared |"
+    },
+    {
+      "url": "https://docs.cloudamqp.com/",
+      "date": "2026-10-31",
+      "proved": "a REST API manages instances and the team",
+      "capture": "sha256:4d571dc466cfc084e62bac455d70af07db1786a34a29192fc55a2245ff8e658b",
+      "quote": "This API allows you to create and edit your instances, manage your team, invoices etc."
+    },
+    {
+      "url": "https://docs.cloudamqp.com/",
+      "date": "2026-10-31",
+      "proved": "the Customer API is served at customer.cloudamqp.com/api",
+      "capture": "sha256:4d571dc466cfc084e62bac455d70af07db1786a34a29192fc55a2245ff8e658b",
+      "quote": "Server:https://customer.cloudamqp.com/api"
+    },
+    {
+      "url": "https://docs.cloudamqp.com/",
+      "date": "2026-10-31",
+      "proved": "the API key is sent as the HTTP basic password with an empty username",
+      "capture": "sha256:4d571dc466cfc084e62bac455d70af07db1786a34a29192fc55a2245ff8e658b",
+      "quote": "Enter your Instance API key as password. Leave username empty."
+    },
+    {
+      "url": "https://customer.cloudamqp.com/signup",
+      "date": "2026-10-31",
+      "proved": "the signup asks for an email, or a GitHub or Google sign-in",
+      "capture": "sha256:215ce2133dd625a7a2cc93e95309a3ee54e7a53a65b6e788bbc1d188d6531061",
+      "quote": "or use a third-party service"
+    },
+    {
+      "url": "probe:https://customer.cloudamqp.com/api/instances",
+      "date": "2026-10-31",
+      "proved": "the Customer API host answers and refuses a request with no API key",
+      "capture": "sha256:03cdb4c7e88434aa39c648b20252b65c437c458aa7133071a0b6866ba5b7789b",
+      "quote": "\"status\": 401"
+    }
+  ]
+}

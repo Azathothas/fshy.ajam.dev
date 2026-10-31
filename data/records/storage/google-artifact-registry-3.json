@@ -5,55 +5,313 @@
   "url": "https://cloud.google.com/free/docs/free-cloud-features",
   "category": "rejected-provider",
   "free_tier": {
-    "stated": "0.5 GB/month free.",
-    "unit": "none",
-    "metered_on": "none",
-    "source_url": "https://cloud.google.com/free/docs/free-cloud-features",
+    "stated": "0.5 GiB-month of Artifact Registry storage free per billing account, shared across every project attached to it; above that USD 0.000136986 per GiB-hour",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://cloud.google.com/artifact-registry/pricing",
     "read_on": "2026-10-21",
-    "notes": null
+    "notes": "the Google Cloud Free Tier page states the same allowance as 0.5 GB of storage per month"
   },
   "per_object_cap": {
-    "stated": "not recorded",
+    "stated": "unverified: the Artifact Registry quotas page lists request quotas and usage limits but no size cap for a stored file",
     "bytes": null,
-    "source_url": "https://cloud.google.com/free/docs/free-cloud-features",
-    "notes": "not recorded"
+    "source_url": "https://cloud.google.com/artifact-registry/quotas",
+    "notes": "the only size limit on the quotas page is 9.9 GB of data retrieved from the upstream of a remote repository per request"
   },
   "retention": {
-    "stated": "not recorded",
+    "stated": "unverified: the pricing, quotas and generic artifact pages state no expiry for stored artifacts",
     "days": null,
-    "source_url": "https://cloud.google.com/free/docs/free-cloud-features",
-    "notes": null
+    "source_url": "https://cloud.google.com/artifact-registry/quotas",
+    "notes": "cleanup policies, at most 10 per repository, delete at most 300,000 artifacts per repository a day"
   },
   "egress": {
-    "terms": "not recorded",
-    "metered": false
+    "terms": "outbound internet transfer from a repository is billed at Premium Tier internet rates; transfer into Google Cloud is free; transfer to a Google Cloud service in the same location is free, and between locations in the US and Canada it is USD 0.01 per GiB; no free outbound allowance is stated for Artifact…",
+    "metered": true
   },
   "interface": [
-    "unknown"
+    "rest",
+    "cli",
+    "oci"
   ],
-  "interface_detail": null,
-  "tooling": "not recorded",
-  "chaining": "not recorded",
-  "limits": [],
-  "limits_note": null,
+  "interface_detail": "generic repositories: upload with POST https://artifactregistry.googleapis.com/upload/v1/projects/PROJECT/locations/LOCATION/repositories/REPOSITORY/genericArtifacts:create, download with GET https://artifactregistry.googleapis.com/download/v1/projects/PROJECT/locations/LOCATION/repositories/REPOSITORY/files/FILE:download?alt=media, or gcloud artifacts generic upload and download; Docker-format repositories store OCI images",
+  "tooling": "gcloud artifacts generic upload and download, or any HTTP client against the REST upload and download endpoints; Docker clients for Docker-format repositories",
+  "chaining": "projects do not multiply the allowance: the 0.5 GiB-month of free storage is counted once per billing account, across every project attached to it",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "0.5 GiB-month of storage free per billing account, shared across every attached project",
+      "source": "https://cloud.google.com/artifact-registry/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "60,000 requests and 18,000 write requests per minute per project in each region or multi-region",
+      "source": "https://cloud.google.com/artifact-registry/quotas"
+    }
+  ],
+  "limits_note": "storage above the free band is billed at USD 0.000136986 per GiB-hour, so the volume quota is a price threshold, not a hard stop",
   "identity_cost": {
-    "kind": "email",
-    "detail": null,
+    "kind": "card",
+    "detail": "the free tier needs a Google Cloud billing account; billing signup takes a credit card or other payment method, and in some countries a bank account verification",
     "country": null
   },
-  "reliability_note": "0.5 GB/month free.",
-  "confidence": "reported",
-  "confidence_note": null,
+  "reliability_note": "usage above the 0.5 GiB-month of free storage is billed at standard rates to the billing account, not stopped",
+  "confidence": "documented",
+  "confidence_note": "every value was read on Google Cloud pages; no billing account was opened, so no value is measured",
   "evidence": [
     {
       "url": "https://cloud.google.com/free/docs/free-cloud-features",
       "date": "2026-10-21",
       "proved": "0.5 GB/month free."
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/pricing",
+      "date": "2026-10-31",
+      "proved": "Artifact Registry storage is free from 0 to 0.5 GiB-month per billing account and USD 0.000136986 per GiB-hour above",
+      "capture": "sha256:fdcb3cf330c6b93e04a181560f029b0a0e9834e0aa724d9623426875e9b233f6",
+      "quote": "| Artifact Registry Storage | 0 gibibyte month to 0.5 gibibyte month<br>$0.00 (Free) / 1 gibibyte hour, per 1 month / account<br>0.5 gibibyte month and above<br>$0.000136986 / 1 gibibyte hour, per 1 month / account |"
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/pricing",
+      "date": "2026-10-31",
+      "proved": "the free storage band is stated in gibibytes",
+      "capture": "sha256:fdcb3cf330c6b93e04a181560f029b0a0e9834e0aa724d9623426875e9b233f6",
+      "quote": "| Artifact Registry Storage | 0 gibibyte month to 0.5 gibibyte month<br>$0.00 (Free) / 1 gibibyte hour, per 1 month / account<br>0.5 gibibyte month and above<br>$0.000136986 / 1 gibibyte hour, per 1 month / account |"
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/pricing",
+      "date": "2026-10-31",
+      "proved": "the storage charge and its free band meter bytes at rest",
+      "capture": "sha256:fdcb3cf330c6b93e04a181560f029b0a0e9834e0aa724d9623426875e9b233f6",
+      "quote": "Storage costs apply to the at-rest storage of your artifacts in Artifact Registry repositories."
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/pricing",
+      "date": "2026-10-31",
+      "proved": "the product pricing page states the free band and the price above it",
+      "capture": "sha256:fdcb3cf330c6b93e04a181560f029b0a0e9834e0aa724d9623426875e9b233f6",
+      "quote": "| Artifact Registry Storage | 0 gibibyte month to 0.5 gibibyte month<br>$0.00 (Free) / 1 gibibyte hour, per 1 month / account<br>0.5 gibibyte month and above<br>$0.000136986 / 1 gibibyte hour, per 1 month / account |"
+    },
+    {
+      "url": "https://cloud.google.com/free/docs/free-cloud-features",
+      "date": "2026-10-31",
+      "proved": "the Google Cloud Free Tier gives Artifact Registry 0.5 GB of storage a month",
+      "capture": "sha256:885a38c2b738a7e9ac34bffbae919db1163c80786856ff5f689da3a3bfe0b095",
+      "quote": "0.5 GB of storage per month. Learn about [Artifact Registry pricing]"
+    },
+    {
+      "url": "https://cloud.google.com/free/docs/free-cloud-features",
+      "date": "2026-10-31",
+      "proved": "Google Cloud billing signup takes a credit card or other payment method",
+      "capture": "sha256:885a38c2b738a7e9ac34bffbae919db1163c80786856ff5f689da3a3bfe0b095",
+      "quote": "During the sign up, you must provide a credit card or other payment method that is valid for the period of the Free Trial."
+    },
+    {
+      "url": "https://cloud.google.com/free/docs/free-cloud-features",
+      "date": "2026-10-31",
+      "proved": "billing signup takes a card or other payment method, and in some countries a bank account verification",
+      "capture": "sha256:885a38c2b738a7e9ac34bffbae919db1163c80786856ff5f689da3a3bfe0b095",
+      "quote": "During the sign up, you must provide a credit card or other payment method that is valid for the period of the Free Trial. Depending on your country, you might also need to [verify your bank account]"
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/pricing",
+      "date": "2026-10-31",
+      "proved": "outbound internet transfer from a repository is priced at Premium Tier rates",
+      "capture": "sha256:fdcb3cf330c6b93e04a181560f029b0a0e9834e0aa724d9623426875e9b233f6",
+      "quote": "Pricing for outbound Internet data transfer is based on [Premium tier](https://cloud.google.com/network-tiers/pricing#premium-pricing) pricing."
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/pricing",
+      "date": "2026-10-31",
+      "proved": "outbound internet transfer is billed",
+      "capture": "sha256:fdcb3cf330c6b93e04a181560f029b0a0e9834e0aa724d9623426875e9b233f6",
+      "quote": "Pricing for outbound Internet data transfer is based on [Premium tier](https://cloud.google.com/network-tiers/pricing#premium-pricing) pricing."
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/docs/generic",
+      "date": "2026-10-31",
+      "proved": "generic artifacts are uploaded through a REST endpoint; the page also documents gcloud artifacts generic upload and download",
+      "capture": "sha256:5b416c2de70b2d956060c20262945d0d517c4249678c3008e1277c894993405b",
+      "quote": "POST https://artifactregistry.googleapis.com/upload/v1/projects/PROJECT/locations/LOCATION/repositories/REPOSITORY/genericArtifacts:create?alt=json"
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/docs/generic",
+      "date": "2026-10-31",
+      "proved": "generic artifacts are downloaded through a REST endpoint; the same page gives the upload endpoint",
+      "capture": "sha256:5b416c2de70b2d956060c20262945d0d517c4249678c3008e1277c894993405b",
+      "quote": "GET https://artifactregistry.googleapis.com/download/v1/projects/PROJECT/locations/LOCATION/repositories/REPOSITORY/files/FILE:download?alt=media"
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/docs/generic",
+      "date": "2026-10-31",
+      "proved": "the generic artifact page documents the REST upload endpoint and the gcloud artifacts generic commands",
+      "capture": "sha256:5b416c2de70b2d956060c20262945d0d517c4249678c3008e1277c894993405b",
+      "quote": "POST https://artifactregistry.googleapis.com/upload/v1/projects/PROJECT/locations/LOCATION/repositories/REPOSITORY/genericArtifacts:create?alt=json"
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/pricing",
+      "date": "2026-10-31",
+      "proved": "the free storage limit is shared by every project attached to one billing account",
+      "capture": "sha256:fdcb3cf330c6b93e04a181560f029b0a0e9834e0aa724d9623426875e9b233f6",
+      "quote": "the limit for the [storage](https://cloud.google.com/artifact-registry/pricing#storage) free tier is for total usage across all the attached projects."
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/pricing",
+      "date": "2026-10-31",
+      "proved": "the free storage band is 0.5 GiB-month per billing account",
+      "capture": "sha256:fdcb3cf330c6b93e04a181560f029b0a0e9834e0aa724d9623426875e9b233f6",
+      "quote": "| Artifact Registry Storage | 0 gibibyte month to 0.5 gibibyte month<br>$0.00 (Free) / 1 gibibyte hour, per 1 month / account<br>0.5 gibibyte month and above<br>$0.000136986 / 1 gibibyte hour, per 1 month / account |"
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/quotas",
+      "date": "2026-10-31",
+      "proved": "each project may make 18,000 write requests a minute in a region or multi-region; the same table gives 60,000 requests a minute",
+      "capture": "sha256:a63156d62bbac3a48a0f4451a3204835b9c4c99363bb0bc07599a2da1a6d2f39",
+      "quote": "| Write requests per minute in each region or multi-region | 18,000 |"
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/pricing",
+      "date": "2026-10-31",
+      "proved": "storage above 0.5 GiB-month is billed at USD 0.000136986 per GiB-hour",
+      "capture": "sha256:fdcb3cf330c6b93e04a181560f029b0a0e9834e0aa724d9623426875e9b233f6",
+      "quote": "| Artifact Registry Storage | 0 gibibyte month to 0.5 gibibyte month<br>$0.00 (Free) / 1 gibibyte hour, per 1 month / account<br>0.5 gibibyte month and above<br>$0.000136986 / 1 gibibyte hour, per 1 month / account |"
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/pricing",
+      "date": "2026-10-31",
+      "proved": "the free tier is a storage volume band",
+      "capture": "sha256:fdcb3cf330c6b93e04a181560f029b0a0e9834e0aa724d9623426875e9b233f6",
+      "quote": "| Artifact Registry Storage | 0 gibibyte month to 0.5 gibibyte month<br>$0.00 (Free) / 1 gibibyte hour, per 1 month / account<br>0.5 gibibyte month and above<br>$0.000136986 / 1 gibibyte hour, per 1 month / account |"
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/pricing",
+      "date": "2026-10-31",
+      "proved": "storage is free to 0.5 GiB-month and billed above",
+      "capture": "sha256:fdcb3cf330c6b93e04a181560f029b0a0e9834e0aa724d9623426875e9b233f6",
+      "quote": "| Artifact Registry Storage | 0 gibibyte month to 0.5 gibibyte month<br>$0.00 (Free) / 1 gibibyte hour, per 1 month / account<br>0.5 gibibyte month and above<br>$0.000136986 / 1 gibibyte hour, per 1 month / account |"
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/quotas",
+      "date": "2026-10-31",
+      "proved": "the only size limit in the usage limits table is on upstream retrieval by a remote repository, not on a stored file",
+      "capture": "sha256:a63156d62bbac3a48a0f4451a3204835b9c4c99363bb0bc07599a2da1a6d2f39",
+      "quote": "| Max data retrieval from upstream of remote repository per request | 9.9 GB |"
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/quotas",
+      "date": "2026-10-31",
+      "proved": "the quotas page is where Artifact Registry publishes its size limits",
+      "capture": "sha256:a63156d62bbac3a48a0f4451a3204835b9c4c99363bb0bc07599a2da1a6d2f39",
+      "quote": "| Max data retrieval from upstream of remote repository per request | 9.9 GB |"
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/quotas",
+      "date": "2026-10-31",
+      "proved": "a remote repository retrieves at most 9.9 GB from its upstream per request",
+      "capture": "sha256:a63156d62bbac3a48a0f4451a3204835b9c4c99363bb0bc07599a2da1a6d2f39",
+      "quote": "| Max data retrieval from upstream of remote repository per request | 9.9 GB |"
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/quotas",
+      "date": "2026-10-31",
+      "proved": "deletion is driven by cleanup policies; the usage limits table states no expiry",
+      "capture": "sha256:a63156d62bbac3a48a0f4451a3204835b9c4c99363bb0bc07599a2da1a6d2f39",
+      "quote": "| Cleanup policy deletions per repository, per day | 300,000 |"
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/quotas",
+      "date": "2026-10-31",
+      "proved": "cleanup policies delete at most 300,000 artifacts per repository a day; the same table allows 10 policies per repository",
+      "capture": "sha256:a63156d62bbac3a48a0f4451a3204835b9c4c99363bb0bc07599a2da1a6d2f39",
+      "quote": "| Cleanup policy deletions per repository, per day | 300,000 |"
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/quotas",
+      "date": "2026-10-31",
+      "proved": "the quotas page states the cleanup policy limits",
+      "capture": "sha256:a63156d62bbac3a48a0f4451a3204835b9c4c99363bb0bc07599a2da1a6d2f39",
+      "quote": "| Cleanup policy deletions per repository, per day | 300,000 |"
+    },
+    {
+      "url": "https://cloud.google.com/free/docs/free-cloud-features",
+      "date": "2026-10-31",
+      "proved": "usage above a Free Tier limit is billed, not stopped",
+      "capture": "sha256:885a38c2b738a7e9ac34bffbae919db1163c80786856ff5f689da3a3bfe0b095",
+      "quote": "Any usage that exceeds the Free Tier usage limits is billed at standard rates."
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/pricing",
+      "date": "2026-10-31",
+      "proved": "Artifact Registry storage is free to 0.5 GiB-month per billing account and USD 0.000136986 per GiB-hour above",
+      "capture": "sha256:fdcb3cf330c6b93e04a181560f029b0a0e9834e0aa724d9623426875e9b233f6",
+      "quote": "| Artifact Registry Storage | 0 gibibyte month to 0.5 gibibyte month<br>$0.00 (Free) / 1 gibibyte hour, per 1 month / account<br>0.5 gibibyte month and above<br>$0.000136986 / 1 gibibyte hour, per 1 month / account |"
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/pricing",
+      "date": "2026-10-31",
+      "proved": "the free tier is read on the first-party pricing page",
+      "capture": "sha256:fdcb3cf330c6b93e04a181560f029b0a0e9834e0aa724d9623426875e9b233f6",
+      "quote": "| Artifact Registry Storage | 0 gibibyte month to 0.5 gibibyte month<br>$0.00 (Free) / 1 gibibyte hour, per 1 month / account<br>0.5 gibibyte month and above<br>$0.000136986 / 1 gibibyte hour, per 1 month / account |"
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/pricing",
+      "date": "2026-10-31",
+      "proved": "the values are read on first-party pages",
+      "capture": "sha256:fdcb3cf330c6b93e04a181560f029b0a0e9834e0aa724d9623426875e9b233f6",
+      "quote": "| Artifact Registry Storage | 0 gibibyte month to 0.5 gibibyte month<br>$0.00 (Free) / 1 gibibyte hour, per 1 month / account<br>0.5 gibibyte month and above<br>$0.000136986 / 1 gibibyte hour, per 1 month / account |"
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/pricing",
+      "date": "2026-10-31",
+      "proved": "the free tier is 0.5 GiB-month per billing account, so the verdict fails-quota stands",
+      "capture": "sha256:fdcb3cf330c6b93e04a181560f029b0a0e9834e0aa724d9623426875e9b233f6",
+      "quote": "| Artifact Registry Storage | 0 gibibyte month to 0.5 gibibyte month<br>$0.00 (Free) / 1 gibibyte hour, per 1 month / account<br>0.5 gibibyte month and above<br>$0.000136986 / 1 gibibyte hour, per 1 month / account |"
+    },
+    {
+      "url": "https://cloud.google.com/free/docs/free-cloud-features",
+      "date": "2026-10-31",
+      "proved": "the Artifact Registry free tier needs a Google Cloud billing account",
+      "capture": "sha256:885a38c2b738a7e9ac34bffbae919db1163c80786856ff5f689da3a3bfe0b095",
+      "quote": "To use products that have a Free Tier, you need a [Google Cloud billing account]"
+    },
+    {
+      "url": "https://cloud.google.com/billing/docs/how-to/create-billing-account",
+      "date": "2026-10-31",
+      "proved": "creating a self-serve billing account verifies a payment card with a pre-authorization hold",
+      "capture": "sha256:99c40681abe5e96b9fc0afb0a1eebd0d72e84501ece02acb431add2b9af1c793",
+      "quote": "This hold is not an actual charge. Instead, it is a verification request between the billing system and your card issuer to ensure that your card is valid and has sufficient credit available to cover your payments."
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/docs/supported-formats",
+      "date": "2026-10-31",
+      "proved": "generic repositories store files in no package format, which is the blob-store use",
+      "capture": "sha256:818146dba8bb558ae94ffdeed29f959758049e492eacd6df408f94938f1d1c0e",
+      "quote": "| Generic | Store generic artifacts. Generic artifacts are versioned, immutable artifacts that don't adhere to any specific package format."
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/docs/supported-formats",
+      "date": "2026-10-31",
+      "proved": "Docker-format repositories store OCI images",
+      "capture": "sha256:818146dba8bb558ae94ffdeed29f959758049e492eacd6df408f94938f1d1c0e",
+      "quote": "| Docker | Store Docker container images and Helm charts packaged in OCI format."
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/quotas",
+      "date": "2026-10-31",
+      "proved": "each project may make 60,000 requests a minute in a region or multi-region",
+      "capture": "sha256:a63156d62bbac3a48a0f4451a3204835b9c4c99363bb0bc07599a2da1a6d2f39",
+      "quote": "| Requests per minute in each region or multi-region | 60,000 |  |"
+    },
+    {
+      "url": "https://cloud.google.com/artifact-registry/quotas",
+      "date": "2026-10-31",
+      "proved": "a repository holds at most 10 cleanup policies",
+      "capture": "sha256:a63156d62bbac3a48a0f4451a3204835b9c4c99363bb0bc07599a2da1a6d2f39",
+      "quote": "| Cleanup policies per repository | 10 |"
     }
   ],
   "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
-  "notes": "0.5 GB/month free.",
+  "verified_at": "2026-10-31T00:29:41.516Z",
+  "notes": "Artifact Registry generic repositories hold versioned, immutable files of any format. The free tier is 0.5 GiB-month of storage per billing account; above it storage costs USD 0.000136986 per GiB-hour, and outbound internet transfer is billed at Premium Tier rates. The Cloud Storage Archive storage class is a separate product with its own pricing page.",
   "extras": {
     "dead_end": {
       "failure_class": "quota",
@@ -62,6 +320,6 @@
       "first_recorded": "2026-10-21"
     }
   },
-  "binding": "none",
-  "binding_note": null
+  "binding": "volume-quota",
+  "binding_note": "the 0.5 GiB-month of free storage per billing account is the whole free tier; every byte above it is billed"
 }

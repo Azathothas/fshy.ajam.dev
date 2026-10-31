@@ -1,0 +1,205 @@
+{
+  "topic": "data-apis",
+  "slug": "meteostat",
+  "provider": "Meteostat",
+  "url": "https://dev.meteostat.net/data",
+  "category": "weather data dumps",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Bulk Parquet files across all weather stations (hourly, daily, monthly, one file per year) and full per-station CSV time series, with no key and no sign-up; no quota is published.",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://dev.meteostat.net/data/bulk",
+    "read_on": "2026-10-31",
+    "notes": "The 2024 hourly file for all stations declares 992,333,139 bytes; the 2024 hourly CSV for station 10637 downloaded at 133,686 bytes. Recent hourly data lands within 24 hours. The files are not versioned: columns can be added or reordered without notice."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: read-only files; the 2024 hourly all-station Parquet file declares 992,333,139 bytes",
+    "bytes": null,
+    "notes": "",
+    "source_url": "https://dev.meteostat.net/data/bulk"
+  },
+  "retention": {
+    "stated": "not applicable: read-only files",
+    "days": null,
+    "notes": "",
+    "source_url": "https://dev.meteostat.net/data/bulk"
+  },
+  "egress": {
+    "terms": "no fee and no key on data.meteostat.net; a 2024 hourly station file downloaded and a 992,333,139-byte Parquet file answered HTTP 200 with no account",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://dev.meteostat.net/data/bulk"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "plain HTTPS downloads from data.meteostat.net: <granularity>/<year>.parquet for all stations and <granularity>/<year>/<station>.csv.gz per station; station metadata in JSON and SQL",
+  "endpoint": "https://data.meteostat.net/hourly/2024.parquet",
+  "tooling": "any HTTP client; the Meteostat Python library wraps the files",
+  "chaining": "A keyless bulk source of station history: one Parquet file per year and granularity covers every station, so a full year of hourly observations is one download.",
+  "limits": [],
+  "binding": "none",
+  "binding_note": "No quota is published for the files and no key is asked; the size of one year of hourly data (992,333,139 bytes) is the practical unit of a pull.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No sign-up and no API key for the bulk and time-series files; a station file and a bulk file answered HTTP 200 with no credentials.",
+    "country": null
+  },
+  "reliability_note": "Meteostat may discontinue or block access at any time without prior notice; a year with no data answers HTTP 404.",
+  "confidence": "measured",
+  "confidence_note": "The 2024 hourly CSV for station 10637 downloaded in full (133,686 bytes) with no credentials, and the 2024 hourly all-station Parquet file answered HTTP 200 declaring 992,333,139 bytes (the first 1,048,576 bytes were read).",
+  "evidence": [
+    {
+      "url": "https://dev.meteostat.net/data/bulk",
+      "date": "2026-10-31",
+      "proved": "the bulk interface covers all stations in Parquet",
+      "capture": "sha256:b668a44dcf70f3f75b9a964ccc7b6f4d71c58ee97df55fb6701550373ec01c9b",
+      "quote": "The Meteostat bulk data interface provides access to weather and climate data across all weather stations in Parquet format."
+    },
+    {
+      "url": "https://dev.meteostat.net/data/bulk",
+      "date": "2026-10-31",
+      "proved": "the bulk files need no key",
+      "capture": "sha256:b668a44dcf70f3f75b9a964ccc7b6f4d71c58ee97df55fb6701550373ec01c9b",
+      "quote": "This interface does not require an API key."
+    },
+    {
+      "url": "https://dev.meteostat.net/data/bulk",
+      "date": "2026-10-31",
+      "proved": "the bulk files need no sign-up",
+      "capture": "sha256:b668a44dcf70f3f75b9a964ccc7b6f4d71c58ee97df55fb6701550373ec01c9b",
+      "quote": "Users are not required to sign up for this service."
+    },
+    {
+      "url": "https://dev.meteostat.net/data/bulk",
+      "date": "2026-10-31",
+      "proved": "a year of hourly data for all stations is one file",
+      "capture": "sha256:b668a44dcf70f3f75b9a964ccc7b6f4d71c58ee97df55fb6701550373ec01c9b",
+      "quote": "curl \"https://data.meteostat.net/hourly/2024.parquet\" --output \"2024.parquet\""
+    },
+    {
+      "url": "https://dev.meteostat.net/data/bulk",
+      "date": "2026-10-31",
+      "proved": "recent hourly data lands within 24 hours",
+      "capture": "sha256:b668a44dcf70f3f75b9a964ccc7b6f4d71c58ee97df55fb6701550373ec01c9b",
+      "quote": "Recent hourly data should be available after a maximum of 24 hours."
+    },
+    {
+      "url": "https://dev.meteostat.net/data/timeseries",
+      "date": "2026-10-31",
+      "proved": "per-station time series are CSV files by year",
+      "capture": "sha256:dcb6f3b1cfed1a1e54269751abc8a11ee0c39b1cf3890c45436ca4008f04cb9f",
+      "quote": "curl \"https://data.meteostat.net/hourly/2024/10637.csv.gz\" --output \"10637-2024.csv.gz\""
+    },
+    {
+      "url": "https://dev.meteostat.net/data/timeseries",
+      "date": "2026-10-31",
+      "proved": "the Python library wraps the files",
+      "capture": "sha256:dcb6f3b1cfed1a1e54269751abc8a11ee0c39b1cf3890c45436ca4008f04cb9f",
+      "quote": "With our [Python library](https://dev.meteostat.net/python) we're providing a simple, yet powerful, wrapper for data dumps."
+    },
+    {
+      "url": "https://dev.meteostat.net/data/bulk",
+      "date": "2026-10-31",
+      "proved": "the files come hourly, daily and monthly",
+      "capture": "sha256:b668a44dcf70f3f75b9a964ccc7b6f4d71c58ee97df55fb6701550373ec01c9b",
+      "quote": "Data is available in three different granularities:"
+    },
+    {
+      "url": "https://dev.meteostat.net/data/bulk",
+      "date": "2026-10-31",
+      "proved": "the files are not versioned",
+      "capture": "sha256:b668a44dcf70f3f75b9a964ccc7b6f4d71c58ee97df55fb6701550373ec01c9b",
+      "quote": "This dataset is not versioned."
+    },
+    {
+      "url": "https://dev.meteostat.net/data/bulk",
+      "date": "2026-10-31",
+      "proved": "columns can be added without notice",
+      "capture": "sha256:b668a44dcf70f3f75b9a964ccc7b6f4d71c58ee97df55fb6701550373ec01c9b",
+      "quote": "New columns may be added to the datasets without prior notice."
+    },
+    {
+      "url": "https://dev.meteostat.net/data/bulk",
+      "date": "2026-10-31",
+      "proved": "a year with no data answers 404",
+      "capture": "sha256:b668a44dcf70f3f75b9a964ccc7b6f4d71c58ee97df55fb6701550373ec01c9b",
+      "quote": "Years without data will return an HTTP `404` status code."
+    },
+    {
+      "url": "https://dev.meteostat.net/data",
+      "date": "2026-10-31",
+      "proved": "station metadata comes in JSON and SQL",
+      "capture": "sha256:777ebcc7e170374148754f4c5cdc00fdd5871262ba1d14e8de38c19ad115dcd1",
+      "quote": "Weather station [meta data](https://dev.meteostat.net/data/weather-stations) is provided in JSON and SQL formats."
+    },
+    {
+      "url": "https://dev.meteostat.net/license",
+      "date": "2026-10-31",
+      "proved": null,
+      "capture": "sha256:fabf2f17fd98447cb8ee975b862983681c15608dafd86b6807ad13e5196c4a8f",
+      "quote": "You must give credit to Meteostat and its meteorological data providers."
+    },
+    {
+      "url": "https://dev.meteostat.net/data",
+      "date": "2026-10-31",
+      "proved": "the datasets need no sign-up",
+      "capture": "sha256:777ebcc7e170374148754f4c5cdc00fdd5871262ba1d14e8de38c19ad115dcd1",
+      "quote": "Users are not required to sign up for this service."
+    },
+    {
+      "url": "https://dev.meteostat.net/license",
+      "date": "2026-10-31",
+      "proved": null,
+      "capture": "sha256:fabf2f17fd98447cb8ee975b862983681c15608dafd86b6807ad13e5196c4a8f",
+      "quote": null
+    },
+    {
+      "url": "https://dev.meteostat.net/license",
+      "date": "2026-10-31",
+      "proved": null,
+      "capture": "sha256:fabf2f17fd98447cb8ee975b862983681c15608dafd86b6807ad13e5196c4a8f",
+      "quote": null
+    },
+    {
+      "url": "https://dev.meteostat.net/terms.html",
+      "date": "2026-10-31",
+      "proved": "the data costs nothing",
+      "capture": "sha256:a158d021ac7a2dc67451f98160c35eb41c9f7fce329e51ddfbcaa063c4860a4e",
+      "quote": "All weather and climate data provided by Meteostat can be accessed without any cost for the user."
+    },
+    {
+      "url": "https://dev.meteostat.net/terms.html",
+      "date": "2026-10-31",
+      "proved": "access can be blocked without notice",
+      "capture": "sha256:a158d021ac7a2dc67451f98160c35eb41c9f7fce329e51ddfbcaa063c4860a4e",
+      "quote": "Meteostat may discontinue or block access to the services at any time without prior notice."
+    },
+    {
+      "url": "probe:https://data.meteostat.net/hourly/2024/10637.csv.gz",
+      "date": "2026-10-31",
+      "proved": "the 2024 hourly CSV for station 10637 downloaded at 133,686 bytes",
+      "capture": "sha256:1ca43ea60dc6a23dfec6cfe838f04ffe1605d705527f9b3fc41c2f6c1a1988b8",
+      "quote": "\"bytes\": 133686"
+    },
+    {
+      "url": "probe:https://data.meteostat.net/hourly/2024/10637.csv.gz",
+      "date": "2026-10-31",
+      "proved": "the station file answered HTTP 200 with no credentials",
+      "capture": "sha256:1ca43ea60dc6a23dfec6cfe838f04ffe1605d705527f9b3fc41c2f6c1a1988b8",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:https://data.meteostat.net/hourly/2024.parquet",
+      "date": "2026-10-31",
+      "proved": "the 2024 hourly all-station Parquet file answered HTTP 200 declaring 992,333,139 bytes",
+      "capture": "sha256:48ef49c1edd2bb90271f4cb1d67f336d09646123f37ccfafe94bb93dc0ff5e38",
+      "quote": "\"declared_bytes\": 992333139"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-31T10:04:05.824Z",
+  "notes": "Bulk path: data.meteostat.net Parquet and CSV files with no key. The JSON API is a separate keyed offer (data-apis/meteostat-json-api)."
+}

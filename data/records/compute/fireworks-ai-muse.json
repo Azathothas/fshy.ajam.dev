@@ -34,14 +34,29 @@
   "interface": [
     "rest"
   ],
-  "interface_detail": "inferred from the tooling the provider documents; not probed",
-  "tooling": "not stated",
-  "chaining": "this is the only lane in this class that touches training, and it composes with the free inference lanes: train the adapter here by 2026-11-30, then serve the tuned model on a free recurrent lane, because deployments on Fireworks itself are not covered.",
+  "interface_detail": "HTTPS REST: the Serverless Training API endpoint is https://api.fireworks.ai/training/v1/serverless, reached through the Python SDK; documented, not probed",
+  "tooling": "the provider documents the Python SDK (pip install \"fireworks-ai[training]\"), the firectl CLI, the fw-ai/cookbook training examples and the dashboard UI",
+  "chaining": "it composes with hosted inference lanes: train the LoRA adapter here inside the promotion window, download it with firectl model download, and serve it on a hosted lane that accepts a LoRA adapter on the same base. On Fireworks itself a trained LoRA can only be deployed to an on-demand (dedicated) deployment, which the promotion does not cover; serverless deployment of LoRA models is not supported. The adapter needs the exact base it was trained on, and whether the Muse Glimmer base weights can also be downloaded is not stated (unverified).",
   "limits": [
     {
       "kind": "retention-clamped",
       "value": "the 2026-11-30 window binds, not a quota: there is no published cap on the number of free LoRA SFT jobs inside the window, and the day the window closes the same job is refused unless it is run with --allow-paid.",
       "source": "https://docs.fireworks.ai/fine-tuning/training-api/cookbook/muse-glimmer"
+    },
+    {
+      "kind": "request-rate",
+      "value": "10 requests per minute account-wide while the account has no payment method or no credits; with a payment method and active credits the ceiling is 6,000 requests per minute. The cap is one envelope shared by every model and every API, not a per-model request limit; requests above it are rejected (for example HTTP 429).",
+      "source": "https://docs.fireworks.ai/guides/quotas_usage/account-quotas"
+    },
+    {
+      "kind": "request-rate",
+      "value": "serverless limits per model are tokens per minute, not requests: three adaptive meters (total prompt, uncached prompt and generated TPM) start at an unpublished default and rise 25% at most once every 15 minutes toward a ceiling set by model size and spend tier. The published ceilings (for a model under 800B parameters: 216M total prompt, 54M uncached prompt and 2.16M generated TPM) apply at Tier 3 and above; the ceiling of an account with no payment method is not published.",
+      "source": "https://docs.fireworks.ai/serverless/rate-limits"
+    },
+    {
+      "kind": "request-rate",
+      "value": "concurrency, not a rate: the Serverless Training API allows 8 active runs per account by default (account overrides may differ); some pool models also cap active runs per account on that base model, with managed fine-tuning jobs on it counting toward the cap, and a run over either cap fails with RESOURCE_EXHAUSTED.",
+      "source": "https://docs.fireworks.ai/fine-tuning/training-api/serverless"
     }
   ],
   "limits_note": "the 2026-11-30 window binds, not a quota: there is no published cap on the number of free LoRA SFT jobs inside the window, and the day the window closes the same job is refused unless it is run with --allow-paid.",
@@ -49,10 +64,10 @@
   "binding_note": "the 2026-11-30 window binds, not a quota: there is no published cap on the number of free LoRA SFT jobs inside the window, and the day the window closes the same job is refused unless it is run with --allow-paid.",
   "identity_cost": {
     "kind": "email",
-    "detail": "no card on the free path: the cookbook states 'Muse Glimmer 30B SFT is free via UI and Serverless Training API until 11/30. No credit card required.' A payment method is added only 'to buy credits' on the general platform, and no hold is stated. The signup form is not quoted, so the email requirement is inferred rather than read; debit and prepaid acceptance are not stated.",
+    "detail": "the account-creation form asks for an email address, or a Google, GitHub or LinkedIn sign-in, at its first step ('Create Account Email Next OR Sign up with GoogleSign up with GitHubSign up with LinkedIn'); what the steps after it ask, a phone check among them, is unverified: behind a sign-up. No card on the free training path (the promotion states 'No credit card required'). Serverless inference outside the promotion needs a payment method and bought credits; debit and prepaid card acceptance are not stated.",
     "country": null
   },
-  "reliability_note": "no reliability event recorded",
+  "reliability_note": "an account that finishes its $1 credit with no payment method is suspended until a payment method is added; with credits exhausted and Auto Reload off, usage pauses until credits are added.",
   "confidence": "documented",
   "evidence": [
     {
@@ -74,11 +89,137 @@
       "url": "https://fireworks.ai/pricing",
       "date": "2026-10-22",
       "proved": "'Simply add a payment method to buy credits' for the general platform; the free credit line is gone from the pricing page, quoted"
+    },
+    {
+      "url": "https://docs.fireworks.ai/guides/quotas_usage/account-quotas",
+      "date": "2026-10-30",
+      "proved": "an account with no payment method or no credits is held to 10 requests per minute, account-wide",
+      "capture": "sha256:21bc2e111d6e20861d0424ffb8a7771c921b82917dd3e599600b8d82b6b95ddd",
+      "quote": "| No payment method or no credits | 10 RPM |"
+    },
+    {
+      "url": "https://docs.fireworks.ai/serverless/rate-limits",
+      "date": "2026-10-30",
+      "proved": "per-model serverless ceilings are published only for Tier 3 and above; lower tiers have unpublished lower ceilings",
+      "capture": "sha256:0e8f28092fc14c3340ec77d035c7b071ee55dd308363fd25a111e48a97c69e39",
+      "quote": "The table shows the maximum ceilings, available at Tier 3 and above. Tiers below Tier 3 have lower ceilings."
+    },
+    {
+      "url": "https://docs.fireworks.ai/fine-tuning/training-api/serverless",
+      "date": "2026-10-30",
+      "proved": "the Serverless Training API holds an account to 8 active runs by default",
+      "capture": "sha256:1c9eb54f3f92e2ce4ea505dd9cad41678e6d42c22003997f12a52e2322402f2d",
+      "quote": "The default is 8 active runs per account, although account overrides may differ."
+    },
+    {
+      "url": "https://docs.fireworks.ai/faq-new/billing-pricing/what-happens-when-i-finish-my-1-dollar-credit",
+      "date": "2026-10-30",
+      "proved": "an account that finishes its $1 credit with no payment method is suspended until one is added",
+      "capture": "sha256:38f6247142c0de8258659a1eae1079a35b347a3fb562b85e4367a0a6811b3d07",
+      "quote": "Without payment method: Your account will be suspended until you add a payment method."
+    },
+    {
+      "url": "https://app.fireworks.ai/signup",
+      "date": "2026-10-30",
+      "proved": "the account-creation form asks for an email address or a Google, GitHub or LinkedIn sign-in at its first step",
+      "capture": "sha256:f4d4d70ec7803949a5f72d37b0bf08dd86926726c0dd679601b0bd4ec7bee510",
+      "quote": "Create Account Email Next OR Sign up with GoogleSign up with GitHubSign up with LinkedIn"
+    },
+    {
+      "url": "https://fireworks.ai/pricing",
+      "date": "2026-10-30",
+      "proved": "serverless inference is prepaid from credits bought after a payment method is added; the page advertises no signup credit",
+      "capture": "sha256:0c8107d7814eb4579bbfbc2db7220d830252700a7f600cc1a7f0866f23bb905a",
+      "quote": "Simply add a payment method to buy credits, and usage is then deducted from your balance."
+    },
+    {
+      "url": "https://docs.fireworks.ai/fine-tuning/deploying-loras",
+      "date": "2026-10-30",
+      "proved": "trained LoRA weights can be downloaded and served outside Fireworks",
+      "capture": "sha256:9fe3d242b45eede6874a981bfe41883a1995b01cfc9c782a8d695c2d36257cea",
+      "quote": "You can download your trained weights from Fireworks to inspect them, extend the context locally, or serve them outside the platform."
+    },
+    {
+      "url": "https://docs.fireworks.ai/fine-tuning/training-api/serverless",
+      "date": "2026-10-30",
+      "proved": "the provider documents a Python SDK for the Serverless Training API",
+      "capture": "sha256:1c9eb54f3f92e2ce4ea505dd9cad41678e6d42c22003997f12a52e2322402f2d",
+      "quote": "Install the SDK (same one as the dedicated path, no separate console flow): pip install \"fireworks-ai[training]\""
+    },
+    {
+      "url": "https://docs.fireworks.ai/fine-tuning/training-api/serverless",
+      "date": "2026-10-30",
+      "proved": "the Serverless Training API is an HTTPS endpoint reached through the Python SDK",
+      "capture": "sha256:1c9eb54f3f92e2ce4ea505dd9cad41678e6d42c22003997f12a52e2322402f2d",
+      "quote": "Point at the serverless endpoint: base_url=\"https://api.fireworks.ai/training/v1/serverless\""
+    },
+    {
+      "url": "https://fireworks.ai/pricing",
+      "date": "2026-10-30",
+      "proved": "the pricing page still offers free Muse Glimmer 30B SFT with no card until 11/30",
+      "capture": "sha256:0c8107d7814eb4579bbfbc2db7220d830252700a7f600cc1a7f0866f23bb905a",
+      "quote": "Muse Glimmer 30B SFT is free via UI and Serverless Training API until 11/30 ✨ No credit card required."
+    },
+    {
+      "url": "https://docs.fireworks.ai/fine-tuning/models",
+      "date": "2026-10-30",
+      "proved": "the models page dates the end of the free Muse Glimmer 30B SFT window to November 30, 2026",
+      "capture": "sha256:a82e2cc81ba13209f54008c44b80d39245a14abbec6d28945bce4d115d6acb0b",
+      "quote": "Muse Glimmer 30B SFT is free to train until November 30, 2026."
+    },
+    {
+      "url": "https://github.com/fw-ai/cookbook/blob/main/skills/fireworks-training/references/getting-started.md",
+      "date": "2026-10-30",
+      "proved": "training job creation otherwise needs a payment method; the Muse Glimmer promotion is the stated no-card exception",
+      "capture": "sha256:91acaa521f91ea42e877882b1f01d754924a456e4eea0711d15e82bb0f279121",
+      "quote": "Exception: the temporary Muse Glimmer promotion in ../../configure/references/cost-estimation.md states no credit card is required."
+    },
+    {
+      "url": "https://docs.fireworks.ai/guides/quotas_usage/account-quotas",
+      "date": "2026-10-30",
+      "proved": "the default training GPU quota of an account with no payment method is 0 GPUs",
+      "capture": "sha256:21bc2e111d6e20861d0424ffb8a7771c921b82917dd3e599600b8d82b6b95ddd",
+      "quote": "No payment method: 0 GPUs"
+    },
+    {
+      "url": "https://docs.fireworks.ai/faq-new/billing-pricing/how-does-billing-and-credit-usage-work",
+      "date": "2026-10-30",
+      "proved": "platform usage is paid from credits bought after a payment method and billing address are added",
+      "capture": "sha256:7e9145c0a2626e5a37dcc61cb0aea069a73a17d52f4ed6fba2f7b7505b9c3acb",
+      "quote": "Add a valid payment method and billing address, then purchase credits."
+    },
+    {
+      "url": "https://fireworks.ai/startups",
+      "date": "2026-10-30",
+      "proved": "serverless inference starts after a payment method and credits are added",
+      "capture": "sha256:997756da2ff533ae95479c448eefc17141588e02fcf137b964c75ac051d52c99",
+      "quote": "Add a payment method and credits, then call any serverless model through the OpenAI- or Anthropic-compatible API."
+    },
+    {
+      "url": "https://www.usagepricing.com/blueprint/activity/fireworks-ai-2026-10-22-signup-credit-dropped",
+      "date": "2026-10-30",
+      "proved": "a third party reports the pricing page dropped its $1 free-credit line between its 2026-09-20 and 2026-10-22 captures",
+      "capture": "sha256:c6d815152a53fea516ba0546c6e5dd7f7ee83798b4eea7d264331aee6a36df6a",
+      "quote": "Serverless: postpaid billing, get started with $1 in free credits  Serverless: pre-paid credits bought after adding a payment method; no signup credit advertised"
+    },
+    {
+      "url": "https://web.archive.org/web/20260915000000/https://fireworks.ai/pricing",
+      "date": "2026-10-30",
+      "proved": "the 2026-09-15 Wayback copy of the pricing page offered $1 in free credits with postpaid billing; the live page of 2026-10-30 no longer does",
+      "capture": "sha256:1c36dfe6151254b2044f5712be34f1a2e98803e3cb7ebb1c4030b172aa90c0af",
+      "quote": "Pay per token, with high rate limits and postpaid billing. Get started with $1 in free credits."
+    },
+    {
+      "url": "https://docs.fireworks.ai/fine-tuning/training-api/cookbook/muse-glimmer",
+      "date": "2026-10-30",
+      "proved": "the free LoRA SFT window still covers jobs started before 2026-12-01T00:00:00-08:00 and the starter refuses later jobs without --allow-paid",
+      "capture": "sha256:c816e7c33c9324963349b485d5fdea7a6f992081ec6d437be8a6a8c831b66462",
+      "quote": "The starter applies the promotion to LoRA SFT jobs started before `2026-12-01T00:00:00-08:00` and refuses to launch after that unless you pass `--allow-paid`."
     }
   ],
   "verdict": "trial-only",
-  "verified_at": "2026-10-22T00:00:00.000Z",
-  "notes": "Important boundary: a token allowance cannot train a model, and this is the exception that proves it, because what is free here is the training loop and not the tokens. Two limits are open: no cap on the number of jobs is published, and the export path for the adapter is not stated, so whether the tuned weights can leave the platform is unverified. Do not read this as a general free-training lane: the promotion names one 30B base model and four excluded job types.",
+  "verified_at": "2026-10-31T00:12:44.357Z",
+  "notes": "What is free here is the training loop, not tokens. Serverless inference carries no advertised signup credit: the pricing page reads 'Simply add a payment method to buy credits, and usage is then deducted from your balance.' Whether a new account still holds a starting balance is unverified: behind a sign-up. The promotion names one base model and excludes RL, DPO, full-parameter training, deployments and inference outside the training run, so it is not a general free-training lane. No cap on the number of free jobs is published; the concurrency cap is in limits.",
   "extras": {
     "facets": {
       "class": "promotional-window",

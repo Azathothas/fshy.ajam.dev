@@ -7,49 +7,50 @@
   },
   "interface": [
     "rest",
-    "cli"
+    "cli",
+    "ssh"
   ],
   "interface_detail": "web IDE, SSH into a Studio, and a CLI",
   "tooling": "lightning CLI, SSH, the Studio IDE; persistent filesystem per Studio",
   "chaining": "the free CPU Studio is the only free 24/7 machine with a persistent disk and no card",
   "limits_note": "the 4-hour restart is the constraint: a process that must survive it needs a supervisor that resumes after the restart",
-  "reliability_note": "access revoked for every user on 2026-10-16 at 01:00 UTC after credential compromise; the incident page states the platform stays inaccessible to all users and status.lightning.ai still reported the service down on 2026-10-22",
+  "reliability_note": "access revoked for every user on 2026-10-16 at 01:00 UTC after credential compromise; read-only Drive access through the CLI is back since 2026-10-28, while Studio, Jobs and Deployments stay closed; the status incident was still unresolved on 2026-10-30, its newest update dated 2026-10-29 15:55 UTC, and the sign-up page redirected to the incident page",
   "confidence": "documented",
-  "verified_at": "2026-10-24T02:10:12.000Z",
+  "verified_at": "2026-10-31T00:39:31.081Z",
   "price_per_tb_month": null,
   "slug": "lightning-ai",
   "provider": "Lightning AI",
   "url": "https://lightning.ai/pricing",
   "category": "dev environment",
   "free_tier": {
-    "stated": "one Studio free 24/7, no credit card, no commitment; free Studios require a restart every 4 hours; 80 free GPU hours to start",
+    "stated": "one CPU Studio free 24/7 with a restart every 4 hours, no credit card; up to 30 free credits to start: 5 at registration and 25 more after a card is added, expiring after 12 months unused; the pricing table states the free GPU hours as T4 75, L4 31, L40S 5, RTXP 6000 3 and A100 40 GB 10, headlined 'up to 80 free GPU hours'; 10 GB of storage free within a 200 GB persistent storage limit",
     "unit": "hours",
     "metered_on": "wall-clock",
     "source_url": "https://lightning.ai/pricing",
-    "read_on": "2026-10-22",
-    "notes": "the 80 GPU hours are a starting grant against a table from T4 to H200"
+    "read_on": "2026-10-30",
+    "notes": "the GPU hours are what the credits buy: the table's hours assume the full 30 credits, and without a card the grant is 5 credits; A100 80 GB, H100 and H200 carry no free hours; on the free tier A100, H100 and H200 sessions stop at 4 hours; 1 credit is USD 1"
   },
   "retention": {
     "stated": "a Studio keeps its files between sessions; the free tier forces a restart every 4 hours",
     "days": 0
   },
   "egress": {
-    "terms": "not priced on the page read",
+    "terms": "no egress charge: the billing page names only two activities that consume credits, running machines and storage above 10 GB",
     "metered": false,
     "free_allowance": null,
     "price_per_tb": null,
-    "source_url": "https://lightning.ai/pricing"
+    "source_url": "https://lightning.ai/docs/platform/overview/faq/billing"
   },
   "limits": [
     {
       "kind": "write-gated",
-      "value": "all user access revoked on 2026-10-16 01:00 UTC; no Studio can be created while the incident is open",
+      "value": "all user access revoked on 2026-10-16 01:00 UTC; since 2026-10-28 only read-only Drive access through the CLI is back, and no Studio can be started or account opened while the incident is open",
       "source": "https://lightning.ai/security-incident"
     }
   ],
   "identity_cost": {
-    "kind": "email",
-    "detail": "'No credit card' for the free Studio, quoted",
+    "kind": "any-phone",
+    "detail": "a non-virtual phone number is verified at account creation: 'Lightning AI requires non-virtual phone numbers.' (https://lightning.ai/docs/platform/overview/faq) and 'Verify your phone number to receive up to 80 free GPU hours to start. This step is required for your security.' (https://lightning.ai/docs/platform/build/ai-studio); sign-up is by work or university email, Gmail or GitHub, followed by an identity review in which personal emails take two to three business days (https://lightning.ai/docs/platform/overview/faq/create-account); no card at sign-up, and adding one unlocks 25 more credits; free credits go to one account only; the docs state the service 'is not available in every country' and publish no list; whether the free CPU Studio starts before the phone check is unverified: behind a sign-up",
     "country": null
   },
   "evidence": [
@@ -107,13 +108,244 @@
       "url": "https://lightning.ai/pricing",
       "date": "2026-10-24",
       "proved": "the quoted rate table, all eight rows: T4 USD 0.55 with 75 free hours to start, L4 USD 0.79 with 31, L40S USD 3.54 with 5, RTXP 6000 USD 4.64 with 3, A100 40 GB USD 2.19 with 10, A100 80 GB USD 1.85 with none, H100 USD 5.45 with none and H200 USD 4.50 with none; footnotes read 'Billed by the second' and 'Free Studios run 24/7 but require restart every 4 hours'"
+    },
+    {
+      "url": "https://lightning.ai/docs/platform/overview/faq",
+      "date": "2026-10-30",
+      "proved": "account creation verifies a phone number, and a virtual number is refused",
+      "capture": "sha256:6f84a2af913681c70b29b333b6f9ef5b1037d81d155a27192cb45cb371fc9248",
+      "quote": "Lightning AI requires non-virtual phone numbers."
+    },
+    {
+      "url": "https://lightning.ai/docs/platform/build/ai-studio",
+      "date": "2026-10-30",
+      "proved": "phone verification is required for the free GPU hours and stated as required for security",
+      "capture": "sha256:b9a696f33a0d2dac0633b3eac59b14d3591e000f23180597bf3bd3d5bcfbec45",
+      "quote": "Verify your phone number to receive up to 80 free GPU hours to start. This step is required for your security."
+    },
+    {
+      "url": "https://lightning.ai/pricing",
+      "date": "2026-10-30",
+      "proved": "registration grants 5 credits, a card adds 25, and unused credits expire after 12 months",
+      "capture": "sha256:e015f9460e854e54ce21ce8d7f4daa478fb25401a90705b5d5f3a1c856642415",
+      "quote": "You get 5 free Lightning credits upon registration. Add a card for 25 more. If you don't use them, they expire in 12 months."
+    },
+    {
+      "url": "https://lightning.ai/pricing",
+      "date": "2026-10-30",
+      "proved": "the pricing page still offers one free 24/7 Studio with no card",
+      "capture": "sha256:e015f9460e854e54ce21ce8d7f4daa478fb25401a90705b5d5f3a1c856642415",
+      "quote": "Run 1 Studio free 24/7**. No credit card. No commitments."
+    },
+    {
+      "url": "https://lightning.ai/pricing",
+      "date": "2026-10-30",
+      "proved": "the per-class free hours in the table are bought with up to 30 credits",
+      "capture": "sha256:e015f9460e854e54ce21ce8d7f4daa478fb25401a90705b5d5f3a1c856642415",
+      "quote": "Free GPU hrs with up to 30 free credits to start."
+    },
+    {
+      "url": "https://status.lightning.ai",
+      "date": "2026-10-30",
+      "proved": "the status page's newest update, 2026-10-29 15:55 UTC, restores only read-only Drive access",
+      "capture": "sha256:d77070349309d91155b99d8e432f9cfe7c17dee01c36618621dd54396e507cf3",
+      "quote": "Read-only access to Drive is restored."
+    },
+    {
+      "url": "https://lightning.ai/security-incident",
+      "date": "2026-10-30",
+      "proved": "Studio, Jobs and Deployments were still closed on 2026-10-30 with no restoration date",
+      "capture": "sha256:052fc87bf94d0ff430ff95e9a9b926e1593ec59106f6d829512bf92726827790",
+      "quote": "Access to Studio, Jobs, and Deployments will follow, and we will provide updates regarding their timing."
+    },
+    {
+      "url": "https://lightning.ai/security-incident",
+      "date": "2026-10-30",
+      "proved": "the only restored access is the Drive, through the CLI",
+      "capture": "sha256:052fc87bf94d0ff430ff95e9a9b926e1593ec59106f6d829512bf92726827790",
+      "quote": "Access to the Drive is available through the CLI."
+    },
+    {
+      "url": "https://lightning.ai/sign-up",
+      "date": "2026-10-30",
+      "proved": "https://lightning.ai/sign-up answered with a redirect to the security-incident page on 2026-10-30",
+      "capture": "sha256:a8df347a89330328f6edcfd7b624b14663affdef0ae358e78c1b73de9ac67f93",
+      "quote": "x-web-final-url: https://lightning.ai/security-incident"
+    },
+    {
+      "url": "https://lightning.ai/docs/platform/overview/faq/billing",
+      "date": "2026-10-30",
+      "proved": "only machines and storage above 10 GB consume credits; transfer is not billed",
+      "capture": "sha256:7b71efc12a2d7be3ccb5fba2239890efd4593cea1ff9f732889e60176d77d3b8",
+      "quote": "There are 2 activities that consume credits, running machines (in Studios or Jobs) and storage (above 10 GB)."
+    },
+    {
+      "url": "https://lightning.ai/docs/platform/overview/faq/billing",
+      "date": "2026-10-30",
+      "proved": "the billing page is the source of the egress terms",
+      "capture": "sha256:7b71efc12a2d7be3ccb5fba2239890efd4593cea1ff9f732889e60176d77d3b8",
+      "quote": "There are 2 activities that consume credits, running machines (in Studios or Jobs) and storage (above 10 GB)."
+    },
+    {
+      "url": "https://lightning.ai/docs/platform/overview/getting-started",
+      "date": "2026-10-30",
+      "proved": "a Studio is reachable over SSH",
+      "capture": "sha256:e9c1b70b38feb0cc41d2b097e9409ee9cbf085589044968feaaf65bfed79f86e",
+      "quote": "Any editor that connects over SSH works."
+    },
+    {
+      "url": "https://lightning.ai/docs/platform/build/ai-studio",
+      "date": "2026-10-30",
+      "proved": "the free Studio is a 4-CPU instance",
+      "capture": "sha256:b9a696f33a0d2dac0633b3eac59b14d3591e000f23180597bf3bd3d5bcfbec45",
+      "quote": "The first 4-CPU instance on any cloud is always free."
+    },
+    {
+      "url": "https://lightning.ai/docs/platform/build/ai-studio",
+      "date": "2026-10-30",
+      "proved": "an idle Studio sleeps after 10 minutes",
+      "capture": "sha256:b9a696f33a0d2dac0633b3eac59b14d3591e000f23180597bf3bd3d5bcfbec45",
+      "quote": "When Studios are idle for more than 10 minutes, they will automatically sleep."
+    },
+    {
+      "url": "https://lightning.ai/pricing",
+      "date": "2026-10-30",
+      "proved": "paid machines are billed per second",
+      "capture": "sha256:e015f9460e854e54ce21ce8d7f4daa478fb25401a90705b5d5f3a1c856642415",
+      "quote": "Billed by the second."
+    },
+    {
+      "url": "https://lightning.ai/docs/platform/overview/faq/billing",
+      "date": "2026-10-30",
+      "proved": "10 GB of storage is free",
+      "capture": "sha256:7b71efc12a2d7be3ccb5fba2239890efd4593cea1ff9f732889e60176d77d3b8",
+      "quote": "The first 10 GB of storage is free."
+    },
+    {
+      "url": "https://lightning.ai/docs/platform/overview/faq/billing",
+      "date": "2026-10-30",
+      "proved": "storage above 10 GB costs USD 0.10 per GB per month",
+      "capture": "sha256:7b71efc12a2d7be3ccb5fba2239890efd4593cea1ff9f732889e60176d77d3b8",
+      "quote": "After that, it's billed at a rate of $0.10 / GB / month (billed daily)."
+    },
+    {
+      "url": "https://lightning.ai/pricing",
+      "date": "2026-10-30",
+      "proved": "the pricing FAQ asks for a phone number at registration, answered 'To prevent abuse of the platform.'",
+      "capture": "sha256:e015f9460e854e54ce21ce8d7f4daa478fb25401a90705b5d5f3a1c856642415",
+      "quote": "Why do you need my phone number?"
+    },
+    {
+      "url": "https://lightning.ai/docs/platform/overview/faq/create-account",
+      "date": "2026-10-30",
+      "proved": "an identity review follows sign-up; personal emails take two to three business days",
+      "capture": "sha256:a6e3963459a5319e880b4b880d98372d04b3075ca66d3f5c27f34de2bcee663c",
+      "quote": "Personal emails are typically harder to verify and may take 2-3 business days."
+    },
+    {
+      "url": "https://lightning.ai/docs/platform/overview/faq",
+      "date": "2026-10-30",
+      "proved": "free credits are granted to one account per person",
+      "capture": "sha256:6f84a2af913681c70b29b333b6f9ef5b1037d81d155a27192cb45cb371fc9248",
+      "quote": "You can only get credits for 1 account."
+    },
+    {
+      "url": "https://lightning.ai/docs/platform/build/ai-studio",
+      "date": "2026-10-30",
+      "proved": "the service is restricted by country, with no list on the page",
+      "capture": "sha256:b9a696f33a0d2dac0633b3eac59b14d3591e000f23180597bf3bd3d5bcfbec45",
+      "quote": "Tip: Use a work or university email for the fastest verification. Lightning AI is not available in every country."
+    },
+    {
+      "url": "https://lightning.ai/docs/platform/overview/faq/billing",
+      "date": "2026-10-30",
+      "proved": "one credit is worth USD 1",
+      "capture": "sha256:7b71efc12a2d7be3ccb5fba2239890efd4593cea1ff9f732889e60176d77d3b8",
+      "quote": "1 Lightning AI credit = $1 US dollar."
+    },
+    {
+      "url": "https://lightning.ai/docs/platform/overview/faq/billing",
+      "date": "2026-10-30",
+      "proved": "the billing page also states one free 4-CPU Studio",
+      "capture": "sha256:7b71efc12a2d7be3ccb5fba2239890efd4593cea1ff9f732889e60176d77d3b8",
+      "quote": "Users get 1 free 4-CPU Studio to code in and run workloads on."
+    },
+    {
+      "url": "https://lightning.ai/security-incident",
+      "date": "2026-10-30",
+      "proved": "read-only Drive access returned on 2026-10-28",
+      "capture": "sha256:052fc87bf94d0ff430ff95e9a9b926e1593ec59106f6d829512bf92726827790",
+      "quote": "We have restored read-only access to Drive as of 2PM ET on Wednesday, October 28."
+    },
+    {
+      "url": "https://status.lightning.ai/incidents/h20stxqvwg8r",
+      "date": "2026-10-30",
+      "proved": "the incident report h20stxqvwg8r is still open, newest update 2026-10-29 15:55 UTC",
+      "capture": "sha256:39394e906a96cb01625cd51eb7df0ece5c9f4772580aafc98e389a93d11a73fc",
+      "quote": "Read-only access to Drive is restored."
+    },
+    {
+      "url": "https://status.lightning.ai",
+      "date": "2026-10-30",
+      "proved": "the status history lists the incident as unresolved on 2026-10-29",
+      "capture": "sha256:d77070349309d91155b99d8e432f9cfe7c17dee01c36618621dd54396e507cf3",
+      "quote": "Unresolved incident: Service is down to address a security incident."
+    },
+    {
+      "url": "https://lightning.ai/docs/platform/build/ai-studio",
+      "date": "2026-10-30",
+      "proved": "a Studio keeps its files across a stop",
+      "capture": "sha256:b9a696f33a0d2dac0633b3eac59b14d3591e000f23180597bf3bd3d5bcfbec45",
+      "quote": "Studios include persistent storage, allowing file and data downloads to remain intact even if the instance stops, without incurring costs."
+    },
+    {
+      "url": "https://lightning.ai/security-incident",
+      "date": "2026-10-30",
+      "proved": "Studio access is still closed on 2026-10-30, so the verdict dead holds",
+      "capture": "sha256:052fc87bf94d0ff430ff95e9a9b926e1593ec59106f6d829512bf92726827790",
+      "quote": "Access to Studio, Jobs, and Deployments will follow, and we will provide updates regarding their timing."
+    },
+    {
+      "url": "https://lightning.ai/docs/platform/overview/faq/billing",
+      "date": "2026-10-31",
+      "proved": "the free storage allowance is stated as 10 GB, with no decimal or binary base",
+      "capture": "sha256:7b71efc12a2d7be3ccb5fba2239890efd4593cea1ff9f732889e60176d77d3b8",
+      "quote": "The first 10 GB of storage is free."
+    },
+    {
+      "url": "https://lightning.ai/docs/platform/overview/faq/billing",
+      "date": "2026-10-31",
+      "proved": "the free 10 GB is stated in GB with no base and covers the Drive and container images together",
+      "capture": "sha256:7b71efc12a2d7be3ccb5fba2239890efd4593cea1ff9f732889e60176d77d3b8",
+      "quote": "The first 10 GB of storage, across the Drive and container images, is free."
+    },
+    {
+      "url": "https://lightning.ai/docs/platform/overview/faq/billing",
+      "date": "2026-10-31",
+      "proved": "the free tier keeps 10 GB free within a 200 GB total storage limit",
+      "capture": "sha256:7b71efc12a2d7be3ccb5fba2239890efd4593cea1ff9f732889e60176d77d3b8",
+      "quote": "Free: 200 GB total storage limit (only first 10 GB free)"
+    },
+    {
+      "url": "https://lightning.ai/docs/platform/overview/faq/billing",
+      "date": "2026-10-31",
+      "proved": "storage above the free 10 GB costs USD 0.10 per GB per month, billed daily",
+      "capture": "sha256:7b71efc12a2d7be3ccb5fba2239890efd4593cea1ff9f732889e60176d77d3b8",
+      "quote": "After that, it's billed at a rate of $0.10 / GB / month (billed daily)."
+    },
+    {
+      "url": "https://lightning.ai/docs/platform/overview/faq/billing",
+      "date": "2026-10-31",
+      "proved": "only machines and storage above 10 GB consume credits; transfer is not billed",
+      "capture": "sha256:7b71efc12a2d7be3ccb5fba2239890efd4593cea1ff9f732889e60176d77d3b8",
+      "quote": "There are 2 activities that consume credits, running machines (in Studios or Jobs) and storage (above 10 GB)."
     }
   ],
   "verdict": "dead",
-  "notes": "The offer is real on the pricing page and the platform is not: the security-incident page still states the Platform remains inaccessible, and the status banner still reads 'Service is down'. An earlier read on 2026-10-24 covered only the pricing page and reversed this verdict to qualifies; the two operational pages read the same day contradict that. Keep dead. Reopen when status.lightning.ai clears the banner and the incident page announces restoration.",
+  "notes": "The offer is real on the pricing page and the platform is not. On 2026-10-30 the security-incident page states that read-only Drive access through the CLI is back since 2026-10-28 and that Studio, Jobs and Deployments will follow at a time not yet given; the status page still lists the incident as unresolved, and https://lightning.ai/sign-up redirects to the incident page, so no account can be opened and no Studio started. Keep dead. Reopen when status.lightning.ai resolves the incident and Studio access returns.",
   "extras": {
     "shape": {
-      "vcpu": null,
+      "vcpu": 4,
       "ram_gib": null,
       "disk_gib": null,
       "gpu_class": null,
@@ -122,11 +354,11 @@
     "billing_model": "wall-clock",
     "granularity": {
       "min_billed_s": 60,
-      "rounding_s": 60
+      "rounding_s": 1
     },
     "session_cap": {
       "wall_clock_min": 240,
-      "idle_reap_s": null,
+      "idle_reap_s": 600,
       "restart_required": true,
       "note": "a free Studio must restart every 4 hours; Pro removes the restriction"
     },
@@ -136,12 +368,13 @@
       "source": "https://lightning.ai/pricing"
     },
     "persistent_storage": {
-      "included_gib": null,
-      "price_gib_month": "not stated on the pricing page",
+      "included_gib": 10,
+      "price_gib_month": "USD 0.10 per GB per month above the first 10 GB, billed daily; the free tier caps total storage at 200 GB",
       "durability": "Studio filesystem persists",
       "survives_stop": true,
       "survives_destroy": null,
-      "max_retention": "while the Studio exists"
+      "max_retention": "while the Studio exists",
+      "notes": "the billing and pricing pages state 10 GB free and do not say whether GB is decimal or binary; kept as stated; the free 10 GB counts the Drive and the container images together"
     },
     "network_out": {
       "allow_outbound": true,
@@ -159,5 +392,5 @@
     "facets": {}
   },
   "binding": "write-gated",
-  "binding_note": "the platform is closed to all users while an incident is open: no Studio can be created, so the free allowance cannot be reached at all"
+  "binding_note": "the platform is closed while the incident is open: Studio, Jobs and Deployments are not restored and the sign-up page redirects to the incident page, so the free allowance cannot be reached; only read-only Drive access through the CLI is back"
 }

@@ -1,0 +1,203 @@
+{
+  "topic": "data-apis",
+  "slug": "fred",
+  "provider": "FRED (Federal Reserve Bank of St. Louis)",
+  "url": "https://fred.stlouisfed.org/docs/api/fred/",
+  "category": "economic data API (FRED and ALFRED time series, releases, vintages)",
+  "free_tier": {
+    "stated": "Free API key: no request count per day or month is stated; up to 120 requests per minute before HTTP 429; v1 series observations return up to 100,000 rows per call, and v2 release observations return up to 500,000 observations per call for all series on a release, with a cursor for the rest",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://fred.stlouisfed.org/docs/api/fred/errors.html",
+    "read_on": "2026-10-31",
+    "notes": "The API is offered free; no paid plan is named. Not complying with the 120 per minute throttle can bring a temporary block. The terms reserve the right to set a bandwidth or transaction ceiling at any time. A single series also downloads as CSV with no key from fred.stlouisfed.org/graph/fredgraph.csv?id=SERIES (GDP answered HTTP 200, 6419 bytes)."
+  },
+  "per_object_cap": {
+    "stated": "100,000 observations per v1 series/observations call; 500,000 observations per v2 release/observations call",
+    "bytes": null,
+    "source_url": "https://fred.stlouisfed.org/docs/api/fred/v2/release_observations.html",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: a query API with no stored objects",
+    "days": null,
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not metered in bytes; the 120 requests per minute bound what a key can pull",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://fred.stlouisfed.org/docs/api/fred/errors.html"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "v1: GET https://api.stlouisfed.org/fred/... with api_key (a 32-character lower-case key) as a query parameter, JSON or XML. v2: GET https://api.stlouisfed.org/fred/v2/release/observations with the key in an Authorization: Bearer header and next_cursor paging. A call with no key answered HTTP 400.",
+  "endpoint": "https://api.stlouisfed.org/fred",
+  "tooling": "curl or any HTTP client; fredgraph.csv serves one series as CSV with no key",
+  "chaining": "Whole economic releases in one paged v2 pull at no cost; it pairs with a market source such as Tiingo or CoinGecko when macro series sit beside prices.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "120 requests per minute, then HTTP 429 and possibly a temporary block",
+      "source": "https://fred.stlouisfed.org/docs/api/fred/errors.html"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "500,000 observations per v2 release/observations call, cursor paging for the rest",
+      "source": "https://fred.stlouisfed.org/docs/api/fred/v2/release_observations.html"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "100,000 observations per v1 series/observations call",
+      "source": "https://fred.stlouisfed.org/docs/api/fred/series_observations.html"
+    }
+  ],
+  "limits_note": "Bulk path: API v2 fred/v2/release/observations returns every series on a release with its entire history, 500,000 observations a call with next_cursor paging; one series is also a keyless CSV at fredgraph.csv.",
+  "binding": "request-rate",
+  "binding_note": "No daily or monthly count is published, so the 120 per minute throttle is the only stated ceiling; v2 release pulls of 500,000 observations a call keep it far away.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Every API request needs a key, and a key is requested from a fredaccount.stlouisfed.org account. The account asks only for a valid email address and a password, and is active as soon as the form is submitted; no card, no phone. The keyless fredgraph.csv download and the website need no account.",
+    "country": null
+  },
+  "reliability_note": "Past 120 requests a minute the API answers HTTP 429, and ignoring the throttle can bring a temporary block of the key.",
+  "confidence": "documented",
+  "confidence_note": "The rate, the row caps and the account fields are documented on the FRED API and help pages. Probes measured that a keyless API call answers HTTP 400 and that fredgraph.csv serves GDP as CSV with no key. The 120 per minute throttle needs a key to measure.",
+  "evidence": [
+    {
+      "url": "https://fred.stlouisfed.org/docs/api/fred/errors.html",
+      "date": "2026-10-31",
+      "proved": "up to 120 requests per minute are allowed before HTTP 429, and ignoring the throttle can bring a temporary block",
+      "capture": "sha256:a913528b88b24c286d01e03d06236796dd70da9b582e293534eeebbf96400a54",
+      "quote": "429 Too Many Requests (Up to 120 requests per minute are allowed before being served a 429 error code. Not complying with the throttling can result in a temporary block.)"
+    },
+    {
+      "url": "https://fred.stlouisfed.org/docs/api/api_key.html",
+      "date": "2026-10-31",
+      "proved": "every request needs an API key",
+      "capture": "sha256:4548b785ab6a4a4a15bf62bf865d0f9a2ca4d3d7703db4681a8625618e4c064b",
+      "quote": "All web service requests require an API key to identify requests."
+    },
+    {
+      "url": "https://fred.stlouisfed.org/docs/api/terms_of_use.html",
+      "date": "2026-10-31",
+      "proved": "API use needs a registered key",
+      "capture": "sha256:9862c1410ba1e74e25a1f5710cb0e64a461ca797db722c511b34a70c8d88de63",
+      "quote": "In order to use the FRED® API, you must have register for an API Key."
+    },
+    {
+      "url": "https://fred.stlouisfed.org/legal/",
+      "date": "2026-10-31",
+      "proved": "the FRED API is offered free",
+      "capture": "sha256:0dbe8b49a93477a64d8ed8a3e9e9f319d706386bae93a7274fb71bfd9d5f56de",
+      "quote": null
+    },
+    {
+      "url": "https://fred.stlouisfed.org/docs/api/api_key.html",
+      "date": "2026-10-31",
+      "proved": "the v1 key is a 32-character lower-case string passed as api_key",
+      "capture": "sha256:4548b785ab6a4a4a15bf62bf865d0f9a2ca4d3d7703db4681a8625618e4c064b",
+      "quote": "The API key is set using the api\\_key variable, a 32 character lower-cased alpha-numeric string."
+    },
+    {
+      "url": "https://fredhelp.stlouisfed.org/fred/account/fred-account-features/register/",
+      "date": "2026-10-31",
+      "proved": "the account asks only for an email address and a password",
+      "capture": "sha256:3b211191e6e5c6eb702d4c49a546e794b4656e7b3af4dd54db9d2c9c0d41f28a",
+      "quote": "For a user account, we require only a valid email address and password of your choice."
+    },
+    {
+      "url": "https://fredhelp.stlouisfed.org/fred/account/fred-account-features/register/",
+      "date": "2026-10-31",
+      "proved": "the account is active as soon as the form is submitted",
+      "capture": "sha256:3b211191e6e5c6eb702d4c49a546e794b4656e7b3af4dd54db9d2c9c0d41f28a",
+      "quote": "Your account will be activated immediately after submitting the form."
+    },
+    {
+      "url": "https://fredaccount.stlouisfed.org/login/secure/",
+      "date": "2026-10-31",
+      "proved": "the website shows data with no account",
+      "capture": "sha256:849e6f1e27abac0693224cca61bed8ef17bc43bcd395e5cb083a89c6edcaad9f",
+      "quote": "A user account is not needed to view data on [FRED](https://fred.stlouisfed.org/) website."
+    },
+    {
+      "url": "https://fred.stlouisfed.org/docs/api/fred/v2/index.html",
+      "date": "2026-10-31",
+      "proved": "API v2 retrieves all series on a release in bulk with the entire history",
+      "capture": "sha256:41ee1db2423fbe762f0eb60b91b8ea9e77e4571959a66da05a7821287d2aca85",
+      "quote": "The FRED® API, Version 2 is ideal for anyone who is interested to retrieve observations for all series on a release in bulk and obtain the entire history."
+    },
+    {
+      "url": "https://fred.stlouisfed.org/docs/api/fred/v2/release_observations.html",
+      "date": "2026-10-31",
+      "proved": "the v2 endpoint returns the observations of every series on a release",
+      "capture": "sha256:f519b3aafb8bc3ffabcca236b26a31fe27cb714aaa53b3f4a05616627ef70205",
+      "quote": "Get the observations for all series on a release of economic data."
+    },
+    {
+      "url": "https://fred.stlouisfed.org/docs/api/fred/v2/release_observations.html",
+      "date": "2026-10-31",
+      "proved": "a v2 call returns up to 500,000 observations",
+      "capture": "sha256:f519b3aafb8bc3ffabcca236b26a31fe27cb714aaa53b3f4a05616627ef70205",
+      "quote": "- integer between 1 and 500000, optional, default: 500000"
+    },
+    {
+      "url": "https://fred.stlouisfed.org/docs/api/fred/v2/api_key.html",
+      "date": "2026-10-31",
+      "proved": "v2 takes the key in a request header",
+      "capture": "sha256:76dfaacc019109cb2bae75a08cf3b5fa92883b820d16ef09a622435611899a05",
+      "quote": "An API key must be specified in the request header in the following way:"
+    },
+    {
+      "url": "https://fred.stlouisfed.org/docs/api/fred/series_observations.html",
+      "date": "2026-10-31",
+      "proved": "a v1 series/observations call returns up to 100,000 rows",
+      "capture": "sha256:4b19fa58c81cb87985a8f5402ea041a573fa110502969b1b0f72b915aa7ee89f",
+      "quote": "- integer between 1 and 100000, optional, default: 100000"
+    },
+    {
+      "url": "https://fred.stlouisfed.org/legal/",
+      "date": "2026-10-31",
+      "proved": null,
+      "capture": "sha256:0dbe8b49a93477a64d8ed8a3e9e9f319d706386bae93a7274fb71bfd9d5f56de",
+      "quote": "- View, download, and print FRED content"
+    },
+    {
+      "url": "probe:https://api.stlouisfed.org/fred/series/observations?series_id=GDP&file_type=json",
+      "date": "2026-10-31",
+      "proved": "an API call with no key answered HTTP 400",
+      "capture": "sha256:27a7fa7677d85ac9c8186b256d1be9536b341a2ee9a49d9c5ab9e7e1e34e88a5",
+      "quote": "\"status\": 400"
+    },
+    {
+      "url": "probe:https://api.stlouisfed.org/fred/series/observations?series_id=GDP&file_type=json",
+      "date": "2026-10-31",
+      "proved": "the API refuses a call that carries no api_key",
+      "capture": "sha256:da3c632f9a98b4c8f641de2b0763d513b4642316fe56d52d883002e011a892ff",
+      "quote": "Variable api_key is not set."
+    },
+    {
+      "url": "probe:https://fred.stlouisfed.org/graph/fredgraph.csv?id=GDP",
+      "date": "2026-10-31",
+      "proved": "fredgraph.csv answered HTTP 200 with no key",
+      "capture": "sha256:82f459e71f9b9d34ff6f57fa64db27f21f5063b6693955cf4d95a5b586d77f5c",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:https://fred.stlouisfed.org/graph/fredgraph.csv?id=GDP",
+      "date": "2026-10-31",
+      "proved": "the keyless CSV carries the GDP series with its dates",
+      "capture": "sha256:209e45690e4a85a6e99578c0a2ad6f1860875f61824dd2f67f9cba25386abd9e",
+      "quote": "observation_date,GDP"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-31T10:04:07.279Z",
+  "notes": "Free with an email-only key, no stated daily or monthly count, and a documented bulk path (v2 release observations). The series notes name them.",
+  "extras": {
+    "bulk_path": "API v2 fred/v2/release/observations: all series on a release with full history, 500,000 observations per call, cursor paging",
+    "keyless_path": "fred.stlouisfed.org/graph/fredgraph.csv?id=SERIES returns one series as CSV with no key"
+  }
+}

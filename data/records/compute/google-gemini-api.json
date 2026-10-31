@@ -5,7 +5,7 @@
   "url": "https://ai.google.dev/gemini-api/docs/pricing",
   "category": "inference API",
   "free_tier": {
-    "stated": "The free tier still exists and the pricing page still prints 'Free of charge' against input, output and caching for Gemini 3.8 Flash, 2.5 Flash-Lite and a dozen older models, but Google has stopped publishing how much the free tier carries. The rate-limits page now says only 'Rate limits depend on a variety of factors (such as your usage tier) and can be viewed in Google AI Studio', and the per-model free table the page carried through 2025 has been removed. The free columns that remain describe what is free, never how much. A Google AI Developers Forum post dated 2026-09-03 quotes 20 RPD on Gemini 3.8 Flash against 500 RPD on Flash-Lite.",
+    "stated": "The free tier still exists and the pricing page still prints 'Free of charge' against input and output for Gemini 3.8 Flash, 3.6 Flash, 3.5 Flash-Lite, 3.1 Flash-Lite, 2.5 Flash-Lite and other models, and against context caching for Gemini 3.8 Flash and 3.6 Flash (2.5 Flash-Lite caching reads 'Not available'), but Google has stopped publishing how much the free tier carries. The rate-limits page now says only 'Rate limits depend on a variety of factors (such as your usage tier) and can be viewed in Google AI Studio', and the per-model free table the page carried through 2025 has been removed. The free columns that remain describe what is free, never how much. A Google AI Developers Forum post dated 2026-09-03 quotes 20 RPD on Gemini 3.8 Flash against 500 RPD on Flash-Lite.",
     "unit": "none",
     "metered_on": "wall-clock",
     "source_url": "https://ai.google.dev/gemini-api/docs/pricing",
@@ -36,7 +36,7 @@
   ],
   "interface_detail": "inferred from the tooling the provider documents; not probed",
   "tooling": "not stated",
-  "chaining": "the free allowance is not the reason to use it: the Batch API at 100 concurrent requests and a 2GB input file is a paid-tier feature and the free-tier Batch rows read 'Not available', so a real batch needs the billing account the free tier exists to avoid.",
+  "chaining": "the pricing page lists the Batch API (50% cost reduction) under the Paid plan; its Free Tier Batch rows read 'Not available' for Gemini 3.8 Flash, 3.6 Flash, 2.5 Pro, 2.5 Flash and 2.5 Flash-Lite, but 'Free of charge' for input and output on Gemini 3.5 Flash-Lite and 3.1 Flash-Lite. The rate-limits page publishes Batch enqueued-token quotas for Tier 1, Tier 2 and Tier 3 only, so a batch on the Flash models needs a billing account, and the free Flash-Lite batch path has no published quota.",
   "limits": [
     {
       "kind": "request-rate",
@@ -49,7 +49,7 @@
   "binding_note": "requests per day binds, not tokens: at a reported 20 RPD on Gemini 3.8 Flash the monthly ceiling is 600 requests, so a 1,000-item job at three requests an item never completes on one free project.",
   "identity_cost": {
     "kind": "email",
-    "detail": "The Free usage tier qualifies on an active project or free trial, and linking an active billing account is the qualification for Tier 1, so no card is named for the Free tier. unverified: the sign-in method and any phone step",
+    "detail": "The Free usage tier qualifies on an active project or free trial, and linking an active billing account is the qualification for Tier 1, so no card is named for the Free tier. AI Studio pages, the rate-limit page among them, redirect to a Google Account sign-in. unverified: whether creating the Google Account asks for a phone number",
     "country": null
   },
   "reliability_note": "no reliability event recorded",
@@ -102,10 +102,87 @@
       "proved": "limits are evaluated per minute and per day on requests and input tokens",
       "capture": "sha256:4a0fb0284036dc725e7291e3a98a5b1143b98458ea7f0b04b87ed341972e7829",
       "quote": "Your usage is evaluated against each limit, and exceeding any of them will trigger a rate limit error."
+    },
+    {
+      "url": "https://ai.google.dev/gemini-api/docs/pricing",
+      "date": "2026-10-30",
+      "proved": "the Gemini 3.5 Flash-Lite Batch table reads Free of charge for input on the Free Tier, so the Batch rows are not all Not available",
+      "capture": "sha256:5ab384ae802aa78696805f7765aab6206fdbeb7fb85b2839c8b15e233280c456",
+      "quote": "## Gemini 3.5 Flash-Lite ... ### Batch ... | Input price | Free of charge | $0.15 (text / image / video / audio) |"
+    },
+    {
+      "url": "https://ai.google.dev/gemini-api/docs/pricing",
+      "date": "2026-10-30",
+      "proved": "the Gemini 3.8 Flash Batch table still reads Not available on the Free Tier",
+      "capture": "sha256:5ab384ae802aa78696805f7765aab6206fdbeb7fb85b2839c8b15e233280c456",
+      "quote": "## Gemini 3.8 Flash ... ### Batch ... | Input price | Not available | $0.375 through December 31, 2026. $0.75 starting January 1, 2027. |"
+    },
+    {
+      "url": "https://ai.google.dev/gemini-api/docs/pricing",
+      "date": "2026-10-30",
+      "proved": "the pricing page lists the Batch API among the Paid plan features",
+      "capture": "sha256:5ab384ae802aa78696805f7765aab6206fdbeb7fb85b2839c8b15e233280c456",
+      "quote": "### Paid ... check_circleBatch API (50% cost reduction)"
+    },
+    {
+      "url": "https://ai.google.dev/gemini-api/docs/rate-limits",
+      "date": "2026-10-30",
+      "proved": "the Batch enqueued-token tables start at Tier 1; no Free-tier Batch quota is published",
+      "capture": "sha256:abf8ffe1accb93124137d67a9c3d0470cb004e96505d3c7080869415ced71063",
+      "quote": "Batch API requests are subject to their own rate limits, separate from the non-batch API calls. ... ### Tier 1"
+    },
+    {
+      "url": "https://ai.google.dev/gemini-api/docs/pricing",
+      "date": "2026-10-30",
+      "proved": "Gemini 2.5 Flash-Lite context caching reads Not available on the Free Tier, so caching is not free on that model",
+      "capture": "sha256:5ab384ae802aa78696805f7765aab6206fdbeb7fb85b2839c8b15e233280c456",
+      "quote": "## Gemini 2.5 Flash-Lite ... | Context caching price | Not available | $0.01 (text / image / video) $0.03 (audio) $1.00 / 1,000,000 tokens per hour (storage price) |"
+    },
+    {
+      "url": "https://aistudio.google.com/rate-limit",
+      "date": "2026-10-30",
+      "proved": "the AI Studio rate-limit page answers with a Google Account sign-in, so its per-model values are not readable without an account",
+      "capture": "sha256:555e52471280fe6709e672c85eb9b8afa0459d0459493f719776fbce64e11f2e",
+      "quote": "Use your Google Account"
+    },
+    {
+      "url": "probe:aistudio.google.com/rate-limit",
+      "date": "2026-10-30",
+      "proved": "aistudio.google.com/rate-limit redirects with HTTP 302 to the Google Accounts sign-in",
+      "capture": "sha256:1a60642babb2dc0855632ced11870118ccb0fd5ea26b7b200f5910a65c0a6880",
+      "quote": "\"location\": \"https://accounts.google.com/ServiceLogin?passive=1209600&continue=https://aistudio.google.com/rate-limit"
+    },
+    {
+      "url": "https://imisofts.com/blog/gemini-api-free-tier-limits/",
+      "date": "2026-10-30",
+      "proved": "a third party reading AI Studio's rate-limit page for a Free-tier project on 2026-10-21 reports 5 RPM, 250,000 input TPM and 20 RPD on Gemini 3.8 Flash; reported, not a vendor page",
+      "capture": "sha256:43765a166d2a152d4e4cc7e2ce2f19e2967c994a3d656175866423f235c73e47",
+      "quote": "Gemini 3.8 Flash, 3.6 Flash, 3 Flash and 2.5 Flash: 5 RPM, 250,000 TPM, 20 RPD."
+    },
+    {
+      "url": "https://imisofts.com/blog/gemini-api-free-tier-limits/",
+      "date": "2026-10-30",
+      "proved": "the same third-party reading reports 15 RPM, 250,000 input TPM and 500 RPD on Gemini 3.5 and 3.1 Flash-Lite, and 10 RPM and 20 RPD on Gemini 2.5 Flash-Lite; reported",
+      "capture": "sha256:43765a166d2a152d4e4cc7e2ce2f19e2967c994a3d656175866423f235c73e47",
+      "quote": "Gemini 3.5 Flash-Lite and 3.1 Flash-Lite: 15 RPM, 250,000 TPM, 500 RPD. Gemini 2.5 Flash-Lite gets 10 RPM and 20 RPD."
+    },
+    {
+      "url": "https://discuss.ai.google.dev/t/gemini-3-8-flash-free-tier-20-rpd-is-too-limited-for-practical-evaluation/180609",
+      "date": "2026-10-30",
+      "proved": "a developer post on the vendor forum dated 2026-09-03 reports a 20 RPD Free-tier limit on Gemini 3.8 Flash; reported, not a vendor figure",
+      "capture": "sha256:85a2cfb02753a1057270d1782ed9d6765488e449bc9f7107b97b8db807de9390",
+      "quote": "However, the free tier limit of 20 RPD is very restrictive."
+    },
+    {
+      "url": "https://ai.google.dev/gemini-api/docs/pricing",
+      "date": "2026-10-30",
+      "proved": "Gemini 3.8 Flash input, output and context caching still read Free of charge on the Free Tier",
+      "capture": "sha256:5ab384ae802aa78696805f7765aab6206fdbeb7fb85b2839c8b15e233280c456",
+      "quote": "| Context caching price | Free of charge | $0.075 through December 31, 2026. $0.15 starting January 1, 2027."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-28T09:47:56.221Z",
+  "verified_at": "2026-10-31T00:12:53.944Z",
   "notes": "Arithmetic, labelled estimate: 20 RPD x 30 days = 600 requests a month per model. The gap is the finding: a reader who trusts the word 'generous' on the pricing page and not the forum will design a batch that cannot run. Not measured: limits appear only in AI Studio after an account exists, so the 20 RPD figure rests on a forum report, and the 2025 archive's 250 RPD for 2.5 Flash disagrees with it by an order of magnitude.",
   "extras": {
     "facets": {

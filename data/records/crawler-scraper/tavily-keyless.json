@@ -6,14 +6,14 @@
   "category": "search API",
   "verdict": "qualifies-with-caveat",
   "confidence": "reported",
-  "confidence_note": "not re-run here",
-  "verified_at": "2026-10-22T00:00:00.000Z",
+  "confidence_note": "free tier, identity and route quoted from the vendor's keyless page; the hold length in limits is reported and not re-measured, because the route takes POST and a GET probe cannot exercise it",
+  "verified_at": "2026-10-30T11:10:02.157Z",
   "free_tier": {
-    "stated": "a shared public route with no key",
+    "stated": "Search and Extract free with no account and no API key, rate-limited; the keyless cap is not published",
     "unit": "requests",
     "metered_on": "request-count",
-    "source_url": "https://www.tavily.com/",
-    "read_on": "2026-10-22",
+    "source_url": "https://docs.tavily.com/documentation/keyless",
+    "read_on": "2026-10-30",
     "notes": ""
   },
   "per_object_cap": {
@@ -29,7 +29,7 @@
     "notes": ""
   },
   "egress": {
-    "terms": "not applicable: JSON answers",
+    "terms": "not applicable",
     "metered": false,
     "free_allowance": null,
     "price_per_tb": null,
@@ -38,7 +38,7 @@
   "interface": [
     "rest"
   ],
-  "interface_detail": "the same search endpoint without a key",
+  "interface_detail": "POST https://api.tavily.com/search or /extract with the header X-Tavily-Access-Mode: keyless, or the remote MCP at mcp.tavily.com/mcp/ with the same header; Crawl, Map and Research need a key",
   "tooling": "not stated",
   "chaining": "The last search leg, kept for the case where every keyed provider is spent",
   "limits": [
@@ -52,7 +52,7 @@
   "limits_note": "",
   "identity_cost": {
     "kind": "anonymous",
-    "detail": "no key",
+    "detail": "no account and no API key; each request carries the header X-Tavily-Access-Mode: keyless",
     "country": null
   },
   "reliability_note": "no reliability event recorded",
@@ -62,6 +62,41 @@
       "url": null,
       "date": "2026-10-22",
       "proved": "probe outcome rate, 0 failures, this deployment's keyless leg"
+    },
+    {
+      "url": "https://docs.tavily.com/documentation/keyless",
+      "date": "2026-10-30",
+      "proved": "Search and Extract are free with no account and no API key",
+      "capture": "sha256:11d99270048de1438976b44140444cbc4b36c544b5dee6fe895b940e482b2e56",
+      "quote": "Use Tavily Search and Extract for free, with zero setup. No account, no API key, no configuration."
+    },
+    {
+      "url": "https://docs.tavily.com/documentation/keyless",
+      "date": "2026-10-30",
+      "proved": "the keyless route is the ordinary POST to /search or /extract with the X-Tavily-Access-Mode: keyless header, and the remote MCP takes the same header; Crawl, Map and Research need a key",
+      "capture": "sha256:11d99270048de1438976b44140444cbc4b36c544b5dee6fe895b940e482b2e56",
+      "quote": "Send a request with the `X-Tavily-Access-Mode: keyless` header."
+    },
+    {
+      "url": "https://docs.tavily.com/documentation/keyless",
+      "date": "2026-10-30",
+      "proved": "the keyless route is rate-limited and the page publishes no number for the cap",
+      "capture": "sha256:11d99270048de1438976b44140444cbc4b36c544b5dee6fe895b940e482b2e56",
+      "quote": "Keyless access is free and rate-limited, ideal for exploration and light use."
+    },
+    {
+      "url": "https://docs.tavily.com/documentation/rate-limits",
+      "date": "2026-10-30",
+      "proved": "keyless limits are separate from the keyed 100 and 1,000 requests a minute, and no keyless number is published",
+      "capture": "sha256:7da8fc1b0ac14b837a53d21997864d459f6f275344d25a53ea2a9ac6ee7cc17f",
+      "quote": "Keyless access uses a different error format and separate limits."
+    },
+    {
+      "url": "probe:https://api.tavily.com/search?query=wikipedia",
+      "date": "2026-10-30",
+      "proved": "a GET to the keyless search route answers 405 Method Not Allowed: the route takes POST, which a GET probe cannot exercise",
+      "capture": "sha256:f88325e1df566fb69288eeece906ac64314bb93bef1f1f3d716e9fcd3cfa53af",
+      "quote": "\"status\": 405"
     }
   ],
   "notes": "The clearest measured hold in the topic: 600 seconds. A caller that retries on a shorter clock burns its own budget and learns nothing."

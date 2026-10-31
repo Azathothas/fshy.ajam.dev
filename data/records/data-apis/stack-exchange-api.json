@@ -1,0 +1,365 @@
+{
+  "topic": "data-apis",
+  "slug": "stack-exchange-api",
+  "provider": "Stack Exchange API",
+  "url": "https://api.stackexchange.com/docs",
+  "category": "Q&A knowledge API (REST, JSON) with quarterly XML data dumps",
+  "tier": "free",
+  "free_tier": {
+    "stated": "With no key, 300 requests per day per IP. A free app key from Stack Apps raises the daily limit to 10,000 per IP; an access token gives a separate 10,000-per-day quota for each user and app pair, up to 5 per user. Every site's content is also published quarterly as an XML data dump.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://stackapps.com/questions/2",
+    "read_on": "2026-10-31",
+    "notes": "A keyless call answered 200 with quota_max 300. When one IP uses several keys, the highest key's limit applies to that IP, so more keys do not add quota. Anonymous paging stops at page 25: a page above 25 answered access_denied with no key or token."
+  },
+  "per_object_cap": {
+    "stated": "at most 100 items per page and 100 ids per {ids} parameter; page numbers above 25 need an app key or an access token",
+    "bytes": null,
+    "source_url": "https://api.stackexchange.com/docs",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "the API serves the live sites; the official dump page offers the current quarterly dump, and Academic Torrents lists community uploads of the network dump from 2024-02-29 to 2026-09-30",
+    "days": null,
+    "source_url": "https://meta.stackexchange.com/questions/419975/the-return-of-the-network-data-dump",
+    "notes": "The company states it will keep the dumps online for as long as reasonably possible."
+  },
+  "egress": {
+    "terms": "Free: API responses are gzip-compressed JSON with no byte price; the official dumps download free from a logged-in profile, and the community copy on the Internet Archive downloads over anonymous HTTP with Range support",
+    "metered": false,
+    "free_allowance": "no byte allowance published",
+    "price_per_tb": null,
+    "source_url": "https://stackoverflow.com/help/data-dumps"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "JSON over HTTPS GET at https://api.stackexchange.com/2.3/, every response compressed; OAuth 2.0 for user-scoped calls and writes; quarterly XML dumps as one 7z archive per site, downloaded from the profile settings (per site, or the whole network since October 2026); the Stack Exchange Data Explorer runs SQL over a copy refreshed every Sunday.",
+  "endpoint": "https://api.stackexchange.com/2.3/",
+  "tooling": "Any HTTP client that decompresses gzip; 7-Zip or p7zip for the dump archives; a BitTorrent client for the Internet Archive and Academic Torrents copies of the network dump.",
+  "chaining": "The quarterly XML dump is the bulk path for a whole-site or whole-network read (official download from a logged-in profile, or the anonymous community copy on the Internet Archive and Academic Torrents); the API at 300 requests a day keyless, or 10,000 with a free key, serves fresh lookups; the Data Explorer answers SQL over the weekly copy.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "300 requests per day per IP with no key; 10,000 per day per IP with a free app key, and an IP using several keys gets the highest key's limit",
+      "source": "https://stackapps.com/questions/2"
+    },
+    {
+      "kind": "request-rate",
+      "value": "10,000 requests per day for each user and app pair with an access token; up to 5 such quotas per user",
+      "source": "https://api.stackexchange.com/docs/throttle"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "more than 30 requests a second from one IP are dropped, with a ban on the order of 30 seconds to a few minutes",
+      "source": "https://api.stackexchange.com/docs/throttle"
+    },
+    {
+      "kind": "request-rate",
+      "value": "a response carrying backoff means that method must not be called again for that many seconds; semantically identical requests at most once a minute",
+      "source": "https://api.stackexchange.com/docs/throttle"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "100 items per page and 100 ids per call; page numbers above 25 need an app key or an access token",
+      "source": "https://api.stackexchange.com/docs"
+    }
+  ],
+  "limits_note": "The keyless quota is shared by every keyless application on one IP. The network-wide dump download is reported to fail around 19.5 GB for some downloaders.",
+  "binding": "request-rate",
+  "binding_note": "An IP gets 300 requests a day with no key and 10,000 with a free key, so a whole-site read goes to the quarterly dump, which has no request count.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Keyless reads need nothing: a call with no key answered 200 at 300 requests a day. The 10,000-a-day key needs an application registered on Stack Apps, whose registration page sends a visitor to the login page; the network signup takes an email and a password, or a Google or GitHub sign-in. The official dumps need a logged-in profile on the site; the community copy on the Internet Archive needs no account.",
+    "country": null
+  },
+  "reliability_note": "The network-wide dump came back in October 2026 after a removal of about two years, and downloads of the full archive are reported to fail around 19.5 GB; the Internet Archive copy is a community upload, not an official release.",
+  "confidence": "documented",
+  "confidence_note": "The quotas and throttles are documented, not exhausted. A keyless call answered 200 with quota_max 300, page 26 with no key answered access_denied, and a HEAD on one site archive of the Internet Archive copy answered 200 with its size. The 10,000-a-day key quota sits behind a sign-up.",
+  "evidence": [
+    {
+      "url": "https://stackapps.com/questions/2",
+      "date": "2026-10-31",
+      "proved": "the daily request limit is counted per IP address",
+      "capture": "sha256:fdd5cfb8f1b2b14128f5e67e220bbd173ffabc02ccb92813c57ee5b07fc9242d",
+      "quote": "A single IP address can only make a limited number of requests per day to the API."
+    },
+    {
+      "url": "https://stackapps.com/questions/2",
+      "date": "2026-10-31",
+      "proved": "with an API key the daily limit is 10,000 requests",
+      "capture": "sha256:fdd5cfb8f1b2b14128f5e67e220bbd173ffabc02ccb92813c57ee5b07fc9242d",
+      "quote": "- Key: `10,000`"
+    },
+    {
+      "url": "https://stackapps.com/questions/2",
+      "date": "2026-10-31",
+      "proved": "with no key the daily limit is 300 requests",
+      "capture": "sha256:fdd5cfb8f1b2b14128f5e67e220bbd173ffabc02ccb92813c57ee5b07fc9242d",
+      "quote": "- No Key: `300`"
+    },
+    {
+      "url": "https://stackapps.com/questions/2",
+      "date": "2026-10-31",
+      "proved": "an IP using several keys gets the highest key's limit, not a sum",
+      "capture": "sha256:fdd5cfb8f1b2b14128f5e67e220bbd173ffabc02ccb92813c57ee5b07fc9242d",
+      "quote": "Should an IP address be using more than one key, the highest request limit will be used."
+    },
+    {
+      "url": "https://api.stackexchange.com/2.3/info?site=stackoverflow",
+      "date": "2026-10-30",
+      "proved": "a keyless call to /2.3/info answered with quota_max 300",
+      "capture": "sha256:2a7afc9ca71f4a6691cfda0a0191d67e24ac9503c6f2277b38303df46e2f777a",
+      "quote": "\"has_more\":false,\"quota_max\":300,\"quota_remaining\":299"
+    },
+    {
+      "url": "probe:https://api.stackexchange.com/2.3/info?site=stackoverflow",
+      "date": "2026-10-31",
+      "proved": "a keyless GET of /2.3/info?site=stackoverflow answered 200",
+      "capture": "sha256:b4aff130cbd799f269b779148d24e87f9e7bb85231206a208d2909ead3cbe89a",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "https://api.stackexchange.com/2.3/questions?page=26&pagesize=1&site=stackoverflow",
+      "date": "2026-10-31",
+      "proved": "page 26 with no key or token answered access_denied",
+      "capture": "sha256:d3eee9ed2be73e57d3066c8bfda0b5f9794331af3d656f5e6a025244a52972cf",
+      "quote": "{\"error_id\":403,\"error_message\":\"page above 25 requires access token or app key\",\"error_name\":\"access_denied\"}"
+    },
+    {
+      "url": "https://api.stackexchange.com/docs",
+      "date": "2026-10-30",
+      "proved": "anonymous paging stops at page 25",
+      "capture": "sha256:c50b33cbc51a04fd3fa66267cbb9cf719d86df0f7f0654af8e99de1214bde51b",
+      "quote": "The maximum page number that will be returned for anonymous API access (no access token or app key) is 25"
+    },
+    {
+      "url": "https://api.stackexchange.com/docs",
+      "date": "2026-10-30",
+      "proved": "a page holds at most 100 items and an {ids} parameter at most 100 ids",
+      "capture": "sha256:c50b33cbc51a04fd3fa66267cbb9cf719d86df0f7f0654af8e99de1214bde51b",
+      "quote": "Unless otherwise noted, the maximum size of any page is `100`, any `{ids}` parameter likewise is capped at `100` elements, all indexes start at 1."
+    },
+    {
+      "url": "https://api.stackexchange.com/docs",
+      "date": "2026-10-30",
+      "proved": "a request key needs an application registered on Stack Apps",
+      "capture": "sha256:c50b33cbc51a04fd3fa66267cbb9cf719d86df0f7f0654af8e99de1214bde51b",
+      "quote": "Applications must be registered on [Stack Apps](http://stackapps.com/apps/oauth/register) to get a request key or [enable OAuth for authentication](https://api.stackexchange.com/docs/authentication)."
+    },
+    {
+      "url": "https://api.stackexchange.com/docs",
+      "date": "2026-10-30",
+      "proved": "every API response is compressed",
+      "capture": "sha256:c50b33cbc51a04fd3fa66267cbb9cf719d86df0f7f0654af8e99de1214bde51b",
+      "quote": "Additionally, all API responses are compressed."
+    },
+    {
+      "url": "https://api.stackexchange.com/docs/throttle",
+      "date": "2026-10-30",
+      "proved": "more than 30 requests a second from one IP are dropped",
+      "capture": "sha256:44e77939f9c8ab30ac0851cfa17729c9d9ca7e5659e502af2cb1d7652de9b8b9",
+      "quote": "If a single IP is making more than 30 requests a second, new requests will be dropped."
+    },
+    {
+      "url": "https://api.stackexchange.com/docs/throttle",
+      "date": "2026-10-30",
+      "proved": "the ban after the 30-a-second throttle lasts about 30 seconds to a few minutes",
+      "capture": "sha256:44e77939f9c8ab30ac0851cfa17729c9d9ca7e5659e502af2cb1d7652de9b8b9",
+      "quote": "The exact ban period is subject to change, but will be on the order of 30 seconds to a few minutes typically."
+    },
+    {
+      "url": "https://api.stackexchange.com/docs/throttle",
+      "date": "2026-10-30",
+      "proved": "keyed applications without a token share an IP quota of 10,000 a day by default",
+      "capture": "sha256:44e77939f9c8ab30ac0851cfa17729c9d9ca7e5659e502af2cb1d7652de9b8b9",
+      "quote": "it is the max of the daily request limit for the applications involved, which by default is 10,000."
+    },
+    {
+      "url": "https://api.stackexchange.com/docs/throttle",
+      "date": "2026-10-30",
+      "proved": "an access token gives a separate 10,000-a-day quota for each user and app pair",
+      "capture": "sha256:44e77939f9c8ab30ac0851cfa17729c9d9ca7e5659e502af2cb1d7652de9b8b9",
+      "quote": "then the application is on a distinct user/app pair daily quota (default size of 10,000)."
+    },
+    {
+      "url": "https://api.stackexchange.com/docs/throttle",
+      "date": "2026-10-30",
+      "proved": "a user can hold up to 5 such quotas",
+      "capture": "sha256:44e77939f9c8ab30ac0851cfa17729c9d9ca7e5659e502af2cb1d7652de9b8b9",
+      "quote": "A user can have up to 5 distinct quotas at any one time"
+    },
+    {
+      "url": "https://api.stackexchange.com/docs/throttle",
+      "date": "2026-10-30",
+      "proved": "a backoff field obliges a wait before calling that method again",
+      "capture": "sha256:44e77939f9c8ab30ac0851cfa17729c9d9ca7e5659e502af2cb1d7652de9b8b9",
+      "quote": "If an application receives a response with the `backoff` field set, it must wait that many seconds before hitting the same method again."
+    },
+    {
+      "url": "https://api.stackexchange.com/docs/throttle",
+      "date": "2026-10-30",
+      "proved": "identical requests are asked to be at most once a minute",
+      "capture": "sha256:44e77939f9c8ab30ac0851cfa17729c9d9ca7e5659e502af2cb1d7652de9b8b9",
+      "quote": "no application should make semantically identical requests more than once a minute."
+    },
+    {
+      "url": "https://api.stackexchange.com/docs/authentication",
+      "date": "2026-10-30",
+      "proved": "user-scoped access uses OAuth 2.0",
+      "capture": "sha256:1eb8d65dbad9edbe2ce1730bbbc406d4e9856e9c185307998e4568eaa06532b1",
+      "quote": "The Stack Exchange API offers user authentication via OAuth 2.0"
+    },
+    {
+      "url": "https://stackapps.com/apps/oauth/register",
+      "date": "2026-10-30",
+      "proved": "the Stack Apps application registration page redirects a visitor with no session to the login page",
+      "capture": "sha256:48ec0d8b519ad05b6cabfc2ebf0f0f1cf00902397057fbc0e5ce7ad7a026d389",
+      "quote": "x-web-final-url: https://stackapps.com/users/login?returnurl=/applications"
+    },
+    {
+      "url": "https://stackoverflow.com/users/signup",
+      "date": "2026-10-30",
+      "proved": "the network signup offers GitHub sign-in beside the email and password fields",
+      "capture": "sha256:eafdc00381d3d096f9acf1651a8e245cc37312d5a1d5658b30deeb7393a33250",
+      "quote": "Sign up with GitHub"
+    },
+    {
+      "url": "https://stackoverflow.com/users/signup",
+      "date": "2026-10-30",
+      "proved": "the network signup offers Google sign-in",
+      "capture": "sha256:eafdc00381d3d096f9acf1651a8e245cc37312d5a1d5658b30deeb7393a33250",
+      "quote": "Sign up with Google"
+    },
+    {
+      "url": "https://stackoverflow.com/help/data-dumps",
+      "date": "2026-10-30",
+      "proved": "each site's dump is published quarterly and downloaded from the account settings page",
+      "capture": "sha256:66188c6853d8963f0472798032fed98e80ef908b4eb01f5a79c15caedc37c6c0",
+      "quote": "Content from each Stack Exchange site is made available quarterly in the form of a “data dump” file that can be accessed by a user via their account settings page."
+    },
+    {
+      "url": "https://stackoverflow.com/help/data-dumps",
+      "date": "2026-10-30",
+      "proved": "the official download is a checkbox and a button on a logged-in settings page",
+      "capture": "sha256:66188c6853d8963f0472798032fed98e80ef908b4eb01f5a79c15caedc37c6c0",
+      "quote": "Check the box affirming that you do not intend to use the file for LLM training, and then use the “Download data” button to begin downloading the file."
+    },
+    {
+      "url": "https://meta.stackexchange.com/questions/419975/the-return-of-the-network-data-dump",
+      "date": "2026-10-31",
+      "proved": "the network-wide dump had been removed about two years earlier",
+      "capture": "sha256:0404e037bdeda36f5b73c27e8bf40af5e56193262d6aa9707e000b11fd0ed647",
+      "quote": "A couple of years ago, we announced some changes to the way that we handled data dumps."
+    },
+    {
+      "url": "https://meta.stackexchange.com/questions/419975/the-return-of-the-network-data-dump",
+      "date": "2026-10-31",
+      "proved": "the network-wide dump was restored in October 2026",
+      "capture": "sha256:0404e037bdeda36f5b73c27e8bf40af5e56193262d6aa9707e000b11fd0ed647",
+      "quote": "I am very pleased to tell you that we are now restoring the network-level data dump, effective today."
+    },
+    {
+      "url": "https://meta.stackexchange.com/questions/419975/the-return-of-the-network-data-dump",
+      "date": "2026-10-31",
+      "proved": "the network and per-site dumps download from the user preferences page",
+      "capture": "sha256:0404e037bdeda36f5b73c27e8bf40af5e56193262d6aa9707e000b11fd0ed647",
+      "quote": "The tool to download these dumps can be found on the data dumps page in [user preferences](https://meta.stackexchange.com/users/data-dump-access/current), along with the per-site data dump."
+    },
+    {
+      "url": "https://meta.stackexchange.com/questions/419975/the-return-of-the-network-data-dump",
+      "date": "2026-10-31",
+      "proved": "new dumps are published quarterly",
+      "capture": "sha256:0404e037bdeda36f5b73c27e8bf40af5e56193262d6aa9707e000b11fd0ed647",
+      "quote": "We will publish new dumps quarterly, as soon as reasonably possible after the beginning of each quarter."
+    },
+    {
+      "url": "https://meta.stackexchange.com/questions/419975/the-return-of-the-network-data-dump",
+      "date": "2026-10-31",
+      "proved": "full-archive downloads are reported to fail around 19.5 GB for some downloaders",
+      "capture": "sha256:0404e037bdeda36f5b73c27e8bf40af5e56193262d6aa9707e000b11fd0ed647",
+      "quote": "We have reports of successful downloads, including the full archive, and reports that the full archive still fails around 19.5 GB."
+    },
+    {
+      "url": "https://meta.stackexchange.com/questions/419975/the-return-of-the-network-data-dump",
+      "date": "2026-10-31",
+      "proved": "the dumps are kept online for as long as reasonably possible, with no fixed period",
+      "capture": "sha256:0404e037bdeda36f5b73c27e8bf40af5e56193262d6aa9707e000b11fd0ed647",
+      "quote": "On availability: we will keep the dumps online for as long as reasonably possible."
+    },
+    {
+      "url": "https://archive.org/details/stackexchange_20260930",
+      "date": "2026-10-31",
+      "proved": "the Internet Archive copy is a community upload, not an official release",
+      "capture": "sha256:87037267276672adbfa956d91bf53a210b45db5b612e1bea79fb208a6df2cff9",
+      "quote": "This community release is an unofficial replacement for the now-killed official archive.org release."
+    },
+    {
+      "url": "https://archive.org/details/stackexchange_20260930",
+      "date": "2026-10-31",
+      "proved": "the Internet Archive item holds the dump through 2026-09-30",
+      "capture": "sha256:87037267276672adbfa956d91bf53a210b45db5b612e1bea79fb208a6df2cff9",
+      "quote": "This dump contains data up to and including 2026-09-30."
+    },
+    {
+      "url": "https://archive.org/details/stackexchange_20260930",
+      "date": "2026-10-31",
+      "proved": "the official dump format is XML",
+      "capture": "sha256:87037267276672adbfa956d91bf53a210b45db5b612e1bea79fb208a6df2cff9",
+      "quote": "Note that Stack Exchange themselves only publish a .XML-formatted data dump, meaning converted formats are fully community-generated."
+    },
+    {
+      "url": "https://archive.org/details/stackexchange_20260930",
+      "date": "2026-10-31",
+      "proved": "the Internet Archive item is 91.9G",
+      "capture": "sha256:87037267276672adbfa956d91bf53a210b45db5b612e1bea79fb208a6df2cff9",
+      "quote": "91.9G"
+    },
+    {
+      "url": "probe:https://archive.org/download/stackexchange_20260930/stackexchange_20260930/math.stackexchange.com.7z",
+      "date": "2026-10-31",
+      "proved": "a HEAD with no account on math.stackexchange.com.7z in the Internet Archive copy answered 200 with 3,933,317,407 bytes",
+      "capture": "sha256:46551f7976e9a5642ff79cfd2b6b302c3b1e5579d5e1532fbb3dacb7a0907c72",
+      "quote": "\"content-length\": \"3933317407\""
+    },
+    {
+      "url": "probe:https://archive.org/download/stackexchange_20260930/stackexchange_20260930/math.stackexchange.com.7z",
+      "date": "2026-10-31",
+      "proved": "the Internet Archive copy supports HTTP ranges",
+      "capture": "sha256:46551f7976e9a5642ff79cfd2b6b302c3b1e5579d5e1532fbb3dacb7a0907c72",
+      "quote": "\"accept-ranges\": \"bytes\""
+    },
+    {
+      "url": "https://academictorrents.com/collection/stack-exchange-data-dumps.csv",
+      "date": "2026-10-30",
+      "proved": "Academic Torrents lists the 2026-09-30 network dump at 99,497,279,488 bytes",
+      "capture": "sha256:5799d50446402c3530e14fe026f68649efeb29f9f0426f0549ebc1b7a77e61b1",
+      "quote": "| Dataset | Stack Exchange Data Dump (2026-09-30)                  | c32cdd0306ee7717cd63f98f8df6486af55f79c8 | 99497279488  |"
+    },
+    {
+      "url": "https://academictorrents.com/collection/stack-exchange-data-dumps.csv",
+      "date": "2026-10-30",
+      "proved": "the oldest dump listed on Academic Torrents is 2024-02-29",
+      "capture": "sha256:5799d50446402c3530e14fe026f68649efeb29f9f0426f0549ebc1b7a77e61b1",
+      "quote": "| Dataset | Stack Exchange Data Dump (2024-02-29)                  | 5a3d9b0c0855056a5ef6e90d9766c3005145c979 | 91754594304  |"
+    },
+    {
+      "url": "https://data.stackexchange.com/help",
+      "date": "2026-10-30",
+      "proved": "the Data Explorer copy is refreshed every Sunday",
+      "capture": "sha256:143c29f697e47de6aa97e4ca34948346cc33e432993baa5e8a57141ef8e6e608",
+      "quote": "The data is updated early every Sunday morning around 3:00 UTC."
+    },
+    {
+      "url": "https://data.stackexchange.com/help",
+      "date": "2026-10-30",
+      "proved": "the Data Explorer runs queries for anonymous users",
+      "capture": "sha256:143c29f697e47de6aa97e4ca34948346cc33e432993baa5e8a57141ef8e6e608",
+      "quote": "While anonymous users can run queries without any imposed restrictions, there are a few perks to registering:"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-31T05:06:55.547Z",
+  "notes": "Caveat: the keyless quota is 300 requests a day, and the 10,000-a-day quota needs an account and a registered app. Bulk path: the quarterly XML dump, per site or for the whole network, from a logged-in profile; the 2026-09-30 network dump is also on the Internet Archive (91.9G) and Academic Torrents (99,497,279,488 bytes) as community uploads."
+}

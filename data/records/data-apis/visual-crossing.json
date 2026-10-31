@@ -1,0 +1,259 @@
+{
+  "topic": "data-apis",
+  "slug": "visual-crossing",
+  "provider": "Visual Crossing",
+  "url": "https://www.visualcrossing.com/weather-data-editions/",
+  "category": "weather API",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free account: 1,000 weather records a day (30,000 a month) through the Timeline Weather API and the Query Builder, with forecasts, current conditions and 50+ years of history; 1,000 records and 5 locations per query, 1 concurrent request, and 10,000 weather map requests a month.",
+    "unit": "mixed",
+    "metered_on": "object-count",
+    "source_url": "https://www.visualcrossing.com/weather-data-editions/",
+    "read_on": "2026-10-31",
+    "notes": "The true unit is a weather record, which the unit vocabulary lacks: one row of daily, hourly or sub-hourly history for one location, while a full 15-day forecast for one location counts as one record. Bulk path: Query Builder datasets of up to 1,000 records and 5 locations each on Free, with no dataset scheduling."
+  },
+  "per_object_cap": {
+    "stated": "1,000 records and 5 locations per API query; 1,000 records and 5 locations per Query Builder dataset",
+    "bytes": null,
+    "notes": "",
+    "source_url": "https://www.visualcrossing.com/weather-data-editions/"
+  },
+  "retention": {
+    "stated": "not applicable: the unit is a record returned",
+    "days": null,
+    "notes": "",
+    "source_url": "https://www.visualcrossing.com/weather-data-editions/"
+  },
+  "egress": {
+    "terms": "not applicable",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.visualcrossing.com/weather-data-editions/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "Timeline Weather API over HTTPS GET or POST with the key in the key query parameter; JSON, flat JSON or CSV answers; Query Builder dataset downloads in the browser",
+  "endpoint": "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/",
+  "tooling": "any HTTP client; the key goes in the key query parameter",
+  "chaining": "A history-heavy source: one call returns daily or hourly history, current conditions and a 15-day forecast for a location, so 1,000 locations of forecasts or 1,000 rows of history fit in a day.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "1,000 records a day (30,000 a month)",
+      "source": "https://www.visualcrossing.com/weather-data-editions/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "1,000 records and 5 locations per API query",
+      "source": "https://www.visualcrossing.com/weather-data-editions/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "1 concurrent API request",
+      "source": "https://www.visualcrossing.com/weather-data-editions/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "10,000 weather map requests a month",
+      "source": "https://www.visualcrossing.com/weather-data-editions/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "Query Builder datasets: 1,000 records and 5 locations each, no scheduling",
+      "source": "https://www.visualcrossing.com/weather-data-editions/"
+    }
+  ],
+  "binding": "volume-quota",
+  "binding_note": "1,000 records a day binds first for history, where every daily or hourly row is a record; a 15-day forecast is one record per location, so forecast polling meets the 1-concurrent-request limit sooner.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The sign-up form shows a Website field and an Account Email field with no card field; the API key is then on the account page.",
+    "country": null
+  },
+  "reliability_note": "Fair use: an account past the day's fair usage answers HTTP 429 and is held to one concurrent request for the rest of the day; extreme cases are suspended until support restores the account.",
+  "confidence": "documented",
+  "confidence_note": "The plan table was read from the raw pricing HTML and the free-plan, record and fair-use pages; the keyed free plan was not exercised. The same endpoint answered HTTP 200 to a call with no key (see data-apis/visual-crossing-no-key).",
+  "evidence": [
+    {
+      "url": "https://www.visualcrossing.com/weather-data-editions/",
+      "date": "2026-10-31",
+      "proved": "the Free column allows 30,000 records a month at 1,000 a day",
+      "capture": "sha256:7259b867100896a406bdb2af0783a6baa9a9a9a442c5ad4c3184901bc2e40c7c",
+      "quote": "<div class=\"vc-limit-main\">30,000</div> <div class=\"vc-limit-sub\">1,000 records/day</div>"
+    },
+    {
+      "url": "https://www.visualcrossing.com/resources/documentation/visual-crossing-weather-free-plan-free-weather-data-for-analysts-and-api-developers/",
+      "date": "2026-10-31",
+      "proved": "the free plan allows up to 1,000 records a day",
+      "capture": "sha256:0668c76df64629d0e5ae5bd97eeb978c2c805530c7a663dbbf9c62bdfe6d2197",
+      "quote": "| API Requests | Up to 1,000 [records](https://www.visualcrossing.com/resources/documentation/weather-data/what-exactly-is-a-weather-record/) per day |"
+    },
+    {
+      "url": "https://www.visualcrossing.com/weather-data-editions/",
+      "date": "2026-10-31",
+      "proved": "the Free column allows 1,000 records per API query",
+      "capture": "sha256:7259b867100896a406bdb2af0783a6baa9a9a9a442c5ad4c3184901bc2e40c7c",
+      "quote": "<td><a href=\"#record-limits\">Records/API Query</a></td> <td class=\"text-center vc-free-col\">1,000</td>"
+    },
+    {
+      "url": "https://www.visualcrossing.com/weather-data-editions/",
+      "date": "2026-10-31",
+      "proved": "the Free column allows 5 locations per API query",
+      "capture": "sha256:7259b867100896a406bdb2af0783a6baa9a9a9a442c5ad4c3184901bc2e40c7c",
+      "quote": "<td><a href=\"#record-limits\">Locations/API Query</a></td> <td class=\"text-center vc-free-col\">5</td>"
+    },
+    {
+      "url": "https://www.visualcrossing.com/weather-data-editions/",
+      "date": "2026-10-31",
+      "proved": "the Free column allows 1 concurrent API request",
+      "capture": "sha256:7259b867100896a406bdb2af0783a6baa9a9a9a442c5ad4c3184901bc2e40c7c",
+      "quote": "<td><a href=\"#record-limits\">Maximum API Concurrency</a></td> <td class=\"text-center vc-free-col\">1</td>"
+    },
+    {
+      "url": "https://www.visualcrossing.com/weather-data-editions/",
+      "date": "2026-10-31",
+      "proved": "the Free column allows 10,000 weather map requests a month",
+      "capture": "sha256:7259b867100896a406bdb2af0783a6baa9a9a9a442c5ad4c3184901bc2e40c7c",
+      "quote": "<td><a href=\"#\">Monthly Request Limit</a></td> <td class=\"text-center vc-free-col\">10,000</td>"
+    },
+    {
+      "url": "https://www.visualcrossing.com/weather-data-editions/",
+      "date": "2026-10-31",
+      "proved": "a Free Query Builder dataset holds up to 1,000 records",
+      "capture": "sha256:7259b867100896a406bdb2af0783a6baa9a9a9a442c5ad4c3184901bc2e40c7c",
+      "quote": "<td><a href=\"#bulk-limits\">Records/dataset</a></td> <td class=\"text-center vc-free-col\">1,000</td>"
+    },
+    {
+      "url": "https://www.visualcrossing.com/weather-data-editions/",
+      "date": "2026-10-31",
+      "proved": "a Free Query Builder dataset holds up to 5 locations",
+      "capture": "sha256:7259b867100896a406bdb2af0783a6baa9a9a9a442c5ad4c3184901bc2e40c7c",
+      "quote": "<td><a href=\"#bulk-limits\">Locations/dataset</a</td> <td class=\"text-center vc-free-col\">5</td>"
+    },
+    {
+      "url": "https://www.visualcrossing.com/weather-data-editions/",
+      "date": "2026-10-31",
+      "proved": "Query Builder datasets are the bulk path",
+      "capture": "sha256:934b2a304d17768339d47adc3d6477fd96b9cbdd8ac112b4472c313ae0efbc76",
+      "quote": "Bulk datasets can include multiple locations across multiple days or hours and are perfect for populating data lakes or databases."
+    },
+    {
+      "url": "https://www.visualcrossing.com/weather-data-editions/",
+      "date": "2026-10-31",
+      "proved": null,
+      "capture": "sha256:934b2a304d17768339d47adc3d6477fd96b9cbdd8ac112b4472c313ae0efbc76",
+      "quote": null
+    },
+    {
+      "url": "https://www.visualcrossing.com/resources/documentation/weather-data/what-exactly-is-a-weather-record/",
+      "date": "2026-10-31",
+      "proved": "a 15-day forecast for one location is one record",
+      "capture": "sha256:5caa1f6f8de87bd217cc7222e7ca807d56513a49f46720fe24f3d798e9041bd7",
+      "quote": "A full 15-day forecast for one location counts as a single record."
+    },
+    {
+      "url": "https://www.visualcrossing.com/resources/documentation/weather-data/what-exactly-is-a-weather-record/",
+      "date": "2026-10-31",
+      "proved": "each row of history is one record",
+      "capture": "sha256:5caa1f6f8de87bd217cc7222e7ca807d56513a49f46720fe24f3d798e9041bd7",
+      "quote": "One weather history record is defined as a single row of history data."
+    },
+    {
+      "url": "https://www.visualcrossing.com/resources/documentation/weather-api/understanding-the-fair-use-system-in-visual-crossing-weather/",
+      "date": "2026-10-31",
+      "proved": "past fair usage the account is held to one concurrent request for the day",
+      "capture": "sha256:e459e5bcfd942001ffc038abaecce912294b83eeb4b695a57afb335a8c776360",
+      "quote": "Your usage has exceeded the fair usage for the current day. You can continue to execute queries however you cannot execute more than one concurrent request."
+    },
+    {
+      "url": "https://www.visualcrossing.com/sign-up/",
+      "date": "2026-10-31",
+      "proved": "the sign-up form asks for an account email",
+      "capture": "sha256:55520962329ec1aaeb97b0bf582bf58b58f6224c6519318d916bfbf9b7fa87d2",
+      "quote": "Account Email"
+    },
+    {
+      "url": "https://www.visualcrossing.com/sign-up/",
+      "date": "2026-10-31",
+      "proved": "the sign-up form has a Website field",
+      "capture": "sha256:55520962329ec1aaeb97b0bf582bf58b58f6224c6519318d916bfbf9b7fa87d2",
+      "quote": "Website"
+    },
+    {
+      "url": "https://www.visualcrossing.com/resources/documentation/weather-api/how-do-i-get-started-with-the-weather-api",
+      "date": "2026-10-31",
+      "proved": "the key is issued on the account page",
+      "capture": "sha256:8da4b892698b2f1d556060a42b8bf32b1990cbe2949c5dc5e69d131478c0033a",
+      "quote": "Your API key is available from your [account page](https://www.visualcrossing.com/account/) and is used to authenticate each Weather API request."
+    },
+    {
+      "url": "https://www.visualcrossing.com/resources/documentation/visual-crossing-weather-free-plan-free-weather-data-for-analysts-and-api-developers/",
+      "date": "2026-10-31",
+      "proved": "the free plan authenticates with an API key",
+      "capture": "sha256:0668c76df64629d0e5ae5bd97eeb978c2c805530c7a663dbbf9c62bdfe6d2197",
+      "quote": "| Authentication | API Key |"
+    },
+    {
+      "url": "https://www.visualcrossing.com/resources/documentation/visual-crossing-weather-free-plan-free-weather-data-for-analysts-and-api-developers/",
+      "date": "2026-10-31",
+      "proved": "the free plan reaches more than 50 years of history",
+      "capture": "sha256:0668c76df64629d0e5ae5bd97eeb978c2c805530c7a663dbbf9c62bdfe6d2197",
+      "quote": "| Historical Coverage | More than 50 years of historical weather data |"
+    },
+    {
+      "url": "https://www.visualcrossing.com/resources/documentation/visual-crossing-weather-free-plan-free-weather-data-for-analysts-and-api-developers/",
+      "date": "2026-10-31",
+      "proved": "the free plan includes the Query Builder and the full Weather API",
+      "capture": "sha256:0668c76df64629d0e5ae5bd97eeb978c2c805530c7a663dbbf9c62bdfe6d2197",
+      "quote": "| API Access | Query Builder and Full Weather API |"
+    },
+    {
+      "url": "https://www.visualcrossing.com/resources/documentation/visual-crossing-weather-free-plan-free-weather-data-for-analysts-and-api-developers/",
+      "date": "2026-10-31",
+      "proved": "the key goes in the key query parameter",
+      "capture": "sha256:0668c76df64629d0e5ae5bd97eeb978c2c805530c7a663dbbf9c62bdfe6d2197",
+      "quote": "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/London?key=YOUR_API_KEY"
+    },
+    {
+      "url": "https://www.visualcrossing.com/resources/documentation/weather-api/free-weather-api-no-key/",
+      "date": "2026-10-31",
+      "proved": "the Timeline API takes GET or POST",
+      "capture": "sha256:e5336750428f2a539da14499520d21ec6606ff6398c937cd334d72b5a02887ec",
+      "quote": "The API also supports HTTP POST requests."
+    },
+    {
+      "url": "https://www.visualcrossing.com/resources/documentation/weather-api/free-weather-api-no-key/",
+      "date": "2026-10-31",
+      "proved": "answers come as JSON, flat JSON or CSV",
+      "capture": "sha256:e5336750428f2a539da14499520d21ec6606ff6398c937cd334d72b5a02887ec",
+      "quote": "Visual Crossing offers JSON, Flat JSON, and CSV, data formats."
+    },
+    {
+      "url": "https://www.visualcrossing.com/resources/documentation/weather-api/understanding-the-fair-use-system-in-visual-crossing-weather/",
+      "date": "2026-10-31",
+      "proved": "extreme fair-use cases are suspended",
+      "capture": "sha256:e459e5bcfd942001ffc038abaecce912294b83eeb4b695a57afb335a8c776360",
+      "quote": null
+    },
+    {
+      "url": "https://www.visualcrossing.com/weather-api/",
+      "date": "2026-10-31",
+      "proved": "past 1,000 free records a day, pay-as-you-go costs USD 0.0001 a record",
+      "capture": "sha256:d76909361e413ce91971f3319031008156b9f645313402322be94d0d21b342f1",
+      "quote": "our prices start at free up to 1000 records per day, are only $0.0001 per record for pay-as-you-go access"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/public-apis/public-apis/master/README.md",
+      "date": "2026-10-31",
+      "proved": "listed under Weather in the public-apis list with an apiKey",
+      "capture": "sha256:7c0d65a75227ba9bd3f8576a39262f7af32373d3eca4190cd91e66329ca1d059",
+      "quote": "| [Visual Crossing](https://www.visualcrossing.com/weather-api) | Global historical and weather forecast data | `apiKey` | Yes | Yes |"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-31T10:04:05.824Z",
+  "notes": "Bulk path: Query Builder datasets, 1,000 records and 5 locations each on Free. Past the free records, the Metered plan bills USD 0.0001 a record."
+}

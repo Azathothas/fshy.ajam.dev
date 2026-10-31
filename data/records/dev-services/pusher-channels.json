@@ -1,0 +1,215 @@
+{
+  "topic": "dev-services",
+  "slug": "pusher-channels",
+  "provider": "Pusher",
+  "tier": "Sandbox",
+  "url": "https://pusher.com/channels/pricing",
+  "category": "realtime pub/sub messaging over WebSocket with an HTTP publish API",
+  "free_tier": {
+    "stated": "Channels Sandbox: 200k messages per day and 100 concurrent connections, free",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://pusher.com/channels/pricing",
+    "read_on": "2026-10-30",
+    "notes": "A message is each API request plus each delivery to a connected client: a publish to 50 subscribers is 51 messages. Limits are counted per account, over all the apps it owns. A warning email goes out at 80% of a limit. Past the daily message limit every trigger request answers 403 over quota; past the connection limit new connections are rejected, and on Sandbox the connection limit is enforced at once (paid plans at 120%). One trigger request reaches at most 100 channels."
+  },
+  "per_object_cap": {
+    "stated": "10KB of event data per message; a larger event answers 413",
+    "bytes": null,
+    "source_url": "https://docs.bird.com/pusher/channels/channels/limits/what-is-the-message-size-limit-when-publishing-an-event-in-channels",
+    "notes": "The page writes 10KB without saying 10,000 or 10,240 bytes, so no byte count is recorded."
+  },
+  "retention": {
+    "stated": "No message history by default; an opt-in cache channel keeps the last event in memory for at most 30 minutes or until a new event arrives",
+    "days": 0,
+    "source_url": "https://docs.bird.com/pusher/channels/channels/events/does-channels-store-a-history-of-events-and-messages"
+  },
+  "egress": {
+    "terms": "Each delivery to a connected client counts as a message against the 200k daily quota; no byte allowance is stated",
+    "metered": true,
+    "free_allowance": "200k messages per day, deliveries included",
+    "price_per_tb": null,
+    "source_url": "https://pusher.com/channels/pricing"
+  },
+  "interface": [
+    "rest",
+    "unknown"
+  ],
+  "interface_detail": "HTTP API at api-CLUSTER.pusher.com (for example api-mt1.pusher.com) over HTTP or HTTPS, each request signed with an HMAC SHA256 digest; clients hold WebSocket connections with an HTTP fallback transport, which the interface vocabulary has no term for. The api-mt1 host answered 400 to an unsigned request.",
+  "endpoint": "https://api-mt1.pusher.com",
+  "tooling": "The pusher-js client and the Pusher server libraries, or any HTTP client that signs requests with the app secret.",
+  "chaining": "A notification fan-out from a worker to a browser dashboard, sized for about 18,000 publishes a day to 10 subscribers each.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "200k messages per day per account, deliveries included",
+      "source": "https://pusher.com/channels/pricing"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "10KB of event data per message",
+      "source": "https://docs.bird.com/pusher/channels/channels/limits/what-is-the-message-size-limit-when-publishing-an-event-in-channels"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "no history; cache channels keep the last event for at most 30 minutes",
+      "source": "https://docs.bird.com/pusher/channels/channels/events/does-channels-store-a-history-of-events-and-messages"
+    }
+  ],
+  "limits_note": "100 concurrent connections per account, enforced at once on Sandbox, and 100 channels per trigger request. The vocabulary has no kind for a concurrency cap.",
+  "binding": "request-rate",
+  "binding_note": "A publish to n subscribers counts n + 1 against 200,000 a day, so a publish to 10 subscribers leaves about 18,000 publishes a day (200,000 / 11); a fan-out to more than 100 clients meets the connection cap first.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The signup form asks for an email address and a password, or a GitHub or Google sign-in, behind an invisible reCAPTCHA; billing and card details are entered only when a plan is upgraded.",
+    "country": null
+  },
+  "reliability_note": "Over the daily message quota the HTTP API answers 403 and further publishes fail until the next day; connections over the limit are rejected at once on Sandbox.",
+  "confidence": "documented",
+  "confidence_note": "Every limit is quoted from first-party pricing, documentation and support pages; the HTTP API host was probed and answered 400 to an unsigned request. No event was published, because publishing needs an app key and secret. A signed publish from a Sandbox app would move it to measured.",
+  "evidence": [
+    {
+      "url": "https://pusher.com/channels/",
+      "date": "2026-10-30",
+      "proved": "Sandbox is free with 200k messages a day and 100 concurrent connections",
+      "capture": "sha256:582813b69c8366ac09c32beb0e42b9db211661ee74fabb8bbb8f6baf7c7e2205",
+      "quote": "200k messages per day, 100 concurrent connections, Standard support"
+    },
+    {
+      "url": "https://pusher.com/channels/pricing",
+      "date": "2026-10-30",
+      "proved": "a message is each API request plus each delivery",
+      "capture": "sha256:29b6eeca36952c1e99d78960ef34fc074abdd1e183817ed73f0352095f672cf3",
+      "quote": "A message refers to messages we receive through our API and those we deliver to your connected users. For example, if you publish one message to 50 subscribers, that’s 51 messages."
+    },
+    {
+      "url": "https://docs.bird.com/pusher/account-billing/account-billing/plans/how-does-my-channels-plan-level-affect-the-limits-of-my-apps",
+      "date": "2026-10-31",
+      "proved": "message limits are aggregated over every app an account owns",
+      "capture": "sha256:149b5643dd50e3fdb818e2cf9f81d4390c33be2999541ce586b9ef0871977d30",
+      "quote": "The same goes for messages - they are aggregated over all of the apps that an account owns."
+    },
+    {
+      "url": "https://docs.bird.com/pusher/channels/channels/limits/what-happens-when-i-hit-my-channels-plan-limits",
+      "date": "2026-10-30",
+      "proved": "past the event limit every trigger request is refused",
+      "capture": "sha256:a1b0655420f8b2db8e95b465def7eb33b7fa0f8fa644599e9fda978a8f7e27ba",
+      "quote": "When you hit event limits you will not be able to publish any more events from your server and any trigger request will return a"
+    },
+    {
+      "url": "https://docs.bird.com/pusher/channels/channels/limits/what-happens-when-i-hit-my-channels-plan-limits",
+      "date": "2026-10-30",
+      "proved": "past the connection limit new client connections fail",
+      "capture": "sha256:a1b0655420f8b2db8e95b465def7eb33b7fa0f8fa644599e9fda978a8f7e27ba",
+      "quote": "When you encounter connection limits your clients will not be able to initiate a connection to Channels."
+    },
+    {
+      "url": "https://pusher.com/docs/channels/using_channels/connection",
+      "date": "2026-10-31",
+      "proved": "connection limits are enforced at once on Sandbox",
+      "capture": "sha256:207bb05dd5dc68eb0fbfb74efb6f3d27ef3ab79e8713dd6af6bacbefd69a014a",
+      "quote": "Connection limits are currently only strictly enforced on Sandbox plans."
+    },
+    {
+      "url": "https://pusher.com/docs/channels/using_channels/connection",
+      "date": "2026-10-31",
+      "proved": "clients use WebSockets with an HTTP-based fallback transport",
+      "capture": "sha256:207bb05dd5dc68eb0fbfb74efb6f3d27ef3ab79e8713dd6af6bacbefd69a014a",
+      "quote": "This implies that WebSockets are not natively available and an HTTP-based transport could not be found."
+    },
+    {
+      "url": "https://docs.bird.com/pusher/channels/channels/limits/what-is-the-message-size-limit-when-publishing-an-event-in-channels",
+      "date": "2026-10-30",
+      "proved": "an event carries at most 10KB of data",
+      "capture": "sha256:b06004788daafe953c603ce780eca0105fefd63b63b4293744c02076e3cadc0e",
+      "quote": "The message size limit is 10KB"
+    },
+    {
+      "url": "https://docs.bird.com/pusher/channels/channels/events/does-channels-store-a-history-of-events-and-messages",
+      "date": "2026-10-30",
+      "proved": "Channels keeps no message history by default",
+      "capture": "sha256:156da0f25e8ea1e13b3981517692bd3c2bdfa18d25eef41c3cd2bd598c16626a",
+      "quote": "By default, Channels does not offer any message history functionality."
+    },
+    {
+      "url": "https://docs.bird.com/pusher/channels/channels/events/does-channels-store-a-history-of-events-and-messages",
+      "date": "2026-10-30",
+      "proved": "a cache channel keeps the last event for at most 30 minutes",
+      "capture": "sha256:156da0f25e8ea1e13b3981517692bd3c2bdfa18d25eef41c3cd2bd598c16626a",
+      "quote": "Cache channels stores the last event sent to the channel - this event is stored for a maximum of 30 minutes or until a new event arrives."
+    },
+    {
+      "url": "https://pusher.com/docs/channels/library_auth_reference/rest-api/",
+      "date": "2026-10-30",
+      "proved": "the HTTP API is hosted per cluster, over HTTP or HTTPS",
+      "capture": "sha256:5998893e4832e8db909da5056d9a70e1e5ec2ddbde38fce534922e3ec3a54c96",
+      "quote": "where CLUSTER is replaced with your own apps cluster (e.g., mt1). The API may be accessed via HTTP or HTTPS."
+    },
+    {
+      "url": "https://pusher.com/docs/channels/library_auth_reference/rest-api/",
+      "date": "2026-10-30",
+      "proved": "the HTTP API answers 403 when the app is over its message quota",
+      "capture": "sha256:5998893e4832e8db909da5056d9a70e1e5ec2ddbde38fce534922e3ec3a54c96",
+      "quote": null
+    },
+    {
+      "url": "https://pusher.com/docs/channels/library_auth_reference/rest-api/",
+      "date": "2026-10-30",
+      "proved": "one trigger request reaches at most 100 channels",
+      "capture": "sha256:5998893e4832e8db909da5056d9a70e1e5ec2ddbde38fce534922e3ec3a54c96",
+      "quote": "| channels | Array of one or more channel names - limited to 100 channels. |"
+    },
+    {
+      "url": "https://pusher.com/docs/channels/library_auth_reference/rest-api/",
+      "date": "2026-10-30",
+      "proved": "requests are signed with an HMAC SHA256 digest",
+      "capture": "sha256:5998893e4832e8db909da5056d9a70e1e5ec2ddbde38fce534922e3ec3a54c96",
+      "quote": "The signature is a HMAC SHA256 hex digest."
+    },
+    {
+      "url": "https://dashboard.pusher.com/accounts/sign_up",
+      "date": "2026-10-30",
+      "proved": "the signup form asks for an email address",
+      "capture": "sha256:15dca6e4c0c3644ecdcb83cd84e3c7185c0ca06ba0ebd6acb0d37596e286769e",
+      "quote": "<input name=\"account[email]\" id=\"signup-email\" type=\"email\""
+    },
+    {
+      "url": "https://dashboard.pusher.com/accounts/sign_up",
+      "date": "2026-10-30",
+      "proved": "the signup form asks for a password",
+      "capture": "sha256:15dca6e4c0c3644ecdcb83cd84e3c7185c0ca06ba0ebd6acb0d37596e286769e",
+      "quote": "<input name=\"account[password]\" id=\"signup-password\" type=\"password\""
+    },
+    {
+      "url": "https://dashboard.pusher.com/accounts/sign_up",
+      "date": "2026-10-30",
+      "proved": "the signup form is submitted through an invisible reCAPTCHA",
+      "capture": "sha256:15dca6e4c0c3644ecdcb83cd84e3c7185c0ca06ba0ebd6acb0d37596e286769e",
+      "quote": "onsubmit=\"grecaptcha.execute(); return false;\""
+    },
+    {
+      "url": "https://dashboard.pusher.com/accounts/sign_up",
+      "date": "2026-10-30",
+      "proved": "the signup also accepts a GitHub sign-in",
+      "capture": "sha256:15dca6e4c0c3644ecdcb83cd84e3c7185c0ca06ba0ebd6acb0d37596e286769e",
+      "quote": "Sign up with GitHub"
+    },
+    {
+      "url": "https://docs.bird.com/pusher/account-billing/account-billing/plans/how-can-i-upgrade-my-channels-plan",
+      "date": "2026-10-31",
+      "proved": "billing and card details are entered when a plan is upgraded",
+      "capture": "sha256:6a6db0a8a177a8d9c880cfa919c931c6b1fba7a309dd755ddd640759ae4f00a9",
+      "quote": "Clicking on an Upgrade Button for a plan will take you to the sign up page where you can enter your billing and card details."
+    },
+    {
+      "url": "probe:https://api-mt1.pusher.com/apps/1/channels",
+      "date": "2026-10-31",
+      "proved": "the HTTP API host answers and refuses an unsigned request",
+      "capture": "sha256:00bf1605fd081b328c67cff69114a7bc4ced6b2c0d43db65f88d9790f80ff47e",
+      "quote": "\"status\": 400"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-31T00:43:05.347Z",
+  "notes": "Pusher Beams, the push-notification product, has its own Sandbox plan priced separately and is not part of this record."
+}

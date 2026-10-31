@@ -5,22 +5,24 @@
   "url": "https://www.ovhcloud.com/en/public-cloud/prices/",
   "category": "S3-compatible object storage, single-AZ",
   "free_tier": {
-    "stated": "unlimited, per GiB",
-    "unit": "unlimited",
-    "metered_on": "unstated",
-    "source_url": "https://www.ovhcloud.com/en/public-cloud/prices/#object-storage",
+    "stated": "No free tier: the Standard class in a 1-AZ (One Zone) region is billed from the first GiB at USD 0.00001111 per GiB-hour (about USD 0.0081103 per GiB-month), one rate at every volume, with no capacity cap stated",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://www.ovhcloud.com/en/public-cloud/prices/",
     "read_on": "2026-10-21",
-    "notes": null
+    "notes": "billed per GiB-hour; the monthly figure is the hourly price x 730 hours"
   },
   "per_object_cap": {
-    "stated": "not stated",
-    "source_url": "https://www.ovhcloud.com/en/public-cloud/prices/#object-storage",
-    "notes": "not stated"
+    "stated": "48 TiB per object through multipart upload (up to 10,000 parts of 5 MiB to 5 GiB); 5 GiB through a single PUT",
+    "bytes": 52776558133248,
+    "source_url": "https://docs.ovhcloud.com/en/guides/storage-and-backup/object-storage/s3-limitations",
+    "notes": "the Object Storage technical limits page states one set of limits for the Object Storage offer"
   },
   "retention": {
-    "stated": "not stated",
-    "source_url": "https://www.ovhcloud.com/en/public-cloud/prices/#object-storage",
-    "notes": "not stated"
+    "stated": "unlimited time: objects are kept until deleted, and the Standard class has no minimum storage duration",
+    "days": null,
+    "source_url": "https://help.ovhcloud.com/csm/en-public-cloud-storage-s3-faq?id=kb_article_view&sysparm_article=KB0059679",
+    "notes": "the price table marks the Standard minimum storage billed N/A"
   },
   "egress": {
     "terms": "Free — same 'Ingoing/Outgoing external traffic | Free' row. No retrieval fee on Standard. API requests Free.",
@@ -34,16 +36,32 @@
   "interface_detail": "S3 API",
   "tooling": "rclone / aws-cli / s3cmd",
   "chaining": "serve directly or put Cloudflare in front",
-  "limits": [],
-  "limits_note": "Single zone — no cross-AZ redundancy. Multi-Zone Standard is $0.0157/GiB/mo (≈$16.08/TB) for redundancy.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "48 TiB per object by multipart upload; 5 GiB by a single PUT",
+      "source": "https://docs.ovhcloud.com/en/guides/storage-and-backup/object-storage/s3-limitations"
+    },
+    {
+      "kind": "request-rate",
+      "value": "300 PUT and 900 GET requests per second per bucket, soft defaults",
+      "source": "https://docs.ovhcloud.com/en/guides/storage-and-backup/object-storage/s3-limitations"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "1 Gbps per connection",
+      "source": "https://docs.ovhcloud.com/en/guides/storage-and-backup/object-storage/s3-limitations"
+    }
+  ],
+  "limits_note": "Single availability zone: 99.9% availability SLA for a 1-AZ deployment, against 99.99% for a 3-AZ deployment",
   "identity_cost": {
     "kind": "card",
-    "detail": "card",
+    "detail": "an email address validated by a one-time code, the country of tax residence, and a valid payment method on the account before the first Public Cloud project; Visa, Mastercard and Maestro cards are accepted, and PayPal and a prepaid account are offered as payment methods",
     "country": null
   },
-  "reliability_note": "The cheapest metered-egress-free hot S3 tier among the mainstream EU clouds. Still ~2× Hetzner BX41 per TB, so it only wins if you truly need S3 semantics and per-GB elasticity.",
-  "confidence": "reported",
-  "confidence_note": null,
+  "reliability_note": "1-AZ regions survive server and disk failures, and the data becomes unavailable if the datacentre hosting it becomes completely unavailable; durability is stated as 11 nines for every class",
+  "confidence": "documented",
+  "confidence_note": "documented: the international price list, the storage classes page, the Object Storage technical limits page, the account-creation guide and the free-trial page were read and quoted on 2026-10-30; a read timed from a bucket would make it measured",
   "evidence": [
     {
       "url": "https://www.ovhcloud.com/en/public-cloud/prices/",
@@ -54,15 +72,85 @@
       "url": null,
       "date": "2026-10-21",
       "proved": "same page — Multi Zone Standard $0.0157096/GiB/month first 50 TiB, $0.0140233 next 450 TiB, $0.012337 over 500 TiB"
+    },
+    {
+      "url": "https://www.ovhcloud.com/en/public-cloud/prices/",
+      "date": "2026-10-30",
+      "proved": "the 1-AZ (One Zone) Standard class costs USD 0.00001111 per GiB-hour, about USD 0.0081103 per GiB-month, with no tier, no minimum duration and traffic, retrieval and API requests free",
+      "capture": "sha256:592d28765238669188fc8855269fbcad0c1ae6d8adf83d80063cda0ff79c8325",
+      "quote": "| Standard | \\- | Free | Free | Free | Free | N/A | $0.00001111 | ~$0.0081103 |"
+    },
+    {
+      "url": "https://www.ovhcloud.com/en/public-cloud/prices/",
+      "date": "2026-10-30",
+      "proved": "Object Storage is invoiced per GiB-hour and the monthly figure assumes 730 hours",
+      "capture": "sha256:592d28765238669188fc8855269fbcad0c1ae6d8adf83d80063cda0ff79c8325",
+      "quote": "For optimal readability, the price is displayed as GiB/month – but since there are 730 hours in an average month, the invoicing granularity is GiB/hour."
+    },
+    {
+      "url": "https://www.ovhcloud.com/en/public-cloud/free-trial/",
+      "date": "2026-10-30",
+      "proved": "a valid payment method is required on the account before the first Public Cloud project",
+      "capture": "sha256:833a8cfc5f5b014146b61bc60e022d12222c9157a6b8ef84510e03864ce36f6e",
+      "quote": "You need to add a valid payment method to your OVHcloud customer account before starting the free trial, which will be used after your free trial ends, if you want to keep running the project you have launched."
+    },
+    {
+      "url": "https://www.ovhcloud.com/en/terms-and-conditions/payment/",
+      "date": "2026-10-30",
+      "proved": "OVHcloud accepts Visa, Mastercard and Maestro cards; the same page offers PayPal and a prepaid account",
+      "capture": "sha256:1bb040f010d78fc15cad2155da6cdc0195337f3af99e51d70c12b68810997e37",
+      "quote": "Cards accepted are Visa, Mastercard, Maestro."
+    },
+    {
+      "url": "https://docs.ovhcloud.com/en/guides/account-and-service-management/account-information/ovhcloud-account-creation",
+      "date": "2026-10-30",
+      "proved": "account creation validates the email address with a one-time code",
+      "capture": "sha256:945f4e98b5d2464730e482bbf6d18a52f2b8a530031f2e94ba7fcf8f4fc3af25",
+      "quote": "After you submit this form, a one-time code will be sent to the email address you entered."
+    },
+    {
+      "url": "https://help.ovhcloud.com/csm/en-public-cloud-storage-s3-faq?id=kb_article_view&sysparm_article=KB0059679",
+      "date": "2026-10-30",
+      "proved": "Object Storage keeps data for an unlimited time and volume; no expiry applies",
+      "capture": "sha256:e2f754959578b54279d07f11d3711095db3f622bea84cf881f970cef9fff5d07",
+      "quote": "Object Storage is adapted to store unstructured data in an unlimited volume and time, for use cases such as websites, e-commerce platforms, video streaming, image libraries, analytics, backups, archives."
+    },
+    {
+      "url": "https://docs.ovhcloud.com/en/guides/storage-and-backup/object-storage/s3-limitations",
+      "date": "2026-10-30",
+      "proved": "the largest object is 48 TiB by multipart upload and 5 GiB by a single PUT",
+      "capture": "sha256:eb85a82eeca983386bbc398a29f6fd8610cb084c18e136ed158079d3ccc499eb",
+      "quote": "| Maximum Object size | 48 TiB | This maximum can be achieved using Multi-Part Upload (MPU), via a single PUT request, the maximum object size is 5 GiB |"
+    },
+    {
+      "url": "https://docs.ovhcloud.com/en/guides/storage-and-backup/object-storage/s3-limitations",
+      "date": "2026-10-30",
+      "proved": "Object Storage bandwidth is 1 Gbps per connection, lifted by parallel requests",
+      "capture": "sha256:eb85a82eeca983386bbc398a29f6fd8610cb084c18e136ed158079d3ccc499eb",
+      "quote": "1 Gbps/connection."
+    },
+    {
+      "url": "https://www.ovhcloud.com/en/public-cloud/object-storage/",
+      "date": "2026-10-30",
+      "proved": "Object Storage availability SLA is 99.9% in 1-AZ and 99.99% in 3-AZ",
+      "capture": "sha256:720b23a7846ed60e24ed15bb486dfd93fdaef45f98ebac08c02552536ec794df",
+      "quote": "99.9% SLA for a 1-AZ deployment and 99.99% for a 3-AZ deployment."
+    },
+    {
+      "url": "https://www.ovhcloud.com/en/public-cloud/object-storage/classes/",
+      "date": "2026-10-30",
+      "proved": "1-AZ regions survive server and disk failures but not the loss of the hosting datacentre",
+      "capture": "sha256:13c979ffcc3e5955e7055d779498ef0b07db7a5a56e291588cbfa3c2042e0768",
+      "quote": "They provide protection against server and disk failures, but can be affected in the event that the datacentre hosting the data becomes completely unavailable."
     }
   ],
-  "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-21T00:00:00.000Z",
-  "price_per_tb_month": "One Zone Standard $8.31/TB/mo (free egress, free requests). Multi-Zone Standard $16.08/TB/mo at first-50-TiB tier.",
+  "verdict": "paid-only",
+  "verified_at": "2026-10-30T18:30:29.211Z",
+  "price_per_tb_month": "USD 7.55 per TB per month (USD 0.0081103 per GiB-month x 931.32 GiB per TB); one rate at every volume",
   "notes": "unlimited, per GiB",
   "extras": {
     "price_verbatim": "One Zone Standard $8.31/TB/mo (free egress, free requests). Multi-Zone Standard $16.08/TB/mo at first-50-TiB tier."
   },
   "binding": "none",
-  "binding_note": null
+  "binding_note": "none: storage has no stated cap, an object may reach 48 TiB, the per-bucket rates of 300 PUT and 900 GET requests per second are soft defaults, and the 1 Gbps per connection is lifted by parallel connections"
 }

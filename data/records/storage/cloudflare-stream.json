@@ -5,63 +5,257 @@
   "url": "https://developers.cloudflare.com/stream/pricing/",
   "category": "rejected-provider",
   "free_tier": {
-    "stated": "Paid, and metered in MINUTES not bytes: $5/month per 1,000 minutes of storage (≈16.7 h) and $1 per 1,000 minutes delivered. The inversion is interesting — because it is duration-priced, a…",
+    "stated": "none: stored minutes have no Free allowance; storage is prepaid at USD 5 a month for each 1,000 minutes of video storage capacity, and delivery is post-paid at USD 1 per 1,000 minutes delivered",
     "unit": "none",
     "metered_on": "none",
     "source_url": "https://developers.cloudflare.com/stream/pricing/",
-    "read_on": "2026-10-21",
-    "notes": null
+    "read_on": "2026-10-31",
+    "notes": "100 stored minutes and 10,000 delivered minutes a month are included with the Pro and Business plans, which are paid plans; the Free plan includes none"
   },
   "per_object_cap": {
-    "stated": "not recorded",
+    "stated": "30 GB per video upload by default",
     "bytes": null,
-    "source_url": "https://developers.cloudflare.com/stream/pricing/",
-    "notes": "not recorded"
+    "source_url": "https://developers.cloudflare.com/stream/faq/",
+    "notes": "the page writes 30 GB without naming base 10 or base 2, so bytes stays null; the cap applies to one video file"
   },
   "retention": {
-    "stated": "not recorded",
-    "days": null,
-    "source_url": "https://developers.cloudflare.com/stream/pricing/",
-    "notes": null
+    "stated": "videos are removed if the Stream subscription is not renewed within 30 days of a cancellation; no other expiry of uploaded videos is stated, and an account cannot upload videos once the total video duration exceeds the purchased storage capacity",
+    "days": 30,
+    "source_url": "https://developers.cloudflare.com/stream/faq/",
+    "notes": "the 30 days count from a cancelled Stream subscription, not from the upload or the last view; while the subscription is renewed, no expiry is stated"
   },
   "egress": {
-    "terms": "not recorded",
-    "metered": false
+    "terms": "delivery is post-paid at USD 1 per 1,000 minutes delivered, counted by HTTP requests for video segments or parts of an MP4; bandwidth is included in it with no separate egress fee",
+    "metered": true,
+    "free_allowance": "none on the Free plan",
+    "price_per_tb": null,
+    "source_url": "https://developers.cloudflare.com/stream/pricing/"
   },
   "interface": [
-    "unknown"
+    "rest"
   ],
-  "interface_detail": null,
-  "tooling": "not recorded",
-  "chaining": "not recorded",
-  "limits": [],
-  "limits_note": null,
+  "interface_detail": "the Cloudflare REST API under api.cloudflare.com/client/v4/accounts/<ACCOUNT_ID>/stream and the Stream page of the dashboard; uploads from a link, a file, TUS or a direct creator upload URL; playback through HLS and DASH manifests, and MP4 downloads generated per video through the /downloads endpoint",
+  "tooling": "the Cloudflare REST API with an API token, the Cloudflare SDKs (client.stream), the dashboard, and the Workers Stream binding",
+  "chaining": "none as a byte store: storage is billed by video duration regardless of file size, uploads are video files that Stream re-encodes, and downloads are MP4 files that Stream generates per…",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "storage bought in increments of 1,000 minutes of video at USD 5 a month; no upload once the purchased minutes are used",
+      "source": "https://developers.cloudflare.com/stream/pricing/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "30 GB per video upload by default",
+      "source": "https://developers.cloudflare.com/stream/faq/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "120 videos queued or encoding at once by default",
+      "source": "https://developers.cloudflare.com/stream/faq/"
+    }
+  ],
+  "limits_note": "storage is metered on video duration rounded up to the second, regardless of file size; delivery is metered on minutes delivered, and client-side preloading and buffering count as delivery",
   "identity_cost": {
-    "kind": "email",
-    "detail": null,
+    "kind": "card",
+    "detail": "Stream storage is a prepaid purchase, and Cloudflare's billing guide requires a primary payment method to purchase products: a card (Visa, Mastercard, American Express, Discover, UnionPay), PayPal, or a wallet (Apple Pay, Google Pay, Link)",
     "country": null
   },
-  "reliability_note": "Paid, and metered in MINUTES not bytes: $5/month per 1,000 minutes of storage (≈16.7 h) and $1 per 1,000 minutes delivered. The inversion is interesting — because it is duration-priced, a…",
-  "confidence": "reported",
-  "confidence_note": null,
+  "reliability_note": "uploads stop once the total video duration exceeds the purchased storage capacity, until more storage is purchased or videos are deleted; after a cancellation, videos are removed if the subscription is not renewed within 30 days",
+  "confidence": "documented",
+  "confidence_note": "the prices, the Free column of the price table, the upload cap, the encode queue limit and the payment-method requirement are quoted from Cloudflare's pages read on 2026-10-31; no probe, because every use needs a purchase",
   "evidence": [
     {
       "url": "https://developers.cloudflare.com/stream/pricing/",
       "date": "2026-10-21",
       "proved": "Paid, and metered in MINUTES not bytes: $5/month per 1,000 minutes of storage (≈16.7 h) and $1 per 1,000 minutes delivered. The inversion is interesting — because it is duration-priced, a…"
+    },
+    {
+      "url": "https://www.cloudflare.com/plans/",
+      "date": "2026-10-31",
+      "proved": "the developer-platform price table lists no Free allowance for stored minutes, only USD 5.00 per thousand minutes",
+      "capture": "sha256:351fd2f65b94a87f5105b9bd9a5caca9677190d2b02c4de5c91bb17086a4d207",
+      "quote": "| Minutes Stored | — | $5.00 / thousand minutes |"
+    },
+    {
+      "url": "https://developers.cloudflare.com/stream/pricing/",
+      "date": "2026-10-31",
+      "proved": "storage is prepaid in increments of 1,000 minutes at USD 5 a month",
+      "capture": "sha256:3db904afb538c2f25a6e69da5fb7bad07131255779eb97b51632b7e273f51cd4",
+      "quote": "Storage is a prepaid pricing dimension purchased in increments of $5 per month for each 1,000 minutes of video storage capacity."
+    },
+    {
+      "url": "https://www.cloudflare.com/en-in/plans/",
+      "date": "2026-10-31",
+      "proved": "100 stored minutes and 10,000 delivered minutes a month come with the Pro and Business plans",
+      "capture": "sha256:a46067a69f90bd4dfe378931456a99d7428163253b70d1f32e4767f010b4f83a",
+      "quote": "Or, with a Pro or Business Plan, you get 100 free minutes of video storage and 10,000 minutes of video delivery every month included with your plan."
+    },
+    {
+      "url": "https://www.cloudflare.com/en-in/plans/",
+      "date": "2026-10-31",
+      "proved": "Pro and Business are paid plans",
+      "capture": "sha256:a46067a69f90bd4dfe378931456a99d7428163253b70d1f32e4767f010b4f83a",
+      "quote": "If you currently have a paid plan (e.g. Pro) for one of your domains and upgrade to a higher priced plan (e.g. Business), the following happens:"
+    },
+    {
+      "url": "https://developers.cloudflare.com/stream/faq/",
+      "date": "2026-10-31",
+      "proved": "one video upload is capped at 30 GB by default",
+      "capture": "sha256:2e63c68b8bccc6eed6b80468e6da2838531f27140fcee8ac0b3fef2603857861",
+      "quote": "By default, a video upload can be at most 30 GB."
+    },
+    {
+      "url": "https://developers.cloudflare.com/stream/uploading-videos/",
+      "date": "2026-10-31",
+      "proved": "the upload page repeats the 30 GB file cap under its list of supported video formats",
+      "capture": "sha256:137e24b209610e72397beb5b2f649749d47197c51038c7dab670e9f4e3cb6fe7",
+      "quote": "Files must be less than 30 GB, and content should be encoded and uploaded in the same frame rate it was recorded."
+    },
+    {
+      "url": "https://developers.cloudflare.com/stream/pricing/",
+      "date": "2026-10-31",
+      "proved": "uploads and live streams stop when the purchased storage is used up",
+      "capture": "sha256:3db904afb538c2f25a6e69da5fb7bad07131255779eb97b51632b7e273f51cd4",
+      "quote": "If you run out of storage, you will not be able to upload new videos or start new live streams until you purchase more storage or delete videos."
+    },
+    {
+      "url": "https://developers.cloudflare.com/stream/pricing/",
+      "date": "2026-10-31",
+      "proved": "delivery is post-paid at USD 1 per 1,000 minutes delivered",
+      "capture": "sha256:3db904afb538c2f25a6e69da5fb7bad07131255779eb97b51632b7e273f51cd4",
+      "quote": "Delivery is a post-paid, usage-based pricing dimension billed at $1 per 1,000 minutes delivered."
+    },
+    {
+      "url": "https://developers.cloudflare.com/stream/pricing/",
+      "date": "2026-10-31",
+      "proved": "bandwidth is priced inside the delivered-minutes meter, with no separate egress fee",
+      "capture": "sha256:3db904afb538c2f25a6e69da5fb7bad07131255779eb97b51632b7e273f51cd4",
+      "quote": "Bandwidth is already included in \"video delivered\" with no additional egress (traffic/bandwidth) fees."
+    },
+    {
+      "url": "https://www.cloudflare.com/plans/",
+      "date": "2026-10-31",
+      "proved": "the price table lists no Free allowance for delivered minutes, only USD 1.00 per thousand minutes",
+      "capture": "sha256:351fd2f65b94a87f5105b9bd9a5caca9677190d2b02c4de5c91bb17086a4d207",
+      "quote": "| Minutes Delivered | — | $1.00 / thousand minutes |"
+    },
+    {
+      "url": "https://developers.cloudflare.com/stream/pricing/",
+      "date": "2026-10-31",
+      "proved": "delivery is counted per HTTP request for segments or MP4 parts",
+      "capture": "sha256:3db904afb538c2f25a6e69da5fb7bad07131255779eb97b51632b7e273f51cd4",
+      "quote": "Delivery is counted by HTTP requests for video segments or parts of the MP4."
+    },
+    {
+      "url": "https://developers.cloudflare.com/stream/get-started/",
+      "date": "2026-10-31",
+      "proved": "uploads go through the API or the dashboard",
+      "capture": "sha256:57476626382cf71d0c8e39b9ea7123e54d2f3ca5b3990b5bc58aa1394cd61efb",
+      "quote": "You can upload videos using the API or directly on the Stream page of the Cloudflare dashboard."
+    },
+    {
+      "url": "https://developers.cloudflare.com/stream/pricing/",
+      "date": "2026-10-31",
+      "proved": "large uploads go through upload from a link or TUS",
+      "capture": "sha256:3db904afb538c2f25a6e69da5fb7bad07131255779eb97b51632b7e273f51cd4",
+      "quote": "Be sure to use an upload method like Upload from Link or TUS that handles large files well."
+    },
+    {
+      "url": "https://developers.cloudflare.com/stream/viewing-videos/download-videos/",
+      "date": "2026-10-31",
+      "proved": "an MP4 download is generated per video through the /downloads endpoint",
+      "capture": "sha256:823709d59d1ae1c66ae9ad5454968774bf09c803196a122f3fdf4fab4eaeeaff",
+      "quote": "Enable MP4 support by making a POST request to the `/downloads` or `/downloads/default` endpoint."
+    },
+    {
+      "url": "https://developers.cloudflare.com/stream/viewing-videos/download-videos/",
+      "date": "2026-10-31",
+      "proved": "a Workers Stream binding exists",
+      "capture": "sha256:823709d59d1ae1c66ae9ad5454968774bf09c803196a122f3fdf4fab4eaeeaff",
+      "quote": "See the full [Workers Stream binding API reference](https://developers.cloudflare.com/stream/manage-video-library/bindings/)."
+    },
+    {
+      "url": "https://developers.cloudflare.com/stream/pricing/",
+      "date": "2026-10-31",
+      "proved": "storage is metered on video duration, not on bytes",
+      "capture": "sha256:3db904afb538c2f25a6e69da5fb7bad07131255779eb97b51632b7e273f51cd4",
+      "quote": "Storage consumption is rounded up to the second of video duration, regardless of file size."
+    },
+    {
+      "url": "https://developers.cloudflare.com/stream/uploading-videos/",
+      "date": "2026-10-31",
+      "proved": "uploaded videos are re-encoded",
+      "capture": "sha256:137e24b209610e72397beb5b2f649749d47197c51038c7dab670e9f4e3cb6fe7",
+      "quote": "During encoding, Stream re-encodes videos for a maximum of 90 FPS playback."
+    },
+    {
+      "url": "https://developers.cloudflare.com/stream/faq/",
+      "date": "2026-10-31",
+      "proved": "uploads are gated by the purchased storage capacity",
+      "capture": "sha256:2e63c68b8bccc6eed6b80468e6da2838531f27140fcee8ac0b3fef2603857861",
+      "quote": "An account cannot upload videos if the total video duration exceeds the video storage capacity purchased."
+    },
+    {
+      "url": "https://developers.cloudflare.com/stream/faq/",
+      "date": "2026-10-31",
+      "proved": "at most 120 videos queue or encode at once by default",
+      "capture": "sha256:2e63c68b8bccc6eed6b80468e6da2838531f27140fcee8ac0b3fef2603857861",
+      "quote": "By default, you can have up to 120 videos queued or being encoded simultaneously."
+    },
+    {
+      "url": "https://developers.cloudflare.com/stream/pricing/",
+      "date": "2026-10-31",
+      "proved": "preloading and buffering are billed as delivery",
+      "capture": "sha256:3db904afb538c2f25a6e69da5fb7bad07131255779eb97b51632b7e273f51cd4",
+      "quote": "Client-side preloading and buffering is counted as billable delivery."
+    },
+    {
+      "url": "https://developers.cloudflare.com/billing/get-started/create-billing-profile/",
+      "date": "2026-10-31",
+      "proved": "a purchase on Cloudflare, prepaid Stream storage among them, needs a primary payment method",
+      "capture": "sha256:5ce86720b4ddb72032ffe13a60d5c93647cb26a752f272f2d6a3cacfd6a7b023",
+      "quote": "A primary payment method is required to purchase Cloudflare products and services."
+    },
+    {
+      "url": "https://developers.cloudflare.com/stream/pricing/",
+      "date": "2026-10-31",
+      "proved": "R2 is a separate storage product of the same vendor, not the Stream offer",
+      "capture": "sha256:3db904afb538c2f25a6e69da5fb7bad07131255779eb97b51632b7e273f51cd4",
+      "quote": "Video stored in Stream does not incur additional storage fees from other storage products such as R2."
+    },
+    {
+      "url": "https://developers.cloudflare.com/stream/pricing/",
+      "date": "2026-10-31",
+      "proved": "ingress and encoding carry no charge",
+      "capture": "sha256:3db904afb538c2f25a6e69da5fb7bad07131255779eb97b51632b7e273f51cd4",
+      "quote": "Ingress (sending your content to us) and encoding are always free."
+    },
+    {
+      "url": "https://developers.cloudflare.com/stream/faq/",
+      "date": "2026-10-31",
+      "proved": "stored videos are removed when a cancelled Stream subscription is not renewed within 30 days",
+      "capture": "sha256:2e63c68b8bccc6eed6b80468e6da2838531f27140fcee8ac0b3fef2603857861",
+      "quote": "Videos are removed if the subscription is not renewed within 30 days."
+    },
+    {
+      "url": "https://developers.cloudflare.com/stream/faq/",
+      "date": "2026-10-31",
+      "proved": "uploads stop once the total video duration exceeds the purchased storage capacity",
+      "capture": "sha256:2e63c68b8bccc6eed6b80468e6da2838531f27140fcee8ac0b3fef2603857861",
+      "quote": "An account cannot upload videos if the total video duration exceeds the video storage capacity purchased."
     }
   ],
-  "verdict": "fails-egress",
-  "verified_at": "2026-10-21T00:00:00.000Z",
-  "notes": "Paid, and metered in MINUTES not bytes: $5/month per 1,000 minutes of storage (≈16.7 h) and $1 per 1,000 minutes delivered. The inversion is interesting — because it is duration-priced, a…",
+  "verdict": "paid-only",
+  "verified_at": "2026-10-31T00:58:04.815Z",
+  "notes": "A video product priced by duration: storage at USD 5 a month per 1,000 minutes, prepaid; delivery at USD 1 per 1,000 minutes, post-paid; ingress and encoding free. Cloudflare R2 is a separate storage product of the same vendor.",
   "extras": {
     "dead_end": {
-      "failure_class": "egress",
-      "why": "Paid, and metered in MINUTES not bytes: $5/month per 1,000 minutes of storage (≈16.7 h) and $1 per 1,000 minutes delivered. The inversion is interesting — because it is duration-priced, a…",
-      "retry_when": null,
+      "failure_class": "paid",
+      "why": "no stored minutes on the Free plan: storage is prepaid at USD 5 a month for each 1,000 minutes, and delivery is billed at USD 1 per 1,000 minutes",
+      "retry_when": "if the Free plan gains included stored minutes",
       "first_recorded": "2026-10-21"
     }
   },
-  "binding": "none",
-  "binding_note": null
+  "binding": "volume-quota",
+  "binding_note": "the Free plan includes no stored minutes, so the prepaid storage increment of 1,000 minutes at USD 5 a month is the first gate; every delivered minute is billed after it"
 }

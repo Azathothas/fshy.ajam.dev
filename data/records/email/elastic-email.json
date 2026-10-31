@@ -1,0 +1,251 @@
+{
+  "topic": "email",
+  "slug": "elastic-email",
+  "provider": "Elastic Email",
+  "url": "https://elasticemail.com/email-api",
+  "category": "transactional sender and SMTP relay",
+  "tier": "free",
+  "free_tier": {
+    "stated": "100 emails per day and 3,000 emails per month on the Email API Free plan, up to 1,000 contacts, at USD 0 with no card",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://help.elasticemail.com/en/articles/3331811-elastic-email-pricing-plans",
+    "read_on": "2026-10-30",
+    "notes": "The daily limit resets every day and unused sends do not carry over. Each attachment counts as one more email against the daily limit, so a message with one attachment uses 2 of the 100. The Free plan keeps 3 days of logs and allows single address verification only. Email API and Email Marketing are separate accounts. The cheapest paid Email API plan is USD 19 per month for 50,000 emails, and paid plans have no daily limit."
+  },
+  "per_object_cap": {
+    "stated": "not stated; each attachment counts as one more email against the daily limit",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": "3 days of log history on the Free plan, against 7 days on Pro",
+    "days": null,
+    "notes": "",
+    "source_url": "https://help.elasticemail.com/en/articles/3331811-elastic-email-pricing-plans"
+  },
+  "egress": {
+    "terms": "not applicable: an outbound sender",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://elasticemail.com/email-api"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "SMTP at smtp.elasticemail.com on ports 25, 2525, 587 and 465 with TLS 1.2, and the HTTP REST API; the interface vocabulary has no smtp term",
+  "tooling": "any SMTP client, or curl and the official API libraries against the REST API",
+  "chaining": "an outbound sender at 100 a day that pairs with an inbound router such as Cloudflare Email Routing for the receiving half; the daily count is the scarce link.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "100 emails per day, resetting daily with no carry-over; each attachment counts as one more email",
+      "source": "https://help.elasticemail.com/en/articles/3331811-elastic-email-pricing-plans"
+    },
+    {
+      "kind": "request-rate",
+      "value": "3,000 emails per month",
+      "source": "https://elasticemail.com/email-api"
+    },
+    {
+      "kind": "write-gated",
+      "value": "the account must be verified before it can send, and a verified domain set as the default sender is required from the start",
+      "source": "https://help.elasticemail.com/en/articles/2361393-how-to-get-started"
+    }
+  ],
+  "limits_note": "counts of things, not rates, so no vocabulary kind names them: 1,000 contacts on the Free plan. SMTP accepts 20 concurrent requests from a single IP.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The Email API signup form asks for an email, a password, a first and last name and a field labelled Address, behind a reCAPTCHA, and offers Google sign-in; it has no card field, and the email is confirmed. A profile survey then asks for accurate information about the primary person and organization behind the account, and the account must be verified before it can send; whether that verification asks for a phone number is unverified: behind a sign-up. A domain the sender owns must be verified from the start (SPF mandatory, DKIM encouraged, a tracking CNAME and DMARC recommended); domains of free providers such as gmail.com cannot be verified, and on the Free plan an added domain cannot be removed from the account.",
+    "country": null
+  },
+  "reliability_note": "an account placed Under Review has delivery paused; mail submitted meanwhile is queued and sent if the account is reactivated",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://help.elasticemail.com/en/articles/3331811-elastic-email-pricing-plans",
+      "date": "2026-10-30",
+      "proved": "the Free plan sends to any recipient, 100 emails per day, resetting daily with no carry-over",
+      "capture": "sha256:ff937b7e74cd7545e3dced437c482bbfa98cfe3f0ba37893b624476950844b40",
+      "quote": "Emails: Ability to send emails to everyone, with a limit of 100 emails per day. The limit resets every day, and unused emails do not carry over to the next day."
+    },
+    {
+      "url": "https://elasticemail.com/email-api",
+      "date": "2026-10-30",
+      "proved": "the Email API Free plan offers 3,000 emails per month",
+      "capture": "sha256:9481f82e19670472c5a05642ec18485afca63a76ae48c80cd87772ebf1e09c92",
+      "quote": "There is also a Free plan available, offering 3,000 emails per month."
+    },
+    {
+      "url": "https://help.elasticemail.com/en/articles/3331811-elastic-email-pricing-plans",
+      "date": "2026-10-30",
+      "proved": "each attachment counts as one more email against the 100 per day",
+      "capture": "sha256:ff937b7e74cd7545e3dced437c482bbfa98cfe3f0ba37893b624476950844b40",
+      "quote": "Attachments: each attachment counts as one email towards the daily limit of 100 emails."
+    },
+    {
+      "url": "https://help.elasticemail.com/en/articles/3331811-elastic-email-pricing-plans",
+      "date": "2026-10-30",
+      "proved": "the Free plan holds up to 1,000 contacts",
+      "capture": "sha256:ff937b7e74cd7545e3dced437c482bbfa98cfe3f0ba37893b624476950844b40",
+      "quote": "Contacts: Support for up to 1000 contacts."
+    },
+    {
+      "url": "https://help.elasticemail.com/en/articles/3331811-elastic-email-pricing-plans",
+      "date": "2026-10-30",
+      "proved": "the Free plan keeps 3 days of logs",
+      "capture": "sha256:ff937b7e74cd7545e3dced437c482bbfa98cfe3f0ba37893b624476950844b40",
+      "quote": "Logs: 3 days of log history."
+    },
+    {
+      "url": "https://help.elasticemail.com/en/articles/3331811-elastic-email-pricing-plans",
+      "date": "2026-10-30",
+      "proved": "Pro plans keep 7 days of logs against 3",
+      "capture": "sha256:ff937b7e74cd7545e3dced437c482bbfa98cfe3f0ba37893b624476950844b40",
+      "quote": "7 days of log history instead of 3."
+    },
+    {
+      "url": "https://help.elasticemail.com/en/articles/3331811-elastic-email-pricing-plans",
+      "date": "2026-10-30",
+      "proved": "the cheapest paid Email API plan is 19 per month for 50,000 emails",
+      "capture": "sha256:ff937b7e74cd7545e3dced437c482bbfa98cfe3f0ba37893b624476950844b40",
+      "quote": "The Pricing Plan starts at $19 and includes 50,000 emails per month."
+    },
+    {
+      "url": "https://help.elasticemail.com/en/articles/3331811-elastic-email-pricing-plans",
+      "date": "2026-10-30",
+      "proved": "the daily limit applies to the Free plan only",
+      "capture": "sha256:ff937b7e74cd7545e3dced437c482bbfa98cfe3f0ba37893b624476950844b40",
+      "quote": "Paid plans have no daily sending limit, only the monthly limit of your plan."
+    },
+    {
+      "url": "https://elasticemail.com/email-marketing-pricing",
+      "date": "2026-10-31",
+      "proved": "prices are in USD",
+      "capture": "sha256:81688ffd8e48d35843bf92921a0d3c69a88f300ed058f7e3c3d56870db0aa244",
+      "quote": "We accept Visa, Mastercard, American Express, and PayPal. All prices are in USD."
+    },
+    {
+      "url": "https://help.elasticemail.com/en/articles/2446055-what-are-sending-limits-for-new-accounts",
+      "date": "2026-10-31",
+      "proved": "the Free plan phase needs no upfront payment",
+      "capture": "sha256:3cd8893f3386e7c8a1a5dc3179070e67b98b93b51a25a52419251a4d1fd06191",
+      "quote": "This allows you to test the platform without any upfront costs."
+    },
+    {
+      "url": "https://help.elasticemail.com/en/articles/2446055-what-are-sending-limits-for-new-accounts",
+      "date": "2026-10-31",
+      "proved": "a Free account must be verified before it can send",
+      "capture": "sha256:3cd8893f3386e7c8a1a5dc3179070e67b98b93b51a25a52419251a4d1fd06191",
+      "quote": "You need to verify your account before you can send."
+    },
+    {
+      "url": "https://elasticemail.com/getting-started",
+      "date": "2026-10-31",
+      "proved": "registration is a short form and an email confirmation",
+      "capture": "sha256:d0aa9a46b967d1f03b019e1937f78eba279f3f4d350652dfcc680fbd6ca1a771",
+      "quote": "You will need to pick a product you wish to use, fill out a short registration form and confirm your email."
+    },
+    {
+      "url": "https://app.elasticemail.com/api/create-account",
+      "date": "2026-10-31",
+      "proved": "the Email API signup offers Google sign-in beside the form",
+      "capture": "sha256:17b2630f71bdfbbdaed516772e4513648cca853d6f2910186b4436ae4e357fef",
+      "quote": "Sign in with GoogleSign in with Google."
+    },
+    {
+      "url": "https://app.elasticemail.com/api/create-account",
+      "date": "2026-10-31",
+      "proved": "the signup form asks for email, password, a field labelled Address, first and last name, with no card field",
+      "capture": "sha256:17b2630f71bdfbbdaed516772e4513648cca853d6f2910186b4436ae4e357fef",
+      "quote": "Caps Lock is on Address First name Last name"
+    },
+    {
+      "url": "https://app.elasticemail.com/api/create-account",
+      "date": "2026-10-31",
+      "proved": "the signup form is behind a reCAPTCHA",
+      "capture": "sha256:17b2630f71bdfbbdaed516772e4513648cca853d6f2910186b4436ae4e357fef",
+      "quote": "Recaptcha requires verification."
+    },
+    {
+      "url": "https://help.elasticemail.com/en/articles/2361393-how-to-get-started",
+      "date": "2026-10-30",
+      "proved": "a profile survey asks for the person and organization behind the account",
+      "capture": "sha256:c75a1ea73676212c38d7d53dcd6ff8773c7ee86680558ffdf2dfb816ec85c0aa",
+      "quote": "Elastic Email requires that you provide accurate information about the primary person and organization that controls and uses the account."
+    },
+    {
+      "url": "https://help.elasticemail.com/en/articles/2361393-how-to-get-started",
+      "date": "2026-10-30",
+      "proved": "a verified domain set as default sender is required from the start",
+      "capture": "sha256:c75a1ea73676212c38d7d53dcd6ff8773c7ee86680558ffdf2dfb816ec85c0aa",
+      "quote": "From the start, we require you to add and verify at least one domain on your account, including setting it as the default sender."
+    },
+    {
+      "url": "https://help.elasticemail.com/en/articles/4934400-how-to-verify-your-domain",
+      "date": "2026-10-30",
+      "proved": "a free-provider domain cannot be verified, so sending needs a domain the sender owns",
+      "capture": "sha256:b4c38fc0b7f6f2757c14a7b14facc815685b2fc9144e61809c4210a8af68879d",
+      "quote": "You cannot verify domains that belong to free email providers, such as gmail.com, yahoo.com, or outlook.com, because only the owner of a domain can add DNS records to it."
+    },
+    {
+      "url": "https://help.elasticemail.com/en/articles/4934400-how-to-verify-your-domain",
+      "date": "2026-10-30",
+      "proved": "SPF is mandatory and DKIM encouraged in the domain steps",
+      "capture": "sha256:b4c38fc0b7f6f2757c14a7b14facc815685b2fc9144e61809c4210a8af68879d",
+      "quote": "SPF is mandatory if you expect to experience good email deliverability. We also encourage you to verify DKIM."
+    },
+    {
+      "url": "https://help.elasticemail.com/en/articles/4934400-how-to-verify-your-domain",
+      "date": "2026-10-30",
+      "proved": "the SPF record value to publish",
+      "capture": "sha256:b4c38fc0b7f6f2757c14a7b14facc815685b2fc9144e61809c4210a8af68879d",
+      "quote": "v=spf1 a mx include:_spf.elasticemail.com ~all"
+    },
+    {
+      "url": "https://help.elasticemail.com/en/articles/4934400-how-to-verify-your-domain",
+      "date": "2026-10-30",
+      "proved": "on the Free plan an added domain cannot be removed from the account",
+      "capture": "sha256:b4c38fc0b7f6f2757c14a7b14facc815685b2fc9144e61809c4210a8af68879d",
+      "quote": "On Free plans, a domain cannot be removed from the account once it has been added, so contact our support team in that case too."
+    },
+    {
+      "url": "https://help.elasticemail.com/en/articles/4803409-smtp-settings",
+      "date": "2026-10-30",
+      "proved": "SMTP at smtp.elasticemail.com accepts ports 25, 2525, 587 and 465",
+      "capture": "sha256:836a3e858c013377180f6c4c8079c122cebf033d13b3ed36aba4d554af653ada",
+      "quote": "25, 2525, 587, 465"
+    },
+    {
+      "url": "https://help.elasticemail.com/en/articles/4803409-smtp-settings",
+      "date": "2026-10-30",
+      "proved": "SMTP accepts 20 concurrent requests from one IP",
+      "capture": "sha256:836a3e858c013377180f6c4c8079c122cebf033d13b3ed36aba4d554af653ada",
+      "quote": "20 concurrent requests from single IP"
+    },
+    {
+      "url": "https://help.elasticemail.com/en/articles/2361427-what-is-your-elastic-email-account-s-status",
+      "date": "2026-10-30",
+      "proved": "an account under review has delivery paused",
+      "capture": "sha256:1f1f9bd967f865883e7283c4404607f112ac229f2111872a5c157648196e30c7",
+      "quote": "While an account is Under Review, email delivery is paused and credit cannot be purchased."
+    },
+    {
+      "url": "probe:smtp.elasticemail.com:587",
+      "date": "2026-10-30",
+      "proved": "smtp.elasticemail.com answered a 220 banner on ports 587 and 2525; no message was sent",
+      "capture": "sha256:5e44b6f44e88fde74d914661ed180286ff2ca6110ec11a32210a7f256792785b",
+      "quote": "\"banner\": \"220 smtp.elasticemail.com ESMTP\""
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-31T00:31:32.737Z",
+  "notes": "The 3,000 a month is the 100 a day summed over 30 days, so the monthly figure cannot be spent in a burst.",
+  "extras": {
+    "stale_after_days": 90
+  },
+  "binding": "request-rate",
+  "binding_note": "100 per day rather than 3,000 per month: the monthly figure is the daily cap summed over 30 days.",
+  "confidence_note": "no message was sent, so no delivery is proved; smtp.elasticemail.com answered a 220 banner on ports 587 and 2525. The account verification step and any phone check are behind a sign-up."
+}

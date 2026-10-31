@@ -1,0 +1,262 @@
+{
+  "topic": "ci-cd-runners",
+  "slug": "cloudflare-workers-builds",
+  "provider": "Cloudflare Workers Builds",
+  "url": "https://developers.cloudflare.com/workers/ci-cd/builds/limits-and-pricing/",
+  "category": "CI runner",
+  "tier": "free",
+  "verdict": "qualifies-with-caveat",
+  "confidence": "documented",
+  "confidence_note": "every number is quoted from Cloudflare's Workers Builds limits page and the build documentation; no build was run, so network access from the build container and the behaviour once Free minutes are spent are unverified",
+  "verified_at": "2026-10-30T10:47:32.542Z",
+  "free_tier": {
+    "stated": "Workers Free: 3,000 build minutes a month, 1 concurrent build, 20 minutes per build, 2 vCPU, 8 GB memory and 20 GB disk. Workers Paid (USD 5 a month minimum): 6,000 build minutes a month, then USD 0.005 per minute, 6 concurrent builds, 4 vCPU",
+    "unit": "minutes",
+    "metered_on": "wall-clock",
+    "source_url": "https://developers.cloudflare.com/workers/ci-cd/builds/limits-and-pricing/",
+    "read_on": "2026-10-30",
+    "notes": "a build minute is the time a project takes to build; the overage price applies on Paid plans only"
+  },
+  "per_object_cap": {
+    "stated": "20 minutes per build on every plan; 8 GB memory and 20 GB disk per build; 64 environment variables per Worker",
+    "bytes": null,
+    "source_url": "https://developers.cloudflare.com/workers/ci-cd/builds/limits-and-pricing/"
+  },
+  "retention": {
+    "stated": "builds and build logs are kept 90 days after the build finishes; the versions and deployments a build created are not removed",
+    "days": 90,
+    "source_url": "https://developers.cloudflare.com/workers/ci-cd/builds/limits-and-pricing/"
+  },
+  "egress": {
+    "terms": "not stated for the build container; the build's output is a Worker, and the Workers Paid plan states no additional charge for data transfer (egress) or bandwidth",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://developers.cloudflare.com/workers/platform/pricing/"
+  },
+  "interface": [
+    "git",
+    "rest"
+  ],
+  "interface_detail": "a push to a connected GitHub, GitLab, Cursor Origin or Cloudflare Artifacts repository runs an optional build command, then a deploy command that defaults to npx wrangler deploy and can be customised; non-production branches run a preview command. A Deploy Hook is a URL that starts a build for one branch on an HTTP POST with no Authorization header",
+  "endpoint": "https://api.cloudflare.com/client/v4/workers/builds/deploy_hooks/<DEPLOY_HOOK_ID>",
+  "tooling": "an Ubuntu 24.04 build image with Node.js, Python, PHP, Ruby and Go preinstalled and versions overridable by environment variable or version file; the deploy and preview commands are Wrangler commands",
+  "chaining": "a 20-minute Ubuntu job on every push or Deploy Hook call, ending in a Worker deploy; an external cron calling a Deploy Hook makes it a scheduled job, and a repository on Cloudflare Artifacts keeps source, build and deploy inside one Cloudflare account. GitHub Actions on a public repository gives longer jobs and comes first",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "20 minutes per build on Free and Paid; 8 GB memory; 20 GB disk",
+      "source": "https://developers.cloudflare.com/workers/ci-cd/builds/limits-and-pricing/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "3,000 build minutes a month on Free; 6,000 on Paid, then USD 0.005 per minute",
+      "source": "https://developers.cloudflare.com/workers/ci-cd/builds/limits-and-pricing/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "1 concurrent build per account on Free, 6 on Paid; Deploy Hooks 10 a minute per Worker and 100 a minute per account",
+      "source": "https://developers.cloudflare.com/workers/ci-cd/builds/limits-and-pricing/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "builds and build logs kept 90 days after the build finishes",
+      "source": "https://developers.cloudflare.com/workers/ci-cd/builds/limits-and-pricing/"
+    }
+  ],
+  "limits_note": "a build fails when the Worker name in the dashboard does not match the name in the Wrangler configuration file; Workers Builds does not honour the custom-build settings of the Wrangler file",
+  "binding": "per-object-cap",
+  "binding_note": "a job longer than 20 minutes cannot run on any plan, and the 3,000 Free minutes at one concurrent build hold many full-length builds, so the per-build cap fails before the monthly minutes",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a Cloudflare account opened with an email address and a password, then verified by email; a GitHub, GitLab or Cursor Origin account authorised to Cloudflare, unless the repository is on Cloudflare Artifacts. Workers Paid adds a USD 5 monthly minimum charge",
+    "country": null
+  },
+  "reliability_note": "only GitHub, GitLab, Cursor Origin and Cloudflare Artifacts repositories connect; GitHub or GitLab instances run by their owners do not",
+  "price_per_tb_month": null,
+  "evidence": [
+    {
+      "url": "https://developers.cloudflare.com/workers/ci-cd/builds/limits-and-pricing/",
+      "date": "2026-10-30",
+      "proved": "Free includes 3,000 build minutes a month; Paid includes 6,000, then USD 0.005 per minute",
+      "capture": "sha256:6c03d75dc57a16803ff41ce337dcfa48975e762b0e0a107914e70b8808f2c51d",
+      "quote": "| Build minutes | 3,000 per month | 6,000 per month (then, +$0.005 per minute) |"
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/ci-cd/builds/limits-and-pricing/",
+      "date": "2026-10-30",
+      "proved": "1 concurrent build on Free, 6 on Paid",
+      "capture": "sha256:6c03d75dc57a16803ff41ce337dcfa48975e762b0e0a107914e70b8808f2c51d",
+      "quote": "| Concurrent builds | 1 | 6 |"
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/ci-cd/builds/limits-and-pricing/",
+      "date": "2026-10-30",
+      "proved": "a build is terminated after 20 minutes on every plan",
+      "capture": "sha256:6c03d75dc57a16803ff41ce337dcfa48975e762b0e0a107914e70b8808f2c51d",
+      "quote": "| Build timeout | 20 minutes | 20 minutes |"
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/ci-cd/builds/limits-and-pricing/",
+      "date": "2026-10-30",
+      "proved": "a build gets 2 vCPU on Free and 4 on Paid",
+      "capture": "sha256:6c03d75dc57a16803ff41ce337dcfa48975e762b0e0a107914e70b8808f2c51d",
+      "quote": "| CPU | 2 vCPU | 4 vCPU |"
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/ci-cd/builds/limits-and-pricing/",
+      "date": "2026-10-30",
+      "proved": "a build gets 8 GB of memory",
+      "capture": "sha256:6c03d75dc57a16803ff41ce337dcfa48975e762b0e0a107914e70b8808f2c51d",
+      "quote": "| Memory | 8 GB | 8 GB |"
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/ci-cd/builds/limits-and-pricing/",
+      "date": "2026-10-30",
+      "proved": "a build gets 20 GB of disk",
+      "capture": "sha256:6c03d75dc57a16803ff41ce337dcfa48975e762b0e0a107914e70b8808f2c51d",
+      "quote": "| Disk space | 20 GB | 20 GB |"
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/ci-cd/builds/limits-and-pricing/",
+      "date": "2026-10-30",
+      "proved": "builds and build logs are kept 90 days",
+      "capture": "sha256:6c03d75dc57a16803ff41ce337dcfa48975e762b0e0a107914e70b8808f2c51d",
+      "quote": "| Build and build log retention | 90 days | 90 days |"
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/ci-cd/builds/limits-and-pricing/",
+      "date": "2026-10-30",
+      "proved": "Deploy Hooks are limited to 10 a minute per Worker and 100 a minute per account",
+      "capture": "sha256:6c03d75dc57a16803ff41ce337dcfa48975e762b0e0a107914e70b8808f2c51d",
+      "quote": "| Deploy Hooks | 10/min per Worker, 100/min per account | 10/min per Worker, 100/min per account |"
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/ci-cd/builds/limits-and-pricing/",
+      "date": "2026-10-30",
+      "proved": "64 environment variables per Worker",
+      "capture": "sha256:6c03d75dc57a16803ff41ce337dcfa48975e762b0e0a107914e70b8808f2c51d",
+      "quote": "| Environment variables | 64 | 64 |"
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/ci-cd/builds/",
+      "date": "2026-10-30",
+      "proved": "a push to a connected Artifacts, GitHub or GitLab repository builds and deploys the Worker",
+      "capture": "sha256:3abe72e22b8b8def2df796bf1fa87cd09138b14968445832400f8cdd390f852b",
+      "quote": "lets you connect a new or existing Worker to a repository hosted by Artifacts, GitHub, or GitLab, enabling automated builds and deployments for your Worker on push."
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/ci-cd/builds/configuration/",
+      "date": "2026-10-30",
+      "proved": "the deploy command defaults to npx wrangler deploy and can be customised",
+      "capture": "sha256:a54e6da48d73c15a406b4acf7322079052cdff692c9dae781ff4a917959b7bb0",
+      "quote": "Your deploy command will default to `npx wrangler deploy` but you may customize this command."
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/ci-cd/builds/configuration/",
+      "date": "2026-10-30",
+      "proved": "a build command is optional and set by the user",
+      "capture": "sha256:a54e6da48d73c15a406b4acf7322079052cdff692c9dae781ff4a917959b7bb0",
+      "quote": "Set a build command if your project requires a build step (e.g. `npm run build`)."
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/ci-cd/builds/build-image/",
+      "date": "2026-10-30",
+      "proved": "the build environment is Ubuntu 24.04",
+      "capture": "sha256:4f2ac936310a744762c959b555fd0f9ee414602f29774d6cffa1561c916b6e74",
+      "quote": "| Build Environment | Ubuntu 24.04 |"
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/ci-cd/builds/build-image/",
+      "date": "2026-10-30",
+      "proved": "the build image carries Node.js, Python, PHP, Ruby and Go",
+      "capture": "sha256:4f2ac936310a744762c959b555fd0f9ee414602f29774d6cffa1561c916b6e74",
+      "quote": "Workers Builds uses a build image with support for a variety of languages and tools such as Node.js, Python, PHP, Ruby, and Go."
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/ci-cd/builds/limits-and-pricing/",
+      "date": "2026-10-30",
+      "proved": "a build minute is the time a project takes to build",
+      "capture": "sha256:6c03d75dc57a16803ff41ce337dcfa48975e762b0e0a107914e70b8808f2c51d",
+      "quote": "Build minutes**: The number of minutes that it takes to build a project."
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/ci-cd/builds/",
+      "date": "2026-10-30",
+      "proved": "a build fails when the dashboard Worker name differs from the Wrangler configuration name",
+      "capture": "sha256:3abe72e22b8b8def2df796bf1fa87cd09138b14968445832400f8cdd390f852b",
+      "quote": "the Worker name in the Cloudflare dashboard must match the `name` in the Wrangler configuration file in the specified root directory, or the build will fail."
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/ci-cd/builds/configuration/",
+      "date": "2026-10-30",
+      "proved": "the custom-build settings of the Wrangler file are not honoured",
+      "capture": "sha256:a54e6da48d73c15a406b4acf7322079052cdff692c9dae781ff4a917959b7bb0",
+      "quote": "Currently, Workers Builds does not honor the configurations set in"
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/ci-cd/builds/git-integration/",
+      "date": "2026-10-30",
+      "proved": "Artifacts, GitHub, GitLab and Cursor Origin repositories can be connected",
+      "capture": "sha256:fb02e8d1acf70e81848978c1ddc4cd1216d181615fe0aaf5bc999db8d4c98b66",
+      "quote": "Cloudflare supports connecting Cloudflare Workers to your Artifacts, GitHub, GitLab, and Cursor Origin repositories."
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/ci-cd/builds/git-integration/",
+      "date": "2026-10-30",
+      "proved": "GitHub or GitLab instances run by their owners cannot be connected",
+      "capture": "sha256:fb02e8d1acf70e81848978c1ddc4cd1216d181615fe0aaf5bc999db8d4c98b66",
+      "quote": "Workers Builds does not currently support connecting self-hosted instances of GitHub or GitLab."
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/ci-cd/builds/git-integration/artifacts-integration/",
+      "date": "2026-10-30",
+      "proved": "with a Cloudflare Artifacts repository, source, build and deploy stay inside Cloudflare",
+      "capture": "sha256:b26a221dcf2ac2379d26c3d8ab44d562678c41f9d2a18652d305edd78896b11f",
+      "quote": "With Artifacts and Workers Builds, you can host source code, run builds, test changes with Worker Previews, and deploy Workers entirely within Cloudflare."
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/ci-cd/builds/deploy-hooks/",
+      "date": "2026-10-30",
+      "proved": "a Deploy Hook URL starts a build for one branch on an HTTP POST",
+      "capture": "sha256:395e15577e65d2c1f98f1f06bd17825eecf41677a698d7c7c1f4ee013607a73c",
+      "quote": "Each hook is a unique URL that triggers a manual build for one branch when it receives an HTTP POST request."
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/ci-cd/builds/deploy-hooks/",
+      "date": "2026-10-30",
+      "proved": "a Deploy Hook call needs no Authorization header",
+      "capture": "sha256:395e15577e65d2c1f98f1f06bd17825eecf41677a698d7c7c1f4ee013607a73c",
+      "quote": "No `Authorization` header is needed."
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/platform/pricing/",
+      "date": "2026-10-30",
+      "proved": "Workers Paid has a minimum charge of USD 5 a month per account",
+      "capture": "sha256:7ee841f6ac8633cfac31f1c0c35852d58c4e8f2f76ee2660f24b8f810d4f6f6c",
+      "quote": "The Workers Paid plan includes Workers, Pages Functions, Workers KV, Hyperdrive, and Durable Objects usage for a minimum charge of $5 USD per month for an account."
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/platform/pricing/",
+      "date": "2026-10-30",
+      "proved": "Workers Paid charges nothing extra for egress or bandwidth",
+      "capture": "sha256:7ee841f6ac8633cfac31f1c0c35852d58c4e8f2f76ee2660f24b8f810d4f6f6c",
+      "quote": "There are no additional charges for data transfer (egress) or throughput (bandwidth)."
+    },
+    {
+      "url": "https://developers.cloudflare.com/fundamentals/account/create-account/",
+      "date": "2026-10-30",
+      "proved": "the sign-up form asks for an email address and a password",
+      "capture": "sha256:0165fdf250cc1338d7e7a94dd78c7adc2df6f592133ad72dfcf0651a080c5543",
+      "quote": "Enter your Email and Password."
+    },
+    {
+      "url": "https://developers.cloudflare.com/fundamentals/account/create-account/",
+      "date": "2026-10-30",
+      "proved": "the email address is verified after sign-up",
+      "capture": "sha256:0165fdf250cc1338d7e7a94dd78c7adc2df6f592133ad72dfcf0651a080c5543",
+      "quote": "Once you create your account, Cloudflare will automatically send an email to your address"
+    }
+  ],
+  "notes": "Confirmed as a CI runner service whose job is bound to a Worker deploy: every production build ends in the deploy command and every other branch in the preview command. Price per minute: USD 0.005 beyond the 6,000 minutes included in the USD 5 Workers Paid plan. Whether the build container has unrestricted outbound network access, and what happens to a build on Free once the 3,000 minutes are spent, are unverified."
+}

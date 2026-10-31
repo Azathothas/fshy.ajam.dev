@@ -2,27 +2,27 @@
   "topic": "ip-proxy",
   "slug": "thespeedx-proxy-list",
   "provider": "TheSpeedX/PROXY-List",
-  "url": "https://api.github.com/repos/TheSpeedX/PROXY-List",
+  "url": "https://github.com/TheSpeedX/PROXY-List",
   "category": "public proxy list",
   "tier": "free",
   "free_tier": {
     "stated": "Free and keyless: 10,430 lines in total, 2,918 HTTP, 2,425 SOCKS4 and 5,087 SOCKS5, with no metadata at all.",
     "unit": "objects",
     "metered_on": "none",
-    "source_url": "https://api.github.com/repos/TheSpeedX/PROXY-List",
+    "source_url": "https://github.com/TheSpeedX/PROXY-List",
     "read_on": "2026-10-24",
     "notes": "The three counts sum to 10,430, so the split is exhaustive rather than overlapping. A line is an address and a port and nothing else: there is no country, ASN, uptime, latency or anonymity field to filter on before a line is dialled."
   },
   "per_object_cap": {
     "stated": "not applicable",
     "bytes": null,
-    "source_url": "https://api.github.com/repos/TheSpeedX/PROXY-List",
+    "source_url": "https://github.com/TheSpeedX/PROXY-List",
     "notes": "The nearest thing to a size is a line, and a line carries no field beyond ip:port. Nothing here can be filtered server-side; the whole list has to be pulled and triaged locally."
   },
   "retention": {
     "stated": "not applicable: a live address, not stored bytes",
     "days": null,
-    "source_url": "https://api.github.com/repos/TheSpeedX/PROXY-List",
+    "source_url": "https://github.com/TheSpeedX/PROXY-List",
     "notes": "A line is durable only while the maintainer leaves it in the file, and 92 of 100 sampled lines were already dead when read, so the file's existence says nothing about whether its lines answer."
   },
   "egress": {
@@ -30,7 +30,7 @@
     "metered": false,
     "free_allowance": "none published",
     "price_per_tb": null,
-    "source_url": "https://api.github.com/repos/TheSpeedX/PROXY-List"
+    "source_url": "https://github.com/TheSpeedX/PROXY-List"
   },
   "interface": [
     "rest"
@@ -39,7 +39,7 @@
   "tooling": "curl or wget pulls the three text files; no account, key, SDK or wrapper is involved. Dialling a line needs a client that speaks its protocol, which curl does for HTTP CONNECT and SOCKS5 and a small socket driver does for SOCKS4. The work is not access but triage: a health check that discards the 92 percent which do not answer, run often enough to keep the remainder current.",
   "chaining": "A failover supply for the Workers AI gateway's egress: a request the Worker cannot make from its own address is retried through a line, with a short timeout and the next line on failure, so the value is the retry loop rather than any single address.",
   "limits": [],
-  "limits_note": "No constraint was found that names a vocabulary kind, so the array is empty rather than padded. Three constraints were found that fit none of the seven: yield, since 8 of 100 sampled lines carried a payload and 92 were dead weight; the absence of metadata, since there is no field to filter on before a request is spent; and churn, since handshakes fell from 17 to 15 between two runs 23 minutes apart while payloads held at 8, and a later recheck of the 8 named lines returned 4.",
+  "limits_note": "No measured constraint fits a vocabulary kind, so the array is empty: over two runs of the same 100 lines no failure was a quota, rate or shaping answer, and the error classes were TimeoutError, OSError, ConnectionRefusedError, body-not-json and ConnectionResetError. Three constraints fit none of the seven kinds: yield, 8 of 100 sampled lines carried a payload; no metadata, a line is ip:port with no field to filter on before it is dialled; churn, handshakes fell from 17 to 15 between two runs about 23 minutes apart while payloads held at 8, and a recheck of the 8 run-1 payload lines returned 4.",
   "binding": "none",
   "binding_note": "Nothing in the vocabulary fails first at 45 GB a month across 599,000 requests, because the list imposes no quota, no request rate and no per-address shape to hit. What fails is the supply: 8 of 100 lines carried a payload, and yield has no vocabulary kind.",
   "identity_cost": {
@@ -49,7 +49,7 @@
   },
   "reliability_note": "The working exits sat in hosting-provider ASNs rather than residential ones, so reputation follows a datacenter block; and the working set churns, with handshakes falling from 17 to 15 between two runs 23 minutes apart while payloads held at 8, and a later recheck of the 8 named lines returning 4.",
   "confidence": "measured",
-  "confidence_note": "Measured is the top rung, so the honest question is what would strengthen it rather than what would raise it: a larger sample than 100, and runs spread across a day so a diurnal effect can be told apart from a dead list.",
+  "confidence_note": "Measured: the per-line results of two runs over the same 100 lines, of a recheck of the 8 run-1 payload lines and of an ASN lookup of the exit addresses are stored with the three list files as read on 2026-10-24, 2,918 HTTP, 2,425 SOCKS4 and 5,087 SOCKS5 lines. Each rate is one sample of 100 lines dialled twice: enough to show a low yield that repeats, not enough to put an interval on it or to separate a diurnal effect from a dead list.",
   "evidence": [
     {
       "url": "https://api.github.com/repos/TheSpeedX/PROXY-List",
@@ -75,12 +75,68 @@
       "url": "probe:kept-privately",
       "date": "2026-10-24",
       "proved": "A recheck of the 8 lines that had carried a payload returned 4 payload successes, with exit organisations BIZNET-PREPAID-BLOCK in ID, OVH SAS in FR, OVH Ltd in GB and GoDaddy.com, LLC in SG."
+    },
+    {
+      "url": "probe:TheSpeedX/PROXY-List",
+      "date": "2026-10-24",
+      "proved": "run 1, run 2, the recheck and the ASN lookup of the exit addresses, per line: the 8 run-1 payload exits map to AS16276 twice, AS17451, AS51004, AS60404, AS51167, AS8075 and AS26496",
+      "capture": "sha256:5c310e89dc10b7018e71e9bda779c9d06f1c32c0b8bae69b8903ca1f96b047c9",
+      "quote": "\"51.210.123.18\": [\"51.210.0.0/16\", 16276, \"OVH OVH SAS\"]"
+    },
+    {
+      "url": "probe:TheSpeedX/PROXY-List",
+      "date": "2026-10-24",
+      "proved": "the per-line error classes of both runs, none of them a quota, rate or shaping answer",
+      "capture": "sha256:5c310e89dc10b7018e71e9bda779c9d06f1c32c0b8bae69b8903ca1f96b047c9",
+      "quote": "\"error\": \"OSError: connect-status-407\""
+    },
+    {
+      "url": "probe:TheSpeedX/PROXY-List",
+      "date": "2026-10-24",
+      "proved": "the stored per-line results of both runs and of the recheck, the ASN lookup and the three list files",
+      "capture": "sha256:5c310e89dc10b7018e71e9bda779c9d06f1c32c0b8bae69b8903ca1f96b047c9",
+      "quote": "\"source\": \"speedx-recheck\""
+    },
+    {
+      "url": "probe:TheSpeedX/PROXY-List",
+      "date": "2026-10-24",
+      "proved": "both runs hold the same 100 lines, 40 from http.txt, 40 from socks5.txt and 20 from socks4.txt",
+      "capture": "sha256:5c310e89dc10b7018e71e9bda779c9d06f1c32c0b8bae69b8903ca1f96b047c9",
+      "quote": "\"source\": \"TheSpeedX/socks4.txt\""
+    },
+    {
+      "url": "probe:TheSpeedX/PROXY-List",
+      "date": "2026-10-24",
+      "proved": "the ASN lookup maps the 8 run-1 payload exits to AS16276 twice, AS17451, AS51004, AS60404, AS51167, AS8075 and AS26496; AS14061 and AS398101 belong to addresses without a payload",
+      "capture": "sha256:5c310e89dc10b7018e71e9bda779c9d06f1c32c0b8bae69b8903ca1f96b047c9",
+      "quote": "\"188.113.171.120\": [\"188.113.171.0/24\", 51004, \"SCTS-AS Sakhalin Cable Telesystems Ltd\"]"
+    },
+    {
+      "url": "probe:https://github.com/TheSpeedX/PROXY-List",
+      "date": "2026-10-31",
+      "proved": "the public repository page of TheSpeedX/PROXY-List answers HTTP 200 at this URL with no redirect",
+      "capture": "sha256:54b7c80ab59fdb4f428817123f05466544ec4149f2d954f547490de3c9571ec8",
+      "quote": "\"final_url\": \"https://github.com/TheSpeedX/PROXY-List\""
+    },
+    {
+      "url": "probe:https://api.github.com/repos/TheSpeedX/PROXY-List",
+      "date": "2026-10-31",
+      "proved": "the GitHub API resource repos/TheSpeedX/PROXY-List names https://github.com/TheSpeedX/PROXY-List as its repository page",
+      "capture": "sha256:41272b3867eb4d80bc9ed10d8e72eb406c437201fc941183544c7d2ac6a8d4c3",
+      "quote": "\"html_url\": \"https://github.com/TheSpeedX/PROXY-List\""
+    },
+    {
+      "url": "https://github.com/TheSpeedX/PROXY-List",
+      "date": "2026-10-31",
+      "proved": "the repository at this URL publishes the free public proxy list that the record describes",
+      "capture": "sha256:8dd96c2387ee57e2058a1dcc0ee0bc18bfcdb937fba64990aa65b416a2e73425",
+      "quote": "This list gets free public proxies that are updated from time to time."
     }
   ],
   "verdict": "dead",
-  "verified_at": "2026-10-24T10:07:11.000Z",
+  "verified_at": "2026-10-31T05:14:02.383Z",
   "price_per_tb_month": null,
-  "notes": "But nothing here shows the file is unmaintained, only that most of its lines do not answer. (3) A vantage-point or diurnal effect on this machine. Not refuted, because two runs 23 minutes apart cannot separate it from a dead list, and only runs spread across a day could. The verdict rests on (2) with (3) open, and (3) does not change it: the payload rate would have to rise by an order of magnitude before the list became usable at a steady request volume. Weight: each rate is one sample of 100 lines drawn stratified across the three protocol files, taken twice, which is enough to show the yield is low and repeats and not enough to put an interval on it. A discrepancy between the assigned facts and the artefacts, recorded rather than smoothed. The facts give the working exits as OVH AS16276 twice, Contabo AS51167, DigitalOcean AS14061, Microsoft AS8075, GoDaddy AS26496 and AS398101, and Biznet AS17451. Re-deriving from the two named result files yields eight payload exits: OVH AS16276 twice, Biznet AS17451, Contabo AS51167, Microsoft AS8075 and GoDaddy AS26496, plus SCTS AS51004 and Liteserver AS60404, which are absent from the assigned list; what changes is the roster, not the finding, and the verdict does not rest on it. The array therefore carries rest, matching ip-proxy/proxyscrape-free-list, and the three protocols are stated in interface_detail. That gap is a defect worth naming: an ip-proxy topic cannot express what it is about until the enum gains socks5, http-proxy and a static-file token. The only hit is ip-proxy/proxyscrape-free-list and it is a substring match on free-proxy-list rather than a mention of this provider, so this record corrects nothing outside itself.",
+  "notes": "Run 1 dialled 100 lines drawn from the three files (40 HTTP, 40 SOCKS5, 20 SOCKS4): 17 completed a handshake and 8 carried a payload. The 92 lines without a payload split into five error classes: 58 TimeoutError, 19 OSError (7 of them an HTTP CONNECT answered with status 407), 7 ConnectionRefusedError, 5 body-not-json (an unrelated HTML page came back, such as a video recorder, a network camera or a login form) and 3 ConnectionResetError. Run 2 dialled the same 100 lines: 15 handshakes and 8 payloads, 6 of the payload lines common to both runs. The 8 run-1 payload exits map to AS16276 OVH (51.210.123.18 and 198.244.254.77), AS17451 Biznet, AS51004 Sakhalin Cable Telesystems, AS60404 Liteserver, AS51167 Contabo, AS8075 Microsoft and AS26496 GoDaddy. Four of the eight are SOCKS5 lines on 45.74.31.42 and 45.74.31.46 whose exit address differs from the line's address. The same lookup maps other addresses to AS14061 DigitalOcean and AS398101 GoDaddy; none of those addresses carried a payload in either run. A recheck of the 8 run-1 payload lines returned 4 payloads, with exits in ID, FR, GB and SG, and 4 timeouts.",
   "extras": {
     "rung": 2,
     "rung_note": "The product is a set of single addresses judged one at a time, so rung 2 is the furthest the measurement reaches; no subnet and no ASN was needed, and the datacenter composition of the survivors is the only wider observation it produced.",
@@ -102,16 +158,16 @@
       "ConnectionResetError": 3
     },
     "dead_weight": "92 of 100 sampled lines",
-    "sample_size": "100 stratified random lines per run, two runs 23 minutes apart",
+    "sample_size": "the same 100 lines (40 HTTP, 40 SOCKS5, 20 SOCKS4) dialled in two runs about 23 minutes apart",
     "metadata": "none",
     "exit_asn": [
       "AS16276 OVH, twice",
+      "AS17451 Biznet",
+      "AS51004 Sakhalin Cable Telesystems",
+      "AS60404 Liteserver",
       "AS51167 Contabo",
-      "AS14061 DigitalOcean",
       "AS8075 Microsoft",
-      "AS26496 GoDaddy",
-      "AS398101 GoDaddy",
-      "AS17451 Biznet"
+      "AS26496 GoDaddy"
     ],
     "interface_enum_gap": null
   }

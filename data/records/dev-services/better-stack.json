@@ -1,0 +1,209 @@
+{
+  "topic": "dev-services",
+  "slug": "better-stack",
+  "provider": "Better Stack",
+  "tier": "Free",
+  "url": "https://betterstack.com/pricing",
+  "category": "uptime monitoring and status pages, with log, trace and metric storage and error tracking",
+  "free_tier": {
+    "stated": "Free for personal projects (USD 0/month): 10 monitors and 10 heartbeats with 3-minute checks, 1 status page, Slack and e-mail alerts, 100,000 exceptions per month, 5,000 session replays, 3 GB logs retained for 3 days, 3 GB traces retained for 3 days, 30 GB metrics, 3 GB web events retained for 3 days; no credit card",
+    "unit": "mixed",
+    "source_url": "https://betterstack.com/pricing",
+    "read_on": "2026-10-30",
+    "notes": "The allowance mixes object counts (monitors, heartbeats, exceptions, session replays) and ingested bytes (3 GB per month each of logs, traces and web events, 30 GB of metrics), so no single unit of the vocabulary fits. The check frequency ranges from 3 minutes on free plans to 30 seconds on paid plans. Logs beyond the allowance cost USD 0.10 per GB ingested in Europe, USD 0.15 in the United States and USD 0.35 in Singapore."
+  },
+  "per_object_cap": {
+    "stated": "unverified: no per-log-line or per-event size is stated on the pages read",
+    "bytes": null
+  },
+  "retention": {
+    "stated": "Logs, traces and web events: 3 GB per month retained for 3 days on the free plan. Exceptions and session replays: 90 days.",
+    "days": 3,
+    "source_url": "https://betterstack.com/pricing",
+    "notes": "The 3-day window applies to the telemetry kept on the free plan; paid telemetry bundles include 30-day log retention."
+  },
+  "egress": {
+    "terms": "unverified: no egress term on the pages read; logs and metrics are read back through a read-only HTTP SQL API",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://betterstack.com/docs/logs/query-api/connect-remotely/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "The Uptime (Incidents) API follows JSON:API with an Authorization: Bearer token, global or per team; logs and metrics are queried through a read-only HTTP SQL API with a username and password made per connection. The API host uptime.betterstack.com answered 401 to /api/v2/monitors without a token. Whether the SQL API is open on the free plan is unverified: behind a sign-up.",
+  "endpoint": "https://uptime.betterstack.com/api/v2/monitors",
+  "tooling": "curl or any HTTP client with a Bearer token, the Better Stack Terraform provider, and Prometheus or OpenTelemetry collectors for metrics",
+  "chaining": "An external check every 3 minutes on up to 10 endpoints of free compute services, with heartbeats for scheduled jobs and a 3-day window of logs for debugging.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "10 monitors and 10 heartbeats, 1 status page",
+      "source": "https://betterstack.com/uptime"
+    },
+    {
+      "kind": "request-rate",
+      "value": "uptime checks every 3 minutes at the shortest on the free plan",
+      "source": "https://betterstack.com/docs/uptime/check-frequency/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "logs, traces and web events retained for 3 days",
+      "source": "https://betterstack.com/pricing"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "3 GB of logs, 3 GB of traces and 3 GB of web events per month, 30 GB of metrics, 100,000 exceptions per month, 5,000 session replays",
+      "source": "https://betterstack.com/pricing"
+    }
+  ],
+  "binding": "retention-clamped",
+  "binding_note": "Logs, traces and web events older than 3 days are deleted, so the free telemetry is a 3-day debugging window whatever the volume; the 10-monitor count binds the uptime side.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The sign-up form asks for an e-mail address and sends a magic link; Better Stack's own comparison page states the free plan needs no credit card. Whether a later step asks for a phone number is unverified: behind a sign-up.",
+    "country": null
+  },
+  "reliability_note": "Logs, traces and web events are deleted after 3 days on the free plan.",
+  "confidence": "documented",
+  "confidence_note": "Every limit is quoted from a first-party page, and the API host answered 401 without a token. No account was opened, so the free plan's API access and any later sign-up step are unverified; an authenticated API call from a free account would move it to measured.",
+  "evidence": [
+    {
+      "url": "https://betterstack.com/pricing",
+      "date": "2026-10-30",
+      "proved": "the free plan costs USD 0 a month",
+      "capture": "sha256:165f6f4cb431c67efa47e30d6850b78dabcb52da5036eca494af9a8ba2d1bbbf",
+      "quote": "Free for personal projects ($0/month):"
+    },
+    {
+      "url": "https://betterstack.com/pricing",
+      "date": "2026-10-30",
+      "proved": "the free plan includes 10 monitors and heartbeats and 1 status page",
+      "capture": "sha256:165f6f4cb431c67efa47e30d6850b78dabcb52da5036eca494af9a8ba2d1bbbf",
+      "quote": "10 monitors & heartbeats, 1 status page"
+    },
+    {
+      "url": "https://betterstack.com/pricing",
+      "date": "2026-10-30",
+      "proved": "the free plan keeps 3 GB of logs for 3 days",
+      "capture": "sha256:165f6f4cb431c67efa47e30d6850b78dabcb52da5036eca494af9a8ba2d1bbbf",
+      "quote": "3 GB logs retained for 3 days"
+    },
+    {
+      "url": "https://betterstack.com/pricing",
+      "date": "2026-10-30",
+      "proved": "the included log and trace allowance is 3 GB per month retained for 3 days",
+      "capture": "sha256:165f6f4cb431c67efa47e30d6850b78dabcb52da5036eca494af9a8ba2d1bbbf",
+      "quote": "| Included | 3 GB per month retained for 3 days |"
+    },
+    {
+      "url": "https://betterstack.com/pricing",
+      "date": "2026-10-30",
+      "proved": "the free plan includes 100,000 exceptions per month",
+      "capture": "sha256:165f6f4cb431c67efa47e30d6850b78dabcb52da5036eca494af9a8ba2d1bbbf",
+      "quote": "100,000 exceptions per month"
+    },
+    {
+      "url": "https://betterstack.com/pricing",
+      "date": "2026-10-30",
+      "proved": "the free plan includes 5,000 session replays",
+      "capture": "sha256:165f6f4cb431c67efa47e30d6850b78dabcb52da5036eca494af9a8ba2d1bbbf",
+      "quote": "5,000 session replays"
+    },
+    {
+      "url": "https://betterstack.com/pricing",
+      "date": "2026-10-30",
+      "proved": "the free plan includes 30 GB of metrics",
+      "capture": "sha256:165f6f4cb431c67efa47e30d6850b78dabcb52da5036eca494af9a8ba2d1bbbf",
+      "quote": "30 GB metrics"
+    },
+    {
+      "url": "https://betterstack.com/pricing",
+      "date": "2026-10-30",
+      "proved": "exceptions and session replays are retained for 90 days",
+      "capture": "sha256:165f6f4cb431c67efa47e30d6850b78dabcb52da5036eca494af9a8ba2d1bbbf",
+      "quote": "| Retention | 90 days |"
+    },
+    {
+      "url": "https://betterstack.com/pricing",
+      "date": "2026-10-30",
+      "proved": "paid telemetry bundles include 30-day log retention",
+      "capture": "sha256:165f6f4cb431c67efa47e30d6850b78dabcb52da5036eca494af9a8ba2d1bbbf",
+      "quote": "All bundles include 30 day logs retention."
+    },
+    {
+      "url": "https://betterstack.com/pricing",
+      "date": "2026-10-30",
+      "proved": "log ingestion beyond the allowance costs USD 0.10, 0.15 or 0.35 per GB in Europe, the United States and Singapore",
+      "capture": "sha256:165f6f4cb431c67efa47e30d6850b78dabcb52da5036eca494af9a8ba2d1bbbf",
+      "quote": "| Ingestion | $0.10 per GB | $0.15 per GB | $0.35 per GB |"
+    },
+    {
+      "url": "https://betterstack.com/pricing",
+      "date": "2026-10-30",
+      "proved": "a Terraform provider is offered",
+      "capture": "sha256:165f6f4cb431c67efa47e30d6850b78dabcb52da5036eca494af9a8ba2d1bbbf",
+      "quote": "Terraform provider"
+    },
+    {
+      "url": "https://betterstack.com/pricing",
+      "date": "2026-10-30",
+      "proved": "metrics are collected through Prometheus or OpenTelemetry",
+      "capture": "sha256:165f6f4cb431c67efa47e30d6850b78dabcb52da5036eca494af9a8ba2d1bbbf",
+      "quote": "Generate metrics from logs or collect them via Prometheus or OpenTelemetry."
+    },
+    {
+      "url": "https://betterstack.com/uptime",
+      "date": "2026-10-31",
+      "proved": "the free plan gives 10 monitors, 10 heartbeats and a status page with 3-minute checks",
+      "capture": "sha256:d17bd8cdbf2649f78bd6c8fa9aefc9c15a1a1bbabadd6d94a46dc0b1c4472e64",
+      "quote": "Get 10 monitors, 10 heartbeats and a status page with 3-minute checks totally free."
+    },
+    {
+      "url": "https://betterstack.com/docs/uptime/check-frequency/",
+      "date": "2026-10-30",
+      "proved": "the shortest check frequency is 3 minutes on free plans and 30 seconds on paid plans",
+      "capture": "sha256:daf0b992378cc8cc1997e76754456d22cb0acc0f209ee5207695a28633c09a09",
+      "quote": "The frequency options range from 3 minutes for free plans to 30 seconds for paid plans."
+    },
+    {
+      "url": "https://betterstack.com/users/sign-up",
+      "date": "2026-10-31",
+      "proved": "the sign-up form takes an e-mail address and sends a magic link",
+      "capture": "sha256:f2a63506f5337ee33dc22a96b1971dc173c06bf87e42287e59a886e3409b50eb",
+      "quote": "Send me a magic link"
+    },
+    {
+      "url": "https://betterstack.com/community/comparisons/better-stack-vs-axiom",
+      "date": "2026-10-31",
+      "proved": "Better Stack states its free plan needs no credit card",
+      "capture": "sha256:509a7a8a5af9f7d86f1947999f13474141cbfd694f3cc6d73ebd50f2205e1a60",
+      "quote": "3 GB logs/traces/metrics, 100,000 exceptions/month, 5,000 session replays, 10 monitors, incident management, no credit card required."
+    },
+    {
+      "url": "https://betterstack.com/docs/uptime/api/getting-started-with-uptime-api/",
+      "date": "2026-10-30",
+      "proved": "the Uptime API is authorised with a Bearer token",
+      "capture": "sha256:3e18a7e408ed46fa9361a95cdd9a6ccef02c471ed1d02201fbfb18bb8ba8824e",
+      "quote": "Simply include an `Authorization: Bearer $TOKEN` header in your requests."
+    },
+    {
+      "url": "https://betterstack.com/docs/logs/query-api/connect-remotely/",
+      "date": "2026-10-30",
+      "proved": "logs and metrics are queried through a read-only HTTP API",
+      "capture": "sha256:5383cb20f17811c8c97c6e7cc39bd389d7affe0ef14b1deb464764da226341b8",
+      "quote": "Query your logs & metrics outside of the Better Stack dashboard with our read-only HTTP API."
+    },
+    {
+      "url": "probe:https://uptime.betterstack.com/api/v2/monitors",
+      "date": "2026-10-31",
+      "proved": "the Uptime API host answers 401 without a token",
+      "capture": "sha256:53e3040e14bdc1bb43fc23a6253b6b4fe2e5633880af44cba3f0c84433251759",
+      "quote": "\"status\": 401"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-31T00:42:59.132Z",
+  "notes": "One account covers uptime checks, heartbeats, a status page, logs, traces, metrics, error tracking and session replay. The telemetry part is small and short-lived (3 GB a month kept 3 days); the uptime part is 10 monitors at a 3-minute interval."
+}

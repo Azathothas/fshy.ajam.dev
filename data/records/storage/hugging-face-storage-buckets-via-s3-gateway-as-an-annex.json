@@ -3,54 +3,59 @@
   "slug": "hugging-face-storage-buckets-via-s3-gateway-as-an-annex",
   "provider": "Hugging Face Storage Buckets via S3 gateway (s3.hf.co) — as an annex/DVC backend",
   "url": "https://huggingface.co/docs/hub/storage-buckets-s3",
-  "category": "academic",
+  "category": "S3-compatible object storage (Hugging Face Storage Buckets through the s3.hf.co gateway)",
   "free_tier": {
-    "stated": "Public repos/buckets: 'Best-effort' — no published numeric ceiling on a Free account (private is a hard 100 GB). Storage plans table: Free user or org = Public 'Best-effort', Private 100 GB. HF is on the known list, but the S3 gateway is new and turns HF into a generic S3 endpoint, which is the part that matters for this slot.",
+    "stated": "Free user or organisation: public storage 'Best-effort' with no published figure, private storage 100 GB; the storage plans and policies apply to every repository type, buckets included",
     "unit": "GB",
     "metered_on": "stored-bytes",
     "source_url": "https://huggingface.co/docs/hub/storage-limits",
-    "read_on": "2026-10-21",
-    "notes": null
+    "read_on": "2026-10-30",
+    "notes": "above the first few gigabytes of public storage the page asks for content of value to other users and names abuse mitigations without a figure; PRO, Team and Enterprise plans carry numeric public and private limits"
   },
   "per_object_cap": {
-    "stated": "single file will exceed 500GB",
-    "bytes": 500000000000,
+    "stated": "unverified: the 500 GB per-file hard limit on the storage-limits page is stated in a section marked as not applying to Storage Buckets, and the bucket and S3 gateway pages publish no per-object limit",
     "source_url": "https://huggingface.co/docs/hub/storage-limits",
-    "notes": "not stated"
+    "notes": "Git-backed model, dataset and Space repositories keep the 500 GB per-file hard limit"
   },
   "retention": {
-    "stated": "not stated",
-    "source_url": "https://huggingface.co/docs/hub/storage-limits",
-    "notes": "not stated"
+    "stated": "unverified: the bucket, S3 gateway and storage-limits pages state no expiry or inactivity rule for stored objects; incomplete multipart uploads expire after 7 days",
+    "source_url": "https://huggingface.co/docs/hub/storage-buckets-s3",
+    "notes": "buckets are non-versioned: a delete is immediate and unrecoverable"
   },
   "egress": {
-    "terms": "Free and CDN-backed: 'Egress and CDN included at no extra cost'. Served via CloudFront, so downloads are cacheable. This is the single best egress term of any LFS-adjacent host found.",
-    "metered": false
+    "terms": "Egress and CDN are included in the storage price up to a ratio of 8:1 to total storage; the storage page publishes no price or action above the ratio. GetObject through the single-region S3 gateway usually answers with a redirect to the nearest Hugging Face CDN edge rather than serving the bytes itself.",
+    "metered": true,
+    "free_allowance": "8:1 of total storage"
   },
   "interface": [
-    "s3",
-    "git",
-    "cli"
+    "s3-compatible",
+    "cli",
+    "rest"
   ],
   "interface_detail": "s3",
   "tooling": "Any S3 client: AWS CLI, boto3, s5cmd; `hf` CLI (`hf sync`, `hf buckets`); python `huggingface_hub`. For this slot: `git annex initremote type=S3 host=s3.hf.co region=us-east-1 requeststyle=path` (annex needs path-style, which the gateway requires anyway) and `dvc remote add ... ; dvc remote modify myremote endpointurl https://s3.hf.co/<namespace>`. S3 creds are derived from an HF token via 'Generate S3 credentials' (HFAK... key).",
-  "chaining": "Bucket-per-purpose, unlimited buckets per namespace, unlimited free orgs. Because buckets are NON-versioned, git-annex supplies the versioning (hash-keyed objects) and DVC supplies the pointer layer — that combination gives you a versioned 500GB+ dataset store on a free, CDN-backed S3 endpoint. Dedupe is chunk-level on the Xet backend, so re-pushing near-identical files is cheap.",
+  "chaining": "Buckets are non-versioned, so a versioning layer on top of the S3 gateway keeps history: DVC is documented as a bucket remote through the gateway, and other S3 clients that take a custom endpoint with path-style addressing reach it the same way; storage is deduplicated at chunk level by Xet, and reads go out through the included CDN.",
   "limits": [
     {
-      "kind": "per-object-cap",
-      "value": "single file will exceed 500GB",
+      "kind": "volume-quota",
+      "value": "private storage 100 GB on a free user or organisation; public storage 'Best-effort' with no published figure",
       "source": "https://huggingface.co/docs/hub/storage-limits"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "egress included up to 8:1 of total storage",
+      "source": "https://huggingface.co/storage"
     }
   ],
-  "limits_note": "Bucket = not Git, so no git LFS semantics — you get S3 PUT/GET only. Hard limit: 'no single file will exceed 500GB' for Hub repos (buckets: gateway multipart, docs recommend 2 GB multipart chunks). Recommended <100k files and <10k entries per folder; >200 GB files discouraged due to CloudFront not caching them. Region pinned us-east-1. Gateway does not parse aws-chunked trailing checksums — must set request_checksum_calculation=when_required.",
+  "limits_note": "The S3 gateway is single-region (us-east-1), path-style only and ListObjectsV2 only, and does not parse aws-chunked trailing checksums (request_checksum_calculation and response_checksum_validation set to when_required); ACLs, bucket policies, object tagging, object versioning, lifecycle rules, server-side encryption and bucket notifications are not supported, user metadata is not stored, server-side copy works within one namespace only, and incomplete multipart uploads expire after 7 days; 2 GB multipart parts are recommended. The per-file and file-count figures on the storage-limits page are stated for Git-backed repositories only.",
   "identity_cost": {
-    "kind": "institution",
-    "detail": "inferred from the category 'academic'; the source record states no identity cost, so this is a class assumption, not evidence",
+    "kind": "email",
+    "detail": "the join form asks an email address and a password; free-tier accounts exist with no credit card on file, and a card is asked for PRO, Team, paid compute and storage above the free tier; whether a later step of the join form asks a phone number is unverified",
     "country": null
   },
-  "reliability_note": "Free public storage is explicitly 'best-effort' and HF says 'Beyond the first few gigabytes, please use this resource responsibly', with a mitigation the page describes as 'in place to prevent abuse', meaning a limit on excess use. That is the softest possible enforcement language. Gateway is single-region (us-east-1).",
-  "confidence": "reported",
-  "confidence_note": null,
+  "reliability_note": "Public storage on a free account is 'Best-effort': above the first few gigabytes the page names abuse mitigations without a figure; bucket deletions are immediate and unrecoverable; the S3 gateway is single-region (us-east-1).",
+  "confidence": "documented",
+  "confidence_note": "free allowance, egress ratio, identity, gateway limits and prices quoted from the storage-limits, Storage Buckets, S3 gateway and billing documentation, the storage page and the join page on 2026-10-30; the gateway answered an anonymous GET with an S3-style refusal",
   "evidence": [
     {
       "url": "https://huggingface.co/docs/hub/storage-buckets-s3",
@@ -71,12 +76,202 @@
       "url": "https://s3.hf.co/",
       "date": "2026-10-21",
       "proved": "probe: GET -> HTTP 403 with x-amz-request-id (live S3-compatible gateway answering)"
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/main/storage-buckets-s3",
+      "date": "2026-10-30",
+      "proved": "buckets are object storage reached through an S3-compatible API",
+      "capture": "sha256:932fd6f99d8800c09c757b9bc78071b08c0266d7af79b31eae4a8d26ccc0c597",
+      "quote": "Storage Buckets can be accessed through an S3-compatible API, letting you use existing S3 tooling"
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/en/storage-limits",
+      "date": "2026-10-30",
+      "proved": "the storage plans cover buckets",
+      "capture": "sha256:3151524ee2beb01b75e821c0d45e7cfc23e4a7feda74ce198393d81b23a27079",
+      "quote": "Storage limits and policies apply to all types of repositories (models, datasets, buckets, …) on the Hub."
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/en/storage-limits",
+      "date": "2026-10-30",
+      "proved": "a free user or organisation has best-effort public storage and 100 GB private",
+      "capture": "sha256:3151524ee2beb01b75e821c0d45e7cfc23e4a7feda74ce198393d81b23a27079",
+      "quote": "| Free user or org | Best-effort\\* | 100GB |"
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/en/storage-limits",
+      "date": "2026-10-30",
+      "proved": "the free allowance was read on 2026-10-30",
+      "capture": "sha256:3151524ee2beb01b75e821c0d45e7cfc23e4a7feda74ce198393d81b23a27079",
+      "quote": "| Free user or org | Best-effort\\* | 100GB |"
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/en/storage-limits",
+      "date": "2026-10-30",
+      "proved": "public storage above the first few gigabytes is best-effort",
+      "capture": "sha256:3151524ee2beb01b75e821c0d45e7cfc23e4a7feda74ce198393d81b23a27079",
+      "quote": "Beyond the first few gigabytes, please use this resource responsibly by uploading content that offers genuine value to other users."
+    },
+    {
+      "url": "https://huggingface.co/storage",
+      "date": "2026-10-30",
+      "proved": "egress is included up to 8 times the stored volume",
+      "capture": "sha256:d8bdfb698ca943e5373e3abfd569b8a3ed5d9d122888e2fe3f57b769446e4dd4",
+      "quote": "Egress is included up to a generous 8:1 ratio of your total storage."
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/main/storage-buckets-s3",
+      "date": "2026-10-30",
+      "proved": "downloads redirect to a CDN edge; the gateway is single-region",
+      "capture": "sha256:932fd6f99d8800c09c757b9bc78071b08c0266d7af79b31eae4a8d26ccc0c597",
+      "quote": "The gateway is currently single-region. To improve download performance, `GetObject` typically responds with an HTTP 302 redirect to the nearest Hugging Face CDN edge rather than serving bytes directly."
+    },
+    {
+      "url": "https://huggingface.co/storage",
+      "date": "2026-10-30",
+      "proved": "included egress has a quota tied to stored volume",
+      "capture": "sha256:d8bdfb698ca943e5373e3abfd569b8a3ed5d9d122888e2fe3f57b769446e4dd4",
+      "quote": "Egress is included up to a generous 8:1 ratio of your total storage."
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/en/storage-limits",
+      "date": "2026-10-30",
+      "proved": "the repository limitations section, which holds the 500 GB per-file limit, does not apply to buckets",
+      "capture": "sha256:3151524ee2beb01b75e821c0d45e7cfc23e4a7feda74ce198393d81b23a27079",
+      "quote": "This section does not apply to [Storage Buckets](./storage-buckets)"
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/en/storage-limits",
+      "date": "2026-10-30",
+      "proved": "Git-backed repositories have a 500 GB per-file hard limit",
+      "capture": "sha256:3151524ee2beb01b75e821c0d45e7cfc23e4a7feda74ce198393d81b23a27079",
+      "quote": "In all cases, no single file will exceed 500GB. I.e. 500GB is the hard limit for a single file size."
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/en/storage-limits",
+      "date": "2026-10-30",
+      "proved": "a free account holds 100 GB private and best-effort public storage",
+      "capture": "sha256:3151524ee2beb01b75e821c0d45e7cfc23e4a7feda74ce198393d81b23a27079",
+      "quote": "| Free user or org | Best-effort\\* | 100GB |"
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/en/storage-limits",
+      "date": "2026-10-30",
+      "proved": "free public storage is under unstated abuse mitigations",
+      "capture": "sha256:3151524ee2beb01b75e821c0d45e7cfc23e4a7feda74ce198393d81b23a27079",
+      "quote": "We do have mitigations in place to prevent abuse of free public storage"
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/main/storage-buckets-s3",
+      "date": "2026-10-30",
+      "proved": "incomplete multipart uploads expire after 7 days",
+      "capture": "sha256:932fd6f99d8800c09c757b9bc78071b08c0266d7af79b31eae4a8d26ccc0c597",
+      "quote": "in-flight multipart uploads that are never completed or aborted are automatically expired and cleaned up after 7 days."
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/main/storage-buckets-s3",
+      "date": "2026-10-30",
+      "proved": "the listed S3 features are unsupported on the gateway",
+      "capture": "sha256:932fd6f99d8800c09c757b9bc78071b08c0266d7af79b31eae4a8d26ccc0c597",
+      "quote": "ACLs, bucket policies, object tagging, object versioning, lifecycle rules, server-side encryption (SSE), and bucket notifications are not supported."
+    },
+    {
+      "url": "https://huggingface.co/join",
+      "date": "2026-10-30",
+      "proved": "the join form asks an email address and a password",
+      "capture": "sha256:780d1e325a5b4bcac0666414ea3d40ec8e963dca3fe4b583e151f0ec8a61f026",
+      "quote": "Email Address"
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/billing",
+      "date": "2026-10-30",
+      "proved": "free-tier accounts exist with no credit card on file",
+      "capture": "sha256:a820b4d02e4aeb23cee791950344e28f8c57d16c89da4377e18be5940a2b0c76",
+      "quote": "Organizations on the free tier with no credit card on file usually switch immediately"
+    },
+    {
+      "url": "https://huggingface.co/join",
+      "date": "2026-10-30",
+      "proved": "the identity cost is read from the join form",
+      "capture": "sha256:780d1e325a5b4bcac0666414ea3d40ec8e963dca3fe4b583e151f0ec8a61f026",
+      "quote": "Email Address"
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/storage-buckets",
+      "date": "2026-10-30",
+      "proved": "bucket deletions are immediate and unrecoverable",
+      "capture": "sha256:f67f06947b6064676a74d22692769c70185ff851d07547e501e3109799939d82",
+      "quote": "Since buckets are non-versioned, deletions are immediate and permanent — there is no way to recover a deleted file."
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/storage-buckets",
+      "date": "2026-10-30",
+      "proved": "buckets are reached through the hf CLI and the Python API, not through Git",
+      "capture": "sha256:f67f06947b6064676a74d22692769c70185ff851d07547e501e3109799939d82",
+      "quote": "You can interact with buckets using the Hub web interface, the [`hf` CLI](https://huggingface.co/docs/huggingface_hub/guides/cli#hf-buckets), or the [Python API](https://huggingface.co/docs/huggingface_hub/guides/buckets)."
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/storage-buckets",
+      "date": "2026-10-30",
+      "proved": "an HTTP API under /api/buckets serves bucket change events",
+      "capture": "sha256:f67f06947b6064676a74d22692769c70185ff851d07547e501e3109799939d82",
+      "quote": "streams a bucket's file changes as [server-sent events]"
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/main/storage-buckets-s3",
+      "date": "2026-10-30",
+      "proved": "DVC uses a bucket as a remote through the gateway",
+      "capture": "sha256:932fd6f99d8800c09c757b9bc78071b08c0266d7af79b31eae4a8d26ccc0c597",
+      "quote": "A bucket works as a DVC remote through the gateway"
+    },
+    {
+      "url": "https://huggingface.co/storage",
+      "date": "2026-10-30",
+      "proved": "the storage page lists per-TB prices for public and private storage by volume tier",
+      "capture": "sha256:d8bdfb698ca943e5373e3abfd569b8a3ed5d9d122888e2fe3f57b769446e4dd4",
+      "quote": "500TB+ 33% off"
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/en/storage-limits",
+      "date": "2026-10-30",
+      "proved": "paid public storage needs a PRO, Team or Enterprise plan",
+      "capture": "sha256:3151524ee2beb01b75e821c0d45e7cfc23e4a7feda74ce198393d81b23a27079",
+      "quote": "Users on a paid plan (PRO, Team, or Enterprise) can subscribe to a Public Storage add-on for additional public storage on top of their plan's base limit."
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/main/storage-buckets-s3",
+      "date": "2026-10-30",
+      "proved": "S3 keys derive from a Hugging Face access token",
+      "capture": "sha256:932fd6f99d8800c09c757b9bc78071b08c0266d7af79b31eae4a8d26ccc0c597",
+      "quote": "The gateway authenticates with AWS-style access keys derived from a Hugging Face [User Access Token](./security-tokens)."
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/en/storage-limits",
+      "date": "2026-10-30",
+      "proved": "the vendor documentation was read and quoted",
+      "capture": "sha256:3151524ee2beb01b75e821c0d45e7cfc23e4a7feda74ce198393d81b23a27079",
+      "quote": "Storage limits and policies apply to all types of repositories (models, datasets, buckets, …) on the Hub."
+    },
+    {
+      "url": "probe:s3.hf.co",
+      "date": "2026-10-30",
+      "proved": "the gateway answers an anonymous GET with an S3-style 403 (application/xml, x-amz-request-id): it is live and refuses unsigned requests",
+      "capture": "sha256:b021b6667cb130624be0a9f67a4412bdf685ac7bfd6335ca11b49daf3a075fbe",
+      "quote": "\"status\": 403"
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/en/storage-limits",
+      "date": "2026-10-30",
+      "proved": "the storage plans, including the free allowance, cover buckets",
+      "capture": "sha256:3151524ee2beb01b75e821c0d45e7cfc23e4a7feda74ce198393d81b23a27079",
+      "quote": "Storage limits and policies apply to all types of repositories (models, datasets, buckets, …) on the Hub."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-21T00:00:00.000Z",
-  "notes": "Public repos/buckets: 'Best-effort' — no published numeric ceiling on a Free account (private is a hard 100 GB). Storage plans table: Free user or org = Public 'Best-effort', Private 100 GB. HF is on the known list, but the S3 gateway is new and turns HF into a generic S3 endpoint, which is the part that matters for this slot.",
+  "verified_at": "2026-10-30T17:52:30.796Z",
+  "notes": "Storage Buckets are non-versioned, mutable object storage on the Xet backend; the S3 gateway at https://s3.hf.co/<namespace> takes access keys with the HFAK prefix, derived from a Hugging Face access token whose read or write scope they inherit",
   "extras": {},
-  "binding": "per-object-cap",
-  "binding_note": null
+  "binding": "volume-quota",
+  "binding_note": "a free account holds 100 GB private, and public storage beyond the first few gigabytes is best-effort under abuse mitigations, so the stored volume binds first",
+  "price_per_tb_month": "USD 12 per TB-month public and USD 18 per TB-month private at the base tier; USD 10 and 16 from 50 TB, USD 9 and 14 from 200 TB, USD 8 and 12 from 500 TB; public storage beyond a plan's base needs a PRO, Team or Enterprise plan"
 }

@@ -7,7 +7,7 @@
   "verdict": "qualifies-with-caveat",
   "confidence": "measured",
   "confidence_note": "",
-  "verified_at": "2026-10-22T00:00:00.000Z",
+  "verified_at": "2026-10-31T06:44:32.044Z",
   "free_tier": {
     "stated": "keyless index and WARC access",
     "unit": "requests",
@@ -23,13 +23,13 @@
     "notes": ""
   },
   "retention": {
-    "stated": "each crawl keeps its own index; up to 12 are asked",
+    "stated": "one index per crawl, all still listed: collinfo.json names 129 crawl indexes, from CC-MAIN-2008-2009 to CC-MAIN-2026-43",
     "days": null,
-    "source_url": "https://commoncrawl.org/",
+    "source_url": "https://index.commoncrawl.org/collinfo.json",
     "notes": ""
   },
   "egress": {
-    "terms": "not applicable: the archived body, read from a WARC",
+    "terms": "No charge and no account for HTTPS downloads of the data and index files from data.commoncrawl.org.",
     "metered": false,
     "free_allowance": null,
     "price_per_tb": null,
@@ -39,18 +39,23 @@
     "rest"
   ],
   "interface_detail": "Index API per crawl on index.commoncrawl.org; WARC files on data.commoncrawl.org",
-  "tooling": "not stated",
-  "chaining": null,
+  "tooling": "Any HTTP client: a CDXJ lookup on index.commoncrawl.org returns a WARC filename, offset and length, and a byte-range GET on data.commoncrawl.org returns that one record.",
+  "chaining": "A CDXJ lookup on index.commoncrawl.org names the WARC file, offset and length of a stored capture and one byte-range GET on data.commoncrawl.org reads it, so a page Common Crawl captured is read from the crawl copy when a live fetch fails; for broad or large-scale URL filtering Common Crawl points callers to its URL Index (formerly the Columnar Index) through Amazon Athena or Apache Spark instead of the CDXJ API",
   "limits": [
     {
       "kind": "request-rate",
-      "value": "about 1 request a second on the index, per the platform research report",
-      "source": null
+      "value": "at most 1 request a second (HTTP level) on index.commoncrawl.org: the rate a Common Crawl engineer asked index callers to keep to on the Common Crawl user forum in April 2023",
+      "source": "https://groups.google.com/g/common-crawl/c/d7ftvUSuGYI"
     },
     {
       "kind": "request-rate",
-      "value": "a crawl index call is bounded at 5 s; the listing ends at 8 s",
-      "source": null
+      "value": "no concurrent requests from one IP address on the CDXJ API: callers are asked to sleep between calls, not to run multiple threads at once on the same IP and not to use proxy networks; an HTTP 503 answer means the acceptable request rate is exceeded",
+      "source": "https://commoncrawl.org/faq"
+    },
+    {
+      "kind": "request-rate",
+      "value": "the CDXJ API on index.commoncrawl.org is heavily rate limited; an IP address that sends too many requests may be blocked, and a blocked IP address should wait 24 hours",
+      "source": "https://commoncrawl.org/faq"
     }
   ],
   "binding": "request-rate",
@@ -60,7 +65,7 @@
     "detail": "keyless",
     "country": null
   },
-  "reliability_note": "504 to a direct index call; 9 consecutive probe timeouts as of 02:50Z 2026-10-22",
+  "reliability_note": "The CDXJ index is intermittent: on 2026-10-30 the same lookup answered 504 Gateway Time-out from nginx after 11.0 s and 200 after 9.1 s, while a WARC byte-range read on data.commoncrawl.org answered 206 in 0.7 s.",
   "price_per_tb_month": null,
   "evidence": [
     {
@@ -72,7 +77,168 @@
       "url": null,
       "date": "2026-10-22",
       "proved": "state failing, 9 consecutive probe timeouts, the only provider not ok"
+    },
+    {
+      "url": "probe:https://index.commoncrawl.org/CC-MAIN-2026-43-index?url=wikipedia.org&output=json&limit=1",
+      "date": "2026-10-30",
+      "proved": "the CDXJ lookup answered 200 after 9.1 s with no key",
+      "capture": "sha256:cdf99b6983e5ed4af67d1e02e05b9617152498aee0d3d05458a01fc04dac1139",
+      "quote": "\"elapsed_ms\": 9101.5"
+    },
+    {
+      "url": "probe:https://index.commoncrawl.org/CC-MAIN-2026-43-index?url=wikipedia.org&output=json&limit=1",
+      "date": "2026-10-30",
+      "proved": "the same CDXJ lookup answered 504 Gateway Time-out from nginx after 11.0 s, minutes before the 200",
+      "capture": "sha256:e52ddd1e86b2a670851fd33b6eb0841152bf9c9c189b259fb88e95f6b6411420",
+      "quote": "\"status\": 504"
+    },
+    {
+      "url": "probe:https://data.commoncrawl.org/crawl-data/CC-MAIN-2026-43/segments/1791170053823.21/warc/CC-MAIN-20261005105623-20261005135623-00993.warc.gz",
+      "date": "2026-10-30",
+      "proved": "an anonymous byte-range GET on data.commoncrawl.org returned the one WARC record the index named (206)",
+      "capture": "sha256:72f6da208a9a3a417c5c03d2933225a8bb0fcc05ca90649838c39eb3e9520b1f",
+      "quote": "\"content_range\": \"bytes 937296400-937320567/958726164\""
+    },
+    {
+      "url": "probe:https://index.commoncrawl.org/CC-MAIN-2026-43-index?url=example.com&output=json&limit=1",
+      "date": "2026-10-30",
+      "proved": "a second CDXJ lookup on the October 2026 index answered 504 Gateway Time-out",
+      "capture": "sha256:eb96ce4ec2b1b5024c01245586a0465200b5826a2172b268544712b16944488c",
+      "quote": "\"status\": 504"
+    },
+    {
+      "url": "probe:https://index.commoncrawl.org/collinfo.json",
+      "date": "2026-10-30",
+      "proved": "collinfo.json lists one index per crawl, back to the 2008-2009 ARC crawl; the body has 129 entries",
+      "capture": "sha256:a683312f4448cdda63b38f40c7289853fa82eb1e7e3cd5a3674e46142b01891a",
+      "quote": "\"id\": \"CC-MAIN-2008-2009\""
+    },
+    {
+      "url": "probe:https://index.commoncrawl.org/CC-MAIN-2026-43-index?url=wikipedia.org&output=json&limit=1",
+      "date": "2026-10-30",
+      "proved": "the index answer names the WARC filename, offset and length of the capture",
+      "capture": "sha256:a7e2ae3a76bf30b4972c716e32b6f3c5bdc685e560c44334905c3f37e1c9cdd8",
+      "quote": "\"offset\": \"937296400\""
+    },
+    {
+      "url": "https://index.commoncrawl.org/",
+      "date": "2026-10-30",
+      "proved": null,
+      "capture": "sha256:7ff7835462eec34c002d6da07b91f1a3798465091a93f407303955d644ce79bf",
+      "quote": "All data and index files are free to download."
+    },
+    {
+      "url": "https://commoncrawl.org/get-started",
+      "date": "2026-10-30",
+      "proved": "HTTPS downloads from data.commoncrawl.org need no account",
+      "capture": "sha256:f035bf60f3892932f25c16f775fb450fc05385e94f3405fd0ba1b9e5f7714d37",
+      "quote": "There is no need to create an AWS account in order to access the data using this method."
+    },
+    {
+      "url": "https://commoncrawl.org/faq",
+      "date": "2026-10-30",
+      "proved": "a blocked IP address should wait 24 hours",
+      "capture": "sha256:eb8cba4c974736f6f2bb2d8eedacf491f2fb960db386bb581669780186d3a1b5",
+      "quote": "If your IP is temporarily blocked, please wait 24 hours before trying again."
+    },
+    {
+      "url": "https://commoncrawl.org/faq",
+      "date": "2026-10-30",
+      "proved": "the CDXJ index is heavily rate limited and blocks an IP address that sends too many requests",
+      "capture": "sha256:eb8cba4c974736f6f2bb2d8eedacf491f2fb960db386bb581669780186d3a1b5",
+      "quote": "Our CDX API endpoint is frequently abused and therefore heavily rate limited. If your client sends too many requests in a short period of time, your IP address may be temporarily blocked."
+    },
+    {
+      "url": "https://commoncrawl.org/blog/you-can-now-build-directly-on-common-crawl-from-the-browser",
+      "date": "2026-10-30",
+      "proved": "the index rate limits are strict",
+      "capture": "sha256:416b7747fbea2e6bec5566970056be621e9bf9cfdebe8d73d6f69dea95990475",
+      "quote": "Please be aware, `index.commoncrawl.org` is rate-limited, and those limits are strict."
+    },
+    {
+      "url": "https://groups.google.com/g/common-crawl/c/d7ftvUSuGYI",
+      "date": "2026-10-30",
+      "proved": "a Common Crawl engineer asked index users to stay at or below 1 request a second (forum, 2023)",
+      "capture": "sha256:00f7c09509cc998d20cbd7370992a850dcecd192518dd55a6695b28cab663616",
+      "quote": "reduce the request rate to max. 1 request per second (on HTTP level)."
+    },
+    {
+      "url": "https://commoncrawl.org/blog/oct-nov-2023-performance-issues",
+      "date": "2026-10-30",
+      "proved": "the 2023 performance post asks small-request callers to stay below 10 requests a second",
+      "capture": "sha256:536be8f1769d1477a7b3618e294584068b09b804852b884020115c8a058f4add",
+      "quote": "If you’re sending small requests for index information or single webpages contained in WARC files, we can handle a few thousand requests per second total for everyone combined, so you’ll want to stay below 10 per second"
+    },
+    {
+      "url": "probe:https://index.commoncrawl.org/collinfo.json",
+      "date": "2026-10-31",
+      "proved": "collinfo.json lists one CDXJ index per crawl, back to CC-MAIN-2008-2009; the body has 129 entries, the newest CC-MAIN-2026-43",
+      "capture": "sha256:a683312f4448cdda63b38f40c7289853fa82eb1e7e3cd5a3674e46142b01891a",
+      "quote": "\"id\": \"CC-MAIN-2008-2009\""
+    },
+    {
+      "url": "probe:https://groups.google.com/g/common-crawl/c/d7ftvUSuGYI",
+      "date": "2026-10-31",
+      "proved": "a Common Crawl engineer asked index callers on the Common Crawl user forum (April 2023) to keep to at most 1 request a second",
+      "capture": "sha256:ad05e0640adfef35a6bf073ca54fd37649f7e5735f44abe1dd00a2933111e2f3",
+      "quote": "reduce the request rate to max. 1 request per second (on HTTP level)."
+    },
+    {
+      "url": "probe:https://commoncrawl.org/team",
+      "date": "2026-10-31",
+      "proved": "Sebastian Nagel, the author of the April 2023 forum post, is on the Common Crawl team as Distinguished Engineer",
+      "capture": "sha256:2fe717a7b57d1ff846b91d34c9ab55c87a52e9351b4fb0a6e6e40267f4f0f70d",
+      "quote": "Sebastian Nagel Distinguished Engineer"
+    },
+    {
+      "url": "probe:https://commoncrawl.org/faq",
+      "date": "2026-10-31",
+      "proved": "the CDXJ API is to be called with a pause between calls, no parallel threads from one IP address and no proxy networks",
+      "capture": "sha256:b8d8611668566f66cbf218403910994c71382a9af8d8278648ed11349dd6ffd1",
+      "quote": "Please sleep between calls to our API (including if you run your script repeatedly in a loop), don't run multiple threads at once on the same IP, and don't use proxy networks."
+    },
+    {
+      "url": "probe:https://commoncrawl.org/faq",
+      "date": "2026-10-31",
+      "proved": "an HTTP 503 from the CDXJ API means the caller exceeded the acceptable request rate",
+      "capture": "sha256:b8d8611668566f66cbf218403910994c71382a9af8d8278648ed11349dd6ffd1",
+      "quote": "If you receive HTTP 503 responses, please slow down your request rate. These are a sign you've exceeded the acceptable request rate."
+    },
+    {
+      "url": "probe:https://commoncrawl.org/faq",
+      "date": "2026-10-31",
+      "proved": "Common Crawl points broad or large-scale URL filtering to its URL Index, through Amazon Athena or Apache Spark, instead of the CDXJ API",
+      "capture": "sha256:b8d8611668566f66cbf218403910994c71382a9af8d8278648ed11349dd6ffd1",
+      "quote": "You may wish to use our URL Index (previously called the \"Columnar Index\") via Amazon Athena or Apache Spark if your query involves broad or large-scale filtering."
+    },
+    {
+      "url": "probe:https://index.commoncrawl.org/",
+      "date": "2026-10-31",
+      "proved": "the index server page sends bulk filtering to the Columnar Index",
+      "capture": "sha256:7beb65c8ff3f5ed6b0744426593bfae7f2d6640bb8927ef79ac0a07839fe4c8c",
+      "quote": "The Columnar Index is a better fit for bulk filtering and aggregation."
+    },
+    {
+      "url": "probe:https://data.commoncrawl.org/crawl-data/CC-MAIN-2026-43/segments/1791170053823.21/warc/CC-MAIN-20261005105623-20261005135623-00993.warc.gz",
+      "date": "2026-10-31",
+      "proved": "an anonymous byte-range GET on data.commoncrawl.org answered 206; the October 2026 WARC file is 958726164 bytes",
+      "capture": "sha256:0daf334f2fba907a2ee686736b3c76857b68fd5fa6af726c41999143076744d4",
+      "quote": "\"content_range\": \"bytes 0-1023/958726164\""
+    },
+    {
+      "url": "probe:https://commoncrawl.org/get-started",
+      "date": "2026-10-31",
+      "proved": "HTTPS downloads from data.commoncrawl.org need no account",
+      "capture": "sha256:25e9bc50af15ca0235cbc0fad6a7fe9463e3bcf37b9233e78236f9ca6578ba7a",
+      "quote": "There is no need to create an AWS account in order to access the data using this method."
+    },
+    {
+      "url": "probe:https://index.commoncrawl.org/CC-MAIN-2026-43-index?url=wikipedia.org&output=json&limit=1",
+      "date": "2026-10-31",
+      "proved": "a keyless CDXJ lookup answered 200 on 2026-10-31 with the WARC filename, offset and length of the capture",
+      "capture": "sha256:a7e2ae3a76bf30b4972c716e32b6f3c5bdc685e560c44334905c3f37e1c9cdd8",
+      "quote": "\"length\": \"24168\", \"offset\": \"937296400\""
     }
   ],
-  "notes": "A listing can return unknown for every crawl it could not read, so an empty answer is not evidence of absence."
+  "notes": "Degraded, not dead: on 2026-10-30 the CDXJ index answered 504 and 200 to the same lookup within minutes, while the WARC files on data.commoncrawl.org answered at once. One offer with storage/common-crawl, which reads the same corpus as storage."
 }

@@ -6,12 +6,12 @@
   "category": "per-address ISP proxy",
   "tier": "ISP Proxies (static residential), pay per address, Starter plan floor",
   "free_tier": {
-    "stated": "'Welcome credits FREE $5 toward any product'. A credit against an invoice, not an allowance: at USD 1.50/IP the first band is 3 addresses, and the plan floor is USD 30/mo Starter, so the credit takes USD 5 off a first invoice and buys no service on its own. The pricing page states the credit and states no card requirement for it.",
-    "unit": "objects",
+    "stated": "One-time USD 5.00 Welcome Credit on registration, spent at each product's rates: 'Every new account receives a one-time $5.00 Welcome Credit on registration, added to your balance immediately – no commitment required to start testing products.' It applies per team, not per user, stays valid while the account is on the free plan, and unused credit carries into the first upgrade to a paid plan.",
+    "unit": "credits",
     "metered_on": "object-count",
     "source_url": "https://oxylabs.io/pricing/isp-proxies",
     "read_on": "2026-10-24",
-    "notes": "The billed object is one ISP address for one billing period, so 'objects' is the address count and not a file or a record."
+    "notes": "The ISP pricing page states 'We offer free credits for ISP Proxies' and 'our ISP Proxies free trial is for a single use'; ISP addresses are priced from USD 1.5/IP ('$1.5/IP Up to 3 IPs')."
   },
   "per_object_cap": {
     "stated": "not applicable",
@@ -23,10 +23,10 @@
     "stated": "not applicable: an address, not an object",
     "days": null,
     "source_url": "https://oxylabs.io/pricing/isp-proxies",
-    "notes": "No stored bytes are involved. The nearest thing to retention is the session: the vendor sells 'Unlimited-duration sessions', so an address is held for the billing period rather than expiring on a timer."
+    "notes": "No stored bytes are involved. Sessions carry no time limit: 'You can keep an IP for as long as you need without worrying about session time.'"
   },
   "egress": {
-    "terms": "Unlimited and unpriced by the byte: the pricing page lists 'Unlimited bandwidth with fair usage', and the product page heads a bullet 'Unlimited bandwidth' and explains it as 'No additional charges on traffic expenditure with the Pay-per-IP pricing model'. Billing is per address, not per GB.",
+    "terms": "Not billed by the byte: 'Unlimited bandwidth with fair usage', explained as 'No additional charges on traffic expenditure with the Pay-per-IP pricing model'; addresses are priced from '$1.5/IP' down to '$1.1/IP' at 2.27K+ IPs. the provider limits concurrency, not bytes: until 50 GB of usage per ISP proxy in a month, 100 concurrent sessions per purchased proxy; once 50 GB is reached, 10 concurrent sessions per proxy for the rest of the billing cycle.",
     "metered": false,
     "free_allowance": null,
     "price_per_tb": null,
@@ -35,15 +35,15 @@
   "interface": [
     "rest"
   ],
-  "interface_detail": "The access is a proxy endpoint, not a REST resource: the vendor's quick start tabulates 'ISP isp.oxylabs.io 8000 user- 8001 and up' and 'Dedicated ISP disp.oxylabs.io 8000 user- 8001 and up', with the protocol set by a user's connection prefix - 'http://, https://, or socks5h://'. The product page lists 'HTTP, HTTPS, and SOCKS5 protocols' and 'UDP and TCP connection'. Management is a web dashboard. This token list carries no proxy-protocol value, so 'rest' is the nearest it has; see notes.",
+  "interface_detail": "A proxy endpoint, not a REST resource. The quick start lists 'ISP isp.oxylabs.io 8000 user- 8001 and up' and 'Dedicated ISP disp.oxylabs.io 8000 user- 8001 and up' (endpoint, rotating port, username prefix, static ports); the protocol is set by the connection prefix in the proxy client, 'http://', 'https://' or 'socks5h://'. A static address is chosen by port ('use 8001 for IP #1, 8002 for IP #2, etc.'); shared ISP targets a country with '-country-US' in the username, dedicated ISP by the port of an address in that country. Proxy users and instances are set up in the Oxylabs Dashboard. No interface token names a proxy protocol, so 'rest' is the nearest.",
   "endpoint": "isp.oxylabs.io:8000 (ISP), disp.oxylabs.io:8000 (Dedicated ISP), static ports 8001 and up",
-  "tooling": "Any client that accepts a proxy URL: curl -x, Python requests with a proxies dict, Node.js, Scrapy. The vendor publishes integration guides for Python, Node.js and cURL, and an Agent Skills repository for agent frameworks. The address is selected by the static port - '8001 for IP #1, 8002 for IP #2, etc.' - so no session identifier is needed. No dedicated CLI was found, and none is required.",
-  "chaining": "The address layer in front of the Cloudflare Workers AI gateway at about 599,000 requests and 45 GB a month: the bytes do not cross a meter, so the cost is the address count against a USD 30/mo plan floor and the constraint is which targets the vendor will carry, not how much traffic moves.",
+  "tooling": "Any client that takes an HTTP, HTTPS or SOCKS5 proxy. The product page links integration guides for Puppeteer, Selenium, Playwright, Scrapy, AdsPower, GoLogin, Multilogin and Octo Browser, and an Agent Skills repository (github.com/oxylabs/agent-skills) of SKILL.md files for AI agents.",
+  "chaining": "The outbound address layer of an HTTP client: bytes are not billed ('No additional charges on traffic expenditure with the Pay-per-IP pricing model'), so cost follows the address count, from USD 1.5/IP with the smallest plan Starter at USD 30/mo, and the limit that applies is which targets the ISP network carries; restricted targets open only 'after you go through a short KYC procedure'.",
   "limits": [
     {
       "kind": "request-rate",
-      "value": "target blocklist rather than a rate: 'Some websites are restricted on our Residential Proxy network to avoid abuse and unclear activities', and 'The list includes but is not limited to targets such as:' 'All Apple domains', 'Some Google domains', 'Government websites'",
-      "source": "https://oxylabs.io/pricing/residential-proxy-pool"
+      "value": "target blocklist rather than a rate: 'Some websites are restricted on our ISP Proxy network'; the list 'includes but is not limited to' entertainment and streaming (Netflix, Spotify, Twitch, Disney), banking and other financial institutions (PayPal, Bank of America, Binance), government websites (usa.gov, canada.ca), gaming (Playstation, Steam), ticketing (Ticketmaster, Eventbrite) and mailing (Outlook, Yahoo mail)",
+      "source": "https://developers.oxylabs.io/products/proxies/isp-proxies/restricted-targets"
     },
     {
       "kind": "per-ip-shaping",
@@ -52,8 +52,8 @@
     },
     {
       "kind": "per-ip-shaping",
-      "value": "'Unlimited bandwidth with fair usage' - unlimited in price, with a fair-use qualifier the vendor does not define",
-      "source": "https://oxylabs.io/pricing/isp-proxies"
+      "value": "fair usage limits concurrency: until 50 GB of usage per ISP proxy in a month, 100 concurrent sessions per purchased proxy; once 50 GB is reached, 10 concurrent sessions per proxy for the rest of the billing cycle, applied automatically, with an email notice at 80% and at 100% of the data allowance",
+      "source": "https://developers.oxylabs.io/products/proxies/isp-proxies/fair-usage-policy"
     },
     {
       "kind": "volume-quota",
@@ -61,17 +61,17 @@
       "source": "https://oxylabs.io/products/isp-proxies"
     }
   ],
-  "limits_note": "Two constraints found have no kind in the vocabulary. The plan floor is a minimum spend - USD 30/mo Starter - and the blocklist is a refusal of the destination rather than a rate on a user; the blocklist is filed under request-rate because that is the nearest kind, and the floor is recorded here. Whether a 3-address order bills USD 4.50 or the USD 30 floor is not stated on either page.",
+  "limits_note": "Two constraints have no limit kind. The plan floor is a minimum spend: the smallest self-service plan is Starter at USD 30/mo. The target blocklist refuses destinations rather than rating requests ('We restrict some websites for ISP Proxies'); it is filed under request-rate as the nearest kind, and listed targets can be opened 'after you go through a short KYC procedure'.",
   "binding": "request-rate",
-  "binding_note": "No byte meter and no address ceiling fail at 45 GB and 599,000 requests a month - bandwidth is unmetered and the address count is what a user buys. What fails first is the target: the vendor refuses whole destination classes on the residential network, and the refusal arrives as a failed request, so it is the request that is denied and not the volume.",
+  "binding_note": "The target blocklist binds ('We restrict some websites for ISP Proxies'): bytes are not billed ('Unlimited bandwidth with fair usage'), and the provider limits concurrency rather than volume, at 100 concurrent sessions per purchased proxy until 50 GB of usage per proxy in a month and 10 per proxy after that for the rest of the billing cycle.",
   "identity_cost": {
     "kind": "card",
-    "detail": "Two gates. An email address claims the USD 5 welcome credit, and the pricing page states no card for it. Reaching the product at all costs a card: the smallest plan is USD 30/mo Starter. The card is the binding gate because the credit alone buys no address.",
+    "detail": "Paid plans take 'Credit card payments', PayPal, Google Pay, Apple Pay, or wire transfers through the sales or account-manager teams; 'Please note that we do not accept cryptocurrency payments.' What registration asks for, and whether the welcome credit needs a payment method, is unverified: behind a sign-up.",
     "country": null
   },
-  "reliability_note": "Semi-dedicated, not exclusive, and the vendor states the addresses 'originate from datacenter proxies', so a target that blocks hosting ranges sees the datacenter side of the registration; 'fair usage' is stated without a number, so a throttle would arrive without a published threshold.",
+  "reliability_note": "Addresses are 'hosted on a data center but registered under ISPs' and 'Shared with up to 3 users'. Past 50 GB of usage per proxy in a month, concurrency drops from 100 to 10 sessions per proxy for the rest of the billing cycle. Listed targets are refused unless opened 'after you go through a short KYC procedure'. Self-service purchases are non-refundable.",
   "confidence": "documented",
-  "confidence_note": "The price ladder, the plan floor, the credit, the protocol list and the blocklist are all on vendor pages read. Measured would need a paid account, one address, a request through isp.oxylabs.io, and a status code from a blocked target; the blocklist's effect on a user's own targets was not tested.",
+  "confidence_note": "Documented: the per-IP ladder, the plan floor, the welcome credit, the protocol list, the fair-usage concurrency limits and the restricted-target notice are on the vendor's ISP pricing page. No address has been bought, so no request through an ISP address and no answer from a restricted target is measured.",
   "evidence": [
     {
       "url": "https://oxylabs.io/pricing/isp-proxies",
@@ -97,12 +97,166 @@
       "url": "https://developers.oxylabs.io/get-started/quick-start-proxies",
       "date": "2026-10-24",
       "proved": "How the address is reached: 'ISP isp.oxylabs.io 8000 user- 8001 and up' and 'Dedicated ISP disp.oxylabs.io 8000 user- 8001 and up', with the protocol chosen by connection prefix - 'http://, https://, or socks5h://' - and a static port per address, '8001 for IP #1, 8002 for IP #2, etc.'"
+    },
+    {
+      "url": "https://developers.oxylabs.io/dashboard/credit-based-billing",
+      "date": "2026-10-30",
+      "proved": "the welcome credit is USD 5.00, one-time, team-level, valid on the free plan, deducted at product rates, and carried into one upgrade",
+      "capture": "sha256:4332a120fa10cdaa94e49064114c22a81c87d298ffb85a9970de304f2af79c68",
+      "quote": "Every new account receives a one-time $5.00 Welcome Credit on registration, added to your balance immediately – no commitment required to start testing products."
+    },
+    {
+      "url": "https://developers.oxylabs.io/dashboard/credit-based-billing",
+      "date": "2026-10-30",
+      "proved": "the free allowance is a USD credit on a shared balance",
+      "capture": "sha256:4332a120fa10cdaa94e49064114c22a81c87d298ffb85a9970de304f2af79c68",
+      "quote": "Every new account receives a one-time $5.00 Welcome Credit on registration, added to your balance immediately – no commitment required to start testing products."
+    },
+    {
+      "url": "https://oxylabs.io/pricing/isp-proxies",
+      "date": "2026-10-30",
+      "proved": "the welcome credit covers ISP proxies, once, and the smallest ISP band is USD 1.5/IP up to 3 IPs",
+      "capture": "sha256:f001d43d595331412c61f8d595a0150d76dc9a900a9c8b02c1f22814653eaed4",
+      "quote": "We offer free credits for ISP Proxies."
+    },
+    {
+      "url": "https://oxylabs.io/products/isp-proxies",
+      "date": "2026-10-30",
+      "proved": "ISP sessions have no stated time limit",
+      "capture": "sha256:b05d28a6e84bdfb3801227689b408bb80b7c03ad6f5c35f146ecf3b99c97ce92",
+      "quote": "You can keep an IP for as long as you need without worrying about session time."
+    },
+    {
+      "url": "https://oxylabs.io/products/isp-proxies",
+      "date": "2026-10-30",
+      "proved": "traffic is not charged, pricing is per IP, and the provider steps concurrency from 100 to 10 sessions per proxy at 50 GB a month",
+      "capture": "sha256:b05d28a6e84bdfb3801227689b408bb80b7c03ad6f5c35f146ecf3b99c97ce92",
+      "quote": "No additional charges on traffic expenditure with the Pay-per-IP pricing model."
+    },
+    {
+      "url": "https://developers.oxylabs.io/products/proxies/isp-proxies/restricted-targets",
+      "date": "2026-10-30",
+      "proved": "the ISP network has its own restricted-target list, with six categories and named examples",
+      "capture": "sha256:dc2457647c40025aac254a89aadf33ed2e716999fc55fce4c2537bd3ca1d238c",
+      "quote": "Some websites are restricted on our ISP Proxy network to avoid abuse and unclear activities."
+    },
+    {
+      "url": "https://developers.oxylabs.io/products/proxies/isp-proxies/restricted-targets",
+      "date": "2026-10-30",
+      "proved": "this page is the ISP network's restricted-target list",
+      "capture": "sha256:dc2457647c40025aac254a89aadf33ed2e716999fc55fce4c2537bd3ca1d238c",
+      "quote": "Some websites are restricted on our ISP Proxy network to avoid abuse and unclear activities."
+    },
+    {
+      "url": "https://developers.oxylabs.io/products/proxies/isp-proxies/fair-usage-policy",
+      "date": "2026-10-30",
+      "proved": "the provider: 100 concurrent sessions per proxy until 50 GB a month, then 10, applied automatically with notices at 80% and 100%",
+      "capture": "sha256:bac146304ec507e328c8c5d154e34c92d2c5aee9a2c6ac1459451ce70eb3583d",
+      "quote": "Proxy usage is tracked automatically and an email notification is sent when 80% and 100% of the data allowance is reached."
+    },
+    {
+      "url": "https://developers.oxylabs.io/products/proxies/isp-proxies/fair-usage-policy",
+      "date": "2026-10-30",
+      "proved": null,
+      "capture": "sha256:bac146304ec507e328c8c5d154e34c92d2c5aee9a2c6ac1459451ce70eb3583d",
+      "quote": "Proxy usage is tracked automatically and an email notification is sent when 80% and 100% of the data allowance is reached."
+    },
+    {
+      "url": "https://oxylabs.io/pricing/isp-proxies",
+      "date": "2026-10-30",
+      "proved": "the Starter plan is USD 30/mo, ISP targets are restricted, and restricted targets can be opened after a KYC procedure",
+      "capture": "sha256:f001d43d595331412c61f8d595a0150d76dc9a900a9c8b02c1f22814653eaed4",
+      "quote": "However, we can access specific targets after you go through a short KYC procedure."
+    },
+    {
+      "url": "https://oxylabs.io/pricing/isp-proxies",
+      "date": "2026-10-30",
+      "proved": "ISP targets are restricted, bandwidth is unlimited with fair usage, and fair usage steps concurrency from 100 to 10 sessions per proxy at 50 GB a month",
+      "capture": "sha256:f001d43d595331412c61f8d595a0150d76dc9a900a9c8b02c1f22814653eaed4",
+      "quote": "We restrict some websites for ISP Proxies to avoid abuse and suspicious activities."
+    },
+    {
+      "url": "https://developers.oxylabs.io/get-started/quick-start-proxies",
+      "date": "2026-10-30",
+      "proved": "the ISP and dedicated ISP endpoints, ports and username prefix, the protocol prefixes, port-per-IP selection and country targeting",
+      "capture": "sha256:26fdbe059af402f5fe1ad14d3e536e38c3244942b5455958826fe863cd01305f",
+      "quote": "ISP isp.oxylabs.io 8000 user- 8001 and up"
+    },
+    {
+      "url": "https://oxylabs.io/products/isp-proxies",
+      "date": "2026-10-30",
+      "proved": "the integration guides and the Agent Skills repository linked for ISP proxies, and the HTTP, HTTPS and SOCKS5 protocols",
+      "capture": "sha256:b05d28a6e84bdfb3801227689b408bb80b7c03ad6f5c35f146ecf3b99c97ce92",
+      "quote": "Explore step-by-step guides to quickly integrate Oxylabs ISP Proxies with the most popular third-party software."
+    },
+    {
+      "url": "https://oxylabs.io/products/isp-proxies",
+      "date": "2026-10-30",
+      "proved": "traffic is not charged, ISP is priced from USD 1.5/IP with a USD 30/mo Starter plan, and restricted targets need a KYC procedure",
+      "capture": "sha256:b05d28a6e84bdfb3801227689b408bb80b7c03ad6f5c35f146ecf3b99c97ce92",
+      "quote": "No additional charges on traffic expenditure with the Pay-per-IP pricing model."
+    },
+    {
+      "url": "https://developers.oxylabs.io/help-center/billing-and-payments/what-forms-of-payment-do-you-accept",
+      "date": "2026-10-30",
+      "proved": "accepted payment methods are card, PayPal, Google Pay, Apple Pay and wire via sales; no cryptocurrency",
+      "capture": "sha256:e2ad4d641f4bb3b32ce91c14e0e548848a3e37cd575ae443c9bb27747cfc4e42",
+      "quote": "Please note that we do not accept cryptocurrency payments."
+    },
+    {
+      "url": "https://oxylabs.io/pricing/isp-proxies",
+      "date": "2026-10-30",
+      "proved": "datacenter-hosted, ISP-registered addresses shared with up to 3 users, the fair-usage concurrency step, KYC for restricted targets, and no self-service refunds",
+      "capture": "sha256:f001d43d595331412c61f8d595a0150d76dc9a900a9c8b02c1f22814653eaed4",
+      "quote": "An ISP proxy server is an IP address hosted on a data center but registered under ISPs (Internet Service Providers)."
+    },
+    {
+      "url": "https://oxylabs.io/pricing/isp-proxies",
+      "date": "2026-10-30",
+      "proved": "the ISP pricing page carries the ladder, the plans, the credit, the protocols, the fair-usage limits and the restricted-target FAQ",
+      "capture": "sha256:f001d43d595331412c61f8d595a0150d76dc9a900a9c8b02c1f22814653eaed4",
+      "quote": "Unlimited bandwidth with fair usage"
+    },
+    {
+      "url": "https://oxylabs.io/products/static-residential-proxies",
+      "date": "2026-10-30",
+      "proved": "the vendor's two descriptions of the registration class, the 100K+ pool, 'Shared with up to 3 users', and the claim of no target restrictions",
+      "capture": "sha256:9959026c81d88005c7b95ec7083305a4af06ecc96313a25f03cdab5d40c334f0",
+      "quote": "Static Residential Proxies originate from datacenter proxies, therefore they are just as fast as their counterparts."
+    },
+    {
+      "url": "https://developers.oxylabs.io/help-center/billing-and-payments/purchasing-products",
+      "date": "2026-10-30",
+      "proved": "credit-based billing: a plan funds one balance drawn at product rates, unused credit expires each cycle, and the welcome credit works without a plan",
+      "capture": "sha256:10587a245ea60bd9f1f091e9909e665b63b8680ca08811d0522cbbb8114cd826",
+      "quote": "An active plan is required to use self-service products, aside from your welcome credit while you're evaluating."
+    },
+    {
+      "url": "https://developers.oxylabs.io/dashboard/credit-based-billing",
+      "date": "2026-10-30",
+      "proved": "an exhausted balance pauses service with no overage; top-up or upgrade continues it",
+      "capture": "sha256:4332a120fa10cdaa94e49064114c22a81c87d298ffb85a9970de304f2af79c68",
+      "quote": "When your credit balance is fully used, the service pauses, there's no overusage allowance in the self-service flow."
+    },
+    {
+      "url": "https://oxylabs.io/products/isp-proxies",
+      "date": "2026-10-30",
+      "proved": "the product page title still reads 'from $2.10/IP' while its pricing table starts at $1.5/IP",
+      "capture": "sha256:d23342dd228ae78df366a495f53a5ed3a7384bbca24139eb633a4ab93c4e49b3",
+      "quote": "Buy Residential ISP Proxies from $2.10/IP  - Free Trial"
+    },
+    {
+      "url": "https://oxylabs.io/pricing/isp-proxies",
+      "date": "2026-10-30",
+      "proved": "the per-IP ladder from USD 1.5 to 1.1, the USD 30/mo Starter plan and the five listed features are unchanged",
+      "capture": "sha256:f001d43d595331412c61f8d595a0150d76dc9a900a9c8b02c1f22814653eaed4",
+      "quote": "Shared with up to 3 users"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-24T10:07:11.000Z",
+  "verified_at": "2026-10-30T18:28:35.819Z",
   "price_per_tb_month": "not applicable: priced per address at USD 1.50/IP in the smallest band, bandwidth unmetered",
-  "notes": "Registration class, and what the vendor actually sells. Three readings of 'ISP proxy' were considered. (1) Addresses physically hosted on consumer ISP lines - refuted by the vendor's own sentence that they 'originate from datacenter proxies'. (2) Datacenter-hosted addresses announced from an ISP's own ASN, which is what the page describes and what makes a target see a residential registration - confirmed by that sentence together with 'Premium ASN providers' and the named ASNs. (3) A marketing synonym for a datacenter proxy with no technical difference - not excluded, because the vendor publishes no ASN or hosting-provider list per address; The record therefore states the class the vendor claims and does not claim the addresses are consumer-hosted. Two source corrections. First, the blocklist is not on the ISP pages: the pricing and product pages for ISP proxies and static residential were each fetched and grepped for 'restricted on our' and returned zero matches, while the residential pricing page carries the full sentence. The record cites that page. Second, the products/isp-proxies page title advertises 'from $2.10/IP' while the pricing table's smallest band is USD 1.50/IP; the table is used because it carries the band structure, and the headline is recorded in extras as a discrepancy rather than resolved. Corrects a neighbouring record's emphasis. debrid/oxylabs records identity_cost.kind 'card' with the detail 'Self-service subscription with card', and records the USD 5 welcome credit as its free tier. This record finds the two gates are separate: the credit is claimed with an email and no card is stated for it, while the card belongs to the plan. That does not make the debrid record wrong about the subscription it prices, but its 'card' describes the paid plan and not the way in, and a reader who took it as the credit's cost would overstate the entry price. At the gate run on 2026-10-24, ip-proxy/decodo-isp-proxies and ip-proxy/openproxylist-xyz use 'socks5', 'http-proxy' and 'web-ui' and are the four enum errors the schema check reports; eleven of the topic's twenty-one records use 'rest' for the reason this one does. Adding the two proxy tokens to the enum is a two-line change and would let every ip-proxy record say what it is. Not settled: whether a 3-address order at USD 1.50/IP bills USD 4.50 against a USD 30/mo floor or is rounded up to the floor; whether 'Shared with up to 3 users' means dashboard sub-users or address sharing, since the bullet sits under a heading about the product rather than the panel; and what 'fair usage' permits in bytes. All three need an account and an invoice, or a support answer, and none is needed to price the offer.",
+  "notes": "The vendor states the class two ways on its static residential page: 'Static Residential Proxies originate from datacenter proxies, therefore they are just as fast as their counterparts', and they are 'datacenter IPs assigned via a contract with an Internet Service Provider (ISP)' that 'receive their IPs from internet service providers, such as British Telecom, Comcast'. No per-address ASN or hosting-provider list is published, so the ASN that announces an issued address is unverified: behind a purchase. The page states a pool of over 100K static residential IPs and lists 'Shared with up to 3 users' without saying whether that counts dashboard users or buyers of one address. The same page says 'there are no limits or restrictions to any of your targets', while the ISP network's restricted-target list is in limits.",
   "extras": {
     "rung": 5,
     "rung_note": "The target reads the address's registration class - an ISP-announced ASN - and the vendor states the addresses 'originate from datacenter proxies', so what is bought is a class label on the address, not a session, a subnet or a chosen ASN block.",
@@ -114,6 +268,8 @@
     "protocols": "http, https, socks5h by connection prefix; UDP and TCP",
     "semi_dedicated": "Vendor label 'Semi-dedicated IPs' - not exclusive to one buyer",
     "datacenter_origin": "Static Residential Proxies originate from datacenter proxies, therefore they are just as fast as their counterparts.",
-    "sessions": "Unlimited-duration; the vendor sells the address for the billing period, not for a session length"
+    "sessions": "Unlimited-duration; the vendor sells the address for the billing period, not for a session length",
+    "billing": "Plans are 'a recurring subscription for a set dollar amount' added to one credit balance shared across self-service products; credit is deducted at each product's rates, unused credit expires at the end of the cycle, and 'An active plan is required to use self-service products, aside from your welcome credit while you're evaluating.'",
+    "balance_exhausted": "service pauses when the credit balance is used up, with no overusage allowance in the self-service flow; a top-up or an upgrade resumes it"
   }
 }

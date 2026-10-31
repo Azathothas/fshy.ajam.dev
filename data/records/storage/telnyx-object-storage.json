@@ -5,12 +5,12 @@
   "url": "https://telnyx.com/pricing/storage",
   "category": "object-storage",
   "free_tier": {
-    "stated": "Unlimited, $0.006 per GiB/month (≈$6.14/TB), no platform fee. Confirmed live: '$0.006per GB/mo', '$0platform fee', and the page's own worked example '10,000 GB STORED … $60.00'.",
+    "stated": "10 GiB of US storage, 1 million state-change (Class A) and 10 million state-read (Class B) operations free every month; US storage beyond it USD 0.006 per GiB a month; EU storage has no free tier and costs USD 0.025 per GiB a month",
     "unit": "GiB",
     "metered_on": "stored-bytes",
-    "source_url": "https://telnyx.com/pricing/storage",
-    "read_on": "2026-10-21",
-    "notes": null
+    "source_url": "https://developers.telnyx.com/docs/cloud-storage/billing",
+    "read_on": "2026-10-30",
+    "notes": "on the Trial account tier, Cloud Storage is limited to the documented free tier of used capacity, to non-public bucket and object policies or ACLs and to pre-signed URLs with a 5-minute TTL"
   },
   "per_object_cap": {
     "stated": "not stated",
@@ -18,37 +18,37 @@
     "notes": "not stated"
   },
   "retention": {
-    "stated": "not stated",
-    "source_url": "https://telnyx.com/pricing/storage",
-    "notes": "not stated"
+    "stated": "no expiry is stated while available credit is positive; when available credit stays negative for 30 days the account is abolished and all data is irreversibly purged",
+    "source_url": "https://developers.telnyx.com/docs/cloud-storage/billing",
+    "notes": "the account suspension and loss of data section of the first-party billing documentation"
   },
   "egress": {
-    "terms": "'Egress fees | None'. This is the cheapest combined storage+egress number in this niche: $6/TB at rest with no egress metre at all, versus Bunny's $10 + $10 and CacheFly's $25 flat.",
-    "metered": true,
-    "price_per_tb": "$6/TB"
+    "terms": "the pay-as-you-go rate card lists Egress fees: None; reads are billed as state-read operations at USD 0.04 per million",
+    "metered": false,
+    "price_per_tb": "none: the rate card lists no egress fee"
   },
   "interface": [
     "s3-compatible"
   ],
   "interface_detail": "s3",
-  "tooling": "S3-compatible API; sign-up is self-serve ('SIGN UP FOR FREE' with a $0 PAYG tier). Operations are metred separately: $0.50/M state-change, $0.04/M state-read — negligible at blob-store access patterns but not at 1 TiB/day of small reads.",
-  "chaining": "Take a free origin (Internet Archive at $0, or an anonymous host), front it with Telnyx storage only where you must, and the egress line disappears. At 20 TiB it is $123/mo with unlimited reads — cheaper than Hetzner BX41 (€40.60 ≈ $45 for 20 TB, and still the champion on pure price) but with S3 semantics and no per-connection shaping. Note their competitor table prices AWS S3 at '$0.023 + $0.09 egress' to make exactly this point.",
+  "tooling": "AWS SDKs, AWS CLI and third-party S3 clients, authenticated with the Telnyx API key; buckets in us-central-1, us-east-1, us-west-1, eu-central-1, ap-southeast-1 and ca-central-1",
+  "chaining": "S3-compatible origin with no egress fee on the rate card, billed per GiB stored and per million operations",
   "limits": [
     {
-      "kind": "per-ip-shaping",
-      "value": "1 TiB/day",
-      "source": "https://telnyx.com/pricing/storage"
+      "kind": "volume-quota",
+      "value": "10 GiB of US storage, 1 million state-change and 10 million state-read operations free a month; usage beyond them is billed, and EU storage has no free tier",
+      "source": "https://developers.telnyx.com/docs/cloud-storage/billing"
     }
   ],
-  "limits_note": "per-object-cap: none published. Request pricing is per-operation, so a workload of 10 KB objects at 1 TiB/day (~100M reads/day) would cost ~$4/day in state-reads — fine; a workload of 1 KiB objects would not be.",
+  "limits_note": "minimum billable object size 4 KiB, and metadata counts toward stored bytes; stored bytes are recorded hourly and debited from the account balance; while available credit is negative the free tier is unavailable and new buckets and uploads are refused",
   "identity_cost": {
     "kind": "card",
-    "detail": "card",
+    "detail": "reaching the Paid tier needs a verified email, a passed fraud review (LinkedIn or GitHub verification or an AI agent evaluation), a verified mobile number, a payment with a credit or debit card, 2FA and a Provided Service Address; the Trial tier needs only the verified email and the fraud review; the Verified tier adds KYC",
     "country": null
   },
-  "reliability_note": "Card on file required for the PAYG tier. Their documented machine-readable endpoint GET /v2/public/pricing is 404 in practice — do not rely on it programmatically.",
-  "confidence": "reported",
-  "confidence_note": null,
+  "reliability_note": "with a negative available credit, data is retained but API requests fail with UserSuspended until a payment restores the credit; after 30 days of negative credit the account is abolished and all data is irreversibly purged",
+  "confidence": "documented",
+  "confidence_note": "the rate card is quoted from the first-party pricing page, the free tier, regional prices, minimum object size and suspension terms from the first-party billing documentation, and the account tiers from the first-party developer documentation",
   "evidence": [
     {
       "url": "https://telnyx.com/pricing/storage",
@@ -59,15 +59,176 @@
       "url": "https://api.telnyx.com/v2/public/pricing",
       "date": "2026-10-21",
       "proved": "HTTP 404 'Resource not found' (probed; the page's claim of a machine-readable rate card does not hold)"
+    },
+    {
+      "url": "https://developers.telnyx.com/docs/cloud-storage/billing",
+      "date": "2026-10-30",
+      "proved": "US storage: the first 10 GiB a month is free, then USD 0.006 per GiB; Class A and B operations have 1 million and 10 million free; EU storage has no free tier",
+      "capture": "sha256:c47ba8b7ee799d434c1812380ca396eae1307ac0598d19960bd90489fe4b1475",
+      "quote": "Every month, your first 10 GiB is free of charge. Any bytes beyond that are billed at:"
+    },
+    {
+      "url": "https://developers.telnyx.com/docs/account-setup/levels-and-capabilities/trial",
+      "date": "2026-10-30",
+      "proved": "on the Trial tier Cloud Storage is limited to the free tier, to non-public policies or ACLs and to 5-minute pre-signed URLs",
+      "capture": "sha256:c535ceabc56ca936963967a614d595224da0bfc904409cf0a541d9912ac8638b",
+      "quote": "* Limited to the documented free tier of used capacity across all buckets and regions."
+    },
+    {
+      "url": "https://developers.telnyx.com/docs/cloud-storage/billing",
+      "date": "2026-10-30",
+      "proved": "USD 0.006 per GiB a month in the US and USD 0.025 in the EU; operations USD 0.50 and 0.04 per million in the US, 5.00 and 0.40 in the EU; minimum billable object 4 KiB",
+      "capture": "sha256:c47ba8b7ee799d434c1812380ca396eae1307ac0598d19960bd90489fe4b1475",
+      "quote": "- $0.006 per GiB per month for regular storage"
+    },
+    {
+      "url": "https://telnyx.com/pricing/storage",
+      "date": "2026-10-30",
+      "proved": "the pay-as-you-go rate card lists no egress fee",
+      "capture": "sha256:b14d3b483343e4f33e3f5b4800b209072cfbdad64b9e5bb0b5a969ddd8d9e74e",
+      "quote": "| Egress fees             | None                            |"
+    },
+    {
+      "url": "https://telnyx.com/pricing/storage",
+      "date": "2026-10-30",
+      "proved": "the rate card lists no egress fee and bills reads as state-read operations at USD 0.04 per million",
+      "capture": "sha256:b14d3b483343e4f33e3f5b4800b209072cfbdad64b9e5bb0b5a969ddd8d9e74e",
+      "quote": "| State-read operations   | $0.04 per million               |"
+    },
+    {
+      "url": "https://developers.telnyx.com/docs/cloud-storage/billing",
+      "date": "2026-10-30",
+      "proved": "1 million Class A and 10 million Class B operations are free each month in the US",
+      "capture": "sha256:c47ba8b7ee799d434c1812380ca396eae1307ac0598d19960bd90489fe4b1475",
+      "quote": "| Class A | PUT, COPY, POST, LIST requests | Every month, the first 1 Million is free of charge, thereafter $0.50 per 1 Million |"
+    },
+    {
+      "url": "https://developers.telnyx.com/docs/cloud-storage/billing",
+      "date": "2026-10-30",
+      "proved": "the free tier lapses with negative credit; minimum billable object size 4 KiB; storage snapshotted hourly and debited from the balance",
+      "capture": "sha256:c47ba8b7ee799d434c1812380ca396eae1307ac0598d19960bd90489fe4b1475",
+      "quote": "Lastly, free tier is not available to an account if its available credit is negative."
+    },
+    {
+      "url": "https://developers.telnyx.com/docs/cloud-storage/billing",
+      "date": "2026-10-30",
+      "proved": "30 days of negative available credit abolish the account and purge its data",
+      "capture": "sha256:c47ba8b7ee799d434c1812380ca396eae1307ac0598d19960bd90489fe4b1475",
+      "quote": "If available credit remains negative for 30 days, your account will be abolished."
+    },
+    {
+      "url": "https://developers.telnyx.com/docs/cloud-storage/billing",
+      "date": "2026-10-30",
+      "proved": "with negative credit data is retained and API requests fail with UserSuspended; after 30 days the account is abolished and data purged",
+      "capture": "sha256:c47ba8b7ee799d434c1812380ca396eae1307ac0598d19960bd90489fe4b1475",
+      "quote": "- Your data is still retained in the system but API requests will fail with error message `UserSuspended`."
+    },
+    {
+      "url": "https://developers.telnyx.com/docs/account-setup/account-upgrade",
+      "date": "2026-10-30",
+      "proved": "the Paid tier needs a verified email, a passed fraud review, a verified mobile number, a card payment, 2FA and a Provided Service Address; Trial needs email and fraud review; Verified adds KYC",
+      "capture": "sha256:914df71e9b38854f890424ec05f661dcbe1376b8d325a51480a546bc9efc9b33",
+      "quote": "| Made a payment with CC/Debit Card | | | X | X |"
+    },
+    {
+      "url": "https://developers.telnyx.com/docs/cloud-storage/overview",
+      "date": "2026-10-30",
+      "proved": "S3 clients reach the service with the Telnyx API key; buckets in six named regions",
+      "capture": "sha256:a3b3b8b358934487546e39924300e70104a4ca959c37b79b2f532d521d5c0d42",
+      "quote": "* Use your existing S3 tooling — the AWS SDKs, AWS CLI, and third-party S3 clients work unchanged; authenticate with your Telnyx API key"
+    },
+    {
+      "url": "https://telnyx.com/pricing/storage",
+      "date": "2026-10-30",
+      "proved": "pay as you go needs a card on file; the rate card lists storage at USD 0.006 per GiB, egress fees None, and calls the service S3 compatible",
+      "capture": "sha256:b14d3b483343e4f33e3f5b4800b209072cfbdad64b9e5bb0b5a969ddd8d9e74e",
+      "quote": "Standard rates. Card on file. Automatic tier discounts as usage crosses thresholds, no contract needed."
+    },
+    {
+      "url": "https://developers.telnyx.com/docs/account-setup/signup",
+      "date": "2026-10-30",
+      "proved": "every sign-up passes trust and safety checks, and some sign-ups must also validate a mobile number or pass KYC document verification",
+      "capture": "sha256:2ddd81f6c764a993b0fc300f755781c7c63b4805d064f1f5401217c25781cc97",
+      "quote": "Successfully passing Know Your Customer (KYC) documentation verification"
+    },
+    {
+      "url": "probe:api.telnyx.com/v2/public/pricing?primitive=object_storage",
+      "date": "2026-10-30",
+      "proved": "the machine-readable rate card the pricing page names, GET /v2/public/pricing?primitive=object_storage, answers HTTP 404",
+      "capture": "sha256:72332927d79dba48970fb504daf8673e0b95c2d63748f8fa104f38f5f6e40dc0",
+      "quote": "\"status\": 404"
+    },
+    {
+      "url": "https://developers.telnyx.com/docs/cloud-storage/billing",
+      "date": "2026-10-31",
+      "proved": "stored usage is debited from the account balance; the billing page never calls that balance prepaid",
+      "capture": "sha256:c47ba8b7ee799d434c1812380ca396eae1307ac0598d19960bd90489fe4b1475",
+      "quote": "Usage is subsequently calculated and debited from your balance."
+    },
+    {
+      "url": "https://developers.telnyx.com/docs/cloud-storage/billing",
+      "date": "2026-10-31",
+      "proved": "storage is billed in 4 KiB multiples and metadata counts toward stored bytes",
+      "capture": "sha256:c47ba8b7ee799d434c1812380ca396eae1307ac0598d19960bd90489fe4b1475",
+      "quote": "Storage consumed by each bucket is billed in multiples of 4 KiB, rounded up; Metadata counts towards storage consumed."
+    },
+    {
+      "url": "https://developers.telnyx.com/docs/cloud-storage/billing",
+      "date": "2026-10-31",
+      "proved": "stored bytes are recorded hourly",
+      "capture": "sha256:c47ba8b7ee799d434c1812380ca396eae1307ac0598d19960bd90489fe4b1475",
+      "quote": "Bytes stored across all buckets are recorded hourly."
+    },
+    {
+      "url": "https://developers.telnyx.com/docs/cloud-storage/billing",
+      "date": "2026-10-31",
+      "proved": "with negative available credit no new bucket can be created and no object uploaded",
+      "capture": "sha256:c47ba8b7ee799d434c1812380ca396eae1307ac0598d19960bd90489fe4b1475",
+      "quote": "You will not be able to create a bucket and upload objects until your available credit is restored."
+    },
+    {
+      "url": "https://developers.telnyx.com/api-reference/billing/get-user-balance-details",
+      "date": "2026-10-31",
+      "proved": "available credit is the account balance plus its credit limit, so the balance is not shown to be prepaid",
+      "capture": "sha256:f009a6078d69473ad4c306e8c140690daf0b5c2cb0d60b6c5e42530263dc4030",
+      "quote": "Available amount to spend (balance + credit limit)"
+    },
+    {
+      "url": "https://developers.telnyx.com/docs/cloud-storage/billing",
+      "date": "2026-10-31",
+      "proved": "30 days of negative available credit abolish the account",
+      "capture": "sha256:c47ba8b7ee799d434c1812380ca396eae1307ac0598d19960bd90489fe4b1475",
+      "quote": "If available credit remains negative for 30 days, your account will be abolished."
+    },
+    {
+      "url": "https://developers.telnyx.com/docs/cloud-storage/billing",
+      "date": "2026-10-31",
+      "proved": "with negative available credit data is retained and API requests fail with UserSuspended",
+      "capture": "sha256:c47ba8b7ee799d434c1812380ca396eae1307ac0598d19960bd90489fe4b1475",
+      "quote": "- Your data is still retained in the system but API requests will fail with error message `UserSuspended`."
+    },
+    {
+      "url": "https://telnyx.com/pricing/storage",
+      "date": "2026-10-31",
+      "proved": "the pay-as-you-go rate card lists no egress fee",
+      "capture": "sha256:b14d3b483343e4f33e3f5b4800b209072cfbdad64b9e5bb0b5a969ddd8d9e74e",
+      "quote": "| Egress fees             | None                            |"
+    },
+    {
+      "url": "https://developers.telnyx.com/docs/cloud-storage/billing",
+      "date": "2026-10-31",
+      "proved": "the free tier is unavailable while available credit is negative",
+      "capture": "sha256:c47ba8b7ee799d434c1812380ca396eae1307ac0598d19960bd90489fe4b1475",
+      "quote": "Lastly, free tier is not available to an account if its available credit is negative."
     }
   ],
   "verdict": "qualifies",
-  "verified_at": "2026-10-21T00:00:00.000Z",
-  "price_per_tb_month": "$6.14/TB stored (0.006/GiB), $0 egress, $0.04–0.50 per million operations.",
+  "verified_at": "2026-10-31T00:58:05.585Z",
+  "price_per_tb_month": "USD 0.006 per GiB a month for US storage beyond the free 10 GiB (about USD 6.14 per TiB), USD 0.025 per GiB a month in the EU (about USD 25.60 per TiB); beyond the free quotas, US operations cost USD 0.50 per million state-change and USD 0.04 per million read requests, EU operations USD 5.00 and USD 0.40 per million; minimum billable object size 4 KiB",
   "notes": "Unlimited, $0.006 per GiB/month (≈$6.14/TB), no platform fee. Confirmed live: '$0.006per GB/mo', '$0platform fee', and the page's own worked example '10,000 GB STORED … $60.00'.",
   "extras": {
     "price_verbatim": "$6.14/TB stored (0.006/GiB), $0 egress, $0.04–0.50 per million operations."
   },
-  "binding": "per-ip-shaping",
-  "binding_note": null
+  "binding": "volume-quota",
+  "binding_note": "the free 10 GiB of US storage a month is the first limit reached; every GiB beyond it is billed at USD 0.006 a month"
 }

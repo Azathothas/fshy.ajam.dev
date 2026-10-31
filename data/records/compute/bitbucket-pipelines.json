@@ -5,11 +5,11 @@
   "url": "https://www.atlassian.com/software/bitbucket/pricing",
   "category": "platform host",
   "free_tier": {
-    "stated": "Bitbucket Cloud is free forever for up to 5 users at $0; the page does not render the build-minute allowance for the Free plan",
-    "unit": "users",
-    "metered_on": "identity-count",
-    "source_url": "https://www.atlassian.com/software/bitbucket/pricing",
-    "read_on": "2026-10-22"
+    "stated": "50 build minutes a month on the Free plan, at $0 for up to 5 users, with 1 GB of Git LFS storage in total, up to 100 steps per pipeline and up to 10 concurrent steps; no overage protection on Free",
+    "unit": "minutes",
+    "metered_on": "wall-clock",
+    "source_url": "https://support.atlassian.com/bitbucket-cloud/docs/limitations-of-bitbucket-pipelines/",
+    "read_on": "2026-10-31"
   },
   "per_object_cap": {
     "stated": "not stated",
@@ -39,7 +39,7 @@
   "limits": [
     {
       "kind": "request-rate",
-      "value": "Free is capped at 5 users; the build-minute allowance for Free is not rendered on the pricing page",
+      "value": "50 build minutes a month on Free, shared by all users of the workspace; a step on a 2x runner consumes minutes at twice the rate",
       "source": "https://www.atlassian.com/software/bitbucket/pricing"
     },
     {
@@ -48,15 +48,15 @@
       "source": "https://www.atlassian.com/software/bitbucket/pricing"
     }
   ],
-  "limits_note": "not stated",
+  "limits_note": "a step times out after 120 minutes by default, and max-time accepts 1 to 720 minutes; sizes 4x and up are limited to Standard and Premium",
   "identity_cost": {
     "kind": "email",
-    "detail": "Atlassian Cloud signup at $0 for up to 5 users; the page states no card requirement for the Free plan",
+    "detail": "an Atlassian account; the Free plan covers up to 5 users, and the billing documentation charges a credit card on file only for monthly Standard or Premium plans after a 30-day evaluation; whether the Free sign-up form asks for a card is unverified: the form renders client-side",
     "country": null
   },
   "reliability_note": "no reliability event recorded",
   "confidence": "documented",
-  "confidence_note": "the pricing page was read on 2026-10-22 and states the free plan and the two paid tiers.",
+  "confidence_note": "documented from the Pipelines limitations page, the pricing page and the step-options page; the 1x size table and the prose of the step-options page disagree on the CPU count (2 against 4)",
   "evidence": [
     {
       "url": "https://www.atlassian.com/software/bitbucket/pricing",
@@ -67,22 +67,148 @@
       "url": "https://www.atlassian.com/software/bitbucket/pricing",
       "date": "2026-10-22",
       "proved": "'Free forever for up to 5 users' at $0, with Standard $3.65 and Premium $8 per user a month, quoted; the page's build-minute definition is in a collapsed section it does not render"
+    },
+    {
+      "url": "https://support.atlassian.com/bitbucket-cloud/docs/limitations-of-bitbucket-pipelines/",
+      "date": "2026-10-30",
+      "proved": "the Free plan includes 50 build minutes a month for up to 5 users",
+      "capture": "sha256:7b0fa43b7fa726b70e338f2a52ef0ad289fd0636081a10714267421fcd55b62a",
+      "quote": "| Free | $0 for up to 5 users | Build minutes: 50 min/monthLarge file storage: 1 GB totalSteps per pipeline: up to 100 Concurrent steps*: up to 10 | Not included |"
+    },
+    {
+      "url": "https://support.atlassian.com/bitbucket-cloud/docs/limitations-of-bitbucket-pipelines/",
+      "date": "2026-10-30",
+      "proved": "the Free allowance is a number of build minutes",
+      "capture": "sha256:7b0fa43b7fa726b70e338f2a52ef0ad289fd0636081a10714267421fcd55b62a",
+      "quote": "| Free | $0 for up to 5 users | Build minutes: 50 min/monthLarge file storage: 1 GB totalSteps per pipeline: up to 100 Concurrent steps*: up to 10 | Not included |"
+    },
+    {
+      "url": "https://www.atlassian.com/licensing/bitbucket",
+      "date": "2026-10-30",
+      "proved": "build minutes are pipeline execution time",
+      "capture": "sha256:2b7ecd1d6836678157c1c8cbdeb87e272a227b10e3c9ab55534ef0ea9f529d6d",
+      "quote": "Build minutes measure CI/CD pipeline execution time on Atlassian cloud runners."
+    },
+    {
+      "url": "https://www.atlassian.com/software/bitbucket/pricing",
+      "date": "2026-10-30",
+      "proved": "the Free plan includes 50 build minutes",
+      "capture": "sha256:35d795508696cf0255b943d9650af4a252c3118008812985e57428d7257e82a7",
+      "quote": "You also get 1 GB file storage for LFS and 50 build minutes to get started with Pipelines."
+    },
+    {
+      "url": "https://support.atlassian.com/bitbucket-cloud/docs/step-options/",
+      "date": "2026-10-30",
+      "proved": "a 1x step has 2 CPU, 4 GB memory and a 64 GB volume",
+      "capture": "sha256:58439f373c5d529105bcfd711350b8f84585dea7d52937bb6bcc6de84604d2ea",
+      "quote": "| 1x | 2 | 4 | 64GB |"
+    },
+    {
+      "url": "https://support.atlassian.com/bitbucket-cloud/docs/step-options/",
+      "date": "2026-10-30",
+      "proved": "a step times out after 120 minutes unless max-time is set",
+      "capture": "sha256:58439f373c5d529105bcfd711350b8f84585dea7d52937bb6bcc6de84604d2ea",
+      "quote": "The default maximum time for pipeline steps is 120 minutes."
+    },
+    {
+      "url": "https://support.atlassian.com/bitbucket-cloud/docs/step-options/",
+      "date": "2026-10-30",
+      "proved": "max-time can be raised to at most 720 minutes per step",
+      "capture": "sha256:58439f373c5d529105bcfd711350b8f84585dea7d52937bb6bcc6de84604d2ea",
+      "quote": "Allowed values — A positive integer between 1 and 720"
+    },
+    {
+      "url": "https://support.atlassian.com/bitbucket-cloud/docs/step-options/",
+      "date": "2026-10-30",
+      "proved": "the default step timeout is 120 minutes",
+      "capture": "sha256:58439f373c5d529105bcfd711350b8f84585dea7d52937bb6bcc6de84604d2ea",
+      "quote": "The default maximum time for pipeline steps is 120 minutes."
+    },
+    {
+      "url": "https://www.atlassian.com/licensing/bitbucket",
+      "date": "2026-10-30",
+      "proved": "the Free plan allowance cannot be extended by purchase",
+      "capture": "sha256:2b7ecd1d6836678157c1c8cbdeb87e272a227b10e3c9ab55534ef0ea9f529d6d",
+      "quote": "On free plans, you cannot buy extra build minutes or LFS storage beyond your plan allowances."
+    },
+    {
+      "url": "https://support.atlassian.com/bitbucket-cloud/docs/manage-your-plan-and-billing/",
+      "date": "2026-10-30",
+      "proved": "a card on file is tied to the paid Standard and Premium plans",
+      "capture": "sha256:f835970f560cc250c2e04fd37d11f30668a92c24d3539a39d0e9474c8348820f",
+      "quote": "If you have signed up for or upgraded to a monthly Standard or Premium plan, we will start to charge your credit card on file upon completion of the 30-day evaluation."
+    },
+    {
+      "url": "https://support.atlassian.com/bitbucket-cloud/docs/step-options/",
+      "date": "2026-10-30",
+      "proved": "the size table gives 2 CPU for 1x",
+      "capture": "sha256:58439f373c5d529105bcfd711350b8f84585dea7d52937bb6bcc6de84604d2ea",
+      "quote": "| 1x | 2 | 4 | 64GB |"
+    },
+    {
+      "url": "https://www.atlassian.com/software/bitbucket/features/pipelines",
+      "date": "2026-10-30",
+      "proved": "the Pipelines feature page also states 50 minutes a month on Free",
+      "capture": "sha256:5c220e1fea319a91a37ca196a435cadfc67b9c7a21c9a4efa646db2e87c7678e",
+      "quote": "Free: 50 min / month included"
+    },
+    {
+      "url": "https://support.atlassian.com/bitbucket-cloud/docs/step-options/",
+      "date": "2026-10-30",
+      "proved": "the prose gives a default step 4 GB memory, 4 shared CPUs and 64 GB of disk",
+      "capture": "sha256:58439f373c5d529105bcfd711350b8f84585dea7d52937bb6bcc6de84604d2ea",
+      "quote": "By default, a step running on Bitbucket Cloud infrastructure or a Linux Docker self-hosted runner has access to 4GB of memory, 4 CPUs (which might be shared with other tasks), and 64 GB of disk space per step for mounting volumes."
+    },
+    {
+      "url": "https://support.atlassian.com/bitbucket-cloud/docs/step-options/",
+      "date": "2026-10-30",
+      "proved": "the Free plan is limited to 1x and 2x steps",
+      "capture": "sha256:58439f373c5d529105bcfd711350b8f84585dea7d52937bb6bcc6de84604d2ea",
+      "quote": "4x, 8x, 16x, 24x, and 32x pipelines size options are only available for builds running on a paid Bitbucket Cloud plan (Standard or Premium)."
+    },
+    {
+      "url": "https://www.atlassian.com/software/bitbucket/pricing",
+      "date": "2026-10-30",
+      "proved": "the Free plan is still offered for up to 5 users",
+      "capture": "sha256:7eb2d0af32e7a650c5208526cc808202abc718e9a6d96ddc079028959fa4b779",
+      "quote": "Free forever for up to 5 users"
+    },
+    {
+      "url": "https://www.atlassian.com/software/bitbucket/pricing",
+      "date": "2026-10-30",
+      "proved": "Standard is still $3.65 a user a month",
+      "capture": "sha256:7eb2d0af32e7a650c5208526cc808202abc718e9a6d96ddc079028959fa4b779",
+      "quote": "$3.65"
+    },
+    {
+      "url": "https://support.atlassian.com/bitbucket-cloud/docs/limitations-of-bitbucket-pipelines/",
+      "date": "2026-10-31",
+      "proved": "the Free row gives $0 for up to 5 users, 50 build minutes a month, 1 GB LFS in total, up to 100 steps per pipeline, up to 10 concurrent steps, and overage protection not included",
+      "capture": "sha256:7b0fa43b7fa726b70e338f2a52ef0ad289fd0636081a10714267421fcd55b62a",
+      "quote": "| Free | $0 for up to 5 users | Build minutes: 50 min/monthLarge file storage: 1 GB totalSteps per pipeline: up to 100 Concurrent steps*: up to 10 | Not included |"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-22T04:46:22.041Z",
+  "verified_at": "2026-10-31T00:29:58.855Z",
   "price_per_tb_month": null,
-  "notes": "",
+  "notes": "free plans cannot buy extra build minutes or LFS storage beyond the plan allowances; on paid plans extra minutes are $10 per 1,000",
   "extras": {
     "keep_rate": 1.0,
     "keep_rate_basis": null,
     "billing_model": "unclassified",
-    "shape": null,
+    "shape": {
+      "vcpu": 2,
+      "ram": 4,
+      "disk": 64,
+      "gpu_class": null,
+      "gpu_count": null,
+      "note": "a default 1x step: 2 CPU, 4 GB memory and a 64 GB volume in the size table, while the prose of the same page says 4 CPUs that might be shared; 2x gives 4 CPU and 8 GB; 4x and larger sizes need a paid plan"
+    },
     "session_cap": {
-      "wall_clock_min": null,
+      "wall_clock_min": 720,
       "idle_reap_s": null,
       "restart_required": false,
-      "note": "a build has its own timeout; the Free plan's minute pool is unstated here"
+      "note": "a step runs for at most 120 minutes by default and at most 720 minutes with max-time"
     },
     "persistent_storage": null,
     "network_out": null,

@@ -1,0 +1,112 @@
+{
+  "topic": "data-apis",
+  "slug": "ipdata",
+  "provider": "ipdata (ipdata.free)",
+  "url": "https://ipdata.co/pricing.html",
+  "category": "IP geolocation API",
+  "tier": "Free",
+  "free_tier": {
+    "stated": "1,000 city-level lookups a day with no API key, then country-level and ASN data without limit; no credit card",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://ipdata.co/pricing.html",
+    "read_on": "2026-10-30",
+    "notes": "served at ipdata.free; paid plans start at USD 50 a month (Startup)"
+  },
+  "per_object_cap": {
+    "stated": "not stated: single-IP lookups",
+    "bytes": null
+  },
+  "retention": {
+    "stated": "not stated",
+    "days": null
+  },
+  "egress": {
+    "terms": "not applicable",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://ipdata.co/pricing.html"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "GET https://ipdata.free/{ip} with no key, JSON with ip, city, region, country, latitude, longitude, asn, org, postal and timezone; RateLimit-Limit, RateLimit-Remaining and RateLimit-Reset headers on every answer",
+  "endpoint": "https://ipdata.free/",
+  "tooling": "any HTTP client",
+  "chaining": "1,000 city-level lookups a day with no account, then unlimited country and ASN answers; the keyed api.ipdata.co plans add threat and company data. Bulk path: none free",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "1,000 city-level lookups a day with no key, then country and ASN only",
+      "source": "https://ipdata.co/pricing.html"
+    }
+  ],
+  "binding": "volume-quota",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no key and no account on ipdata.free; the keyed api.ipdata.co answers 401 without a key",
+    "country": null
+  },
+  "reliability_note": "past the daily city-level quota answers narrow to country and ASN fields rather than failing",
+  "confidence": "documented",
+  "confidence_note": "the pricing page was quoted on 2026-10-30, and a keyless lookup of ipdata.free answered HTTP 200 with RateLimit-Limit 1000; the keyed endpoint answered HTTP 401 without a key.",
+  "evidence": [
+    {
+      "url": "https://ipdata.co/pricing.html",
+      "date": "2026-10-30",
+      "proved": "the free tier is 1,000 city-level a day, then country-level without limit, with no key",
+      "capture": "sha256:552be6fff0a0a5bf901172f7a67f9cfb2228e2ce262278ecd01d1e84a99767f5",
+      "quote": "1,000 city-level a day, then country-level without limit, no key"
+    },
+    {
+      "url": "https://ipdata.co/pricing.html",
+      "date": "2026-10-30",
+      "proved": "country and ASN data continue without limit",
+      "capture": "sha256:552be6fff0a0a5bf901172f7a67f9cfb2228e2ce262278ecd01d1e84a99767f5",
+      "quote": "You get 1,000 city-level lookups a day with no API key at all, and country and ASN data without limit after that."
+    },
+    {
+      "url": "https://ipdata.co/pricing.html",
+      "date": "2026-10-30",
+      "proved": "no card is needed",
+      "capture": "sha256:552be6fff0a0a5bf901172f7a67f9cfb2228e2ce262278ecd01d1e84a99767f5",
+      "quote": "No credit card required"
+    },
+    {
+      "url": "https://ipdata.co/pricing.html",
+      "date": "2026-10-30",
+      "proved": "Startup is USD 50 a month",
+      "capture": "sha256:552be6fff0a0a5bf901172f7a67f9cfb2228e2ce262278ecd01d1e84a99767f5",
+      "quote": "Startup $50/ mo"
+    },
+    {
+      "url": "probe:https://ipdata.free/8.8.8.8",
+      "date": "2026-10-31",
+      "proved": "a keyless answer carried a 1000-request limit",
+      "capture": "sha256:9acf8e6d9637158c4caa6ce887df0c6da310d241360f19ca7d6e7b95ceeeeb82",
+      "quote": "\"ratelimit-limit\": \"1000\""
+    },
+    {
+      "url": "probe:https://ipdata.free/8.8.8.8",
+      "date": "2026-10-30",
+      "proved": "a keyless lookup answered with network data",
+      "capture": "sha256:1f64611fea583482515c3e7861037a9aa72949cad58af3845806fde707cea520",
+      "quote": "\"org\": \"Google LLC\""
+    },
+    {
+      "url": "probe:https://api.ipdata.co/8.8.8.8",
+      "date": "2026-10-30",
+      "proved": "the keyed endpoint refuses a keyless call",
+      "capture": "sha256:2e796e4a24c88f85b7119a203f84c9b5ae28ae79d652999f456bf0cdf37c87cd",
+      "quote": "You have not provided a valid API Key."
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-31T06:24:05.368Z",
+  "notes": "Free requests: 1,000 city-level a day with no key, then unlimited country and ASN. Rate limit: none beyond the daily count; RateLimit headers report it. Bulk path: none free.",
+  "extras": {
+    "bulk_path": "none free",
+    "free_requests": "1,000 city-level a day, then unlimited country and ASN"
+  }
+}

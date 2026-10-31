@@ -5,22 +5,22 @@
   "url": "https://www.storj.io/pricing",
   "category": "S3-compatible distributed object storage",
   "free_tier": {
-    "stated": "Per-TB-month, globally distributed; $5 minimum monthly fee",
+    "stated": "Standard plan: USD 7 per TB per month of storage and USD 7 per TB of egress, with a USD 5 minimum monthly fee. No free tier: the free trial is USD 0, free for 30 days, with no credit card required and 25GB free storage for 30 days.",
     "unit": "TB",
-    "metered_on": "unstated",
+    "metered_on": "stored-bytes",
     "source_url": "https://www.storj.io/pricing",
     "read_on": "2026-10-21",
-    "notes": null
+    "notes": "no standing free allowance; the trial's 25GB of upload and download for 30 days is the only free volume"
   },
   "per_object_cap": {
-    "stated": "not stated",
-    "source_url": "https://www.storj.io/pricing",
-    "notes": "not stated"
+    "stated": "no maximum: the S3-compatible gateway sets no limit on object size and none per PUT operation; a multipart upload takes up to 10000 parts of at least 5 MiB each, the last part excepted",
+    "source_url": "https://storj.dev/dcs/api/s3/s3-compatibility",
+    "notes": "objects under 50 KB are billed as 50 KB on the Standard plan; that is a billing floor, not a size cap"
   },
   "retention": {
-    "stated": "not stated",
+    "stated": "no expiry of stored objects is stated; objects deleted before 30 days are billed for the rest of the 30 days, and accounts with a USD 0 balance at the end of a billing cycle and no active storage are suspended and then deleted",
     "source_url": "https://www.storj.io/pricing",
-    "notes": "not stated"
+    "notes": "the 30-day minimum storage duration is billed, not an expiry; Object Mount users are exempt from it"
   },
   "egress": {
     "terms": "Metered at $7/TB — verbatim \"Egress $7/TB\" on both Standard and Advanced. No free allowance, no ratio.",
@@ -35,16 +35,32 @@
   "interface_detail": "S3 API (gateway.storjshare.io)",
   "tooling": "S3 SDKs, rclone, Uplink CLI, Object Mount",
   "chaining": "Egress must be fronted by Cloudflare or the $7/TB dominates everything.",
-  "limits": [],
-  "limits_note": "Advanced plan is US SOC2 datacenters only and priced per license at $10/TB.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "Pro account: 25 TB storage per project and 100 TB egress bandwidth per project, 3 projects; increases on request",
+      "source": "https://storj.dev/learn/concepts/limits"
+    },
+    {
+      "kind": "request-rate",
+      "value": "Pro account: 100 requests per second per project, and 1 write per second to the same object name",
+      "source": "https://storj.dev/learn/concepts/limits"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "free trial: upload and download 25GB free for 30 days",
+      "source": "https://redirects.storj.io/signup"
+    }
+  ],
+  "limits_note": "Standard objects under 50 KB are billed as 50 KB, and objects deleted before 30 days are billed for the rest of the 30 days. The Advanced plan stores in U.S. SOC2 type 2 data centers at USD 10 per TB per month with the same USD 7 per TB egress. Accounts paying with USDC are exempt from the USD 5 monthly minimum.",
   "identity_cost": {
-    "kind": "card",
-    "detail": "card",
+    "kind": "email",
+    "detail": "sign-up asks for an email address and a password, with no card; Pro account limits follow a payment method: a credit card (some debit cards; prepaid cards are not supported), Google Pay, Apple Pay, a bank account, or a deposit of USD 10 or more in USDC on Ethereum mainnet",
     "country": null
   },
-  "reliability_note": null,
-  "confidence": "reported",
-  "confidence_note": null,
+  "reliability_note": "designed for 11 nines (99.999999999%) durability via erasure coding; accounts with a USD 0 balance at the end of a billing cycle and no active storage are suspended and then deleted",
+  "confidence": "documented",
+  "confidence_note": "documented: the pricing page, the pricing documentation, the sign-up page, the usage-limits page and the S3-compatibility page state the values quoted in the evidence",
   "evidence": [
     {
       "url": "https://www.storj.io/pricing",
@@ -55,12 +71,145 @@
       "url": "https://gateway.storjshare.io/",
       "date": "2026-10-21",
       "proved": "endpoint probe -> 401 (live, requires auth)"
+    },
+    {
+      "url": "https://www.storj.io/pricing",
+      "date": "2026-10-30",
+      "proved": "the Standard plan bills storage and egress at $7/TB each with a $5 monthly minimum, and the only free offer on the page is a trial that is free for 30 days with no credit card",
+      "capture": "sha256:e36516d3ea0357a5cbe3f816596cf5b54ecdb0a010bcba969568bd2441a76731",
+      "quote": "Minimum monthly fee for Storj Object Storage Standard and Advanced plan accounts is $5."
+    },
+    {
+      "url": "https://storj.dev/dcs/pricing/simplified",
+      "date": "2026-10-30",
+      "proved": "storage is billed on the bytes stored, measured hourly",
+      "capture": "sha256:cf00ee656a8a20feddf71759ce30716bc1d5de864b34f081ee8816f1fb500655",
+      "quote": "Storage is measured continuously (per hour) throughout the month, based on the actual bytes stored."
+    },
+    {
+      "url": "https://redirects.storj.io/signup",
+      "date": "2026-10-30",
+      "proved": "the trial allows 25GB of upload and download for 30 days",
+      "capture": "sha256:51668cf9703df6453c68a48e210ae53de45d83342bd3719192bb1a7241759c3c",
+      "quote": "Upload and download 25GB free for 30 days."
+    },
+    {
+      "url": "https://storj.dev/dcs/api/s3/s3-compatibility",
+      "date": "2026-10-30",
+      "proved": "the S3-compatible gateway sets no maximum object size",
+      "capture": "sha256:7dbdb30297460285f152437625c535da525a3d7e55f985e9ae3ce7075b04f634",
+      "quote": "| Maximum object size | No limit |"
+    },
+    {
+      "url": "https://www.storj.io/pricing",
+      "date": "2026-10-30",
+      "proved": "50 KB is the minimum billed object size on the Standard plan, not a maximum",
+      "capture": "sha256:e36516d3ea0357a5cbe3f816596cf5b54ecdb0a010bcba969568bd2441a76731",
+      "quote": "Standard: 50 KB minimum per object. Objects under 50 KB are billed as 50 KB."
+    },
+    {
+      "url": "https://www.storj.io/pricing",
+      "date": "2026-10-30",
+      "proved": "no expiry of stored objects is stated; an account with a $0 balance and no active storage is suspended and then deleted",
+      "capture": "sha256:e36516d3ea0357a5cbe3f816596cf5b54ecdb0a010bcba969568bd2441a76731",
+      "quote": "Accounts with a $0 balance at the end of a billing cycle and no active storage will be suspended and then deleted."
+    },
+    {
+      "url": "https://www.storj.io/pricing",
+      "date": "2026-10-30",
+      "proved": "the 30-day minimum storage duration is an early-deletion charge that Object Mount users do not pay",
+      "capture": "sha256:e36516d3ea0357a5cbe3f816596cf5b54ecdb0a010bcba969568bd2441a76731",
+      "quote": "Customers using Object Mount with Storj Object Storage will be exempt from this charge."
+    },
+    {
+      "url": "https://redirects.storj.io/signup",
+      "date": "2026-10-30",
+      "proved": "the sign-up form asks for an email address and a password and states that no credit card is needed",
+      "capture": "sha256:51668cf9703df6453c68a48e210ae53de45d83342bd3719192bb1a7241759c3c",
+      "quote": "No credit card needed to create an account."
+    },
+    {
+      "url": "https://storj.dev/learn/concepts/limits",
+      "date": "2026-10-30",
+      "proved": "Pro limits follow a payment method, and a USDC deposit of $10 or more upgrades an account without a card",
+      "capture": "sha256:e3401722243b26d81e0068f3eff66db2d24b5d2ca92ed003387a196ef0a1a6c3",
+      "quote": "Adding $10 or more in USDC to your account deposit address will automatically upgrade your account to PRO."
+    },
+    {
+      "url": "https://www.storj.io/pricing",
+      "date": "2026-10-30",
+      "proved": "the Standard plan prices storage at $7/TB per month and egress at $7/TB",
+      "capture": "sha256:e36516d3ea0357a5cbe3f816596cf5b54ecdb0a010bcba969568bd2441a76731",
+      "quote": "Monthly storage$7/TB"
+    },
+    {
+      "url": "https://storj.dev/learn/concepts/limits",
+      "date": "2026-10-30",
+      "proved": "a Pro account has 3 projects, each limited to 25 TB of storage and 100 TB of egress",
+      "capture": "sha256:e3401722243b26d81e0068f3eff66db2d24b5d2ca92ed003387a196ef0a1a6c3",
+      "quote": "25 TB storage per project"
+    },
+    {
+      "url": "https://storj.dev/learn/concepts/limits",
+      "date": "2026-10-30",
+      "proved": "a Pro project is limited to 100 requests per second and 1 write per second to the same object name",
+      "capture": "sha256:e3401722243b26d81e0068f3eff66db2d24b5d2ca92ed003387a196ef0a1a6c3",
+      "quote": "100 request per second rate limit"
+    },
+    {
+      "url": "https://storj.dev/learn/concepts/limits",
+      "date": "2026-10-30",
+      "proved": "the Pro project limits are raised on request",
+      "capture": "sha256:e3401722243b26d81e0068f3eff66db2d24b5d2ca92ed003387a196ef0a1a6c3",
+      "quote": "Customers can request a limit increase when needed by filling out the"
+    },
+    {
+      "url": "https://www.storj.io/pricing",
+      "date": "2026-10-30",
+      "proved": "the $5 monthly minimum applies from the first billing cycle after the trial, and USDC-paying accounts are exempt",
+      "capture": "sha256:e36516d3ea0357a5cbe3f816596cf5b54ecdb0a010bcba969568bd2441a76731",
+      "quote": "Accounts paying with USDC are exempt from the minimum monthly fee."
+    },
+    {
+      "url": "https://www.storj.io/pricing",
+      "date": "2026-10-30",
+      "proved": "the vendor states a design durability of 11 nines through erasure coding",
+      "capture": "sha256:e36516d3ea0357a5cbe3f816596cf5b54ecdb0a010bcba969568bd2441a76731",
+      "quote": "All tiers are designed for 11 nines (99.999999999%) durability via erasure coding and distributed architecture."
+    },
+    {
+      "url": "https://www.storj.io/pricing",
+      "date": "2026-10-30",
+      "proved": "the free trial is $0, free for 30 days, with no credit card required and 25GB of storage",
+      "capture": "sha256:e36516d3ea0357a5cbe3f816596cf5b54ecdb0a010bcba969568bd2441a76731",
+      "quote": "25GB free storage for 30 days"
+    },
+    {
+      "url": "https://rclone.org/storj/",
+      "date": "2026-10-30",
+      "proved": "rclone reaches Storj through its native storj backend and through its s3 backend on the S3-compatible gateway",
+      "capture": "sha256:c2368f669d6432a0b234aeaedfbeedeec7629bb97b6984f3774ff82c64797cee",
+      "quote": "Storj can be used both with this native backend and with the s3 backend using the Storj S3 compatible gateway (shared or private)."
+    },
+    {
+      "url": "https://www.storj.io/pricing/change-FAQs/",
+      "date": "2026-10-30",
+      "proved": "the pricing FAQ states the same Standard storage and egress prices",
+      "capture": "sha256:4a228b8b2125113b0e35b98a661cd43c8abfa7b1fb65e2b50e5b07aa00f86d2c",
+      "quote": "Standard $7/TB/month storage, $7/TB egress. Global, distributed storage built for worldwide workloads."
+    },
+    {
+      "url": "https://www.storj.io/pricing",
+      "date": "2026-10-30",
+      "proved": "Standard egress is metered at $7/TB with no free allowance",
+      "capture": "sha256:e36516d3ea0357a5cbe3f816596cf5b54ecdb0a010bcba969568bd2441a76731",
+      "quote": "The new pricing structure allowed us to reduce egress on the Standard tier from $20/TB to $7/TB."
     }
   ],
   "verdict": "fails-egress",
-  "verified_at": "2026-10-21T00:00:00.000Z",
-  "price_per_tb_month": "$7.00/TB at 5 TB and 20 TB for storage, plus $7.00/TB on every byte read — $14/TB effective at a 1:1 read ratio.",
-  "notes": "Per-TB-month, globally distributed; $5 minimum monthly fee",
+  "verified_at": "2026-10-30T18:30:31.624Z",
+  "price_per_tb_month": "USD 7.00 per TB-month of storage on the Standard plan, plus USD 7.00 per TB of egress: USD 14.00 per TB stored and read once in a month",
+  "notes": "Storj Object Storage, Standard plan: USD 7 per TB-month stored and USD 7 per TB of egress with a USD 5 monthly minimum; the only free offer is a trial that is free for 30 days",
   "extras": {
     "dead_end": {
       "failure_class": "quota",
@@ -71,5 +220,5 @@
     "price_verbatim": "$7.00/TB at 5 TB and 20 TB for storage, plus $7.00/TB on every byte read — $14/TB effective at a 1:1 read ratio."
   },
   "binding": "none",
-  "binding_note": null
+  "binding_note": "none: the Pro project limits of 25 TB stored and 100 TB egress per project are raised on request, so the egress price fails a read-heavy use before any limit does; a price is not a limit kind"
 }

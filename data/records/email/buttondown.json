@@ -1,0 +1,241 @@
+{
+  "topic": "email",
+  "slug": "buttondown",
+  "provider": "Buttondown",
+  "url": "https://buttondown.com/pricing",
+  "category": "newsletter sender with a REST API",
+  "tier": "free",
+  "free_tier": {
+    "stated": "free for the first 100 subscribers, with the price assuming at most one email a day to the whole subscriber base; API included, no card",
+    "unit": "users",
+    "metered_on": "identity-count",
+    "source_url": "https://buttondown.com/pricing",
+    "read_on": "2026-10-30",
+    "notes": "The quota counts subscribers, not messages. Sending from a custom domain is free; without one, mail goes out from the account's username at buttondown.email. Attachments, tagging and segmentation, automations and archives on a custom domain are paid add-ons. Subscribers are confirmed by double opt-in unless created through the API with type regular."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: email attachments are a paid add-on",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not stated",
+    "days": null,
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not applicable: an outbound sender",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://buttondown.com/pricing"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "the REST API at https://api.buttondown.com/v1 with an OpenAPI spec: POST /v1/emails creates an email for the subscriber base, and POST /v1/subscribers/{id_or_email}/emails/{email_id} sends a specific email to a specific subscriber",
+  "tooling": "curl or any HTTP client; there is no official SDK, and typed clients are generated from the OpenAPI spec",
+  "chaining": "a list sender rather than a transactional relay: every recipient is a subscriber, so it carries a newsletter or a notification list of up to 100 people, and per-message transactional mail belongs on a relay.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "the free price assumes at most one email a day to the whole subscriber base; more needs a contact with the vendor",
+      "source": "https://buttondown.com/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "600 API requests per minute on every endpoint, and 100 subscriber creations per day through POST /v1/subscribers",
+      "source": "https://docs.buttondown.com/api-rate-limits"
+    },
+    {
+      "kind": "write-gated",
+      "value": "every new account is reviewed before it can send, most reviews within one to three business days",
+      "source": "https://docs.buttondown.com/account-review"
+    },
+    {
+      "kind": "request-rate",
+      "value": "new senders are capped per hour until they reach a baseline of engagement and reputation; the figure is not stated",
+      "source": "https://docs.buttondown.com/sending-from-a-custom-domain"
+    }
+  ],
+  "limits_note": "counts of things, not rates, so no vocabulary kind names them: 100 subscribers on the free plan.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The register page asks for a username, an email address and a password, or Apple or Google sign-in, and states that no card is needed. Every new account is reviewed before it can send, and a verification form asks what the newsletter is about, who its audience is, where imported subscribers came from, and details of the person or organization. No domain is needed: mail goes out from the username at buttondown.email by default. A custom sending domain is free, set up either by delegating a subdomain with two NS records (managed) or by adding the records shown in settings (manual).",
+    "country": null
+  },
+  "reliability_note": "sending is disabled temporarily when unsubscribes, complaints or hard bounces run high on a new sender",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://buttondown.com/pricing",
+      "date": "2026-10-30",
+      "proved": "the free plan covers the first 100 subscribers",
+      "capture": "sha256:1ddcae945707d0d198b6187ff2bb96d2da5558bc26fa6f79ef4292a00bd44dc4",
+      "quote": "Absolutely nothing for your first 100 subscribers."
+    },
+    {
+      "url": "https://buttondown.com/pricing",
+      "date": "2026-10-30",
+      "proved": "the free price assumes at most one email a day to the whole list",
+      "capture": "sha256:1ddcae945707d0d198b6187ff2bb96d2da5558bc26fa6f79ef4292a00bd44dc4",
+      "quote": "All of these prices assume that you're sending at most one email a day to your entire subscriber base."
+    },
+    {
+      "url": "https://buttondown.com/pricing",
+      "date": "2026-10-30",
+      "proved": "tagging and segmentation is listed among the add-ons at 9 per month",
+      "capture": "sha256:1ddcae945707d0d198b6187ff2bb96d2da5558bc26fa6f79ef4292a00bd44dc4",
+      "quote": "Tagging & [segmentation](/features/analytics)"
+    },
+    {
+      "url": "https://buttondown.com/pricing",
+      "date": "2026-10-30",
+      "proved": "email attachments are listed among the add-ons at 9 per month",
+      "capture": "sha256:1ddcae945707d0d198b6187ff2bb96d2da5558bc26fa6f79ef4292a00bd44dc4",
+      "quote": "Email [attachments](/features/attachments)"
+    },
+    {
+      "url": "https://buttondown.com/llms.txt",
+      "date": "2026-10-30",
+      "proved": "the free tier is up to 100 subscribers with no stated email count",
+      "capture": "sha256:ad99d6be5570e7badcfba48189bbb928d493d4007d3208d941a9275e7d5cad81",
+      "quote": "Free tier: Up to 100 subscribers, unlimited emails"
+    },
+    {
+      "url": "https://buttondown.com/llms.txt",
+      "date": "2026-10-30",
+      "proved": "the summary file lists API access and custom domains under the 9 per month Basic plan",
+      "capture": "sha256:ad99d6be5570e7badcfba48189bbb928d493d4007d3208d941a9275e7d5cad81",
+      "quote": "Basic ($9/month): Custom domains, API access, automations, remove Buttondown branding"
+    },
+    {
+      "url": "https://buttondown.com/features/api",
+      "date": "2026-10-30",
+      "proved": "the API is on the free plan",
+      "capture": "sha256:dc81a6188a4ba68abb21b19b23645614e2dcd5e7d5ba2e97f3bdc404549a4ed7",
+      "quote": "Yes. The API is available on all plans, including free."
+    },
+    {
+      "url": "https://docs.buttondown.com/api-rate-limits",
+      "date": "2026-10-30",
+      "proved": "every API endpoint allows 600 requests per minute",
+      "capture": "sha256:ce39f02c145e304063c49d8e5b65377339e73627009a93da2828dfa497f595d9",
+      "quote": "| All API endpoints | 600 requests per minute |"
+    },
+    {
+      "url": "https://docs.buttondown.com/api-rate-limits",
+      "date": "2026-10-30",
+      "proved": "subscriber creation through the API is limited to 100 a day",
+      "capture": "sha256:ce39f02c145e304063c49d8e5b65377339e73627009a93da2828dfa497f595d9",
+      "quote": "| [`POST /v1/subscribers`](/api-subscribers-create) | 100 requests per day |"
+    },
+    {
+      "url": "https://buttondown.com/register",
+      "date": "2026-10-30",
+      "proved": "registration needs no card",
+      "capture": "sha256:319469292117f32f51ec42446aa16d8ef4c099496e12d61b25e16fe202a3cc76",
+      "quote": "Get started for free. No credit card required."
+    },
+    {
+      "url": "https://buttondown.com/register",
+      "date": "2026-10-30",
+      "proved": "the register form asks for a username, an email address and a password, beside Apple and Google sign-in",
+      "capture": "sha256:319469292117f32f51ec42446aa16d8ef4c099496e12d61b25e16fe202a3cc76",
+      "quote": "Username Email address Password"
+    },
+    {
+      "url": "https://docs.buttondown.com/account-review",
+      "date": "2026-10-30",
+      "proved": "every new account is reviewed before it can send",
+      "capture": "sha256:2e3878ae8596a4a369331493adf11f659ec5619859c44d361fcbae475dd79d68",
+      "quote": "All new accounts go through an initial review before they can start sending."
+    },
+    {
+      "url": "https://docs.buttondown.com/account-review",
+      "date": "2026-10-30",
+      "proved": "most reviews finish within one to three business days",
+      "capture": "sha256:2e3878ae8596a4a369331493adf11f659ec5619859c44d361fcbae475dd79d68",
+      "quote": "Most reviews are completed within one to three business days."
+    },
+    {
+      "url": "https://docs.buttondown.com/account-review",
+      "date": "2026-10-30",
+      "proved": "the verification form asks about the newsletter, its audience, imported subscribers and the person or organization",
+      "capture": "sha256:2e3878ae8596a4a369331493adf11f659ec5619859c44d361fcbae475dd79d68",
+      "quote": "A few details about you or your organization"
+    },
+    {
+      "url": "https://buttondown.com/blog/sending-email-address",
+      "date": "2026-10-30",
+      "proved": "without a custom domain, mail goes out from the username at buttondown.email",
+      "capture": "sha256:8ad50d57a7588d85121651c4f55a84d74f222e98eeda57a1e90305414b3a3753",
+      "quote": "Your username at buttondown.email (the default)"
+    },
+    {
+      "url": "https://docs.buttondown.com/sending-from-a-custom-domain",
+      "date": "2026-10-30",
+      "proved": "a custom sending domain is free",
+      "capture": "sha256:803e3a4ae952be2311c9d28ba3601cea0aad016e2bc189e56487459570089e1b",
+      "quote": "Sending from a custom domain is available to everyone"
+    },
+    {
+      "url": "https://docs.buttondown.com/sending-from-a-custom-domain",
+      "date": "2026-10-30",
+      "proved": "the managed domain setup delegates a subdomain with two NS records",
+      "capture": "sha256:803e3a4ae952be2311c9d28ba3601cea0aad016e2bc189e56487459570089e1b",
+      "quote": "2. Add the two `NS` type records that are shown to you in Settings."
+    },
+    {
+      "url": "https://docs.buttondown.com/sending-from-a-custom-domain",
+      "date": "2026-10-30",
+      "proved": "new senders are capped per hour",
+      "capture": "sha256:803e3a4ae952be2311c9d28ba3601cea0aad016e2bc189e56487459570089e1b",
+      "quote": "We cap the number of emails a newsletter can send in a given hour until you've reached a baseline level of engagement and reputation for your content."
+    },
+    {
+      "url": "https://docs.buttondown.com/sending-from-a-custom-domain",
+      "date": "2026-10-30",
+      "proved": "sending is disabled temporarily on high unsubscribes, complaints or hard bounces",
+      "capture": "sha256:803e3a4ae952be2311c9d28ba3601cea0aad016e2bc189e56487459570089e1b",
+      "quote": "we will temporarily disable your sending capability and reach out to help resolve the issue."
+    },
+    {
+      "url": "https://docs.buttondown.com/double-opt-in",
+      "date": "2026-10-30",
+      "proved": "subscribers are confirmed by double opt-in by default",
+      "capture": "sha256:510e8cbce4ce6df0f948e74fc9ad1b9219e7fb3c2e83cc6143d75137c67e089f",
+      "quote": "Buttondown requires double opt-in for all newsletters by default."
+    },
+    {
+      "url": "https://docs.buttondown.com/api-subscribers-create",
+      "date": "2026-10-30",
+      "proved": "a subscriber created through the API with type regular skips the confirmation",
+      "capture": "sha256:38e96c74ef9e594f97cfc1f05b74e9dcd6516b4302076e8115e97d0079ab22b2",
+      "quote": "You can't disable this behavior globally, but you can disable it on a per-subscriber basis by providing a `type` of `regular` in the request body."
+    },
+    {
+      "url": "https://docs.buttondown.com/openapi.json",
+      "date": "2026-10-31",
+      "proved": "the API sends a specific email to a specific subscriber",
+      "capture": "sha256:9ca7959104eb65645ce333a1dcf4ff50fafd086456221ad9d01d3dbbe5a3d0e0",
+      "quote": "\"description\": \"Send a specific email to a specific subscriber\","
+    },
+    {
+      "url": "https://buttondown.com/blog/safer-email-api-defaults",
+      "date": "2026-10-30",
+      "proved": "the first API send of a key needs a one-time confirmation header",
+      "capture": "sha256:b702da17bdbc53f0dcf821a521dd00b88ac3c277f6e6c717f6f46c69a09b9cc7",
+      "quote": "To confirm, pass the `X-Buttondown-Live-Dangerously: true` header."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-31T00:31:32.737Z",
+  "notes": "The vendor's summary file (llms.txt) lists API access and custom domains under the USD 9 Basic plan, while the API page and the sending-domain page state both are on the free plan.",
+  "extras": {
+    "stale_after_days": 90
+  },
+  "binding": "request-rate",
+  "binding_note": "one email a day to at most 100 subscribers: the subscriber ceiling caps the recipients and the daily assumption caps the sends.",
+  "confidence_note": "no message was sent and no endpoint was probed; the free plan, the API and its rate limits are documented, and the account review and its verification form are behind a sign-up."
+}

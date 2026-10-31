@@ -5,16 +5,16 @@
   "url": "https://urlscan.io/",
   "category": "archive",
   "verdict": "qualifies-with-caveat",
-  "confidence": "reported",
-  "confidence_note": "one keyless call measured; the limits are inherited",
-  "verified_at": "2026-10-22T00:00:00.000Z",
+  "confidence": "measured",
+  "confidence_note": "keyless quotas measured on the quotas and search endpoints; the free account's quotas read on the pricing page",
+  "verified_at": "2026-10-30T11:10:03.630Z",
   "free_tier": {
-    "stated": "1,000 unlisted and 5,000 public scans a day, 1,000 searches a day, 10,000 result requests a day",
+    "stated": "keyless, counted per IP address: 500 searches a day (100 an hour, 30 a minute) and 500 result retrievals a day (250 an hour, 20 a minute), at most 100 results a search",
     "unit": "requests",
     "metered_on": "request-count",
-    "source_url": "https://urlscan.io/",
-    "read_on": "2026-10-22",
-    "notes": ""
+    "source_url": "https://urlscan.io/api/v1/quotas",
+    "read_on": "2026-10-30",
+    "notes": "a free account (API Only) raises the daily quotas to 1,000 searches, 10,000 result requests, 5,000 public, 1,000 unlisted and 50 private scans"
   },
   "per_object_cap": {
     "stated": "not applicable: the unit is a scan",
@@ -39,25 +39,25 @@
     "rest"
   ],
   "interface_detail": "REST search and result APIs",
-  "tooling": "not stated",
+  "tooling": "REST with an API-Key header or none; X-Rate-Limit headers on each rate-limited answer; a quotas endpoint at /api/v1/quotas",
   "chaining": "The stored-scan leg under Cloudflare URL Scanner; useful when a page must be read as it was and no archive holds it",
   "limits": [
     {
       "kind": "request-rate",
-      "value": "30 requests a minute on search, per the platform research report",
-      "source": null
+      "value": "keyless search 30 a minute, 100 an hour and 500 a day per IP address",
+      "source": "https://urlscan.io/api/v1/quotas"
     },
     {
       "kind": "request-rate",
-      "value": "1,000 searches a day and 10,000 result requests a day",
-      "source": null
+      "value": "keyless result retrieval 20 a minute, 250 an hour and 500 a day per IP address",
+      "source": "https://urlscan.io/api/v1/quotas"
     }
   ],
   "binding": "request-rate",
-  "limits_note": "",
+  "limits_note": "a keyless search answer carries X-Rate-Limit headers scoped to ip-address, with a concurrency limit of 10",
   "identity_cost": {
     "kind": "anonymous",
-    "detail": "the search API answered with no key",
+    "detail": "search and result retrieval answer with no key at per-IP quotas; submitting scans and the larger free quotas need a user account and an API key",
     "country": null
   },
   "reliability_note": "no reliability event recorded",
@@ -67,7 +67,71 @@
       "url": "https://urlscan.io/api/v1/search/?q=domain:example.com&size=1",
       "date": "2026-10-22",
       "proved": "200, 1,953 bytes, results[] with a canonical URL, no key"
+    },
+    {
+      "url": "probe:https://urlscan.io/api/v1/quotas",
+      "date": "2026-10-30",
+      "proved": "keyless quotas are counted per IP address: search 30 a minute, 100 an hour, 500 a day; retrieve 20 a minute, 250 an hour, 500 a day; at most 100 results a search",
+      "capture": "sha256:dd409d5ce5df91c62fcd1fff0dbc9430a201d9c0b93374db614e75d0d4e15057",
+      "quote": "\"scope\": \"ip-address\""
+    },
+    {
+      "url": "https://urlscan.io/pricing/",
+      "date": "2026-10-30",
+      "proved": "the free plan allows 1,000 searches a day; the same table lists 10,000 result requests, 5,000 public, 1,000 unlisted and 50 private scans",
+      "capture": "sha256:7b464be57c209cecc893c3922810d655d364dfb5ec8ebadabba751557fc4a009",
+      "quote": "Only syntactically correct searches count against your quota. | 1,000 | 12,500 | 150,000 | 500,000 | 500,000 |"
+    },
+    {
+      "url": "https://urlscan.io/pricing/",
+      "date": "2026-10-30",
+      "proved": "the Free plan costs USD 0",
+      "capture": "sha256:7b464be57c209cecc893c3922810d655d364dfb5ec8ebadabba751557fc4a009",
+      "quote": "| Monthly Price | $0 | N/A | $1,250 | $2,500 | $5,000 |"
+    },
+    {
+      "url": "probe:https://urlscan.io/api/v1/search/?q=domain:example.com&size=1",
+      "date": "2026-10-30",
+      "proved": "the keyless search answered 200 with X-Rate-Limit-Limit 30 a minute, scope ip-address and concurrency limit 10",
+      "capture": "sha256:fa6a902132858259d927be964b1ef254623c6c0125aa4e9d5c785ab611198252",
+      "quote": "\"x-rate-limit-concurrency-limit\": \"10\""
+    },
+    {
+      "url": "https://urlscan.io/docs/api/",
+      "date": "2026-10-30",
+      "proved": "calls with no account get small quotas; the full API wants an account and a key",
+      "capture": "sha256:e122a22f0fe8a83066b201e3509be6e045737c2a63c0ea8e802a0ff7a40ef67a",
+      "quote": "Unauthenticated users only receive minor quotas for API calls."
+    },
+    {
+      "url": "https://docs.urlscan.io/pages/api-rate-limits",
+      "date": "2026-10-30",
+      "proved": "the quotas endpoint reports the caller's limits",
+      "capture": "sha256:89f264ea8998a0afe18f0e0ed113b8f1814233da97ff733fb3797f4171361903",
+      "quote": "You can query your current limits and quotas via the [API Quotas](https://urlscan.io/api/v1/quotas) endpoint."
+    },
+    {
+      "url": "https://urlscan.io/blog/2021/12/02/search-api-limitations-for-free-users/",
+      "date": "2026-10-30",
+      "proved": "a search with no account returns at most 100 results",
+      "capture": "sha256:638fd59e8850b556922eb68f928436fe5029f626d273d1d606ccbfd15d2a2d80",
+      "quote": "Anon Users: 100 results max"
+    },
+    {
+      "url": "https://docs.urlscan.io/pages/api-rate-limits",
+      "date": "2026-10-30",
+      "proved": "unauthenticated requests are limited per IP address",
+      "capture": "sha256:89f264ea8998a0afe18f0e0ed113b8f1814233da97ff733fb3797f4171361903",
+      "quote": "Either `user` (with cookie or API-Key header) or `ip-address` for unauthenticated requests."
+    },
+    {
+      "url": "probe:https://urlscan.io/api/v1/search/?q=domain:example.com&size=1",
+      "date": "2026-10-30",
+      "proved": "the keyless search API answered 200 with a 30-a-minute limit",
+      "capture": "sha256:fa6a902132858259d927be964b1ef254623c6c0125aa4e9d5c785ab611198252",
+      "quote": "\"x-rate-limit-limit\": \"30\""
     }
   ],
-  "notes": "A scan is a page's DOM and resource list as somebody else's browser saw it, which is why it is the only source for a page that a challenge keeps from every live fetch."
+  "notes": "A scan is a page's DOM and resource list as somebody else's browser saw it, which is why it is the only source for a page that a challenge keeps from every live fetch.",
+  "binding_note": "keyless search: 30 a minute and 500 a day per IP address"
 }

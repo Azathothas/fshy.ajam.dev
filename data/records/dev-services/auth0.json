@@ -1,0 +1,304 @@
+{
+  "topic": "dev-services",
+  "slug": "auth0",
+  "provider": "Auth0",
+  "tier": "Free",
+  "url": "https://auth0.com/pricing",
+  "category": "hosted authentication and authorization (OAuth 2.0, OIDC, social, passwordless and enterprise login)",
+  "free_tier": {
+    "stated": "Free plan: up to 25,000 monthly active users, unlimited social connections, 5 organizations, 1 enterprise connection, 1,000 machine-to-machine authentications, 1 tenant and 3 admins; no credit card needed to sign up",
+    "unit": "users",
+    "metered_on": "identity-count",
+    "source_url": "https://auth0.com/pricing",
+    "read_on": "2026-10-30",
+    "notes": "An MAU is a non-internal user that authenticated during a month for a given tenant. The Free plan is the same for B2C and B2B. It includes 1 custom domain, which needs credit card verification, and 5 Actions + Forms. Pro MFA factors and role management are not available on Free. Each account holds one free tenant at a time."
+  },
+  "per_object_cap": {
+    "stated": "unverified: no size limit for user metadata is stated on the pages read",
+    "bytes": null
+  },
+  "retention": {
+    "stated": "Tenant logs are kept 1 day on Free; a Free tenant with no admin login, user login or API call for 150 days is deleted with all its data and cannot be recovered",
+    "days": 1,
+    "source_url": "https://auth0.com/pricing",
+    "notes": "Paid plans keep logs 5, 10 or 30 days. The inactivity rule is on the Auth0 support article and the data processing page."
+  },
+  "egress": {
+    "terms": "not applicable: an authentication API; no traffic allowance or egress term is published",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://auth0.com/pricing"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "Authentication API (OAuth 2.0 and OIDC endpoints such as /oauth/token and /userinfo) and Management API v2 at https://{tenant}/api/v2/ with a Bearer token; both are served on the tenant's own domain.",
+  "endpoint": "https://{tenant}/api/v2/",
+  "tooling": "Any HTTP client or OAuth 2.0 / OIDC library against the tenant's Authentication API and Management API v2.",
+  "chaining": "An OIDC identity provider in front of apps on free compute; user import is included on Free, so users can be moved in through the Management API.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "25,000 monthly active users",
+      "source": "https://auth0.com/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "Authentication API: 300 burst, 300 requests per minute sustained",
+      "source": "https://auth0.com/docs/troubleshoot/customer-support/operational-policies/rate-limit-policy/rate-limit-configurations/free-public"
+    },
+    {
+      "kind": "request-rate",
+      "value": "Management API: 2 burst, 2 requests per second sustained",
+      "source": "https://auth0.com/docs/troubleshoot/customer-support/operational-policies/rate-limit-policy/rate-limit-configurations/free-public"
+    },
+    {
+      "kind": "request-rate",
+      "value": "Get Token (/oauth/token): 30 requests per second",
+      "source": "https://auth0.com/docs/troubleshoot/customer-support/operational-policies/rate-limit-policy/rate-limit-configurations/free-public"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "logs kept 1 day; a tenant inactive for 150 days is deleted",
+      "source": "https://support.auth0.com/center/s/article/tenant-unban-request"
+    },
+    {
+      "kind": "write-gated",
+      "value": "the custom domain needs credit card verification",
+      "source": "https://auth0.com/pricing"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "The Management API takes 2 requests a second on Free, so any bulk user administration is slow; sign-ins share the Authentication API's 300 requests a minute.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The sign-up page asks for an email address, or a GitHub, Google or Microsoft sign-in, and states no credit card is required. A custom domain needs credit card verification.",
+    "country": null
+  },
+  "reliability_note": "A Free tenant inactive for 150 days is deleted and cannot be recovered; Free support is community only.",
+  "confidence": "documented",
+  "confidence_note": "Every limit is quoted from the first-party pricing page, rate-limit policy, data processing page, support article and sign-up page. No probe was run, because the API is served on a per-tenant domain. A token request on a Free tenant would move it to measured.",
+  "evidence": [
+    {
+      "url": "https://auth0.com/pricing",
+      "date": "2026-10-30",
+      "proved": "the Free plan is USD 0 with up to 25,000 MAUs",
+      "capture": "sha256:fa4f71fd41fdbc5f40015d48951e580fbeb73c152e5ede8914fdf9ad43330670",
+      "quote": "| Free | $0/month | $0/month | Up to 25,000 |"
+    },
+    {
+      "url": "https://auth0.com/pricing",
+      "date": "2026-10-30",
+      "proved": "the Free plan needs no credit card to sign up",
+      "capture": "sha256:fa4f71fd41fdbc5f40015d48951e580fbeb73c152e5ede8914fdf9ad43330670",
+      "quote": "No credit card needed to sign up."
+    },
+    {
+      "url": "https://auth0.com/pricing",
+      "date": "2026-10-30",
+      "proved": "an MAU is a non-internal user that authenticated in a month for a tenant",
+      "capture": "sha256:fa4f71fd41fdbc5f40015d48951e580fbeb73c152e5ede8914fdf9ad43330670",
+      "quote": "- Monthly Active Users (MAUs): Any non-internal (non-employee) user that authenticated during a given month for a given tenant."
+    },
+    {
+      "url": "https://auth0.com/pricing",
+      "date": "2026-10-30",
+      "proved": "the Free plan is the same for B2C and B2B, 25,000 MAUs, no card",
+      "capture": "sha256:fa4f71fd41fdbc5f40015d48951e580fbeb73c152e5ede8914fdf9ad43330670",
+      "quote": "- The Free plan is identical for B2C and B2B: up to 25,000 MAUs, no credit card required"
+    },
+    {
+      "url": "https://auth0.com/pricing",
+      "date": "2026-10-30",
+      "proved": "Free includes 1,000 machine-to-machine authentications",
+      "capture": "sha256:fa4f71fd41fdbc5f40015d48951e580fbeb73c152e5ede8914fdf9ad43330670",
+      "quote": "| Machine-to-Machine Authentication | 1,000 | 1,000 | 5,000 | 5,000 |"
+    },
+    {
+      "url": "https://auth0.com/pricing",
+      "date": "2026-10-30",
+      "proved": "Free includes 5 organizations",
+      "capture": "sha256:fa4f71fd41fdbc5f40015d48951e580fbeb73c152e5ede8914fdf9ad43330670",
+      "quote": "| Organizations | 5 | 10 | 10 | Custom Tiers |"
+    },
+    {
+      "url": "https://auth0.com/pricing",
+      "date": "2026-10-30",
+      "proved": "Free includes 1 enterprise connection",
+      "capture": "sha256:fa4f71fd41fdbc5f40015d48951e580fbeb73c152e5ede8914fdf9ad43330670",
+      "quote": "| Enterprise Connections | 1 | Not available | Not available | Custom Tiers |"
+    },
+    {
+      "url": "https://auth0.com/pricing",
+      "date": "2026-10-30",
+      "proved": "Free has unlimited social connections",
+      "capture": "sha256:fa4f71fd41fdbc5f40015d48951e580fbeb73c152e5ede8914fdf9ad43330670",
+      "quote": "| Social Connections | Unlimited** | Unlimited** | Unlimited** | Unlimited** |"
+    },
+    {
+      "url": "https://auth0.com/pricing",
+      "date": "2026-10-30",
+      "proved": "Free includes 1 tenant",
+      "capture": "sha256:fa4f71fd41fdbc5f40015d48951e580fbeb73c152e5ede8914fdf9ad43330670",
+      "quote": "| Number of Tenants Included | 1 | 3 | 12 | Unlimited** |"
+    },
+    {
+      "url": "https://auth0.com/pricing",
+      "date": "2026-10-30",
+      "proved": "Free has 3 admins",
+      "capture": "sha256:fa4f71fd41fdbc5f40015d48951e580fbeb73c152e5ede8914fdf9ad43330670",
+      "quote": "| Number of Admin/Contributors | 3 | Unlimited** | Unlimited** | Unlimited** |"
+    },
+    {
+      "url": "https://auth0.com/pricing",
+      "date": "2026-10-30",
+      "proved": "Free keeps logs 1 day",
+      "capture": "sha256:fa4f71fd41fdbc5f40015d48951e580fbeb73c152e5ede8914fdf9ad43330670",
+      "quote": "| Log Retention | 1 Day | 5 Days | 10 Days | 30 Days |"
+    },
+    {
+      "url": "https://auth0.com/pricing",
+      "date": "2026-10-30",
+      "proved": "a custom domain needs credit card verification",
+      "capture": "sha256:fa4f71fd41fdbc5f40015d48951e580fbeb73c152e5ede8914fdf9ad43330670",
+      "quote": "- * Custom domains require credit card verification"
+    },
+    {
+      "url": "https://auth0.com/pricing",
+      "date": "2026-10-30",
+      "proved": "Free includes 5 Actions + Forms",
+      "capture": "sha256:fa4f71fd41fdbc5f40015d48951e580fbeb73c152e5ede8914fdf9ad43330670",
+      "quote": "| Actions + Forms | 5 | 10 | 15 | 30 + ADD-ON |"
+    },
+    {
+      "url": "https://auth0.com/pricing",
+      "date": "2026-10-30",
+      "proved": "Pro MFA factors are not available on Free",
+      "capture": "sha256:fa4f71fd41fdbc5f40015d48951e580fbeb73c152e5ede8914fdf9ad43330670",
+      "quote": "| Pro MFA Factors | Not available | Included | Included | Included |"
+    },
+    {
+      "url": "https://auth0.com/pricing",
+      "date": "2026-10-30",
+      "proved": "role management is not available on Free",
+      "capture": "sha256:fa4f71fd41fdbc5f40015d48951e580fbeb73c152e5ede8914fdf9ad43330670",
+      "quote": "| Role Management | Not available | Included | Included | Included |"
+    },
+    {
+      "url": "https://auth0.com/pricing",
+      "date": "2026-10-30",
+      "proved": "user import is included on Free",
+      "capture": "sha256:fa4f71fd41fdbc5f40015d48951e580fbeb73c152e5ede8914fdf9ad43330670",
+      "quote": "| User Import | Included | Included | Included | Included |"
+    },
+    {
+      "url": "https://auth0.com/pricing",
+      "date": "2026-10-30",
+      "proved": "standard support is not available on Free",
+      "capture": "sha256:fa4f71fd41fdbc5f40015d48951e580fbeb73c152e5ede8914fdf9ad43330670",
+      "quote": "| Standard Support | Not available | Included | Included | Included |"
+    },
+    {
+      "url": "https://auth0.com/pricing",
+      "date": "2026-10-30",
+      "proved": "Essentials starts at USD 35 a month for 500 MAUs",
+      "capture": "sha256:fa4f71fd41fdbc5f40015d48951e580fbeb73c152e5ede8914fdf9ad43330670",
+      "quote": "| Essentials | $35/month | $150/month | 500 MAUs |"
+    },
+    {
+      "url": "https://auth0.com/docs/troubleshoot/customer-support/operational-policies/rate-limit-policy/rate-limit-configurations/free-public",
+      "date": "2026-10-30",
+      "proved": "the Authentication API allows a 300 burst and 300 a minute on Free",
+      "capture": "sha256:0d43b90596b6d82d12356cc6dce43bdd55af5190df2f0e4a497aa4ce826514ac",
+      "quote": "> | Authentication API | 300 | 300/minute |"
+    },
+    {
+      "url": "https://auth0.com/docs/troubleshoot/customer-support/operational-policies/rate-limit-policy/rate-limit-configurations/free-public",
+      "date": "2026-10-30",
+      "proved": "the Management API allows 2 a second on Free",
+      "capture": "sha256:0d43b90596b6d82d12356cc6dce43bdd55af5190df2f0e4a497aa4ce826514ac",
+      "quote": "> | Management | 2 | 2/second |"
+    },
+    {
+      "url": "https://auth0.com/docs/troubleshoot/customer-support/operational-policies/rate-limit-policy/rate-limit-configurations/free-public",
+      "date": "2026-10-30",
+      "proved": "the token endpoint allows 30 a second",
+      "capture": "sha256:0d43b90596b6d82d12356cc6dce43bdd55af5190df2f0e4a497aa4ce826514ac",
+      "quote": "> | Get Token | POST | `/oauth/token` | 30 | 30 per/sec | Any request |"
+    },
+    {
+      "url": "https://support.auth0.com/center/s/article/tenant-unban-request",
+      "date": "2026-10-30",
+      "proved": "free tenants inactive for 150 days are deleted",
+      "capture": "sha256:97641425d15433cee1522d6ac9060ed25eaad4cfc936c2de8e0bdb2a27542a4c",
+      "quote": "Auth0 deletes free plan tenants that remain inactive for a continuous period of 150 days."
+    },
+    {
+      "url": "https://support.auth0.com/center/s/article/tenant-unban-request",
+      "date": "2026-10-30",
+      "proved": "a deleted tenant cannot be recovered",
+      "capture": "sha256:97641425d15433cee1522d6ac9060ed25eaad4cfc936c2de8e0bdb2a27542a4c",
+      "quote": "Once Auth0 deletes a tenant through this process, administrators cannot recover the tenant."
+    },
+    {
+      "url": "https://support.auth0.com/center/s/article/tenant-unban-request",
+      "date": "2026-10-30",
+      "proved": "one free tenant per account at a time",
+      "capture": "sha256:97641425d15433cee1522d6ac9060ed25eaad4cfc936c2de8e0bdb2a27542a4c",
+      "quote": "NOTE: Auth0 limits each account to one free tenant at a time."
+    },
+    {
+      "url": "https://auth0.com/docs/secure/data-privacy-and-compliance/data-processing",
+      "date": "2026-10-30",
+      "proved": "inactive Free customers' tenants and data are scheduled for deletion after 150 days",
+      "capture": "sha256:6a64dbef089c146f1187d778566be2067c1eec3883a183f59f5701146ebac5df",
+      "quote": "After 150 days of inactivity, the system schedules the inactive Customer"
+    },
+    {
+      "url": "https://auth0.com/signup",
+      "date": "2026-10-31",
+      "proved": "the sign-up page states no credit card is required",
+      "capture": "sha256:4580dfcb2f24f6297ee71c163c137cbc7aa35d801cb1e46184f4a83ce4213aba",
+      "quote": "# Start building with your free plan\n\n## No credit card required."
+    },
+    {
+      "url": "https://auth0.com/signup",
+      "date": "2026-10-31",
+      "proved": "the sign-up asks for an email address",
+      "capture": "sha256:4580dfcb2f24f6297ee71c163c137cbc7aa35d801cb1e46184f4a83ce4213aba",
+      "quote": "## Sign up\n\nEmail"
+    },
+    {
+      "url": "https://auth0.com/signup",
+      "date": "2026-10-31",
+      "proved": "the sign-up offers GitHub sign-in",
+      "capture": "sha256:4580dfcb2f24f6297ee71c163c137cbc7aa35d801cb1e46184f4a83ce4213aba",
+      "quote": "Continue with GitHub"
+    },
+    {
+      "url": "https://auth0.com/signup",
+      "date": "2026-10-31",
+      "proved": "the sign-up offers Google sign-in",
+      "capture": "sha256:4580dfcb2f24f6297ee71c163c137cbc7aa35d801cb1e46184f4a83ce4213aba",
+      "quote": "Continue with Google"
+    },
+    {
+      "url": "https://auth0.com/signup",
+      "date": "2026-10-31",
+      "proved": "the sign-up offers Microsoft sign-in",
+      "capture": "sha256:4580dfcb2f24f6297ee71c163c137cbc7aa35d801cb1e46184f4a83ce4213aba",
+      "quote": "Continue with Microsoft"
+    },
+    {
+      "url": "https://auth0.com/docs/api/management/v2",
+      "date": "2026-10-31",
+      "proved": "the Management API is served at /api/v2 on the tenant domain with a Bearer token",
+      "capture": "sha256:dc58bdbd35bd35214ec3ace5109f0b6e2986fda59d000b657089656839b1b9f1",
+      "quote": "> curl -H \"Authorization: Bearer eyJhb...\" https://@@TENANT@@/api/v2/users"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-31T06:23:28.112Z",
+  "notes": "Essentials starts at USD 35 a month for 500 MAUs (B2C); paid plans add role management, MFA factors and longer log retention."
+}
