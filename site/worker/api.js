@@ -332,7 +332,7 @@ export function search(store, p) {
   notes.push(`name hits: ${nName} records; text hits: ${nText} more`);
   if (nSelf) notes.push(SELF_HOSTED_NOTE(nSelf, 'records'));
   return table([...CARD_COLUMNS, 'matched'], out, {
-    total: all.length, offset, truncated: offset + out.length < all.length, notes,
+    total: all.length, offset, paged: true, truncated: offset + out.length < all.length, notes,
   });
 }
 
@@ -376,7 +376,7 @@ export function entitySearch(store, p) {
   const nSelf = hits.filter((h) => sh.has(h.eid)).length;
   if (nSelf) notes.push(`self-hosted: ${nSelf} entities whose every record is self-hosted, listed after every other entity`);
   return table(['eid', 'name', 'domain', 'topics', 'n_records', 'best_vorder', 'score', 'match', 'alias'], out, {
-    total: hits.length, offset, truncated: offset + out.length < hits.length, notes,
+    total: hits.length, offset, paged: true, truncated: offset + out.length < hits.length, notes,
   });
 }
 
@@ -437,7 +437,7 @@ export function filter(store, p) {
   const nSelf = scalar(db, `SELECT count(*) FROM record WHERE ${W} AND self_hosted = 1`, fa);
   if (nSelf) notes.push(SELF_HOSTED_NOTE(nSelf, 'records'));
   return table([...CARD_COLUMNS, ...extra], out, {
-    total, offset, truncated: offset + out.length < total, notes, excluded,
+    total, offset, paged: true, truncated: offset + out.length < total, notes, excluded,
   });
 }
 
@@ -645,7 +645,7 @@ export async function need(store, env, p) {
       (nSelfUnstated ? `; ${nSelfUnstated} of them with the card or phone requirement not stated, in self_hosted_unstated_rows` : ''));
   }
   return table([...CARD_COLUMNS, ...extra], out, {
-    total: seq.length, offset, truncated: offset + page.length < seq.length, notes, nullRows: nullOut, nullKey: key,
+    total: seq.length, offset, paged: true, truncated: offset + page.length < seq.length, notes, nullRows: nullOut, nullKey: key,
     unstatedRows: unstatedOut, selfRows: selfOut, selfUnstatedRows: selfUnstatedOut,
     need: { id: n.id, title: n.title, topic: n.topic, sort: key, scope: n.scope, sql: n.sql },
   });
@@ -726,7 +726,7 @@ export function worklist(store, p) {
   const page = (cols, countSql, sel, args) => {
     const total = scalar(db, countSql, args);
     const out = rows(db, sel + ' LIMIT ? OFFSET ?', [...args, limit, offset]);
-    return table(cols, out, { total, offset, truncated: offset + out.length < total, notes });
+    return table(cols, out, { total, offset, paged: true, truncated: offset + out.length < total, notes });
   };
 
   if (kind === 'stale') {
@@ -829,7 +829,7 @@ export async function help(store, env) {
 
 // ------------------------------------------------------------------ rendering
 
-function cell(v) {
+export function cell(v) {
   if (v == null) return '';
   if (typeof v === 'number') return Number.isInteger(v) ? String(v) : String(+v.toFixed(4));
   const s = String(v).replace(/[\t\r\n]+/g, ' ');
@@ -840,9 +840,10 @@ export function footer(t) {
   const lines = [];
   const shown = t.rows.length + (t.nullRows ? t.nullRows.length : 0) + (t.unstatedRows ? t.unstatedRows.length : 0) +
     (t.selfRows ? t.selfRows.length : 0) + (t.selfUnstatedRows ? t.selfUnstatedRows.length : 0);
-  // a capped result (sql) says the cap in its own note, so the first line counts the rows only
+  // a capped result (sql) says the cap in its own note, so the first line counts the rows only; only a paged result
+  // (one that takes offset) names the offset that reads on
   if (t.open) lines.push(`# ${shown} rows`);
-  else if (t.truncated) lines.push(`# ${shown} of ${t.total} rows; offset=${t.offset + shown} for more`);
+  else if (t.truncated && t.paged) lines.push(`# ${shown} of ${t.total} rows; offset=${t.offset + shown} for more`);
   else lines.push(`# ${shown} of ${t.total} rows`);
   for (const [col, n] of Object.entries(t.excluded || {})) lines.push(`# excluded for NULL ${col}: ${n}`);
   for (const n of t.notes || []) lines.push('# ' + String(n).replace(/[\r\n]+/g, ' '));
