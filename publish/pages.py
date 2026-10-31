@@ -366,12 +366,14 @@ class Site:
         return "/p/%s/#%s--%s" % (e(c["eid"]), e(c["topic"]), e(c["slug"]))
 
     def fresh(self, c):
-        """The freshness item. The build writes the stale date; the script turns it into 'fresh until' or 'stale
-        since' against today. A dead record shows its check date only."""
-        if c["grp"] == "dead" or not c["stale_on"]:
+        """The freshness item. The build writes the stale date, as 'stale since' when it is on or before the date of
+        the data (llms.fresh_word); the script turns it into 'fresh until' or 'stale since' against today. A dead record
+        shows its check date only."""
+        word = llms.fresh_word(c, self.meta.get("as_of") or "")
+        if not word:
             return '<span class="fr done">checked %s</span>' % e(c["checked_on"] or "on an unknown date")
-        return '<span class="fr" data-basis="%s" data-checked="%s">stale on %s</span>' % (
-            e(c["verified_basis"]), e(c["checked_on"]), e(c["stale_on"]))
+        return '<span class="fr" data-basis="%s" data-checked="%s">%s</span>' % (
+            e(c["verified_basis"]), e(c["checked_on"]), e(word))
 
     def badges(self, c, with_topic=False):
         """The facts line under an offer: topic, free tier, identity, card, phone, limit, evidence, freshness, flags.

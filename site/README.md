@@ -66,7 +66,8 @@ non-Latin script carries its `lang`. The labels of a row are in the markup, so a
 an agent get them. A key under the filter bar says what each word and mark means.
 
 The browser computes freshness and the filter chips against today, so a page built today stays correct tomorrow.
-The page says "stale on" a date; the script turns that into "fresh until" or "stale since". The script keeps the
+The page says "stale on" a date, or "stale since" when the date is on or before the date of the data. The script turns
+that into "fresh until" or "stale since" against today. The Markdown index lines say the same words. The script keeps the
 pressed chips in `?f=` and the interface text in `?i=`, so a filtered list is a link. Without JavaScript the
 filter bar stays hidden, and the search and compare pages name the API route that answers instead. Both asset
 URLs carry `?v=` and the first ten hex digits of the file's SHA-256. A deploy that changes either file thus
@@ -92,7 +93,7 @@ store the HTML comes from. None is written by hand, and the leak scan reads them
 | `/llms-full.txt` | how to read a record, and the index of the parts |
 | `/t/<topic>/llms-full.txt` | one topic in full when it fits in one file, else the index of its parts |
 | `/t/<topic>/llms-full-<group>[-<k>].txt` | a part: the hosted records of one verdict group (usable, trial, paid, rejected, dead), or every self-hosted record of the topic (self-hosted, the last part), cut into balanced pieces when it is over the budget |
-| `/t/<topic>.md`, `/t/<topic>/rejected.md` | the two topic pages: one line per record |
+| `/t/<topic>.md`, `/t/<topic>/rejected.md` | the two topic pages: one line per record, with its stale date |
 | `/p/<id>.md` | a provider page: every record of that provider in full |
 | `/need/<id>.md` | a best-per-need ranking, with its SQL |
 
