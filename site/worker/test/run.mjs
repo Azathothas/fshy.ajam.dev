@@ -947,9 +947,13 @@ test('the changes worklist says which field of which record was amended and neve
   assert.equal(w.res.status, 200, w.body);
   const ledger = w.json.rows.filter((r) => r[1] === 'ledger');
   assert.ok(ledger.length > 0, 'the newest rows are ledger rows');
+  const api = await import('../api.js');
+  const titles = new Set([...Object.values(api.LEDGER_TITLE), ...Object.values(api.LEDGER_NO_OP)]);
   for (const r of ledger) {
     assert.ok(!/^ -> $/.test(r[4]), r.join(' | '));
-    assert.match(r[4], /^amended; the old and the new value are not published$| -> /);
+    assert.ok(titles.has(r[4]) || / -> /.test(r[4]), r.join(' | '));
+    // an amended row names its field; a row with no field (an evidence row, a relation, a record) is not amended
+    if (/amended/.test(r[4])) assert.ok(r[2], 'an amended row names its field: ' + r.join(' | '));
     assert.ok(r[5].includes('/'), 'the record id is the last column');
   }
 });
@@ -1311,11 +1315,55 @@ test('small API and MCP answers: the sql cap once, a ledger path without $., a n
   const text = q.json.result.content[0].text;
   assert.equal((text.match(/row cap/g) || []).length, 1, text.split('\n').slice(-4).join(' | '));
   const w = await call('/api/v1/worklist/changes?limit=200');
-  for (const r of w.json.rows.filter((x) => x[1] === 'ledger')) assert.ok(!r[2].startsWith('$.'), r[2]);
+  assert.equal(w.res.status, 200, w.body);
+  // ref is the field without $.; a row that adds or removes an evidence row, a relation or a record names no field,
+  // so its ref is null and its title never says amended
+  for (const r of w.json.rows.filter((x) => x[1] === 'ledger')) {
+    if (r[2] === null) assert.ok(!/amended/.test(r[4]), 'a ledger row with no field is titled ' + r[4]);
+    else assert.ok(!r[2].startsWith('$.'), r[2]);
+  }
   const n = await rpc('tools/call', { name: 'need', arguments: { id: 'nope' } });
   assert.equal(n.json.result.isError, true);
   assert.match(n.json.result.content[0].text, /unknown need "nope"; the needs are s3-storage-no-card, /);
   assert.ok(!/\/api\/v1\/need\//.test(n.json.result.content[0].text), 'the MCP answer names no HTTP route');
+});
+
+test('the title of a ledger row in the worklist changes follows its op, and its shape when it has no op', async () => {
+  const api = await import('../api.js');
+  const own = (o, k) => k != null && Object.prototype.hasOwnProperty.call(o, k);
+  const want = (op, path, url) => own(api.LEDGER_TITLE, op) ? api.LEDGER_TITLE[op] : api.LEDGER_NO_OP[path ? 'field' : url ? 'url' : 'none'];
+  // every op, and each shape with no op, through the SQL that the worklist runs
+  const u = 'https://example.com/a';
+  const cases = [...Object.keys(api.LEDGER_TITLE).map((op) => [op, null, u]), ['set', '$.notes', u], [null, '$.notes', u],
+    [null, null, u], [null, null, null], ['an_op_not_named', null, u]];
+  const lit = (v) => (v == null ? 'NULL' : "'" + v + "'");
+  const q = `WITH ledger(op, path, url, old, new) AS (VALUES ${cases.map((c) => `(${c.map(lit).join(', ')}, NULL, NULL)`).join(', ')})
+    SELECT op, path, url, ${api.LEDGER_TITLE_SQL} FROM ledger`;
+  const s = await call('/api/v1/sql?q=' + encodeURIComponent(q));
+  assert.equal(s.res.status, 200, s.body);
+  assert.equal(s.json.rows.length, cases.length);
+  for (const [op, path, url, title] of s.json.rows) assert.equal(title, want(op, path, url), JSON.stringify([op, path, url]));
+  const by = Object.fromEntries(s.json.rows.filter((r) => r[1] === null && r[2] === u).map((r) => [r[0], r[3]]));
+  assert.equal(by.drop_evidence, 'evidence row removed');
+  assert.equal(by.append_evidence, 'evidence row added');
+  // the rows of the store: each ledger row of a page of the worklist has the title of its own op, field and source
+  const w = await call('/api/v1/worklist/changes?limit=100');
+  const led = w.json.rows.filter((r) => r[1] === 'ledger');
+  if (!led.length) return;
+  const since = led.map((r) => r[0]).sort()[0];
+  const l = await call('/api/v1/sql?limit=200&q=' + encodeURIComponent(
+    `SELECT at, rid, CASE WHEN path LIKE '$.%' THEN substr(path, 3) ELSE path END, op, path, url FROM ledger WHERE at >= '${since}'`));
+  assert.equal(l.res.status, 200, l.body);
+  assert.ok(!l.json.truncated, 'the ledger rows since ' + since + ' fit in one answer');
+  const titles = new Map();
+  for (const [at, rid, ref, op, path, url] of l.json.rows) {
+    const k = JSON.stringify([at, rid, ref]);
+    titles.set(k, [...(titles.get(k) || []), want(op, path, url)]);
+  }
+  for (const [at, , ref, , title, rid] of led) {
+    const k = JSON.stringify([at, rid, ref]);
+    assert.ok((titles.get(k) || []).includes(title), k + ' is titled ' + title + ', and its op gives ' + titles.get(k));
+  }
 });
 
 test('a missing Markdown page is a Markdown 404, and the not-found page says 404 (W2-14, W-28)', async () => {

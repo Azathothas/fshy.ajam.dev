@@ -101,11 +101,11 @@ jobs:
         run: python3 publish/test_publish.py
 
       # data/ of version 1 has no self-hosted record, so the self-hosted tests above skip, and the order check of the
-      # build has no self-hosted row to find. This step marks some records of a copy of data/ as self-hosted, at
-      # version 2, and runs the build, the Worker tests, the files for agents, the weight budget and the store checks
+      # build has no self-hosted row to find. This step marks some records of a copy of data/ as self-hosted, at the
+      # version that build.py writes, and runs the build, the Worker tests, the files for agents, the weight budget and the store checks
       # on that copy. When data/ has self-hosted records, the tool writes no copy and the step stops there. smoke.mjs
       # does not run here: it serves site/dist, the files that the job deploy ships, so the copy must not replace them.
-      - name: self-hosted last, on a copy of data/ at version 2
+      - name: self-hosted last, on a copy of data/ at the version of build.py
         if: hashFiles('data/meta.json') != ''
         run: |
           fx="$RUNNER_TEMP/fx"

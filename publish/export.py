@@ -13,7 +13,8 @@ usage:
    python CLONE/scripts/fshy/build.py --repo CLONE --public TMP. The projection rules stay in that repository,
    because they name what they remove.
 4. Check the contract: the store's schema version, tables and columns are the ones publish/schema.sql gives,
-   and rules/needs.json is the research copy.
+   and rules/needs.json is the research copy. A store of an older version that build.py reads (build.OLDER) is
+   checked without the columns that the version lacks, and data/ gets that version.
 5. Write each record as data/records/<topic>/<slug>.json and each other table as data/tables/<table>.jsonl,
    sorted, with no row numbers, so the diff of a publish shows exactly which records changed. meta.json names
    the commit as source_commit.
@@ -156,8 +157,18 @@ def drift(tree):
     return warnings
 
 
+def store_version(pub_db):
+    db = sqlite3.connect("file:%s?mode=ro" % pub_db, uri=True)
+    try:
+        return (db.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone() or [None])[0]
+    finally:
+        db.close()
+
+
 def contract(pub_db, tree):
-    """The research store and its rules against this repository's schema and rules. -> [problem]"""
+    """The research store and its rules against this repository's schema and rules. -> [problem]. A store of a version
+    of build.OLDER is checked against schema.sql without the columns that the version lacks, and is exported at its
+    version: a change of the schema lands here first, and the next publish does not stop."""
     problems = []
     want_db = sqlite3.connect(":memory:")
     want_db.executescript(open(os.path.join(HERE, "schema.sql"), encoding="utf-8").read())
@@ -165,10 +176,13 @@ def contract(pub_db, tree):
     want_db.close()
     db = sqlite3.connect("file:%s?mode=ro" % pub_db, uri=True)
     have = tables_of(db)
-    version = (db.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone() or [None])[0]
     db.close()
-    if version != build.SCHEMA_VERSION:
-        problems.append("the research store has schema_version %r; publish/build.py knows %r" % (version, build.SCHEMA_VERSION))
+    version = store_version(pub_db)
+    if version != build.SCHEMA_VERSION and version not in build.OLDER:
+        problems.append("the research store has schema_version %r; publish/build.py reads %r and %s"
+                        % (version, build.SCHEMA_VERSION, ", ".join(map(repr, sorted(build.OLDER)))))
+    for t, cs in build.OLDER.get(version, {}).items():
+        want[t] = [c for c in want.get(t, []) if c not in cs]
     for t in sorted(set(want) | set(have)):
         if t not in have:
             problems.append("table %s is in publish/schema.sql but not in the research store" % t)
@@ -247,15 +261,18 @@ def roundtrip(pub_db, out, tmp):
     a = sqlite3.connect("file:%s?mode=ro" % pub_db, uri=True)
     b = sqlite3.connect("file:%s?mode=ro" % store, uri=True)
     try:
-        return compare_stores(a, b)
+        return compare_stores(a, b, build.OLDER.get(store_version(pub_db), {}))
     finally:
         a.close()
         b.close()
 
 
-def compare_stores(a, b):
-    """The research store a against the store b that publish/build.py made from data/. -> [problem]"""
+def compare_stores(a, b, lacks=None):
+    """The research store a against the store b that publish/build.py made from data/. -> [problem]. lacks names the
+    columns, by table, that the version of a does not have: b holds them with their defaults, and they are not
+    compared."""
     problems = []
+    lacks = lacks or {}
 
     def compare(name, x, y):
         if x == y:
@@ -278,7 +295,7 @@ def compare_stores(a, b):
         return out
 
     for t in build.TABLES:
-        compare(t, table(a, t, null=NULLED.get(t, ())), table(b, t))
+        compare(t, table(a, t, null=NULLED.get(t, ())), table(b, t, drop=lacks.get(t, ())))
     keep = [c for c in tables_of(a)["record"] if c not in RECORD_DROP]
     recs = []
     for db in (a, b):

@@ -144,9 +144,58 @@ def rfc822(when):
 
 
 def ledger_field(path):
-    """The field of a ledger row in words: the JSON path without its root, or 'not named' when the row names none."""
+    """The field of a ledger row in words: the JSON path without its root, 'the whole record' for the root, or 'not
+    named' when the row names none."""
     p = str(path or "")
+    if p == "$":
+        return "the whole record"
     return p[2:] if p.startswith("$.") else (p.lstrip("$") or "not named")
+
+
+# The title of a ledger row: what the row did, by its op. The published ledger holds no old or new value. A row with no
+# op (data of schema_version 2 and older) or an op not named here gets the title of its shape: LEDGER_NO_OP["field"]
+# when it names a field, "url" when it names only a source, "none" when it names neither. LEDGER_TITLE and LEDGER_NO_OP
+# of site/worker/api.js hold the same words for the worklist changes; test_publish.py checks the copy.
+LEDGER_TITLE = {
+    "set": "amended; the old and the new value are not published",
+    "basis": "amended; the old and the new value are not published",
+    "confirm": "confirmed on its source; only the check date changed",
+    "dead": "marked dead",
+    "undo": "an earlier change undone",
+    "undo_skipped": "undo skipped; the value did not change",
+    "append_evidence": "evidence row added",
+    "drop_evidence": "evidence row removed",
+    "relate": "relation to another record added",
+    "add_record": "record added",
+}
+LEDGER_NO_OP = {
+    "field": "amended; the old and the new value are not published",
+    "url": "evidence row or relation changed; the row does not say how",
+    "none": "record changed; the row names no field",
+}
+
+
+def ledger_title(op, path, url):
+    """The title of a ledger row, as the Worker's worklist changes gives it."""
+    if op in LEDGER_TITLE:
+        return LEDGER_TITLE[op]
+    return LEDGER_NO_OP["field" if path else "url" if url else "none"]
+
+
+def ledger_feed(at, rid, path, url, op):
+    """(title, description) of a ledger row in the feed. A row that amends a field names the field; the other rows give
+    their title."""
+    day, title = (at or "")[:10], ledger_title(op, path, url)
+    if title == LEDGER_NO_OP["field"]:
+        what = ("The whole record %s" % rid) if path == "$" else ("The field %s of the record %s" % (ledger_field(path), rid))
+        return ("%s: %s amended" % (rid, ledger_field(path)),
+                "%s was amended on %s%s. The old and the new value are not published: open the record to read the "
+                "current value." % (what, day, (", source " + url) if url else ""))
+    field = (", " + ledger_field(path)) if path else ""
+    named = ("" if not path else ", the whole record" if path == "$" else ", the field " + ledger_field(path))
+    return ("%s%s: %s" % (rid, field, title),
+            "The record %s, on %s%s: %s.%s Open the record to read the current value." % (
+                rid, day, named, title, (" URL of the row: %s." % url) if url else ""))
 
 
 def extra_html(v):
@@ -921,25 +970,25 @@ class Site:
             rss.append((t[0] if t else EPOCH, '<item><title>%s</title><link>%s/changes/#%s</link><guid isPermaLink="false">%s</guid>'
                         '<description>%s</description>%s</item>' % (
                             e(title), e(llms.BASE), hist_anchor(hid), hist_anchor(hid), e(desc), ("<pubDate>%s</pubDate>" % t[1]) if t else "")))
-        # the published ledger says when, which record and field, the evidence and the source. It holds no old or new
-        # value, so the page says so and sends the reader to the record, where the current value is
+        # the published ledger says when, which record, what the row did, the field, the evidence and the source. It holds
+        # no old or new value, so the page says so and sends the reader to the record, where the current value is
         n_led = db.execute("SELECT count(*) FROM ledger").fetchone()[0]
-        led = db.execute("SELECT at, rid, path, rung, url FROM ledger ORDER BY at DESC LIMIT 500").fetchall()
-        lh = "".join('<tr><td>%s</td><td><a href="/r/%s">%s</a></td><td><code>%s</code></td><td>%s</td><td>%s</td></tr>' % (
-            e((a or "")[:10]), e(r), e(r), e(ledger_field(p)), e(g or ""), prose(u)) for a, r, p, g, u in led)
-        for a, r, p, g, u in led[:LEDGER_FEED]:
+        led = db.execute("SELECT at, rid, path, rung, url, op FROM ledger ORDER BY at DESC LIMIT 500").fetchall()
+        lh = "".join('<tr><td>%s</td><td><a href="/r/%s">%s</a></td><td>%s</td><td><code>%s</code></td><td>%s</td><td>%s</td></tr>' % (
+            e((a or "")[:10]), e(r), e(r), e(ledger_title(o, p, u)), e(ledger_field(p)), e(g or ""), prose(u))
+            for a, r, p, g, u, o in led)
+        for a, r, p, g, u, o in led[:LEDGER_FEED]:
             t = rfc822(a)
             if t:
+                title, desc = ledger_feed(a, r, p, u, o)
                 rss.append((t[0], '<item><title>%s</title><link>%s/r/%s</link><guid isPermaLink="false">%s</guid>'
                             '<description>%s</description><pubDate>%s</pubDate></item>' % (
-                                e("%s: %s amended" % (r, ledger_field(p))), e(llms.BASE), e(r), hist_anchor("ledger|%s|%s|%s" % (a, r, p)),
-                                e("The field %s of the record %s was amended on %s%s. The old and the new value are not published: "
-                                  "open the record to read the current value." % (ledger_field(p), r, (a or "")[:10],
-                                                                                  (", source " + u) if u else "")), t[1])))
+                                e(title), e(llms.BASE), e(r), hist_anchor("ledger|%s|%s|%s" % (a, r, p)), e(desc), t[1])))
         body = ('<h1>Changes</h1><p class="lede">Dated entries, newest first: the corrections of earlier claims, the other '
-                'changes of state, and the newest amendments of the change ledger. A ledger row says which field of which record '
-                'was amended, on which date and on which source. It holds no old or new value, so open the record to read the '
-                'current one. RSS: <a href="/changes.xml">/changes.xml</a>.</p>'
+                'changes of state, and the newest rows of the change ledger. A ledger row says what changed in which record, '
+                'on which date and on which source: a field that was amended, an evidence row that was added or removed, a '
+                'relation or a new record. It holds no old or new value, so open the record to read the current one. RSS: '
+                '<a href="/changes.xml">/changes.xml</a>.</p>'
                 '<ul class="stats"><li><a class="st" href="#corrections"><b>%s</b>corrections</a></li>%s%s</ul>'
                 '<h2 id="corrections">Corrections <small>%s</small></h2>%s%s%s') % (
             num(len(corr)), ('<li><a class="st" href="#other"><b>%s</b>other entries</a></li>' % num(len(other))) if other else "",
@@ -947,7 +996,7 @@ class Site:
             num(len(corr)), "".join(corr),
             ('<h2 id="other">Other entries <small>%s</small></h2>%s' % (num(len(other)), "".join(other))) if other else "",
             ('<h2 id="ledger">Ledger <small>%s of %s</small></h2><p>The newest %s rows. The API gives every row: '
-             '<a href="/api/v1/worklist/changes">/api/v1/worklist/changes</a>.</p><div class="tw"><table class="ev led"><thead><tr><th>date</th><th>record</th><th>field</th>'
+             '<a href="/api/v1/worklist/changes">/api/v1/worklist/changes</a>.</p><div class="tw"><table class="ev led"><thead><tr><th>date</th><th>record</th><th>change</th><th>field</th>'
              '<th>evidence</th><th>source</th></tr></thead><tbody>%s</tbody></table></div>' % (num(len(led)), num(n_led), num(len(led)), lh)) if lh else "")
         self.page("changes/index.html", "Changes", body, "Corrections and other dated changes of the fshy catalogue, newest first.")
         self.write("changes.xml", '<?xml version="1.0" encoding="utf-8"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">'
