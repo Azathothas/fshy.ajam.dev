@@ -947,9 +947,13 @@ test('the changes worklist says which field of which record was amended and neve
   assert.equal(w.res.status, 200, w.body);
   const ledger = w.json.rows.filter((r) => r[1] === 'ledger');
   assert.ok(ledger.length > 0, 'the newest rows are ledger rows');
+  const api = await import('../api.js');
+  const titles = new Set([...Object.values(api.LEDGER_TITLE), ...Object.values(api.LEDGER_NO_OP)]);
   for (const r of ledger) {
     assert.ok(!/^ -> $/.test(r[4]), r.join(' | '));
-    assert.match(r[4], /^amended; the old and the new value are not published$| -> /);
+    assert.ok(titles.has(r[4]) || / -> /.test(r[4]), r.join(' | '));
+    // an amended row names its field; a row with no field (an evidence row, a relation, a record) is not amended
+    if (/amended/.test(r[4])) assert.ok(r[2], 'an amended row names its field: ' + r.join(' | '));
     assert.ok(r[5].includes('/'), 'the record id is the last column');
   }
 });
