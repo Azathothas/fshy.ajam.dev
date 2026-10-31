@@ -215,6 +215,12 @@ joined file, so a client can resume. The route reads only the parts that the ran
 manifest gives their size. A list of ranges, another unit and an invalid range are ignored, and the whole file is
 sent.
 
+**The cap of an MCP answer.** A tool answer holds about 20,000 tokens or less (`MAX_TOKENS` of `worker/mcp.js`). A
+cut keeps whole rows and whole records, so the text stays valid TSV or valid JSON, and a format of `json` stays JSON.
+A note in the answer counts what the cut left out: the offset that reads on for a paged list, and the rids for a list
+with no offset. `get` with `detail=full` sends whole records in the order asked, the first one always, and lists the
+ids of the others in `omitted`. The HTTP API does not cut an answer.
+
 The Worker does not cache an API answer at the edge: Workers Cache would bill the static requests that are free
 now, and its key is the full URL, so a crawler that changes `q` or `offset` would gain nothing from it.
 

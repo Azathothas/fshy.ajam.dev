@@ -1386,6 +1386,94 @@ test('a missing Markdown page is a Markdown 404, and the not-found page says 404
   }
 });
 
+// ------------------------------------------------------------------ blind test 2 of the live site
+
+const FULL_IDS = ['compute/oracle-cloud', 'compute/google-cloud-free-tier', 'compute/aws-free-plan-t4g', 'compute/euserv-vs2-free', 'compute/sillydev-free'];
+
+test('MCP get detail=full over the token cap sends whole records as JSON and names the ids it left out (F-09)', async (t) => {
+  if (!HAVE_DIST) { t.skip('no ' + DIST); return; }
+  const { estimateTokens } = await import('../mcp.js');
+  const g = await rpc('tools/call', { name: 'get', arguments: { ids: FULL_IDS, detail: 'full' } });
+  assert.equal(g.json.result.isError, false, g.body);
+  assert.equal(g.json.result.content.length, 1);
+  const text = g.json.result.content[0].text;
+  const o = JSON.parse(text); // before the fix: the text ended inside a string, then a footer line
+  assert.ok(estimateTokens(text) <= 20000, 'about 20,000 tokens or less: ' + estimateTokens(text));
+  const sent = o.records.map((r) => r.rid);
+  assert.ok(sent.length >= 1 && o.omitted.length >= 1, `${sent.length} sent, ${o.omitted.length} omitted`);
+  assert.deepEqual([...sent, ...o.omitted], FULL_IDS, 'whole records in the order asked, then the ids left out');
+  assert.ok(o.notes.some((n) => /cut at about 20000 tokens: \d+ records? not sent, listed in omitted/.test(n)), o.notes.join(' | '));
+  for (const r of o.records) {
+    const whole = await call('/api/v1/record/' + r.rid);
+    assert.deepEqual(r, whole.json, r.rid + ' is the whole record');
+  }
+  // the ids that it left out fit in a second call
+  const rest = await rpc('tools/call', { name: 'get', arguments: { ids: o.omitted, detail: 'full' } });
+  const ro = JSON.parse(rest.json.result.content[0].text);
+  assert.deepEqual(ro.records.map((r) => r.rid), o.omitted);
+  assert.ok(!('omitted' in ro), 'an answer under the cap has no omitted');
+  // fields keep each answer small, so nothing is left out
+  const f = await rpc('tools/call', { name: 'get', arguments: { ids: FULL_IDS, detail: 'full', fields: ['card.verdict'] } });
+  assert.equal(JSON.parse(f.json.result.content[0].text).records.length, 5);
+});
+
+test('every cut of an MCP answer keeps whole rows and stays valid TSV or JSON (F-09)', async () => {
+  const mcp = await import('../mcp.js');
+  const api = await import('../api.js');
+  const { getStore } = await import('../db.js');
+  const { store } = await getStore(env, globalThis.__fshyWasm);
+  // a sql answer as JSON over the cap: JSON with whole rows, not TSV and not a cut string
+  const big = await rpc('tools/call', { name: 'sql', arguments: { query: 'SELECT rid, summary, summary || summary || summary AS s FROM record', limit: 200, format: 'json' } });
+  const bj = JSON.parse(big.json.result.content[0].text);
+  assert.deepEqual(bj.columns, ['rid', 'summary', 's']);
+  assert.ok(bj.rows.length > 0 && bj.rows.length < 200 && bj.truncated, bj.rows.length);
+  assert.ok(bj.rows.every((r) => r.length === 3 && typeof r[0] === 'string'));
+  assert.ok(bj.notes.some((n) => /^cut at about 20000 tokens: \d+ more rows not shown; select fewer rows or columns$/.test(n)), bj.notes.join(' | '));
+  // a paged result: the footer and the note give the offset that reads on, and every line is a whole row
+  const f = api.filter(store, { topic: 'storage', limit: 200 });
+  for (const format of ['tsv', 'json']) {
+    const text = mcp.tableText(f, format, 1500);
+    assert.ok(mcp.estimateTokens(text) <= 1500, format);
+    if (format === 'json') {
+      const j = JSON.parse(text);
+      assert.ok(j.truncated && j.rows.length > 0 && j.rows.length < f.rows.length);
+      assert.deepEqual(j.rows, f.rows.slice(0, j.rows.length));
+      assert.ok(j.notes.includes(`cut at about 1500 tokens: ${f.rows.length - j.rows.length} more rows not shown; offset=${j.rows.length} reads on`), j.notes.at(-1));
+    } else {
+      const lines = text.split('\n');
+      const body = lines.slice(1).filter((l) => !l.startsWith('#'));
+      assert.equal(lines[0], f.columns.join('\t'));
+      assert.deepEqual(body, f.rows.slice(0, body.length).map((r) => r.map(api.cell).join('\t')));
+      assert.ok(lines.includes(`# ${body.length} of ${f.total} rows; offset=${body.length} for more`), lines.filter((l) => l.startsWith('#')).join(' | '));
+    }
+  }
+  // a need: the parts are cut in list order, so a part after the cut is empty, and the offset reads on
+  const n = await api.need(store, env, { id: 'free-gpu', limit: 200 });
+  const all = [...n.rows, ...n.nullRows, ...n.unstatedRows, ...n.selfRows, ...n.selfUnstatedRows];
+  const nj = JSON.parse(mcp.tableText(n, 'json', 1200));
+  const kept = [...nj.rows, ...nj.null_rows, ...(nj.unstated_rows || []), ...nj.self_hosted_rows, ...(nj.self_hosted_unstated_rows || [])];
+  assert.ok(kept.length > 0 && kept.length < all.length, `${kept.length} of ${all.length}`);
+  assert.deepEqual(kept, all.slice(0, kept.length));
+  // a result with no offset (get card): no offset in the footer, and the note names the rids that it left out
+  const ids = rows(store, 'SELECT rid FROM record ORDER BY rid LIMIT 50').map((r) => r[0]);
+  const g = await api.get(store, env, { ids });
+  const gt = mcp.tableText(g, 'tsv', 800);
+  const shown = gt.split('\n').slice(1).filter((l) => !l.startsWith('#')).map((l) => l.split('\t')[0]);
+  assert.ok(shown.length > 0 && shown.length < 50);
+  assert.ok(gt.includes(`# ${shown.length} of 50 rows\n`) && !/offset=/.test(gt), gt.split('\n').filter((l) => l.startsWith('#')).join(' | '));
+  assert.ok(gt.includes(`more rows not shown: ${ids.slice(shown.length).join(', ')}`));
+  // get detail=full: the first record is sent whole even when it alone is over the cap
+  const one = JSON.parse(mcp.recordsText({ records: [{ rid: 'a/b', x: 'y'.repeat(4000) }, { rid: 'c/d' }], missing: [], notes: [] }, 100));
+  assert.equal(one.records[0].x.length, 4000);
+  assert.deepEqual(one.omitted, ['c/d']);
+});
+
+function rows(store, sql) {
+  const st = store.db.prepare(sql);
+  const out = [];
+  try { while (st.step()) out.push(st.get()); } finally { st.free(); }
+  return out;
+}
 test('report', () => {
   for (const [k, v] of Object.entries(timings)) console.log('# ' + k + ': ' + (typeof v === 'number' ? v.toFixed(1) : JSON.stringify(v)));
 });
