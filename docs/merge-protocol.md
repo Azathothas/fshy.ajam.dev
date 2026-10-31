@@ -76,7 +76,10 @@ scripts/rq review RUN
 
 Read all of it. Then check these, in this order:
 
-1. **The gate and CI.** `gh pr checks <number>` must be green. A red check is a stop.
+1. **The gate and CI.** `scripts/rq ci RUN` must be green: the run of the workflow `f-research-ci` of this
+   repository on the run's head. `f-research` runs no Actions of its own; that run's log prints only check names and
+   PASS or FAIL, beside what the checkout prints: the fetched branch names, and the tested commit's hash and subject
+   line. A red check is a stop. Read its detail in your own clone with `scripts/rq gatecmp --base origin/main`.
 2. **The audit.** Every work unit of the run has an audit line. A unit marked `reverted` is already undone.
    A run with no audit line for a unit is a stop.
 3. **Drafts merged into existing records.** For each line under "drafts merged into existing records", open
@@ -110,7 +113,8 @@ Read all of it. Then check these, in this order:
 
    A research run adds no row, because `scripts/rq land` refuses one. Rows that a run removed with
    `scripts/rq check --prune --run RUN` are expected. Another pull request that adds rows fails
-   the CI job `baseline` until it carries the label `rq:baseline`. Apply the label only when both are true:
+   the baseline check of `scripts/rq ci --pr NUMBER --wait` until it carries the label `rq:baseline`. Apply the
+   label only when both are true:
 
    - Each added row comes from a rule that the pull request adds or widens, in
      `scripts/fshy/rules/projection.json` or `scripts/research/checks.py`.
@@ -121,10 +125,11 @@ Read all of it. Then check these, in this order:
      git diff --name-only origin/main...origin/BRANCH -- dossier
      ```
 
-   Then apply the label. CI runs again:
+   Then apply the label, and run the check again (a label starts no check by itself):
 
    ```bash
    gh pr edit NUMBER --repo Azathothas/f-research --add-label rq:baseline
+   scripts/rq ci --pr NUMBER --wait
    ```
 
    ⚠ A row that names a record that the pull request touches is a send-back, not a label.
@@ -146,10 +151,12 @@ scripts/rq merge RUN
 ```
 
 `merge` brings the branch up to date with main in git objects, with no worktree. It renders the tables of the
-topics that the run touched with the render of main, pushes, waits for CI and merges the head that CI checked
-(`gh pr merge --match-head-commit`). The gate comparison, the baseline check and the parity check run in CI on the
-pull request and nowhere else, so a red or missing check stops the merge. A CI that answers nothing within five
-minutes stops the merge too. `scripts/rq merge RUN --no-ci` merges without CI, and only on purpose.
+topics that the run touched with the render of main, pushes, runs the light checks (the commit hook on every
+commit and on the pull request's text, the baseline rows), waits for the run of `f-research-ci` on that head (it
+starts one when there is none) and merges the head that run checked (`gh pr merge --match-head-commit`). The gate
+comparison, the render check, the selftests and the parity check run in that workflow and nowhere else, so a red,
+cancelled or missing run stops the merge, and so does one that does not finish within 40 minutes.
+`scripts/rq merge RUN --no-ci` merges without CI, and only on purpose.
 
 `merge` then files the follow-up issue for open items, judges the claimed issue, deletes the branch, releases the
 leases of the run, and comments `rq merged:` on the pull request. If it stops after the merge, run it again: it
@@ -185,7 +192,9 @@ When every line is ticked, close the issue by hand, with a link to the pull requ
 ## 5. Other pull requests
 
 A pull request that is not a run (code, documents, rules) gets a code review: read the diff, run the checks it
-names, and confirm CI is green. Then merge it with `gh pr merge <number> --merge`. ⛔ Do not merge your own.
+names, and confirm CI is green. In `f-research` that is `scripts/rq ci --pr NUMBER --wait` once the branch holds
+`main`, then `gh pr merge NUMBER --merge --match-head-commit SHA`; here it is `gh pr checks NUMBER`, then
+`gh pr merge <number> --merge`. ⛔ Do not merge your own.
 ⚠ A pull request runs the workflow, the hook and the leak rules of its own head. Read a change of `.github/`,
 `.githooks/` or `publish/rules/leak.json` as a change of the checks that judge it.
 In `f-research`, also do step 7 of section 3, the baseline.
