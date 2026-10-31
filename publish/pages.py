@@ -223,10 +223,7 @@ def source_text(url):
     return e(url)
 
 
-def money(v, suffix):
-    if v is None:
-        return ""
-    return "USD %s%s" % (("%.2f" % v).rstrip("0").rstrip(".") if v < 1000 else "%.0f" % v, suffix)
+money = llms.money  # one rule for a price on every page and in every file
 
 
 def price_of(c):
@@ -369,12 +366,14 @@ class Site:
         return "/p/%s/#%s--%s" % (e(c["eid"]), e(c["topic"]), e(c["slug"]))
 
     def fresh(self, c):
-        """The freshness item. The build writes the stale date; the script turns it into 'fresh until' or 'stale
-        since' against today. A dead record shows its check date only."""
-        if c["grp"] == "dead" or not c["stale_on"]:
+        """The freshness item. The build writes the stale date, as 'stale since' when it is on or before the date of
+        the data (llms.fresh_word); the script turns it into 'fresh until' or 'stale since' against today. A dead record
+        shows its check date only."""
+        word = llms.fresh_word(c, self.meta.get("as_of") or "")
+        if not word:
             return '<span class="fr done">checked %s</span>' % e(c["checked_on"] or "on an unknown date")
-        return '<span class="fr" data-basis="%s" data-checked="%s">stale on %s</span>' % (
-            e(c["verified_basis"]), e(c["checked_on"]), e(c["stale_on"]))
+        return '<span class="fr" data-basis="%s" data-checked="%s">%s</span>' % (
+            e(c["verified_basis"]), e(c["checked_on"]), e(word))
 
     def badges(self, c, with_topic=False):
         """The facts line under an offer: topic, free tier, identity, card, phone, limit, evidence, freshness, flags.
@@ -1020,6 +1019,7 @@ class Site:
         b = llms.BASE
         api = [("/api/v1/search?q=gpu", "full-text search, names first"),
                ("/api/v1/records?topic=storage&no_card=1&sort=usd_per_tb_month", "records that meet conditions, sorted"),
+               ("/api/v1/records?topic=storage&iface=s3&free=1", "records with a free allowance (free=1)"),
                ("/api/v1/sql?q=SELECT+rid,verdict+FROM+record+LIMIT+5", "one read-only SQL statement"),
                ("/api/v1/need/", "the best-per-need lists"),
                ("/api/v1/record/compute/oracle-cloud", "one record as JSON"),

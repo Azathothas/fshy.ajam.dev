@@ -66,7 +66,8 @@ non-Latin script carries its `lang`. The labels of a row are in the markup, so a
 an agent get them. A key under the filter bar says what each word and mark means.
 
 The browser computes freshness and the filter chips against today, so a page built today stays correct tomorrow.
-The page says "stale on" a date; the script turns that into "fresh until" or "stale since". The script keeps the
+The page says "stale on" a date, or "stale since" when the date is on or before the date of the data. The script turns
+that into "fresh until" or "stale since" against today. The Markdown index lines say the same words. The script keeps the
 pressed chips in `?f=` and the interface text in `?i=`, so a filtered list is a link. Without JavaScript the
 filter bar stays hidden, and the search and compare pages name the API route that answers instead. Both asset
 URLs carry `?v=` and the first ten hex digits of the file's SHA-256. A deploy that changes either file thus
@@ -92,7 +93,7 @@ store the HTML comes from. None is written by hand, and the leak scan reads them
 | `/llms-full.txt` | how to read a record, and the index of the parts |
 | `/t/<topic>/llms-full.txt` | one topic in full when it fits in one file, else the index of its parts |
 | `/t/<topic>/llms-full-<group>[-<k>].txt` | a part: the hosted records of one verdict group (usable, trial, paid, rejected, dead), or every self-hosted record of the topic (self-hosted, the last part), cut into balanced pieces when it is over the budget |
-| `/t/<topic>.md`, `/t/<topic>/rejected.md` | the two topic pages: one line per record |
+| `/t/<topic>.md`, `/t/<topic>/rejected.md` | the two topic pages: one line per record, with its stale date |
 | `/p/<id>.md` | a provider page: every record of that provider in full |
 | `/need/<id>.md` | a best-per-need ranking, with its SQL |
 
@@ -119,6 +120,13 @@ do not overlap, because a second matching rule appends to a header instead of re
 that no file gets one header from two rules and that every `.md` and `.txt` file has a charset, and `smoke.mjs`
 checks the headers that workerd sends. A topic with no record yet has no page, no Markdown file and no line in
 `llms.txt` or the sitemap. The API still accepts it as a topic, with an empty list.
+
+**Ranges.** The assets serve the `.txt` files without the Worker, and they ignore a `Range` header: the answer is 200
+with the whole file. So `static/_headers` sends `Accept-Ranges: none` on `/llms.txt`, `/llms-full.txt` and
+`/t/*.txt`. To read less, read one part of a split topic. The Worker serves the `.md` files, and a `.md` file
+answers one range (`bytes=a-b`, `a-` or `-n`) with 206 and `Content-Range`, and keeps its ETag and its
+`Cache-Control`. `If-Range` must name that ETag. A list of ranges, another unit and an invalid range get the whole
+file, and a range past the end gets 416.
 
 ## Fork
 
@@ -178,7 +186,8 @@ lists them, and `smoke.mjs` checks the exceptions. So `/api/v1/` lists the route
 assets answer it with the HTML 404 page, because the Worker does not see it. The Worker also serves the Markdown
 alternates (`/index.md`, `/t/*.md`, `/p/*.md`, `/need/*.md`) from the assets with the headers of `static/_headers`, so
 that a missing one is a short Markdown 404 and not the HTML not-found page under a Markdown type, and `/404` and
-`/404.html`, so that the not-found page answers 404 at its own URL too. A need that asks for no card or no phone ends
+`/404.html`, so that the not-found page answers 404 at its own URL too. A Markdown alternate answers one byte range
+(section "Ranges" above). A need that asks for no card or no phone ends
 with a section "Card or phone requirement not stated": the rows of its SQL without the conditions on the card, the
 phone and a stated identity, minus the confirmed rows and the rows that need a card or a phone (`llms.need_unstated`,
 and the same rule in `api.need`, with `unstated_rows` in the JSON). The self-hosted rows of that section are the last
@@ -214,6 +223,12 @@ with a matching `If-None-Match` gets 304 and no body. A request with one `Range`
 joined file, so a client can resume. The route reads only the parts that the range touches, and `part_bytes` in the
 manifest gives their size. A list of ranges, another unit and an invalid range are ignored, and the whole file is
 sent.
+
+**The cap of an MCP answer.** A tool answer holds about 20,000 tokens or less (`MAX_TOKENS` of `worker/mcp.js`). A
+cut keeps whole rows and whole records, so the text stays valid TSV or valid JSON, and a format of `json` stays JSON.
+A note in the answer counts what the cut left out: the offset that reads on for a paged list, and the rids for a list
+with no offset. `get` with `detail=full` sends whole records in the order asked, the first one always, and lists the
+ids of the others in `omitted`. The HTTP API does not cut an answer.
 
 The Worker does not cache an API answer at the edge: Workers Cache would bill the static requests that are free
 now, and its key is the full URL, so a crawler that changes `q` or `offset` would gain nothing from it.

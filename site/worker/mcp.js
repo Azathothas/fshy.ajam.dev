@@ -1,7 +1,8 @@
 // Remote MCP endpoint: stateless Streamable HTTP, JSON responses only, JSON-RPC 2.0 by hand.
 // POST /mcp carries one message, or a batch of at most MAX_BATCH messages, of which at most MAX_BATCH_SQL are sql
 // calls; GET and DELETE are 405 because there is no server-initiated stream and no session. Tool results are text:
-// TSV by default, capped near 20,000 tokens with a footer that says what was cut.
+// TSV by default, capped near 20,000 tokens. A cut keeps whole rows and whole records, so the text stays valid TSV or
+// valid JSON, and a note in the text says what the cut left out.
 //
 // Cost: each tools/call message counts one unit of the rate limit RL_API, so a batch costs what its calls cost. A
 // sql call can take 0.6 s of CPU where any other call takes 0.1 s or less, so the batch limit weighs it: with the
@@ -58,6 +59,7 @@ export const TOOLS = [
       no_card: b('a card is stated as not required'),
       no_phone: b('a phone is stated as not required'),
       anonymous: b('no account at all'),
+      free: b('a free allowance is stated (the claim has-free-tier), as the need lists read it'),
       iface: s('interface substring: s3, webdav, sftp, api ...'),
       binding: s('binding constraint, comma list'),
       crypto: b('a crypto payment rail is named'),
@@ -73,7 +75,7 @@ export const TOOLS = [
   },
   {
     name: 'get',
-    description: 'Use after search or filter to read records in full. ids are rids (topic/slug). detail=card takes up to 50 ids; detail=full takes up to 5 and gives the record JSON with claims, unknown, history and drift.',
+    description: 'Use after search or filter to read records in full. ids are rids (topic/slug). detail=card takes up to 50 ids; detail=full takes up to 5 and gives the record JSON with claims, unknown, history and drift. Over about 20,000 tokens, full sends whole records only and lists the ids it left out in omitted.',
     inputSchema: obj({
       ids: { type: 'array', items: { type: 'string' }, description: 'rids, e.g. storage/hetzner-storage-box' },
       detail: s('card (default) or full', { enum: ['card', 'full'] }),
@@ -146,37 +148,93 @@ export function estimateTokens(text) {
   return Math.ceil(ascii / 4) + other;
 }
 
-/** TSV text for a table result, cut at about MAX_TOKENS with a footer that says so. */
-export function tableText(t, format = 'tsv', maxTokens = MAX_TOKENS) {
-  if (format === 'json') {
-    const text = JSON.stringify(api.toJson(t));
-    if (estimateTokens(text) <= maxTokens) return text;
-    // too large as JSON: fall back to TSV, which is cut by rows
+// The row lists of a table result, in list order: a need has its rows in these parts (api.need), any other table has
+// rows only. toTsv and toJson print them in this order.
+const SECTIONS = ['rows', 'nullRows', 'unstatedRows', 'selfRows', 'selfUnstatedRows'];
+const allRows = (t) => SECTIONS.flatMap((k) => t[k] || []);
+const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+/**
+ * A copy of a table result with its first n rows in list order, and a note that says what the cut left out. A paged
+ * result (api.js marks it paged) gives the offset that reads on; the footer of toTsv gives it too. A sql result says to
+ * select less. Any other result names the rids of the rows that it left out, so that get can read them.
+ */
+function cutTable(t, n, maxTokens) {
+  const out = { ...t };
+  let left = n;
+  for (const k of SECTIONS) {
+    if (!t[k]) continue;
+    out[k] = t[k].slice(0, left);
+    left -= out[k].length;
   }
-  const { lines, footer } = api.toTsv(t);
-  let budget = maxTokens - estimateTokens(footer.join('\n')) - 60;
-  const kept = [];
-  let cut = 0;
-  for (let i = 0; i < lines.length; i++) {
-    const cost = estimateTokens(lines[i]) + 1;
-    if (cost > budget) { cut = lines.length - i; break; }
-    budget -= cost;
-    kept.push(lines[i]);
+  const rest = allRows(t).slice(n);
+  out.truncated = true;
+  let note = `cut at about ${maxTokens} tokens: ${plural(rest.length, 'more row')} not shown`;
+  if (t.open) {
+    note += '; select fewer rows or columns';
+  } else if (t.paged) {
+    note += `; offset=${t.offset + n} reads on`;
+  } else if (t.columns[0] === 'rid') {
+    note += ': ' + rest.map((r) => r[0]).join(', ');
   }
-  const out = kept.concat(footer);
-  if (cut) {
-    const shown = Math.max(0, kept.length - 1);
-    out.push(`# truncated at about ${maxTokens} tokens: ${cut} more lines not shown after row ${shown}; narrow the query or page with limit/offset`);
-  }
-  return out.join('\n');
+  out.notes = [...(t.notes || []), note];
+  return out;
 }
 
-function jsonText(o, maxTokens = MAX_TOKENS) {
-  const text = JSON.stringify(o);
-  if (estimateTokens(text) <= maxTokens) return text;
-  let cut = text.slice(0, maxTokens * 3);
-  while (estimateTokens(cut) > maxTokens && cut.length > 100) cut = cut.slice(0, Math.floor(cut.length * 0.9));
-  return cut + `\n# truncated at about ${maxTokens} tokens; ask for fewer ids or use fields`;
+function render(t, format) {
+  if (format === 'json') return JSON.stringify(api.toJson(t));
+  const { lines, footer } = api.toTsv(t);
+  return lines.concat(footer).join('\n');
+}
+
+/**
+ * The text of a table result, TSV or JSON, at about MAX_TOKENS or less. A cut keeps whole rows in list order, so the
+ * text stays valid TSV or valid JSON, and its last note says how many rows it left out and how to read them.
+ */
+export function tableText(t, format = 'tsv', maxTokens = MAX_TOKENS) {
+  const whole = render(t, format);
+  if (estimateTokens(whole) <= maxTokens) return whole;
+  // the rows that fit after the text with no row, whose note names every row that it leaves out, so it is the longest
+  const rows = allRows(t);
+  let budget = maxTokens - estimateTokens(render(cutTable(t, 0, maxTokens), format));
+  let n = 0;
+  for (; n < rows.length; n++) {
+    const cost = estimateTokens(format === 'json' ? JSON.stringify(rows[n]) : rows[n].map(api.cell).join('\t')) + 1;
+    if (cost > budget) break;
+    budget -= cost;
+  }
+  // a heading line of a part of a need costs a little too: take one more row off until the text fits
+  let text = render(cutTable(t, n, maxTokens), format);
+  while (n > 0 && estimateTokens(text) > maxTokens) text = render(cutTable(t, --n, maxTokens), format);
+  return text;
+}
+
+/**
+ * The JSON of get with detail=full, at about MAX_TOKENS or less: {records, missing, notes}, plus omitted when it is cut.
+ * A cut keeps whole records in the order asked and leaves out the rest: omitted lists their ids and a note says so, so
+ * the text always parses. The first record is always sent whole, because no smaller answer holds it.
+ */
+export function recordsText(o, maxTokens = MAX_TOKENS) {
+  const whole = JSON.stringify(o);
+  if (estimateTokens(whole) <= maxTokens) return whole;
+  const shape = (records, omitted) => ({
+    ...o, records, omitted,
+    notes: [...(o.notes || []), `cut at about ${maxTokens} tokens: ${plural(omitted.length, 'record')} not sent, ` +
+      `listed in omitted; ask for ${omitted.length === 1 ? 'it' : 'them'} in another call, or name fields`],
+  });
+  let budget = maxTokens - estimateTokens(JSON.stringify(shape([], o.records.map((r) => r.rid))));
+  const kept = [];
+  const omitted = [];
+  for (const r of o.records) {
+    const cost = estimateTokens(JSON.stringify(r)) + 1;
+    if (omitted.length || (kept.length && cost > budget)) {
+      omitted.push(r.rid);
+      continue;
+    }
+    kept.push(r);
+    budget -= cost;
+  }
+  return JSON.stringify(shape(kept, omitted));
 }
 
 function args(a) {
@@ -201,7 +259,7 @@ async function callTool(name, a, store, env, request) {
       return tableText(api.filter(store, a), fmt(a));
     case 'get': {
       const r = await api.get(store, env, a);
-      return r.json ? jsonText(r.json) : tableText(r, 'tsv');
+      return r.json ? recordsText(r.json) : tableText(r, 'tsv');
     }
     case 'entity':
       await loadNames(store, env);

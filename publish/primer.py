@@ -133,6 +133,7 @@ def _text(db):
     w("  none; no row: unknown. free_unit is the unit of the headline offer, which can be a price, so it does not say")
     w("  this. Join: JOIN claim c ON c.rid = r.rid AND c.kind = 'has-free-tier' AND c.num = 1 keeps the records with a")
     w("  free allowance (example 8). With LEFT JOIN and no test on c.num, a record with no row has c.num IS NULL.")
+    w("  The filter operation applies the same join with free=1: /api/v1/records?free=1, or free true in the MCP tool.")
     w("- TSV output ends with lines that start with '#': the row count, the limit, a cut. Read it with")
     w("  comment='#' in pandas, or drop those lines.")
     w("- vorder 0..7 orders verdicts best first; grp groups them.")

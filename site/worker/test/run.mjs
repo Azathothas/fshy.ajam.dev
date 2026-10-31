@@ -1386,6 +1386,201 @@ test('a missing Markdown page is a Markdown 404, and the not-found page says 404
   }
 });
 
+// ------------------------------------------------------------------ blind test 2 of the live site
+
+const FULL_IDS = ['compute/oracle-cloud', 'compute/google-cloud-free-tier', 'compute/aws-free-plan-t4g', 'compute/euserv-vs2-free', 'compute/sillydev-free'];
+
+test('MCP get detail=full over the token cap sends whole records as JSON and names the ids it left out (F-09)', async (t) => {
+  if (!HAVE_DIST) { t.skip('no ' + DIST); return; }
+  const { estimateTokens } = await import('../mcp.js');
+  const g = await rpc('tools/call', { name: 'get', arguments: { ids: FULL_IDS, detail: 'full' } });
+  assert.equal(g.json.result.isError, false, g.body);
+  assert.equal(g.json.result.content.length, 1);
+  const text = g.json.result.content[0].text;
+  const o = JSON.parse(text); // before the fix: the text ended inside a string, then a footer line
+  assert.ok(estimateTokens(text) <= 20000, 'about 20,000 tokens or less: ' + estimateTokens(text));
+  const sent = o.records.map((r) => r.rid);
+  assert.ok(sent.length >= 1 && o.omitted.length >= 1, `${sent.length} sent, ${o.omitted.length} omitted`);
+  assert.deepEqual([...sent, ...o.omitted], FULL_IDS, 'whole records in the order asked, then the ids left out');
+  assert.ok(o.notes.some((n) => /cut at about 20000 tokens: \d+ records? not sent, listed in omitted/.test(n)), o.notes.join(' | '));
+  for (const r of o.records) {
+    const whole = await call('/api/v1/record/' + r.rid);
+    assert.deepEqual(r, whole.json, r.rid + ' is the whole record');
+  }
+  // the ids that it left out fit in a second call
+  const rest = await rpc('tools/call', { name: 'get', arguments: { ids: o.omitted, detail: 'full' } });
+  const ro = JSON.parse(rest.json.result.content[0].text);
+  assert.deepEqual(ro.records.map((r) => r.rid), o.omitted);
+  assert.ok(!('omitted' in ro), 'an answer under the cap has no omitted');
+  // fields keep each answer small, so nothing is left out
+  const f = await rpc('tools/call', { name: 'get', arguments: { ids: FULL_IDS, detail: 'full', fields: ['card.verdict'] } });
+  assert.equal(JSON.parse(f.json.result.content[0].text).records.length, 5);
+});
+
+test('every cut of an MCP answer keeps whole rows and stays valid TSV or JSON (F-09)', async () => {
+  const mcp = await import('../mcp.js');
+  const api = await import('../api.js');
+  const { getStore } = await import('../db.js');
+  const { store } = await getStore(env, globalThis.__fshyWasm);
+  // a sql answer as JSON over the cap: JSON with whole rows, not TSV and not a cut string
+  const big = await rpc('tools/call', { name: 'sql', arguments: { query: 'SELECT rid, summary, summary || summary || summary AS s FROM record', limit: 200, format: 'json' } });
+  const bj = JSON.parse(big.json.result.content[0].text);
+  assert.deepEqual(bj.columns, ['rid', 'summary', 's']);
+  assert.ok(bj.rows.length > 0 && bj.rows.length < 200 && bj.truncated, bj.rows.length);
+  assert.ok(bj.rows.every((r) => r.length === 3 && typeof r[0] === 'string'));
+  assert.ok(bj.notes.some((n) => /^cut at about 20000 tokens: \d+ more rows not shown; select fewer rows or columns$/.test(n)), bj.notes.join(' | '));
+  // a paged result: the footer and the note give the offset that reads on, and every line is a whole row
+  const f = api.filter(store, { topic: 'storage', limit: 200 });
+  for (const format of ['tsv', 'json']) {
+    const text = mcp.tableText(f, format, 1500);
+    assert.ok(mcp.estimateTokens(text) <= 1500, format);
+    if (format === 'json') {
+      const j = JSON.parse(text);
+      assert.ok(j.truncated && j.rows.length > 0 && j.rows.length < f.rows.length);
+      assert.deepEqual(j.rows, f.rows.slice(0, j.rows.length));
+      assert.ok(j.notes.includes(`cut at about 1500 tokens: ${f.rows.length - j.rows.length} more rows not shown; offset=${j.rows.length} reads on`), j.notes.at(-1));
+    } else {
+      const lines = text.split('\n');
+      const body = lines.slice(1).filter((l) => !l.startsWith('#'));
+      assert.equal(lines[0], f.columns.join('\t'));
+      assert.deepEqual(body, f.rows.slice(0, body.length).map((r) => r.map(api.cell).join('\t')));
+      assert.ok(lines.includes(`# ${body.length} of ${f.total} rows; offset=${body.length} for more`), lines.filter((l) => l.startsWith('#')).join(' | '));
+    }
+  }
+  // a need: the parts are cut in list order, so a part after the cut is empty, and the offset reads on
+  const n = await api.need(store, env, { id: 'free-gpu', limit: 200 });
+  const all = [...n.rows, ...n.nullRows, ...n.unstatedRows, ...n.selfRows, ...n.selfUnstatedRows];
+  const nj = JSON.parse(mcp.tableText(n, 'json', 1200));
+  const kept = [...nj.rows, ...nj.null_rows, ...(nj.unstated_rows || []), ...nj.self_hosted_rows, ...(nj.self_hosted_unstated_rows || [])];
+  assert.ok(kept.length > 0 && kept.length < all.length, `${kept.length} of ${all.length}`);
+  assert.deepEqual(kept, all.slice(0, kept.length));
+  // a result with no offset (get card): no offset in the footer, and the note names the rids that it left out
+  const ids = rows(store, 'SELECT rid FROM record ORDER BY rid LIMIT 50').map((r) => r[0]);
+  const g = await api.get(store, env, { ids });
+  const gt = mcp.tableText(g, 'tsv', 800);
+  const shown = gt.split('\n').slice(1).filter((l) => !l.startsWith('#')).map((l) => l.split('\t')[0]);
+  assert.ok(shown.length > 0 && shown.length < 50);
+  assert.ok(gt.includes(`# ${shown.length} of 50 rows\n`) && !/offset=/.test(gt), gt.split('\n').filter((l) => l.startsWith('#')).join(' | '));
+  assert.ok(gt.includes(`more rows not shown: ${ids.slice(shown.length).join(', ')}`));
+  // get detail=full: the first record is sent whole even when it alone is over the cap
+  const one = JSON.parse(mcp.recordsText({ records: [{ rid: 'a/b', x: 'y'.repeat(4000) }, { rid: 'c/d' }], missing: [], notes: [] }, 100));
+  assert.equal(one.records[0].x.length, 4000);
+  assert.deepEqual(one.omitted, ['c/d']);
+});
+
+function rows(store, sql) {
+  const st = store.db.prepare(sql);
+  const out = [];
+  try { while (st.step()) out.push(st.get()); } finally { st.free(); }
+  return out;
+}
+
+test('TSV keeps the significant digits of a small number, and never prints 0 for one (F-19)', async () => {
+  const api = await import('../api.js');
+  const want = [[0, '0'], [2, '2'], [-3, '-3'], [1.1193, '1.1193'], [1234.56789, '1234.5679'], [0.5, '0.5'],
+    [0.00003873, '0.00003873'], [0.00005528, '0.00005528'], [0.1983009573970223, '0.1983'], [-0.0000123456, '-0.00001235'],
+    [1.2345e-9, '1.235e-9'], [0.99996, '1']];
+  for (const [v, s] of want) assert.equal(api.numberText(v), s, String(v));
+  for (let e = -12; e < 0; e++) assert.notEqual(Number(api.numberText(3.3 * 10 ** e)), 0, 'nonzero at 1e' + e);
+  const t = await call('/api/v1/sql.tsv?q=' + encodeURIComponent("SELECT ccy, usd_per_unit FROM fx WHERE ccy IN ('VND', 'IDR') ORDER BY ccy"));
+  assert.equal(t.res.status, 200, t.body);
+  const j = await call('/api/v1/sql?q=' + encodeURIComponent("SELECT ccy, usd_per_unit FROM fx WHERE ccy IN ('VND', 'IDR') ORDER BY ccy"));
+  const lines = t.body.split('\n').filter((l) => l && !l.startsWith('#')).slice(1);
+  assert.equal(lines.length, j.json.rows.length);
+  for (const [i, [ccy, rate]] of j.json.rows.entries()) {
+    const cell = lines[i].split('\t');
+    assert.equal(cell[0], ccy);
+    assert.ok(Number(cell[1]) !== 0 && Math.abs(Number(cell[1]) - rate) / rate < 1e-3, `${ccy}: TSV ${cell[1]}, JSON ${rate}`);
+  }
+});
+
+test('records and the MCP tool filter take free=1: only the records with a free allowance (F-15)', async () => {
+  const base = '/api/v1/records?topic=storage&iface=s3&no_card=1&grp=usable&limit=200';
+  const all = await call(base);
+  const free = await call(base + '&free=1');
+  assert.equal(free.res.status, 200, free.body);
+  const q = await call('/api/v1/sql?limit=200&q=' + encodeURIComponent("SELECT rid FROM claim WHERE kind = 'has-free-tier' AND num = 1"));
+  const sqlFree = await call('/api/v1/sql?limit=200&q=' + encodeURIComponent(
+    "SELECT r.rid FROM record r JOIN claim c ON c.rid = r.rid AND c.kind = 'has-free-tier' AND c.num = 1 WHERE r.topic = 'storage' " +
+    "AND instr(lower(coalesce(r.interfaces, '')), 's3') > 0 AND r.needs_card = 0 AND r.identity_basis = 'stated' AND r.grp = 'usable' " +
+    'AND r.duplicate_of IS NULL ORDER BY r.rid'));
+  const got = free.json.rows.map((r) => r[0]);
+  assert.deepEqual([...got].sort(), sqlFree.json.rows.map((r) => r[0]), 'the join of the need lists');
+  assert.equal(free.json.total, got.length);
+  assert.ok(got.length > 0 && got.length < all.json.total, `${got.length} of ${all.json.total}`);
+  // the claim of every row: without free=1 the list opens with records whose free allowance is not stated
+  const claims = await call('/api/v1/sql?limit=200&q=' + encodeURIComponent(
+    "SELECT r.rid, c.num FROM record r LEFT JOIN claim c ON c.rid = r.rid AND c.kind = 'has-free-tier' WHERE r.topic = 'storage' " +
+    "AND instr(lower(coalesce(r.interfaces, '')), 's3') > 0 AND r.grp = 'usable'"));
+  const num = new Map(claims.json.rows.map(([rid, v]) => [rid, v]));
+  assert.ok(!claims.json.truncated);
+  assert.ok(all.json.rows.some((r) => num.get(r[0]) !== 1), 'without free=1, a record with no stated free allowance is listed');
+  assert.ok(got.every((rid) => num.get(rid) === 1), 'with free=1, every record states a free allowance');
+  assert.ok(q.json.rows.length > 0);
+  // 0 sets no condition, as no_card does; another value is a 400
+  assert.equal((await call(base + '&free=0')).json.total, all.json.total);
+  assert.equal((await call(base + '&free=maybe')).res.status, 400);
+  assert.ok(!(await call(base + '&free=1')).json.notes.some((n) => /ignored parameter/.test(n)));
+  // the MCP tool filter, the route list and the help
+  const m = await rpc('tools/call', { name: 'filter', arguments: { topic: 'storage', iface: 's3', no_card: true, grp: 'usable', free: true, limit: 200, format: 'json' } });
+  assert.deepEqual(JSON.parse(m.json.result.content[0].text).rows.map((r) => r[0]), got);
+  const tl = await rpc('tools/list');
+  assert.ok(tl.json.result.tools.find((x) => x.name === 'filter').inputSchema.properties.free);
+  assert.match((await call('/api/v1/')).body, /anonymous, free, iface/);
+});
+
+test('a Markdown page answers one byte range with 206 and keeps its cache headers (F-21)', async (t) => {
+  const file = join(DIST, 't', 'storage.md');
+  if (!existsSync(file)) { t.skip('no ' + file); return; }
+  const bytes = readFileSync(file);
+  const ETAG = '"md-etag-1"';
+  const tagged = { ...env, ASSETS: { async fetch(req) {
+    const res = await ASSETS.fetch(req);
+    const h = new Headers(res.headers);
+    if (res.status === 200) h.set('etag', ETAG);
+    return new Response(res.body, { status: res.status, headers: h });
+  } } };
+  const get = async (headers, method = 'GET') => {
+    const res = await worker.fetch(new Request(ORIGIN + '/t/storage.md', { method, headers }), tagged);
+    return { res, body: Buffer.from(await res.arrayBuffer()) };
+  };
+  const whole = await get({});
+  assert.equal(whole.res.status, 200);
+  assert.ok(whole.body.equals(bytes));
+  assert.equal(whole.res.headers.get('accept-ranges'), 'bytes');
+  for (const [range, a, b] of [['bytes=0-99', 0, 99], ['bytes=100-', 100, bytes.length - 1], ['bytes=-20', bytes.length - 20, bytes.length - 1],
+    [`bytes=5-${bytes.length + 50}`, 5, bytes.length - 1]]) {
+    const r = await get({ range });
+    assert.equal(r.res.status, 206, range);
+    assert.equal(r.res.headers.get('content-range'), `bytes ${a}-${b}/${bytes.length}`, range);
+    assert.equal(r.res.headers.get('content-length'), String(b - a + 1), range);
+    assert.ok(r.body.equals(bytes.subarray(a, b + 1)), range);
+    assert.equal(r.res.headers.get('content-type'), 'text/markdown; charset=utf-8');
+    assert.equal(r.res.headers.get('cache-control'), 'public, max-age=300');
+    assert.equal(r.res.headers.get('etag'), ETAG);
+  }
+  const past = await get({ range: `bytes=${bytes.length}-` });
+  assert.equal(past.res.status, 416);
+  assert.equal(past.res.headers.get('content-range'), `bytes */${bytes.length}`);
+  assert.equal(past.body.length, 0);
+  // If-Range with the ETag sends the range; with another ETag the whole page; a list of ranges and another unit are ignored
+  assert.equal((await get({ range: 'bytes=0-9', 'if-range': ETAG })).res.status, 206);
+  for (const headers of [{ range: 'bytes=0-9', 'if-range': '"old"' }, { range: 'bytes=0-9,20-29' }, { range: 'lines=0-9' }]) {
+    const r = await get(headers);
+    assert.equal(r.res.status, 200, JSON.stringify(headers));
+    assert.ok(r.body.equals(bytes), JSON.stringify(headers));
+  }
+  const head = await get({ range: 'bytes=0-9' }, 'HEAD');
+  assert.equal(head.res.status, 200);
+  assert.equal(head.body.length, 0);
+  // the files for agents that the assets serve take no range: _headers says so with Accept-Ranges: none
+  const headers = readFileSync(join(SITE, 'static', '_headers'), 'utf8');
+  for (const rule of ['/llms.txt', '/llms-full.txt', '/t/*.txt']) {
+    const block = headers.split(/\n(?=\S)/).find((b) => b.split('\n')[0] === rule);
+    assert.match(block || '', /\n {2}Accept-Ranges: none(\n|$)/, rule);
+  }
+});
+
 test('report', () => {
   for (const [k, v] of Object.entries(timings)) console.log('# ' + k + ': ' + (typeof v === 'number' ? v.toFixed(1) : JSON.stringify(v)));
 });

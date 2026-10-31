@@ -332,7 +332,7 @@ export function search(store, p) {
   notes.push(`name hits: ${nName} records; text hits: ${nText} more`);
   if (nSelf) notes.push(SELF_HOSTED_NOTE(nSelf, 'records'));
   return table([...CARD_COLUMNS, 'matched'], out, {
-    total: all.length, offset, truncated: offset + out.length < all.length, notes,
+    total: all.length, offset, paged: true, truncated: offset + out.length < all.length, notes,
   });
 }
 
@@ -376,14 +376,18 @@ export function entitySearch(store, p) {
   const nSelf = hits.filter((h) => sh.has(h.eid)).length;
   if (nSelf) notes.push(`self-hosted: ${nSelf} entities whose every record is self-hosted, listed after every other entity`);
   return table(['eid', 'name', 'domain', 'topics', 'n_records', 'best_vorder', 'score', 'match', 'alias'], out, {
-    total: hits.length, offset, truncated: offset + out.length < hits.length, notes,
+    total: hits.length, offset, paged: true, truncated: offset + out.length < hits.length, notes,
   });
 }
 
 // ------------------------------------------------------------------ filter
 
-const FILTER_KEYS = new Set(['topic', 'verdict', 'grp', 'confidence', 'no_card', 'no_phone', 'anonymous', 'iface',
+const FILTER_KEYS = new Set(['topic', 'verdict', 'grp', 'confidence', 'no_card', 'no_phone', 'anonymous', 'free', 'iface',
   'binding', 'crypto', 'max_usd_month', 'max_usd_tb', 'include_duplicates', 'sort', 'order', 'limit', 'offset']);
+// free=1: the records with a free allowance, the claim has-free-tier with num 1. The need lists, the free tier chip of
+// the wiki (publish/llms.py attach_free_claims) and worked query 8 of help.txt use the same claim. 0 or absent sets no
+// condition, as no_card does: a record with no such claim is unknown, never no.
+const HAS_FREE_TIER = "rid IN (SELECT rid FROM claim WHERE kind = 'has-free-tier' AND num = 1)";
 
 export function filter(store, p) {
   const db = store.db;
@@ -397,6 +401,7 @@ export function filter(store, p) {
   if (bool(p.no_card, 'no_card')) where.push("needs_card = 0 AND identity_basis = 'stated'");
   if (bool(p.no_phone, 'no_phone')) where.push("needs_phone = 0 AND identity_basis = 'stated'");
   if (bool(p.anonymous, 'anonymous')) where.push("identity_kind = 'anonymous' AND identity_basis = 'stated'");
+  if (bool(p.free, 'free')) where.push(HAS_FREE_TIER);
   const iface = str(p.iface, 'iface');
   if (iface) { where.push('instr(lower(coalesce(interfaces, \'\')), lower(?)) > 0'); args.push(iface); }
   if (p.crypto != null && p.crypto !== '') where.push(bool(p.crypto, 'crypto') ? 'crypto = 1' : 'crypto IS NOT 1');
@@ -437,7 +442,7 @@ export function filter(store, p) {
   const nSelf = scalar(db, `SELECT count(*) FROM record WHERE ${W} AND self_hosted = 1`, fa);
   if (nSelf) notes.push(SELF_HOSTED_NOTE(nSelf, 'records'));
   return table([...CARD_COLUMNS, ...extra], out, {
-    total, offset, truncated: offset + out.length < total, notes, excluded,
+    total, offset, paged: true, truncated: offset + out.length < total, notes, excluded,
   });
 }
 
@@ -645,7 +650,7 @@ export async function need(store, env, p) {
       (nSelfUnstated ? `; ${nSelfUnstated} of them with the card or phone requirement not stated, in self_hosted_unstated_rows` : ''));
   }
   return table([...CARD_COLUMNS, ...extra], out, {
-    total: seq.length, offset, truncated: offset + page.length < seq.length, notes, nullRows: nullOut, nullKey: key,
+    total: seq.length, offset, paged: true, truncated: offset + page.length < seq.length, notes, nullRows: nullOut, nullKey: key,
     unstatedRows: unstatedOut, selfRows: selfOut, selfUnstatedRows: selfUnstatedOut,
     need: { id: n.id, title: n.title, topic: n.topic, sort: key, scope: n.scope, sql: n.sql },
   });
@@ -726,7 +731,7 @@ export function worklist(store, p) {
   const page = (cols, countSql, sel, args) => {
     const total = scalar(db, countSql, args);
     const out = rows(db, sel + ' LIMIT ? OFFSET ?', [...args, limit, offset]);
-    return table(cols, out, { total, offset, truncated: offset + out.length < total, notes });
+    return table(cols, out, { total, offset, paged: true, truncated: offset + out.length < total, notes });
   };
 
   if (kind === 'stale') {
@@ -806,8 +811,9 @@ export async function help(store, env) {
     ``,
     `Operations (HTTP /api/v1/... and MCP tools take the same names):`,
     `  search q [topic grp limit]          names first (exact, prefix, substring, fuzzy), then BM25 full text`,
-    `  filter topic verdict grp confidence no_card no_phone anonymous iface binding crypto`,
+    `  filter topic verdict grp confidence no_card no_phone anonymous free iface binding crypto`,
     `         max_usd_month max_usd_tb include_duplicates sort order limit offset`,
+    `         free=1: a free allowance is stated (the claim has-free-tier with num 1)`,
     `  get ids [detail=card|full fields]   full = the record JSON with claims, unknown, history, drift`,
     `  entity id|name [include_duplicates] a vendor and its records; a duplicate is left out unless asked`,
     `  need [id]                           curated best-per-need lists`,
@@ -829,9 +835,20 @@ export async function help(store, env) {
 
 // ------------------------------------------------------------------ rendering
 
-function cell(v) {
+/**
+ * A number as text: an integer as it is; else four decimals, or four significant figures when that keeps more, so a
+ * small value such as an exchange rate of 0.00003873 is never 0 and keeps the digits that tell it from its neighbours.
+ * publish/llms.py decimal() is the twin.
+ */
+export function numberText(v) {
+  if (Number.isInteger(v) || !Number.isFinite(v)) return String(v);
+  return String(Math.abs(v) >= 1 ? +v.toFixed(4) : +v.toPrecision(4));
+}
+
+/** One cell of a TSV row: a number by numberText, a text with no tab or line break, cut to 200 characters. */
+export function cell(v) {
   if (v == null) return '';
-  if (typeof v === 'number') return Number.isInteger(v) ? String(v) : String(+v.toFixed(4));
+  if (typeof v === 'number') return numberText(v);
   const s = String(v).replace(/[\t\r\n]+/g, ' ');
   return clip(s, 200);
 }
@@ -840,9 +857,10 @@ export function footer(t) {
   const lines = [];
   const shown = t.rows.length + (t.nullRows ? t.nullRows.length : 0) + (t.unstatedRows ? t.unstatedRows.length : 0) +
     (t.selfRows ? t.selfRows.length : 0) + (t.selfUnstatedRows ? t.selfUnstatedRows.length : 0);
-  // a capped result (sql) says the cap in its own note, so the first line counts the rows only
+  // a capped result (sql) says the cap in its own note, so the first line counts the rows only; only a paged result
+  // (one that takes offset) names the offset that reads on
   if (t.open) lines.push(`# ${shown} rows`);
-  else if (t.truncated) lines.push(`# ${shown} of ${t.total} rows; offset=${t.offset + shown} for more`);
+  else if (t.truncated && t.paged) lines.push(`# ${shown} of ${t.total} rows; offset=${t.offset + shown} for more`);
   else lines.push(`# ${shown} of ${t.total} rows`);
   for (const [col, n] of Object.entries(t.excluded || {})) lines.push(`# excluded for NULL ${col}: ${n}`);
   for (const n of t.notes || []) lines.push('# ' + String(n).replace(/[\r\n]+/g, ' '));
