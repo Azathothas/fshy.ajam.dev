@@ -86,6 +86,10 @@ Read all of it. Then check these, in this order:
 3. **Drafts merged into existing records.** For each line under "drafts merged into existing records", open
    both records and confirm that they are the same offer of the same provider. ⚠ This decision is the one that
    no later check re-examines. A wrong merge puts one vendor's evidence into another vendor's record.
+   The opposite list, "new records that share a domain and provider with an existing record of another tier",
+   names each new record that the integrator kept apart because its tier differs. Open both and confirm that
+   they are two plans. Two labels for one plan ("Hobby" and "free") are one offer: comment naming both records
+   and set `rq:changes`.
 4. **Undos that could not restore a value, and open conflicts.** They become a follow-up issue at the merge.
    Confirm that the list is short and specific.
 5. **The re-check lines.** For each one, read the page again and check the quote:
