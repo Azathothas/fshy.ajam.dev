@@ -78,8 +78,11 @@ CREATE TABLE drift (kind TEXT NOT NULL, subject TEXT NOT NULL, other TEXT, field
 CREATE TABLE history (hid TEXT PRIMARY KEY, when_utc TEXT, status TEXT, confidence TEXT,
   title TEXT, supersedes TEXT, body TEXT) WITHOUT ROWID;
 CREATE TABLE history_link (hid TEXT NOT NULL, rid TEXT NOT NULL, PRIMARY KEY (hid, rid)) WITHOUT ROWID;
+-- one row per change of a record. op is what the row did: set, basis, confirm, dead and undo name a field in path;
+-- append_evidence, drop_evidence, relate and add_record name none. url is the source of the row; of drop_evidence, it
+-- is the URL of the evidence row that it removed. NULL op: the data does not name it (schema_version 2 and older)
 CREATE TABLE ledger (at TEXT, rid TEXT, path TEXT, old TEXT, new TEXT, rung TEXT,
-  url TEXT, date TEXT, proved TEXT, reason TEXT);
+  url TEXT, date TEXT, proved TEXT, reason TEXT, op TEXT DEFAULT NULL);
 CREATE TABLE capture (url TEXT NOT NULL, captured_at TEXT, path TEXT, sha256 TEXT);
 
 -- full text, one row per record (docid = record.rno), one column per field group; contentless:

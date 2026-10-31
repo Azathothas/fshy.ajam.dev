@@ -38,10 +38,12 @@ sys.path.insert(0, HERE)
 
 import selfhosted  # noqa: E402
 
-SCHEMA_VERSION = "2"  # the version of data/ this build reads and of the store it writes; the export writes the same one
+SCHEMA_VERSION = "3"  # the version of data/ this build reads and of the store it writes
 # Older versions of data/ that this build still reads: {version: {table: the columns that version lacks}}. A missing
-# column gets its default from schema.sql. Version 1 has no record.self_hosted, so each of its records is hosted (0).
-OLDER = {"1": {"record": ("self_hosted",)}}
+# column gets its default from schema.sql. The export also takes a research store of one of these versions, so a
+# change of the schema lands here first and the next publish does not stop. Version 1 has no record.self_hosted, so
+# each of its records is hosted (0). Versions 1 and 2 have no ledger.op, so the op of each ledger row is NULL.
+OLDER = {"1": {"record": ("self_hosted",), "ledger": ("op",)}, "2": {"ledger": ("op",)}}
 DERIVED = ("rno", "lid_min", "lid_max", "doc", "sha256", "path")  # record columns build() makes, never in data/
 TABLES = ("entity", "alias", "evidence", "limit_row", "claim", "fx", "unknown", "edge", "drift", "history",
           "history_link", "ledger", "capture", "vocab")
@@ -183,17 +185,27 @@ def git_info():
     return os.environ.get("WORKERS_CI_COMMIT_SHA") or run("rev-parse", "HEAD"), when
 
 
+def older_defaults(version):
+    """{table: {column: default}}: the columns that data of this version lacks, each with the default of schema.sql
+    (a literal). Empty for SCHEMA_VERSION."""
+    schema = sqlite3.connect(":memory:")
+    try:
+        schema.executescript(open(os.path.join(HERE, "schema.sql"), encoding="utf-8").read())
+        return {t: {c[1]: schema.execute("SELECT %s" % c[4]).fetchone()[0]
+                    for c in schema.execute("PRAGMA table_info(%s)" % t) if c[1] in cs}
+                for t, cs in OLDER.get(version, {}).items()}
+    finally:
+        schema.close()
+
+
 def build(data, out_db):
     """data/ -> a public store at out_db. -> counts. Raises DataError when data/ is not what this build reads."""
     meta_in = read_meta(data)
     schema = sqlite3.connect(":memory:")
     schema.executescript(open(os.path.join(HERE, "schema.sql"), encoding="utf-8").read())
     tcols = {t: [c[1] for c in schema.execute("PRAGMA table_info(%s)" % t)] for t in ("record",) + TABLES}
-    # the columns that this version of the data lacks, each with the default of schema.sql (a literal)
-    lacks = {t: {c[1]: schema.execute("SELECT %s" % c[4]).fetchone()[0]
-                 for c in schema.execute("PRAGMA table_info(%s)" % t) if c[1] in cs}
-             for t, cs in OLDER.get(meta_in.get("schema_version"), {}).items()}
     schema.close()
+    lacks = older_defaults(meta_in.get("schema_version"))
     cols = tcols["record"]
     tables = {t: table_rows(data, t, tcols[t], lacks.get(t)) for t in TABLES}
     rows = sorted(table_rows(data, "record", [c for c in cols if c not in DERIVED], lacks.get("record")),

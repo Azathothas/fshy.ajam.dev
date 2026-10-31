@@ -32,9 +32,10 @@ so its failed check holds no other update.
 3. It runs the research repository's own build of the public store in that clone:
    `python CLONE/scripts/fshy/build.py --repo CLONE --public TMP`. The projection and its rules stay in the
    research repository, because they name what they remove.
-4. It checks the contract. The store must have the `schema_version` that `build.py` reads, and the tables and
-   the columns of `schema.sql`. `rules/needs.json` must be the same as the research copy. Each topic of the
-   research schema must have a line in `rules/topics.json`.
+4. It checks the contract. The store must have a `schema_version` that `build.py` reads, and the tables and
+   the columns of `schema.sql`. A store of an older version (`OLDER` of `build.py`) has the columns of
+   `schema.sql` without the ones that the version lacks, and `data/` gets that version. `rules/needs.json` must be
+   the same as the research copy. Each topic of the research schema must have a line in `rules/topics.json`.
 5. It writes each record as `data/records/<topic>/<slug>.json` and each other table as
    `data/tables/<table>.jsonl`. Rows are sorted and carry no row numbers, so the diff of a publish shows exactly
    which records changed. `data/meta.json` names the commit as `source_commit`.
@@ -57,8 +58,9 @@ empty directory. It refuses any other `--data` with exit 2, before it reads the 
 | `--data DIR` | write to DIR instead of `data/`. DIR must be new or empty |
 
 **Build.** It loads `data/` into a SQLite store with `schema.sql`, rebuilds the leaf table and the full-text index
-from the record files, and scans every text value of every table. It reads data of `SCHEMA_VERSION` 2 and of the
-older version 1, which has no `record.self_hosted`: each record of version 1 is hosted (0). It refuses data whose
+from the record files, and scans every text value of every table. It reads data of `SCHEMA_VERSION` 3 and of the
+older versions 2 and 1. Version 1 has no `record.self_hosted`: each record of version 1 is hosted (0). Versions 2
+and 1 have no `ledger.op`: the op of each ledger row is NULL, and the site titles the row by its shape. It refuses data whose
 `entity.best_vorder` is not the best verdict of the entity's hosted records (of all its records when every one is
 self-hosted), with exit 3. A public history entry is its date, status,
 title and linked records, so a history row with a body, a supersedes line or a confidence is a leak hit. With
@@ -138,20 +140,27 @@ the Python twin.
 
 `data/meta.json` names the `schema_version` of the data. `build.py` reads `SCHEMA_VERSION`, and the older versions
 that `OLDER` names with the columns that each one lacks. A lacking column gets its default from `schema.sql`. The
-export writes `SCHEMA_VERSION` only. The build refuses data of another version, a table file that `schema.sql` does not have, a missing table file, and an
+export takes a research store of `SCHEMA_VERSION` or of a version of `OLDER`, and writes the version of the store.
+The build refuses data of another version, a table file that `schema.sql` does not have, a missing table file, and an
 unknown or missing column. It stops with exit 3 and a message that names the problem. ⚠ Without this check, a load
 through the schema drops an unknown column and leaves a missing column empty, and the build still passes.
 
 If the research repository adds a topic, add a line for it to `rules/topics.json` and an option to the New offer
 form, in one pull request here, before the next publish. `test_publish.py` checks that the form agrees.
 
-If the research repository changes its store schema, do these steps in one pull request here, before the next
-publish:
+A change of the store schema lands here first. The research repository checks that its `schema.sql` is this one
+at its pinned commit, so it follows after this pull request merges. Do these steps in one pull request here:
 
-1. Change `schema.sql`, and the code in `build.py`, `site_gen.py`, `pages.py` and `llms.py` that reads the
-   changed tables.
-2. Increase `SCHEMA_VERSION` in `build.py` to the version of the research store.
-3. Export, build and run the tests.
+1. Change `schema.sql`, and the code in `build.py`, `site_gen.py`, `pages.py`, `llms.py` and `site/worker/` that
+   reads the changed tables. A new column gets a default, for example `DEFAULT NULL`.
+2. Increase `SCHEMA_VERSION` in `build.py`. Add the old version to `OLDER` with the columns that it lacks, and add
+   those columns to each older version of `OLDER` too. The export then still takes the research store of the old
+   version, so the next publish does not stop.
+3. Build and run the tests. Add the new column to the export cases of `test_publish.py`, which check the
+   contract on a store of the new version and of the old one.
+
+Then the research repository changes its `schema.sql` and its version, and moves its pin, in its own pull request.
+The first publish after that pull request merges gives `data/` of the new version.
 
 ## Files
 
@@ -166,7 +175,7 @@ publish:
 | `test_llms.py` | the selftest of `llms.py`, over the store that `build.py` writes |
 | `test_publish.py` | the selftest of the contract and of `files_sha256`, of the export's refusals, of the leak rules and `--scan`, of the lists that are copied by hand, of the helpers that the pages share, of the self-hosted rule and its check, and of the worked queries of the primer |
 | `test_weight.py` | the weight budget of the built site: the shared files, the page shell, and each kind of page |
-| `fixture_selfhosted.py` | for CI: a copy of `data/` at version 2 in which some records are self-hosted, while `data/` has none, so that the build, `run.mjs` and `test_llms.py` test the self-hosted order on every pull request |
+| `fixture_selfhosted.py` | for CI: a copy of `data/` at the version of `build.py` in which some records are self-hosted, while `data/` has none, so that the build, `run.mjs` and `test_llms.py` test the self-hosted order on every pull request |
 | `primer.py` | the text primer of the store: schema, vocabularies, worked queries |
 | `schema.sql` | the store schema, shared by the Worker |
 | `rules/needs.json` | the best-per-need queries |

@@ -38,6 +38,35 @@ const PRICE = new Set(['usd_month', 'usd_per_tb_month']);
 const LOCAL_ONLY_KINDS = new Set(['unknown', 'held']);
 const KINDS = new Set(['stale', 'drift', 'changes', 'unparsed']);
 
+// The title of a ledger row in the worklist changes: what the row did, by its op. The published ledger holds no old
+// or new value. A row with no op (data of schema_version 2 and older) or an op not named here gets the title of its
+// shape: LEDGER_NO_OP.field when it names a field, .url when it names only a source, .none when it names neither.
+// LEDGER_TITLE and LEDGER_NO_OP of publish/pages.py hold the same words; test_publish.py checks the copy.
+export const LEDGER_TITLE = {
+  set: 'amended; the old and the new value are not published',
+  basis: 'amended; the old and the new value are not published',
+  confirm: 'confirmed on its source; only the check date changed',
+  dead: 'marked dead',
+  undo: 'an earlier change undone',
+  undo_skipped: 'undo skipped; the value did not change',
+  append_evidence: 'evidence row added',
+  drop_evidence: 'evidence row removed',
+  relate: 'relation to another record added',
+  add_record: 'record added'
+};
+export const LEDGER_NO_OP = {
+  field: 'amended; the old and the new value are not published',
+  url: 'evidence row or relation changed; the row does not say how',
+  none: 'record changed; the row names no field'
+};
+const sqlText = (s) => "'" + String(s).replace(/'/g, "''") + "'";
+// the SQL of the title of a ledger row, over the columns op, path and url (and old and new, which only a local store
+// fills)
+export const LEDGER_TITLE_SQL = `CASE WHEN old IS NOT NULL OR new IS NOT NULL THEN coalesce(old, '') || ' -> ' || coalesce(new, '')
+  ${Object.entries(LEDGER_TITLE).map(([op, t]) => `WHEN op = ${sqlText(op)} THEN ${sqlText(t)}`).join(' ')}
+  WHEN path IS NOT NULL THEN ${sqlText(LEDGER_NO_OP.field)} WHEN url IS NOT NULL THEN ${sqlText(LEDGER_NO_OP.url)}
+  ELSE ${sqlText(LEDGER_NO_OP.none)} END`;
+
 /** A tabular result. rows are arrays aligned with columns. */
 function table(columns, rows, extra = {}) {
   return { columns, rows, total: rows.length, truncated: false, offset: 0, notes: [], excluded: {}, ...extra };
@@ -729,8 +758,8 @@ export function worklist(store, p) {
     const body = `SELECT h.when_utc AS at, 'history' AS source, h.hid AS ref, h.status AS status, h.title AS title,
         (SELECT group_concat(rid, ' ') FROM history_link l WHERE l.hid = h.hid) AS rids FROM history h ${hw}
       UNION ALL
-      SELECT at, 'ledger', CASE WHEN path LIKE '$.%' THEN substr(path, 3) ELSE path END, rung, CASE WHEN old IS NULL AND new IS NULL THEN 'amended; the old and the new value are not published'
-        ELSE coalesce(old, '') || ' -> ' || coalesce(new, '') END, rid FROM ledger ${lw}`;
+      SELECT at, 'ledger', CASE WHEN path LIKE '$.%' THEN substr(path, 3) ELSE path END, rung, ${LEDGER_TITLE_SQL}, rid
+        FROM ledger ${lw}`;
     return page(['at', 'source', 'ref', 'status', 'title', 'rids'], `SELECT count(*) FROM (${body})`,
       `SELECT * FROM (${body}) ORDER BY at DESC, ref`, a);
   }
