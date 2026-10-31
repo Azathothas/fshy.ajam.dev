@@ -1,14 +1,14 @@
 # Backup
 
-Both repositories write a weekly backup to one private Cloudflare R2 bucket. If GitHub or the account goes
-away, the bucket keeps the last 52 weeks of each repository.
+This repository writes a weekly backup of both repositories to one private Cloudflare R2 bucket. If GitHub or
+the account goes away, the bucket keeps the last 52 weeks of each repository.
 
 ## What is written
 
 | repository | workflow | files in the bucket |
 | --- | --- | --- |
 | `fshy.ajam.dev` | [`../.github/workflows/backup.yml`](../.github/workflows/backup.yml), Monday 07:00 UTC | `fshy.ajam.dev/<UTC time>/repo.bundle`, `fshy.ajam.dev/<UTC time>/site-data.tar.gz` |
-| `f-research` | `.github/workflows/backup.yml`, Monday 07:30 UTC | `f-research/<UTC time>/repo.bundle` |
+| `f-research` | [`../.github/workflows/f-research-ci.yml`](../.github/workflows/f-research-ci.yml), job `backup`, Monday 07:30 UTC | `f-research/<UTC time>/repo.bundle` |
 
 - `repo.bundle` is a `git bundle` of every branch and tag.
 - `site-data.tar.gz` is `site/dist/data` of a build of `main`: the public store `fshy-public.sqlite.gz`, the
@@ -25,8 +25,8 @@ same, byte for byte. Each workflow also runs by hand on `main`.
 | lifecycle | a file is deleted 365 days after it is written; an unfinished upload, after 1 day |
 | lock | a file under `fshy.ajam.dev/` or `f-research/` cannot be deleted or replaced for 28 days |
 | budget | 5 GiB. The script fails the job when the bucket holds more than 4.5 GiB |
-| keys | each repository has its own token, for this bucket only, in `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY` |
-| settings | `CLOUDFLARE_ACCOUNT_ID` and `R2_BUCKET`. In `fshy.ajam.dev` all four are secrets of the environment `backup`, which only `main` can use, so the public log does not show them. In `f-research`, a private repository, the keys are repository secrets and the two settings are repository variables |
+| keys | one token, for this bucket only, in `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY` of the environment `backup`. Both bundles are written from this repository, because `f-research` runs no Actions of its own. The job reads `f-research` with the read-only deploy key `F_RESEARCH_DEPLOY_KEY`, a secret of the same environment |
+| settings | `CLOUDFLARE_ACCOUNT_ID` and `R2_BUCKET`. In `fshy.ajam.dev` all four are secrets of the environment `backup`, which only `main` can use, so the public log does not show them. `f-research` still holds its own token (repository secrets) and the two settings (repository variables), which only a manual run of its own `.github/workflows/backup.yml` uses; the weekly run is the job here |
 
 The script fails the job when a setting is missing or empty, so a backup does not stop without a red run.
 ⚠ GitHub stops the scheduled workflows of a public repository after 60 days with no activity, and such a stop
