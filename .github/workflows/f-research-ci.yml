@@ -1,0 +1,245 @@
+name: f-research-ci
+
+# The heavy checks of the private repository Azathothas/f-research, which runs no Actions of its own. Its harness
+# (scripts/research/ci.py) starts a run with the inputs sha and base, and the run is named "f-research <sha>";
+# scripts/rq merge waits for that run and merges only a green head. Each job checks out f-research at sha with the
+# read-only deploy key F_RESEARCH_DEPLOY_KEY, a secret of the environment f-research-ci that only main can use, and
+# runs scripts/research/ci-checks.sh from that checkout. This log is public. The script writes each check's output
+# to a file on the runner and prints only PASS, FAIL or SKIP and the check's name; no step here prints, uploads or
+# caches a file of f-research. The checkout prints the fetched branch names and the tested commit's hash and subject
+# line, and nothing else of f-research. The script runs from the tested commit, so a change of it is read in review
+# before it runs here; each run of it points the step summary and the step's output, environment and path files at
+# /dev/null, so a check cannot write to the public page of the run. Every day the job lock-fresh checks f-research's pin of the Worker rules, and every
+# Monday the job backup writes a git bundle of f-research to the private R2 bucket (docs/backup.md); its environment
+# backup holds the R2 settings and a second copy of the deploy key.
+# Actions are pinned by commit; the comment names the tag.
+
+run-name: >-
+  f-research ${{ github.event_name == 'schedule' && (github.event.schedule == '40 6 * * *' && 'lock' || 'backup')
+  || (inputs.mode == 'pr' && inputs.sha || inputs.mode) }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "pr: the checks of one head (sha against base); lock: the pin check; backup: the bundle"
+        type: choice
+        options: [pr, lock, backup]
+        default: pr
+      sha:
+        description: "mode pr: the f-research commit to check (40 hex)"
+        type: string
+        default: ""
+      base:
+        description: "mode pr: the f-research commit it is compared with, usually main (40 hex)"
+        type: string
+        default: ""
+  schedule:
+    - cron: "40 6 * * *"
+    - cron: "30 7 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: f-research-ci-${{ inputs.sha || github.event.schedule || inputs.mode }}
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.mode == 'pr'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 40
+    environment: f-research-ci
+    steps:
+      - name: the inputs are two commits
+        env:
+          SHA: ${{ inputs.sha }}
+          BASE: ${{ inputs.base }}
+        run: |
+          printf '%s\n' "$SHA" | grep -qxE '[0-9a-f]{40}' && printf '%s\n' "$BASE" | grep -qxE '[0-9a-f]{40}' ||
+            { echo "sha and base must each be a commit of 40 hex digits"; exit 1; }
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Azathothas/f-research
+          ref: ${{ inputs.sha }}
+          ssh-key: ${{ secrets.F_RESEARCH_DEPLOY_KEY }}
+          fetch-depth: 0
+          persist-credentials: false
+          path: f-research
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: the gate comparison, the render check and the selftests
+        working-directory: f-research
+        env:
+          BASE: ${{ inputs.base }}
+        run: |
+          sudo apt-get install -y -q strace > /dev/null 2>&1 || true
+          git config --global user.email "gate@localhost"
+          git config --global user.name "gate"
+          GITHUB_STEP_SUMMARY=/dev/null GITHUB_OUTPUT=/dev/null GITHUB_ENV=/dev/null GITHUB_PATH=/dev/null \
+            sh scripts/research/ci-checks.sh linux "$BASE"
+
+  harness-windows:
+    # the failures that matter most on the research machine (a rename with an open handle, LK_LOCK, text-mode pipes,
+    # the cost of MSYS process starts) exist only on Windows; the script skips the cases when the harness did not change
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.mode == 'pr'
+    runs-on: windows-latest
+    timeout-minutes: 40
+    environment: f-research-ci
+    steps:
+      - name: the inputs are two commits
+        shell: bash
+        env:
+          SHA: ${{ inputs.sha }}
+          BASE: ${{ inputs.base }}
+        run: |
+          printf '%s\n' "$SHA" | grep -qxE '[0-9a-f]{40}' && printf '%s\n' "$BASE" | grep -qxE '[0-9a-f]{40}' ||
+            { echo "sha and base must each be a commit of 40 hex digits"; exit 1; }
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Azathothas/f-research
+          ref: ${{ inputs.sha }}
+          ssh-key: ${{ secrets.F_RESEARCH_DEPLOY_KEY }}
+          fetch-depth: 0
+          persist-credentials: false
+          path: f-research
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: the harness's Windows cases and the load test
+        shell: bash
+        working-directory: f-research
+        env:
+          BASE: ${{ inputs.base }}
+        run: |
+          git config --global user.email "gate@localhost"
+          git config --global user.name "gate"
+          GITHUB_STEP_SUMMARY=/dev/null GITHUB_OUTPUT=/dev/null GITHUB_ENV=/dev/null GITHUB_PATH=/dev/null \
+            sh scripts/research/ci-checks.sh windows "$BASE"
+
+  parity:
+    # fr.py re-implements the public Worker's ranking, text rules and SQL guard; this runs both on the same inputs at
+    # the public commit that f-research pins in scripts/fshy/public.lock
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.mode == 'pr'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    environment: f-research-ci
+    steps:
+      - name: the input is a commit
+        env:
+          SHA: ${{ inputs.sha }}
+        run: |
+          printf '%s\n' "$SHA" | grep -qxE '[0-9a-f]{40}' || { echo "sha must be a commit of 40 hex digits"; exit 1; }
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Azathothas/f-research
+          ref: ${{ inputs.sha }}
+          ssh-key: ${{ secrets.F_RESEARCH_DEPLOY_KEY }}
+          persist-credentials: false
+          path: f-research
+
+      - name: the pinned public commit
+        id: pin
+        run: |
+          sha=$(sed -n 's/^commit \([0-9a-f]\{40\}\)$/\1/p' f-research/scripts/fshy/public.lock | head -n 1)
+          if [ -z "$sha" ]; then echo "FAIL parity (public.lock has no commit line)"; exit 1; fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ steps.pin.outputs.sha }}
+          persist-credentials: false
+          path: f-research/.tmp/public
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+
+      - name: fr's twin of the Worker
+        working-directory: f-research
+        env:
+          FSHY_PUBLIC: .tmp/public
+        run: >-
+          GITHUB_STEP_SUMMARY=/dev/null GITHUB_OUTPUT=/dev/null GITHUB_ENV=/dev/null GITHUB_PATH=/dev/null
+          sh scripts/research/ci-checks.sh parity
+
+  lock-fresh:
+    if: >-
+      github.ref == 'refs/heads/main' && ((github.event_name == 'schedule' && github.event.schedule == '40 6 * * *')
+      || (github.event_name == 'workflow_dispatch' && inputs.mode == 'lock'))
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    environment: f-research-ci
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Azathothas/f-research
+          ssh-key: ${{ secrets.F_RESEARCH_DEPLOY_KEY }}
+          persist-credentials: false
+          path: f-research
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: the pin holds the newest public change of the Worker rules
+        working-directory: f-research
+        env:
+          # the token only raises the API rate limit; the public repository needs none
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          GITHUB_STEP_SUMMARY=/dev/null GITHUB_OUTPUT=/dev/null GITHUB_ENV=/dev/null GITHUB_PATH=/dev/null
+          sh scripts/research/ci-checks.sh lock
+
+  backup:
+    if: >-
+      github.ref == 'refs/heads/main' && ((github.event_name == 'schedule' && github.event.schedule == '30 7 * * 1')
+      || (github.event_name == 'workflow_dispatch' && inputs.mode == 'backup'))
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    environment: backup
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: .github/r2-backup.sh
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+          path: fshy
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Azathothas/f-research
+          ssh-key: ${{ secrets.F_RESEARCH_DEPLOY_KEY }}
+          fetch-depth: 0
+          persist-credentials: false
+          path: f-research
+
+      - name: bundle every branch and tag of f-research
+        working-directory: f-research
+        run: |
+          git for-each-ref --format='%(refname:strip=3)' refs/remotes/origin | grep -vx HEAD |
+            while read -r b; do git update-ref "refs/heads/$b" "refs/remotes/origin/$b"; done
+          git bundle create "$RUNNER_TEMP/repo.bundle" --branches --tags > /dev/null 2>&1
+          git bundle verify "$RUNNER_TEMP/repo.bundle" > /dev/null 2>&1 && echo "the bundle verifies"
+
+      - name: upload, and check the budget
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        # the script names the folder after the repository: f-research/, as the backups that f-research wrote itself
+        run: GITHUB_REPOSITORY=Azathothas/f-research sh fshy/.github/r2-backup.sh "$RUNNER_TEMP/repo.bundle"
