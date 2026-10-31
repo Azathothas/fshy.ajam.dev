@@ -23,7 +23,7 @@
     if (sh) { return '<span class="v v-self-hosted">' + SH + '</span>'; }
     var i = typeof v === 'number' ? v : VT.indexOf(v); return '<span class="v v-' + esc(VT[i] || v) + '">' + esc(VL[i] || v) + '</span>';
   }
-  function usd(v, sfx) { return v == null ? '' : 'USD ' + (v < 1000 ? String(+(+v).toFixed(2)) : (+v).toFixed(0)) + sfx; }
+  function usd(v, sfx) { return v == null ? '' : 'USD ' + (v < 1000 ? String(v > 0 && v < 1 ? +(+v).toPrecision(4) : +(+v).toFixed(2)) : (+v).toFixed(0)) + sfx; }
   function topics(ts) { return ts.map(function (t) { return TN[t] || t; }).join(', '); }
   function lane(vs) { // as pages.py lane()
     var w = Math.max.apply(null, vs.map(function (v) { var i = VT.indexOf(v); return (VL[i] || v || '').length; }));

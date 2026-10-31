@@ -21,8 +21,9 @@ request. A merge session reviews that pull request, merges it, and exports the p
 3. ⛔ **Every document is written in ASD-STE100 Simplified Technical English.** The working rules are in
    [`docs/conventions.md`](docs/conventions.md). They bind commit messages, issue comments and pull requests too.
 4. ⛔ **No personal or operator detail.** No name of a person, email address, home address, IP address, device name,
-   local path or private host, in any file, commit, issue comment or pull request. The author address that GitHub
-   writes on a merge commit is not a defect. ⚠ The leak scan ([`publish/rules/leak.json`](publish/rules/leak.json))
+   local path or private host, in any file, commit, issue comment or pull request. A merge commit's author is the
+   noreply address of the account: every merge command passes it ([`docs/merge-protocol.md`](docs/merge-protocol.md),
+   section 4). ⚠ The leak scan ([`publish/rules/leak.json`](publish/rules/leak.json))
    catches only a short list of generic shapes. They are keys and tokens, home paths, scratch paths, a tailnet
    address, a free-mail address, terms text, and the shapes of the research process, which the export refuses. It
    does not catch a name, an address, a host name or a sentence about a person, and it does not read commit

@@ -209,6 +209,32 @@ def lossless_checks(dist, st):
     unknown = [k for k, v in index.items() for ln in v.split("\n") if ln.startswith("- [") and
                not re.search(r"\| (no phone|phone|phone\?|any-phone\??|country-phone\??)( \||$|\.)", ln)]
     check("every index line says no phone, phone or phone? (U-24)", not unknown, unknown[:3])
+    stale_checks(index, st)
+
+
+def stale_word(c, as_of):
+    """The freshness item that an index line and an HTML row must carry, from the card alone."""
+    if c["grp"] == "dead" or not c["stale_on"]:
+        return ""
+    return ("stale since %s" if c["stale_on"] <= as_of else "stale on %s") % c["stale_on"]
+
+
+def stale_checks(index, st):
+    """Each line of a topic, rejected or need index names the stale date of its record, as 'stale since' when it is on
+    or before the date of the data; a dead record names none (F-12)."""
+    wrong, n = [], 0
+    for k, v in index.items():
+        for ln in v.split("\n"):
+            m = re.search(r"\.md\) \[?`([^`]+)`", ln) if re.match(r"^(?:- |\d+\. )", ln) else None
+            if not m or m.group(1) not in st.cards:
+                continue
+            n += 1
+            want = stale_word(st.cards[m.group(1)], st.as_of)
+            have = re.findall(r"\| (stale (?:on|since) \d{4}-\d{2}-\d{2})(?= \||\.|$)", ln)
+            if have != ([want] if want else []):
+                wrong.append((k, m.group(1), want, have))
+    check("every index line names its stale date, 'stale since' when it is past the data date (F-12; %d lines)" % n,
+          n and not wrong, wrong[:3])
 
 
 def leak_scan_covers(dist):
@@ -281,6 +307,14 @@ def link_checks():
         if got != want:
             bad.append((rel, got))
     check("alternate_link maps each page to its Markdown version, and no other page", not bad, bad)
+
+
+def price_checks():
+    """A parsed price keeps cents from 1 and four significant figures under 1, so it is never USD 0 (F-19)."""
+    prices = [(0.004, "USD 0.004"), (0.00003873, "USD 0.00003873"), (0.1247, "USD 0.1247"), (0.5, "USD 0.5"),
+              (0.99996, "USD 1"), (4.999, "USD 5"), (12.3456, "USD 12.35"), (1234.4, "USD 1234"), (0, "USD 0")]
+    bad = [(v, llms.money(v, ""), w) for v, w in prices if llms.money(v, "") != w]
+    check("a price under 1 keeps four significant figures and is never USD 0 (F-19)", not bad, bad)
 
 
 def site_checks(dist, store):
@@ -373,7 +407,7 @@ def site_checks(dist, store):
           and as_of in read(os.path.join(dist, "api", "v1", "help.txt")), (st.as_of, as_of))
     check("the notice is in llms.txt and not in llms-full.txt (U-36)", "research and education" in lt and
           "research and education" not in files.get("llms-full.txt", ""))
-    html_checks(dist, man)
+    html_checks(dist, man, st)
     hdr = read(os.path.join(dist, "_headers"))
     check("_headers sets caching and CORS for every new path",
           all(p in hdr.split("\n") for p in ("/llms.txt", "/llms-full.txt", "/index.md", "/t/*.md", "/t/*.txt", "/p/*.md", "/need/*.md")))
@@ -431,7 +465,7 @@ def headers_of(rules, path):
     return [h for pat, hs in rules if re.fullmatch(re.escape(pat).replace(r"\*", ".*"), path) for h in hs]
 
 
-def html_checks(dist, man):
+def html_checks(dist, man, st=None):
     """The HTML pages that pages.py writes, checked on every page."""
     pages = {}
     for root, _, fs in os.walk(dist):
@@ -505,6 +539,23 @@ def html_checks(dist, man):
               and sum(int(n) for _, n in got) == rows == md_rows
               and all(("## %s (" % h) in md for k, h, _ in sections if k in {g for g, _ in split})
               and all(("## Self-hosted, the last resort (%s)" % n) in md for _, n in last), (got, rows))
+    # F-12: each row of a topic, paid, rejected and need page names its stale date without the script
+    wrong, n = [], 0
+    for rel, h in pages.items():
+        if not st or not re.fullmatch(r"(t/[^/]+/(?:paid/|rejected/)?|need/[^/]+/)index\.html", rel):
+            continue
+        for li in re.findall(r'<li class="e".*?</li>', h):
+            a = re.search(r'<a class="n" href="/p/[^"/]+/(?:#|)([a-z0-9-]+?)--([^"/]+)/?"', li)
+            c = st.cards.get("%s/%s" % a.groups()) if a else None
+            if not c:
+                continue
+            n += 1
+            want = stale_word(c, st.as_of)
+            have = re.findall(r'<span class="fr"[^>]*>(stale (?:on|since) [0-9-]+)</span>', li)
+            if have != ([want] if want else []):
+                wrong.append((rel, c["rid"], want, have))
+    check("every row of a topic or need page names its stale date without the script (F-12; %d rows)" % n,
+          not st or (n and not wrong), wrong[:3])
     topic = pages.get("t/storage/index.html", "")
     check("the filter bar is hidden until the script shows it, and a key follows it (U-02, U-10)",
           '<div class="chips" role="group" aria-label="filters" hidden>' in topic and '<details class="key">' in topic)
@@ -557,6 +608,7 @@ def main():
         except (AttributeError, ValueError):
             pass
     link_checks()
+    price_checks()
     if not os.path.exists(a.store):
         print("no store at %s: run python publish/build.py --check first" % a.store)
         return 1
