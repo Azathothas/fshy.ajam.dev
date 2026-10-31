@@ -19,6 +19,7 @@ import argparse
 import collections
 import email.utils
 import glob
+import html
 import json
 import math
 import os
@@ -33,6 +34,7 @@ REPO = os.path.abspath(os.path.join(HERE, ".."))
 sys.path.insert(0, HERE)
 import build  # noqa: E402
 import llms  # noqa: E402
+import pages as pages_mod  # noqa: E402
 project = build  # leaves() and jpath() are in build.py here
 
 FAILS = []
@@ -518,6 +520,14 @@ def html_checks(dist, man):
           "holds no old or new value" in changes and re.search(r"<td><code>[a-z_.\[\]0-9]+</code></td>", changes)
           and "<code>$." not in changes and re.search(r"<title>[a-z-]+/[^<]+: [^<]+ amended</title>", feed)
           and "The old and the new value are not published" in feed, changes[:0])
+    # a ledger row that names no field (an evidence row, a relation, a new record) is never titled amended
+    cells = re.findall(r"<tr><td>[^<]*</td><td><a [^>]*>[^<]*</a></td><td>([^<]*)</td><td><code>([^<]*)</code></td>", changes)
+    titles = set(pages_mod.LEDGER_TITLE.values()) | set(pages_mod.LEDGER_NO_OP.values())
+    wrong = [c for c in cells if html.unescape(c[0]) not in titles or (c[1] == "not named" and "amended" in c[0])]
+    items = re.findall(r"<item><title>([^<]*)</title><link>[^<]*/r/[^<]*</link>", feed)
+    check("each ledger row of the Changes page and the feed says what the row did, and a row with no field is not "
+          "titled amended (%d rows)" % len(cells), cells and not wrong and not [t for t in items if t.endswith(": not named amended")],
+          wrong[:3])
     check("the feed and the changes page carry no history id as text (U-04)",
           not re.search(r"#\d{4}-\d{2}-\d{2}t", feed + pages.get("changes/index.html", "")))
 

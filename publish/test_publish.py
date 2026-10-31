@@ -3,21 +3,26 @@
 
 1. The contract between export and build: build.py refuses data/ of another schema version, an unknown table
    file, an unknown or a missing column, and files that do not match files_sha256, with exit 3 and a message that
-   names the problem. It reads data of the older version 1, which has no self_hosted column, as hosted records.
-2. The export refuses a source that is not a research checkout (exit 3), a test export into data/ (exit 2), and a
-   --data that is not data/ and not empty (exit 2), and it keeps the files of that directory.
+   names the problem. It reads data of the older version 1, which has no self_hosted column, as hosted records, and
+   data of the versions 1 and 2, which have no ledger.op, with op NULL.
+2. The export takes a research store of SCHEMA_VERSION or of an older version that build.py reads, each with its
+   own columns, and compares the roundtrip without the columns that the version lacks. It refuses a source that is
+   not a research checkout (exit 3), a test export into data/ (exit 2), and a --data that is not data/ and not
+   empty (exit 2), and it keeps the files of that directory.
 3. The leak rules, of both levels, match each leak sample and pass each technical sample; the history title rule
    matches a narrative title and passes a correction; build.py --scan finds a leak in a text file. The commit-msg
    hook refuses every credit line of a tool and passes a message that only names a provider.
 4. The lists agree. rules/topics.json is the one list of topics: pages.py reads it, app.js holds no copy and
    reads the topic bar, and the New offer form lists the same topics. The verdict labels of pages.py and app.js
-   agree. When the store exists, its vocabulary and its topics agree with them.
+   agree, and so do the titles of a ledger row of pages.py and site/worker/api.js. When the store exists, its
+   vocabulary and its topics agree with them.
 5. Each worked query of primer.py that lists record ids sorts on self_hosted first. When the store exists: each one
    runs, so /api/v1/help.txt never shows a query that fails, and without its LIMIT it lists every hosted row first.
 6. The helpers that the pages and the files for agents share: the lang of a run of another script, the label that
    tells two records of one provider apart, the one line of a row, the order of a tie in a ranked list, the words of
-   a category, the anchor of a history entry, the pictographs that quoted text loses, the parallel leak scan, and
-   the twin of the Worker's name normaliser against site/worker/test/parity.json.
+   a category, the anchor of a history entry, the pictographs that quoted text loses, the parallel leak scan, the
+   twin of the Worker's name normaliser against site/worker/test/parity.json, and the title of a ledger row in the
+   pages and the feed.
 7. Self-hosted last (selfhosted.py): the stable split of a list, the rows of a need, and the check of the build, which
    finds a hosted row below a self-hosted one, a starred self-hosted row, and a Markdown line whose verdict comes
    before the label, and passes a list in the right order; and the rule of entity.best_vorder against rank.js.
@@ -79,18 +84,17 @@ def schema_columns():
     return cols
 
 
-def fake_data(top, version=build.SCHEMA_VERSION, tables=None, record_row=None, entity_row=None):
-    """A data/ directory with an empty file per table, except a record row and an entity row when they are given. With
-    an entity row, the record also gets its record file, so the build can load it."""
+def fake_data(top, version=build.SCHEMA_VERSION, tables=None, record_row=None, entity_row=None, ledger_row=None):
+    """A data/ directory with an empty file per table, except a record row, an entity row and a ledger row when they are
+    given. With an entity row, the record also gets its record file, so the build can load it."""
     os.makedirs(os.path.join(top, "tables"))
     with open(os.path.join(top, "meta.json"), "w", encoding="utf-8") as f:
         json.dump({"schema_version": version, "as_of": "2026-10-28", "source_commit": "0" * 40}, f)
+    one = {"record": record_row, "entity": entity_row, "ledger": ledger_row}
     for t in tables if tables is not None else ("record",) + build.TABLES:
         with open(os.path.join(top, "tables", t + ".jsonl"), "w", encoding="utf-8") as f:
-            if t == "record" and record_row is not None:
-                f.write(json.dumps(record_row) + "\n")
-            if t == "entity" and entity_row is not None:
-                f.write(json.dumps(entity_row) + "\n")
+            if one.get(t) is not None:
+                f.write(json.dumps(one[t]) + "\n")
     if record_row is not None and entity_row is not None:
         p = os.path.join(top, "records", record_row["rid"] + ".json")
         os.makedirs(os.path.dirname(p))
@@ -130,7 +134,8 @@ def contract_checks(tmp):
     rec = dict(row, rid="storage/x", topic="storage", slug="x", eid="x", verdict="qualifies", vorder=0, grp="usable")
     ent = {c: None for c in cols["entity"]}
     ent.update(eid="x", name="X", best_vorder=0)
-    for version, r, want in (("1", {k: v for k, v in rec.items() if k != "self_hosted"}, 0), (build.SCHEMA_VERSION, dict(rec, self_hosted=1), 1)):
+    for version, r, want in (("1", {k: v for k, v in rec.items() if k != "self_hosted"}, 0), ("2", dict(rec, self_hosted=1), 1),
+                             (build.SCHEMA_VERSION, dict(rec, self_hosted=1), 1)):
         d = os.path.join(tmp, "data-v%s" % version)
         fake_data(d, version=version, record_row=r, entity_row=ent)
         out = os.path.join(tmp, "v%s.db" % version)
@@ -138,11 +143,82 @@ def contract_checks(tmp):
         got = sqlite3.connect(out).execute("SELECT self_hosted FROM record").fetchall() if rc == 0 else None
         check("build reads data of schema_version %s, and the record has self_hosted %d" % (version, want),
               rc == 0 and got == [(want,)], (rc, err, got))
-    d = os.path.join(tmp, "data-v2-lack")
+    d = os.path.join(tmp, "data-lack-self-hosted")
     fake_data(d, record_row={k: v for k, v in rec.items() if k != "self_hosted"}, entity_row=ent)
     rc, err = quiet(build.main, ["--data", d, "--db", os.path.join(tmp, "lack.db"), "--check", "--quiet"])
     check("build refuses data of schema_version %s with no self_hosted column (exit 3)" % build.SCHEMA_VERSION,
           rc == 3 and "lacks ['self_hosted']" in err, (rc, err))
+    # data of versions 1 and 2 has no ledger.op: the build reads it, and the op of each row is NULL. Data of
+    # SCHEMA_VERSION keeps the op of each row, and a ledger row with no op is refused
+    led = {c: None for c in cols["ledger"]}
+    led.update(at="2026-10-31T00:00:00.000Z", rid="storage/x", url="https://example.com/a", op="drop_evidence")
+    no_op = {k: v for k, v in led.items() if k != "op"}
+    for version, r, want in (("1", no_op, None), ("2", no_op, None), (build.SCHEMA_VERSION, led, "drop_evidence")):
+        d = os.path.join(tmp, "data-ledger-v%s" % version)
+        rr = dict(rec, self_hosted=0) if version != "1" else {k: v for k, v in rec.items() if k != "self_hosted"}
+        fake_data(d, version=version, record_row=rr, entity_row=ent, ledger_row=r)
+        out = os.path.join(tmp, "ledger-v%s.db" % version)
+        rc, err = quiet(build.main, ["--data", d, "--db", out, "--check", "--quiet"])
+        got = sqlite3.connect(out).execute("SELECT op, url FROM ledger").fetchall() if rc == 0 else None
+        check("build reads the ledger of schema_version %s, and the row has op %r" % (version, want),
+              rc == 0 and got == [(want, led["url"])], (rc, err, got))
+    d = os.path.join(tmp, "data-lack-op")
+    fake_data(d, record_row=dict(rec, self_hosted=0), entity_row=ent, ledger_row=no_op)
+    rc, err = quiet(build.main, ["--data", d, "--db", os.path.join(tmp, "lack-op.db"), "--check", "--quiet"])
+    check("build refuses a ledger of schema_version %s with no op column (exit 3)" % build.SCHEMA_VERSION,
+          rc == 3 and "lacks ['op']" in err, (rc, err))
+
+
+def research_store(path, version, lacks=None, ledger=()):
+    """A store as the research build writes it: the tables of schema.sql without the columns of lacks, at version, with
+    the rows of ledger."""
+    db = sqlite3.connect(path)
+    db.executescript(open(os.path.join(HERE, "schema.sql"), encoding="utf-8").read())
+    for t, cs in (lacks or {}).items():
+        for c in cs:
+            db.execute('ALTER TABLE "%s" DROP COLUMN "%s"' % (t, c))
+    db.execute("INSERT INTO meta VALUES ('schema_version', ?)", (version,))
+    for r in ledger:
+        db.execute("INSERT INTO ledger (%s) VALUES (%s)" % (",".join(r), ",".join("?" * len(r))), list(r.values()))
+    db.commit()
+    db.close()
+    return path
+
+
+def export_contract_checks(tmp):
+    """The export takes a research store of SCHEMA_VERSION or of a version of build.OLDER, each with its own columns,
+    so a change of the schema lands here first and the next publish does not stop."""
+    tree = os.path.join(tmp, "tree")
+    os.makedirs(os.path.join(tree, "scripts", "fshy", "rules"))
+    with open(os.path.join(tree, "scripts", "fshy", "rules", "needs.json"), "w", encoding="utf-8") as f:
+        f.write(open(os.path.join(HERE, "rules", "needs.json"), encoding="utf-8").read())
+    no_op = {"ledger": ("op",)}
+    cases = [  # (what, version, the columns the store lacks, a problem must name this, or None)
+        ("a store of schema_version 2 with no ledger.op", "2", no_op, None),
+        ("a store of schema_version %s" % build.SCHEMA_VERSION, build.SCHEMA_VERSION, {}, None),
+        ("a store of schema_version %s with no ledger.op" % build.SCHEMA_VERSION, build.SCHEMA_VERSION, no_op,
+         "table ledger has columns"),
+        ("a store of schema_version 2 with a ledger.op", "2", {}, "table ledger has columns"),
+        ("a store of an unknown schema_version", "99", {}, "schema_version '99'"),
+    ]
+    for i, (what, version, lacks, want) in enumerate(cases):
+        got = export.contract(research_store(os.path.join(tmp, "rs%d.db" % i), version, lacks), tree)
+        if want is None:
+            check("the export takes %s" % what, got == [], got)
+        else:
+            check("the export refuses %s and names it" % what, any(want in p for p in got), got)
+    # the roundtrip of a store of version 2: the build gives each ledger row op NULL, and the compare leaves op out
+    row = {"at": "2026-10-31T00:00:00.000Z", "rid": "storage/x", "url": "https://example.com/a"}
+    a = sqlite3.connect(research_store(os.path.join(tmp, "rt-a.db"), "2", no_op, [row]))
+    b = sqlite3.connect(research_store(os.path.join(tmp, "rt-b.db"), build.SCHEMA_VERSION, {}, [dict(row, op=None)]))
+    try:
+        got, raw = export.compare_stores(a, b, build.OLDER["2"]), export.compare_stores(a, b)
+    finally:
+        a.close()
+        b.close()
+    check("the export compares a store of version 2 with its build without ledger.op", got == [], got)
+    check("the compare without the columns that version 2 lacks finds the ledger different",
+          any(p.startswith("ledger:") for p in raw), raw)
 
 
 def export_checks(tmp):
@@ -311,11 +387,12 @@ def hook_checks(tmp):
     check("the commit-msg hook refuses a subject that ends in a full stop", run("site: a change.\n") != 0)
 
 
-def js_list(src, name):
-    m = re.search(r"var %s = (\[[^\]]*\]|\{[^}]*\});" % name, src)
+def js_list(src, name, decl="var"):
+    m = re.search(r"%s %s = (\[[^\]]*\]|\{[^}]*\});" % (decl, name), src)
     if not m:
         return None
     text = re.sub(r"'", '"', m.group(1))
+    text = re.sub(r",(\s*[}\]])", r"\1", text)  # a trailing comma
     text = re.sub(r"([{,]\s*)([A-Za-z_][\w]*)\s*:", r'\1"\2":', text)  # bare keys
     return json.loads(text)
 
@@ -336,6 +413,10 @@ def list_checks(db_path):
     block = re.search(r"label: Topic\n\s+options:\n((?:\s+- .+\n)+)", form)
     opts = re.findall(r"- (\S+)", block.group(1)) if block else []
     check("the New offer form lists the topics of rules/topics.json", sorted(opts) == sorted(rules), opts)
+    api = open(os.path.join(ROOT, "site", "worker", "api.js"), encoding="utf-8").read()
+    jt, jn = js_list(api, "LEDGER_TITLE", "export const"), js_list(api, "LEDGER_NO_OP", "export const")
+    check("api.js LEDGER_TITLE and LEDGER_NO_OP are pages.LEDGER_TITLE and pages.LEDGER_NO_OP",
+          jt == pages.LEDGER_TITLE and jn == pages.LEDGER_NO_OP, (jt, jn))
     if not db_path:
         return
     db = sqlite3.connect("file:%s?mode=ro" % db_path, uri=True)
@@ -478,6 +559,25 @@ def helper_checks(tmp):
     parallel = build.scan_files(big, jobs=4)
     check("the parallel leak scan finds what one process finds, in the same order (P-15, %d hits)" % len(serial),
           len(serial) == 4 and serial == parallel, (len(serial), len(parallel)))
+    # the title of a ledger row: by its op, else by its shape. A removed evidence row never reads as an amendment
+    # or as an addition, and a row that names no field never reads as an amendment
+    u = "https://example.com/a"
+    lt = [(("drop_evidence", None, u), "evidence row removed"), (("append_evidence", None, u), "evidence row added"),
+          (("add_record", None, None), "record added"), (("relate", None, u), "relation to another record added"),
+          (("confirm", "$.verified_at", u), "confirmed on its source; only the check date changed"),
+          (("set", "$.notes", u), pages.LEDGER_NO_OP["field"]), ((None, "$.notes", u), pages.LEDGER_NO_OP["field"]),
+          ((None, None, u), pages.LEDGER_NO_OP["url"]), ((None, None, None), pages.LEDGER_NO_OP["none"]),
+          (("an_op_not_named", None, u), pages.LEDGER_NO_OP["url"])]
+    bad = [(a, pages.ledger_title(*a)) for a, want in lt if pages.ledger_title(*a) != want]
+    check("the title of a ledger row follows its op, and its shape when it has no op", not bad, bad)
+    no_field = [a for a, _ in lt if a[1] is None and "amended" in pages.ledger_title(*a)]
+    check("a ledger row that names no field is never titled amended", not no_field, no_field)
+    t_drop, d_drop = pages.ledger_feed("2026-10-31T01:02:03.000Z", "storage/x", None, u, "drop_evidence")
+    t_set, d_set = pages.ledger_feed("2026-10-31T01:02:03.000Z", "storage/x", "$.notes", u, "set")
+    check("the feed titles a removed evidence row as removed, and an amended field by its name",
+          t_drop == "storage/x: evidence row removed" and u in d_drop and "amended" not in t_drop + d_drop
+          and t_set == "storage/x: notes amended" and "The old and the new value are not published" in d_set,
+          (t_drop, d_drop, t_set, d_set))
 
 
 def selfhosted_checks():
@@ -641,6 +741,7 @@ def main(argv=None):
     tmp = tempfile.mkdtemp(prefix="fshy-test-")
     try:
         contract_checks(tmp)
+        export_contract_checks(tmp)
         export_checks(tmp)
         leak_checks(tmp)
         hook_checks(tmp)
