@@ -20,6 +20,7 @@ t=$(cygpath -u "$RUNNER_TEMP" 2>/dev/null || printf '%s' "$RUNNER_TEMP")
 k="$t/f-research-key"
 h="$t/f-research-known-hosts"
 umask 077
+trap 'rm -f "$k"' EXIT
 printf '%s\n' "$KEY" > "$k"
 printf '%s\n' 'github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl' > "$h"
 export GIT_SSH_COMMAND="ssh -i $k -o IdentitiesOnly=yes -o UserKnownHostsFile=$h -o StrictHostKeyChecking=yes"
