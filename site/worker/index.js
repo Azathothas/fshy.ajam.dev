@@ -15,7 +15,7 @@ const DOWNLOAD = '/data/fshy-public.sqlite.gz';
 // GET /api/v1/: the routes, for a caller that guesses the root of the API
 const ROUTES = [
   ['GET /api/v1/search?q=WORDS', 'provider names first, then full text; also topic, grp, limit, offset'],
-  ['GET /api/v1/records?topic=storage&no_card=1&sort=usd_per_tb_month', 'record cards that meet conditions: topic, verdict, grp, confidence, no_card, no_phone, anonymous, iface, binding, crypto, max_usd_month, max_usd_tb, sort, order, limit, offset'],
+  ['GET /api/v1/records?topic=storage&no_card=1&sort=usd_per_tb_month', 'record cards that meet conditions: topic, verdict, grp, confidence, no_card, no_phone, anonymous, free, iface, binding, crypto, max_usd_month, max_usd_tb, sort, order, limit, offset; free=1 keeps the records with a free allowance'],
   ['GET /api/v1/sql?q=SELECT+rid+FROM+record+LIMIT+5', 'one read-only SQL statement; also POST {q, limit}; 30 a minute'],
   ['GET /api/v1/need/', 'the best-per-need lists; /api/v1/need/ID gives one ranked list'],
   ['GET /api/v1/worklist/KIND', 'KIND is stale, drift, changes or unparsed'],

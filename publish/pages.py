@@ -1017,6 +1017,7 @@ class Site:
         b = llms.BASE
         api = [("/api/v1/search?q=gpu", "full-text search, names first"),
                ("/api/v1/records?topic=storage&no_card=1&sort=usd_per_tb_month", "records that meet conditions, sorted"),
+               ("/api/v1/records?topic=storage&iface=s3&free=1", "records with a free allowance (free=1)"),
                ("/api/v1/sql?q=SELECT+rid,verdict+FROM+record+LIMIT+5", "one read-only SQL statement"),
                ("/api/v1/need/", "the best-per-need lists"),
                ("/api/v1/record/compute/oracle-cloud", "one record as JSON"),

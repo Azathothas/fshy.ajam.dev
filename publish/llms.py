@@ -733,7 +733,8 @@ def access_lines():
         "`claude mcp add --transport http fshy %s/mcp`" % (BASE, BASE, BASE),
         "- [help.txt](%s/api/v1/help.txt): the query primer: tables, columns, vocabularies and worked SQL; read it first" % BASE,
         "- [search](%s/api/v1/search?q=gpu+hours&topic=compute): full-text search; `q` words, optional `topic`" % BASE,
-        "- [records](%s/api/v1/records?topic=storage&no_card=1&sort=usd_per_tb_month): filter and sort record cards" % BASE,
+        "- [records](%s/api/v1/records?topic=storage&no_card=1&sort=usd_per_tb_month): filter and sort record cards; "
+        "`free=1` keeps the records with a free allowance" % BASE,
         "- [sql](%s/api/v1/sql?q=SELECT+rid,verdict+FROM+record+LIMIT+5): read-only SQLite over the store" % BASE,
         "- [record](%s/api/v1/record/compute/oracle-cloud): one record as JSON, `/api/v1/record/<topic>/<slug>`" % BASE,
         "- [entity](%s/api/v1/entity/oracle.json): one provider and all its records as JSON, `/api/v1/entity/<id>.json`" % BASE,
