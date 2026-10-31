@@ -1,0 +1,85 @@
+{
+  "topic": "storage",
+  "slug": "biostudies-arrayexpress",
+  "provider": "BioStudies / ArrayExpress (EMBL-EBI)",
+  "url": "https://www.ebi.ac.uk/biostudies",
+  "category": "academic",
+  "free_tier": {
+    "stated": "Free deposit, no published cap. 'Is there a cost to deposit data in BioStudies? No, both deposition of data to BioStudies and data access are free of charge.' Docs discuss 'larger data volumes (hundreds of GiB)' as routine.",
+    "unit": "unlimited",
+    "metered_on": "unstated",
+    "source_url": "https://www.ebi.ac.uk/biostudies/submit",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://www.ebi.ac.uk/biostudies/submit",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Binding constraint on read is per-ip-shaping — 1 stream 7 KB/s, 16 parallel 25 KB/s against the EBI FTP edge. Retention: permanent, DOI auto-assigned; files can sit 'hold until published' indefinitely before release.",
+    "source_url": "https://www.ebi.ac.uk/biostudies/submit",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and anonymous. 'Anonymous downloads are enabled' over FTP; also HTTPS. No egress meter anywhere in the docs.",
+    "metered": false
+  },
+  "interface": [
+    "ftp",
+    "nfs"
+  ],
+  "interface_detail": "ftp",
+  "tooling": "Submission Tool + FTP + Aspera (ascp) in; anonymous FTP/HTTPS out. Path is predictable: /biostudies/<mode>/<COLL>/<COLL0-99>/<ACC>/Files/ where mode is `fire` or `nfs`.",
+  "chaining": "ArrayExpress is a BioStudies collection, so one account covers both. Unlimited accessions per account; each accession gets its own directory tree. Read side anonymous per-file HTTP, so it fronts to a CDN trivially.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "7 KB/s",
+      "source": "https://www.ebi.ac.uk/biostudies/submit"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "25 KB/s",
+      "source": "https://www.ebi.ac.uk/biostudies/submit"
+    }
+  ],
+  "limits_note": "per-object-cap: none stated; Aspera recommended above 10 GiB. Binding constraint on read is per-ip-shaping — 1 stream 7 KB/s, 16 parallel 25 KB/s against the EBI FTP edge. Retention: permanent, DOI auto-assigned; files can sit 'hold until published' indefinitely before release.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Read edge is slow per connection and stalls connections under parallel load (one of 16 timed out with 0 bytes). Fetches from the same EBI edge as ENA/PRIDE, so they are one throughput pool, not three.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://www.ebi.ac.uk/biostudies/submit",
+      "date": "2026-10-21",
+      "proved": "'both deposition of data to BioStudies and data access are free of charge', 'Aspera transfer for medium to large (10 GiB+)', 'hundreds of GiB'"
+    },
+    {
+      "url": "https://www.ebi.ac.uk/biostudies/help#download",
+      "date": "2026-10-21",
+      "proved": "'Anonymous downloads are enabled', exact FTP path scheme"
+    },
+    {
+      "url": "https://ftp.ebi.ac.uk/biostudies/fire/S-BSST/S-BSST0-99/S-BSST7/Files/",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, Apache directory index listing 10 files"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET .../Files/1_TCGA_signature_A_top_10percent.txt -> 200, Content-Length 1282965, downloaded 1282965 bytes, sha256 aff47b60a0ccec2bbf433186a933627f01f54f43a2c2d326fac431a3a961e028, body is the real TSV"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Free deposit, no published cap. 'Is there a cost to deposit data in BioStudies? No, both deposition of data to BioStudies and data access are free of charge.' Docs discuss 'larger data volumes (hundreds of GiB)' as routine.",
+  "extras": {},
+  "binding": "per-ip-shaping",
+  "binding_note": null
+}

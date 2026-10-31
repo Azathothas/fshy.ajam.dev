@@ -1,0 +1,120 @@
+{
+  "topic": "email",
+  "slug": "postmark",
+  "provider": "Postmark",
+  "url": "https://www.postmark.com/pricing",
+  "category": "transactional sender",
+  "free_tier": {
+    "stated": "100 emails/month on the free Developer tier, which does not expire",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://www.postmark.com/pricing",
+    "read_on": "2026-10-22",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": "45 days of activity retention",
+    "days": 45,
+    "notes": "",
+    "source_url": "https://www.postmark.com/pricing"
+  },
+  "egress": {
+    "terms": "not applicable: an outbound sender",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.postmark.com/pricing"
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "curl, any HTTP client",
+  "chaining": "composes with a domain and with nothing else at this volume.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "100 emails per month with no daily allowance beyond it",
+      "source": "https://www.postmark.com/pricing"
+    },
+    {
+      "kind": "write-gated",
+      "value": "until Postmark approves a new account, it sends only to addresses on domains added to the account and verified; review takes under 24 hours on weekdays",
+      "source": "https://postmarkapp.com/support/article/1084-how-does-the-account-approval-process-work"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an account with an email address; no credit card for the free Developer plan",
+    "country": null
+  },
+  "reliability_note": "no overage on the free tier",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://www.postmark.com/pricing",
+      "date": "2026-10-22",
+      "proved": "'Test your integration with 100 emails/month'"
+    },
+    {
+      "url": "probe:smtp://smtp.postmarkapp.com:587",
+      "date": "2026-10-22",
+      "proved": "banner 250, EHLO advertises SIZE and 8BITMIME, STARTTLS completed, and AUTH LOGIN returned 334"
+    },
+    {
+      "url": "https://www.postmark.com/pricing",
+      "date": "2026-10-30",
+      "proved": "message content history is kept 45 days by default",
+      "capture": "sha256:4bb4051eb4976bc6ad36bdd799d13e17f7f175eef8251b8ba20e573d817747dc",
+      "quote": "45 days worth of full content history by default to help you troubleshoot (customizable from 7 to 365 days if needed)."
+    },
+    {
+      "url": "https://www.postmark.com/pricing",
+      "date": "2026-10-30",
+      "proved": "the free plan needs no card",
+      "capture": "sha256:4bb4051eb4976bc6ad36bdd799d13e17f7f175eef8251b8ba20e573d817747dc",
+      "quote": "Try Postmark Free No Credit Card Required"
+    },
+    {
+      "url": "https://postmarkapp.com/support/article/1084-how-does-the-account-approval-process-work",
+      "date": "2026-10-30",
+      "proved": "a new account is limited to its own verified domains until it is approved",
+      "capture": "sha256:93eefbc8f9e68af9ea8820060059d2e8fa5525324052e52181888be22969a197",
+      "quote": "Until your account is approved, you won’t be able to send to any email address outside the domains you’ve added to your account and verified."
+    },
+    {
+      "url": "https://www.postmark.com/pricing",
+      "date": "2026-10-30",
+      "proved": "the free plan allows no overage",
+      "capture": "sha256:4bb4051eb4976bc6ad36bdd799d13e17f7f175eef8251b8ba20e573d817747dc",
+      "quote": "No overages allowed in this plan."
+    },
+    {
+      "url": "probe:smtp.postmarkapp.com:587",
+      "date": "2026-10-31",
+      "proved": "the Postmark SMTP relay answers on port 587 with a 220 ESMTP banner",
+      "capture": "sha256:21ba8b1bab525e6e89e778a2ad76f72cca8dfb34d1db49abb91165c33c3ddcd9",
+      "quote": ".smtpservice.postmarkapp.com ESMTP"
+    },
+    {
+      "url": "https://www.postmark.com/pricing",
+      "date": "2026-10-30",
+      "proved": "the free Developer plan gives 100 emails a month and does not expire",
+      "capture": "sha256:4bb4051eb4976bc6ad36bdd799d13e17f7f175eef8251b8ba20e573d817747dc",
+      "quote": "Everyone starts on our free Developer plan, which includes 100 emails every month. And it never expires or runs out."
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-31T01:05:03.738Z",
+  "notes": "There is no burst room at all, which distinguishes it from every 100/day product here.",
+  "extras": {
+    "stale_after_days": 90
+  },
+  "binding": "request-rate",
+  "interface_detail": "https://api.postmarkapp.com/email",
+  "limits_note": "no daily allowance exists: 100 emails per month is the whole month, which is 3.3 a day averaged. A verified sender signature or domain is required and a card is not"
+}

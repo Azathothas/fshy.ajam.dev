@@ -1,0 +1,85 @@
+{
+  "topic": "debrid",
+  "slug": "stremio-web",
+  "provider": "Stremio Web",
+  "url": "https://web.stremio.com/",
+  "category": "free hosted web client for Stremio addons; no install, no local server",
+  "tier": "web",
+  "free_tier": {
+    "stated": "Free, no payment and no install: the app is served from the browser at web.stremio.com. It does require a Stremio account - the vendor's own walkthrough for iOS opens with 'logging in to Stremio Web' and syncing addons through that account.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://blog.stremio.com/using-stremio-web-on-iphone-ipad/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: a client, not a store",
+    "bytes": null,
+    "source_url": "https://blog.stremio.com/using-stremio-web-on-iphone-ipad/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: the addon list and library live in the Stremio account, not on the client device",
+    "days": null,
+    "source_url": "https://blog.stremio.com/using-stremio-web-on-iphone-ipad/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Stremio does not meter a user. The bytes come from wherever the addon points - the debrid provider or the source host - so no allowance exists at this layer.",
+    "metered": false,
+    "free_allowance": "unlimited",
+    "price_per_tb": null,
+    "source_url": "https://web.stremio.com/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "A single-page web app (10,759-byte HTML shell titled 'Stremio - Freedom to Stream') that speaks the Stremio addon protocol to whatever manifests the account has installed. PWA-installable in Safari for iOS/iPadOS.",
+  "tooling": "runs in the browser. Its missing half is Stremio Service, the local daemon: 'Stremio Web will still not be fully featured without connecting it to Stremio Service ... some missing features include: converting videos to support the browser, torrent streaming, etc'.",
+  "chaining": "The free front end for the whole pipeline: install Torrentio/Comet/MediaFusion/AIOStreams manifest URLs into the account, and a debrid key inside one of them turns Stremio Web into a player with no hardware anywhere.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "no published limit on the web client itself; every limit met here belongs to the installed addon",
+      "source": "https://web.stremio.com/"
+    }
+  ],
+  "limits_note": "The real limit is a capability gap, not a counter: without a local Stremio Service there is no torrent streaming and no in-browser conversion, so a P2P result set is unplayable in the browser even though it renders in the list.",
+  "binding": "none",
+  "binding_note": "Nothing at the Stremio layer counts bytes or requests.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "A Stremio account is required to hold addons and library, which the vendor's own guide treats as step one ('logging in to Stremio Web'). No card and no phone.",
+    "country": "None"
+  },
+  "reliability_note": "The vendor's help centre still answers 'Can I run Stremio in my browser?' with 'Not at the moment, but this is coming!' (updated 2026-09-03) while the web app is live and documented on their own blog - the support page is stale, not the product.",
+  "confidence": "documented",
+  "confidence_note": "The HTML shell, the vendor blog walkthrough and the help-centre answer were read. Not measured: an actual account login and playback, which needs an account the session did not create.",
+  "evidence": [
+    {
+      "url": "https://web.stremio.com/",
+      "date": "2026-10-23",
+      "proved": "HTTP 200, 10,759 bytes of HTML, title 'Stremio - Freedom to Stream' - the app is served, not a landing page"
+    },
+    {
+      "url": "https://blog.stremio.com/using-stremio-web-on-iphone-ipad/",
+      "date": "2026-10-23",
+      "proved": "'Stremio Web will still not be fully featured without connecting it to Stremio Service', 'torrent streams will still not work, but all other streams will be opened with an external video player', the external-player setting, and that a login is required"
+    },
+    {
+      "url": "https://stremio.zendesk.com/hc/en-us/articles/360000281532-Can-I-run-Stremio-in-my-browser",
+      "date": "2026-10-23",
+      "proved": "the stale official answer 'Not at the moment, but this is coming!', in a 19,387-byte page dated 2026-09-03 - the support article contradicts the vendor's own live web app"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-23T02:28:11.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "This is the piece that makes the free floor a real floor: a browser tab replaces a user and the media player. What it cannot replace is Stremio Service, and that daemon is what a P2P-only stack needs - so in practice Stremio Web forces the debrid key rather than removing the need for one.",
+  "extras": {
+    "service_daemon": "https://github.com/Stremio/stremio-service",
+    "web_app_repo": "https://github.com/Stremio/stremio-web",
+    "install_shape": "PWA in Safari on iOS; ordinary tab elsewhere"
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "topic": "compute",
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "notes": null
+  },
+  "interface": [
+    "ssh"
+  ],
+  "interface_detail": "a public *.azurewebsites.net endpoint; deployment by git, zip or container",
+  "tooling": "the Azure CLI, Kudu, git push deployment",
+  "chaining": "a public HTTPS endpoint with 60 CPU minutes a day, which is a scheduler and not a host",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "60 CPU minutes a day shared across the app",
+      "source": "https://azure.microsoft.com/en-us/pricing/details/app-service/linux/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "the app sleeps after 20 minutes without a direct request; Always On is not available on F1",
+      "source": "https://learn.microsoft.com/en-us/azure/app-service/webjobs-execution"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "1 GB RAM and 1.00 GB of storage",
+      "source": "https://azure.microsoft.com/en-us/pricing/details/app-service/linux/"
+    }
+  ],
+  "limits_note": "the 20-minute idle timeout is stated by Microsoft in two first-party articles; learn.microsoft.com/en-us/azure/app-service/webjobs-execution carries the sentence quoted in evidence",
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "price_per_tb_month": null,
+  "notes": "It is documented first-party at learn.microsoft.com/en-us/azure/app-service/webjobs-execution (read 2026-10-22), which also says a portal visit or a Kudu request does not reset the timer",
+  "slug": "azure-app-service-f1",
+  "provider": "Azure App Service (F1)",
+  "url": "https://azure.microsoft.com/en-us/pricing/details/app-service/linux/",
+  "category": "platform host",
+  "free_tier": {
+    "stated": "F1 Free Shared: 60 CPU minutes a day, 1 GB RAM, 1.00 GB storage, no SLA",
+    "unit": "minutes",
+    "metered_on": "wall-clock",
+    "source_url": "https://azure.microsoft.com/en-us/pricing/details/app-service/linux/",
+    "read_on": "2026-10-06",
+    "notes": "the 512 MB and 5 GB figures in older guides are obsolete"
+  },
+  "retention": {
+    "stated": "the app and its files persist on the plan; no deletion clock is stated",
+    "days": null
+  },
+  "egress": {
+    "terms": "not published on the page read",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://azure.microsoft.com/en-us/pricing/details/app-service/linux/"
+  },
+  "identity_cost": {
+    "kind": "card",
+    "detail": "an Azure account requires a card and a phone number",
+    "country": null
+  },
+  "evidence": [
+    {
+      "url": "https://azure.microsoft.com/en-us/pricing/details/app-service/linux/",
+      "date": "2026-10-06",
+      "proved": "F1 Free Shared is 60 CPU minutes a day with 1 GB RAM and 1.00 GB storage"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/app-service/webjobs-execution",
+      "date": "2026-10-22",
+      "proved": "'Web apps can time out after 20 minutes of inactivity, and only direct requests to the app reset this idle timer. Actions like viewing the portal or accessing the Kudu tools don't keep the app active.'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "extras": {
+    "shape": null,
+    "billing_model": "consumed-cpu",
+    "session_cap": {
+      "wall_clock_min": null,
+      "idle_reap_s": 1200,
+      "restart_required": false,
+      "note": "20-minute idle timeout: 'Web apps can time out after 20 minutes of inactivity, and only direct requests to the app reset this idle timer. Actions like viewing the portal or accessing the Kudu tools don't keep the app active.'"
+    },
+    "keep_rate": {
+      "value": 0.0,
+      "basis": "a free app does not bill",
+      "source": "https://azure.microsoft.com/en-us/pricing/details/app-service/linux/"
+    },
+    "persistent_storage": {
+      "included_gib": 1,
+      "price_gib_month": "not offered",
+      "durability": "app files",
+      "survives_stop": true,
+      "survives_destroy": false,
+      "max_retention": "while the plan exists"
+    },
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": true,
+      "ports": "HTTPS on the app hostname",
+      "static_ip": null,
+      "ipv6": null,
+      "per_session_bytes": null
+    },
+    "free_tier_kind": "allowance"
+  },
+  "binding": "retention-clamped",
+  "binding_note": "the 20-minute idle timer is the first wall: 60 CPU-minutes a day is generous for a keepalive, and a keepalive needs a direct request to reset the timer, which a health probe from outside the app supplies",
+  "confidence_note": null
+}

@@ -1,0 +1,98 @@
+{
+  "topic": "storage",
+  "slug": "flathub",
+  "provider": "Flathub (dl.flathub.org OSTree repo)",
+  "url": "https://flathub.org",
+  "category": "paas",
+  "free_tier": {
+    "stated": "No published storage quota for published applications. This is a deduplicating OSTree/OCI repo: apps are stored as content-addressed ostree commits, so identical files across apps are stored once. Review is human: submissions arrive as a pull request to github.com/flathub/flathub and 'will be reviewed' - there is no self-service arbitrary-blob publish.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.flathub.org/docs/for-app-authors/submission",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.flathub.org/docs/for-app-authors/submission",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "per-object-cap: none published; the practical constraint is the build (GitHub-hosted runners with limited CPU/memory/time). retention: indefinite for published apps (OSTree history is retained; `flatpak repair`/`prune` is user-side)",
+    "source_url": "https://docs.flathub.org/docs/for-app-authors/submission",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free, CDN-backed static repo at dl.flathub.org. No billing.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "oci",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "`flatpak` (client), `flatpak-builder` + `org.flatpak.Builder`, `ostree` tooling, and the repo is readable as a plain static OSTree (summary / summary.idx / objects). No rclone backend and no OCI registry (registry.flathub.org does not resolve publicly - DNS NXDOMAIN from this vantage).",
+  "chaining": "one repo, unlimited apps x unlimited architectures (x86_64, aarch64) x unlimited builds. Per-app dedup means 20 TiB of distinct content is not achievable here; dedup only helps legitimately-overlapping app payloads. Multiplication is by flatpak app, not by account, and every app is human-reviewed.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "applications",
+      "source": "https://docs.flathub.org/docs/for-app-authors/submission"
+    },
+    {
+      "kind": "write-gated",
+      "value": "Review is human: submissions arrive as a pull request to github",
+      "source": "https://docs.flathub.org/docs/for-app-authors/submission"
+    }
+  ],
+  "limits_note": "per-object-cap: none published; the practical constraint is the build (GitHub-hosted runners with limited CPU/memory/time). retention: indefinite for published apps (OSTree history is retained; `flatpak repair`/`prune` is user-side). request-rate: dl.flathub.org supports ranges (verified 206). Builds that exceed CI limits 'fail to build'. Human review gates publication.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Read path is excellent and range-capable. Write path is not programmatic: a pull request + human review + a CI build. Content must be a valid Flatpak app manifest that builds from source, so arbitrary blobs cannot be published without wrapping them in an app (and reviewers will see them). dl.flathub.org works; registry.flathub.org does not resolve.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://dl.flathub.org/repo/summary",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, 12,702,673 bytes (real binary OSTree summary, contains app/ai.jan.Jan/x86_64/stable etc.)"
+    },
+    {
+      "url": "https://dl.flathub.org/repo/appstream/x86_64/appstream.xml.gz",
+      "date": "2026-10-21",
+      "proved": "probe: ranged GET bytes 0-1048575 on -> 206, 1,048,576 bytes"
+    },
+    {
+      "url": "https://dl.flathub.org/repo/appstream/x86_64/appstream.xml.gz",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, 10,738,037 bytes"
+    },
+    {
+      "url": "https://docs.flathub.org/docs/for-app-authors/submission",
+      "date": "2026-10-21",
+      "proved": "submission is a PR to github.com/flathub/flathub, built with org.flatpak.Builder and reviewed"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: DNS registry.flathub.org -> NXDOMAIN (the OCI registry endpoint is not publicly resolvable)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published storage quota for published applications. This is a deduplicating OSTree/OCI repo: apps are stored as content-addressed ostree commits, so identical files across apps are stored once. Review is human: submissions arrive as a pull request to github.com/flathub/flathub and 'will be reviewed' - there is no self-service arbitrary-blob publish.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "write-gated",
+      "why": "No published storage quota for published applications. This is a deduplicating OSTree/OCI repo: apps are stored as content-addressed ostree commits, so identical files across apps are stored once. Review is human: submissions arrive as a pull request to github.com/flathub/flathub and 'will be reviewed' - there is no self-service arbitrary-blob publish.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "write-gated",
+  "binding_note": null
+}

@@ -1,0 +1,75 @@
+{
+  "topic": "storage",
+  "slug": "amazon-ecr-public",
+  "provider": "Amazon ECR Public",
+  "url": "https://gallery.ecr.aws",
+  "category": "registry",
+  "free_tier": {
+    "stated": "50 GB per month of always-free storage for public repositories: 'Both new and existing customers get 50 GB per month of always-free storage for their public repositories.' Past 50 GB it is not blocked — storage is billed to the repository owner: pricing table 'All storage / month ... per GB' resolves via AWS's price API to $0.1000000000/GB-month.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://aws.amazon.com/ecr/pricing/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://aws.amazon.com/ecr/pricing/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://aws.amazon.com/ecr/pricing/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Half-free, and the free half is generous: 'You can anonymously (without using an AWS account) transfer 500 GB of data to the Internet from a public repository each month for free. If you sign up for an AWS account, or authenticate to Amazon ECR with an existing AWS account, you can transfer 5 TB of data to the Internet from a public repository each month for free.' Past that: 'Greater than 5 TB / month to non AWS Regions | $0.09 per GB'. Anonymous overage is not billed, it is refused: 'Up to 500 GB/month can be transferred out to non-AWS destinations to clients that have not authenticated (that is, anonymously). After that limit is reached, no further anonymous data transfer is allowed.' Zero egress cost to AWS compute in any region.",
+    "metered": true,
+    "free_allowance": "5 TB per month"
+  },
+  "interface": [
+    "oci",
+    "cli"
+  ],
+  "interface_detail": "oci",
+  "tooling": "docker/skopeo/oras/crane; ORAS pushes arbitrary blobs as OCI artifacts. AWS CLI for auth (aws ecr-public get-login-password).",
+  "chaining": "50 GB x N AWS accounts. Egress is per-downloader-IP for anonymous pulls and 5 TB/month for any authenticated AWS account, so a single account gives 5 TB/mo of public egress, and each additional free AWS account gives another 5 TB/mo as the authenticated client. Storage is only 50 GB/account, so the economics are inverted versus most registries: egress scales, storage does not.",
+  "limits": [],
+  "limits_note": "Max layer size 10,000 MiB; max layer part 10 MiB; 100,000 images/repo; 1,000 tags/image; unauthenticated pulls rate-limited to 1/s and capped at 500 GB/month per source IP; authenticated pulls 10/s. Repos are always publicly listable — 'Using a repository policy to deny access to view or pull from a public repository is not supported.'",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Very stable; the 1 pull/s anonymous rate limit is the thing that bites bulk fetches (a parallel fetcher must spread across IPs or authenticate).",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://aws.amazon.com/ecr/pricing/",
+      "date": "2026-10-21",
+      "proved": "50 GB always-free public storage; 500 GB/mo anonymous egress, 5 TB/mo authenticated, $0.09/GB beyond"
+    },
+    {
+      "url": "https://docs.aws.amazon.com/AmazonECR/latest/public/public-service-quotas.html",
+      "date": "2026-10-21",
+      "proved": "'unauthenticated image pulls 1 per second', max layer 10,000 MiB"
+    },
+    {
+      "url": "https://b0.p.awsstatic.com/pricing/2.0/meteredUnitMaps/ecr/USD/current/ecr.json",
+      "date": "2026-10-21",
+      "proved": "rateCode zY12MU_... price 0.1000000000 (storage $/GB-mo)"
+    },
+    {
+      "url": "https://public.ecr.aws/v2/",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 401 with Www-Authenticate: Bearer realm=\"https://public.ecr.aws/token/\"; GET /token/?service=public.ecr.aws&scope=repository:amazonlinux/amazonlinux:pull -> {\"token\":...}; GET /v2/amazonlinux/amazonlinux/manifests/latest with that Bearer -> 200, Content-Type application/vnd.docker.distribution.manifest.list.v2+json"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "50 GB per month of always-free storage for public repositories: 'Both new and existing customers get 50 GB per month of always-free storage for their public repositories.' Past 50 GB it is not blocked — storage is billed to the repository owner: pricing table 'All storage / month ... per GB' resolves via AWS's price API to $0.1000000000/GB-month.",
+  "extras": {},
+  "binding": "none",
+  "binding_note": null
+}

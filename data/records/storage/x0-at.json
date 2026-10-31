@@ -1,0 +1,94 @@
+{
+  "topic": "storage",
+  "slug": "x0-at",
+  "provider": "x0.at (filehost2, x0.at / 0x0 family)",
+  "url": "https://x0.at",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "1024 MiB per file, no account, no per-account cap — unlimited uploads. Retention 3 to 100 days, scaled by file size via MIN_AGE + (MAX_AGE - MIN_AGE) * (1 - size/max_size)^2, so small files live ~100 days and near-max files ~3 days.",
+    "unit": "unlimited",
+    "metered_on": "unstated",
+    "source_url": "https://x0.at/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "1024 MiB per file",
+    "bytes": 1073741824,
+    "source_url": "https://x0.at/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Retention 3 to 100 days, scaled by file size via MIN_AGE + (MAX_AGE - MIN_AGE) * (1 - size/max_size)^2, so small files live ~100 days and near-max files ~3 days",
+    "days": 100,
+    "source_url": "https://x0.at/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "free direct HTTPS GET from x0.at, no redirect, no metering; Content-Length served correctly and range requests supported.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "plain curl multipart: curl -F file=@x https://x0.at/ (also -F keep_name=1, -F id_length=N). ShareX and Hupl configs published. Open-source server: github.com/Rouji/filehost2 (37 stars). No rclone backend.",
+  "chaining": "unlimited anonymous uploads at 1 GiB each with random IDs; the only chaining needed is a client-side index of returned URLs. Retention is the binding constraint, not quota.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "1024 MiB per file",
+      "source": "https://x0.at/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "1024 MiB/file",
+      "source": "https://x0.at/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "Retention 3 to 100 days",
+      "source": "https://x0.at/"
+    }
+  ],
+  "limits_note": "1024 MiB/file; 3-100 day retention driven by size; no accounts so no listing or bulk delete; deletion only by knowing the URL.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Longest-lived 0x0 derivative still accepting uploads. Provenance is a hobby VPS; no durability guarantee and expiry is silent and size-dependent. Treat as a 3-8 week cache tier, not archive.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://x0.at/",
+      "date": "2026-10-21",
+      "proved": "'The maximum allowed file size is 1024 MiB', 'Files are kept for a minimum of 3, and a maximum of 100 Days', retention formula quoted verbatim"
+    },
+    {
+      "url": "https://x0.at/",
+      "date": "2026-10-21",
+      "proved": "probe: curl -F file=@x5.bin -> https://x0.at/UdCm.bin; GET -> 200, bytes=5000000"
+    },
+    {
+      "url": "https://x0.at/",
+      "date": "2026-10-21",
+      "proved": "probe: curl -F file=@x80.bin (80,000,000 bytes) -> https://x0.at/Z5CJ.bin (accepted at scale, not just in theory)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "1024 MiB per file, no account, no per-account cap — unlimited uploads. Retention 3 to 100 days, scaled by file size via MIN_AGE + (MAX_AGE - MIN_AGE) * (1 - size/max_size)^2, so small files live ~100 days and near-max files ~3 days.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "retention",
+      "why": "1024 MiB per file, no account, no per-account cap — unlimited uploads. Retention 3 to 100 days, scaled by file size via MIN_AGE + (MAX_AGE - MIN_AGE) * (1 - size/max_size)^2, so small files live ~100 days and near-max files ~3 days.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

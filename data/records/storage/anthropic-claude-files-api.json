@@ -1,0 +1,88 @@
+{
+  "topic": "storage",
+  "slug": "anthropic-claude-files-api",
+  "provider": "Anthropic Claude Files API",
+  "url": "https://platform.claude.com/docs/en/build-with-claude/files",
+  "category": "LLM provider /v1/files",
+  "free_tier": {
+    "stated": "1 TB per organization; 500 MB per file; files persist until deleted or until expires_at",
+    "unit": "TB",
+    "metered_on": "unstated",
+    "source_url": "https://platform.claude.com/docs/en/build-with-claude/files",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "500 MB per file",
+    "bytes": 500000000,
+    "source_url": "https://platform.claude.com/docs/en/build-with-claude/files",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "1 TB per organization; 500 MB per file; files persist until deleted or until expires_at | per-object-cap 500 MB",
+    "source_url": "https://platform.claude.com/docs/en/build-with-claude/files",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "No egress fee documented.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "REST POST/GET/DELETE /v1/files; GET /v1/files/{file_id}/content; `ant files` CLI; Python/TS/Go/Java/C# SDKs",
+  "tooling": "anthropic SDK; curl with x-api-key + anthropic-version headers",
+  "chaining": "1 TB per org, and 'Each organization can have up to 100 workspaces' with files scoped to the workspace. Nominally 100 TB if workspaces were a cheap axis — but see the read gate.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "500 MB per file",
+      "source": "https://platform.claude.com/docs/en/build-with-claude/files"
+    }
+  ],
+  "limits_note": "per-object-cap 500 MB. Files cannot be modified or renamed after upload. Files API request size capped at 500 MB (Messages 32 MB, Batch 256 MB).",
+  "identity_cost": {
+    "kind": "any-phone",
+    "detail": "any-phone",
+    "country": null
+  },
+  "reliability_note": "HARD READ GATE, stated in the docs not in a forum. Uploading is therefore write-only data loss. (Anthropic separately requires phone verification for new Console accounts.)",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/files",
+      "date": "2026-10-21",
+      "proved": "'Maximum file size: 500 MB for each file'; 'Total storage: 1 TB for each organization'; 'Download files that were created by skills or the code execution tool. Files you upload cannot be downloaded.'"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/files",
+      "date": "2026-10-21",
+      "proved": "'Each organization can have up to 100 workspaces'; 'Files are scoped to the workspace they were uploaded in'"
+    },
+    {
+      "url": "https://support.claude.com/en/articles/8241126-upload-files-to-claude",
+      "date": "2026-10-21",
+      "proved": "consumer side is much smaller: 'Project files — File size: 30MB per file'"
+    },
+    {
+      "url": "https://api.anthropic.com/v1/files?beta=true",
+      "date": "2026-10-21",
+      "proved": "PROBE: curl -D - -> HTTP 404 with a JSON error body, Cloudflare-fronted; endpoint does not answer unauthenticated (not a 0-byte 200)"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "1 TB per organization; 500 MB per file; files persist until deleted or until expires_at",
+  "extras": {
+    "dead_end": {
+      "failure_class": "retention",
+      "why": "1 TB per organization; 500 MB per file; files persist until deleted or until expires_at",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

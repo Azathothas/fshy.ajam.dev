@@ -1,0 +1,80 @@
+{
+  "topic": "storage",
+  "slug": "gumroad",
+  "provider": "Gumroad",
+  "url": "https://gumroad.com",
+  "category": "Digital-product fulfilment",
+  "free_tier": {
+    "stated": "Own help centre: 'If you price your product at any number greater than $0.99, the largest single file that you can upload to a product is 20 GB in size... you can add as many files as you want to each product.' Free/$0 products are capped at 250 MB cumulative.",
+    "unit": "MB",
+    "metered_on": "unstated",
+    "source_url": "https://gumroad.com/help/article/289-file-size-limits-on-gumroad",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "largest single file that you can upload to a product is 20 GB",
+    "bytes": 20000000000,
+    "source_url": "https://gumroad.com/help/article/289-file-size-limits-on-gumroad",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://gumroad.com/help/article/289-file-size-limits-on-gumroad",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "CloudFront in front of S3 (confirmed in their open-source repo: CLOUDFRONT_* + FILE_DOWNLOAD_DISTRIBUTION_URL_PROD). No per-download quota published.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "Web + documented REST API (products, product_files); the codebase is open source (antiwork/gumroad), so limits are inspectable.",
+  "tooling": "REST API with access token; the repo exposes /attachments/... presigned paths via SignedUrlHelper.",
+  "chaining": "The $0.99 pricing gate is the mechanism: price at $1, get 20 GB/file, unlimited files per product, unlimited products. A $1 product that never sells still costs the seller ~nothing after fees. 20 GB x N files.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "largest single file that you can upload to a product is 20 GB",
+      "source": "https://gumroad.com/help/article/289-file-size-limits-on-gumroad"
+    }
+  ],
+  "limits_note": "per-object-cap 20 GB (products >$0.99) / 250 MB cumulative (priced $0). 'Download all' button only appears under 500 MB total content, but a single ZIP sidesteps that. Repo shows MAX_EPUB_READER_ARCHIVE_SIZE = 32 MB and thumbnail cap 5 MB — those are feature caps, not the product-file cap.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email",
+    "country": null
+  },
+  "reliability_note": "Purchases require a payment method on the seller side to withdraw, but uploading does not. Download URLs are presigned CloudFront/S3 and short-lived, so there is no stable hot-link — archive/delivery tier only.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://gumroad.com/help/article/289-file-size-limits-on-gumroad",
+      "date": "2026-10-21",
+      "proved": "'20 GB File size limit' and '250 MB limit' sections, verbatim"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "raw.githubusercontent.com/antiwork/gumroad/main/app/models/product_file.rb — confirms S3/CloudFront storage classes and that 20 GB is not enforced in this model, i.e. it is a policy cap at the uploader"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "config/initializers/aws.rb + .env.example in the same repo — CLOUDFRONT_DOWNLOAD_DISTRIBUTION_URL_PROD, FILE_DOWNLOAD_DISTRIBUTION_URL_PROD, S3_BUCKET production 'gumroad'"
+    },
+    {
+      "url": "https://gumroad.com/",
+      "date": "2026-10-21",
+      "proved": "200, 128,717 B (live, not a dead host)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Own help centre: 'If you price your product at any number greater than $0.99, the largest single file that you can upload to a product is 20 GB in size... you can add as many files as you want to each product.' Free/$0 products are capped at 250 MB cumulative.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

@@ -1,0 +1,129 @@
+{
+  "topic": "compute",
+  "slug": "skrime-epyc-1g-ipv6",
+  "provider": "SKRIME",
+  "url": "https://skrime.eu/server/order",
+  "category": "VPS",
+  "tier": "EPYC 1G, Only IPv6",
+  "free_tier": {
+    "stated": "No free tier. EPYC 1G is EUR 0.99 a month configured as IPv6-only, or EUR 1.49 with IPv4: 1 core, 1 GB RAM, 10 GB storage, 10 Gbit/s shared, unlimited traffic, DDoS protection included. The page prints the two network options side by side: 'Only IPv6 0.99EUR per month' and 'IPv4 + IPv6 1.49EUR per month'.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://skrime.eu/server/order",
+    "read_on": "2026-10-24"
+  },
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "not stated on any page read; the order and terms pages are behind a Cloudflare challenge, so the deletion window is unverified",
+    "source_url": "https://skrime.eu/server/order"
+  },
+  "egress": {
+    "terms": "unlimited traffic on a 10 Gbit/s shared uplink, stated on the plan card; no fair-use figure and no overage price is published on the page read",
+    "metered": false,
+    "free_allowance": "unlimited",
+    "price_per_tb": null,
+    "source_url": "https://skrime.eu/server/order"
+  },
+  "interface": [
+    "ssh"
+  ],
+  "interface_detail": "KVM guest with root over SSH on the IPv6 address. The vendor is a German host running its own LIR services and API; the order page is a configurator that builds a server from a link.",
+  "tooling": "any SSH client; the vendor publishes an API documentation page; no panel is named on the plan card.",
+  "chaining": "USD 1.109 a month for 1 GB and 10 GB on a 10 Gbit/s shared port with unlimited traffic, in the same price band as the ST-Hosting row but on KVM rather than LXC and with a bigger uplink; the IPv4 version is EUR 0.50 more if a client needs it.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "IPv6-only at the EUR 0.99 rung: one /64 IPv6 subnet and no IPv4 address. IPv4 costs EUR 0.50 a month more at the same shape.",
+      "source": "https://skrime.eu/server/order"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "none stated: 'Unlimited Traffic' on the plan card",
+      "source": "https://skrime.eu/server/order"
+    },
+    {
+      "kind": "pull-count",
+      "value": "the EUR 0.99 figure is a monthly rate on a configurator; the term length and any minimum contract were not read because the order page is challenge-walled",
+      "source": "https://skrime.eu/server/order"
+    }
+  ],
+  "binding": "per-ip-shaping",
+  "binding_note": "no IPv4 at this rung, so a client without IPv6 must pay the EUR 1.49 dual-stack price; nothing else on the offer is close to binding.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "no card at registration. The register page asks for Username, Email Address, Password, Repeat Password, a Captcha Code and a terms checkbox, and nothing else - read from the form's own inputs, which are registerUsername, registerEmail, registerPassword, registerPasswordRepeat, registerCaptcha and registerTos. No card, address, phone or ID field is on the form. Payment rails were NOT read: the payment-methods page returns a Cloudflare 'Just a moment...' challenge, so the accepted methods are unverified. No card hold or authorisation amount is stated anywhere read.",
+    "country": null
+  },
+  "reliability_note": "No reliability event observed. The vendor states in-house inline DDoS protection on the plan card and operates a public status page.",
+  "confidence": "documented",
+  "confidence_note": "the EUR 0.99 IPv6-only and EUR 1.49 dual-stack prices, the shape and the 10 Gbit/s uplink are quoted from the vendor's own order page, fetched as raw bytes because the extracted-text route returned a 403 on the same URL. The registration fields are read from the vendor's own register page markup. Payment methods are unverified because that page is challenge-walled.",
+  "evidence": [
+    {
+      "url": "https://skrime.eu/server/order",
+      "date": "2026-10-24",
+      "proved": "quoted plan card: 'EPYC 1G / from 0.99EUR per month / 1 Core / 1GB RAM / 10GB Storage / 10 Gbit/s (shared) / Unlimited Traffic / incl. DDoS Protection' followed by 'Only IPv6 0.99EUR per month' and 'IPv4 + IPv6 1.49EUR per month'"
+    },
+    {
+      "url": "https://skrime.eu/server/order",
+      "date": "2026-10-24",
+      "proved": "quoted host and network detail: 'AMD EPYC 7543 @ 3.7GHz / AMD EPYC 7763 @ 3.5GHz / AMD EPYC 7713 @ 3.6GHz / ECC DDR4 RAM / Datacenter NVMe SSD in RAID 1 / 2x 10 Gbit/s LACP' and 'SkyLink, Eygelshoven'"
+    },
+    {
+      "url": "https://skrime.eu/register",
+      "date": "2026-10-24",
+      "proved": "the form's labelled fields and input ids, read from the markup: 'Username' (registerUsername), 'Email Address' (registerEmail), 'Password' (registerPassword), 'Repeat Password' (registerPasswordRepeat), 'Captcha Code' (registerCaptcha), and the terms checkbox (registerTos) - no card, address, phone or ID field"
+    },
+    {
+      "url": "https://skrime.eu/server/order",
+      "date": "2026-10-24",
+      "proved": "the IPv6-only configuration is a separate product link on the page, read from the markup: 'https://skrime.eu/order/server/eyJjIjoyLCJtIjoxLCJkIjoxMCwiNCI6MSwiNiI6MSwiY29uIjoxMH0='. Decoded it is {\"c\":2,\"m\":1,\"d\":10,\"4\":1,\"6\":1,\"con\":10}, which does NOT match the 1-Core plan card (it carries c=2), so the payload is recorded as the link's shape and not as a specification of the EUR 0.99 offer."
+    },
+    {
+      "url": "https://skrime.eu/payment-methods",
+      "date": "2026-10-24",
+      "proved": "the page returns Cloudflare's 'Just a moment...' interstitial (title 'Just a moment...', body 'enable javascript and cookies to continue') - recorded as a failed read, not as a finding about the vendor"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-24T06:37:00.000Z",
+  "price_per_tb_month": null,
+  "notes": "The extracted-text route returned HTTP 403 with a 1462-word body that looked like the page, while the raw fetch of the same URL returned the real 192 KB document with the price table. The 403 body was a provider's stored snapshot with '00.00EUR per month' in the price slot - a placeholder that would have been recorded as a free server if it had been trusted. That is the HTTP-200 trap in its exact form, and the raw bytes settled it. The EUR 0.99 is a monthly rate on a configurator; the minimum contract length, the deletion window and the payment rails were not read because the order and payment pages sit behind Cloudflare. Not established: whether the price is incl. or excl. VAT (the German pages usually print both and this one prints one figure), the minimum term, and the payment methods.",
+  "extras": {
+    "shape": {
+      "vcpu": 1,
+      "ram_gib": 1,
+      "disk_gib": 10,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "billing_model": "monthly",
+    "term": "monthly; minimum contract not read",
+    "m10h_usd": 1.109,
+    "m24h_usd": 1.109,
+    "price_arithmetic": "EUR 0.99 a month, billed monthly; 0.99 / 0.892784 = USD 1.1089, rounded to USD 1.109. Rate: 1 USD = EUR 0.892784 (open.er-api.com/v6/latest/USD, time_last_update_utc Sat, 24 Oct 2026 00:02:31 +0000). A VPS bills whether it runs or not, so 24/7 and 10 h/day are the same.",
+    "out_of_pocket_usd": 1.109,
+    "first_payment_usd": 1.109,
+    "renewal_usd": "not published; the page gives one monthly figure and no first-term discount is marked",
+    "stock": "no sold-out marker on the EPYC 1G card; the configurator offers the IPv6-only variant as an orderable link. The vendor publishes no explicit stock counter on this page, so this is 'no out-of-stock signal' rather than a confirmed count",
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": true,
+      "ports": "all, on the server's own IPv6 address",
+      "static_ip": true,
+      "ipv6": true,
+      "ipv6_prefix": "/64",
+      "per_session_bytes": null
+    },
+    "signup_url": "https://skrime.eu/register",
+    "cart_url": "https://skrime.eu/order/server/eyJjIjoyLCJtIjoxLCJkIjoxMCwiNCI6MSwiNiI6MSwiY29uIjoxMH0=",
+    "ipv6_only": true,
+    "nat_config": null,
+    "payment_methods": "not read: the payment-methods page is behind a Cloudflare challenge",
+    "card_hold": "not established; no hold is stated on any page read",
+    "checkout_fields": "username, email, password, repeat password, captcha, terms checkbox",
+    "udp": "not separately stated; the server holds its own /64 with all ports, so no forwarding table gates UDP",
+    "fx": "open.er-api.com/v6/latest/USD read 2026-10-24T00:02Z: 1 USD = EUR 0.892784"
+  }
+}

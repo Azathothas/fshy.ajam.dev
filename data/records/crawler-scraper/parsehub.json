@@ -1,0 +1,256 @@
+{
+  "topic": "crawler-scraper",
+  "slug": "parsehub",
+  "provider": "ParseHub",
+  "url": "https://www.parsehub.com/pricing",
+  "category": "no-code scraper with a desktop project builder and cloud runs",
+  "free_tier": {
+    "stated": "Free plan, no credit card: 200 pages per run, 5 public projects, data retention for 14 days, 200 pages of data in 40 minutes, limited support; no run count is stated, runs past the speed limit queue, and Free holds up to 100 queued runs. Data downloads as CSV (Excel) or JSON and through the REST API",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://www.parsehub.com/pricing",
+    "read_on": "2026-10-30",
+    "notes": "a page is every content load: a new URL, a scroll that loads more content, or a click that goes to the next page of results; the allowance is per run, not per month"
+  },
+  "per_object_cap": {
+    "stated": "200 pages per run on Free (10,000 on Standard, unlimited on Professional); a results file over 10 MB is not saved as CSV, only as JSON",
+    "bytes": null,
+    "source_url": "https://www.parsehub.com/pricing",
+    "notes": "the 10 MB CSV ceiling is from https://help.parsehub.com/hc/en-us/articles/115006152168-Convert-JSON-to-CSV"
+  },
+  "retention": {
+    "stated": "run data is kept for 14 days on Free and Standard, 30 days on Professional",
+    "days": 14,
+    "source_url": "https://www.parsehub.com/pricing",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not applicable: run data downloads as CSV or JSON",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.parsehub.com/pricing"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "REST API v2 under https://www.parsehub.com/api/v2/ with an api_key parameter from the account page: start a run of a project on the ParseHub cloud, poll the run, and fetch its data as csv or json (always gzip-encoded); the desktop application for Mac, Windows and Linux builds projects by point and click",
+  "tooling": "the ParseHub desktop application (Mac .dmg, Windows installer, Linux AppImage) builds projects; runs execute on ParseHub servers; the REST API starts runs and fetches data",
+  "chaining": "Build a project once in the desktop application, then start runs and pull JSON over the REST API from any scheduler, since scheduling is a paid feature; Free projects are public, so their designs and run data may be shared with other users",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "200 pages per run on Free; every new URL, content-loading scroll or next-page click counts as one page",
+      "source": "https://www.parsehub.com/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "200 pages in 40 minutes on Free, 5 pages a minute; each worker scrapes up to 5 pages a minute and runs past the speed limit queue",
+      "source": "https://www.parsehub.com/pricing"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "up to 100 queued runs on Free, 100,000 on paid plans",
+      "source": "https://help.parsehub.com/hc/en-us/articles/360009172513-API-Limits"
+    },
+    {
+      "kind": "request-rate",
+      "value": "API: 5 requests a second, queued up to 25 a second, then HTTP 429 (API reference); six concurrent connections per IP and 60 requests in any 30 seconds (help center)",
+      "source": "https://www.parsehub.com/docs/ref/api/v2/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "run data kept 14 days on Free",
+      "source": "https://www.parsehub.com/pricing"
+    },
+    {
+      "kind": "write-gated",
+      "value": "5 projects on Free, all public: project designs and the data from their runs may be shared with other users",
+      "source": "https://www.parsehub.com/pricing"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "5 pages a minute bounds a Free account at 7,200 pages a day however many runs are queued; the 200-page run cap only forces a large crawl into many runs",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "no credit card is required to sign up; the sign-up form posts a name, an email address and a password, and the sign-up code carries an email-verification screen",
+    "country": null
+  },
+  "reliability_note": "a results file over 10 MB is not saved as CSV: the CSV download comes back empty with a notice and only the JSON holds the data",
+  "confidence": "documented",
+  "confidence_note": "every value is read from ParseHub's own pricing page, API reference, help center and sign-up code; the 7,200-pages-a-day ceiling is derived from the stated 200 pages in 40 minutes",
+  "evidence": [
+    {
+      "url": "https://www.parsehub.com/pricing",
+      "date": "2026-10-30",
+      "capture": "sha256:efeefda9fc13022d651a06393203b7dce63d1dccd896dda9e30bc7f9e43d5c07",
+      "quote": "| ## FREE<br>No credit card required - $99 value |",
+      "proved": "the Free plan column, with no credit card required"
+    },
+    {
+      "url": "https://www.parsehub.com/pricing",
+      "date": "2026-10-30",
+      "capture": "sha256:efeefda9fc13022d651a06393203b7dce63d1dccd896dda9e30bc7f9e43d5c07",
+      "quote": "| ##### 200 pages per run |",
+      "proved": "Free scrapes 200 pages per run"
+    },
+    {
+      "url": "https://www.parsehub.com/pricing",
+      "date": "2026-10-30",
+      "capture": "sha256:efeefda9fc13022d651a06393203b7dce63d1dccd896dda9e30bc7f9e43d5c07",
+      "quote": "| ##### Get 200 pages of data in only 40 minutes |",
+      "proved": "Free collects 200 pages in 40 minutes; derived: 200 pages / 40 minutes = 5 pages a minute, and 5 x 60 x 24 = 7,200 pages a day"
+    },
+    {
+      "url": "https://www.parsehub.com/pricing",
+      "date": "2026-10-30",
+      "capture": "sha256:efeefda9fc13022d651a06393203b7dce63d1dccd896dda9e30bc7f9e43d5c07",
+      "quote": "| ##### 5 public projects \\* |",
+      "proved": "Free has 5 public projects"
+    },
+    {
+      "url": "https://www.parsehub.com/pricing",
+      "date": "2026-10-30",
+      "capture": "sha256:efeefda9fc13022d651a06393203b7dce63d1dccd896dda9e30bc7f9e43d5c07",
+      "quote": "| ##### Data retention for 14 days |",
+      "proved": "Free keeps run data for 14 days"
+    },
+    {
+      "url": "https://www.parsehub.com/pricing",
+      "date": "2026-10-30",
+      "capture": "sha256:efeefda9fc13022d651a06393203b7dce63d1dccd896dda9e30bc7f9e43d5c07",
+      "quote": "All users start on the free plan. No credit card is required to sign up.",
+      "proved": "sign-up needs no credit card"
+    },
+    {
+      "url": "https://www.parsehub.com/pricing",
+      "date": "2026-10-30",
+      "capture": "sha256:efeefda9fc13022d651a06393203b7dce63d1dccd896dda9e30bc7f9e43d5c07",
+      "quote": "Public project designs and the data from their runs may be shared with other users.",
+      "proved": "Free projects and their run data are shareable with other users"
+    },
+    {
+      "url": "https://www.parsehub.com/pricing",
+      "date": "2026-10-30",
+      "capture": "sha256:efeefda9fc13022d651a06393203b7dce63d1dccd896dda9e30bc7f9e43d5c07",
+      "quote": "A project can be run multiple times, for example on different starting urls or at different times of day.",
+      "proved": "runs are not counted per project"
+    },
+    {
+      "url": "https://www.parsehub.com/pricing",
+      "date": "2026-10-30",
+      "capture": "sha256:efeefda9fc13022d651a06393203b7dce63d1dccd896dda9e30bc7f9e43d5c07",
+      "quote": "If you start enough runs to exceed the speed limit on your plan, they will be automatically queued until there is enough capacity.",
+      "proved": "the plan's speed limit, not a run count, decides throughput; extra runs queue"
+    },
+    {
+      "url": "https://www.parsehub.com/pricing",
+      "date": "2026-10-30",
+      "capture": "sha256:efeefda9fc13022d651a06393203b7dce63d1dccd896dda9e30bc7f9e43d5c07",
+      "quote": "| ## $189<br>per month, cancel anytime |",
+      "proved": "the cheapest paid plan, Standard, is USD 189 a month"
+    },
+    {
+      "url": "https://help.parsehub.com/hc/en-us/articles/360009172513-API-Limits",
+      "date": "2026-10-30",
+      "capture": "sha256:cfe42b871f89fd121811a400dc8e811c217473a3b2c1abf9dff843fa5910cf3f",
+      "quote": "You can have up to 100 queued runs on our free plan, and up to 100,000 queued runs on any of our paid plans.",
+      "proved": "API-started runs work on Free, with up to 100 queued runs"
+    },
+    {
+      "url": "https://help.parsehub.com/hc/en-us/articles/360009172513-API-Limits",
+      "date": "2026-10-30",
+      "capture": "sha256:cfe42b871f89fd121811a400dc8e811c217473a3b2c1abf9dff843fa5910cf3f",
+      "quote": "We limit users to six concurrent connections to our API servers per IP, and at most, 60 requests in any 30 second interval.",
+      "proved": "the API allows six concurrent connections per IP and 60 requests per 30 seconds"
+    },
+    {
+      "url": "https://www.parsehub.com/docs/ref/api/v2/",
+      "date": "2026-10-30",
+      "capture": "sha256:32b7c72ac50f01425ca1cb31f96fe0af788e1a8059b94d984a7abac36c2e1e37",
+      "quote": "ParseHub limits API usage to 5 requests per second, with any requests thereafter being queued up to a maximum of 25 requests per second.",
+      "proved": "the API reference states 5 requests a second, queued up to 25"
+    },
+    {
+      "url": "https://www.parsehub.com/docs/ref/api/v2/",
+      "date": "2026-10-30",
+      "capture": "sha256:32b7c72ac50f01425ca1cb31f96fe0af788e1a8059b94d984a7abac36c2e1e37",
+      "quote": "This will start running an instance of the project on the ParseHub cloud.",
+      "proved": "an API run executes on the ParseHub cloud"
+    },
+    {
+      "url": "https://www.parsehub.com/docs/ref/api/v2/",
+      "date": "2026-10-30",
+      "capture": "sha256:32b7c72ac50f01425ca1cb31f96fe0af788e1a8059b94d984a7abac36c2e1e37",
+      "quote": "The format that you would like to get the data in. Possible values `csv` or `json`. Defaults to `json`.",
+      "proved": "the data endpoint returns CSV or JSON"
+    },
+    {
+      "url": "https://www.parsehub.com/docs/ref/api/v2/",
+      "date": "2026-10-30",
+      "capture": "sha256:32b7c72ac50f01425ca1cb31f96fe0af788e1a8059b94d984a7abac36c2e1e37",
+      "quote": "You can find your API Key on your [account page](https://www.parsehub.com/account)",
+      "proved": "the API key comes from the account page"
+    },
+    {
+      "url": "https://help.parsehub.com/hc/en-us/articles/115002545274-Lesson-6-Getting-your-Data",
+      "date": "2026-10-30",
+      "capture": "sha256:8e918ef5164e52a4e92b39a77d55680ec8050e68b0af35aeebee682cd6ac28db",
+      "quote": "The project will run on our servers meaning that you can shut down ParseHub and even your device and it will continue to run in the cloud.",
+      "proved": "runs execute on ParseHub servers, not on the user's device"
+    },
+    {
+      "url": "https://help.parsehub.com/hc/en-us/articles/115002545274-Lesson-6-Getting-your-Data",
+      "date": "2026-10-30",
+      "capture": "sha256:8e918ef5164e52a4e92b39a77d55680ec8050e68b0af35aeebee682cd6ac28db",
+      "quote": "Your data will be extracted to both CSV and JSON format and you can choose which format you would like to download.",
+      "proved": "every run yields CSV and JSON"
+    },
+    {
+      "url": "https://help.parsehub.com/hc/en-us/articles/115006152168-Convert-JSON-to-CSV",
+      "date": "2026-10-30",
+      "capture": "sha256:5a5db6f9388b84bb0b9d8661933d8d2a4b28d055d6d6f7e887f72821e1cd0ce0",
+      "quote": "ParseHub extracts your data in both JSON and CSV formats but if the final results' file is too large, (more than 10 MB) ParseHub will not save the CSV file on our servers.",
+      "proved": "a result over 10 MB is kept as JSON only"
+    },
+    {
+      "url": "https://help.parsehub.com/hc/en-us/articles/360006322493-Pricing-of-Paid-Plans",
+      "date": "2026-10-30",
+      "capture": "sha256:55a5a98ec5879e9c8177c4769abbd9d99bf609183c27d135d4a685e52ea4bfd1",
+      "quote": "Every time new content is loaded on a webpage, we count that as one page.",
+      "proved": "how a page is counted against the per-run cap"
+    },
+    {
+      "url": "https://help.parsehub.com/hc/en-us/articles/360006322493-Pricing-of-Paid-Plans",
+      "date": "2026-10-30",
+      "capture": "sha256:55a5a98ec5879e9c8177c4769abbd9d99bf609183c27d135d4a685e52ea4bfd1",
+      "quote": "Each worker can scrape up to 5 pages per minute",
+      "proved": "one worker scrapes up to 5 pages a minute"
+    },
+    {
+      "url": "https://www.parsehub.com/static/js/build/auth.bundle.js",
+      "date": "2026-10-30",
+      "capture": "sha256:c62d729298d8ddb12ae23aaa9a0d2e502fb2d82da678e6e5ee17d94b91f8285e",
+      "quote": "postForm(\"remote_register\",{name:e,email:t,password:n})",
+      "proved": "the sign-up form posts a name, an email address and a password, and nothing else"
+    },
+    {
+      "url": "https://www.parsehub.com/static/js/build/auth.bundle.js",
+      "date": "2026-10-30",
+      "capture": "sha256:c62d729298d8ddb12ae23aaa9a0d2e502fb2d82da678e6e5ee17d94b91f8285e",
+      "quote": "\"Email verified!\"",
+      "proved": "the sign-up code carries an email-verification screen"
+    },
+    {
+      "url": "https://www.parsehub.com/quickstart",
+      "date": "2026-10-30",
+      "capture": "sha256:c7f319c1765cd4cc423654c27a40baa943b51b4f3f23018d339aaab484ad5f35",
+      "quote": "[Mac](https://www.parsehub.com/static/client/ParseHub.dmg) [Windows](https://www.parsehub.com/static/client/ParseHub%20Setup.exe) [Linux](https://www.parsehub.com/static/client/ParseHub.AppImage)",
+      "proved": "the desktop application ships for Mac, Windows and Linux"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-30T10:46:45.024Z",
+  "price_per_tb_month": null,
+  "notes": "Confirmed as a no-code scraper with a free plan. Free runs: no run count is stated; a project can be run many times, runs past the speed limit queue, and Free holds up to 100 queued runs. Pages per run: 200 on Free (10,000 on Standard at USD 189 a month, unlimited on Professional). Export formats: CSV (opened as Excel) and JSON from the desktop application, the website or the API. The desktop application only builds projects; runs execute on ParseHub servers, so no machine has to stay on. The caveats are that Free projects are public and run data is kept 14 days."
+}

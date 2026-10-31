@@ -1,0 +1,262 @@
+{
+  "topic": "data-apis",
+  "slug": "tomorrow-io",
+  "provider": "Tomorrow.io",
+  "url": "https://www.tomorrow.io/weather-api/",
+  "category": "weather API",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free plan: 500 requests a day, 25 an hour and 3 a second, with a 5-day forecast, 24 hours of historical weather, core data layers, 1 automatically monitored location and 1 weather-based alert.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://www.tomorrow.io/a/faq/weather-api/how-can-i-monitor-my-weather-api-usage",
+    "read_on": "2026-10-31",
+    "notes": "Each API key has its own rate limits and token balance. No bulk path on the Free plan: history beyond 24 hours is the Historical API, which runs on a token balance and returns at most 31 days a call."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: the unit is a request",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: the unit is a request",
+    "days": null,
+    "notes": "",
+    "source_url": "https://www.tomorrow.io/weather-api/"
+  },
+  "egress": {
+    "terms": "not applicable",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.tomorrow.io/weather-api/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "REST over HTTPS with the key in the apikey query parameter or header; JSON answers",
+  "endpoint": "https://api.tomorrow.io/v4/weather/realtime",
+  "tooling": "any HTTP client; the key goes in the apikey query parameter or header",
+  "chaining": "A small keyed forecast source: 5-day forecasts and realtime values per location at 500 requests a day, with no history beyond 24 hours on the Free plan.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "500 requests a day",
+      "source": "https://www.tomorrow.io/a/faq/weather-api/how-can-i-monitor-my-weather-api-usage"
+    },
+    {
+      "kind": "request-rate",
+      "value": "25 requests an hour",
+      "source": "https://www.tomorrow.io/a/faq/weather-api/how-can-i-monitor-my-weather-api-usage"
+    },
+    {
+      "kind": "request-rate",
+      "value": "3 requests a second",
+      "source": "https://www.tomorrow.io/a/faq/weather-api/how-can-i-monitor-my-weather-api-usage"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "25 an hour over 24 hours is 600, above the 500 a day, so the daily cap binds a steady poller and the hourly cap binds a burst.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The Create Account page offers SSO, Google or GitHub sign-up, or its own form behind a reCAPTCHA; a Tomorrow.io landing page says no credit card is required, and every call needs the account's key. The form's field labels did not render in any reader, so whether it asks for a phone is unverified: behind a sign-up.",
+    "country": null
+  },
+  "reliability_note": "Over the limits the API answers HTTP 429; a realtime call with no key answered HTTP 401 with code 401001, where the docs name 403, although the LLM docs page says the API can be used with no key.",
+  "confidence": "documented",
+  "confidence_note": "Free-plan limits are read from a Tomorrow.io FAQ page (the pricing page answered 404); plan contents, storage terms and the sign-up routes are first-party; a call with no key answered HTTP 401, so the free key was not exercised.",
+  "evidence": [
+    {
+      "url": "https://www.tomorrow.io/a/faq/weather-api/how-can-i-monitor-my-weather-api-usage",
+      "date": "2026-10-31",
+      "proved": "the list that follows is the Free plan's rate limits",
+      "capture": "sha256:0ae21866172082083c37d7c9c508a796311c830992ef4b5f8cf13170507fa9c3",
+      "quote": "Here are the rate limits for Tomorrow.io’s free plan:"
+    },
+    {
+      "url": "https://www.tomorrow.io/a/faq/weather-api/how-can-i-monitor-my-weather-api-usage",
+      "date": "2026-10-31",
+      "proved": "the Free plan allows 500 requests a day",
+      "capture": "sha256:0ae21866172082083c37d7c9c508a796311c830992ef4b5f8cf13170507fa9c3",
+      "quote": "500 requests per day,"
+    },
+    {
+      "url": "https://www.tomorrow.io/a/faq/weather-api/how-can-i-monitor-my-weather-api-usage",
+      "date": "2026-10-31",
+      "proved": "the Free plan allows 25 requests an hour",
+      "capture": "sha256:0ae21866172082083c37d7c9c508a796311c830992ef4b5f8cf13170507fa9c3",
+      "quote": "25 requests per hour,"
+    },
+    {
+      "url": "https://www.tomorrow.io/a/faq/weather-api/how-can-i-monitor-my-weather-api-usage",
+      "date": "2026-10-31",
+      "proved": "the Free plan allows 3 requests a second",
+      "capture": "sha256:0ae21866172082083c37d7c9c508a796311c830992ef4b5f8cf13170507fa9c3",
+      "quote": "3 requests per second."
+    },
+    {
+      "url": "https://docs.tomorrow.io/reference/rate-limiting",
+      "date": "2026-10-31",
+      "proved": "over the limits the API answers 429",
+      "capture": "sha256:e72548046e9b34b666c0c1c7d9f27d0bb8079c62ec332cc5fccd516ab7e791d5",
+      "quote": "When surpassing your rate-limiting you will get a response with a 429 error code."
+    },
+    {
+      "url": "https://docs.tomorrow.io/reference/rate-limiting",
+      "date": "2026-10-31",
+      "proved": "each API key has its own limits and tokens",
+      "capture": "sha256:e72548046e9b34b666c0c1c7d9f27d0bb8079c62ec332cc5fccd516ab7e791d5",
+      "quote": "In case you have multiple API keys, each one is assigned with its own rate limits and tokens."
+    },
+    {
+      "url": "https://www.tomorrow.io/weather-api/",
+      "date": "2026-10-31",
+      "proved": "the Free plan forecasts 5 days",
+      "capture": "sha256:70d34e25d8de3736c64fcac827aef0fd94f9ce7caf3564d65bc75a8f5de330a6",
+      "quote": "- 5-Day Forecast"
+    },
+    {
+      "url": "https://www.tomorrow.io/weather-api/",
+      "date": "2026-10-31",
+      "proved": "the Free plan reaches 24 hours of history",
+      "capture": "sha256:70d34e25d8de3736c64fcac827aef0fd94f9ce7caf3564d65bc75a8f5de330a6",
+      "quote": "- 24 hours Historical Weather Data"
+    },
+    {
+      "url": "https://www.tomorrow.io/weather-api/",
+      "date": "2026-10-31",
+      "proved": "the Free plan monitors 1 location",
+      "capture": "sha256:70d34e25d8de3736c64fcac827aef0fd94f9ce7caf3564d65bc75a8f5de330a6",
+      "quote": "- 1 Automatically monitored Location"
+    },
+    {
+      "url": "https://www.tomorrow.io/weather-api/",
+      "date": "2026-10-31",
+      "proved": "the Free plan has 1 alert",
+      "capture": "sha256:70d34e25d8de3736c64fcac827aef0fd94f9ce7caf3564d65bc75a8f5de330a6",
+      "quote": "- 1 Weather-Based Alert"
+    },
+    {
+      "url": "https://docs.tomorrow.io/reference/historical-overview",
+      "date": "2026-10-31",
+      "proved": "the Historical API runs on a token balance",
+      "capture": "sha256:fb392f4b76a8ee676752540f74b8fb3110e56de94006a68ecaa648e927995220",
+      "quote": "Each request deducts tokens from the 'historical' tokens balance."
+    },
+    {
+      "url": "https://docs.tomorrow.io/reference/historical-overview",
+      "date": "2026-10-31",
+      "proved": "a Historical API call returns at most 31 days",
+      "capture": "sha256:fb392f4b76a8ee676752540f74b8fb3110e56de94006a68ecaa648e927995220",
+      "quote": "Timerange is limited to up to 31 days per API call."
+    },
+    {
+      "url": "https://www.tomorrow.io/legal/terms-of-service",
+      "date": "2026-10-31",
+      "proved": "storing the unaltered data feed needs an order",
+      "capture": "sha256:9d85c56447b4550ffeb919cb6c74ffefdb0da602c71afae9522e4340e01ed933",
+      "quote": null
+    },
+    {
+      "url": "https://www.tomorrow.io/legal/terms-of-service",
+      "date": "2026-10-31",
+      "proved": null,
+      "capture": "sha256:9d85c56447b4550ffeb919cb6c74ffefdb0da602c71afae9522e4340e01ed933",
+      "quote": "shall prominently display the message “Powered by Tomorrow.io” in a legible manner near such data or any information derived from it."
+    },
+    {
+      "url": "https://app.tomorrow.io/signup",
+      "date": "2026-10-31",
+      "proved": "sign-up is by SSO, Google, GitHub or the page's own form",
+      "capture": "sha256:82ec6a07c11d789b337ac8712c4eefc288fb782b597d7d47e1525c285c3f97ca",
+      "quote": "[With SSO](https://app.tomorrow.io/sso-discover?planid=648b3f22ef567da8b7fb4599)With Google[With GitHub](https://api.tomorrow.io/v4/auth/github/sign-up)"
+    },
+    {
+      "url": "https://docs.tomorrow.io/reference/api-authentication",
+      "date": "2026-10-31",
+      "proved": "every call needs a key",
+      "capture": "sha256:c00c622ea53e8a66e9d52e129906dff2ab7745095d42e66635d4c9a321f3b70f",
+      "quote": "Be sure to include a valid API key with every request in order to access the API."
+    },
+    {
+      "url": "https://docs.tomorrow.io/reference/api-authentication",
+      "date": "2026-10-31",
+      "proved": "the key goes in a query parameter or a header",
+      "capture": "sha256:c00c622ea53e8a66e9d52e129906dff2ab7745095d42e66635d4c9a321f3b70f",
+      "quote": "you can either add the key value in query parameters or in the request header, like so:"
+    },
+    {
+      "url": "https://docs.tomorrow.io/reference/api-authentication",
+      "date": "2026-10-31",
+      "proved": "the docs name 403 for an unauthenticated call",
+      "capture": "sha256:c00c622ea53e8a66e9d52e129906dff2ab7745095d42e66635d4c9a321f3b70f",
+      "quote": "Requests not properly authenticated will return a [403 error code](/reference#errors)."
+    },
+    {
+      "url": "https://www.tomorrow.io/weather-api/",
+      "date": "2026-10-31",
+      "proved": "the Free plan includes the core data layers",
+      "capture": "sha256:70d34e25d8de3736c64fcac827aef0fd94f9ce7caf3564d65bc75a8f5de330a6",
+      "quote": "- Core Weather Data Layers"
+    },
+    {
+      "url": "https://www.tomorrow.io/a/faq/weather-api/what-is-rate-limiting-in-the-context-of-a-weather-api",
+      "date": "2026-10-31",
+      "proved": "a second Tomorrow.io FAQ page gives the same free-plan limits",
+      "capture": "sha256:d7fc8f97480aed7d23ba623a10932c281855fd4b9109b38563dbd21b5847da1c",
+      "quote": "Specifically, the free plan includes: 500 requests per day, 25 requests per hour, 3 requests per second."
+    },
+    {
+      "url": "https://info.tomorrow.io/weather-api-ad-1",
+      "date": "2026-10-31",
+      "proved": "a Tomorrow.io landing page says sign-up needs no credit card",
+      "capture": "sha256:d07b1fd324904c65c86d0ad21ae6ca4a6560ca83d3822de2f79bda36fb861592",
+      "quote": "Sign up for our free trial and start building in 2 clicks * no credit card required"
+    },
+    {
+      "url": "https://www.tomorrow.io/a/faq/weather-api/how-can-i-use-a-weather-api-in-my-application",
+      "date": "2026-10-31",
+      "proved": "the key comes from an account opened with basic login information",
+      "capture": "sha256:4841eb3570363615e5e694dccd3e83198357b4516674482eb22f9d8f32f56c72",
+      "quote": "First, simply register on [Tomorrow.io’s sign-up page](https://app.tomorrow.io/signup?planid=60d46beae90c3b3549a59ff3) and fill out your basic login information."
+    },
+    {
+      "url": "https://app.tomorrow.io/signup",
+      "date": "2026-10-31",
+      "proved": "the rendered sign-up form is behind a reCAPTCHA",
+      "capture": "sha256:f677e93b1de7948fc0f96b6dc4a6eea0f1bd16d70e1c213f3cee5e2c8a27b065",
+      "quote": "Recaptcha requires verification."
+    },
+    {
+      "url": "https://llm-docs.tomorrow.io/",
+      "date": "2026-10-31",
+      "proved": "the LLM docs page states use with no key; the realtime probe with no key answered 401, so no keyless path was confirmed",
+      "capture": "sha256:896901ec92f6a334ac65fe10af5e7a15221a40757528336a9bc00c9ac0757242",
+      "quote": "You can start using Tomorrow.io’s LLM-optimized Weather API right away - no API key required."
+    },
+    {
+      "url": "probe:https://api.tomorrow.io/v4/weather/realtime",
+      "date": "2026-10-31",
+      "proved": "a call with no key answers HTTP 401",
+      "capture": "sha256:0ed7a05176da43ff182b26bd4f56d3d48d823163ce2b80996cf0d1283b197cd7",
+      "quote": "{\"code\":401001,\"type\":\"Invalid Auth\",\"message\":\"The method requires authentication but it was not presented or is invalid.\"}"
+    },
+    {
+      "url": "https://free-for.dev/",
+      "date": "2026-10-31",
+      "proved": "listed on free-for.dev as a free weather API plan",
+      "capture": "sha256:a3bac496b7bbe9c3e469cc7ab5cda64a86be6a5eed50a77839a6822b0e6cab30",
+      "quote": "- [Tomorrow.io Weather API](https://www.tomorrow.io/weather-api/) - Offers free plan of weather API."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/public-apis/public-apis/master/README.md",
+      "date": "2026-10-31",
+      "proved": "listed under Weather in the public-apis list with an apiKey",
+      "capture": "sha256:7c0d65a75227ba9bd3f8576a39262f7af32373d3eca4190cd91e66329ca1d059",
+      "quote": "| [Tomorrow](https://docs.tomorrow.io) | Weather API Powered by Proprietary Technology | `apiKey` | Yes | Unknown |"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-31T10:04:05.824Z",
+  "notes": "Bulk path: none on Free; the Historical API is token-based and returns 31 days a call at most."
+}

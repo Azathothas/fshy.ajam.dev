@@ -1,0 +1,82 @@
+{
+  "topic": "storage",
+  "slug": "gitbook",
+  "provider": "GitBook (Free plan file library)",
+  "url": "https://www.gitbook.com",
+  "category": "paas",
+  "free_tier": {
+    "stated": "No published total storage quota. Per-file cap is explicit: 'GitBook allows you to upload files up to 100MB per file.' GitBook's own docs ask-API, queried live, answered: 'I cannot find a documented storage quota or total storage limit per organization on the Free plan.'",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://gitbook.com/docs/create-content/blocks/insert-files",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "100MB per file",
+    "bytes": 100000000,
+    "source_url": "https://gitbook.com/docs/create-content/blocks/insert-files",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Access token in the download URL is NOT enforced — a deliberately bogus `token=0000` returned the identical 838-byte file (same sha256), so file URLs are effectively public and permanent",
+    "source_url": "https://gitbook.com/docs/create-content/blocks/insert-files",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and CDN-served. Files land on `*-files.gitbook.io` (backed by `gitbook-x-prod.appspot.com`), fronted by Cloudflare with `Cache-Control: public, max-age=31536000`, `Accept-Ranges: bytes`, `Access-Control-Allow-Origin: *`.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "git",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "GitBook Platform API `POST /v1/orgs/{org}/storage` + a `?ask=` query interface on the docs. No rclone backend. Git sync (GitHub/GitLab) is a second, separate route.",
+  "chaining": "Unlimited free GitBook accounts/orgs x 100 MB per file x unbounded file count (undocumented total). If the total really is unbounded this is per-record-unlimited; if it is soft-limited, the multiplier is free orgs.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "100MB per file",
+      "source": "https://gitbook.com/docs/create-content/blocks/insert-files"
+    }
+  ],
+  "limits_note": "per-object-cap: 100 MB per file — the only hard published number. Total org storage: undocumented (searched the docs ask-API, no figure). Retention: files persist while the org exists; no TTL clause.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Access token in the download URL is NOT enforced — a deliberately bogus `token=0000` returned the identical 838-byte file (same sha256), so file URLs are effectively public and permanent. That cuts both ways: stable hotlinks, but no way to keep a file private.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://gitbook.com/docs/create-content/blocks/insert-files",
+      "date": "2026-10-21",
+      "proved": "'GitBook allows you to upload files up to 100MB per file.'"
+    },
+    {
+      "url": "https://1050631731-files.gitbook.io/~/files/v0/gitbook-x-prod.appspot.com/o/spaces%2F...%2Factions.svg?alt=media&token=0000",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, 838 bytes, sha256 2d47fd8e...7356 — byte-identical to the correct-token fetch; the token is decorative"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: same URL with `Range: bytes=0-99` -> 206, 100 bytes (ranging works, so parallel ranged GETs are available)"
+    },
+    {
+      "url": "https://gitbook.com/docs/developers/gitbook-api/api-reference/storage.md?ask=",
+      "date": "2026-10-21",
+      "proved": "... — 'I cannot find a documented storage quota or total storage limit per organization on the Free plan'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published total storage quota. Per-file cap is explicit: 'GitBook allows you to upload files up to 100MB per file.' GitBook's own docs ask-API, queried live, answered: 'I cannot find a documented storage quota or total storage limit per organization on the Free plan.'",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

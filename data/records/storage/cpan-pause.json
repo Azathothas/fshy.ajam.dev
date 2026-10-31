@@ -1,0 +1,88 @@
+{
+  "topic": "storage",
+  "slug": "cpan-pause",
+  "provider": "CPAN / PAUSE (pause.perl.org)",
+  "url": "https://pause.perl.org",
+  "category": "registry",
+  "free_tier": {
+    "stated": "No published byte quota, and the empirical evidence points to a tight request-body limit rather than a documented number: a 2,072,566-byte distribution was rejected with 'Upload failed (request failed with error code 413 Message: Request Entity Too Large)' in April 2024, and the same upload succeeded shortly after, so the 413 was transient rather than a hard 2 MB cap. Treat the ceiling as a few MB, undocumented.",
+    "unit": "MB",
+    "metered_on": "unstated",
+    "source_url": "https://www.cpan.org/modules/04pause.html",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "2 MB cap",
+    "bytes": 2000000,
+    "source_url": "https://www.cpan.org/modules/04pause.html",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "per-object-cap: undocumented; 413s observed around 2 MB, transient. retention: permanent and immutable per version",
+    "source_url": "https://www.cpan.org/modules/04pause.html",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and globally mirrored (CPAN mirror ring); no metering.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "ftp"
+  ],
+  "interface_detail": "rest",
+  "tooling": "`cpan-upload` / `pause upload` (HTTP POST to pause.perl.org/pause/authenquery?ACTION=add_uri), plus the historical FTP path. Read side is plain HTTP from any CPAN mirror.",
+  "chaining": "unlimited distributions x unlimited versions, but each must be a valid Perl distribution tarball with a version number in the filename, and 'you will never be able to upload a file with identical' name+version. Cardinality is real; size per unit is tiny.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "2 MB cap",
+      "source": "https://www.cpan.org/modules/04pause.html"
+    }
+  ],
+  "limits_note": "per-object-cap: undocumented; 413s observed around 2 MB, transient. retention: permanent and immutable per version. request-rate: not documented. Account gate: PAUSE registration requires a human-readable full name with a space (historical anti-spam check).",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "The 413 is emitted by the PAUSE web server as a request-body limit, so it behaves like a surprise ceiling that appears and disappears. Even at a generous reading this is a single-digit-MB store - three orders of magnitude from useful.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://www.mail-archive.com/modules@perl.org/msg53837.html",
+      "date": "2026-10-21",
+      "proved": "'I've got a 2Mb distribution which is being rejected ... 413 Message: Request Entity Too Large'"
+    },
+    {
+      "url": "https://www.mail-archive.com/modules@perl.org/msg53838.html",
+      "date": "2026-10-21",
+      "proved": "'I'm now able to upload the distribution, so that issue seems to have been temporary in nature.'"
+    },
+    {
+      "url": "https://www.cpan.org/modules/04pause.html",
+      "date": "2026-10-21",
+      "proved": "'you will never be able to upload a file with identical' filename/version"
+    },
+    {
+      "url": "https://pause.perl.org/pause/query?ACTION=request_id",
+      "date": "2026-10-21",
+      "proved": "PAUSE signup form live"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published byte quota, and the empirical evidence points to a tight request-body limit rather than a documented number: a 2,072,566-byte distribution was rejected with 'Upload failed (request failed with error code 413 Message: Request Entity Too Large)' in April 2024, and the same upload succeeded shortly after, so the 413 was transient rather than a hard 2 MB cap. Treat the ceiling as a few MB, undocumented.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "No published byte quota, and the empirical evidence points to a tight request-body limit rather than a documented number: a 2,072,566-byte distribution was rejected with 'Upload failed (request failed with error code 413 Message: Request Entity Too Large)' in April 2024, and the same upload succeeded shortly after, so the 413 was transient rather than a hard 2 MB cap. Treat the ceiling as a few MB, undocumented.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

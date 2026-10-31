@@ -1,0 +1,182 @@
+{
+  "topic": "storage",
+  "slug": "ovhcloud-object-storage-one-zone-standard-flat-s3-with-c",
+  "provider": "OVHcloud Object Storage One-Zone Standard (Poland subsidiary)",
+  "url": "https://www.ovhcloud.com/pl/public-cloud/prices/",
+  "category": "object-storage",
+  "free_tier": {
+    "stated": "No free tier: the Standard class in a 1-AZ (One Zone) region is billed from the first GiB at 0,00004861 PLN per GiB-hour (about 0,0354853 PLN per GiB-month) on the Polish price list, one rate at every volume",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://www.ovhcloud.com/pl/public-cloud/prices/",
+    "read_on": "2026-10-21",
+    "notes": "billed per GiB-hour; the monthly figure is the hourly price x 730 hours"
+  },
+  "per_object_cap": {
+    "stated": "48 TiB per object through multipart upload (up to 10,000 parts of 5 MiB to 5 GiB); 5 GiB through a single PUT",
+    "bytes": 52776558133248,
+    "source_url": "https://docs.ovhcloud.com/en/guides/storage-and-backup/object-storage/s3-limitations",
+    "notes": "the Object Storage technical limits page states one set of limits for the Object Storage offer"
+  },
+  "retention": {
+    "stated": "unlimited time: objects are kept until deleted, and the Standard class has no minimum storage duration",
+    "days": null,
+    "source_url": "https://help.ovhcloud.com/csm/en-public-cloud-storage-s3-faq?id=kb_article_view&sysparm_article=KB0059679",
+    "notes": "the price table marks the Standard minimum storage billed N/A"
+  },
+  "egress": {
+    "terms": "Free: the Polish price list marks external ingoing and outgoing traffic, internal traffic, data retrieval and API requests «Darmowy» (free) on the One Zone Standard row",
+    "metered": false
+  },
+  "interface": [
+    "s3",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "s3 + swift",
+  "tooling": "rclone `s3` (any S3 client), s3cmd, aws-cli, boto3, restic/borg via rclone. Live endpoints probed: s3.waw.io.cloud.ovh.net -> 307, s3.gra.io.cloud.ovh.net -> 307, s3.rbx.io.cloud.ovh.net -> 307 (all answer with an S3 XML 307 to the product page, i.e. the clusters are up and addressing buckets by region).",
+  "chaining": "Unbounded — a bucket has no plan size, so 10 TiB and 20 TiB are the same product at the same rate. No tier break at all until the 3-AZ Standard 50 TiB step.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "48 TiB per object by multipart upload; 5 GiB by a single PUT",
+      "source": "https://docs.ovhcloud.com/en/guides/storage-and-backup/object-storage/s3-limitations"
+    },
+    {
+      "kind": "request-rate",
+      "value": "300 PUT and 900 GET requests per second per bucket, soft defaults",
+      "source": "https://docs.ovhcloud.com/en/guides/storage-and-backup/object-storage/s3-limitations"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "1 Gbps per connection",
+      "source": "https://docs.ovhcloud.com/en/guides/storage-and-backup/object-storage/s3-limitations"
+    }
+  ],
+  "limits_note": "One Zone Infrequent Access is 0,00002367 PLN per GiB-hour (about 0,0172791 PLN per GiB-month) with a 30-day minimum storage duration and 0,01728 PLN per GiB retrieved; the Standard class has neither",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "an email address validated by a one-time code, the country of tax residence, and a valid payment method on the account before the first Public Cloud project; Visa, Mastercard and Maestro cards are accepted, and PayPal and a prepaid account are offered as payment methods",
+    "country": null
+  },
+  "reliability_note": "Warsaw (WAW) is listed without 3-AZ: the 3-AZ regions are Paris and Milan, so Object Storage bought in Warsaw is a single-zone deployment",
+  "confidence": "documented",
+  "confidence_note": "documented: the Polish and international price lists, the storage classes page, the Object Storage technical limits page, the account-creation guide and the free-trial page were read and quoted on 2026-10-30; a read timed from a bucket would make it measured",
+  "evidence": [
+    {
+      "url": "https://www.ovhcloud.com/pl/public-cloud/prices/",
+      "date": "2026-10-21",
+      "proved": "Object Storage One Zone table: «Standard | Darmowy | Darmowy | Darmowy | Darmowy | N/A | 0,00004861 PLN | ~0,0354853 PLN» across columns Internal traffic / External traffic / Data retrieval / API Requests / price-per-GiB-hour / price-per-GiB-month"
+    },
+    {
+      "url": "https://www.ovhcloud.com/pl/public-cloud/prices/",
+      "date": "2026-10-21",
+      "proved": "3-AZ table: «Standard | Pierwsze 50 TiB | Darmowy | Darmowy | Darmowy | Darmowy | N/A | 0,00008369 PLN | ~0,0610937 PLN»; Swift Standard 0,000066 PLN/GiB/h (~0,04818/mo) with all traffic Darmowy"
+    },
+    {
+      "url": "https://www.ovhcloud.com/pl/public-cloud/object-storage/",
+      "date": "2026-10-21",
+      "proved": "«nie płacisz za wywołania API ani za ruch przychodzący i wychodzący»"
+    },
+    {
+      "url": "https://www.ovhcloud.com/pl/public-cloud/object-storage/classes/",
+      "date": "2026-10-21",
+      "proved": "«Brak opłat za wywołania API … Brak opłat za ruch wychodzący»; durability 99,99999999999 % (11 nines) all classes; SLA 99,9 % 1-AZ vs 99,99 % 3-AZ"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probes: s3.waw.io.cloud.ovh.net/ -> 307; s3.gra.io.cloud.ovh.net/ -> 307 with x-amz-id-2 header; s3.rbx.io.cloud.ovh.net/ -> 307"
+    },
+    {
+      "url": "https://help.ovhcloud.com/csm/en-public-cloud-storage-s3-faq",
+      "date": "2026-10-21",
+      "proved": "defines Outgoing public traffic and confirms 1-AZ vs 3-AZ billing models differ"
+    },
+    {
+      "url": "https://www.ovhcloud.com/pl/public-cloud/prices/",
+      "date": "2026-10-30",
+      "proved": "the Polish price list gives One Zone Standard 0,00004861 PLN per GiB-hour, about 0,0354853 PLN per GiB-month, with traffic, retrieval and API requests free (Darmowy)",
+      "capture": "sha256:e5346c95229e5fd0c85b19e9a07d38e612afeee671678ea7337bd6e250d42555",
+      "quote": "| Standard | \\- | Darmowy | Darmowy | Darmowy | Darmowy | N/A | 0,00004861 PLN | ~0,0354853 PLN |"
+    },
+    {
+      "url": "https://www.ovhcloud.com/en/public-cloud/prices/",
+      "date": "2026-10-30",
+      "proved": "Object Storage is invoiced per GiB-hour and the monthly figure assumes 730 hours",
+      "capture": "sha256:592d28765238669188fc8855269fbcad0c1ae6d8adf83d80063cda0ff79c8325",
+      "quote": "For optimal readability, the price is displayed as GiB/month – but since there are 730 hours in an average month, the invoicing granularity is GiB/hour."
+    },
+    {
+      "url": "https://www.ovhcloud.com/en/public-cloud/free-trial/",
+      "date": "2026-10-30",
+      "proved": "a valid payment method is required on the account before the first Public Cloud project",
+      "capture": "sha256:833a8cfc5f5b014146b61bc60e022d12222c9157a6b8ef84510e03864ce36f6e",
+      "quote": "You need to add a valid payment method to your OVHcloud customer account before starting the free trial, which will be used after your free trial ends, if you want to keep running the project you have launched."
+    },
+    {
+      "url": "https://www.ovhcloud.com/en/terms-and-conditions/payment/",
+      "date": "2026-10-30",
+      "proved": "OVHcloud accepts Visa, Mastercard and Maestro cards; the same page offers PayPal and a prepaid account",
+      "capture": "sha256:1bb040f010d78fc15cad2155da6cdc0195337f3af99e51d70c12b68810997e37",
+      "quote": "Cards accepted are Visa, Mastercard, Maestro."
+    },
+    {
+      "url": "https://docs.ovhcloud.com/en/guides/account-and-service-management/account-information/ovhcloud-account-creation",
+      "date": "2026-10-30",
+      "proved": "account creation validates the email address with a one-time code",
+      "capture": "sha256:945f4e98b5d2464730e482bbf6d18a52f2b8a530031f2e94ba7fcf8f4fc3af25",
+      "quote": "After you submit this form, a one-time code will be sent to the email address you entered."
+    },
+    {
+      "url": "https://www.ovhcloud.com/pl/public-cloud/prices/",
+      "date": "2026-10-30",
+      "proved": "the Polish One Zone Infrequent Access class costs about 0,0172791 PLN per GiB-month with a 30-day minimum and 0,01728 PLN per GiB retrieved",
+      "capture": "sha256:e5346c95229e5fd0c85b19e9a07d38e612afeee671678ea7337bd6e250d42555",
+      "quote": "| Infrequent Access | \\- | Darmowy | Darmowy | 0,01728 PLN | Darmowy | 30 dni | 0,00002367 PLN | ~0,0172791 PLN |"
+    },
+    {
+      "url": "https://www.ovhcloud.com/en/public-cloud/regions-availability/",
+      "date": "2026-10-30",
+      "proved": "the European Public Cloud regions with 3-AZ are Paris and Milan; Strasbourg, Gravelines, Roubaix, London, Frankfurt and Warsaw are listed without 3-AZ",
+      "capture": "sha256:e5211b31df83e3d7974d2f3d50cbcc401e38d929730ff0a33b3bd010ad639cd2",
+      "quote": "|  | Strasbourg | Gravelines | Roubaix | 3-AZ Paris | 3-AZ Milan | London | Frankfurt | Warsaw |  |"
+    },
+    {
+      "url": "https://help.ovhcloud.com/csm/en-public-cloud-storage-s3-faq?id=kb_article_view&sysparm_article=KB0059679",
+      "date": "2026-10-30",
+      "proved": "Object Storage keeps data for an unlimited time and volume; no expiry applies",
+      "capture": "sha256:e2f754959578b54279d07f11d3711095db3f622bea84cf881f970cef9fff5d07",
+      "quote": "Object Storage is adapted to store unstructured data in an unlimited volume and time, for use cases such as websites, e-commerce platforms, video streaming, image libraries, analytics, backups, archives."
+    },
+    {
+      "url": "https://docs.ovhcloud.com/en/guides/storage-and-backup/object-storage/s3-limitations",
+      "date": "2026-10-30",
+      "proved": "the largest object is 48 TiB by multipart upload and 5 GiB by a single PUT",
+      "capture": "sha256:eb85a82eeca983386bbc398a29f6fd8610cb084c18e136ed158079d3ccc499eb",
+      "quote": "| Maximum Object size | 48 TiB | This maximum can be achieved using Multi-Part Upload (MPU), via a single PUT request, the maximum object size is 5 GiB |"
+    },
+    {
+      "url": "https://docs.ovhcloud.com/en/guides/storage-and-backup/object-storage/s3-limitations",
+      "date": "2026-10-30",
+      "proved": "Object Storage bandwidth is 1 Gbps per connection, lifted by parallel requests",
+      "capture": "sha256:eb85a82eeca983386bbc398a29f6fd8610cb084c18e136ed158079d3ccc499eb",
+      "quote": "1 Gbps/connection."
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-30T18:30:29.231Z",
+  "price_per_tb_month": "PLN 33.05 per TB per month (PLN 0.0354853 per GiB-month x 931.32 GiB per TB); one rate at every volume",
+  "notes": "Unlimited / unbilled minimum: «Możesz przechowywać dowolną ilość danych, nie określamy minimalnego wolumenu». Billed per GiB-hour at 0.00004861 PLN, shown as ~0.0354853 PLN/GiB/month over 730 h.",
+  "extras": {
+    "price_verbatim": "One-Zone Standard: $9.34/TB/mo ($112.03/TB/yr) with free egress, free API calls, free retrieval — identical at 5 TB and 20 TB because pricing is strictly per-GiB with no tiers. One-Zone Infrequent Access: $4.55/TB/mo storage but +$2.27/TB per full read-back (0.01728 PLN/GiB) and a 30-day minimum, so $6.82/TB/mo effective on one read = $81.83/TB/yr. 3-AZ Standard: $16.07/TB/mo, first 50 TiB. Swift Standard: $12.68/TB/mo. All PLN converted at 0.256916 USD/PLN and 1024 GiB/TB.",
+    "fx": {
+      "pair": "USD/PLN",
+      "rate": 3.9261,
+      "date": "2026-10-23",
+      "source": "ECB reference via frankfurter.app"
+    }
+  },
+  "binding": "none",
+  "binding_note": "none: storage has no stated cap, an object may reach 48 TiB, the per-bucket rates of 300 PUT and 900 GET requests per second are soft defaults, and the 1 Gbps per connection is lifted by parallel connections"
+}

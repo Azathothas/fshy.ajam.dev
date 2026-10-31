@@ -1,0 +1,92 @@
+{
+  "topic": "egress",
+  "slug": "proxyguard",
+  "provider": "proxyguard",
+  "url": "https://codeberg.org/eduVPN/proxyguard",
+  "category": "tool (wireguard transport)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "no service and no account; MIT-licensed client and server, packaged in the eduVPN server repository",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://codeberg.org/eduVPN/proxyguard",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://codeberg.org/eduVPN/proxyguard",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://codeberg.org/eduVPN/proxyguard",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not applicable; the software states no volume; ingress: tcp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://codeberg.org/eduVPN/proxyguard"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "proxyguard-client --to http://host ; proxyguard-server --listen --to",
+  "tooling": "make install adds systemd units; DEB and RPM packages in the eduVPN repo",
+  "chaining": "rides any HTTPS reverse proxy, so it composes with a host that already serves a website and with a CDN that passes an Upgrade header.",
+  "limits": [],
+  "limits_note": "",
+  "binding": "none",
+  "binding_note": "the constraint is a server host, mitigated by the fact that it is designed to sit behind a reverse proxy on an existing HTTPS port",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no account for the tool; the eduVPN ecosystem around it issues accounts separately",
+    "country": "None"
+  },
+  "reliability_note": "client requires TLS 1.3 or newer; on Linux --fwmark may be needed to avoid a routing loop, and that flag needs root or CAP_NET_ADMIN",
+  "confidence": "documented",
+  "confidence_note": "a measured run through an nginx or HAProxy front would raise it; eduVPN publishes deployment docs but no throughput figure",
+  "evidence": [
+    {
+      "url": "https://codeberg.org/eduVPN/proxyguard/raw/branch/main/README.md",
+      "date": "2026-10-23",
+      "proved": "\"proxy UDP connections over HTTP(s). The main use case is to proxy WireGuard packets\" and \"This proxy thus needs to run for every client and for a server\""
+    },
+    {
+      "url": "https://codeberg.org/eduVPN/proxyguard/raw/branch/main/README.md",
+      "date": "2026-10-23",
+      "proved": "\"This project started with a UDP to TCP approach, but later moved to HTTP for use behind a reverse proxy\""
+    },
+    {
+      "url": "https://codeberg.org/eduVPN/proxyguard/releases",
+      "date": "2026-10-23",
+      "proved": "release 2.1.1 published 2026-08-26"
+    },
+    {
+      "url": "https://codeberg.org/eduVPN/proxyguard/raw/branch/main/README.md",
+      "date": "2026-10-23",
+      "proved": "\"The goal of this project is NOT to work around intentional state/organizational network blocks/censorship\""
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The most institutionally-backed wrapper: it ships in eduVPN's server packages and is the WireGuard-over-TCP path their own apps use. The reverse-proxy design is the practical difference from wstunnel: because it speaks HTTP with an Upgrade handshake, it can share port 443 with a normal web server, so it needs a host that already exists rather than a dedicated one. It also names mullvad/udp-over-tcp as its ancestor.",
+  "extras": {
+    "wg_path": "none",
+    "wg_detail": "client listens on 127.0.0.1:51821 and the WireGuard config sets Endpoint = 127.0.0.1:51821; server runs 'proxyguard-server --listen 0.0.0.0:51821 --to 127.0.0.1:51820'",
+    "ingress": "tcp",
+    "volume_tib_month": null,
+    "volume_stated": "not applicable; the software states no volume",
+    "bytes_transit": "yes",
+    "transit_note": "through the server half, which forwards to the local WireGuard port",
+    "hosting_requirement": "a server host with an HTTP listener, preferably behind a reverse proxy on 443; a user half runs on the device",
+    "last_release": "2.1.1 2026-08-26",
+    "stars": null
+  },
+  "self_hosted": true
+}

@@ -1,0 +1,81 @@
+{
+  "topic": "storage",
+  "slug": "b2share",
+  "provider": "B2SHARE (EUDAT)",
+  "url": "https://b2share.eudat.eu",
+  "category": "academic",
+  "free_tier": {
+    "stated": "20 GB per record, 10 GB per file, and explicitly unlimited records and unlimited files.",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://docs.eudat.eu/b2share/faq/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "10 GB per file",
+    "bytes": 10000000000,
+    "source_url": "https://docs.eudat.eu/b2share/faq/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.eudat.eu/b2share/faq/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free, unmetered, direct per-file content URLs (GET /api/records/<id>/files/<name>/content). No egress terms or pricing exist; EUDAT is publicly funded.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "InvenioRDM-style REST API (live: GET /api/records?size=1 -> 200 with hits/entries and per-file content links); OAI-PMH; DOI minting (10.23728). Python client via plain requests. No rclone backend.",
+  "chaining": "20 GB per record x unlimited records. 50 records = 1 TB; 1,000 records = 20 TB in one account. The docs state outright 'There is no limit to the number of files you can deposit or records you can create'.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "10 GB per file",
+      "source": "https://docs.eudat.eu/b2share/faq/"
+    },
+    {
+      "kind": "write-gated",
+      "value": "review",
+      "source": "https://docs.eudat.eu/b2share/faq/"
+    }
+  ],
+  "limits_note": "10 GB per file, 20 GB per record — so 20 TB needs ~1,024 records, which trips EUDAT's 'fair share' clause: 'the uploading of large number of files or creating large number of records is not considered fair use' and they ask you to contact them first. Live rate limit header: x-ratelimit-limit: 500, x-ratelimit-remaining: 499.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "inferred from the category 'academic'; the source record states no identity cost, so this is a class assumption, not evidence",
+    "country": null
+  },
+  "reliability_note": "Rate-limited at 500 requests/window and watched for bulk growth; EUDAT says it 'will increase back-end storage capacity incrementally when necessary', which implies throttling rather than deletion, but the fair-share clause is the trigger for manual review.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://docs.eudat.eu/b2share/faq/",
+      "date": "2026-10-21",
+      "proved": "'the maximum size for a record is 20 GB; and the maximum size for a file is 10 GB'"
+    },
+    {
+      "url": "https://eudat.eu/services/userdoc/b2share-faq",
+      "date": "2026-10-21",
+      "proved": "'There is no limit to the number of files you can deposit or records you can create'; 'fair share' principle"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET /api/records?size=1 -> 200, x-ratelimit-limit: 500, x-ratelimit-remaining: 499"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "20 GB per record, 10 GB per file, and explicitly unlimited records and unlimited files.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

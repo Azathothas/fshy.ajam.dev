@@ -1,0 +1,105 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "openlist",
+  "provider": "OpenList (OpenListTeam/OpenList)",
+  "url": "https://github.com/OpenListTeam/OpenList",
+  "category": "bridge",
+  "free_tier": {
+    "stated": "free software, no allowance stated: https://github.com/OpenListTeam/OpenList is AGPL-3.0 software the user runs; it states there are no paid plans and prints no quota, unit or price",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://github.com/OpenListTeam/OpenList",
+    "read_on": "2026-10-30"
+  },
+  "per_object_cap": {
+    "stated": "no cap of its own; the cap is the mounted upstream's",
+    "source_url": "https://github.com/OpenListTeam/OpenList"
+  },
+  "retention": {
+    "stated": "as long as the operator keeps the process and the upstream alive",
+    "days": null,
+    "source_url": "https://github.com/OpenListTeam/OpenList"
+  },
+  "egress": {
+    "terms": "unmetered by the software; the egress is whatever the upstream provider and any CDN in front charge",
+    "metered": false,
+    "source_url": "https://github.com/OpenListTeam/OpenList"
+  },
+  "interface": [
+    "rest",
+    "webdav",
+    "s3",
+    "ftp",
+    "sftp"
+  ],
+  "tooling": "a single Go binary; REST under /api/*, WebDAV at /dav, an S3-compatible gateway, FTP and SFTP; the rclone alist backend works against it",
+  "chaining": "the bridge layer of the whole topic: mount a pooled tenant or a pan account, serve it over REST and WebDAV, put a CDN in front",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "the write gate is CanWriteContent (bit 3) OR a per-path meta override, evaluated in server/middlewares/fsup.go",
+      "source": "https://github.com/OpenListTeam/OpenList/blob/main/server/middlewares/fsup.go"
+    }
+  ],
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "the operator installs it; a reader needs no account on the bridge itself",
+    "country": null
+  },
+  "reliability_note": "A community fork of AList, created in June 2025 after the AList project was sold and its ownership, docs and community were rewritten. The fork is the maintained one; AList v3 builds still run on many public instances and still work.",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://github.com/OpenListTeam/OpenList",
+      "date": "2026-10-22",
+      "proved": "the repository describes itself as 'A new AList Fork to Anti Trust Crisis', 25,183 stars, last push 2026-10-21"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/OpenListTeam/OpenList/main/server/middlewares/fsup.go",
+      "date": "2026-10-22",
+      "proved": "the write gate is: if !user.CanWriteContent() && !common.CanWriteContentBypassUserPerms(parentMeta, parentPath) then deny, then a second check common.CanWrite(user, parentMeta, parentPath)"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/OpenListTeam/OpenList/main/server/handles/fsread.go",
+      "date": "2026-10-22",
+      "proved": "the fs/list response carries Write: common.CanWrite(user, meta, reqPath) and WriteContentBypass: common.CanWriteContentBypassUserPerms(meta, reqPath); these are two different predicates and only the second mirrors the upload gate"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/OpenListTeam/OpenList/main/internal/model/user.go",
+      "date": "2026-10-22",
+      "proved": "the permission bitmask is documented in the struct comment: bit 3 is mkdir and upload, bit 8 is WebDAV read, bit 9 is WebDAV write"
+    },
+    {
+      "url": "https://finance.sina.com.cn/tech/digi/2025-06-16/doc-infahqye9515437.shtml",
+      "date": "2026-10-22",
+      "proved": "the AList project was reported sold in June 2025 and OpenList was created as a replacement that removes the original developer's private API links"
+    },
+    {
+      "url": "https://github.com/OpenListTeam/OpenList",
+      "date": "2026-10-30",
+      "proved": "OpenList has no paid plan and no metered allowance; the software is free to run",
+      "capture": "sha256:a3a61e1281c815782fe05a2c8c2d57687f09990055360a1c0db3fbfe9c780446",
+      "quote": "There are currently no paid plans or commercial deployments, and the use of existing features does not involve any costs."
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-30T17:26:52.228Z",
+  "binding": "write-gated",
+  "notes": "The one piece of this topic a user can own outright. The source is explicit that fs/list's write field is CanWrite, a per-user exclusion-list negation, while the upload gate is CanWriteContent(bit 3) OR a per-path meta; that distinction is why a host can report write:true and refuse every PUT, and why the one writable instance in the population reports write_content_bypass:true and permission 256 with no bit 3.",
+  "extras": {
+    "access_mode": "self-hosted-bridge",
+    "language": "Go",
+    "license": "AGPL-3.0",
+    "stars": 25183,
+    "last_push": "2026-10-21T17:00:56Z",
+    "aliases": [
+      "AList / OpenList — the most-used multi-storage aggregator (50.3k / 25.2k stars)",
+      "alist / OpenList — the layer that works around a missing provider client",
+      "AList / OpenList",
+      "AList / OpenList — the most-used multi-storage aggregator"
+    ],
+    "aggregator_note": "This record is the single home for both spellings of the aggregator, so the name the completeness audit called unindexed resolves here."
+  },
+  "binding_note": "The bridge itself is not the constraint; what it can do is entirely set by which upstream it mounts and whether that upstream grants a write.",
+  "self_hosted": true
+}

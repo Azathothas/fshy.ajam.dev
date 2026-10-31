@@ -1,0 +1,87 @@
+{
+  "topic": "storage",
+  "slug": "launchpad-ppa",
+  "provider": "Launchpad PPA (Ubuntu Personal Package Archive)",
+  "url": "https://launchpad.net/ubuntu/+ppas",
+  "category": "paas",
+  "free_tier": {
+    "stated": "8 GiB of disk per PPA - current official reference: 'Disk space | 8 GiB; larger quotas considered on request at https://answers.launchpad.net/launchpad'. (Historical: PPAs were raised to a 2 GiB minimum in 2010 per the Launchpad blog; the 8 GiB figure is the current documented one.) 'PPAs per owner: One or more per user or team; each has its own URL.'",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://launchpad-help.readthedocs.io/en/latest/how-to/distribute-ubuntu-software.html",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://launchpad-help.readthedocs.io/en/latest/how-to/distribute-ubuntu-software.html",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "This is the binding constraint - you cannot push an arbitrary tarball; everything must be a signed source package (.dsc + orig.tar.gz + debian.tar.gz), so a 4 GB blob becomes one 4 GB .orig.tar.gz (allowed, but must be a valid Debian source package). retention: indefinite - 'A published package remains available until ..",
+    "source_url": "https://launchpad-help.readthedocs.io/en/latest/how-to/distribute-ubuntu-software.html",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free: 'Data transfer | No fixed cap; unusual volumes may trigger contact from Launchpad.' Served from ppa.launchpadcontent.net with no billing.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "ftp",
+    "rsync",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "`dput`/`dput-ng` (rsync+ftp upload to ppa.launchpad.net), `apt`/`deb-src` for consumption, Launchpad REST API + `launchpadlib`. No rclone backend.",
+  "chaining": "N PPAs per owner ('one or more per user or team') x 8 GiB each x unlimited free Launchpad accounts and teams. A team can own multiple PPAs, so 8 GiB x N.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "70 KB/s",
+      "source": "https://launchpad-help.readthedocs.io/en/latest/how-to/distribute-ubuntu-software.html"
+    }
+  ],
+  "limits_note": "per-object-cap: 'Uploadable artefacts | Source packages only; pre-built binary uploads are rejected' and 'Package formats | .deb only'. This is the binding constraint - you cannot push an arbitrary tarball; everything must be a signed source package (.dsc + orig.tar.gz + debian.tar.gz), so a 4 GB blob becomes one 4 GB .orig.tar.gz (allowed, but must be a valid Debian source package). retention: indefinite - 'A published package remains available until ... the owner removes it, or a later upload supersedes it.' request-rate: not documented; download is plain HTTP. Measured single-stream throughput on a real PPA .deb was only ~70 KB/s.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "The read path works and supports ranges (verified 206 on a 1 MB range of a real .deb) but single-connection speed was poor (~70,666 B/s over 15 s). Batch/sharded fetch needed. Upload requires GPG-signed source packages - no arbitrary blob PUT. help.launchpad.net and blog.launchpad.net returned 503 to the reader all session (used archive captures instead), so the live help site is unreliable to fetch programmatically.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://launchpad-help.readthedocs.io/en/latest/how-to/distribute-ubuntu-software.html",
+      "date": "2026-10-21",
+      "proved": "quotas table: 'Disk space | 8 GiB; larger quotas considered on request'; 'Data transfer | No fixed cap'; 'PPAs per owner | One or more per user or team'"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "(captured 2024-12-11) - 'we've gone ahead and upgraded every PPA to a minimum of 2 GiB'"
+    },
+    {
+      "url": "http://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu/pool/main/p/python3.12/",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, directory listing of real .deb files"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: ranged GET bytes 0-1048575 on libpython3.12-dbg_3.12.15-1+jammy1_amd64.deb -> 206, 1,048,576 bytes, 70,666 B/s"
+    },
+    {
+      "url": "http://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu/dists/noble/Release",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, 16,928 bytes (real Release file)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "8 GiB of disk per PPA - current official reference: 'Disk space | 8 GiB; larger quotas considered on request at https://answers.launchpad.net/launchpad'. (Historical: PPAs were raised to a 2 GiB minimum in 2010 per the Launchpad blog; the 8 GiB figure is the current documented one.) 'PPAs per owner: One or more per user or team; each has its own URL.'",
+  "extras": {},
+  "binding": "per-ip-shaping",
+  "binding_note": null
+}

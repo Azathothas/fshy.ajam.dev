@@ -1,0 +1,101 @@
+{
+  "topic": "storage",
+  "slug": "open-storage-network-via-nsf-access-1-to-50-tb-of-s3-per",
+  "provider": "Open Storage Network (OSN) via NSF ACCESS — 1 to 50 TB of S3 per allocation, 10 TB minimum",
+  "url": "https://www.openstoragenetwork.org/get-involved/get-an-allocation/",
+  "category": "academic",
+  "free_tier": {
+    "stated": "'Allocations of a minimum 10 terabytes and max of 50 terabytes supporting up to 1.6 million files can be requested through the ACCESS CI allocation process.' The ACCESS documentation states it as a 10-50 TB project allocation with '1 ACCESS credit = 1 GB' and 'Campus Champions may request 1 TB for testing'. Above 50 TB: 'contact us to discuss the hosting and purchase of your own OSN pod'.",
+    "unit": "TB",
+    "metered_on": "unstated",
+    "source_url": "https://support.access-ci.org/documentation/resources/osn",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://support.access-ci.org/documentation/resources/osn",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Retention: 'Never purged', 'Not backed up' (support.access-ci.org resource table) — genuinely indefinite, which is unusual in this niche",
+    "source_url": "https://support.access-ci.org/documentation/resources/osn",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and unmetered — this is NSF-funded infrastructure, there is no egress meter anywhere in the docs. Public buckets are readable anonymously, which is the fetch path.",
+    "metered": false
+  },
+  "interface": [
+    "s3",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "s3",
+  "tooling": "rclone with provider = Ceph, aws cli, Cyberduck, restic. Endpoints are per-pod, e.g. https://mghp.osn.xsede.org. Bucket management is via the Coldfront portal (coldfront.osn.mghpcc.org), not the CLI.",
+  "chaining": "The multiplier is ACCESS projects, not buckets: 'one project can have many S3 Buckets as long as the total quota doesn't exceed the project network quota'. So 50 TB per ACCESS project. ACCESS allows 'Multiple requests allowed' for Explore, Discover and Accelerate project types, with credit limits of 400,000 / 1,500,000 / 3,000,000 respectively — at 3,000 credits per TB of OSN, a single Explore project (400k credits) can fund ~133 TB if it were all spent on OSN, well above the 50 TB per-project cap, meaning the per-project cap is the binding limit and multiple projects is the way past it.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "review (an Explore project is a 1-page proposal, reviewed, and the PI needs an institu",
+      "source": "https://support.access-ci.org/documentation/resources/osn"
+    }
+  ],
+  "limits_note": "per-object-cap: not documented; the counted limit is 'up to 1.6 million files' per allocation. Retention: 'Never purged', 'Not backed up' (support.access-ci.org resource table) — genuinely indefinite, which is unusual in this niche. request-rate: not published, but the docs note parallel requests against the inside endpoints spread across OSDs 'and therefore achieve very large training throughput'.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Buckets are 'not backed up' and are created by ticket/portal form, not API — automation is limited to reads and writes, not bucket provisioning.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://www.openstoragenetwork.org/get-involved/get-an-allocation/",
+      "date": "2026-10-21",
+      "proved": "'Allocations of a minimum 10 terabytes and max of 50 terabytes supporting up to 1.6 million files can be requested through the ACCESS CI allocation process'"
+    },
+    {
+      "url": "https://support.access-ci.org/documentation/resources/osn",
+      "date": "2026-10-21",
+      "proved": "'Project allocations run from 10 TB to 50 TB through the standard ACCESS process', '1 ACCESS credit = 1 GB', Bucket storage | 50 TB | Never purged | Not backed up"
+    },
+    {
+      "url": "https://openstoragenetwork.github.io/docs/allocations/",
+      "date": "2026-10-21",
+      "proved": "'3,000 ACCESS credits per 1 TB of OSN storage', total OSN allocation 1-50 TB, and OSN is 'at no cost to researchers'"
+    },
+    {
+      "url": "https://openstoragenetwork.github.io/docs/request-bucket/",
+      "date": "2026-10-21",
+      "proved": "public anonymous access is opt-in at bucket request: 'If your bucket should be accessible without authentication, please make a note'"
+    },
+    {
+      "url": "https://mghp.osn.xsede.org/",
+      "date": "2026-10-21",
+      "proved": "probe: curl -D - -> HTTP/1.1 200 OK, x-amz-request-id tx000006fe9903f5e55ebe4-...-default, Ceph RGW ListAllMyBucketsResult"
+    },
+    {
+      "url": "https://mghp.osn.xsede.org/bir190004-bucket01/?list-type=2&max-keys=3",
+      "date": "2026-10-21",
+      "proved": "probe: curl '' -> HTTP 200, 1,100 bytes of valid ListBucketResult JSON-equivalent XML, IsTruncated true, real keys (bioconductor AnnotationHub mirror). Anonymous bucket listing works on a real public OSN bucket."
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: curl -r 0-99 <690MB object> -> HTTP/1.1 206 Partial Content, Content-Range: bytes 0-99/81066 on the small object and 206 on the large one, Accept-Ranges: bytes, ETag present. Ranged reads work."
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "benchmark: single stream 64 MiB ranged GET -> 67,108,864 B in 5.35 s = 12.55 MB/s (97% of this host's 16.67 MB/s Cloudflare baseline). 16 parallel 4 MiB ranged GETs -> 10.16 MiB/s aggregate, 32 parallel -> 6.71 MiB/s. The curve DECREASES: OSN's per-connection throughput is good and a user link is the bottleneck, so parallel ranged GETs buy nothing here — do not condemn OSN with a single-stream test, it is already at line rate."
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "'Allocations of a minimum 10 terabytes and max of 50 terabytes supporting up to 1.6 million files can be requested through the ACCESS CI allocation process.' The ACCESS documentation states it as a 10-50 TB project allocation with '1 ACCESS credit = 1 GB' and 'Campus Champions may request 1 TB for testing'. Above 50 TB: 'contact us to discuss the hosting and purchase of your own OSN pod'.",
+  "extras": {},
+  "binding": "write-gated",
+  "binding_note": null
+}

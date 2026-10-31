@@ -1,0 +1,421 @@
+{
+  "topic": "compute",
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "notes": "the page states 200 GB of combined boot and block volume and contradicts itself on the minimum boot volume, 47 GB in one paragraph and 50 GB in another"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "OCI API, CLI and console; SSH key installed at instance creation",
+  "tooling": "oci CLI, Terraform provider, the OCI SDKs; a real Linux VM with a public IP",
+  "chaining": "the only free tier here that gives a full VM with a public IP and 10 TB of egress a month",
+  "limits_note": "the reclamation test is a 7-day percentile, so a workload that sleeps for five days and bursts for two is still at risk; a second clock suspends accounts left idle 30 days or more",
+  "reliability_note": "Always Free A1 instances above the reduced limit were terminated automatically on 2026-08-18; a user in Phoenix reports the boot volume going with the instance",
+  "confidence": "documented",
+  "verified_at": "2026-10-24T04:10:12.000Z",
+  "price_per_tb_month": null,
+  "slug": "oracle-cloud",
+  "provider": "Oracle Cloud Always Free",
+  "url": "https://www.oracle.com/cloud/free/",
+  "category": "cloud VM",
+  "free_tier": {
+    "stated": "1,500 OCPU-hours and 9,000 GB-hours a month on VM.Standard.A1.Flex, which Oracle states is equivalent to 2 OCPUs and 12 GB; plus up to two VM.Standard.E2.1.Micro instances and 200 GB of block volume",
+    "unit": "hours",
+    "metered_on": "wall-clock",
+    "source_url": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm",
+    "read_on": "2026-10-24",
+    "notes": "the allowance is denominated in OCPU-hours, not in a fixed machine size; the grant is two products at once, an always-on allowance and a 30-day USD 300 trial"
+  },
+  "retention": {
+    "stated": "Always Free resources stay free while the tenancy qualifies; an idle instance may be reclaimed; accounts left idle for 30 days or more may be deemed abandoned and become eligible for suspension or termination",
+    "days": 0,
+    "source_url": "https://www.oracle.com/cloud/free/faq/",
+    "notes": "reclamation is the retention risk, not a deletion clock; there are two clocks, a 7-day p95 reclaim test and a 30-day abandonment rule"
+  },
+  "egress": {
+    "terms": "10 TB a month of outbound data transfer is included on Always Free; E2.1.Micro instances are capped at 50 Mbps on the internet",
+    "metered": true,
+    "free_allowance": "10 TB a month",
+    "price_per_tb": null,
+    "source_url": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm"
+  },
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "1,500 OCPU-hours a month: a 2-OCPU box run 24/7 uses 1,460 and leaves 40",
+      "source": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "10 TB a month outbound; E2.1.Micro capped at 50 Mbps on the internet",
+      "source": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "an instance idle over a 7-day window may be reclaimed: p95 CPU below 20%, network below 20%, memory below 20% on A1",
+      "source": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "accounts left idle for 30 days or more may be deemed abandoned and become eligible for suspension or termination",
+      "source": "https://www.oracle.com/cloud/free/faq/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "200 GB of combined boot and block volume; the stated minimum boot volume is 47 GB in one paragraph and 50 GB in another",
+      "source": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm"
+    }
+  ],
+  "identity_cost": {
+    "kind": "card",
+    "detail": "card and a phone number at signup, no identity document; USD 1.00 authorisation at sign-up, reversed immediately on Oracle's side while the bank decides how long the release takes; USD 100 applies only to the upgrade to Pay As You Go; debit accepted only if it functions like a credit card, so PIN debit is refused; prepaid, virtual and single-use cards refused; one account per person and one per email address",
+    "country": null
+  },
+  "evidence": [
+    {
+      "url": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm",
+      "date": "2026-10-22",
+      "proved": "1,500 OCPU hours and 9,000 GB hours a month on A1.Flex, which Oracle states is equivalent to 2 OCPUs and 12 GB"
+    },
+    {
+      "url": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm",
+      "date": "2026-10-22",
+      "proved": "up to two E2.1.Micro instances, each 1/8 OCPU and 1 GB with up to 50 Mbps of internet bandwidth"
+    },
+    {
+      "url": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm",
+      "date": "2026-10-22",
+      "proved": "an instance may be reclaimed when over 7 days the 95th-percentile CPU is under 20%, network under 20%, and memory under 20% on A1 shapes"
+    },
+    {
+      "url": "https://www.oracle.com/cloud/free/",
+      "date": "2026-10-22",
+      "proved": "HTTP 200 from this host"
+    },
+    {
+      "url": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm",
+      "date": "2026-10-22",
+      "proved": "the live page states 1,500 OCPU hours and 9,000 GB hours a month on A1.Flex, 'equivalent to 2 OCPUs and 12 GB of memory', quoted"
+    },
+    {
+      "url": "https://www.infoq.com/news/2026/07/oracle-cloud-free-tier-limits/",
+      "date": "2026-10-22",
+      "proved": "the reduction from 4 OCPU / 24 GB and 3,000 OCPU hours to 2 OCPU / 12 GB and 1,500 OCPU hours took effect on 2026-06-15 with no announcement; users discovered it from documentation diffs and stopped instances"
+    },
+    {
+      "url": "https://fullmetalbrackets.com/blog/oci-free-tier-breakdown",
+      "date": "2026-10-22",
+      "proved": "Oracle emailed Always Free users that instances above the new limits on or after 2026-08-18 will be terminated"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=49183750",
+      "date": "2026-10-22",
+      "proved": "third-party confirmation that Oracle began enforcing the 2 OCPU / 12 GB Always Free limit on 2026-08-18"
+    },
+    {
+      "url": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier.htm",
+      "date": "2026-10-22",
+      "proved": "if an Always Free tenancy holds more A1 capacity than the allowance, all A1 instances are disabled and then deleted after 30 days unless the account upgrades, quoted"
+    },
+    {
+      "url": "https://community.oracle.com/customerconnect/discussion/974419/urgent-always-free-automated-termination-instance-and-boot-volume-disappeared-need-data-recovery",
+      "date": "2026-08-19",
+      "proved": "a user reports the 2026-08-18 automatic termination took the instance and the boot volume, and that the advance email described only the instance"
+    },
+    {
+      "url": "https://www.v2ex.com/t/1236107",
+      "date": "2026-08-21",
+      "proved": "a user reports an Always Free 4-core/24 GB instance in Phoenix terminated with the account, three days after the cut, with support quoting 'your account has been terminated by the system' and refusing detail"
+    },
+    {
+      "url": "https://www.nodeseek.com/post-857938-1",
+      "date": "2026-08-05",
+      "proved": "a translation of the OCI email, quoted in the post: Always Free compute limits have been updated; a tenancy above the new limit must reduce use before 2026-08-18; from that date OCI enforces the updated Always Free limits and compute instances above them are terminated automatically; the limit is now at most 2 Ampere A1 OCPUs and 12 GB"
+    },
+    {
+      "url": "https://www.nodeseek.com/post-792106-1",
+      "date": "2026-06-24",
+      "proved": "reported: A1 free quota changed from 4 OCPU / 24 GB to 2 OCPU / 12 GB; the Chuncheon region can no longer create new A1 instances on a free account; support told a user that already-running full-spec instances are grandfathered"
+    },
+    {
+      "url": "https://www.nodeseek.com/post-881709-1",
+      "date": "2026-08-18",
+      "proved": "enforcement observed by a user on the announced day: the console banner announced the A1 limit change and the 4c24g machine was stopped"
+    },
+    {
+      "url": "https://www.nodeseek.com/post-803618-1",
+      "date": "2026-07-02",
+      "proved": "reported: accounts upgraded to pay-as-you-go after mid-June were billed about SGD 7 because a 4C/24G instance was priced against the new 2C/12G allowance, while an older account was still grandfathered, so grandfathering is not a documented right"
+    },
+    {
+      "url": "https://www.reddit.com/r/oraclecloud/comments/1ubk2qy/new_always_free_tier_limits_21june2026_update",
+      "date": "2026-06-21",
+      "proved": "the distinction that decides the finding, quoted: 2 OCPU / 12 GB is the new cap for new non-PAYG users, existing non-PAYG 4/24 instances stay only until deleted, and PAYG users can still destroy and recreate a 4/24 instance for free - so the cut lands on the no-card lane and the 4/24 shape survives behind a card"
+    },
+    {
+      "url": "https://www.reddit.com/r/oraclecloud/comments/1ulme2e/my_always_free_oracle_instance_got_idlereclaimed/",
+      "date": "2026-10-01",
+      "proved": "a first-person account of the compound failure: an idle-reclaim, then a quota silently dropped to 2 OCPU / 12 GB, then LimitExceeded, then out of host capacity in Mumbai at even the reduced size"
+    },
+    {
+      "url": "https://community.oracle.com/customerconnect/discussion/663398/compute-instance-idle",
+      "date": "2026-10-22",
+      "proved": null
+    },
+    {
+      "url": "https://stackoverflow.com/questions/71209485/how-to-keep-always-free-account-from-being-terminated",
+      "date": "2026-10-22",
+      "proved": null
+    },
+    {
+      "url": "https://www.oracle.com/cloud/free/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Oracle may periodically check the validity of your card, resulting in a temporary authorization hold', with no amount stated"
+    },
+    {
+      "url": "https://web.archive.org/web/20251001000000/https://www.oracle.com/cloud/free/",
+      "date": "2026-10-24",
+      "proved": "the 2025-09-30 capture states 3,000 OCPU hours and 18,000 GB hours = 4 OCPUs and 24 GB over four instances, against 1,500 and 9,000 over two today"
+    },
+    {
+      "url": "https://www.oracle.com/cloud/free/faq/",
+      "date": "2026-10-24",
+      "proved": "quoted, on payment: 'We accept credit cards and debit cards that function like credit cards. We do not accept debit cards with a PIN or virtual, single-use, or prepaid cards.'"
+    },
+    {
+      "url": "https://www.oracle.com/cloud/free/faq/",
+      "date": "2026-10-24",
+      "proved": "quoted, on the hold: 'Oracle may periodically check the validity of your card, resulting in a temporary \"authorization\" hold. These holds are removed by your bank, typically within three to five days, and do not result in actual charges'"
+    },
+    {
+      "url": "https://www.oracle.com/cloud/free/faq/",
+      "date": "2026-10-24",
+      "proved": "quoted, on the second clock: 'Accounts left idle for 30 days or more may be deemed abandoned and become eligible for suspension or termination.'"
+    },
+    {
+      "url": "https://docs.oracle.com/en-us/iaas/Content/Billing/Tasks/changingpaymentmethod.htm",
+      "date": "2026-10-24",
+      "proved": "quoted, the published hold: 'When you sign up for the Free Tier, your credit card is authorized for $1 USD (or its equivalent in your country) at the time of sign-up.' and 'When upgrading your free account, however, your credit card is authorized for $100 USD' and 'the credit card authorizations are immediately reversed on the Oracle side. The vendor/banking institution at your location, however, decides how long it takes for the reversal to be processed.'"
+    },
+    {
+      "url": "https://www.oracle.com/cloud/free/faq/",
+      "date": "2026-10-24",
+      "proved": "quoted, from the raw HTML because the text extractor dropped this FAQ item: 'What payment methods does Oracle accept? We accept credit cards and debit cards that function like credit cards. We do not accept debit cards with a PIN or virtual, single-use, or prepaid cards.'"
+    },
+    {
+      "url": "https://www.oracle.com/cloud/free/faq/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Oracle may periodically check the validity of your card, resulting in a temporary “authorization” hold. These holds are removed by your bank, typically within three to five days, and do not result in actual charges to your account.'"
+    },
+    {
+      "url": "https://signup.oraclecloud.com/",
+      "date": "2026-10-24",
+      "proved": "the signup page itself, read, is a JavaScript shell: 200, and the only readable text is the eligibility notice, quoted: 'One Oracle Cloud Free Trial or Always Free account is permitted per person.' The form fields are not in the HTML; they come from Oracle's own step-by-step signup document instead"
+    },
+    {
+      "url": "https://docs.oracle.com/en-us/iaas/Content/GSG/Tasks/signingup_topic-Sign_Up_for_Free_Oracle_Cloud_Promotion.htm",
+      "date": "2026-10-24",
+      "proved": "the form, field by field, quoted: 'Select your country.' then 'Enter your name.' then 'Provide a valid email address.' then 'Select the I am human button and follow the instructions in the CAPTCHA dialog'; then 'Verify my email' with a link 'valid for 30 minutes'; then a password with 'a minimum of 8 characters, 1 lowercase, 1 uppercase, 1 numeric, and 1 special character'; then 'Optionally, enter the name of your company'; then 'Create a cloud account name'; then 'Select a Home Region' which 'You can't change this after signing up'; then 'Enter your address and phone number'"
+    },
+    {
+      "url": "https://docs.oracle.com/en-us/iaas/Content/GSG/Tasks/signingup_topic-Sign_Up_for_Free_Oracle_Cloud_Promotion.htm",
+      "date": "2026-10-24",
+      "proved": "the card step, quoted: 'Select Add payment verification method, and then select Credit Card.' and 'Debit cards that have a major credit card log (for example, Visa, Mastercard, Discover, American Express) and don't require a PIN number can be used to sign up for a free Oracle Cloud account.'"
+    },
+    {
+      "url": "https://docs.oracle.com/en-us/iaas/Content/GSG/Tasks/signingup_topic-Sign_Up_for_Free_Oracle_Cloud_Promotion.htm",
+      "date": "2026-10-24",
+      "proved": "the hold, in the signup document's own words, quoted: 'You might see a small, temporary charge on your payment method. This is a verification hold that will be removed automatically. Note that your credit card won't be charged unless you elect to upgrade your cloud account.' No amount is stated on this page"
+    },
+    {
+      "url": "https://docs.oracle.com/en-us/iaas/Content/Billing/Tasks/changingpaymentmethod.htm",
+      "date": "2026-10-24",
+      "proved": "quoted, the published amount: 'When you sign up for the Free Tier, your credit card is authorized for $1 USD (or its equivalent in your country) at the time of sign-up.' and 'When upgrading your free account, however, your credit card is authorized for $100 USD' and 'the credit card authorizations are immediately reversed on the Oracle side. The vendor/banking institution at your location, however, decides how long it takes for the reversal to be processed.'"
+    },
+    {
+      "url": "https://www.oracle.com/cloud/free/faq/",
+      "date": "2026-10-24",
+      "proved": "quoted, on card types: 'We accept credit cards and debit cards that function like credit cards. We do not accept debit cards with a PIN or virtual, single-use, or prepaid cards.'"
+    },
+    {
+      "url": "https://www.oracle.com/cloud/free/faq/",
+      "date": "2026-10-24",
+      "proved": "quoted, the two products named separately: 'provides a number of Always Free services and a Free Trial with US$300 of free credit to use on all eligible Oracle Cloud Infrastructure services for up to 30 days. The Always Free services are available for an unlimited period of time.'"
+    },
+    {
+      "url": "https://www.oracle.com/cloud/free/faq/",
+      "date": "2026-10-24",
+      "proved": "quoted, what the trial end does to the free resources: 'Resources identified as Always Free will not be reclaimed.' and, for a tenancy over the A1 allowance, 'all existing Ampere A1 instances are disabled and then deleted after 30 days unless you upgrade to a paid account'"
+    },
+    {
+      "url": "https://www.oracle.com/cloud/free/faq/",
+      "date": "2026-10-24",
+      "proved": "quoted, on country availability: 'Oracle Cloud Free Tier is currently available in all regions where commercial Oracle Cloud Infrastructure service is available.' with the escape 'If you are unable to find the country or territory you require, please contact Oracle Sales or Cloud Support'"
+    },
+    {
+      "url": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm",
+      "date": "2026-10-24",
+      "proved": "quoted, the A1 grant: 'All tenancies get the first 1,500 OCPU hours and 9,000 GB hours per month for free for VM instances using the VM.Standard.A1.Flex shape ... For Always Free tenancies, this is equivalent to 2 OCPUs and 12 GB of memory.'"
+    },
+    {
+      "url": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm",
+      "date": "2026-10-24",
+      "proved": "quoted, the Micro shape: 'All tenancies get up to two Always Free VM instances using the VM.Standard.E2.1.Micro shape' and 'Processor: 1/8th of an OCPU' and 'Memory: 1 GB' and 'Includes one VNIC with one public IP address and up to 50 Mbps network bandwidth via the internet'"
+    },
+    {
+      "url": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm",
+      "date": "2026-10-24",
+      "proved": "quoted, the idle test: 'Idle Always Free compute instances may be reclaimed by Oracle. Oracle will deem virtual machine and bare metal compute instances as idle if, during a 7-day period' CPU p95 'is less than 20%', network 'is less than 20%', memory 'is less than 20%'"
+    },
+    {
+      "url": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm",
+      "date": "2026-10-24",
+      "proved": "quoted, the egress grant, read from the raw HTML because the text extractor drops this section: 'As part of your Always Free resources, you get 10 TB per month of outbound data.'"
+    },
+    {
+      "url": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm",
+      "date": "2026-10-24",
+      "proved": "quoted, the storage cap and the page's self-contradiction: 'All tenancies receive a total of 200 GB of Block Volume storage' and 'The minimum boot volume size for each instance is 47 GB, regardless of shape' against 'the default boot volume size for the instance is 50 GB' and 'the minimum boot volume size allowed for compute instances is 50 GB'"
+    },
+    {
+      "url": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm",
+      "date": "2026-10-24",
+      "proved": "quoted, the A1 region exclusion: 'You can create OCI Ampere A1 Compute instances in any availability domain, except South Korea North (Chuncheon).' and 'Instances using the VM.Standard.E2.1.Micro shape can only be created in one availability domain.'"
+    },
+    {
+      "url": "https://www.oracle.com/cloud/free/faq/",
+      "date": "2026-10-24",
+      "proved": "quoted, the out-of-capacity failure: 'An \"out of host capacity\" error indicates a temporary lack of Always Free shapes in your home region.'"
+    },
+    {
+      "url": "https://community.oracle.com/customerconnect/discussion/980710/free-tier-sign-up-fails-from-saudi-arabia-were-unable-to-complete-your-sign-up",
+      "date": "2026-10-24",
+      "proved": "reported, 2026-10-03, a signup refused with no proxy and a local bank card, quoting the refusal a user would meet: 'We're unable to complete your sign up. Common errors that prevent sign up include incomplete or inaccurate information, masking your location, or attempting to create multiple accounts.'"
+    },
+    {
+      "url": "https://community.oracle.com/customerconnect/discussion/978312/free-tier-signup-failed-after-successful-card-verification-unable-to-complete-your-sign-up",
+      "date": "2026-10-24",
+      "proved": "reported, 2026-09-16, the same refusal arriving after the card passed verification with a green checkmark, so card validity is not the gate"
+    },
+    {
+      "url": "https://forums.oracle.com/ords/apexds/post/signup-issues-with-oracle-cloud-free-tier-account-7894",
+      "date": "2026-10-24",
+      "proved": "reported, the three causes Oracle's forum moderators name for that refusal: 'Using prepaid cards', 'masking one's location or identity', and 'Entering incomplete or inaccurate account details'"
+    },
+    {
+      "url": "https://www.oracle.com/cloud/public-cloud-regions/",
+      "date": "2026-10-24",
+      "proved": "quoted from the live region table: 'Oracle Cloud offers services from 50+ public cloud regions across 28 countries', and the Asia Pacific rows list Australia East, India West, Japan East, Singapore, South Korea Central and Malaysia West as 'Live' - there is no region in Viet Nam, Thailand, Indonesia or the Philippines"
+    },
+    {
+      "url": "https://www.oracle.com/cloud/public-cloud-regions/",
+      "date": "2026-10-24",
+      "proved": "the live region table lists 50+ public cloud regions in 28 countries, so a country with no region needs an adjacent home region; the signup document says the home region cannot be changed after signup"
+    },
+    {
+      "url": "https://docs.oracle.com/en-us/iaas/Content/GSG/Tasks/signingup_topic-Sign_Up_for_Free_Oracle_Cloud_Promotion.htm",
+      "date": "2026-10-24",
+      "proved": "the signup document lists the form field by field; it does not say which countries a signup succeeds from"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "notes": "SIGNUP PATH, read. The account is created at https://signup.oraclecloud.com/ and nowhere else; oracle.com/cloud/free is the marketing page and signup.cloud.oracle.com serves the same shell. The page is a React application whose HTML carries no form, so the field list is taken from Oracle's own signup document, which walks the same form step by step. In order: country (some countries, Russia named, need the Terms accepted by checkbox), name, email, CAPTCHA, an email verification link valid 30 minutes, a password of 8-40 characters with upper, lower, digit and symbol, an optional company, a cloud account name, a home region that cannot be changed afterwards, the Terms, then address and phone number, then the card, then 'Start my free trial'. There is no identity document and no company requirement; the company field is explicitly optional. The home region matters more than the card: a user in a country with no Oracle region must pick an adjacent one, and the region cannot be changed, so a wrong pick is a new account. THE GRANT IS TWO PRODUCTS, not one. Always Free is the unlimited-period allowance described in free_tier.stated. The USD 300 is a separate 30-day trial that begins at the same signup and expires on its own; the FAQ says Always Free resources survive that expiry, but anything created with trial credit is reclaimed. So 'USD 300 for 90 days' is not what Oracle sells here: it is USD 300 for 30 days plus a permanent allowance. THE HOLD IS USD 1.00, published by Oracle's billing documentation, not by the signup page; the signup page says only 'a small, temporary charge' and names no amount. THE FAILURE MODE is the reason this row is a caveat and not a yes. Oracle refuses signups with a message that names three causes and no remedy, and two 2026 threads on Oracle's own forum show it arriving from Saudi Arabia and from a card that had just verified successfully. The country page says the tier is available wherever commercial OCI runs; there is no OCI region in Viet Nam, Thailand, Indonesia or the Philippines, so a client in one of those picks an adjacent region, and Oracle's fraud checks read the mismatch between the declared address and the connection. That is reported, not documented: nobody publishes the rule. Not established: whether a signup from any particular country succeeds, because only a signup can show it; and the true minimum boot volume, because the page states 47 GB and 50 GB in two paragraphs.",
+  "extras": {
+    "shape": {
+      "vcpu": 2,
+      "ram_gib": 12,
+      "disk_gib": 200,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "billing_model": "allocated",
+    "granularity": {
+      "min_billed_s": 60,
+      "rounding_s": 60
+    },
+    "session_cap": {
+      "wall_clock_min": null,
+      "idle_reap_s": 604800,
+      "restart_required": false,
+      "note": "no session cap; a 7-day idle window can trigger reclamation, and a 30-day account-idle rule can suspend the tenancy"
+    },
+    "keep_rate": {
+      "value": 1.0,
+      "basis": "a running VM bills its OCPU-hours against the allowance regardless of load",
+      "source": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm"
+    },
+    "persistent_storage": {
+      "included_gib": 200,
+      "price_gib_month": "included to 200 GB",
+      "durability": "block volume",
+      "survives_stop": true,
+      "survives_destroy": true,
+      "max_retention": "while the tenancy qualifies"
+    },
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": true,
+      "ports": "a public IPv4 on the VNIC; security lists and the instance firewall both have to be opened",
+      "static_ip": true,
+      "ipv6": null,
+      "per_session_bytes": "10 TB a month"
+    },
+    "free_tier_kind": "allowance",
+    "m10h_usd": 0.0,
+    "m24h_usd": 0.0,
+    "price_arithmetic": "2 OCPU x 730 h = 1,460 OCPU-h inside the 1,500 allowance; 3 OCPU x 730 h = 2,190, which does not fit",
+    "page_conflict": "the same page states a 47 GB minimum boot volume and a 50 GB minimum boot volume",
+    "price_note": "The allowance is time-denominated, 1,500 OCPU-hours and 9,000 GB-hours a month, so it is neither: a 2 OCPU box at 24/7 uses 1,460 of the 1,500 and costs nothing",
+    "dispute": null,
+    "burst_x": 1.0,
+    "facets": {},
+    "payment_methods": {
+      "card_at_signup": "yes",
+      "debit": "accepted-with-condition",
+      "prepaid": "refused",
+      "virtual": "refused",
+      "hold_amount": "USD 1.00",
+      "hold_detail": "authorised at sign-up and reversed immediately on Oracle's side; USD 100 only on upgrade to Pay As You Go",
+      "identity": "phone number, contact details and card; one account per person and one per email address",
+      "source_url": "https://docs.oracle.com/en-us/iaas/Content/Billing/Tasks/changingpaymentmethod.htm",
+      "read_on": "2026-10-24"
+    },
+    "signup": {
+      "url": "https://signup.oraclecloud.com/",
+      "form_fields": [
+        "country",
+        "first name",
+        "last name",
+        "email (verified by a link valid 30 minutes)",
+        "CAPTCHA",
+        "password (8-40 chars, upper, lower, digit, symbol)",
+        "company (optional)",
+        "cloud account name",
+        "home region (permanent)",
+        null,
+        "address",
+        "phone number",
+        "card number, expiry, CVV"
+      ],
+      "company_required": false,
+      "id_document_required": false,
+      "phone_required": true,
+      "non_us_phone": "the form takes a country selector and an address, and the region table lists non-US regions as Live, so a non-US number is the normal case; not separately confirmed on a page",
+      "source_url": "https://docs.oracle.com/en-us/iaas/Content/GSG/Tasks/signingup_topic-Sign_Up_for_Free_Oracle_Cloud_Promotion.htm",
+      "read_on": "2026-10-24"
+    },
+    "signup_failure": {
+      "symptom": "'We're unable to complete your sign up. Common errors that prevent sign up include incomplete or inaccurate information, masking your location, or attempting to create multiple accounts.'",
+      "when": "reported 2026-09-16 and 2026-10-03, both on Oracle's own customer forum, one after a card that had verified",
+      "no_region_in_client_country": "no OCI region in Viet Nam, Thailand, Indonesia or the Philippines on the live region table",
+      "rung": "reported"
+    }
+  },
+  "binding": "retention-clamped",
+  "binding_note": "the 7-day idle reclaim binds: an instance whose p95 utilisation stays under 20 per cent is taken back",
+  "confidence_note": "The grant, the egress term, the shape, the storage cap and the card rules each come from a first-party page read and quoted on 2026-10-24. The signup field list comes from Oracle's own signup document because the signup page itself is a JavaScript shell with no form in its HTML. It is not documented, and it is the one thing that would move this row to a firm yes or a firm no.",
+  "tier": "Always Free, on a Free Tier account that begins with a 30-day USD 300 trial"
+}

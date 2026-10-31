@@ -1,0 +1,88 @@
+{
+  "topic": "storage",
+  "slug": "vercel-blob",
+  "provider": "Vercel Blob (Hobby plan)",
+  "url": "https://vercel.com/storage/blob",
+  "category": "paas",
+  "free_tier": {
+    "stated": "1 GB/month of storage, TOTAL per Hobby team — not per project. Pricing table: 'Blob Storage Size | Regional | Usage-based | 1GB/month' for the Hobby Included column, alongside 'Blob Simple Operations | First 10,000', 'Blob Advanced Operations | First 2,000', 'Blob Data Transfer | First 10 GB'. Per-file ceiling is genuinely large: 'you can store files up to 5 TB' (multipart above 100 MB). Unlimited stores since Sept 2026 — but the changelog is explicit that this buys no storage: 'Splitting the same data across more stores doesn't change those costs.'",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://vercel.com/docs/vercel-blob/usage-and-pricing",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "Per-file ceiling is genuinely large: 'you can store files up to 5 TB",
+    "bytes": 5000000000000,
+    "source_url": "https://vercel.com/docs/vercel-blob/usage-and-pricing",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://vercel.com/docs/vercel-blob/usage-and-pricing",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Metered and small: 10 GB of Blob Data Transfer included, then hard-stopped. 'You will not pay for any additional usage. However, you will not be able to access Vercel Blob if limits are exceeded. In this scenario, you will have to wait until 30 days have passed before using Blob storage again.' Public blobs are served from `*.public.blob.vercel-storage.com` with no auth.",
+    "metered": true
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "`@vercel/blob` JS/TS SDK (`put`, `get`, `del`, `head`, `copy`, `list`, client `upload`) and a Python SDK; usable from any host with a token. No rclone backend.",
+  "chaining": "The obvious idea — unlimited stores x 1 GB — is explicitly dead: storage is billed on total GB-months regardless of store count, and the Hobby allowance is per team. Chaining requires multiplying Vercel accounts, and a Hobby team is 1 per person with a hard 30-day lockout on breach, so the practical rate is roughly 1 GB per person per month.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "Per-file ceiling is genuinely large: 'you can store files up to 5 TB",
+      "source": "https://vercel.com/docs/vercel-blob/usage-and-pricing"
+    }
+  ],
+  "limits_note": "1 GB storage/month, 10 GB transfer, 2,000 advanced ops (each store creation counts as one), 10,000 simple ops. Operation rate limit 1,200/min simple, 900/min advanced. 512 MB max cacheable blob — larger blobs MISS every time and incur Fast Origin Transfer. 30-day total lockout on exceeding any limit.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Reliable while under quota; the failure mode is a 30-day feature freeze, not deletion. Public URLs are stable. Cache HITs are free but misses are billed, so large blobs are unusually expensive.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://vercel.com/docs/vercel-blob/usage-and-pricing",
+      "date": "2026-10-21",
+      "proved": "Hobby Included column: '1GB/month' storage, 'First 10 GB' data transfer, 'First 10,000' simple ops, 'First 2,000' advanced ops; 'you will not be able to access Vercel Blob if limits are exceeded ... wait until 30 days have passed'"
+    },
+    {
+      "url": "https://vercel.com/changelog/unlimited-vercel-blob-stores-on-every-plan",
+      "date": "2026-10-21",
+      "proved": "published Sep 23, 2026: unlimited stores, but 'Splitting the same data across more stores doesn't change those costs'"
+    },
+    {
+      "url": "https://vercel.com/docs/vercel-blob",
+      "date": "2026-10-21",
+      "proved": "'you can store files up to 5 TB'"
+    },
+    {
+      "url": "https://1sxstfwepd7zn41q.public.blob.vercel-storage.com/blob-oYnXSVczoLa9yBYMFJOSNdaiiervF5.png",
+      "date": "2026-10-21",
+      "proved": "probe: curl -D - -> 200, Content-Length 2275823, Server: Vercel, X-Vercel-Cache: HIT, no auth"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "1 GB/month of storage, TOTAL per Hobby team — not per project. Pricing table: 'Blob Storage Size | Regional | Usage-based | 1GB/month' for the Hobby Included column, alongside 'Blob Simple Operations | First 10,000', 'Blob Advanced Operations | First 2,000', 'Blob Data Transfer | First 10 GB'. Per-file ceiling is genuinely large: 'you can store files up to 5 TB' (multipart above 100 MB). Unlimited stores since Sept 2026 — but the changelog is explicit that this buys no storage: 'Splitting the same data across more stores doesn't change those costs.'",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "1 GB/month of storage, TOTAL per Hobby team — not per project. Pricing table: 'Blob Storage Size | Regional | Usage-based | 1GB/month' for the Hobby Included column, alongside 'Blob Simple Operations | First 10,000', 'Blob Advanced Operations | First 2,000', 'Blob Data Transfer | First 10 GB'. Per-file ceiling is genuinely large: 'you can store files up to 5 TB' (multipart above 100 MB). Unlimited stores since Sept 2026 — but the changelog is explicit that this buys no storage: 'Splitting the same data across more stores doesn't change those costs.'",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

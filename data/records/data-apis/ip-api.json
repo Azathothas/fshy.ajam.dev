@@ -1,0 +1,160 @@
+{
+  "topic": "data-apis",
+  "slug": "ip-api",
+  "provider": "ip-api",
+  "url": "https://ip-api.com/docs/api:json",
+  "category": "IP geolocation API",
+  "tier": "Free endpoint",
+  "free_tier": {
+    "stated": "free endpoint with no API key: 45 requests a minute per IP address on /json (15 a minute on /batch, up to 100 IPs a batch), plain HTTP only",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://ip-api.com/docs/api:json",
+    "read_on": "2026-10-30",
+    "notes": "HTTPS and API keys need the Pro plan, EUR 13.3 a month when paid for 12 months"
+  },
+  "per_object_cap": {
+    "stated": "a batch request takes up to 100 IP addresses",
+    "bytes": null,
+    "source_url": "https://ip-api.com/docs/api:batch"
+  },
+  "retention": {
+    "stated": "not stated",
+    "days": null
+  },
+  "egress": {
+    "terms": "not applicable",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://ip-api.com/docs/api:json"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "GET http://ip-api.com/json/{ip} (also xml, csv, line, php), POST http://ip-api.com/batch with a JSON array of up to 100 IPs; the same path over HTTPS answers HTTP 403 SSL unavailable for this endpoint",
+  "endpoint": "http://ip-api.com/json/",
+  "tooling": "any HTTP client; the X-Rl and X-Ttl headers give the remaining requests and the seconds to the window reset",
+  "chaining": "45 lookups a minute from one address with no key, or 15 batches of 100 a minute; part of the data falls back to MaxMind GeoLite2. Bulk path: the batch endpoint; no download",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "45 requests a minute per IP address on /json; 15 a minute on /batch",
+      "source": "https://ip-api.com/docs/api:json"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "up to 100 IPs per batch request",
+      "source": "https://ip-api.com/docs/api:batch"
+    }
+  ],
+  "binding": "request-rate",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no account and no key on the free endpoint",
+    "country": null
+  },
+  "reliability_note": "past the per-minute limit the API answers HTTP 429; repeated overruns ban the IP address for up to 1 hour; no HTTPS on the free endpoint",
+  "confidence": "documented",
+  "confidence_note": "the JSON and batch documentation, the plans page and the terms page were quoted on 2026-10-30; a keyless HTTP lookup answered HTTP 200 and the HTTPS form answered HTTP 403 SSL unavailable. The rate limit was not exhausted to observe it.",
+  "evidence": [
+    {
+      "url": "https://ip-api.com/docs/api:json",
+      "date": "2026-10-30",
+      "proved": "the free endpoint needs no key",
+      "capture": "sha256:b153d250e79b40034deb4dbb4f66ab0d9aac099aabfbd41b5c20e7e39aaaef91",
+      "quote": "There is no API key required."
+    },
+    {
+      "url": "https://ip-api.com/docs/api:json",
+      "date": "2026-10-30",
+      "proved": "the JSON endpoint allows 45 requests a minute per IP",
+      "capture": "sha256:b153d250e79b40034deb4dbb4f66ab0d9aac099aabfbd41b5c20e7e39aaaef91",
+      "quote": "This endpoint is limited to 45 requests per minute from an IP address."
+    },
+    {
+      "url": "https://ip-api.com/docs/api:json",
+      "date": "2026-10-30",
+      "proved": "overruns get HTTP 429 and repeated overruns a 1-hour ban",
+      "capture": "sha256:b153d250e79b40034deb4dbb4f66ab0d9aac099aabfbd41b5c20e7e39aaaef91",
+      "quote": "If you go over the limit your requests will be throttled (`HTTP 429`) until your rate limit window is reset. If you constantly go over the limit your IP address will be banned for 1 hour."
+    },
+    {
+      "url": "https://ip-api.com/docs/api:json",
+      "date": "2026-10-30",
+      "proved": "the free API has no HTTPS",
+      "capture": "sha256:b153d250e79b40034deb4dbb4f66ab0d9aac099aabfbd41b5c20e7e39aaaef91",
+      "quote": "256-bit SSL encryption is not available for this free API."
+    },
+    {
+      "url": "https://ip-api.com/docs/api:batch",
+      "date": "2026-10-30",
+      "proved": "a batch takes up to 100 IPs",
+      "capture": "sha256:7d6533586c0055e2aa1c624f462eb7c1df5bb931d05128c52cc23d6b6cc22e22",
+      "quote": "A request needs to formatted as a JSON array, containing up to 100 IP addresses or objects."
+    },
+    {
+      "url": "https://ip-api.com/docs/api:batch",
+      "date": "2026-10-30",
+      "proved": "the batch endpoint allows 15 requests a minute",
+      "capture": "sha256:7d6533586c0055e2aa1c624f462eb7c1df5bb931d05128c52cc23d6b6cc22e22",
+      "quote": "This endpoint is limited to 15 requests per minute from an IP address."
+    },
+    {
+      "url": "https://members.ip-api.com/",
+      "date": "2026-10-30",
+      "proved": "the plans page repeats 45 a minute",
+      "capture": "sha256:ea6ececff05ca39baae448d63f55fb3444f97416908d5ab2fd0a1bcbde913cb2",
+      "quote": "The free endpoint is limited to 45 requests / minute"
+    },
+    {
+      "url": "https://members.ip-api.com/",
+      "date": "2026-10-30",
+      "proved": "Pro is EUR 13.3 a month",
+      "capture": "sha256:ea6ececff05ca39baae448d63f55fb3444f97416908d5ab2fd0a1bcbde913cb2",
+      "quote": "€13.3"
+    },
+    {
+      "url": "https://members.ip-api.com/",
+      "date": "2026-10-30",
+      "proved": "the Pro price is for yearly payment",
+      "capture": "sha256:ea6ececff05ca39baae448d63f55fb3444f97416908d5ab2fd0a1bcbde913cb2",
+      "quote": "per month, when paying for 12 months"
+    },
+    {
+      "url": "https://ip-api.com/docs/legal",
+      "date": "2026-10-30",
+      "proved": "the terms page states the block and the ban of up to 1 hour",
+      "capture": "sha256:0000b0a51705858b84d62ef6b7986c2d2ebcc10207136a378b207c8fb951c16f",
+      "quote": "If you exceed the usage limit of 45 requests per minute your access to the API will be temporarily blocked. Repeatedly exceeding the limit will result in your IP address being banned for up to 1 hour."
+    },
+    {
+      "url": "https://ip-api.com/docs/legal",
+      "date": "2026-10-30",
+      "proved": "some ranges fall back to GeoLite2 data",
+      "capture": "sha256:0000b0a51705858b84d62ef6b7986c2d2ebcc10207136a378b207c8fb951c16f",
+      "quote": "For some IP ranges we fallback to GeoLite2 data created by MaxMind"
+    },
+    {
+      "url": "probe:http://ip-api.com/json/8.8.8.8",
+      "date": "2026-10-30",
+      "proved": "a keyless HTTP lookup succeeded",
+      "capture": "sha256:0a43ff54117e6c0a1f04c9c2398e970b131fadff75b9662a51e6bf5de09db19d",
+      "quote": "\"status\":\"success\""
+    },
+    {
+      "url": "probe:https://ip-api.com/json/8.8.8.8",
+      "date": "2026-10-30",
+      "proved": "the HTTPS form of the free endpoint is refused",
+      "capture": "sha256:61fd702060224daad1fa949b448fcbebb9d3bc8628ffb942b44e8fa63dbd4c87",
+      "quote": "SSL unavailable for this endpoint"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-31T06:24:05.368Z",
+  "notes": "Free requests: 45 a minute per IP on /json, 15 batches of up to 100 IPs a minute on /batch, no key. Rate limit: HTTP 429, then a ban of up to 1 hour on repeated overruns. Bulk path: the batch endpoint; no database download.",
+  "extras": {
+    "bulk_path": "POST /batch with up to 100 IPs, 15 a minute",
+    "free_requests": "45 a minute per IP"
+  }
+}

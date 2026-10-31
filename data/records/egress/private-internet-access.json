@@ -1,0 +1,95 @@
+{
+  "topic": "egress",
+  "slug": "private-internet-access",
+  "provider": "Private Internet Access",
+  "url": "https://github.com/pia-foss/manual-connections",
+  "category": "vpn port forward",
+  "tier": "paid",
+  "free_tier": {
+    "stated": "No free tier. Buy page 2026-10-23: 1 Month $11.95 per month; 1 Year $3.99 per month billed at $47.88; 3 Years + 3 Months $2.03 per month, autorenews at $79 every 3 years.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://www.privateinternetaccess.com/buy-vpn-online",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://github.com/pia-foss/manual-connections",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://github.com/pia-foss/manual-connections",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "unverified for a byte figure: the buy page states Unlimited Device Security but no page read states a traffic allowance. PIA is widely described as unmetered, which did not confirm from a vendor sentence.; ingress: tcp+udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://github.com/pia-foss/manual-connections"
+  },
+  "interface": [
+    "cli",
+    "rest"
+  ],
+  "interface_detail": "Token and port are HTTP calls to the connected gateway on port 19999 (/getSignature, /bindPort); the scripts wrap them.",
+  "tooling": "pia-foss manual-connections scripts with wg-quick and curl/jq, or the official app.",
+  "chaining": "A token endpoint plus a bind loop is a five-line cron job on a free VM; the VM then holds a stable public UDP endpoint for the life of the signature.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "a bound port is deleted if the bind is not renewed: Call /bindPort every 15 minutes, or the port will be deleted. The port signature is valid for two months: All ports currently expire after 2 months.",
+      "source": "https://github.com/pia-foss/manual-connections"
+    },
+    {
+      "kind": "write-gated",
+      "value": "port forwarding is disabled server side in the United States: Port Forwarding is disabled on server-side in the United States.",
+      "source": "https://github.com/pia-foss/manual-connections"
+    }
+  ],
+  "limits_note": "",
+  "binding": "retention-clamped",
+  "binding_note": "No byte cap is stated, so the binding constraint is the 15-minute bind renewal: the port exists only while a loop keeps re-signing it. That is the same class of failure as Proton's lease but with a 900-second period instead of 60.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "An account with credentials used by the scripts as PIA_USER and PIA_PASS; payment by card or PayPal.",
+    "country": "None"
+  },
+  "reliability_note": "Losing the 15-minute renewal loop silently drops the port mapping while the tunnel stays up. United States servers cannot forward at all.",
+  "confidence": "documented",
+  "confidence_note": "Measured would need a token, a bound port, a live UDP request through it and a byte count. The 15-minute and 2-month sentences are in the vendor's own repository README, read.",
+  "evidence": [
+    {
+      "url": "https://github.com/pia-foss/manual-connections",
+      "date": "2026-10-23",
+      "proved": "Native WireGuard plus port forwarding from vendor scripts; port signature valid 2 months; /bindPort must be called every 15 minutes or the port is deleted; port forwarding is off in the United States."
+    },
+    {
+      "url": "https://www.privateinternetaccess.com/buy-vpn-online",
+      "date": "2026-10-23",
+      "proved": "Prices: $11.95 monthly, $3.99 per month on 1 year at $47.88, $2.03 per month on 3 years at $79."
+    },
+    {
+      "url": "https://helpdesk.privateinternetaccess.com/kb/articles/pdf/how-do-i-enable-port-forwarding-on-my-vpn",
+      "date": "2026-10-23",
+      "proved": "Indexed copy of the vendor article: a random port is automatically assigned, only specific locations support port forwarding, and a manual option exists for non-app clients. The live path returned 404 from the restructured helpdesk."
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 11.95 per month; USD 3.99 per month on 1 year (47.88); USD 2.03 per month on 3 years (79)",
+  "notes": "The GitHub route was used instead. The port number itself is stable for the life of the signature, which is the property Proton lacks.",
+  "extras": {
+    "wg_path": "registration-api",
+    "wg_detail": "Run with PIA_PF=true to bind the port on the same connection.",
+    "ingress": "tcp+udp",
+    "volume_tib_month": null,
+    "volume_stated": "unverified for a byte figure: the buy page states Unlimited Device Security but no page read states a traffic allowance. PIA is widely described as unmetered, which did not confirm from a vendor sentence.",
+    "bytes_transit": "yes",
+    "transit_note": "Traffic crosses the PIA server a user is bound to; the port is only valid on the gateway of that server."
+  }
+}

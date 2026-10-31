@@ -1,0 +1,83 @@
+{
+  "topic": "debrid",
+  "slug": "telegram-debridmasterbot",
+  "provider": "DebridMaster (@debridmasterbot)",
+  "url": "https://debridmaster.com/telegram-bot",
+  "category": "hosted debrid bot (file-host link to download link)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "The pricing page's Free column: '2 files a day, up to 512 MB each', 'Standard hosts only', 'Same verified downloads as paid'.",
+    "unit": "MB",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://debridmaster.com/pricing",
+    "read_on": "2026-10-23",
+    "notes": "512 MB is a per-file cap, so the free ceiling is at most 2 x 512 MB a day"
+  },
+  "per_object_cap": {
+    "stated": "512 MB per file on the free tier; a paid plan has no published per-file cap on this page.",
+    "bytes": 512000000,
+    "source_url": "https://debridmaster.com/pricing"
+  },
+  "retention": {
+    "stated": "'Paid links last 72 hours, free ones 24 hours.' The linked copy itself is deleted on that clock; nothing is stored in Telegram.",
+    "days": 1,
+    "source_url": "https://debridmaster.com/telegram-bot",
+    "notes": "the day count is the free-link lifetime, the shortest published one"
+  },
+  "egress": {
+    "terms": "No Telegram traffic at all: 'Does the bot send the file through Telegram? No. It sends a download link to our verified copy, which works in a browser or a download manager and supports resume.'",
+    "metered": true,
+    "free_allowance": "none: every byte past the free allowance is billed",
+    "price_per_tb": "$0.50/GB standard hosts; $0.40/GB overage on Pro; $0.30/GB on Premium",
+    "source_url": "https://debridmaster.com/telegram-bot"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "A Telegram chat plus a Mini App; the same account also has a website and an API.",
+  "tooling": "Any Telegram client. No token: 'Starting @debridmasterbot creates your DebridMaster account - no email or password needed.'",
+  "chaining": "Fetches a file-host link and hands back a resumable direct URL, so the byte path bypasses Telegram; useful when the object is on Keep2Share or FileJoker and useless as a Telegram store.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "2 files/day on the free tier",
+      "source": "https://debridmaster.com/pricing"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "512 MB per file on the free tier",
+      "source": "https://debridmaster.com/pricing"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "A two-per-day count fails first: two 512 MB files is about 1 GB/day, and the counter stops it before any byte quota could.",
+  "identity_cost": {
+    "kind": "any-phone",
+    "detail": "The account is created by pressing Start in Telegram; an email is optional and there is no card at signup. Paying needs crypto or Telegram Stars, 'The minimum top-up in the bot is $5'.",
+    "country": null
+  },
+  "reliability_note": "Plus hosts (FileJoker, FilesMonster, Upstore) count triple against quota, and dead links are not charged; the bot's copy is deleted with the link, so a re-download after 24 hours costs again.",
+  "confidence": "documented",
+  "confidence_note": "Prices, free allowance and the no-Telegram-delivery answer are all on the vendor's own pages read. Nothing was purchased or measured.",
+  "evidence": [
+    {
+      "url": "https://debridmaster.com/pricing",
+      "date": "2026-10-23",
+      "proved": "'2 files a day, up to 512 MB each' on the free column; '$0.50 per GB' pay-as-you-go; Pro '$4.99 per month' with '15 GB per month'; Premium '$9.99 per month' with '40 GB per month'"
+    },
+    {
+      "url": "https://debridmaster.com/telegram-bot",
+      "date": "2026-10-23",
+      "proved": "'Does the bot send the file through Telegram? No. It sends a download link to our verified copy' and 'Paid links last 72 hours, free ones 24 hours.'"
+    },
+    {
+      "url": "https://debridmaster.com/telegram-bot",
+      "date": "2026-10-23",
+      "proved": "'Starting @debridmasterbot creates your DebridMaster account - no email or password needed.' and 'The minimum top-up in the bot is $5'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "price_per_tb_month": "USD 500 (pay-as-you-go, 0.50/GB); USD 250 effective on Premium (40 GB for 9.99)",
+  "notes": "The important fact is negative: this class of bot is a debrid front-end in a chat and moves zero bytes through Telegram. Abandon if the free column changes or if the bot starts uploading files into the chat.",
+  "verified_at": "2026-10-23T01:52:23.000Z"
+}

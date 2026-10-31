@@ -1,0 +1,94 @@
+{
+  "topic": "debrid",
+  "slug": "zurg",
+  "provider": "zurg (Debrid Media Manager webdav server)",
+  "url": "https://github.com/debridmediamanager/zurg-public",
+  "category": "client: WebDAV gateway over a debrid library",
+  "tier": "free",
+  "free_tier": {
+    "stated": "The server is a public release on GitHub and costs nothing; the debrid account behind it is the thing that costs. The stable release is Real-Debrid only: 'A self-hosted Real-Debrid webdav server written from scratch.' Nightlies add backends 'beyond Real-Debrid (TorBox, AllDebrid and Usenet)' and need an active sponsorship.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://github.com/debridmediamanager/zurg-public",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable to the gateway; the source account's cap applies.",
+    "bytes": null,
+    "source_url": "https://github.com/debridmediamanager/zurg-public",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: the WebDAV tree is a live view of the torrent library.",
+    "days": null,
+    "source_url": "https://github.com/debridmediamanager/zurg-public",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No meter of its own; it spends the debrid account's unmetered premium traffic.",
+    "metered": false,
+    "free_allowance": "none of its own",
+    "price_per_tb": null,
+    "source_url": "https://github.com/debridmediamanager/zurg-public"
+  },
+  "interface": [
+    "webdav-proxy",
+    "rclone",
+    "rest"
+  ],
+  "interface_detail": "Serves the torrent library over WebDAV on localhost:9999 by default, with a per-provider API under /api/providers/realdebrid/ (including /test). rclone mounts the WebDAV; Infuse can read it directly.",
+  "endpoint": "http://localhost:9999/",
+  "tooling": "Ships a bundle with config.yml, docker-compose.yml, rclone.conf and Plex update scripts; 'rclone and ffprobe are automatically downloaded on first run if not already installed'. Docker image ghcr.io/debridmediamanager/zurg-testing.",
+  "chaining": "The bridge that turned debrid into a filesystem for Plex: zurg exposes RD as WebDAV, rclone mounts it, Plex or Jellyfin scans it, and no download ever lands on local disk.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "paces itself to the upstream budget: api_rate_limit_per_minute 250 and torrents_rate_limit_per_minute 75 by default",
+      "source": "https://notes.debridmediamanager.com/providers/realdebrid/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "paces torrent adds to a 20-second floor it discovered by measurement, because Real-Debrid refuses closer adds",
+      "source": "https://notes.debridmediamanager.com/providers/realdebrid/"
+    }
+  ],
+  "limits_note": "The gateway's own throttle exists because the upstream's limit is not the documented one: zurg had to add an add-pacing floor and a repair subsystem for links that stop working while the torrent still reports healthy.",
+  "binding": "none",
+  "binding_note": "A pure client: at 1 TiB/month nothing in zurg fails first, the upstream add floor does. Listed as 'none' because that floor is Real-Debrid's and is recorded there.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account with the project; it needs a debrid API token, which it stores in config.yml.",
+    "country": "None"
+  },
+  "reliability_note": "The stable line is Real-Debrid only; every other backend is a sponsors-only nightly, so a user on the stable release cannot point it at TorBox or AllDebrid at all.",
+  "confidence": "documented",
+  "confidence_note": "Repository README and the project's own provider notes were read. Nothing was run: the throughput and mount behaviour are untested here.",
+  "evidence": [
+    {
+      "url": "https://github.com/debridmediamanager/zurg-public",
+      "date": "2026-10-23",
+      "proved": "'A self-hosted Real-Debrid webdav server written from scratch', the rclone+Plex purpose, the requirements (RD account and API token), and that nightlies add 'TorBox, AllDebrid and Usenet' behind sponsorship"
+    },
+    {
+      "url": "https://notes.debridmediamanager.com/providers/realdebrid/",
+      "date": "2026-10-23",
+      "proved": "the 20-second add floor and the 250/75 per-minute pacing defaults, plus the repair subsystem's reason for existing"
+    },
+    {
+      "url": "https://github.com/debridmediamanager/zurg-public/wiki/Config",
+      "date": "2026-10-23",
+      "proved": "'api_rate_limit_per_minute: 250' and 'torrents_rate_limit_per_minute: 75' as documented configuration keys"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T01:51:00.000Z",
+  "price_per_tb_month": "USD 0 for the gateway; the debrid account is separate",
+  "notes": null,
+  "extras": {
+    "providers_stable": "real-debrid",
+    "providers_nightly": "torbox, alldebrid, usenet",
+    "config_keys": "api_rate_limit_per_minute, torrents_rate_limit_per_minute, api_timeout_secs, download_timeout_secs, retries_until_failed, retry_503_errors, fetch_torrents_page_size"
+  },
+  "self_hosted": true
+}

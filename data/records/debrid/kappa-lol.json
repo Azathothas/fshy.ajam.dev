@@ -1,0 +1,93 @@
+{
+  "topic": "debrid",
+  "slug": "kappa-lol",
+  "provider": "kappa.lol (page title: segs.lol)",
+  "url": "https://kappa.lol/",
+  "category": "anonymous pomf-style file host with a JSON upload API",
+  "tier": "free",
+  "free_tier": {
+    "stated": "No account and no stated per-file cap on the page read; the upload API takes a multipart 'file' field and answers with JSON.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://kappa.lol/",
+    "read_on": "2026-10-23",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "unverified: no cap is published on the page; 1 MiB was accepted",
+    "bytes": null,
+    "source_url": "https://kappa.lol/",
+    "notes": "The ceiling was not found, so the field stays null. A 1 GiB push would find it."
+  },
+  "retention": {
+    "stated": "unverified: no expiry is published and the upload reply carries no expiry field",
+    "days": null,
+    "source_url": "https://kappa.lol/",
+    "notes": "Retention is the one fact this service does not state anywhere on the page."
+  },
+  "egress": {
+    "terms": "Downloads are served from kappa.lol; no byte counter and no download counter are published.",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://kappa.lol/"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "POST https://kappa.lol/api/upload multipart field 'file'. JSON reply: id, ext, type, checksum (MD5), key, link, delete.",
+  "endpoint": "https://kappa.lol/api/upload",
+  "tooling": "An official uploader exists at github.com/Mald-Entertainment-Studio/uploader; curl works with one multipart POST",
+  "chaining": "A stored URL with no extension is a clean drop for a script that only needs a link a human can open; it pairs with a checksum check from the client side because the service returns MD5 itself.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "not published; 1 MiB accepted",
+      "source": "probe:https://kappa.lol/api/upload"
+    }
+  ],
+  "limits_note": "The page title is 'segs.lol', not the host name: the brand and the domain disagree, which is the kind of drift that breaks a hard-coded allow-list.",
+  "binding": "none",
+  "binding_note": "No documented constraint exists to name. At 1 TiB a month nothing in the seven-value vocabulary was observed to bind, because neither a cap nor a retention limit nor a rate is published; the honest answer is that the ceiling is unmeasured, not absent.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "One multipart POST with no cookie and no account returned a link; the reply also carries a delete URL, which is the only control the uploader gets.",
+    "country": null
+  },
+  "reliability_note": "The reply URL carries no file extension (https://kappa.lol/P224n5), so a client that infers type from the URL gets application/octet-stream regardless of the real bytes.",
+  "confidence": "measured",
+  "confidence_note": "Upload, read-back and SHA-256 match. The record stays at measured even though the cap and retention are unverified, because neither is claimed as a number here.",
+  "evidence": [
+    {
+      "url": "probe:https://kappa.lol/api/upload",
+      "date": "2026-10-23",
+      "proved": "POST of 1 048 576 bytes -> HTTP 200, JSON {'id':'P224n5','ext':'.bin','checksum':'0316a02c6c0e8b28ad82065de17289c4','link':'https://kappa.lol/P224n5'}; the checksum equals the MD5 of the uploaded file"
+    },
+    {
+      "url": "probe:https://kappa.lol/P224n5",
+      "date": "2026-10-23",
+      "proved": "read-back 1 048 576 bytes, sha256 da0099c231f1182a5d411c8ac5149dfb7a2e3578a3970928490cb78ba92aecc9, full-body hash matched"
+    },
+    {
+      "url": "https://kappa.lol/",
+      "date": "2026-10-23",
+      "proved": "the page <title> is 'segs.lol'; no size or retention number appears on the page"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T02:30:47.000Z",
+  "price_per_tb_month": "USD 0",
+  "probe": {
+    "record": null,
+    "upload_bytes": 1048576,
+    "download_bytes": 1048576,
+    "match": true,
+    "status": 200
+  },
+  "notes": "Useful as a one-line anonymous store, unusable as an archive until the cap and retention are measured. The absent extension in the returned URL is the practical trap: a resumption test keyed on Content-Type will see application/octet-stream for every file.",
+  "extras": {
+    "md5_echoed": "0316a02c6c0e8b28ad82065de17289c4",
+    "delete_url_in_reply": true
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "topic": "debrid",
+  "slug": "safelinking",
+  "provider": "Safelinking",
+  "url": "https://safelinking.net/",
+  "category": "link container / link protector with a public HTTP API",
+  "tier": "free",
+  "free_tier": {
+    "stated": "A protect API is published with no account field: POST https://safelinking.net/api with 'links-to-protect' mandatory and optional captcha, password, title, provider and mirror fields, plus rsdf/dlc/rtc/cnl2 container output. No price list or quota appears on the API page or the front page.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://github.com/safelinking/Safelinking",
+    "read_on": "2026-10-23",
+    "notes": "The front page is the same form with 'Mirrors', 'Package details' and 'Security Options' (captcha, package password, IP filtering). Nothing on it names a limit."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: it protects link lists; the linked host's cap applies when the file is fetched.",
+    "bytes": null,
+    "source_url": "https://github.com/safelinking/Safelinking"
+  },
+  "retention": {
+    "stated": "unverified: no retention statement found. Old links (a 2018 post cites two) were still being discussed, but none was fetched successfully.",
+    "days": null,
+    "source_url": "https://safelinking.net/"
+  },
+  "egress": {
+    "terms": "No egress of its own: a package page sends the visitor to the host links.",
+    "metered": false,
+    "free_allowance": "none: no service-side bytes",
+    "price_per_tb": null,
+    "source_url": "https://safelinking.net/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "Two documented HTTP endpoints: POST /api to protect (returns the package URL) and GET /check?link=<package>&output=JSON|XML for a link_status check. Container exports: RSDF, DLC, CCF and CNL2. Short links on sflk.in.",
+  "endpoint": "https://safelinking.net/api",
+  "tooling": "Any HTTP client; the API is form-encoded and documented in the project's GitHub README. JDownloader has a safelinking decrypter.",
+  "chaining": "It is the indirection half of a pipeline: protect a set of host links, then hand the package URL to a downloader. It does not resolve to direct links and does not bypass any host limit.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "captcha is optional but on by default in the form (recaptcha or fancy captcha)",
+      "source": "https://safelinking.net/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "unstated",
+      "source": "https://github.com/safelinking/Safelinking"
+    }
+  ],
+  "limits_note": "No byte quota, no account quota and no per-day generation count is published.",
+  "binding": "none",
+  "binding_note": "Nothing in the vocabulary binds at 1 TiB/month because no bytes pass through Safelinking; the only gate is its optional captcha on creation.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "The API documentation lists no credential parameter. The 2011-era competitors required username:password; this one's protect call does not. Not confirmed end to end because the host did not answer a direct request.",
+    "country": null
+  },
+  "reliability_note": "Treat reachability as location-dependent, not as uptime.",
+  "confidence": "reported",
+  "confidence_note": "The page text is a provider snapshot rather than a live origin read, and both direct probes timed out, so the record is third-party until a request succeeds from a client network. A measured rung needs one successful /check call.",
+  "evidence": [
+    {
+      "url": "https://github.com/safelinking/Safelinking",
+      "date": "2026-10-23",
+      "proved": "the protect API at https://safelinking.net/api with 'links-to-protect' mandatory and no credential field; the /check?link=&output=JSON|XML status endpoint; rsdf/dlc/rtc/cnl2 outputs"
+    },
+    {
+      "url": "https://safelinking.net/",
+      "date": "2026-10-23",
+      "proved": "the live form: Mirrors block, Package details, Security Options with captcha, package password and IP filtering"
+    },
+    {
+      "url": "probe:https://safelinking.net/check?link=https://safelinking.net/s64aTFQ&output=JSON",
+      "date": "2026-10-23",
+      "proved": "the API host did not answer a user: timeout after 21151.8 ms, 0 bytes, error 'timeout'"
+    },
+    {
+      "url": "probe:https://safelinking.net/s64aTFQ",
+      "date": "2026-10-23",
+      "proved": "the package host also timed out: 21133.5 ms, 0 bytes, error 'timeout'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T01:52:41.420Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Answers half question negatively: it will mint a protected link anonymously over HTTP, but it does not resolve anything to a direct link and it adds a captcha rather than removing one.",
+  "extras": {
+    "api_endpoints": [
+      "POST https://safelinking.net/api",
+      "GET https://safelinking.net/check?link=<package>&output=JSON"
+    ],
+    "short_domain": "sflk.in",
+    "reachability": "timeout from this host"
+  }
+}

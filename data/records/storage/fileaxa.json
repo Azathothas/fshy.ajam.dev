@@ -1,0 +1,87 @@
+{
+  "topic": "storage",
+  "slug": "fileaxa",
+  "provider": "FileAxa",
+  "url": "https://fileaxa.com",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "Free registered: 488 GB storage, 10,000 Mb (10 GB) per file; free (unregistered) row has no storage pool",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://fileaxa.com/premium.html",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "10 GB/file",
+    "bytes": 10000000000,
+    "source_url": "https://fileaxa.com/premium.html",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://fileaxa.com/premium.html",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "capped: free registered 5 GB/day download volume; Premium 60 GB/day, Premium Pro 120 GB/day",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "XFileSharing Pro; API key endpoint live at /api/upload/server (returns {\"status\":400,\"msg\":\"Invalid key\"} without one); PolyUploader covers it",
+  "chaining": "488 GB per free registration x N registrations; family partners combine into TBs (UpZur 1,953 GB + FileAxa 488 GB + Mega4up 183 GB = 2.6 TB across three signups)",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "5 GB/day",
+      "source": "https://fileaxa.com/premium.html"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "10 GB/file",
+      "source": "https://fileaxa.com/premium.html"
+    }
+  ],
+  "limits_note": "10 GB/file; 5 GB/day egress on free; 488 GB pool; anonymous uploads are disabled by the platform ('uploads are not enabled for your account type')",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "registration page returns 403 to automated clients (human-verification step gate) and anonymous uploads are refused outright, so the quota is only reachable with a scripted/manual signup",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://fileaxa.com/premium.html",
+      "date": "2026-10-21",
+      "proved": "Free: 10000 Mb max upload, storage '—'; Registered: 10000 Mb, 488 GB, 5 GB/day download"
+    },
+    {
+      "url": "https://fileaxa.com/api/upload/server?utype=anon",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200 {\"status\":400,\"msg\":\"Invalid key\"} (API exists, key-gated)"
+    },
+    {
+      "url": "https://s31.fileaxa.com/cgi-bin/upload.cgi",
+      "date": "2026-10-21",
+      "proved": "probe: POST utype=anon -> [{\"file_code\":\"undef\",\"file_status\":\"uploads are not enabled for your account type\"}]"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Free registered: 488 GB storage, 10,000 Mb (10 GB) per file; free (unregistered) row has no storage pool",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "Free registered: 488 GB storage, 10,000 Mb (10 GB) per file; free (unregistered) row has no storage pool",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

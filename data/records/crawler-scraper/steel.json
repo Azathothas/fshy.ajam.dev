@@ -1,0 +1,130 @@
+{
+  "topic": "crawler-scraper",
+  "slug": "steel",
+  "provider": "Steel.dev",
+  "url": "https://steel.dev/",
+  "category": "headless browser",
+  "verdict": "trial-only",
+  "confidence": "documented",
+  "confidence_note": "free tier, limits, retention and the deposit rule read on the vendor's pricing and docs pages; the sign-up form's fields did not render",
+  "verified_at": "2026-10-30T11:10:03.622Z",
+  "free_tier": {
+    "stated": "USD 30 of credits, one time, valid 90 days (about 300 browser hours at USD 0.10 an hour); 10 concurrent sessions of up to 15 minutes",
+    "unit": "mixed",
+    "metered_on": "wall-clock",
+    "source_url": "https://docs.steel.dev/overview/pricinglimits",
+    "read_on": "2026-10-30",
+    "notes": "one-time; the 90-day validity is the binding part"
+  },
+  "per_object_cap": {
+    "stated": "not applicable: the unit is a browser session",
+    "bytes": null,
+    "source_url": "https://steel.dev/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "session data is kept 7 days on Launch; the USD 30 credit expires after 90 days",
+    "days": 7,
+    "source_url": "https://steel.dev/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not applicable",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://steel.dev/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "REST sessions and a scrape route; 10 concurrent and 20 requests a minute on Browser Tools",
+  "tooling": "a session model with a browser control protocol",
+  "chaining": "A session model, so it is the wrong shape for a Worker and the right shape for a long agent run",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "10 concurrent browser sessions and 60 requests a minute on the Launch plan",
+      "source": "https://docs.steel.dev/overview/pricinglimits"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "the USD 30 credit expires after 90 days",
+      "source": "https://docs.steel.dev/overview/pricinglimits"
+    }
+  ],
+  "binding": "retention-clamped",
+  "limits_note": "Browser Tools calls (/scrape, /screenshot, /pdf) are limited to 20 requests a minute per organization, under the plan's request rate",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an account with no credit card for the USD 30 of credits; CAPTCHA solving and Steel-provided proxies on Launch need a USD 10 paid deposit, which free credits do not cover",
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "price_per_tb_month": null,
+  "evidence": [
+    {
+      "url": "https://api.steel.dev/v1/scrape?url=https://example.com",
+      "date": "2026-10-22",
+      "proved": "421 with a 35-byte body reading `No route defined for GET /v1/scrape`: the host is live and the path is wrong, which proves the API exists and not that the route does"
+    },
+    {
+      "url": "https://docs.steel.dev/overview/pricinglimits",
+      "date": "2026-10-30",
+      "proved": "the Launch plan's USD 30 of credits is one-time and valid 90 days",
+      "capture": "sha256:55115f2554c7ea9c57b12b64d1fde291f49bdf4ed5ef08894f95e58d349c41e0",
+      "quote": "Launch includes $30 in one-time free usage credits, valid for 90 days."
+    },
+    {
+      "url": "https://docs.steel.dev/overview/pricinglimits",
+      "date": "2026-10-30",
+      "proved": "the Launch plan allows 60 requests a minute; the same table gives it 10 concurrent sessions",
+      "capture": "sha256:55115f2554c7ea9c57b12b64d1fde291f49bdf4ed5ef08894f95e58d349c41e0",
+      "quote": "| Limits | Requests per minute | 60 | 600 | Custom |"
+    },
+    {
+      "url": "https://docs.steel.dev/overview/pricinglimits",
+      "date": "2026-10-30",
+      "proved": "the Launch plan runs 10 sessions at once",
+      "capture": "sha256:55115f2554c7ea9c57b12b64d1fde291f49bdf4ed5ef08894f95e58d349c41e0",
+      "quote": "| Features | Concurrent browser sessions | 10 | 100 | 1,000+ |"
+    },
+    {
+      "url": "https://docs.steel.dev/overview/browser-tools/overview",
+      "date": "2026-10-30",
+      "proved": "Browser Tools calls have their own 20-a-minute limit per organization",
+      "capture": "sha256:74050b053fe26b60795385b435c1a2f9f4743c1d8b0ce687e3be28c3c4502071",
+      "quote": "Calls are rate limited to 20 requests per minute per organization."
+    },
+    {
+      "url": "https://docs.steel.dev/overview/pricinglimits",
+      "date": "2026-10-30",
+      "proved": "the Launch plan keeps data 7 days",
+      "capture": "sha256:55115f2554c7ea9c57b12b64d1fde291f49bdf4ed5ef08894f95e58d349c41e0",
+      "quote": "| Limits | Data retention | 7 days | 14 days | Custom |"
+    },
+    {
+      "url": "https://docs.steel.dev/overview/pricinglimits",
+      "date": "2026-10-30",
+      "proved": "proxies and CAPTCHA solving on the free plan need a USD 10 paid deposit",
+      "capture": "sha256:55115f2554c7ea9c57b12b64d1fde291f49bdf4ed5ef08894f95e58d349c41e0",
+      "quote": "To use CAPTCHA solving or Steel-provided proxies on Launch, verify your account by adding $10 in paid balance."
+    },
+    {
+      "url": "https://docs.steel.dev/overview/sessions-api/quickstart",
+      "date": "2026-10-30",
+      "proved": "the quickstart opens an account with no credit card",
+      "capture": "sha256:b4293dac4575356771e569195403817dca6a5a08158f31c30ad51eb33adb3226",
+      "quote": "No credit card required"
+    },
+    {
+      "url": "https://steel.dev/pricing",
+      "date": "2026-10-30",
+      "proved": "the pricing page's Launch card needs no credit card",
+      "capture": "sha256:db0a3543db430c6f30b30cf91c2f046b01a9531305ae0c895c9ff5b4767a94e4",
+      "quote": "No credit card needed"
+    }
+  ],
+  "notes": "A 421 naming the missing route is the useful shape: it distinguishes a wrong path from a dead host. Every other browser provider in this class answered 401, which proves less.",
+  "binding_note": "the USD 30 credit is one-time and lapses after 90 days; a Launch session ends at 15 minutes"
+}

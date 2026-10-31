@@ -1,0 +1,99 @@
+{
+  "topic": "debrid",
+  "tier": "free",
+  "limits_note": "",
+  "slug": "1fichier",
+  "provider": "1fichier",
+  "url": "https://1fichier.com/tarifs.html?lg=en",
+  "category": "file host with a permanent anonymous tier, the flagship debrid source",
+  "free_tier": {
+    "stated": "'Every service is available free of charge, in a limited form' and the Visitors column names 'Advertising, captcha, waiting time, limited speed, removal after 15 days'",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://1fichier.com/tarifs.html?lg=en",
+    "read_on": "2026-10-23",
+    "notes": "the four stated restrictions did not bind on the measured path: see egress and limits"
+  },
+  "per_object_cap": {
+    "stated": "not stated for Visitors; Premium Light 500 GB names '300 GB per file', so the paid cap is 300 GB",
+    "bytes": null,
+    "source_url": "https://1fichier.com/tarifs.html?lg=en",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "Visitors: 'removal after 15 days'; a directory file uploaded 2022-11-25 was still served on 2026-10-23, so the 15 days counts inactivity, not age",
+    "days": null,
+    "source_url": "https://1fichier.com/tarifs.html?lg=en",
+    "notes": "activity-based; the number of days between last download and deletion was not measured"
+  },
+  "egress": {
+    "terms": "free and unmetered by bytes: 4.36 MiB/s at 1 connection, 6.05 at 8 and 6.40 at 32, with every range honoured; 6.40 MiB/s is 5.3 TB/month of continuous transfer",
+    "metered": false,
+    "free_allowance": "not published for Visitors",
+    "price_per_tb": null,
+    "source_url": "https://1fichier.com/tarifs.html?lg=en"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "https://1fichier.com/?<id> 302s straight to a node URL a-NN.1fichier.com/<token> that streams and honours Range; public folders export as JSON with ?json=1",
+  "endpoint": "https://1fichier.com/dir/<folderid>?json=1",
+  "tooling": "rclone has no 1fichier backend; JDownloader, aria2 and a 10-line wrapper all work; the JSON folder export makes listing scriptable without an account",
+  "chaining": "the fastest free host measured at a user, so it is the right cold-storage mirror for anything a debrid can also read; pair it with a rented debrid for the hosts that rate-limit",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "6.40 MiB/s aggregate at 32 connections; no connection above 8 improved on 6.05 MiB/s",
+      "source": "probe:https://1fichier.com/?29nsorxu2te2sen8ulvq"
+    },
+    {
+      "kind": "pull-count",
+      "value": "Visitors are told 'removal after 15 days', so an object can disappear between sessions",
+      "source": "https://1fichier.com/tarifs.html?lg=en"
+    }
+  ],
+  "binding": "per-ip-shaping",
+  "binding_note": "Nothing counts bytes on the free tier; the measured 6.40 MiB/s aggregate is the only thing between a user and 5.3 TB/month, and the paid tier exists to remove the speed limit rather than a quota.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no account, cookie or captcha was presented: a bare GET on https://1fichier.com/?29nsorxu2te2sen8ulvq returned 200 with 35,895,659 bytes, twice in a row",
+    "country": null
+  },
+  "reliability_note": "The published Visitors restrictions (captcha, waiting time, limited speed) were absent at the HTTP layer on this path, and a second full download from the same IP 90 s later was served at 5.87 MiB/s; a client that trusts the vendor page will implement a queue it does not need.",
+  "confidence": "measured",
+  "confidence_note": "Full 34.2 MiB object downloaded and hashed twice, plus two ranged concurrency runs, all. A second IP and a file inside the 15-day inactivity window would test the retention claim.",
+  "evidence": [
+    {
+      "url": "probe:https://1fichier.com/?29nsorxu2te2sen8ulvq",
+      "date": "2026-10-23",
+      "proved": "35,895,659 bytes, sha256 15b98b4d48c14ff6256dc238826e6dc779c7575c71c281283e5450a4a425f6bb in 7,850.9 ms (4.360 MiB/s); a second full GET 90 s later 5,828.9 ms (5.873 MiB/s); 8 connections 5,654.3 ms (6.054 MiB/s); 32 connections 5,350.2 ms (6.398 MiB/s) with 32 of 32 ranges honoured"
+    },
+    {
+      "url": "probe:https://1fichier.com/dir/icK5nneQ?json=1",
+      "date": "2026-10-23",
+      "proved": "a public folder exports as JSON with filename, size and link per object, and no credential: the 35,895,659 byte RPI2DMD tutorial zip was found this way"
+    },
+    {
+      "url": "https://1fichier.com/tarifs.html?lg=en",
+      "date": "2026-10-23",
+      "proved": "'Every service is available free of charge, in a limited form' and the Visitors column: 'Advertising, captcha, waiting time, limited speed, removal after 15 days'"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-23T03:31:02.558Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The 41.91 MB FLAC found through MultiUp was dead (HTTP 404 on the 1fichier link), which is why the object is a 2022 zip from a public folder instead.",
+  "extras": {
+    "measured_mib_s": {
+      "c1": 4.36,
+      "c1_second": 5.873,
+      "c8": 6.054,
+      "c32": 6.398
+    },
+    "object_bytes": 35895659,
+    "object_sha256": "15b98b4d48c14ff6256dc238826e6dc779c7575c71c281283e5450a4a425f6bb",
+    "connections": "1/8/32 connections",
+    "wait_between_downloads": "none observed: a second full download started 90 s after the first and ran at 5.87 MiB/s"
+  }
+}

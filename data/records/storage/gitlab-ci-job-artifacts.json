@@ -1,0 +1,69 @@
+{
+  "topic": "storage",
+  "slug": "gitlab-ci-job-artifacts",
+  "provider": "GitLab CI Job Artifacts (GitLab.com Free)",
+  "url": "https://gitlab.com",
+  "category": "paas",
+  "free_tier": {
+    "stated": "Not counted against the 10 GiB project storage limit ('build artifacts are not included in the limit'). 1 GB compressed maximum per artifact archive on GitLab.com.",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Default expiry 30 days, but `expire_in: never` is a valid documented value and the latest-successful-job artifact on every ref is exempt from expiry entirely",
+    "days": 30,
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free, anonymous for public projects. Verified a 321 MB anonymous download.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "GET /projects/:id/jobs/artifacts/:ref/download?job=NAME, and GET /projects/:id/jobs/:job_id/artifacts (zip). No auth needed against a public project. Upload is automatic from .gitlab-ci.yml `artifacts:`.",
+  "chaining": "Unlimited jobs per project x 1 GB per artifact archive, uncounted against quota. Force permanence with `expire_in: never` or the 'Keep' button. Because 'artifacts from the latest pipeline for the ref' never expire regardless of expire_in, every branch/tag becomes a permanent shelf: unlimited branches x 1 GB.",
+  "limits": [],
+  "limits_note": "1 GB compressed per archive. Default expiry 30 days, but `expire_in: never` is a valid documented value and the latest-successful-job artifact on every ref is exempt from expiry entirely. Free tier: 400 compute minutes/month, so bulk upload is compute-bound, not storage-bound.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Expiry is enforced hourly and irreversible — anything not pinned with `never`/Keep silently vanishes. Treat as durable only when pinned.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://docs.gitlab.com/ci/yaml/",
+      "date": "2026-10-21",
+      "proved": "'artifacts:expire_in ... Valid values include ... never' and 'expire_in does not affect artifacts from the latest job'"
+    },
+    {
+      "url": "https://docs.gitlab.com/user/gitlab_com/",
+      "date": "2026-10-21",
+      "proved": "'Artifacts maximum size (compressed) | 1 GB' and 'Artifacts expiry time | 30 days unless otherwise specified'"
+    },
+    {
+      "url": "https://gitlab.com/api/v4/projects/gitlab-org%2Fgitlab-foss/jobs/artifacts/master/download?job=setup-test-env",
+      "date": "2026-10-21",
+      "proved": "probe: curl -L -> 302 then 200, 321472291 bytes, no auth"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Not counted against the 10 GiB project storage limit ('build artifacts are not included in the limit'). 1 GB compressed maximum per artifact archive on GitLab.com.",
+  "extras": {},
+  "binding": "none",
+  "binding_note": null
+}

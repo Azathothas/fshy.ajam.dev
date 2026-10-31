@@ -1,0 +1,137 @@
+{
+  "topic": "compute",
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "notes": null
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "SSH on port 22; an SSH public key is registered with the provisioning API",
+  "tooling": "SSH, screen or tmux, cron",
+  "chaining": "a keepalive file is the cheapest way past the sweep, and it costs one touch",
+  "limits_note": "LXC containers on Atlantic.net",
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "price_per_tb_month": null,
+  "slug": "hashbang",
+  "provider": "hashbang",
+  "url": "https://raw.githubusercontent.com/hashbang/shell-etc/master/cron.daily/clean-lurkers",
+  "category": "shared shell",
+  "free_tier": {
+    "stated": "a free shared shell account; per-user limits applied at login are 512 MB memory, 50% CPU quota and a soft 150 process cap",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://raw.githubusercontent.com/hashbang/shell-etc/master/cron.daily/clean-lurkers",
+    "read_on": "2026-10-06",
+    "notes": "the limits live in the operator's deployed configuration, not on a marketing page"
+  },
+  "retention": {
+    "stated": "a daily sweep terminates sessions for any user with no SSH login in 30 days unless ~/.keep-account exists",
+    "days": 30,
+    "notes": "the sweep keys off lastlog, so a detached tmux does not keep it alive"
+  },
+  "egress": {
+    "terms": "not published",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://hashbang.sh"
+  },
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "sessions terminated after 30 days with no SSH login unless ~/.keep-account exists",
+      "source": "https://raw.githubusercontent.com/hashbang/shell-etc/master/cron.daily/clean-lurkers"
+    },
+    {
+      "kind": "request-rate",
+      "value": "512 MB memory, 50% CPU quota, soft 150 and hard 200 processes per user at login",
+      "source": null
+    },
+    {
+      "kind": "write-gated",
+      "value": "an SSH public key must be registered with the provisioning API",
+      "source": "https://hashbang.sh"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an account with a registered SSH key; no card",
+    "country": null
+  },
+  "evidence": [
+    {
+      "url": "probe:hashbang.sh:22",
+      "date": "2026-10-22",
+      "proved": "TCP connect succeeded in 0.35 s to 174.138.102.152; the host accepted the connection and sent no banner within 6 s"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/hashbang/shell-etc/master/cron.daily/clean-lurkers",
+      "date": "2026-10-22",
+      "proved": "the daily clean-lurkers script sets DAYS=30 and runs lastlog -b 30 -t 32 to terminate users with no login in 30 days"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "notes": "The 30-day sweep is the only real constraint and it has a one-file opt-out.",
+  "extras": {
+    "shape": {
+      "vcpu": null,
+      "ram_gib": 0.5,
+      "disk_gib": null,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "billing_model": "flat-pool",
+    "granularity": {
+      "min_billed_s": null,
+      "rounding_s": null
+    },
+    "session_cap": {
+      "wall_clock_min": null,
+      "idle_reap_s": null,
+      "restart_required": false,
+      "note": "30-day login sweep; no session cap"
+    },
+    "keep_rate": {
+      "value": 0.0,
+      "basis": "a free account costs nothing",
+      "source": "https://hashbang.sh"
+    },
+    "persistent_storage": {
+      "included_gib": null,
+      "price_gib_month": "not offered",
+      "durability": "home directory",
+      "survives_stop": true,
+      "survives_destroy": false,
+      "max_retention": "30 days without a login unless opted out"
+    },
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": null,
+      "ports": null,
+      "static_ip": false,
+      "ipv6": null,
+      "per_session_bytes": null
+    },
+    "free_tier_kind": "allowance",
+    "m10h_usd": 0.0,
+    "m24h_usd": 0.0
+  },
+  "confidence_note": "reachability only: a probe proves the port answers, not the quota, so the per-user limits carry the documented rung and the record is not `measured`",
+  "probe": {
+    "probed_at": "2026-10-22T03:55:15.270Z",
+    "host": "hashbang.sh",
+    "port": 22,
+    "ms": 350,
+    "ok": true,
+    "banner": "",
+    "peer": "174.138.102.152",
+    "note": null
+  },
+  "binding": "retention-clamped",
+  "binding_note": "the 30-day login sweep binds first, with a one-file opt-out"
+}

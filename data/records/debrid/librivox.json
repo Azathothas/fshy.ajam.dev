@@ -1,0 +1,97 @@
+{
+  "topic": "debrid",
+  "slug": "librivox",
+  "provider": "LibriVox",
+  "url": "https://librivox.org/api/info",
+  "category": "public-domain audiobook library (metadata API + Internet Archive files)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free public-domain audiobooks, read by volunteers, with a JSON/XML catalogue API. The API caps a single response at 500 records ('Can no longer be set above 500', added 2026-09-26) and pages with offset.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://librivox.org/api/info",
+    "read_on": "2026-10-23",
+    "notes": "The catalogue size is not published; the highest project id returned by sort_order=desc was 23017, which bounds it near 23,000 projects."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: one MP3 per section, one ZIP per book. The ZIP is served by archive.org, so the object size is the Internet Archive item's size.",
+    "bytes": null,
+    "source_url": "https://librivox.org/api/info",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "permanent: public-domain recordings 'donated to the public domain', with the audio stored as Internet Archive items",
+    "days": null,
+    "source_url": "https://librivox.org/pages/about-librivox/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Metadata is free and unmetered from the API. The audio is not served by librivox.org: each record's url_zip_file points at archive.org/compress/<item>/..., so audio bytes are Internet Archive egress and inherit its per-IP shaping.",
+    "metered": false,
+    "free_allowance": "no byte allowance published",
+    "price_per_tb": null,
+    "source_url": "https://librivox.org/api/info"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "GET https://librivox.org/api/feed/audiobooks with id, since, author, title, genre, fields, extended, coverart, limit, offset, format, sort_order. Parameters may be path segments instead of query strings.",
+  "endpoint": "https://librivox.org/api/feed/audiobooks?format=json&limit=500&offset=0",
+  "tooling": "curl/python-requests; any HTTP client. No SDK and no rclone backend is needed because the metadata is a plain JSON API and the audio is a plain archive.org URL.",
+  "chaining": "Harvest the catalogue through the API (a few hundred requests), then pull the MP3s from archive.org - the same egress path and the same shaping as any other Internet Archive item.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "500 records maximum per request; 'If you intend to access a large number of records this way, please be considerate, and add a delay between your requests.'",
+      "source": "https://librivox.org/api/info"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "audio is fetched from archive.org, which shapes the caller (measured 1.99-3.17 MiB/s on this machine)",
+      "source": "https://librivox.org/api/info"
+    }
+  ],
+  "limits_note": "",
+  "binding": "per-ip-shaping",
+  "binding_note": "The API is metadata and would take minutes to walk at 500 records a request; the bytes come from archive.org, so the Internet Archive's per-IP ceiling is what decides a TiB-scale pull.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No key and no account: the API answered an anonymous GET with 200 and 3,084 bytes for limit=2.",
+    "country": null
+  },
+  "reliability_note": "The API changed in 2026-09-26 to cap limit at 500; older clients that asked for more are silently clamped rather than rejected.",
+  "confidence": "documented",
+  "confidence_note": "The API contract is the vendor's own page and was exercised here for two records; the audio path is read from the record's url_zip_file field, not downloaded. Downloading one ZIP would raise it.",
+  "evidence": [
+    {
+      "url": "https://librivox.org/api/info",
+      "date": "2026-10-23",
+      "proved": "'limit - ... Defaults to 50. Can no longer be set above 500', added 2026-09-26, and the 'add a delay between your requests' guidance"
+    },
+    {
+      "url": "https://librivox.org/pages/about-librivox/",
+      "date": "2026-10-23",
+      "proved": "'Librivox donates its recordings to the public domain' and the non-commercial, ad-free terms"
+    },
+    {
+      "url": "probe:https://librivox.org/api/feed/audiobooks?limit=2&format=json&sort_order=desc",
+      "date": "2026-10-23",
+      "proved": "200, 3,084 bytes of JSON; highest project id 23017, which bounds the catalogue near 23,000 projects"
+    },
+    {
+      "url": "probe:https://librivox.org/api/feed/audiobooks?limit=1&format=json",
+      "date": "2026-10-23",
+      "proved": "anonymous access works and the record carries url_zip_file pointing at archive.org/compress/<item>/"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-23T03:24:34.450Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The interesting part is where the bytes are not: librivox.org serves a small JSON catalogue and archive.org serves the audio. A plan that expects a fast audiobook mirror from this API alone will move metadata and no media.",
+  "extras": {
+    "max_limit": 500,
+    "highest_project_id": 23017,
+    "audio_host": "archive.org"
+  }
+}

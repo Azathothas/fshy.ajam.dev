@@ -1,0 +1,156 @@
+{
+  "topic": "compute",
+  "slug": "segfault-net",
+  "provider": "Segfault (THC)",
+  "url": "https://www.thc.org/segfault/",
+  "category": "sandbox",
+  "tier": "Free root server",
+  "free_tier": {
+    "stated": "'Segfault offers free unlimited Root Servers. A new server (inside a Virtual Machine) is created for every SSH connection.' Access is an ssh login as root on segfault.net with the password 'segfault'; no signup, no email, no account. The free server carries restrictions: 'The storage, memory, processing power and bandwidth is limited.'",
+    "unit": "hours",
+    "metered_on": "wall-clock",
+    "source_url": "https://www.thc.org/segfault/",
+    "read_on": "2026-10-24"
+  },
+  "per_object_cap": {
+    "stated": "one root server per SECRET; a new SECRET yields a new server with a new /sec filesystem. Not a cap on how many you may hold."
+  },
+  "retention": {
+    "stated": "'Data in your home directory and in /sec, /onion and /everyone are permanent. This data is cleared only if the server is not logged in for 30+ days.' Root filesystem and /tmp are wiped at logout: 'Data in (/usr, /tmp, ...) is only valid for the duration of the session'."
+  },
+  "egress": {
+    "terms": "'the outbound traffic is throttled' on the free service; the throttle rate is not published. Outbound is routed through Mullvad/CryptoStorm/NordVPN exit nodes.",
+    "metered": false,
+    "free_allowance": null,
+    "source_url": "https://www.thc.org/segfault/faq/"
+  },
+  "interface": [
+    "ssh"
+  ],
+  "interface_detail": "SSH only, on port 22 or 443, plus a `.onion` and `.gsocket` route. Root inside the guest. No web console, no API. A reverse TCP/UDP port on a public IP is provided; `curl sf/port` prints the IP and port.",
+  "tooling": "any SSH client; OpenSSH must be new enough to support `-o SetEnv` (the FAQ names 'Bad configuration option: setenv' as the failure on old clients)",
+  "chaining": "An anonymous root shell with a public reverse port and no account of any kind: the cheapest possible way to hold a WireGuard endpoint or a cron-driven monitor without giving up an identity, at the cost of a 1.5-day idle reap.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "auto-shutdown when no shell is running in tmux or screen and nobody has logged in for 1.5 days",
+      "source": "https://www.thc.org/segfault/faq/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "permanent data in /sec cleared after 30+ days without a login",
+      "source": "https://www.thc.org/segfault/faq/"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "free servers are resource-restricted; the numeric memory, CPU and storage caps are not published on any page read",
+      "source": "https://www.thc.org/segfault/free/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "outbound traffic is throttled on the free tier; the rate is not published",
+      "source": "https://www.thc.org/segfault/faq/"
+    }
+  ],
+  "binding": "volume-quota",
+  "binding_note": "The free tier's memory, CPU and disk caps are unpublished, so the first thing that fails is whatever the per-container limit is, and you cannot know it before logging in and running `cat /config/self/limits`.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no account, no email, no card, no phone, no document. The login is `ssh [address removed]` with the password 'segfault'; a per-server SECRET is generated at login and is the only thing that identifies the machine back to you. Nothing is registered anywhere.",
+    "country": null
+  },
+  "reliability_note": "No reliability event observed. The operator states it may shut free servers down under resource contention and that it is 'no company' run in spare time, which is a capacity statement rather than an observed outage.",
+  "confidence": "documented",
+  "confidence_note": "The machine's numeric shape is unverified: no first-party page publishes it, and the config file in the public repository has every limit commented out.",
+  "evidence": [
+    {
+      "url": "https://www.thc.org/segfault/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Segfault offers free unlimited Root Servers. A new server (inside a Virtual Machine) is created for every SSH connection.' and the login block 'ssh [address removed] # The password is segfault'"
+    },
+    {
+      "url": "https://www.thc.org/segfault/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Outgoing traffic is routed through NordVPN/CryptoStorm/Mullvad.', 'Reverse TCP/UDP port on a public IP.', 'Encrypted storage in /sec and /home'"
+    },
+    {
+      "url": "https://www.thc.org/segfault/faq/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'How long will the server run? Forever if you stay logged in (active session/connected). Auto-shutdown may occur if there is no shell running (in tmux or screen) and nobody has logged in for 1.5 days.'"
+    },
+    {
+      "url": "https://www.thc.org/segfault/faq/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Data in your home directory and in /sec, /onion and /everyone are permanent. This data is clearedo only if the server is not logged in for 30+ days.'"
+    },
+    {
+      "url": "https://www.thc.org/segfault/faq/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'The FREE service is restricted and the outbound traffic is throttled.' and 'You can see your current restrictions by typing cat /config/self/limits.'"
+    },
+    {
+      "url": "https://www.thc.org/segfault/faq/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'The server comes with around 54GB of pre-installed tools.' and 'There is no systemd/systemctl.'"
+    },
+    {
+      "url": "https://www.thc.org/segfault/free/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'The free servers have restrictions in place. The storage, memory, processing power and bandwidth is limited. When there is a squeeze for resources we may shut down free servers.'"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/hackerschoice/segfault/main/config/etc/sf/sf.conf",
+      "date": "2026-10-24",
+      "proved": "the public limit file ships every value commented out, e.g. '#SF_USER_MEMORY_LIMIT=256m', '#SF_USER_PIDS_LIMIT=128', '#SF_USER_CPU_SHARE=8', '#SF_CPUS= # automatic between 1..4 depending on host's cpu count' - these are examples, not the deployed defaults, so they cannot be read as the free shape"
+    },
+    {
+      "url": "https://blog.thc.org/disposable-root-servers",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Over 8GB of the finest hacking/coding tools pre-installed.' and 'Reverse Port Forwards (forget ngrok. This is free & better).'"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/hackerschoice/segfault/main/config/etc/sf/sf.conf",
+      "date": "2026-10-24",
+      "proved": "the public limit file ships every value commented out, e.g. '#SF_USER_MEMORY_LIMIT=256m', '#SF_USER_PIDS_LIMIT=128', '#SF_USER_CPU_SHARE=8', '#SF_CPUS= # automatic between 1..4 depending on host's cpu count' — these are examples, not the deployed defaults, so they cannot be read as the free shape"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-24T06:00:12.000Z",
+  "price_per_tb_month": null,
+  "notes": "The only provider with a genuinely anonymous identity cost: no signup form exists to be filled in. Three things are unresolved and all three need a login must not perform. First, the numeric shape (vCPU, RAM, disk) is not on any first-party page; `cat /config/self/limits` prints it after login. A third-party writeup (nixsanctuary.com) states 128 MB personal storage, 16 GB shared and a read-only rootfs at 500 Mbit/s, which is reported-only and contradicts nothing but is unconfirmed. Second, the outbound throttle rate is unpublished. Third, 'unlimited Root Servers' is the operator's phrase; whether it means unbounded concurrent servers is unstated. The guest has no systemd, so a daemon has to be started from /sec/usr/etc/rc.local. A reverse port is explicitly provided, so an inbound listener works without a static IP of your own.",
+  "extras": {
+    "shape": {
+      "vcpu": null,
+      "ram_gib": null,
+      "disk_gib": null,
+      "gpu_class": null,
+      "gpu_count": null,
+      "note": "not published on any first-party page; the config file in the public repo has the limits commented out and the FAQ points at `cat /config/self/limits` inside the guest"
+    },
+    "billing_model": "free",
+    "term": "per session; persistent storage survives 30 days of non-use",
+    "m10h_usd": 0,
+    "m24h_usd": 0,
+    "price_arithmetic": "no charge at any point and no payment field exists, so there is no rate to multiply",
+    "free_tier_kind": "always-free",
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": true,
+      "ports": "one reverse TCP/UDP port on a public IP, assigned by the service; `curl sf/port` prints IP and port",
+      "static_ip": false,
+      "ipv6": null,
+      "per_session_bytes": null
+    },
+    "session_cap": {
+      "wall_clock_min": null,
+      "idle_reap_s": 129600,
+      "restart_required": true,
+      "note": "no wall clock while a shell is attached; auto-shutdown after 1.5 days with no login and no shell in tmux or screen. Every login without the SECRET creates a fresh server."
+    },
+    "signup_url": "https://www.thc.org/segfault/",
+    "credit_usd": null,
+    "credit_hours_at_shape": null,
+    "card_hold_usd": null,
+    "payment_methods": "none; there is no billing system and no account to bill"
+  }
+}

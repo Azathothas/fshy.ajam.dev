@@ -1,0 +1,81 @@
+{
+  "topic": "storage",
+  "slug": "shoutwiki",
+  "provider": "ShoutWiki (wiki farm, MediaWiki)",
+  "url": "https://www.shoutwiki.com",
+  "category": "paas",
+  "free_tier": {
+    "stated": "No published per-wiki storage cap; per-file ceiling is 100 MB (live siteinfo). Free, ad-supported; paid tiers exist for custom domains.",
+    "unit": "MB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://www.shoutwiki.com/w/api.php?action=query&meta=siteinfo&siprop=general&format=json",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-file ceiling is 100 MB",
+    "bytes": 100000000,
+    "source_url": "https://www.shoutwiki.com/w/api.php?action=query&meta=siteinfo&siprop=general&format=json",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://www.shoutwiki.com/w/api.php?action=query&meta=siteinfo&siprop=general&format=json",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "No egress meter; images served from `images.shoutwiki.com`.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Standard MediaWiki Action API (1.43.6) + Pywikibot. No rclone backend.",
+  "chaining": "100 MB/file x unlimited files x unlimited free wikis. Per-file cap is 10x Fandom's.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-file ceiling is 100 MB",
+      "source": "https://www.shoutwiki.com/w/api.php?action=query&meta=siteinfo&siprop=general&format=json"
+    }
+  ],
+  "limits_note": "per-object-cap: 100 MB (104,857,600 B, from siteinfo). request-rate: the wiki HTML and the Action API are behind an Anubis proof-of-work challenge — a POST to `/w/api.php` returned the 'Making sure you're not a bot!' page instead of JSON, so programmatic access needs a PoW-capable client. Retention: no expiry published.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Read path splits: the file CDN (`images.shoutwiki.com`) answers plainly (probe: 200, 12,472 B, real PNG 150x150) while the API is Anubis-gated. Browse/upload programmatically is the blocker, not retrieval.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://www.shoutwiki.com/w/api.php?action=query&meta=siteinfo&siprop=general&format=json",
+      "date": "2026-10-21",
+      "proved": "probe: GET (via fetch proxy) -> 200, MediaWiki 1.43.6, maxuploadsize = 104857600"
+    },
+    {
+      "url": "https://images.shoutwiki.com/hub/b/bc/Wiki.png",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, 12,472 bytes, PNG 150x150 — read path open"
+    },
+    {
+      "url": "https://www.shoutwiki.com/w/api.php",
+      "date": "2026-10-21",
+      "proved": "probe: POST (action=upload) -> 200 but body is the Anubis PoW interstitial, not JSON"
+    },
+    {
+      "url": "https://www.mediawiki.org/wiki/Hosting_services",
+      "date": "2026-10-21",
+      "proved": "ShoutWiki listed as a free wiki farm, 'free (with ads)'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published per-wiki storage cap; per-file ceiling is 100 MB (live siteinfo). Free, ad-supported; paid tiers exist for custom domains.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

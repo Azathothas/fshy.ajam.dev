@@ -1,0 +1,95 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "quark-tv-uc-tv",
+  "provider": "Quark TV and UC TV (夸克网盘 TV版, UC网盘 TV版)",
+  "url": "https://pan.quark.cn/",
+  "category": "TV-edition OAuth client for a Chinese pan",
+  "free_tier": {
+    "stated": "Quark free 300 GB plus one-off 1 TB gift campaigns; two documented campaigns give 2 TB total. UC's free base is 10 GB",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://zh.wikipedia.org/zh-cn/中国大陆网盘列表",
+    "read_on": "2026-10-21"
+  },
+  "per_object_cap": {
+    "stated": "Not published for the TV client",
+    "bytes": null,
+    "source_url": "https://zh.wikipedia.org/zh-cn/中国大陆网盘列表"
+  },
+  "retention": {
+    "stated": "The gift campaigns are one-off per account and campaign-gated. No retention clock on stored files",
+    "days": null,
+    "source_url": "https://www.rayks.com/article/ucwp1tbhd.html"
+  },
+  "egress": {
+    "terms": "Quark free is shaped to about 1.7 MB/s and about 5 MB/s at peak for 88VIP. The TV client streams in original quality without downloading, which is why the community uses it",
+    "metered": true,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://zh.wikipedia.org/zh-cn/中国大陆网盘列表"
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "a reverse-engineered TV OAuth client, fully documented in source: the OpenList quark_uc_tv driver hard-codes api https://open-api-drive.quark.cn for Quark and https://open-api-drive.uc.cn for UC, with a public client id, a TV sign key, an app version and a channel. WebDAV comes out once mounted",
+  "chaining": "The TV OAuth reads an account through a clean API with no client, so it is a serving and STRM path and not a write path. Paired with a writable pan it covers both directions, which is why the community keeps it alive",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "the TV client is read-only by design: the driver sets NoUpload and NoOverwriteUpload",
+      "source": "https://github.com/OpenListTeam/OpenList/blob/main/drivers/quark_uc_tv/meta.go"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "free egress shaped to about 1.7 MB/s",
+      "source": "https://zh.wikipedia.org/zh-cn/中国大陆网盘列表"
+    }
+  ],
+  "identity_cost": {
+    "kind": "any-phone",
+    "detail": "a Quark or UC account, which is phone-bound in practice; the TV client's own login path exists but does not remove the account requirement",
+    "country": null
+  },
+  "reliability_note": "The TV client's client id and sign key are public constants that Alibaba rotates, and when they rotate every mount breaks until the driver is re-patched. The free-tier space campaigns are monthly and quantity-capped, so they are a lottery and not a capacity plan",
+  "confidence": "reported",
+  "evidence": [
+    {
+      "url": "https://github.com/OpenListTeam/OpenList/blob/main/drivers/quark_uc_tv/meta.go",
+      "date": "2026-10-21",
+      "proved": "two drivers, QuarkTV and UCTV, both API endpoints, the client id, signKey, app version, channel, and NoUpload: true with NoOverwriteUpload: true"
+    },
+    {
+      "url": "probe:GET https://open-api-drive.quark.cn/1/clouddrive/config?pr=ucpro&fr=pc",
+      "date": "2026-10-21",
+      "proved": "HTTP 400, 65 B, {\"status\":-1,\"errno\":10001,\"error_info\":\"_timestamp格式错误\"}, so the endpoint is live and wants a signed timestamp"
+    },
+    {
+      "url": "probe:GET https://drive-pc.quark.cn/1/clouddrive/member?pr=ucpro&fr=pc",
+      "date": "2026-10-21",
+      "proved": "HTTP 401, 117 B, {\"status\":401,\"code\":31001,\"message\":\"require login [guest]\"}"
+    },
+    {
+      "url": "https://www.rayks.com/article/ucwp1tbhd.html",
+      "date": "2026-10-21",
+      "proved": "two campaigns of 1 TB each, so 2 TB permanent"
+    },
+    {
+      "url": "https://zh.wikipedia.org/zh-cn/中国大陆网盘列表",
+      "date": "2026-10-21",
+      "proved": "夸克网盘, 300G free, shaped at 1.7M/s"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "binding": "write-gated",
+  "binding_note": "300 GB free, and the TV client cannot write at all, so the direction that fails is the write side: it is a download-and-stream path with no upload, which makes it a serving helper and not a store.",
+  "notes": "The canonical inverse of the public-instance problem. There an instance advertises a write it refuses; here a client is documented as read-only by design. Both are cases where the API's write surface must be read from the driver's own flags and not from the marketing page.",
+  "extras": {
+    "access_mode": "registration-gated",
+    "read_only": true,
+    "driver": "OpenList quark_uc_tv",
+    "aliases": [
+      "Quark TV / UC TV (夸克网盘 TV版, UC网盘 TV版)"
+    ]
+  }
+}

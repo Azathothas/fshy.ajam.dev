@@ -1,0 +1,113 @@
+{
+  "topic": "storage",
+  "slug": "sourceforge-file-release-system-project-web-space",
+  "provider": "SourceForge File Release System (FRS) + project web space",
+  "url": "https://sourceforge.net",
+  "category": "paas",
+  "free_tier": {
+    "stated": "NO PUBLISHED QUOTA. The Service Quotas page says verbatim: 'There are currently no fixed capacity limits around usage of our services. In lieu of specific disk usage caps (quotas), we may contact projects if they are using significant storage.' It then gives a soft expectation rather than a cap: 'Keep disk usage to a reasonable level: 5GB or less is ideal. 20-30GB may be permissible. (limits may vary and be flexible depending on the situation)'. So the real number is 20-30 GB of tolerated storage per project, soft, and multiplied by unlimited projects per account.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://sourceforge.net/p/forge/documentation/Disk%20Quotas/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: 'Individual files larger than 10 GB",
+    "bytes": 10000000000,
+    "source_url": "https://sourceforge.net/p/forge/documentation/Disk%20Quotas/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "per-object-cap: 'Individual files larger than 10 GB will not replicate out to our mirrors and can not be downloaded.' That is the hard number and it is published. retention: indefinite - download stats are keyed to path+filename and files are never pruned for age; but the docs warn 'Users are responsible for backing up all of their files",
+    "source_url": "https://sourceforge.net/p/forge/documentation/Disk%20Quotas/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and genuinely CDN'd: 'Unlimited bandwidth for Open Source projects' (create page) plus 'a geographically-distributed network of mirror servers, which receive copies of the files and dispense them to users'. No billing relationship anywhere. Downloads 302 to a geo-selected mirror (zenlayer.dl.sourceforge.net from this vantage) and are served by nginx.",
+    "metered": false
+  },
+  "interface": [
+    "sftp",
+    "scp",
+    "rsync",
+    "ssh"
+  ],
+  "interface_detail": "sftp",
+  "tooling": "Native sftp/scp/rsync-over-ssh, no wrapper needed. FRS host `frs.sourceforge.net` path `/home/frs/project/PROJECT_UNIX_NAME/`; web host `web.sourceforge.net` path `/home/project-web/PROJECT_UNIX_NAME/htdocs`. SFTP is batch-scriptable with key auth ('Use key-based authentication, since password entry can't safely be automated'). rsync is the documented path for anything over 100 MB because it resumes. Read side has machine APIs: `/projects/<name>/best_release.json` (JSON with bytes/md5sum), `/projects/<name>/rss?path=/` (per-file size in `files:size`), and `downloads.sourceforge.net/project/...`.",
+  "chaining": "Each account can register unlimited projects ('you automatically are given administrator rights for that particular project'; the only gate is ODF-compliant OSS licensing + a one-time phone/SMS PIN). At the tolerated 20-30 GB/project that is 20-30 GB x N projects x N accounts. The real find is that the number is NEGOTIABLE and unpublished - 'If you are planning to do something which consumes huge amounts of disk, please ask first' - so the ceiling is a support ticket, not a wall. Two independent storage surfaces per project (FRS + project web htdocs), plus git/hg/svn repos, plus wiki/ticket attachments.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: 'Individual files larger than 10 GB",
+      "source": "https://sourceforge.net/p/forge/documentation/Disk%20Quotas/"
+    }
+  ],
+  "limits_note": "per-object-cap: 'Individual files larger than 10 GB will not replicate out to our mirrors and can not be downloaded.' That is the hard number and it is published. retention: indefinite - download stats are keyed to path+filename and files are never pruned for age; but the docs warn 'Users are responsible for backing up all of their files. SourceForge.net will not restore individual files.' request-rate: none published; the docs instead route large uploads to rsync for resume. Filename charset is restricted (no & : % ? / * $, may not start with space or dot).",
+  "identity_cost": {
+    "kind": "any-phone",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "The only fragile part is the soft quota: 20-30 GB 'may be permissible' means a project that grows to hundreds of GB gets an email, not a hard stop - enforcement is discretionary. SFTP is reachable and live (banner SSH-2.0-OpenSSH_7.4 on port 22). One structural caution: the FRS host deliberately does not list the project directory over SFTP ('your project directory is available, even if you cannot see it listed'), so clients must use absolute paths and cannot enumerate.",
+  "confidence": "documented",
+  "confidence_note": "The absence of a fixed cap is stated on the page as re-read. Was reported; now documented.",
+  "evidence": [
+    {
+      "url": "https://sourceforge.net/p/forge/documentation/Disk%20Quotas/",
+      "date": "2026-10-21",
+      "proved": "'There are currently no fixed capacity limits around usage of our services... 5GB or less is ideal. 20-30GB may be permissible.'"
+    },
+    {
+      "url": "https://sourceforge.net/p/forge/documentation/Release%20Files%20for%20Download",
+      "date": "2026-10-21",
+      "proved": "'Individual files larger than 10 GB will not replicate out to our mirrors and can not be downloaded.'"
+    },
+    {
+      "url": "https://sourceforge.net/p/forge/documentation/SFTP/",
+      "date": "2026-10-21",
+      "proved": "host frs.sourceforge.net, path /home/frs/project/PROJECT_UNIX_NAME/, key-based batch mode"
+    },
+    {
+      "url": "https://sourceforge.net/p/forge/documentation/rsync/",
+      "date": "2026-10-21",
+      "proved": "'rsync over SSH is a supported file transfer method for our File management service'"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: TCP connect frs.sourceforge.net:22 -> 'SSH-2.0-OpenSSH_7.4' (SFTP endpoint live, anonymous banner)"
+    },
+    {
+      "url": "https://downloads.sourceforge.net/project/sevenzip/7-Zip/24.09/7z2409-x64.exe",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 302 to zenlayer.dl.sourceforge.net/?viasf=1&fid=... then 200, Content-Length 1637343, downloaded and sha256 bdd1a33de78618d16ee4ce148b849932c05d0015491c34887846d431d29f308e"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: ranged GET bytes 0-1048575 on /project/clonezilla/.../clonezilla-live-20261018-resolute-amd64.iso -> 206, Content-Range: bytes 0-1048575/640679936 (a 640 MB object, ranges honoured, mirror path works)"
+    },
+    {
+      "url": "https://sourceforge.net/projects/sevenzip/best_release.json",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> JSON with bytes 1868068, md5sum, filename (machine-readable release metadata, anonymous)"
+    },
+    {
+      "url": "https://sourceforge.net/p/forge/documentation/Create%20a%20New%20Project/",
+      "date": "2026-10-21",
+      "proved": "gate is 'all projects must be Open Source Software, with a license compliant with the Open Source Definition' plus a phone PIN; no editorial review step"
+    },
+    {
+      "url": "https://sourceforge.net/p/forge/documentation/Disk%20Quotas/",
+      "date": "2026-10-22",
+      "proved": "200, 3,189 B on 2026-10-22: 'There are currently no fixed capacity limits around usage of our services'"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "NO PUBLISHED QUOTA. The Service Quotas page says verbatim: 'There are currently no fixed capacity limits around usage of our services. In lieu of specific disk usage caps (quotas), we may contact projects if they are using significant storage.' It then gives a soft expectation rather than a cap: 'Keep disk usage to a reasonable level: 5GB or less is ideal. 20-30GB may be permissible. (limits may vary and be flexible depending on the situation)'. So the real number is 20-30 GB of tolerated storage per project, soft, and multiplied by unlimited projects per account.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

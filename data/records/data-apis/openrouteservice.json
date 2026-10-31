@@ -1,0 +1,356 @@
+{
+  "topic": "data-apis",
+  "slug": "openrouteservice",
+  "provider": "openrouteservice",
+  "url": "https://account.heigit.org/info/plans",
+  "category": "routing, geocoding and isochrones API",
+  "tier": "Standard",
+  "free_tier": {
+    "stated": "Standard plan, free to use for everyone: 2000 directions a day (40 a minute), 3000 geocoding requests a day (100 a minute), 500 matrix requests a day (40 a minute), 500 isochrones a day (20 a minute), 2000 elevation and 2000 snap requests a day, 500 optimization and 500 POI requests a day",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://account.heigit.org/info/plans",
+    "read_on": "2026-10-31",
+    "notes": "the daily window resets 24 hours after the first request; the Collaborative plan, for humanitarian, academic, governmental or not-for-profit organisations applying with an organisation email, raises directions to 10000 and geocoding to 15000 a day"
+  },
+  "per_object_cap": {
+    "stated": "a matrix request takes up to 3.500 locations (origins x destinations, e.g. 50 x 50); a route up to 50 waypoints; a snap request up to 5.000 locations",
+    "bytes": null,
+    "source_url": "https://openrouteservice.org/restrictions/",
+    "notes": "read from the Wayback Machine copy of 2026-08-29; the live page answered HTTP 404 on 2026-10-31. The page writes thousands with a dot: 3.500 is three thousand five hundred"
+  },
+  "retention": {
+    "stated": null,
+    "days": null,
+    "source_url": "https://account.heigit.org/info/tos"
+  },
+  "egress": {
+    "terms": "not applicable: a query API metered in requests, not bytes",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://account.heigit.org/info/plans"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "HTTPS to api.openrouteservice.org (directions, matrix, isochrones, geocode, elevation, optimization, POIs) with a personal HeiGIT API key; a keyless geocode answered HTTP 401 'Authorization field missing'; over the daily limit the API answers 403 and over the minutely limit 429, with x-ratelimit-remaining and x-ratelimit-reset headers",
+  "endpoint": "https://api.openrouteservice.org/geocode/search",
+  "tooling": "any HTTP client; the interactive API documentation was offline on 2026-10-31 while the API answered",
+  "chaining": "3000 geocodes and 2000 routes a day on one personal key; the bulk path for routing is the matrix endpoint (up to 3.500 origin-destination pairs a request, 500 a day); there is no batch geocoding endpoint. Last resort: the user installs and runs the openrouteservice backend, Pelias and VROOM on a rented or free machine with no quota, built from the OSM planet file",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "3000 geocoding requests and 2000 directions a day on the Standard plan",
+      "source": "https://account.heigit.org/info/plans"
+    },
+    {
+      "kind": "request-rate",
+      "value": "100 geocoding and 40 directions requests a minute, a sliding 60-second window",
+      "source": "https://account.heigit.org/info/plans"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "3.500 matrix locations (origins x destinations, e.g. 50 x 50) a request; 50 route waypoints",
+      "source": "https://openrouteservice.org/restrictions/"
+    }
+  ],
+  "binding": "volume-quota",
+  "binding_note": "the per-minute rates allow more than the daily counts within the day, so the daily quota is met first",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a HeiGIT account with first and last name, use cases, an email and a password and an Altcha 'I'm not a robot' check, or GitHub sign-in; one account and one free key per person, and multiple accounts by one user are removed; no card",
+    "country": null
+  },
+  "reliability_note": "repeatedly exceeding the limits blocks access temporarily and can disable or remove the account; the openrouteservice.org website and its interactive docs were unavailable on 2026-10-31 while the API stayed reachable",
+  "confidence": "documented",
+  "confidence_note": "the HeiGIT plans page, terms, sign-up page and API landing page, the openrouteservice FAQ and the Wayback copy of the restrictions page were quoted on 2026-10-31; a keyless geocode answered HTTP 401 and the live restrictions page HTTP 404. No account was opened, so no keyed request was made; one would move it to measured.",
+  "evidence": [
+    {
+      "url": "https://account.heigit.org/info/plans",
+      "date": "2026-10-31",
+      "proved": "the Standard plan is free for everyone",
+      "capture": "sha256:190dde7f7c77c58d4f5dde9391be9d848482af688e221522fb3731e9eed8985a",
+      "quote": "Our standard plan. Free to use for everyone"
+    },
+    {
+      "url": "https://account.heigit.org/info/plans",
+      "date": "2026-10-31",
+      "proved": "directions: 2000 a day, 40 a minute",
+      "capture": "sha256:190dde7f7c77c58d4f5dde9391be9d848482af688e221522fb3731e9eed8985a",
+      "quote": "Directions V2 (2000 / 40)"
+    },
+    {
+      "url": "https://account.heigit.org/info/plans",
+      "date": "2026-10-31",
+      "proved": "geocoding: 3000 a day, 100 a minute",
+      "capture": "sha256:190dde7f7c77c58d4f5dde9391be9d848482af688e221522fb3731e9eed8985a",
+      "quote": "Geocoding (3000 / 100)"
+    },
+    {
+      "url": "https://account.heigit.org/info/plans",
+      "date": "2026-10-31",
+      "proved": "matrix: 500 a day, 40 a minute",
+      "capture": "sha256:190dde7f7c77c58d4f5dde9391be9d848482af688e221522fb3731e9eed8985a",
+      "quote": "Matrix V2 (500 / 40)"
+    },
+    {
+      "url": "https://account.heigit.org/info/plans",
+      "date": "2026-10-31",
+      "proved": "isochrones: 500 a day, 20 a minute",
+      "capture": "sha256:190dde7f7c77c58d4f5dde9391be9d848482af688e221522fb3731e9eed8985a",
+      "quote": "Isochrones V2 (500 / 20)"
+    },
+    {
+      "url": "https://account.heigit.org/info/plans",
+      "date": "2026-10-31",
+      "proved": "elevation: 2000 a day",
+      "capture": "sha256:190dde7f7c77c58d4f5dde9391be9d848482af688e221522fb3731e9eed8985a",
+      "quote": "Elevation (2000 / 40)"
+    },
+    {
+      "url": "https://account.heigit.org/info/plans",
+      "date": "2026-10-31",
+      "proved": "snap: 2000 a day",
+      "capture": "sha256:190dde7f7c77c58d4f5dde9391be9d848482af688e221522fb3731e9eed8985a",
+      "quote": "Snap V2 (2000 / 100)"
+    },
+    {
+      "url": "https://account.heigit.org/info/plans",
+      "date": "2026-10-31",
+      "proved": "optimization: 500 a day",
+      "capture": "sha256:190dde7f7c77c58d4f5dde9391be9d848482af688e221522fb3731e9eed8985a",
+      "quote": "Optimization (500 / 40)"
+    },
+    {
+      "url": "https://account.heigit.org/info/plans",
+      "date": "2026-10-31",
+      "proved": "POIs: 500 a day",
+      "capture": "sha256:190dde7f7c77c58d4f5dde9391be9d848482af688e221522fb3731e9eed8985a",
+      "quote": "POIs (500 / 60)"
+    },
+    {
+      "url": "https://account.heigit.org/info/plans",
+      "date": "2026-10-31",
+      "proved": "the Collaborative plan is for such organisations, applied for with an organisation email",
+      "capture": "sha256:190dde7f7c77c58d4f5dde9391be9d848482af688e221522fb3731e9eed8985a",
+      "quote": "If your application is in a humanitarian, academic, governmental, or not-for-profit organisation, you may be eligible for the collaborative plan. Please apply for an upgrade in the dashboard using your organisation email."
+    },
+    {
+      "url": "https://account.heigit.org/info/plans",
+      "date": "2026-10-31",
+      "proved": "the Collaborative plan gives 10000 directions a day",
+      "capture": "sha256:190dde7f7c77c58d4f5dde9391be9d848482af688e221522fb3731e9eed8985a",
+      "quote": "Directions V2 (10000 / 60)"
+    },
+    {
+      "url": "https://account.heigit.org/info/plans",
+      "date": "2026-10-31",
+      "proved": "the Collaborative plan gives 15000 geocodes a day",
+      "capture": "sha256:190dde7f7c77c58d4f5dde9391be9d848482af688e221522fb3731e9eed8985a",
+      "quote": "Geocoding (15000 / 150)"
+    },
+    {
+      "url": "https://account.heigit.org/info/plans",
+      "date": "2026-10-31",
+      "proved": "the services can be installed and run by the user with no API quota",
+      "capture": "sha256:190dde7f7c77c58d4f5dde9391be9d848482af688e221522fb3731e9eed8985a",
+      "quote": "Local installation of services on your own infrastructure for maximum flexibility."
+    },
+    {
+      "url": "https://giscience.github.io/openrouteservice/frequently-asked-questions",
+      "date": "2026-10-31",
+      "proved": "the daily window starts at the first request",
+      "capture": "sha256:952a2f776b9582c79508a56b09fcd8141f882943067a32050c36232f83c76667",
+      "quote": "The daily limit is reset after 24h, starting from the first time you request anything."
+    },
+    {
+      "url": "https://giscience.github.io/openrouteservice/frequently-asked-questions",
+      "date": "2026-10-31",
+      "proved": "the minutely limit is a sliding 60-second window",
+      "capture": "sha256:952a2f776b9582c79508a56b09fcd8141f882943067a32050c36232f83c76667",
+      "quote": "The minutely limit is enforced as a sliding window, meaning that any consecutive period of 60 seconds may only contain 40 directions requests."
+    },
+    {
+      "url": "https://giscience.github.io/openrouteservice/frequently-asked-questions",
+      "date": "2026-10-31",
+      "proved": "the daily limit answers 403 and the minutely limit 429",
+      "capture": "sha256:952a2f776b9582c79508a56b09fcd8141f882943067a32050c36232f83c76667",
+      "quote": "If you run into the daily limit, you will receive a `403 - Forbidden` HTTP error. If you run into the minutely limit, you will receive a `429 - Too many requests` HTTP error."
+    },
+    {
+      "url": "https://giscience.github.io/openrouteservice/frequently-asked-questions",
+      "date": "2026-10-31",
+      "proved": "the remaining quota is in response headers",
+      "capture": "sha256:952a2f776b9582c79508a56b09fcd8141f882943067a32050c36232f83c76667",
+      "quote": "compare the `x-ratelimit-remaining` and the `x-ratelimit-reset` header"
+    },
+    {
+      "url": "https://giscience.github.io/openrouteservice/frequently-asked-questions",
+      "date": "2026-10-31",
+      "proved": "the data comes from the OSM planet file",
+      "capture": "sha256:952a2f776b9582c79508a56b09fcd8141f882943067a32050c36232f83c76667",
+      "quote": "Openrouteservice builds its data from the `planet.osm.pbf`-files."
+    },
+    {
+      "url": "https://giscience.github.io/openrouteservice/frequently-asked-questions",
+      "date": "2026-10-31",
+      "proved": "a key is personal",
+      "capture": "sha256:952a2f776b9582c79508a56b09fcd8141f882943067a32050c36232f83c76667",
+      "quote": "every HeiGIT API key belongs to one person."
+    },
+    {
+      "url": "https://account.heigit.org/info/tos",
+      "date": "2026-10-31",
+      "proved": null,
+      "capture": "sha256:4ab6f60b0666de11bd5602fcdbb817ac2b776beedde9ce2f00c0ccf31509442f",
+      "quote": null
+    },
+    {
+      "url": "https://account.heigit.org/info/tos",
+      "date": "2026-10-31",
+      "proved": "one account per person",
+      "capture": "sha256:4ab6f60b0666de11bd5602fcdbb817ac2b776beedde9ce2f00c0ccf31509442f",
+      "quote": "Any person is permitted one single account for all HeiGIT APIs and services."
+    },
+    {
+      "url": "https://account.heigit.org/info/tos",
+      "date": "2026-10-31",
+      "proved": "repeated excess blocks access and can remove the account",
+      "capture": "sha256:4ab6f60b0666de11bd5602fcdbb817ac2b776beedde9ce2f00c0ccf31509442f",
+      "quote": "If you repeatedly exceed the limits, your access to the API will be temporarily blocked and we reserve the right to disable and/or remove your account without prior notice."
+    },
+    {
+      "url": "https://account.heigit.org/signup",
+      "date": "2026-10-31",
+      "proved": "the sign-up form asks for first and last name",
+      "capture": "sha256:ca14c4990a01441732806f3fa23c9c4129bbb89b965d8f10911088717debaead",
+      "quote": "First Name Clear Last Name Clear"
+    },
+    {
+      "url": "https://account.heigit.org/signup",
+      "date": "2026-10-31",
+      "proved": "the sign-up form asks for use cases",
+      "capture": "sha256:ca14c4990a01441732806f3fa23c9c4129bbb89b965d8f10911088717debaead",
+      "quote": "Pick your use cases"
+    },
+    {
+      "url": "https://account.heigit.org/signup",
+      "date": "2026-10-31",
+      "proved": "the sign-up form asks for an email",
+      "capture": "sha256:ca14c4990a01441732806f3fa23c9c4129bbb89b965d8f10911088717debaead",
+      "quote": "Email Clear"
+    },
+    {
+      "url": "https://account.heigit.org/signup",
+      "date": "2026-10-31",
+      "proved": "the sign-up form asks for a password",
+      "capture": "sha256:ca14c4990a01441732806f3fa23c9c4129bbb89b965d8f10911088717debaead",
+      "quote": "Password Clear"
+    },
+    {
+      "url": "https://account.heigit.org/signup",
+      "date": "2026-10-31",
+      "proved": "the sign-up form has a robot check",
+      "capture": "sha256:ca14c4990a01441732806f3fa23c9c4129bbb89b965d8f10911088717debaead",
+      "quote": "I'm not a robot"
+    },
+    {
+      "url": "https://account.heigit.org/signup",
+      "date": "2026-10-31",
+      "proved": "the robot check is Altcha",
+      "capture": "sha256:ca14c4990a01441732806f3fa23c9c4129bbb89b965d8f10911088717debaead",
+      "quote": "[Altcha (official website)](https://altcha.org)"
+    },
+    {
+      "url": "https://account.heigit.org/signup",
+      "date": "2026-10-31",
+      "proved": "GitHub sign-in is offered",
+      "capture": "sha256:ca14c4990a01441732806f3fa23c9c4129bbb89b965d8f10911088717debaead",
+      "quote": "Signup with GitHub"
+    },
+    {
+      "url": "https://account.heigit.org/signup",
+      "date": "2026-10-31",
+      "proved": "one account and one free key per person",
+      "capture": "sha256:ca14c4990a01441732806f3fa23c9c4129bbb89b965d8f10911088717debaead",
+      "quote": "1 account and free API key per person"
+    },
+    {
+      "url": "https://account.heigit.org/signup",
+      "date": "2026-10-31",
+      "proved": "multiple accounts by one user are removed",
+      "capture": "sha256:ca14c4990a01441732806f3fa23c9c4129bbb89b965d8f10911088717debaead",
+      "quote": "Multiple accounts by the same user will be removed"
+    },
+    {
+      "url": "https://api.heigit.org/",
+      "date": "2026-10-31",
+      "proved": "a HeiGIT account comes with a free Standard key",
+      "capture": "sha256:49db04e82340deee43a181fe74784e296d4f5a1bec8d0225931f829ad82f937c",
+      "quote": "create a HeiGIT account if you haven't already done so. It comes with a free Standard API key."
+    },
+    {
+      "url": "https://openrouteservice.org/",
+      "date": "2026-10-31",
+      "proved": "the openrouteservice.org website was unavailable",
+      "capture": "sha256:8eff4859487af04efaee573f2656420bcc00fb3700bf75708187c0c7c5b60e86",
+      "quote": "Unfortunately, the PHP issues linked above also affect the openroutervice website. Thus, it is currently unavailable."
+    },
+    {
+      "url": "https://openrouteservice.org/",
+      "date": "2026-10-31",
+      "proved": "the API stays reachable without its interactive docs",
+      "capture": "sha256:8eff4859487af04efaee573f2656420bcc00fb3700bf75708187c0c7c5b60e86",
+      "quote": "You can still reach all openrouteservice and HeiGIT services - except for the interactive API documentation."
+    },
+    {
+      "url": "https://web.archive.org/web/20260829024134/https://openrouteservice.org/restrictions/?provider=wayback",
+      "date": "2026-10-31",
+      "proved": "a matrix request takes up to 3.500 locations",
+      "capture": "sha256:66bd8c392fb1ea8d3be09119c53500fd7c8cae2732d742278c09393f70d01dbc",
+      "quote": "| Locations (origin x destination) | 3.500 (e.g. 50 x 50) per request |"
+    },
+    {
+      "url": "https://web.archive.org/web/20260829024134/https://openrouteservice.org/restrictions/?provider=wayback",
+      "date": "2026-10-31",
+      "proved": "a route takes up to 50 waypoints",
+      "capture": "sha256:66bd8c392fb1ea8d3be09119c53500fd7c8cae2732d742278c09393f70d01dbc",
+      "quote": "| Route waypoints | 50 |"
+    },
+    {
+      "url": "https://web.archive.org/web/20260829024134/https://openrouteservice.org/restrictions/?provider=wayback",
+      "date": "2026-10-31",
+      "proved": "a snap request takes up to 5.000 locations",
+      "capture": "sha256:66bd8c392fb1ea8d3be09119c53500fd7c8cae2732d742278c09393f70d01dbc",
+      "quote": "| Locations | 5.000 per request |"
+    },
+    {
+      "url": "probe:https://openrouteservice.org/restrictions/",
+      "date": "2026-10-31",
+      "proved": "the live restrictions page answered HTTP 404",
+      "capture": "sha256:7dbff49ad94fcdd7edbe8fafe245dac676d46dcbcdcfac11e2e0f33196a9c6c7",
+      "quote": "\"status\": 404"
+    },
+    {
+      "url": "probe:https://api.openrouteservice.org/geocode/search?text=Zurich",
+      "date": "2026-10-31",
+      "proved": "the geocode endpoint answers HTTP 401 to a keyless request",
+      "capture": "sha256:975a104d1d2e58870ed47de49200c7b5fc9aaf597c7b076a33bc9d4d786d6e14",
+      "quote": "\"status\": 401"
+    },
+    {
+      "url": "probe:https://api.openrouteservice.org/geocode/search?text=Zurich#body",
+      "date": "2026-10-31",
+      "proved": "the geocode endpoint refuses a request with no key",
+      "capture": "sha256:ef57418d0f0a24d74c66abc6872c2dfccc748e4b9dc39ab380c96bb5813d75e3",
+      "quote": "\"error\": \"Authorization field missing\""
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-31T10:04:03.987Z",
+  "notes": "Bulk path: the matrix endpoint for routing (up to 3.500 pairs a request, 500 requests a day); no batch geocoding. Not listed on free-for.dev.",
+  "extras": {
+    "bulk_path": "matrix endpoint for routing, up to 3.500 origin-destination pairs a request; no batch geocoding"
+  }
+}

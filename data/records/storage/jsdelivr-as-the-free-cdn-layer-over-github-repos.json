@@ -1,0 +1,131 @@
+{
+  "topic": "storage",
+  "slug": "jsdelivr-as-the-free-cdn-layer-over-github-repos",
+  "provider": "jsDelivr as the free CDN layer over GitHub repos",
+  "url": "https://www.jsdelivr.com",
+  "category": "paas",
+  "free_tier": {
+    "stated": "free with no limits on bandwidth or number of requests; GitHub-proxy soft limits of 10 000 actively accessed files and 100 000 files per repository",
+    "unit": "objects",
+    "metered_on": "object-count",
+    "source_url": "https://www.jsdelivr.com/terms/acceptable-use-policy",
+    "read_on": "2026-10-30",
+    "notes": "the file-count soft limits are not automatically enforced"
+  },
+  "per_object_cap": {
+    "stated": "files up to 20 MB through the GitHub proxy, regardless of repository size",
+    "bytes": 20000000,
+    "source_url": "https://github.com/jsdelivr/jsdelivr/issues/18550",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "| Immutable: 'Previously served immutable files may be retained in permanent storage even after upstream deletion' — deletion upstream does not remove it from jsDelivr",
+    "source_url": "https://www.jsdelivr.com/terms/acceptable-use-policy",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered, and immutable-cached at the edge: probed 'Cache-Control: public, max-age=31536000, s-maxage=31536000, immutable' plus Access-Control-Allow-Origin: *.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "URL pattern https://cdn.jsdelivr.net/gh/USER/REPO@TAG/path — no client needed, no auth, no config. Purge API exists for cache busting.",
+  "chaining": "Serving layer only: pair it with Releases (storage) or a git repo (small files). One repo backs 1 TiB/day because the edge absorbs repeats with a 1-year immutable TTL.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per file | 20 MB",
+      "source": "https://github.com/jsdelivr/jsdelivr/issues/18550"
+    }
+  ],
+  "limits_note": "Git repo files only — release assets are NOT served (probed: /gh/cli/cli@v2.102.1/dist/README.md -> 404). ~20 MB effective per-file ceiling for the GitHub proxy (the git-unlimited-storage README states 'jsDelivr per file | 20 MB'); hard per-file/per-package caps are undocumented and enforced at request time. Does not serve the >2 GiB release assets, so the serving path for big objects stays on GitHub's own Fastly edge.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Immutable: 'Previously served immutable files may be retained in permanent storage even after upstream deletion' — deletion upstream does not remove it from jsDelivr. Extension blocklist exists; binaries with unusual extensions can be refused.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://www.jsdelivr.com/terms/acceptable-use-policy",
+      "date": "2026-10-21",
+      "proved": "'there are no limits on bandwidth or number of requests'; soft limit '100 000' files per repository"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET cdn.jsdelivr.net/gh/jquery/jquery@3.7.1/dist/jquery.min.js -> 200, Cache-Control: public, max-age=31536000, s-maxage=31536000, immutable, Access-Control-Allow-Origin: *"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET cdn.jsdelivr.net/gh/cli/cli@v2.102.1/dist/README.md -> 404 (release assets not mirrored)"
+    },
+    {
+      "url": "https://www.jsdelivr.com/terms/acceptable-use-policy",
+      "date": "2026-10-30",
+      "proved": "jsDelivr CDN sets no limit on bandwidth or on the number of requests",
+      "capture": "sha256:2f18e724ac81932cd47f54f153f7202a350bb363b577a1de43bb9073f2771431",
+      "quote": "there are no limits on bandwidth or number of requests"
+    },
+    {
+      "url": "https://www.jsdelivr.com/terms/acceptable-use-policy",
+      "date": "2026-10-30",
+      "proved": "jsDelivr CDN is free",
+      "capture": "sha256:2f18e724ac81932cd47f54f153f7202a350bb363b577a1de43bb9073f2771431",
+      "quote": "using jsDelivr CDN is free"
+    },
+    {
+      "url": "https://www.jsdelivr.com/terms/acceptable-use-policy",
+      "date": "2026-10-30",
+      "proved": "the GitHub-proxy recommendation is at most 10 000 actively accessed files per repository",
+      "capture": "sha256:2f18e724ac81932cd47f54f153f7202a350bb363b577a1de43bb9073f2771431",
+      "quote": "We recommend that the number of actively accessed files per repository does not exceed 10 000."
+    },
+    {
+      "url": "https://www.jsdelivr.com/terms/acceptable-use-policy",
+      "date": "2026-10-30",
+      "proved": "the GitHub-proxy soft limit is 100 000 files per repository",
+      "capture": "sha256:2f18e724ac81932cd47f54f153f7202a350bb363b577a1de43bb9073f2771431",
+      "quote": "The soft limit for the number of files per repository is 100 000."
+    },
+    {
+      "url": "https://www.jsdelivr.com/terms/acceptable-use-policy",
+      "date": "2026-10-30",
+      "proved": "the soft limits are not automatically enforced",
+      "capture": "sha256:2f18e724ac81932cd47f54f153f7202a350bb363b577a1de43bb9073f2771431",
+      "quote": "These limits are not automatically enforced by us, but you agree not to exceed them."
+    },
+    {
+      "url": "https://www.jsdelivr.com/terms/acceptable-use-policy",
+      "date": "2026-10-30",
+      "proved": null,
+      "capture": "sha256:2f18e724ac81932cd47f54f153f7202a350bb363b577a1de43bb9073f2771431",
+      "quote": "_Effective date: October 5, 2026_"
+    },
+    {
+      "url": "https://github.com/jsdelivr/jsdelivr/issues/18550",
+      "date": "2026-10-30",
+      "proved": "a jsDelivr member states the GitHub-proxy per-file limit of 20 MB",
+      "capture": "sha256:2d9aff2fdf9921dacb7594a19f8bc87205957ed03a5a3139bb131f85f89e24c1",
+      "quote": "We actually allow files up to 20 MB for GitHub regardless of the overall repo size"
+    },
+    {
+      "url": "https://www.jsdelivr.com/terms/acceptable-use-policy",
+      "date": "2026-10-30",
+      "proved": "served immutable files can outlive upstream deletion",
+      "capture": "sha256:2f18e724ac81932cd47f54f153f7202a350bb363b577a1de43bb9073f2771431",
+      "quote": "Previously served immutable files may be retained in permanent storage even after upstream deletion."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-30T18:09:47.045Z",
+  "notes": null,
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

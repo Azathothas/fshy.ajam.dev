@@ -1,0 +1,101 @@
+{
+  "topic": "debrid",
+  "slug": "dasan",
+  "provider": "DASAN",
+  "url": "https://dasan.co/",
+  "category": "debrid / cloud download service (premium links, torrent, usenet)",
+  "tier": "free trial",
+  "free_tier": {
+    "stated": "'Try a Magnet, Torrent or NZB free. One free job per 24 hours, up to 500 MB. No account required.' Paid service 'Start from $2.99 and pay only for the GBs you use. No monthly subscription.'",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://dasan.co/",
+    "read_on": "2026-10-23",
+    "notes": "The free job is scoped to magnet, torrent or NZB. A file-host link is the paid product; the page does not offer a free file-host unlock."
+  },
+  "per_object_cap": {
+    "stated": "500 MB per free job ('up to 500 MB').",
+    "bytes": 524288000,
+    "source_url": "https://dasan.co/",
+    "notes": "Paid per-GB jobs have no stated per-file cap on the landing page."
+  },
+  "retention": {
+    "stated": "unverified: files are kept in the account's cloud and can be streamed or re-downloaded; no retention period is stated on the landing page.",
+    "days": null,
+    "source_url": "https://dasan.co/"
+  },
+  "egress": {
+    "terms": "Pay per GB of traffic on paid plans; the free job includes its 500 MB. No per-TB price is listed on the landing page, only the $2.99 entry point.",
+    "metered": true,
+    "free_allowance": "500 MB per 24 hours",
+    "price_per_tb": "start from USD 2.99, pay per GB (rate not stated on the landing page)",
+    "source_url": "https://dasan.co/"
+  },
+  "interface": [
+    "unknown",
+    "rest"
+  ],
+  "interface_detail": "Web app (Chrome/Firefox/mobile) plus a documented JDownloader integration page; file management, zip/unzip, split/join, streaming. No public API documentation was found on the pages read.",
+  "tooling": "Browser; JDownloader integration is documented by the vendor at dasan.co/jdownloader.",
+  "chaining": "It is the debrid layer itself: it accepts a host link, torrent, magnet or NZB and returns a direct link, so it replaces the whole downloader chain rather than slotting into it.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "1 free job per 24 hours",
+      "source": "https://dasan.co/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "500 MB per free job",
+      "source": "https://dasan.co/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "500 MB per job on the free path",
+      "source": "https://dasan.co/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "1 job per 24 hours on the free path",
+      "source": "https://dasan.co/"
+    }
+  ],
+  "limits_note": "The free path is a trial for torrents and usenet, not for host links. The paid path is metered per GB with a $2.99 minimum, which is the debrid model other rows price.",
+  "binding": "per-object-cap",
+  "binding_note": "At 1 TiB/month the 500 MB per-job ceiling is the harder wall than the 1 job/day: 500 MB times 30 days is 15 GB a month, and a single 4 GB file cannot be fetched at all on the free path.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "'No account required' for the one free job per 24 hours; an account is required to buy or hold a balance.",
+    "country": null
+  },
+  "reliability_note": "Cloudflare fronts the site and challenged a plain client probe (challenge detected on a 200 response), so unattended automation needs a browser session. Free jobs are capped so low that queue failures are cheap to retry.",
+  "confidence": "documented",
+  "confidence_note": "The free-trial terms and the $2.99 entry price are quoted from the live landing page; the per-GB rate, retention and file-host free path are not published, so the paid economics stay unverified.",
+  "evidence": [
+    {
+      "url": "https://dasan.co/",
+      "date": "2026-10-23",
+      "proved": "'One free job per 24 hours, up to 500 MB. No account required.'; 'Start from $2.99 and pay only for the GBs you use'; host list including Rapidgator, KatFile, Keep2Share, 1Fichier, Turbobit, Mega"
+    },
+    {
+      "url": "probe:https://dasan.co/",
+      "date": "2026-10-23",
+      "proved": "HTTP 200, 42673 bytes, sha256 7ca8a7590ab1264f..., challenge detected (Cloudflare) for a non-browser client"
+    },
+    {
+      "url": "https://dasan.co/",
+      "date": "2026-10-23",
+      "proved": "torrent, magnet and NZB support; 'One free job per 24 hours, up to 500 MB. No account required.'; 'Start from $2.99 and pay only for the GBs you use'"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-23T01:52:41.420Z",
+  "price_per_tb_month": "from USD 2.99 entry, metered per GB; per-GB rate not published",
+  "notes": "The most precisely stated free tier in the premium-link class after LeechPremium, but it is a torrent/usenet trial rather than a host-link unlock.",
+  "extras": {
+    "free_job_scope": "magnet, torrent, NZB",
+    "paid_model": "prepaid balance, per GB, $2.99 minimum",
+    "jdownloader_integration": "https://dasan.co/jdownloader",
+    "usenet": "yes, NZB accepted"
+  }
+}

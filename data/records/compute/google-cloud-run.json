@@ -1,0 +1,148 @@
+{
+  "topic": "compute",
+  "slug": "google-cloud-run",
+  "provider": "Google Cloud Run",
+  "url": "https://cloud.google.com/run/pricing",
+  "category": "serverless runtime",
+  "free_tier": {
+    "stated": "per billing account, monthly: 2 million requests, 180,000 vCPU-seconds and 360,000 GiB-seconds under request-based billing; 240,000 vCPU-seconds and 450,000 GiB-seconds under instance-based billing; plus 1 GiB of outbound transfer from North America",
+    "unit": "seconds",
+    "metered_on": "wall-clock",
+    "source_url": "https://cloud.google.com/run/pricing",
+    "read_on": "2026-10-24"
+  },
+  "per_object_cap": {
+    "stated": "a request may run up to 60 minutes; memory and CPU per instance are configurable"
+  },
+  "retention": {
+    "stated": "no persistent disk; a container is stateless unless it mounts a volume or a bucket"
+  },
+  "egress": {
+    "terms": "1 GiB of data transfer within North America free per month, then Google Cloud network pricing at the Premium tier",
+    "metered": true,
+    "free_allowance": "1 GiB",
+    "source_url": "https://cloud.google.com/run/pricing"
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "an OCI image behind an HTTPS endpoint; the service listens on a port",
+  "tooling": "gcloud, the Cloud Run API, Docker; any language with an HTTP server",
+  "chaining": "the only free serverless tier here with 50 vCPU-hours and a listening socket",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "240,000 vCPU-seconds and 450,000 GiB-seconds a month under instance-based billing",
+      "source": "https://cloud.google.com/run/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "2 million requests a month under request-based billing",
+      "source": "https://cloud.google.com/run/pricing"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "1 GiB a month of outbound transfer from North America",
+      "source": "https://cloud.google.com/run/pricing"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "an idle instance is billed at the idle rate when a minimum instance is configured; scale to zero is the default",
+      "source": "https://cloud.google.com/run/pricing"
+    }
+  ],
+  "limits_note": "it was not resolved either",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "a card at signup; the free tier is a spending-based discount applied after the fact, not a prepaid allowance",
+    "country": null
+  },
+  "reliability_note": "a service scales to zero by default and pays a cold start on the next request; a minimum instance removes the cold start and starts the idle meter",
+  "confidence": "documented",
+  "confidence_note": "both free-tier tables and the per-second rates were read on the pricing page",
+  "evidence": [
+    {
+      "url": "https://cloud.google.com/free/docs/free-cloud-features",
+      "date": "2026-10-22",
+      "proved": "Cloud Run free tier: 2 million requests, 360,000 GB-seconds of memory, 180,000 vCPU-seconds, 1 GB of outbound transfer a month"
+    },
+    {
+      "url": "https://cloud.google.com/run/pricing",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Free tier (based on us-central1 pricing): CPU - First 240,000 vCPU-seconds free per month; RAM - First 450,000 GiB-seconds free per month' under instance-based billing"
+    },
+    {
+      "url": "https://cloud.google.com/run/pricing",
+      "date": "2026-10-24",
+      "proved": "quoted: 'CPU - First 180,000 vCPU-seconds free per month; RAM - First 360,000 GiB-seconds free per month; Requests - 2 million requests free per month' under request-based billing"
+    },
+    {
+      "url": "https://cloud.google.com/run/pricing",
+      "date": "2026-10-24",
+      "proved": "quoted: 'The free tier usage is aggregated across projects by billing account and resets every month'"
+    },
+    {
+      "url": "https://cloud.google.com/run/pricing",
+      "date": "2026-10-24",
+      "proved": "quoted rate table: 'CPU (per vCPU-second) ... $0.000018', 'Memory (per GiB-second) ... $0.000002', 'Idle time (Min instance1) $0.0000025'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-24T01:55:00.000Z",
+  "price_per_tb_month": null,
+  "notes": "Arithmetic from the published free tiers, not a measurement: at 0.25 vCPU and 512 MiB, an always-on instance needs 648,000 vCPU-seconds and 1,296,000 GiB-seconds a month. The memory grant runs out first, at 900,000 seconds, so the free tier holds an always-on 0.25 vCPU service for about 10.4 days a month. What is not verified is whether the 'Idle time (Min instance)' SKU is drawn from the same free tier; the page presents it as a separate rate.",
+  "extras": {
+    "keep_rate": {
+      "value": 0.0,
+      "basis": "a scaled-to-zero service does not bill",
+      "source": "https://cloud.google.com/free/docs/free-cloud-features"
+    },
+    "keep_rate_basis": null,
+    "billing_model": "per-100ms",
+    "shape": {
+      "vcpu": 0.25,
+      "ram_gib": 0.5,
+      "disk_gib": null,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "session_cap": {
+      "wall_clock_min": 60,
+      "idle_reap_s": null,
+      "restart_required": false,
+      "note": "a request may run 60 minutes; the service scales to zero when idle unless a minimum instance is set"
+    },
+    "persistent_storage": {
+      "included_gib": 0,
+      "price_gib_month": "Cloud Storage is separate",
+      "durability": "none in the runtime",
+      "survives_stop": false,
+      "survives_destroy": false,
+      "max_retention": "none"
+    },
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": true,
+      "ports": "the container port on a generated HTTPS hostname",
+      "static_ip": false,
+      "ipv6": false,
+      "per_session_bytes": null
+    },
+    "price_note": null,
+    "granularity": {
+      "min_billed_s": 0.1,
+      "rounding_s": 0.1
+    },
+    "free_tier_kind": "monthly-spending-discount",
+    "open_question": "whether the grant applies to the Services meter or the Instances meter",
+    "gap": "the grant's meter (Services or Instances) is not resolved; the claim page's Instances section and footnotes would close it",
+    "burst_x": 1.0,
+    "term": "monthly",
+    "m10h_usd": 0.0,
+    "m24h_usd": 0.0,
+    "price_arithmetic": "free within the monthly grant; 512 MiB at 0.25 vCPU consumes the 450,000 GiB-second grant in 900,000 s = 10.4 days of 24/7"
+  },
+  "binding": "volume-quota",
+  "binding_note": "an always-on instance spends the monthly grant in about ten days: 450,000 GiB-seconds at 512 MiB is 900,000 seconds, 10.4 days.",
+  "tier": "Free tier, request-based and instance-based billing"
+}

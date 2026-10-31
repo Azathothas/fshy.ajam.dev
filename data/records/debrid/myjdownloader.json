@@ -1,0 +1,96 @@
+{
+  "topic": "debrid",
+  "slug": "myjdownloader",
+  "provider": "MyJDownloader",
+  "url": "https://my.jdownloader.org/",
+  "category": "hosted remote-control frontend for a JDownloader instance the user runs",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Registration is free and the free account is usable: 'The Customer is required to register on AppWork's website in order to use the Service. The Customer can use the Service for free after registration, which does not incur a fee. AppWork shall only offer a limited scope of Service to the Customer who uses the website for free.' No device count, call count or byte quota is published anywhere on the site.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://my.jdownloader.org/legal/terms.html",
+    "read_on": "2026-10-23",
+    "notes": "The free tier's scope is described only as 'limited' and the paid packages that expand it are not priced on any public page reached today. The unit field says 'unlimited' because nothing is metered in bytes; it does not mean unlimited devices, which is unpublished."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: MyJDownloader relays control commands and link lists to a JDownloader installation that the customer runs. No file passes through AppWork's servers.",
+    "bytes": null,
+    "source_url": "https://my.jdownloader.org/developers/",
+    "notes": "API docs: 'the communication between the frontends and JDownloader is routed through our Connection-Server' for control traffic; downloads are made by the JD device itself."
+  },
+  "retention": {
+    "stated": "not applicable: no file storage. Downloads land on the storage attached to the JDownloader device.",
+    "days": null,
+    "source_url": "https://my.jdownloader.org/legal/terms.html"
+  },
+  "egress": {
+    "terms": "No file egress: the service carries API calls and link lists between the web UI/apps and the customer's JDownloader device. Terms section 2(1) defines the service as access to 'the computer program JDownloader ... installed on a computer of the Customer'.",
+    "metered": false,
+    "free_allowance": "none: no byte path",
+    "price_per_tb": null,
+    "source_url": "https://my.jdownloader.org/legal/terms.html"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "REST over HTTPS at https://api.jdownloader.org; the API document states 'The API is REST based, but currently only GET and POST routes are offered'. Every call carries a request id and an HMAC-SHA256 signature built from the AES-CBC session tokens; email must be lower case.",
+  "endpoint": "https://api.jdownloader.org",
+  "tooling": "myjdapi (Python), the official Android/iOS apps and browser extensions, and third-party clients over the same API. A wrapper must implement AES128-CBC key exchange plus HMAC-SHA256 per call, so the barrier is the signing handshake, not a missing client.",
+  "chaining": "One MyJD account drives any JDownloader device a user can start elsewhere (a free VM), which removes a user's own machine from the path but not the requirement that some machine runs JD.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "connection server answers 429 TOO_MANY_REQUESTS, 503 OVERLOAD and 503 MAINTENANCE; no published call budget",
+      "source": "https://my.jdownloader.org/developers/"
+    },
+    {
+      "kind": "write-gated",
+      "value": "account registration plus email confirmation: 401 ERROR_EMAIL_NOT_CONFIRMED is an API error type",
+      "source": "https://my.jdownloader.org/developers/"
+    }
+  ],
+  "limits_note": "The free tier's 'limited scope' is never enumerated. Features for free users can be added, changed or withdrawn at any time ('Ein Anspruch auf die Zusatzfunktionen hat der Kunde jedoch nicht').",
+  "binding": "none",
+  "binding_note": "Nothing in the seven-kind vocabulary fails at 1 TiB/month because no bytes cross this service: a JDownloader device does the transfer on its own connection. What fails first is architectural, not a quota: a user must supply a running JD instance, and the free tier's feature set is unpublished.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Self-registration on the website, free. The API document exposes /captcha/getCaptcha and an account-registration route, and lists ERROR_EMAIL_NOT_CONFIRMED and EMAIL_FORBIDDEN as server errors, so a working email address is the gate.",
+    "country": null
+  },
+  "reliability_note": "Free accounts have no availability guarantee (terms: 95% monthly availability is promised only for paid packages). The connection server returns 429/503 under load, and the docs warn that results syntax 'MAY CHANGE'.",
+  "confidence": "documented",
+  "confidence_note": "Read: the English terms section and the API basics document, both live today, plus a probe of the API host. A measured rung needs a signed /my/connect plus a real device; that was not attempted.",
+  "evidence": [
+    {
+      "url": "https://my.jdownloader.org/legal/terms.html",
+      "date": "2026-10-23",
+      "proved": "free registration with a 'limited scope of Service' and paid packages that expand it; 95% availability only for paid packages"
+    },
+    {
+      "url": "https://my.jdownloader.org/developers/",
+      "date": "2026-10-23",
+      "proved": "'The API is REST based, but currently only GET and POST routes are offered'; AES128CBC + HMAC-SHA256 signing; /my/connect and /captcha/getCaptcha routes; 429 TOO_MANY_REQUESTS and 503 OVERLOAD error types"
+    },
+    {
+      "url": "probe:https://api.jdownloader.org/my/connect?email=probe@example.invalid",
+      "date": "2026-10-23",
+      "proved": "the API host is live and rejects an unsigned call: HTTP 400, 49 bytes, sha256 cfa5193612ce8570c18192a2311ee7d00612dc230092c480a885eba4e29f0ac2, body {\"src\":\"MYJD\",\"type\":\"BAD_PARAMETERS\"}"
+    },
+    {
+      "url": "https://my.jdownloader.org/login.html",
+      "date": "2026-10-23",
+      "proved": "the web UI is a login wall: HTTP 200, 39805 bytes, challenge signature login-wall:login"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T01:52:41.420Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Does not answer question by itself: it resolves links only through a JDownloader installation the caller provides. The only device statement found is that the dashboard lists connected devices and the Android app 'manage multiple JDownloaders'. Two public JDownloader web instances were probed as part of the jdownloader record and neither accepted anonymous input.",
+  "extras": {
+    "device_count": "unpublished: no page on my.jdownloader.org or the terms names a maximum number of devices; the free tier is described as 'limited scope'",
+    "cloud_features": "no cloud storage is offered; 'cloud' in the sense of remote access means the connection server relays control traffic",
+    "probe_record": "scratch (removed)"
+  },
+  "self_hosted": true
+}

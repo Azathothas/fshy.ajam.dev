@@ -1,0 +1,76 @@
+{
+  "topic": "storage",
+  "slug": "seznam-cz-email-unlimited-size-mailbox-message-count-bou",
+  "provider": "Seznam.cz Email — unlimited-size mailbox, message-count-bound",
+  "url": "https://www.seznam.cz",
+  "category": "cloud-drive",
+  "free_tier": {
+    "stated": "Docs page states verbatim: \"Uživatel může schránku využívat v neomezené velikosti. V praxi je každá schránka založena s limitem na 120 000 zpráv, který lze opakovaně navyšovat.\" = unlimited mailbox size; in practice each mailbox starts with a 120,000-message limit that can be raised repeatedly (on request). This is the only webmail found where the published limit is a MESSAGE COUNT, not a byte quota.",
+    "unit": "unlimited",
+    "metered_on": "unstated",
+    "source_url": "https://o-seznam.cz/napoveda/email/mohlo-by-se-hodit/limity-schranky/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap 35 MB",
+    "bytes": 35000000,
+    "source_url": "https://o-seznam.cz/napoveda/email/mohlo-by-se-hodit/limity-schranky/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://o-seznam.cz/napoveda/email/mohlo-by-se-hodit/limity-schranky/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered by the provider — no transfer meter is published or charged; mail is delivered by SMTP/IMAP, not metered HTTP GET. No egress pricing exists for a mailbox.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Native IMAP, probe-verified live: `imap.seznam.cz:993` -> `* OK Seznam IMAP server ready` / `* CAPABILITY XLIST IMAP4rev1 AUTH=PLAIN AUTH=LOGIN AUTH=OAUTHBEARER AUTH=XOAUTH2 SASL-IR CHILDREN SORT I18NLEVEL=1 UIDPLUS ID MOVE UNSELECT`. Any IMAP client or imapsync/offlineimap works. No rclone backend.",
+  "chaining": "Each account is byte-unlimited (message-count-bound), so a second account carries a second allowance. 120,000 messages × the 35 MB send cap = ~4.2 TB per account before the message-count ceiling even binds; raise the count via support and the ceiling moves. Free registration, no paid tier required.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap 35 MB",
+      "source": "https://o-seznam.cz/napoveda/email/mohlo-by-se-hodit/limity-schranky/"
+    }
+  ],
+  "limits_note": "per-object-cap 35 MB attach send from web (25 MB from mobile app), 50 MB receive per message — that is the real per-blob size. 120,000 messages/mailbox is the binding constraint (a pull-count-style ceiling on object count, raisable on request). Sending-rate limits exist but are explicitly unpublished: \"Tyto limity nejsou veřejné.\"",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Operators state up front that they watch for excess use of the unlimited claim: rules are tuned to catch anyone probing \"kde je ta skutečná hranice\" (where the real boundary is). Message-count ceiling is enforced silently at fill time.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://o-seznam.cz/napoveda/email/mohlo-by-se-hodit/limity-schranky/",
+      "date": "2026-10-21",
+      "proved": "\"neomezené velikosti\" + \"120 000 zpráv\" + 35/50 MB attach caps, read live 2026-10-21"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: openssl s_client -connect imap.seznam.cz:993 -> * OK Seznam IMAP server ready + CAPABILITY incl. AUTH=PLAIN/OAUTHBEARER"
+    },
+    {
+      "url": "https://blog.seznam.cz/2008/12/spustili-jsme-neomezenou-velikost-emailove/",
+      "date": "2026-10-21",
+      "proved": "2008 origin of the unlimited policy, incl. the anti-probing warning"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Docs page states verbatim: \"Uživatel může schránku využívat v neomezené velikosti. V praxi je každá schránka založena s limitem na 120 000 zpráv, který lze opakovaně navyšovat.\" = unlimited mailbox size; in practice each mailbox starts with a 120,000-message limit that can be raised repeatedly (on request). This is the only webmail found where the published limit is a MESSAGE COUNT, not a byte quota.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

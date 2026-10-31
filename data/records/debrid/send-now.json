@@ -1,0 +1,104 @@
+{
+  "topic": "debrid",
+  "slug": "send-now",
+  "provider": "Send.now",
+  "url": "https://send.now/",
+  "category": "file transfer and drive hybrid: WebDAV, FTP and HTTP API on one host",
+  "tier": "free",
+  "free_tier": {
+    "stated": "\"Free to use, no account needed\" for upload, share and download. A guest 'can send a few an hour'; an account is free. Retention is by download activity rather than by a byte count: 'files stay while they are downloaded at least once every 30 days' with an account, and 'As a guest user, your files might be lost after 15 days of inactivity'.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://send.now/",
+    "read_on": "2026-10-23",
+    "notes": "The free tier is not priced in bytes at all. It is priced in activity and in how many transfers a guest may start per hour."
+  },
+  "per_object_cap": {
+    "stated": "\"Any type and size\" for uploads; the paid tier repeats 'No limits on file size'. Chunked upload with a selectable part size (10 to 100 MB) and auto-retry.",
+    "bytes": null,
+    "source_url": "https://send.now/",
+    "notes": "No hard per-file number is printed anywhere on the site, free or paid."
+  },
+  "retention": {
+    "stated": "Guests: 'might be lost after 15 days of inactivity'. Accounts: 'Create a free account to push this to 30 days', and files stay 'while they are downloaded at least once every 30 days'. The sender can also set an explicit expiry from 1 hour to 15 days, or burn after download.",
+    "days": 15,
+    "source_url": "https://send.now/",
+    "notes": "Two clocks: the activity clock (15 days guest, 30 days account) and the sender-set expiry, whichever comes first. Paid accounts get 'Files never expire'."
+  },
+  "egress": {
+    "terms": "Downloads are unmetered on the free path; the meters are on direct links. Premium includes '1000 GB direct link traffic' and 'Unlimited bandwidth' for ordinary downloads, with 'Direct Link Traffic' sold as an add-on at EUR 3 per 1000 GB.",
+    "metered": true,
+    "free_allowance": "Free direct links are limited to 10 MB files",
+    "price_per_tb": "EUR 3 per TB of direct-link traffic (1 TB minimum block)",
+    "source_url": "https://send.now/pricing"
+  },
+  "interface": [
+    "webdav",
+    "ftp",
+    "rest",
+    "unknown"
+  ],
+  "interface_detail": "Three programme paths, all documented on the homepage: WebDAV at `https://webdav.send.now` (needs a free account and an app password); FTP at `ftp.send.now` (Europe) or `ftp-us.send.now` (USA) on port 992 with implicit FTP over TLS, one transfer at a time; and an HTTP API whose upload path is two calls - `GET https://send.now/api/upload/server` for an upload address, then `POST -F \"file_0=@video.mp4\"` to it.",
+  "endpoint": "https://send.now/api",
+  "tooling": "The best-served host: WebDAV means a native macOS/Finder or Windows mount with no wrapper, FTP with TLS means FileZilla or lftp, and the API means a script. rclone can talk to it through WebDAV without a dedicated backend.",
+  "chaining": "A drop box for handoffs and a WebDAV drive for the rare file that must live somewhere mountable: it takes a 5 GB render out of a paid object store, serves it to a collaborator, and expires it by itself. The WebDAV endpoint is what makes it a candidate for a mounting layer rather than a download queue.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "1000 GB of direct-link traffic included per month on Premium; further blocks at EUR 3 per 1000 GB",
+      "source": "https://send.now/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "guests 'can send a few an hour'; the API returns 429 after 5 wrong-key requests in 5 minutes",
+      "source": "https://send.now/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "files are removed after 15 days of inactivity as a guest, 30 days with a free account, unless a paid plan is held",
+      "source": "https://send.now/"
+    }
+  ],
+  "limits_note": "The word 'unlimited' in the paid tier applies to download-page traffic, not to direct links: the same pricing table lists '1000 GB direct link traffic' in the Premium column and sells extra blocks. A client that hotlinks files is on the meter; a client that sends a page link is not.",
+  "binding": "volume-quota",
+  "binding_note": "Ordinary page downloads stay unmetered but cannot be embedded or fetched by a script that expects a stable URL.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Free account needs an email; the registration page sets only two constraints: 'Password must be at least 14 characters long' and no special characters or spaces in the username. No card, no phone, no verification was mentioned.",
+    "country": null
+  },
+  "reliability_note": "Two operational facts a client must know before putting anything there: FTP allows 'One transfer at a time', and files disappear by inactivity rather than by quota, so an archive left untouched for a month is gone whether or not there was room for it. The API also answers HTTP 200 on every call and puts the real status in the JSON body.",
+  "confidence": "documented",
+  "confidence_note": "Retention rules, both metering rules, all three access paths and the full price table were read on the vendor's pages. Nothing was uploaded, so throughput and the real per-file ceiling are unmeasured.",
+  "evidence": [
+    {
+      "url": "https://send.now/",
+      "date": "2026-10-23",
+      "proved": "the three access paths (WebDAV `webdav.send.now`, FTP `ftp.send.now` port 992 implicit TLS, API), the guest and account retention rules, and 'Any type and size' uploads"
+    },
+    {
+      "url": "https://send.now/pricing",
+      "date": "2026-10-23",
+      "proved": "Premium at EUR 14.99 with 10 TB storage, EUR 2 per extra TB, 'Unlimited bandwidth', '1000 GB direct link traffic', 5 simultaneous downloads, files never expire; Yearly EUR 60 with 6000 GB direct link traffic; the EUR 3 per 1000 GB direct-link add-on"
+    },
+    {
+      "url": "https://send.now/docs/api/",
+      "date": "2026-10-23",
+      "proved": null
+    },
+    {
+      "url": "https://send.now/register",
+      "date": "2026-10-23",
+      "proved": "signup needs only a username and a 14-character password; no card or phone is asked for on the form"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T03:41:32.718Z",
+  "price_per_tb_month": "EUR 1.50 per TB-month of storage at Premium (EUR 14.99 for 10 TB); EUR 3 per TB of direct-link egress",
+  "notes": null,
+  "extras": {
+    "webdav": "https://webdav.send.now",
+    "ftp": "ftp.send.now (EU) / ftp-us.send.now (US), port 992, implicit FTP over TLS, one transfer at a time",
+    "successor_note": "userscloud.com now redirects here; the older brand is recorded separately as dead"
+  }
+}

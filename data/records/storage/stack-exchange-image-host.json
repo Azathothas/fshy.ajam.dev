@@ -1,0 +1,82 @@
+{
+  "topic": "storage",
+  "slug": "stack-exchange-image-host",
+  "provider": "Stack Exchange image host (i.sstatic.net, ex-i.stack.imgur.com)",
+  "url": "https://stackexchange.com",
+  "category": "media",
+  "free_tier": {
+    "stated": "2 MiB per image, no per-account total; unlimited images per post",
+    "unit": "unlimited",
+    "metered_on": "unstated",
+    "source_url": "https://meta.stackexchange.com/questions/308507/image-size-limit-why-it-is-set-to-2-mib",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "2 MiB hard cap",
+    "bytes": 2097152,
+    "source_url": "https://meta.stackexchange.com/questions/308507/image-size-limit-why-it-is-set-to-2-mib",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "2 MiB hard cap after the 2024 migration off Imgur; images are re-encoded/downscaled, so it is not byte-exact storage; posting rate limits per site | the most permanent image host in this set — SE migrated every historical Imgur URL to i.sstatic.net in May 2024 precisely to guarantee links never rot; a live 2013-era test image still returns 200 with Last-Modified 2024-05-01",
+    "source_url": "https://meta.stackexchange.com/questions/308507/image-size-limit-why-it-is-set-to-2-mib",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "free, Cloudflare-fronted, cacheable — probe showed 'Server: cloudflare', 'cf-cache-status: HIT'",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "no official image-upload endpoint in the SE API; images are inserted by the web editor or by POSTing a post body containing an already-hosted URL. Wrapper only (Selenium/editor automation) — this is the failure point",
+  "chaining": "2 MiB x unlimited posts x unlimited answers x N Stack Exchange sites (180+ sites, one network account). 500 GB = ~256,000 images; not a practical bulk store without a browser farm",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "2 MiB hard cap",
+      "source": "https://meta.stackexchange.com/questions/308507/image-size-limit-why-it-is-set-to-2-mib"
+    }
+  ],
+  "limits_note": "2 MiB hard cap after the 2024 migration off Imgur; images are re-encoded/downscaled, so it is not byte-exact storage; posting rate limits per site",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "the most permanent image host in this set — SE migrated every historical Imgur URL to i.sstatic.net in May 2024 precisely to guarantee links never rot; a live 2013-era test image still returns 200 with Last-Modified 2024-05-01",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://i.sstatic.net/mHJfs.jpg",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, content-type image/jpeg, 138754 bytes, Server: cloudflare, cf-cache-status: HIT, Last-Modified Wed, 01 May 2024"
+    },
+    {
+      "url": "https://i.stack.imgur.com/mHJfs.jpg",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 302 (redirect to the new host, old URLs still resolve)"
+    },
+    {
+      "url": "https://meta.stackexchange.com/questions/395024/",
+      "date": "2026-10-21",
+      "proved": "... — 'Created a new image uploading service at i.sstatic.net ... Migrated all images from Imgur ... Migration complete! May 28th 2024'"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "2 MiB per image, no per-account total; unlimited images per post",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "2 MiB per image, no per-account total; unlimited images per post",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

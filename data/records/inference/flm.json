@@ -1,0 +1,158 @@
+{
+  "topic": "inference",
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "not applicable"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "slug": "flm",
+  "provider": "flm (flm.stonech.at)",
+  "url": "https://flm.stonech.at/v1",
+  "category": "inference endpoint, keyless, one auto-selected model",
+  "free_tier": {
+    "stated": "No account and no API key. Per IP address: 60 requests per minute, 20,000 requests per day, 10,000,000 tokens per day, at most 65,536 input tokens and 8,192 output tokens per request",
+    "unit": "tokens",
+    "metered_on": "request-count",
+    "source_url": "https://flm.stonech.at/docs.txt",
+    "read_on": "2026-10-28",
+    "notes": "the service chooses the model on every request; GET /v1/models lists one id, auto, and a requested model is ignored"
+  },
+  "endpoint": "https://flm.stonech.at/v1/chat/completions",
+  "tooling": "any OpenAI-compatible client; POST {base}/chat/completions with no Authorization header, or with Bearer flm_anonymous for SDKs that insist on a key. GET /limits returns the live limits as JSON and is not counted",
+  "chaining": "pairs with an agent loop that sets max_tokens; the model cannot be pinned, and the service picks one per request",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "60 requests per minute per IP address (rolling 60-second window); over the limit the service answers 429 rate_limit_exceeded with a retry-after header",
+      "source": "https://flm.stonech.at/docs.txt"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "20,000 requests per day and 10,000,000 tokens per day per IP address, both reset at 00:00 UTC; 65,536 input tokens and 8,192 output tokens per request",
+      "source": "https://flm.stonech.at/docs.txt"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "the 60 requests per minute per IP address binds before the 20,000 per day",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "none: the guide lists Authentication as None; omit the Authorization header or send Bearer flm_anonymous, and any other key is rejected with 401",
+    "country": null
+  },
+  "reliability_note": "under load the service answers 429 rate_limited after making a request wait up to 8s for capacity, and 502 upstream_error when an answer fails mid-way; identical temperature-0 requests may be served from a short-lived cache",
+  "confidence": "documented",
+  "confidence_note": "the limits, the model list and the x-ratelimit headers were read by GET; no chat completion was sent, because probe issues GET and HEAD only, so whether a completion answers is…",
+  "probe": {
+    "records": [
+      {
+        "probe_id": "flm-v1-models-get",
+        "method": "GET",
+        "url": "https://flm.stonech.at/v1/models",
+        "http": 200,
+        "authorization_sent": false,
+        "model_ids": [
+          "auto"
+        ],
+        "ratelimit_headers": {
+          "x-ratelimit-limit-requests": "60",
+          "x-ratelimit-limit-tokens": "10000000"
+        },
+        "body_sha256": "7ed98fb0d5385b11890fb4366b75932f1f47018d38aed01ee158c04d446bad1c",
+        "probed_at": "2026-10-28T04:42:49.584Z",
+        "chat_completion_tested": false
+      },
+      {
+        "probe_id": "flm-limits-get",
+        "method": "GET",
+        "url": "https://flm.stonech.at/limits",
+        "http": 200,
+        "authorization_sent": false,
+        "body": {
+          "requests_per_minute": 60,
+          "requests_per_day": 20000,
+          "tokens_per_minute": null,
+          "tokens_per_day": 10000000,
+          "max_input_tokens": 65536,
+          "max_output_tokens": 8192
+        },
+        "probed_at": "2026-10-28T04:42:47.629Z"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "url": "https://flm.stonech.at/docs.txt",
+      "date": "2026-10-28",
+      "capture": "sha256:298e0b67c30da55b19a5d0ae05f3976b52ca231b82e0ff06248b688d0853f5d0",
+      "quote": "None. Either omit the Authorization header, or (for SDKs that require a key) send:",
+      "proved": "the guide states Authentication is None: no account and no key are needed"
+    },
+    {
+      "url": "https://flm.stonech.at/docs.txt",
+      "date": "2026-10-28",
+      "capture": "sha256:298e0b67c30da55b19a5d0ae05f3976b52ca231b82e0ff06248b688d0853f5d0",
+      "quote": "- Requests per minute: 60 (rolling 60-second window)",
+      "proved": "the request-rate limit is 60 per minute per IP address"
+    },
+    {
+      "url": "https://flm.stonech.at/docs.txt",
+      "date": "2026-10-28",
+      "capture": "sha256:298e0b67c30da55b19a5d0ae05f3976b52ca231b82e0ff06248b688d0853f5d0",
+      "quote": "- Requests per day: 20,000 (resets 00:00 UTC)",
+      "proved": "the daily request limit is 20,000"
+    },
+    {
+      "url": "https://flm.stonech.at/docs.txt",
+      "date": "2026-10-28",
+      "capture": "sha256:298e0b67c30da55b19a5d0ae05f3976b52ca231b82e0ff06248b688d0853f5d0",
+      "quote": "- Tokens per day: 10,000,000 (input + output; resets 00:00 UTC)",
+      "proved": "the daily token limit is 10,000,000, input plus output"
+    },
+    {
+      "url": "https://flm.stonech.at/docs.txt",
+      "date": "2026-10-28",
+      "capture": "sha256:298e0b67c30da55b19a5d0ae05f3976b52ca231b82e0ff06248b688d0853f5d0",
+      "quote": "- Max input tokens per request: 65,536",
+      "proved": "the per-request input cap is 65,536 tokens"
+    },
+    {
+      "url": "https://flm.stonech.at/docs.txt",
+      "date": "2026-10-28",
+      "capture": "sha256:298e0b67c30da55b19a5d0ae05f3976b52ca231b82e0ff06248b688d0853f5d0",
+      "quote": "The model is chosen automatically for every request. Any \"model\" you send is ignored; use \"auto\".",
+      "proved": "the requested model is not honoured and not echoed back: the service picks one"
+    },
+    {
+      "url": "https://flm.stonech.at/v1/models",
+      "date": "2026-10-28",
+      "capture": "sha256:7bc6629878e0ff2cf92ba86e8b64ffa092ac520c3c995aa2f77da0af607808e3",
+      "quote": "x-ratelimit-limit-requests: 60",
+      "proved": "a keyless GET /v1/models answered 200 and returned the x-ratelimit-limit-requests header at 60"
+    },
+    {
+      "url": "https://flm.stonech.at/v1/models",
+      "date": "2026-10-28",
+      "capture": "sha256:7bc6629878e0ff2cf92ba86e8b64ffa092ac520c3c995aa2f77da0af607808e3",
+      "quote": "{\"object\":\"list\",\"data\":[{\"id\":\"auto\",\"object\":\"model\",\"created\":0,\"owned_by\":\"flm\"}]",
+      "proved": "the only model id listed is auto"
+    },
+    {
+      "url": "https://flm.stonech.at/",
+      "date": "2026-10-28",
+      "capture": "sha256:315185a868ac95f4f737c9dade875241b82ddb5bbbdbe73fc1af894d4d6f0e21",
+      "quote": "- $0, no signupNo account, no API key, no credit card.",
+      "proved": "the home page states no account, no API key and no credit card"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-28T04:36:18.974Z",
+  "notes": "the requested model is never echoed because the service ignores it; the guide names no field that reports the model chosen, so which model answered a given request is unknown"
+}

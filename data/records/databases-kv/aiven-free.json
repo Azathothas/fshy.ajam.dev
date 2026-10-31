@@ -1,0 +1,101 @@
+{
+  "topic": "databases-kv",
+  "slug": "aiven-free",
+  "provider": "Aiven",
+  "url": "https://aiven.io/pricing/postgresql",
+  "category": "managed Postgres and friends with a free plan that powers off on inactivity",
+  "free_tier": {
+    "stated": "Free plan with 1 GB RAM and 1 GB total storage per service, on Postgres, MySQL, Valkey, Kafka and OpenSearch; free indefinitely with no time limit, but the service powers off after a period of inactivity",
+    "unit": "GB",
+    "source_url": "https://aiven.io/pricing/postgresql",
+    "read_on": "2026-10-22",
+    "metered_on": "stored-bytes"
+  },
+  "per_object_cap": {
+    "stated": "1 GB total storage per service",
+    "bytes": null,
+    "source_url": "https://aiven.io/pricing/postgresql"
+  },
+  "retention": {
+    "stated": "the service powers off after a period of inactivity, on three triggers: no initial usage in the first few hours, or no continuative activity later; a powered-off service is deleted after 180 days. The Free plan is the exception to 'data retention is only limited by storage'",
+    "days": 180,
+    "source_url": "https://aiven.io/docs/platform/concepts/service-power-cycle"
+  },
+  "egress": {
+    "terms": "no egress allowance, quota or per-GB rate is published on the free-plan pages or the PostgreSQL pricing table; recorded as a gap after checking both",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://aiven.io/pricing/postgresql"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "the Postgres wire protocol; an API and the avn CLI",
+  "tooling": "psql and any Postgres client; the avn CLI",
+  "chaining": "no longer a candidate for a weekly or monthly job: the free service powers off on inactivity and is deleted 180 days after it powers off, so a keep-alive is required and the paid Developer tier is what removes the clock",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "1 GB total storage per service; 1 GB RAM",
+      "source": "https://aiven.io/pricing/postgresql"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "the free service powers off after a period of inactivity; a service powered off for more than 180 days is automatically deleted",
+      "source": "https://aiven.io/docs/platform/concepts/service-power-cycle"
+    },
+    {
+      "kind": "request-rate",
+      "value": "max_connections is set to 20 on a free PostgreSQL service, and there is no connection pooling",
+      "source": "https://aiven.io/docs/products/postgresql/concepts/pg-free-tier"
+    }
+  ],
+  "binding": "retention-clamped",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email signup; no card on the Free plan",
+    "country": null
+  },
+  "reliability_note": "free services power off on inactivity and a service powered off for more than 180 days is automatically deleted; a powered-off service for a version past end of life is deleted within 7…",
+  "confidence": "documented",
+  "confidence_note": "three first-party Aiven pages were read: the pricing page for 1 GB RAM and 1 GB storage, the free-PostgreSQL page for the inactivity power-off, and the service power-cycle page for the 180-day deletion.",
+  "evidence": [
+    {
+      "url": "https://aiven.io/pricing/postgresql",
+      "date": "2026-10-22",
+      "proved": "Free column: RAM per VM 1 GB, Total storage 1 GB; Developer USD 5 with 8 GB; Hobbyist from USD 12; 'Data retention is only limited by storage, with the exception of Free plan'"
+    },
+    {
+      "url": "https://aiven.io/free-postgresql-database",
+      "date": "2026-10-22",
+      "proved": "'Service powers off after a period of inactivity (you'll be notified by email and in-platform beforehand)'; 'It's free indefinitely with no time limit, but the service is automatically powered off after a period of inactivity'"
+    },
+    {
+      "url": "https://aiven.io/docs/products/postgresql/concepts/pg-free-tier",
+      "date": "2026-10-22",
+      "proved": "two power-off triggers: 'Power off free services with no initial usage within the first few hours after the service is running' and 'Power off free services with no continuative activity on the service'"
+    },
+    {
+      "url": "https://aiven.io/docs/platform/concepts/service-power-cycle",
+      "date": "2026-10-22",
+      "proved": "'Services powered off for more than 180 days are automatically deleted'; the 180-day grace does not apply to an end-of-life version, which is deleted within 7 days"
+    },
+    {
+      "url": "https://aiven.io/docs/platform/concepts/free-plan",
+      "date": "2026-10-22",
+      "proved": "'Developer tier services are not automatically powered off when inactive'; the paid step is what removes the clock"
+    },
+    {
+      "url": "https://aiven.io/docs/products/postgresql/concepts/pg-free-tier",
+      "date": "2026-10-22",
+      "proved": "'No connection pooling' and '`max_connections` limit set to `20`' on the free tier"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T03:05:00.000Z",
+  "price_per_tb_month": null,
+  "notes": "1 GB is the smallest free Postgres storage in this class, and the free plan powers off on inactivity, so it does not answer the question the class was formed to ask. 5 GB is what the plan used to give and several comparison pages still print it. The paid Developer tier at USD 5 a month is the version of this that stays up: 'Developer tier services are not automatically powered off when inactive'.",
+  "binding_note": "1 GB of storage is small, but the inactivity power-off is what defeats the use a reader would pick this for: an unattended job that runs less often than the inactivity window. The 180-day deletion sets the outer limit."
+}

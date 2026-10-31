@@ -1,0 +1,69 @@
+{
+  "topic": "storage",
+  "slug": "ncbi-sra-with-anonymous-read-via-aws-open-data",
+  "provider": "NCBI SRA — with anonymous read via AWS Open Data",
+  "url": "https://www.ncbi.nlm.nih.gov/sra",
+  "category": "academic",
+  "free_tier": {
+    "stated": "No per-account quota published. Submission is genuinely bulk: FTP, Aspera (`ascp -QT -l 100m -k1 -d`), or Aspermera; operator guidance for 'tens or more terabytes' is to contact SRA support directly.",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://www.ncbi.nlm.nih.gov/sra/docs/submitfiles/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://www.ncbi.nlm.nih.gov/sra/docs/submitfiles/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "per-object-cap: none on deposit; individual runs of hundreds of GB are normal. Retention: permanent, no expiry",
+    "source_url": "https://www.ncbi.nlm.nih.gov/sra/docs/submitfiles/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free. Read side is mirrored to AWS Open Data (`sra-pub-run-odp.s3.amazonaws.com`) with anonymous, ranged, CORS-open access — no requester-pays, no auth.",
+    "metered": false
+  },
+  "interface": [
+    "s3",
+    "sftp"
+  ],
+  "interface_detail": "sftp",
+  "tooling": "Aspera Connect / ascp, sra-tools (prefetch/fasterq-dump), and the AWS Open Data mirror which behaves like any public S3 bucket.",
+  "chaining": "Deposit is per-submission and effectively unbounded; the AWS mirror means the fetch workload does not touch NCBI's own edge at all, so read capacity is Amazon's, not NCBI's. Each public run is an independently addressable anonymous object.",
+  "limits": [],
+  "limits_note": "per-object-cap: none on deposit; individual runs of hundreds of GB are normal. Retention: permanent, no expiry. Binding limit on read is per-ip-shaping from S3 — not a storage cap.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Historically flaky FTP uploads ('frequent drop-outs, you only have a few minutes from logging in'); Aspera is the working path. Anonymous S3 mirror can lag NCBI's own copy.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://www.ncbi.nlm.nih.gov/sra/docs/submitfiles/",
+      "date": "2026-10-21",
+      "proved": "FTP + Aspera ascend commands, 'recommend it for all medium to large submissions'"
+    },
+    {
+      "url": "https://www.biostars.org/p/9572863/",
+      "date": "2026-10-21",
+      "proved": "'Uploads in theory would only be limited by bandwidth'; >10s of TB goes through SRA support"
+    },
+    {
+      "url": "https://sra-pub-run-odp.s3.amazonaws.com/sra/SRR000001/SRR000001",
+      "date": "2026-10-21",
+      "proved": "probe: GET -r 0-511 -> 206, Content-Range: bytes 0-511/312527083 (298 MB object), real AWS headers"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No per-account quota published. Submission is genuinely bulk: FTP, Aspera (`ascp -QT -l 100m -k1 -d`), or Aspermera; operator guidance for 'tens or more terabytes' is to contact SRA support directly.",
+  "extras": {},
+  "binding": "none",
+  "binding_note": null
+}

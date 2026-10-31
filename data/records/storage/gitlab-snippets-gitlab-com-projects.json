@@ -1,0 +1,76 @@
+{
+  "topic": "storage",
+  "slug": "gitlab-snippets-gitlab-com-projects",
+  "provider": "GitLab Snippets / GitLab.com projects",
+  "url": "https://gitlab.com",
+  "category": "paas",
+  "free_tier": {
+    "stated": "10 GiB free storage per project on GitLab.com Free tier (repo + LFS); snippet files up to 50 MB each (50,000,000-byte default admin limit); projects per account and accounts are free.",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "unmetered, served from gitlab.com; no egress line item exists on any GitLab.com plan.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "git",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "git",
+  "tooling": "glab CLI (glab snippet create), VS Code extension, REST /api/v4/snippets, plain git clone/push for project repos. rclone has a 'gitlab' backend (yes — rclone supports GitLab as a Git remote type via backend 'git').",
+  "chaining": "10 GiB free per project x unlimited projects per free account x unlimited free accounts. Snippets add a parallel 50 MB-per-object path that does not require a project.",
+  "limits": [],
+  "limits_note": "10 GiB per project then the project goes read-only (pushes rejected) until storage is purchased — a hard stop, not a warning; 50 MB per snippet; namespace storage updated every 90 minutes; 5 GiB per-file push limit on gitlab.com is not documented publicly, so shard files.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Read-only lockout is automatic and immediate on exceeding 10 GiB, and it blocks pushes rather than deletes data. Snippets are counted in namespace storage, so they are not a separate free pool.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+      "date": "2026-10-21",
+      "proved": "'Each project in a Free tier namespace on GitLab.com has 10 GiB of free storage', 'the project is set to a read-only state'"
+    },
+    {
+      "url": "https://docs.gitlab.com/administration/snippets/",
+      "date": "2026-10-21",
+      "proved": "'The default limit is 52428800 bytes (50 MB)'"
+    },
+    {
+      "url": "https://about.gitlab.com/pricing/",
+      "date": "2026-10-21",
+      "proved": "Free tier: '10 GiB adjustable storage'"
+    },
+    {
+      "url": "https://gitlab.com/api/v4/snippets/public?per_page=2",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> {\"message\":\"401 Unauthorized\"} (authenticated endpoints only; public snippet read via web returned 200)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "10 GiB free storage per project on GitLab.com Free tier (repo + LFS); snippet files up to 50 MB each (50,000,000-byte default admin limit); projects per account and accounts are free.",
+  "extras": {},
+  "binding": "none",
+  "binding_note": null
+}

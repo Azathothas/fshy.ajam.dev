@@ -1,0 +1,75 @@
+{
+  "topic": "storage",
+  "slug": "microsoft-365-office-365-a1-education-tenant",
+  "provider": "Microsoft 365 / Office 365 A1 Education tenant (100 TB pooled)",
+  "url": "https://www.microsoft.com/en-us/education/products/office",
+  "category": "cloud-drive",
+  "free_tier": {
+    "stated": "100 TB (102,400 GB) free pooled storage per education tenant, spanning OneDrive + SharePoint + Exchange; pooled capacity = 100 TB base + per-license contributions. Office 365 A1 licenses contribute 0 GB but consume from the pool.",
+    "unit": "TB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://learn.microsoft.com/en-us/office365/servicedescriptions/office-365-platform-service-description/office-365-education",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://learn.microsoft.com/en-us/office365/servicedescriptions/office-365-platform-service-description/office-365-education",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://learn.microsoft.com/en-us/office365/servicedescriptions/office-365-platform-service-description/office-365-education",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Not metered. Microsoft 365 is a subscription service with no per-GB egress meter; Microsoft support states 'if the user has the related license, there is no charge for uploading and downloading files'. SharePoint/OneDrive downloads are direct HTTPS URLs.",
+    "metered": true
+  },
+  "interface": [
+    "rest",
+    "graph",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Microsoft Graph driveItem API (whole-tenant app-only auth: Files.ReadWrite.All + Sites.Read.All); rclone backend 'onedrive' with drive_type=business or drive_type=documentLibrary, and a SharePoint remote type; office365-rest-python-client (vgrem) for list/library operations",
+  "chaining": "100 TB is per TENANT and tenants are per institution, not per user: N schools x 100 TB. Inside one tenant the ceiling is much higher than the pool in principle - 2,000,000 site collections per org at up to 25 TB per site - but the 100 TB pool is the binding limit. Add unlimited free A1 user licenses (which add 0 GB but give each user a 100 GB or 1 TB OneDrive ceiling), and paid A3/A5 at 50/100 GB per license. Multiply across tenants for archival shards.",
+  "limits": [],
+  "limits_note": "Office 365 A1 OneDrive = 100 GB/user hard max (set Feb 2024); Microsoft 365 A1 OneDrive = up to 1 TB/user, capped by the same 100 TB pool. 250 GB max single file upload. 50,000 major versions / 511 minor per file - versioning silently duplicates storage on overwrite, so use a Communication site with versioning disabled. 25 TB max per site collection. Tenant goes read-only when over pool.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Storage is enforced at the tenant pool level and tenants get flipped to read-only on overage - data survives but writes fail; per-user OneDrive caps were cut (5 TB -> 100 GB for A1) in 2024 with no migration path.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://learn.microsoft.com/en-us/office365/servicedescriptions/office-365-platform-service-description/office-365-education",
+      "date": "2026-10-21",
+      "proved": "'All Education tenants with Pooled Storage are granted an initial and free 100 TB of storage to their pool'; 'Storage for site collections: Up to 25 TB per site collection or group'; 'Site collections per tenant: 500,000'"
+    },
+    {
+      "url": "https://cdn-dynmedia-1.microsoft.com/is/content/microsoftcorp/microsoft/final/en-us/microsoft-product-and-services/microsoft-education/downloadables/M365-Education-Storage-FAQ.pdf",
+      "date": "2026-10-21",
+      "proved": "'100TB of free pooled storage across OneDrive, SharePoint, and Exchange'; 'Office 365 A1 ... maximum OneDrive limit of 100GB'; '100 TB Default Limit (102,400 GB)'"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/sharepoint/sharepoint-limits",
+      "date": "2026-10-21",
+      "proved": "(via /office365/servicedescriptions/sharepoint-online-service-description/sharepoint-online-limits) - '250 GB - File upload limit', '1 TB + 10GB per license purchased'"
+    },
+    {
+      "url": "https://www.microsoft.com/en-us/education/products/office",
+      "date": "2026-10-21",
+      "proved": "'Educators and students with an eligible education email address can get Office 365 A1 for free'"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "100 TB (102,400 GB) free pooled storage per education tenant, spanning OneDrive + SharePoint + Exchange; pooled capacity = 100 TB base + per-license contributions. Office 365 A1 licenses contribute 0 GB but consume from the pool.",
+  "extras": {},
+  "binding": "none",
+  "binding_note": null
+}

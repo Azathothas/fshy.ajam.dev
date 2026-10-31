@@ -1,0 +1,140 @@
+{
+  "topic": "storage",
+  "slug": "hetzner-storage-box-bx41",
+  "provider": "Hetzner Storage Box BX41 (20 TB)",
+  "url": "https://www.hetzner.com/storage/storage-box/",
+  "category": "managed storage box (HDD, RAID6)",
+  "free_tier": {
+    "stated": "BX11 1 TB · BX21 5 TB · BX31 10 TB · BX41 20 TB. Prices excl. VAT: €3.20 / €10.90 / €20.80 / €40.60 per month.",
+    "unit": "TB",
+    "metered_on": "unstated",
+    "source_url": "https://www.hetzner.com/storage/storage-box/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://www.hetzner.com/storage/storage-box/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://www.hetzner.com/storage/storage-box/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "\"Traffic: Unlimited *\" on every tier, and \"Each Storage Box comes with unlimited traffic\" (docs). The asterisk is a real fair-use clause: a documented 2022 enforcement email told a customer \"your traffic use, which currently averages above 250 TB/month ... is far above what we consider fair use.\" The 250 TB/month in that email is the only threshold Hetzner has ever enforced.",
+    "metered": false,
+    "free_allowance": "250 TB per month"
+  },
+  "interface": [
+    "s3",
+    "webdav",
+    "sftp",
+    "ftps",
+    "scp",
+    "rsync",
+    "smb",
+    "ssh",
+    "rclone"
+  ],
+  "interface_detail": "SFTP, SCP, rsync, FTPS, SMB/CIFS, WebDAV, BorgBackup, SSH (port 23); 100 sub-accounts; 10 concurrent connections",
+  "tooling": "No S3 endpoint — this is the one real gap. rclone via SFTP or WebDAV; Borg/restic first-class",
+  "chaining": "WebDAV -> AList -> Cloudflare works. 100 sub-accounts let you hand one directory each to separate services.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "10 concurrent connections",
+      "source": "https://www.hetzner.com/storage/storage-box/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "32 parallel streams",
+      "source": "https://www.hetzner.com/storage/storage-box/"
+    }
+  ],
+  "limits_note": "10 concurrent connections per box is the binding constraint for parallel ranged GET benchmarks. No object API, so no presigned URLs; every read goes through your WebDAV/SFTP proxy layer.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "card",
+    "country": null
+  },
+  "reliability_note": "Cost: aggressive new-account KYC. LET threads document ID-card scans being requested and accounts silently refused for country/risk reasons; UnionPay accepted but does not waive KYC.",
+  "confidence": "documented",
+  "confidence_note": "The page states the number in the record; the claim is documented, not measured. | re-read 2026-10-22 from the raw HTML (HTTP 200, 116,243 bytes, sha256 recorded in the capture). The price is documented; it is not a measured transaction.",
+  "evidence": [
+    {
+      "url": "https://www.hetzner.com/storage/storage-box/",
+      "date": "2026-10-22",
+      "proved": "BX41 is EUR 40.60 per month for 20 TB. Re-read the raw HTML: HTTP 200, 116,243 bytes; the price block reads product-key=\"ROBOT_1336\" and '€ 40.60 per month, excl. VAT', and the 20 TB row reads '20 TB Upgrade/Downgrade'."
+    },
+    {
+      "url": "https://docs.hetzner.com/storage/storage-box/general/",
+      "date": "2026-10-22",
+      "proved": "each Storage Box includes unlimited traffic. Re-read https://docs.hetzner.com/storage/storage-box/general/: HTTP 200, 7332 bytes, sha256 e5e1ee04e00ee5eb. Quoted: x. ## Pricing For information about available plans and prices, see [hetzner.com/storage/storage-box](https://www.hetzner.com/storage/storage-box/). Each Storage Box comes with unlimited traffic. ## Additional users The original user is the main user. Via Hetzner Console, you can add additional users which will be sub-accounts. The main user has complete access to all directories — including all sub-account directories. Sub-accounts have access to"
+    },
+    {
+      "url": "https://www.hetzner.com/storage/storage-box/bx21/",
+      "date": "2026-10-21",
+      "proved": "BX21: 5 TB, \"Traffic: Unlimited *\", 20 snapshots, €10.90/mo excl."
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "search on include_domains=hetzner.com — the full ladder BX11 €3.20 / BX21 €10.90 / BX31 €20.80 / BX41 €40.60 excl. VAT with the storage table 1/5/10/20 TB and \"Traffic | Unlimited\""
+    },
+    {
+      "url": "https://docs.hetzner.com/storage/storage-box/general/",
+      "date": "2026-10-21",
+      "proved": "\"Each Storage Box comes with unlimited traffic\", protocol list"
+    },
+    {
+      "url": "https://lowendtalk.com/discussion/180504/hetzner-traffic-use-notice-unlimited-unlimited",
+      "date": "2026-10-21",
+      "proved": "the 250 TB/month fair-use enforcement email, verbatim"
+    },
+    {
+      "url": "https://lowendtalk.com/discussion/207732/hetzner-storage-box-new-account-verification",
+      "date": "2026-10-21",
+      "proved": "and /217671 — KYC rejections"
+    },
+    {
+      "url": "https://fsn1-speed.hetzner.com/10GB.bin",
+      "date": "2026-10-21",
+      "proved": "Single-stream ranged GET of 200 MB from a residential line measured 1.05 MB/s (47 MB in 45 s) — i.e. a user's own uplink was the limiter, not Hetzner; do not read this as a Hetzner throughput figure."
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "price_per_tb_month": "€2.03/TB/mo at the 20 TB tier (€40.60/20). at 5 TB: BX21 = €2.18/TB/mo. at 20 TB: BX41 = €2.03/TB/mo. ~$2.19 and ~$2.19 at 1.08 USD/EUR. Non-EU buyers pay excl. VAT (the €3.81/€12.97/€24.75/€48.31 figures circulating online are VAT-inclusive German prices — do not use them).",
+  "notes": "BX11 1 TB · BX21 5 TB · BX31 10 TB · BX41 20 TB. Prices excl. VAT: €3.20 / €10.90 / €20.80 / €40.60 per month.",
+  "extras": {
+    "price_verbatim": "€2.03/TB/mo at the 20 TB tier (€40.60/20). at 5 TB: BX21 = €2.18/TB/mo. at 20 TB: BX41 = €2.03/TB/mo. ~$2.19 and ~$2.19 at 1.08 USD/EUR. Non-EU buyers pay excl. VAT (the €3.81/€12.97/€24.75/€48.31 figures circulating online are VAT-inclusive German prices — do not use them).",
+    "verified": [
+      {
+        "url": "https://docs.hetzner.com/storage/storage-box/general/",
+        "date": "2026-10-22",
+        "via": null,
+        "http_status": 200,
+        "bytes": 7332,
+        "sha256": "e5e1ee04e00ee5eb5793615e3065feaea046ecac21ef080fb5c48513b36e53a9",
+        "pattern_found": true,
+        "what_changed": "no change: the page still states the claim",
+        "capture": "captures\\hetzner-storage-box-bx41-docs-hetzner-com-storage-storage-box-general-.txt"
+      },
+      {
+        "url": "https://www.hetzner.com/storage/storage-box/",
+        "date": "2026-10-22",
+        "via": null,
+        "http_status": 200,
+        "bytes": 116243,
+        "sha256": null,
+        "pattern_found": true,
+        "what_changed": "no change: €40.60 for 20 TB still stated",
+        "capture": null
+      }
+    ]
+  },
+  "binding": "per-ip-shaping",
+  "binding_note": null
+}

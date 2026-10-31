@@ -1,0 +1,119 @@
+{
+  "topic": "compute",
+  "slug": "agent37",
+  "provider": "Agent37",
+  "url": "https://www.agent37.com/docs/agents-api/billing.md",
+  "category": "sandbox (default) and full KVM VM (vm type)",
+  "tier": "2 vCPU / 4 GB / 4 GB disk, default container instance",
+  "free_tier": {
+    "stated": "Add a card from the billing page (nothing is charged) and the workspace gets a one-time USD 5 credit, enough to run the first instance around the clock for about a month.",
+    "unit": "mixed",
+    "metered_on": "wall-clock",
+    "source_url": "https://www.agent37.com/docs/agents-api/billing.md",
+    "read_on": "2026-10-24",
+    "notes": "credit, and it needs a card on file to be granted"
+  },
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "Stopped or sleeping instances bill the disk alone at USD 0.09/GB/month; parked in cold storage at USD 0.03/GB/month on compressed bytes; an instance left suspended for 30 days is permanently deleted.",
+    "source_url": "https://www.agent37.com/docs/agents-api/billing.md"
+  },
+  "egress": {
+    "terms": "No egress price and no transfer allowance are published on the page read; metered is recorded as false because nothing is known to be charged per gigabyte, which is an absence of evidence, not a promise of free traffic.",
+    "metered": false,
+    "free_allowance": "not stated",
+    "source_url": "https://www.agent37.com/docs/agents-api/vm-instances.md"
+  },
+  "interface": [
+    "ssh",
+    "rest"
+  ],
+  "interface_detail": "REST API for the lifecycle, SSH into the instance, exec over the API, and an HTTPS URL per published port",
+  "tooling": "the REST API or SSH; Docker and k3s inside a vm instance; no vendor CLI was read",
+  "chaining": "The cheapest 2 vCPU / 4 GiB offer found anywhere at USD 4.76 a month, but it is the default container instance, not a VM. The VM type - a real KVM machine with its own kernel - costs 2.5x the compute and lands at USD 11.36 for the same 2 vCPU / 4 GiB / 4 GB disk.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "4 vCPU ceiling on every instance type; 2 vCPU / 4 GB is the smallest shape",
+      "source": "https://www.agent37.com/docs/agents-api/instance-sizing.md"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "disk is 2-12 GB on the 2 vCPU shape and bills USD 0.09/GB/month",
+      "source": "https://www.agent37.com/docs/agents-api/instance-sizing.md"
+    }
+  ],
+  "binding": "per-object-cap",
+  "binding_note": "The shape ladder stops at 4 vCPU on every type, so the ceiling is the shape; the money wall is that a real VM is 2.5x the container rate.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "Card required for the USD 5 credit and for every top-up ('Add a card from the billing page (nothing is charged)'); top-ups run USD 5 to USD 10,000 through Stripe, minimum USD 5. No card hold is stated. Debit acceptance is not stated. A create only checks that one day of balance exists and debits nothing.",
+    "country": null
+  },
+  "reliability_note": "Automatic top-up is on by default after the first top-up; when a settle leaves the wallet negative the instances are force-slept and requests return 402 until a top-up.",
+  "confidence": "documented",
+  "confidence_note": "The rate card, the four shapes, the 2.5x VM multiplier, the per-minute metering, the stopped-disk rate and the card requirement are quoted from the vendor's own documentation read. What would raise it: a probe that creates a vm instance and confirms the 2.5x charge on the ledger.",
+  "evidence": [
+    {
+      "url": "https://www.agent37.com/docs/agents-api/billing.md",
+      "date": "2026-10-24",
+      "proved": "quoted: 'vCPU | $0.80 per vCPU per month', 'RAM | $0.70 per GB per month', 'Disk | $0.09 per GB per month', and 'Shape | Price at the default disk | 2 vCPU / 4 GB RAM / 2-12 GB disk (the default) | $4.76'"
+    },
+    {
+      "url": "https://www.agent37.com/docs/agents-api/billing.md",
+      "date": "2026-10-24",
+      "proved": "quoted: 'A VM instance is a whole virtual machine with its own kernel ... Its compute is 2.5x the default rate, and disk is unchanged.' and 'time spent stopped or sleeping bills its disk alone'"
+    },
+    {
+      "url": "https://www.agent37.com/docs/agents-api/vm-instances.md",
+      "date": "2026-10-24",
+      "proved": "quoted: 'A `vm` instance is a full Linux virtual machine with its own kernel and KVM hardware virtualization.' and 'Publish a container's HTTP port onto the VM with `docker run -p`, then reach it at https://{id}-{port}.agent37.app'"
+    },
+    {
+      "url": "https://www.agent37.com/docs/agents-api/billing.md",
+      "date": "2026-10-24",
+      "proved": "quoted: '$5 free to start. Add a card from the billing page (nothing is charged) and your workspace gets a one-time $5 credit'"
+    },
+    {
+      "url": "https://www.agent37.com/docs/agents-api/instance-sizing.md",
+      "date": "2026-10-24",
+      "proved": "quoted: '4 vCPU is the ceiling on every instance type.'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-24T02:11:00.000Z",
+  "price_per_tb_month": null,
+  "notes": "Two rows live in this provider and the shape decides the verdict. Default (container) 2 vCPU / 4 GB / 4 GB disk: 2 x 0.80 + 4 x 0.70 + 4 x 0.09 = USD 4.76 a month at 730 running hours - the cheapest 2 vCPU / 4 GiB found, but it is a shared-kernel instance. VM 2 vCPU / 4 GB / 4 GB disk: 2.5 x (1.60 + 2.80) + 0.36 = USD 11.36. A VM under USD 5 is impossible because the smallest VM shape is 2 vCPU / 4 GB. Ingress is the other catch: ports are published as HTTPS at {id}-{port}.agent37.app, so no raw TCP listener and no UDP - it cannot be a WireGuard node.",
+  "extras": {
+    "shape": {
+      "vcpu": 2,
+      "ram_gib": 4,
+      "disk_gib": 4,
+      "gpu_class": null,
+      "gpu_count": null,
+      "note": "container instance; the vm type carries the same shape at 2.5x compute"
+    },
+    "billing_model": "per-minute",
+    "term": "prepaid wallet, no commitment",
+    "m10h_usd": 1.96,
+    "m24h_usd": 4.76,
+    "price_arithmetic": "Default container: 730 h x (2 x 0.80 + 4 x 0.70 + 4 x 0.09)/730 = USD 4.76 (the vendor's own monthly figure at the default disk). VM type: 730 h x (2.5 x (2 x 0.80 + 4 x 0.70) + 4 x 0.09)/730 = 2.5 x 4.40 + 0.36 = USD 11.36. 10 h/day = 300/730 of either figure: USD 1.96 container, USD 4.67 VM. Stopped, disk only: 4 GB x 0.09 = USD 0.36 a month.",
+    "free_tier_kind": "credit",
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": true,
+      "ports": "HTTP(S) through the vendor proxy at https://{id}-{port}.agent37.app; no raw TCP or UDP ingress was described",
+      "static_ip": false,
+      "ipv6": false,
+      "per_session_bytes": null
+    },
+    "session_cap": {
+      "wall_clock_min": null,
+      "idle_reap_s": null,
+      "restart_required": false,
+      "note": "no wall-clock cap; auto-sleep is optional and cuts billing to the disk rate"
+    }
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "topic": "inference",
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "not applicable"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "slug": "huggingface-gradio-chat-spaces",
+  "provider": "Hugging Face public Gradio chat Spaces (anonymous API)",
+  "url": "https://huggingface.co/docs/hub/spaces-zerogpu",
+  "category": "inference through public Gradio Spaces, anonymous callers",
+  "free_tier": {
+    "stated": "ZeroGPU Spaces give an unauthenticated caller 2 minutes of GPU quota a day at low queue priority (5 minutes for a free account); a public Gradio chat Space publishes its API schema with no token",
+    "unit": "minutes",
+    "metered_on": "wall-clock",
+    "source_url": "https://huggingface.co/docs/hub/spaces-zerogpu",
+    "read_on": "2026-10-28",
+    "notes": "each Space defines its own endpoint names, such as /generate on huggingface-projects/llama-2-13b-chat; there is no OpenAI-shaped route and no model id echo"
+  },
+  "endpoint": "https://huggingface-projects-llama-2-13b-chat.hf.space/gradio_api/info",
+  "tooling": "gradio_client or the Space's /gradio_api/call/<api_name> routes; the schema is at /gradio_api/info on current Gradio and /info on older ones",
+  "chaining": "pairs with ad hoc scripts; the 2 minutes a day of ZeroGPU quota for an unauthenticated caller is the scarce link",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "2 minutes of ZeroGPU GPU quota per day for an unauthenticated caller, low queue priority; 5 minutes for a free account; the quota resets exactly 24 hours after the first GPU usage",
+      "source": "https://huggingface.co/docs/hub/spaces-zerogpu"
+    }
+  ],
+  "binding": "volume-quota",
+  "binding_note": "the 2 minutes a day of GPU quota binds; a Space on CPU hardware has no such quota stated in the page read",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "an unauthenticated caller is a documented quota tier (Unauthenticated, 2 minutes, Low queue priority); no token was needed to read /gradio_api/info",
+    "country": null
+  },
+  "reliability_note": "a Space can be paused or in an error state, and an older Gradio Space serves its schema at /info rather than /gradio_api/info",
+  "confidence": "documented",
+  "confidence_note": "the quota is first-party; the schema was read by a keyless GET. No chat call was made because probe issues GET and HEAD only, so a completed answer is unverified",
+  "probe": {
+    "records": [
+      {
+        "probe_id": "hf-llama2-13b-chat-info-get",
+        "method": "GET",
+        "url": "https://huggingface-projects-llama-2-13b-chat.hf.space/gradio_api/info",
+        "http": 200,
+        "authorization_sent": false,
+        "named_endpoints": [
+          "/generate"
+        ],
+        "probed_at": "2026-10-28T04:50:09.841Z",
+        "chat_completion_tested": false
+      },
+      {
+        "probe_id": "hf-llama3-8b-info-get",
+        "method": "GET",
+        "url": "https://ysharma-chat-with-meta-llama3-8b.hf.space/info",
+        "http": 200,
+        "named_endpoints": [
+          "/chat"
+        ],
+        "probed_at": "2026-10-28T04:50:17.493Z"
+      },
+      {
+        "probe_id": "hf-llama3-8b-gradio-api-info-get",
+        "method": "GET",
+        "url": "https://ysharma-chat-with-meta-llama3-8b.hf.space/gradio_api/info",
+        "http": 404,
+        "probed_at": "2026-10-28T04:50:14.944Z"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "url": "https://huggingface.co/docs/hub/spaces-zerogpu",
+      "date": "2026-10-28",
+      "capture": "sha256:949c22d45251350837459dc32cd16a8713d43068105dd2e610515a6e41af513b",
+      "quote": "| Unauthenticated                | 2 minutes                | Low             |",
+      "proved": "an unauthenticated caller has 2 minutes of daily ZeroGPU quota at low priority"
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/spaces-zerogpu",
+      "date": "2026-10-28",
+      "capture": "sha256:949c22d45251350837459dc32cd16a8713d43068105dd2e610515a6e41af513b",
+      "quote": "| Free account                   | 5 minutes                | Medium          |",
+      "proved": "a free account has 5 minutes a day at medium priority"
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/spaces-zerogpu",
+      "date": "2026-10-28",
+      "capture": "sha256:949c22d45251350837459dc32cd16a8713d43068105dd2e610515a6e41af513b",
+      "quote": "Included daily quota resets exactly 24 hours after your first GPU usage.",
+      "proved": "the daily quota resets 24 hours after first use"
+    },
+    {
+      "url": "https://huggingface-projects-llama-2-13b-chat.hf.space/gradio_api/info",
+      "date": "2026-10-28",
+      "capture": "sha256:21f8d7f4105af2a0de4b0ea8185461b7a2574da42b67e629611232371190b448",
+      "quote": "{\"named_endpoints\":{\"/generate\":{\"parameters\":[",
+      "proved": "a keyless GET /gradio_api/info answered 200 with a named /generate endpoint on a public chat Space"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-28T04:36:18.974Z"
+}

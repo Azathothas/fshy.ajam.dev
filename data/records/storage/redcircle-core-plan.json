@@ -1,0 +1,78 @@
+{
+  "topic": "storage",
+  "slug": "redcircle-core-plan",
+  "provider": "RedCircle — Core (free) plan",
+  "url": "https://redcircle.com",
+  "category": "media",
+  "free_tier": {
+    "stated": "Unlimited. Core is 'our entirely free option ... host one podcast with unlimited storage, bandwidth, episodes, and downloads'. Pricing page comparison table confirms storage / bandwidth / episodes / downloads all 'Unlimited' on Core.",
+    "unit": "unlimited",
+    "metered_on": "stored-bytes",
+    "source_url": "https://support.redcircle.com/articles/7581935770-redcircle-account-plans",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://support.redcircle.com/articles/7581935770-redcircle-account-plans",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://support.redcircle.com/articles/7581935770-redcircle-account-plans",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unlimited / unmetered — the plan table lists 'bandwidth: Unlimited' and 'Number of Downloads: Unlimited'. No egress pricing exists at any tier.",
+    "metered": false
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "wrapper-only",
+  "tooling": "No public upload API found (search surfaced only third-party 'integration' marketing pages). Web dashboard only for uploads; the RSS feed itself is a plain GET, so read-side automation is trivial. Public feed format: https://feeds.redcircle.com/<show-uuid> (documented in RedCircle's own Apple distribution guide).",
+  "chaining": "1 podcast per free account, but unlimited episodes per podcast and unlimited storage — so capacity is per-account, not per-episode: N accounts x unbounded. 200 MB/episode is the only multiplier, so large volumes need many episodes rather than few large files (200 MB x unlimited episodes is still unbounded).",
+  "limits": [],
+  "limits_note": "200 MB per audio file on Core (250 MB on Pro/Enterprise); 10 GB for video, but video upload is Pro/Enterprise only. 1 podcast on Core. Feed refreshes periodically, so a new episode is not instantly in the RSS.",
+  "identity_cost": {
+    "kind": "country-phone",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Serves a dynamic-ad-inserted stream, not your file. Verified live: feed enclosure https://audio3.redcircle.com/episodes/de9e4cc6-.../stream.mp3 -> 302 to media.redcircle.com -> 206, Content-Range 0-1023/60125855, while the feed declared length=60122174 — an 3,681-byte difference, i.e. the served object differs from the declared one (insertion points get stitched in). Audio is 128 kbps stereo joint. RedCircle's own help says 'Episodes are downloaded with Insertion Points, so you may download ads and other custom audio' — confirming the delivered bytes are not the uploaded bytes.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://support.redcircle.com/articles/7581935770-redcircle-account-plans",
+      "date": "2026-10-21",
+      "proved": "'this is our totally free option. With this plan, you're able to host one podcast with unlimited storage, bandwidth, episodes, and downloads'"
+    },
+    {
+      "url": "https://redcircle.com/pricing",
+      "date": "2026-10-21",
+      "proved": "Core column: storage Unlimited, bandwidth Unlimited, Number of Episodes Unlimited, Number of Downloads Unlimited"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET feeds.redcircle.com/511adffa-88d0-4cb5-b77b-06edc73ff3fa -> 200, 763,958 bytes; enclosure audio3.redcircle.com/.../stream.mp3 length=60122174"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET that enclosure -L -> 206, Content-Range 0-1023/60125855 (spooled size ≠ declared size), ID3v2 present, MPEG1 Layer III 128 kbps 44.1 kHz joint stereo"
+    },
+    {
+      "url": "https://support.redcircle.com/articles/1629272190-uploading-an-episode",
+      "date": "2026-10-21",
+      "proved": "'the maximum audio file size is 200MB (250MB if you're on our Pro or Enterprise plans)'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Unlimited. Core is 'our entirely free option ... host one podcast with unlimited storage, bandwidth, episodes, and downloads'. Pricing page comparison table confirms storage / bandwidth / episodes / downloads all 'Unlimited' on Core.",
+  "extras": {},
+  "binding": "none",
+  "binding_note": null
+}

@@ -1,0 +1,75 @@
+{
+  "topic": "storage",
+  "slug": "sourceforge-project-web",
+  "provider": "SourceForge Project Web (<project>.sourceforge.io)",
+  "url": "https://sourceforge.net/p/forge/documentation/Project%20Web%20Services/",
+  "category": "paas",
+  "free_tier": {
+    "stated": "No quota stated anywhere on the page — the docs grant each project a vhost and say nothing about a byte limit. Practically it is the same filesystem family as FRS (uploaded over the same SFTP), so expect the same discretionary 20-30 GB band.",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://sourceforge.net/p/forge/documentation/Project%20Web%20Services/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://sourceforge.net/p/forge/documentation/Project%20Web%20Services/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://sourceforge.net/p/forge/documentation/Project%20Web%20Services/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "'Unlimited bandwidth for Open Source projects' (sourceforge.net/create). 'Our project web servers frequently handle more than 50M hits per day; we handle server scaling, caching, load balancing, and performance tuning.' Served through Cloudflare.",
+    "metered": false
+  },
+  "interface": [
+    "sftp",
+    "scp",
+    "rsync"
+  ],
+  "interface_detail": "sftp",
+  "tooling": "Same SFTP/SCP/rsync upload path as FRS but to /home/project-web/<unixname>/htdocs. Static files come back over plain HTTPS on <unixname>.sourceforge.io — no client, no API, just a web origin. Custom domains supported via the Custom VHOST service.",
+  "chaining": "A second independent quota-less origin per project, free once you already have the project. Because it is a static web origin rather than a download mirror, it is the natural Cloudflare-fronted serving layer for anything in FRS: serves as the hot/serving tier while FRS holds the archive. N projects -> N vhosts.",
+  "limits": [],
+  "limits_note": "per-object-cap: none published (it is a web root, not an artefact store). Request-rate: none published. Retention: 'always-on' service, files persist while the project exists. Practical caveat: it is a web root — directory indexes are not guaranteed, so you index your own paths.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Probed live: https://libreoffice.sourceforge.io/ -> 200 with 134,123 bytes of real HTML; https://gimp.sourceforge.io/ -> 403 (project redirects elsewhere). https://gparted.sourceforge.io/ -> 302 to the project's own domain. Expect some projects to 403/302 depending on their custom-VHOST config; a fresh project should serve its own root.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://sourceforge.net/p/forge/documentation/Project%20Web%20Services/",
+      "date": "2026-10-21",
+      "proved": "'each project is provided the PROJECT.sourceforge.io subdomain'; 'frequently handle more than 50M hits per day'; SFTP path /home/project-web/PROJECT/htdocs"
+    },
+    {
+      "url": "https://sourceforge.net/create/",
+      "date": "2026-10-21",
+      "proved": "'Unlimited bandwidth for Open Source projects'"
+    },
+    {
+      "url": "https://libreoffice.sourceforge.io/",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, 134123 bytes, text/html"
+    },
+    {
+      "url": "https://gparted.sourceforge.io/",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 302 Location: https://gparted.org/ ; GET https://gimp.sourceforge.io/ -> 403"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No quota stated anywhere on the page — the docs grant each project a vhost and say nothing about a byte limit. Practically it is the same filesystem family as FRS (uploaded over the same SFTP), so expect the same discretionary 20-30 GB band.",
+  "extras": {},
+  "binding": "none",
+  "binding_note": null
+}

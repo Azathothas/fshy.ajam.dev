@@ -1,0 +1,72 @@
+{
+  "topic": "storage",
+  "slug": "cachix",
+  "provider": "Cachix (Nix binary cache hosting)",
+  "url": "https://www.cachix.org",
+  "category": "paas",
+  "free_tier": {
+    "stated": "5 GB free for open-source projects: 'Users have a free 5 GB limit for open source projects and 20 Cachix Deploy agents.' Paid tiers start at 50 GiB.",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://www.cachix.org/pricing",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://www.cachix.org/pricing",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://www.cachix.org/pricing",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unlimited bandwidth even on the paid Starter tier ('Unlimited bandwidth', 'CloudFlare CDN caching'); free tier inherits the CF-backed delivery. Free egress is genuinely not the constraint here.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "`cachix` CLI (push/use), Nix `--substituters`, and the standard Nix binary-cache HTTP protocol (narinfo/nar). No rclone backend but the nar protocol is scriptable.",
+  "chaining": "one cache per account, 5 GB free; unlimited free accounts x 5 GB. Because a Nix cache is content-addressed and deduplicated, identical NARs are only stored once per cache - so multiplication is by account, not by file.",
+  "limits": [],
+  "limits_note": "per-account quota: 5 GB hard on free (open-source only). retention: garbage collection removes unreferenced paths after a retention window (docs have a dedicated GC page). request-rate: not documented; served via Cloudflare.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Clean, documented, Cloudflare-fronted, unlimited bandwidth - the 5 GB is the only issue, and it is 100x short of the workload. Any Nix-cache-based plan is account-farming at 5 GB/account.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://www.cachix.org/pricing",
+      "date": "2026-10-21",
+      "proved": "'Users have a free 5 GB limit for open source projects and 20 Cachix Deploy agents'; '50 GiB of storage / Unlimited bandwidth / CloudFlare CDN caching' on Starter"
+    },
+    {
+      "url": "https://cachix.org/api/v1/cache/nixpkgs",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, 241 bytes (cache endpoint live, anonymous)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "5 GB free for open-source projects: 'Users have a free 5 GB limit for open source projects and 20 Cachix Deploy agents.' Paid tiers start at 50 GiB.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "5 GB free for open-source projects: 'Users have a free 5 GB limit for open source projects and 20 Cachix Deploy agents.' Paid tiers start at 50 GiB.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": null
+}

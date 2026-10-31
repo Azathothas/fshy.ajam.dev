@@ -1,0 +1,100 @@
+{
+  "topic": "storage",
+  "slug": "nird-data-lake-s3-object-storage-10-tb-single-object-sup",
+  "provider": "NIRD Data Lake (Sigma2, Norway) — S3 object storage, 10 TB single-object support, 100M objects/bucket",
+  "url": "https://documentation.sigma2.no/files_storage/nird/s3.html",
+  "category": "academic",
+  "free_tier": {
+    "stated": "No fixed per-project byte number published — quota is set per project by the Resource Allocation Committee (RFK) in TiB on NIRD Data Peak and/or Data Lake separately. What IS fixed and unusually generous: 'NIRD S3 supports 10TB single object sizes and up to 100 million objects per bucket', total NIRD capacity 75 PB (24 PB DP + 51 PB DL), and measured throughput '27GB/s'.",
+    "unit": "TiB",
+    "metered_on": "unstated",
+    "source_url": "https://documentation.sigma2.no/files_storage/nird/s3.html",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "10 TB per single object",
+    "bytes": 10000000000000,
+    "source_url": "https://documentation.sigma2.no/files_storage/nird/s3.html",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://documentation.sigma2.no/files_storage/nird/s3.html",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered; S3 and HTTPS serve directly, and NIRD S3 is explicitly for 'data sharing with external collaborators' and 'data streaming'.",
+    "metered": false
+  },
+  "interface": [
+    "s3",
+    "nfs",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "s3",
+  "tooling": "rclone (provider = Other, endpoint https://s3.nird.sigma2.no), AWS CLI, s3cmd, MinIO client, Cyberduck. The same data is simultaneously available over POSIX, NFS and S3 — 'the same data can be accessed simultaneously through multiple protocols'.",
+  "chaining": "Quota is per project and RFK-allocated, so the multiplier is project count and the DP/DL split (two resources, 'The two resources have separate quota based on the project allocation'). NIRD Data Lake is pitched at 'structured or unstructured data of any volume larger than 1 TiB' — i.e. the intended workload IS tens of TB.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "10 TB per single object",
+      "source": "https://documentation.sigma2.no/files_storage/nird/s3.html"
+    }
+  ],
+  "limits_note": "per-object-cap: 10 TB per single object, 100M objects per bucket — the most permissive object caps in this niche. Retention: 'long-term storage of non-persistent data'; Data Lake has NO on-demand backup ('On-demand backup | Yes | No'), only erasure coding and snapshots. request-rate: not published (27 GB/s aggregate is the claim). Gate: Norwegian university/research affiliation plus RFK allocation.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "CRITICAL COST CAVEAT most agents will miss: NIRD is NOT free. The User Contribution Model (v2.2, valid from 1 Oct 2025) prices it at 'NIRD Data Lake 470 NOK per TB/year' and 'NIRD Data Peak 800 NOK per TB/year' for Category A, invoiced yearly to the institution. 20 TiB of Data Lake ≈ 9,400 NOK/yr. The bytes are unmetered but the TB-years are not — this fails the 'free' filter unless an EU-programme exemption applies ('Projects participating in EU programmes are exempted from contribution').",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://documentation.sigma2.no/files_storage/nird/s3.html",
+      "date": "2026-10-21",
+      "proved": "'NIRD S3 supports 10TB single object sizes and up to 100 million objects per bucket', rclone config with endpoint s3.nird.sigma2.no, 'measured throughput of 27GB/s'"
+    },
+    {
+      "url": "https://documentation.sigma2.no/files_storage/nird/dp_dl.html",
+      "date": "2026-10-21",
+      "proved": "DP vs DL table: DL protocols 'POSIX, GPFS and NFS', 'S3'; 'On-demand backup | No'; 'storage for structured or unstructured data of any volume larger than 1 TiB'"
+    },
+    {
+      "url": "https://documentation.sigma2.no/files_storage/nird_lmd.html",
+      "date": "2026-10-21",
+      "proved": "'The total capacity of NIRD is 75 PB (24 PB on DP and 51 PB on DL)'"
+    },
+    {
+      "url": "https://www.sigma2.no/user-contribution-model",
+      "date": "2026-10-21",
+      "proved": "captured 2025-12-06: 'NIRD Data Lake | 470 NOK per TB/year', 'NIRD Data Peak | 800 NOK per TB/year', 'All prices below are valid from 1 October 2025. The current version of the User Contribution model is V2.2.'"
+    },
+    {
+      "url": "https://s3.nird.sigma2.no/",
+      "date": "2026-10-21",
+      "proved": "probe: curl -D - -> HTTP/1.1 200 OK, Server: NooBaa/5.21.4, ListAllMyBucketsResult Owner NooBaa. Live and answering; NooBaa (not Ceph), which means S3-over-object-store namespace rather than RGW."
+    },
+    {
+      "url": "https://s3.nird.sigma2.no/probe-xyz/probe.txt",
+      "date": "2026-10-21",
+      "proved": "probe: curl -X PUT --data x -> 404 (write correctly closed)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No fixed per-project byte number published — quota is set per project by the Resource Allocation Committee (RFK) in TiB on NIRD Data Peak and/or Data Lake separately. What IS fixed and unusually generous: 'NIRD S3 supports 10TB single object sizes and up to 100 million objects per bucket', total NIRD capacity 75 PB (24 PB DP + 51 PB DL), and measured throughput '27GB/s'.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "No fixed per-project byte number published — quota is set per project by the Resource Allocation Committee (RFK) in TiB on NIRD Data Peak and/or Data Lake separately. What IS fixed and unusually generous: 'NIRD S3 supports 10TB single object sizes and up to 100 million objects per bucket', total NIRD capacity 75 PB (24 PB DP + 51 PB DL), and measured throughput '27GB/s'.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

@@ -1,0 +1,78 @@
+{
+  "topic": "storage",
+  "slug": "gitlab-com-container-registry",
+  "provider": "GitLab.com container registry",
+  "url": "https://registry.gitlab.com",
+  "category": "registry",
+  "free_tier": {
+    "stated": "No published storage cap. Explicitly excluded from the per-project 10 GiB limit; unlimited container repositories per project is the practical reading.",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free, Cloudflare + Google Cloud CDN. Blob requests 307-redirect to cdn.registry.gitlab-static.net with a signed URL — directly cacheable by an external Cloudflare zone.",
+    "metered": false
+  },
+  "interface": [
+    "oci"
+  ],
+  "interface_detail": "oci",
+  "tooling": "Standard OCI Distribution v2. ORAS, skopeo, crane, docker. Auth flow is anonymous for public projects (`/jwt/auth` returns a token with auth_type=none).",
+  "chaining": "One OCI artifact per blob of any size -> unlimited projects x unlimited repositories x unlimited tags. This is the canonical 'OCI registry as object store' pattern (ORAS). Blob dedupe means the same chunk stored in N projects costs one copy but is addressable N times.",
+  "limits": [],
+  "limits_note": "Auth token TTL 15 min on GitLab.com. Blob size limited only by the registry (manifest layers routinely are 100s of MB; no documented per-layer cap). Renaming a project with >1000 container repos is blocked. Public pulls are rate-limited loosely; anonymous token issuance works but each pull needs a token round-trip.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "GitLab has run garbage-collection and cleanup-policy tooling against registries since 2023; no automatic purge is documented, but stale-tag cleanup policies are a first-class feature other users may set on shared projects. Own projects are not touched.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+      "date": "2026-10-21",
+      "proved": "package/container registries excluded from the limit"
+    },
+    {
+      "url": "https://registry.gitlab.com/v2/",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 401 with WWW-Authenticate: Bearer realm=\"https://gitlab.com/jwt/auth\",service=\"container_registry\"; Server: cloudflare; gitlab-sv: registry-us-east1-c"
+    },
+    {
+      "url": "https://gitlab.com/jwt/auth?service=container_registry&scope=repository:gitlab-org/gitlab-runner:pull",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, JWT with \"auth_type\":\"none\" (anonymous pull token, no credentials)"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET /v2/gitlab-org/gitlab-runner/manifests/latest with that token -> 200, application/vnd.oci.image.index.v1+json, digest sha256:f1c76f915d7f70d8b3e25cac58da3d87d3d10106dda82ee780409440e1dc1ccc, Server: cloudflare"
+    },
+    {
+      "url": "https://cdn.registry.gitlab-static.net/",
+      "date": "2026-10-21",
+      "proved": "probe: GET /v2/gitlab-org/gitlab-runner/blobs/sha256:a60ef8ec184edb5ed91f5983f00261359fb2fe20f603e8d488b9477d32fcad70 -> 307 to ... (signed CDN URL, cacheable)"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published storage cap. Explicitly excluded from the per-project 10 GiB limit; unlimited container repositories per project is the practical reading.",
+  "extras": {},
+  "binding": "none",
+  "binding_note": null
+}

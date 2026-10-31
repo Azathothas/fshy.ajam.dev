@@ -1,0 +1,99 @@
+{
+  "topic": "storage",
+  "slug": "patrins",
+  "provider": "Patrins",
+  "url": "https://patrins.com",
+  "category": "cloud-drive",
+  "free_tier": {
+    "stated": "Two separate numbers, and the split matters: free plan storage is 8 GB, but the per-file ceiling is unlimited (marketing says 1 TB) on every plan including free, with unlimited bandwidth. Anonymous temporary uploads accept up to 1 TB per file and self-delete after 7 days.",
+    "unit": "TB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://patrins.com/docs",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "1 TB per file",
+    "bytes": 1000000000000,
+    "source_url": "https://patrins.com/docs",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Anonymous downloads expire 7 hours after link generation; temp files auto-delete at 7 days.",
+    "days": 0,
+    "source_url": "https://patrins.com/docs",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unlimited bandwidth on all plans, stated on the pricing table and repeated in docs. No egress product.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "webdav",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "webdav",
+  "tooling": "Documented rclone: `rclone config create patrins webdav url=https://patrins.com/dav user=[address removed] pass=YOUR_DAV_TOKEN`. Also REST + tus 1.0 resumable upload, webhooks, CLI, a Telegram bot and a Windows `net use` drive mapping.",
+  "chaining": "rclone WebDAV mount + N free accounts x 8 GB permanent, or the anonymous 1 TB-per-file path for transit. The 8 GB cap is the binding number for storage; 1 TB/file only helps if something downstream holds the bytes.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "1 TB per file",
+      "source": "https://patrins.com/docs"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "1 TB/file",
+      "source": "https://patrins.com/docs"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "delete after 7 days",
+      "source": "https://patrins.com/docs"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "expire 7 hours",
+      "source": "https://patrins.com/docs"
+    }
+  ],
+  "limits_note": "Free 8 GB storage, unlimited file size, unlimited bandwidth. Rate limits: public upload init 500/hour (files <1 GB) and 30/hour (>=1 GB) per IP; chunks 500/hour; finalize 30/hour; bulk zip 10/hour per user. Anonymous downloads expire 7 hours after link generation; temp files auto-delete at 7 days.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Per-file cap without matching storage is the classic trap: 1 TB/file x 8 GB total means the big-file capability is unusable without paying. API init returns 401 'Authentication required' without a bearer token, so 'no account needed' only holds for the temp flow.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://patrins.com/docs",
+      "date": "2026-10-21",
+      "proved": "table: 'Free | 8 GB | Unlimited | Unlimited' (storage | max file size | bandwidth), and rate-limit table 500/hr and 30/hr per IP"
+    },
+    {
+      "url": "https://patrins.com/upload",
+      "date": "2026-10-21",
+      "proved": "'Free uploads up to 1 TB. No account required for temporary files.', 'Temporary files auto-delete after 7 days'"
+    },
+    {
+      "url": "https://patrins.com/",
+      "date": "2026-10-21",
+      "proved": "'1 TB max file size', '8 GB free forever storage', rclone webdav config snippet"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: POST /api/upload-init -> 401 {\"error\":\"Authentication required\"}; GET /api/public/upload/init -> 404"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Two separate numbers, and the split matters: free plan storage is 8 GB, but the per-file ceiling is unlimited (marketing says 1 TB) on every plan including free, with unlimited bandwidth. Anonymous temporary uploads accept up to 1 TB per file and self-delete after 7 days.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

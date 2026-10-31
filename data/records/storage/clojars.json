@@ -1,0 +1,88 @@
+{
+  "topic": "storage",
+  "slug": "clojars",
+  "provider": "Clojars (repo.clojars.org)",
+  "url": "https://clojars.org",
+  "category": "registry",
+  "free_tier": {
+    "stated": "No published byte quota on the site pages read. A 2020-era project commit records an 81 MB uberjar being rejected as 'too large for clojars', and a later commit adds a client-side 'uberjar size guard' - so there is a per-artifact ceiling in the tens-of-MB, historically around 100 MB.",
+    "unit": "MB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://clojars.org",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: ~100 MB",
+    "bytes": 100000000,
+    "source_url": "https://clojars.org",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "per-object-cap: ~100 MB, from third-party evidence only (81 MB jar rejected). retention: indefinite (Maven-layout artifacts are immutable once deployed)",
+    "source_url": "https://clojars.org",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free. repo.clojars.org is S3/CloudFront-backed ('Server: ... NoSuchKey' XML errors expose S3 origin) and serves without metering.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "`lein deploy clojars`, `clj -T:build deploy` / deps-deploy, `mvn deploy` with the clojars repo, and plain HTTPS/Maven layout GETs. No rclone backend.",
+  "chaining": "unlimited artifacts (group/artifact/version) x unlimited versions x unlimited Clojars accounts (signup with an SSH key, free). At ~100 MB/artifact that is 100 MB x N; 20 TiB would need ~200,000 artifacts. Trivially repeatable in principle, brutally inefficient.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: ~100 MB",
+      "source": "https://clojars.org"
+    }
+  ],
+  "limits_note": "per-object-cap: ~100 MB, from third-party evidence only (81 MB jar rejected). retention: indefinite (Maven-layout artifacts are immutable once deployed). request-rate: not documented. Write path is authenticated `lein deploy` with a Clojars token.",
+  "identity_cost": {
+    "kind": "country-phone",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Read path serves real jars (verified 3,224 and 16,324 bytes on real artifacts). The cap is the story and it is poorly documented - the only hard numbers come from a 2020 project commit and forum traffic. Confirming the current number would need an authenticated deploy probe.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://repo.clojars.org/metosin/reitit/0.7.2/reitit-0.7.2.jar",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, 3,224 bytes"
+    },
+    {
+      "url": "https://repo.clojars.org/hiccup/hiccup/1.0.5/hiccup-1.0.5.jar",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, 16,324 bytes"
+    },
+    {
+      "url": "https://github.com/IntraCel/core/commit/568d4758f5994ac0aa4b7d015af7ed6caef7916b",
+      "date": "2026-10-21",
+      "proved": "'the uberjar task produced an 81MB jar file which was too large for clojars'"
+    },
+    {
+      "url": "https://github.com/pokle/clojr/commit/7c8b2b9b755f751b2f50cbe9e1fa97d43188a8c9",
+      "date": "2026-10-21",
+      "proved": "'add uberjar size guard to deploy'"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published byte quota on the site pages read. A 2020-era project commit records an 81 MB uberjar being rejected as 'too large for clojars', and a later commit adds a client-side 'uberjar size guard' - so there is a per-artifact ceiling in the tens-of-MB, historically around 100 MB.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "No published byte quota on the site pages read. A 2020-era project commit records an 81 MB uberjar being rejected as 'too large for clojars', and a later commit adds a client-side 'uberjar size guard' - so there is a per-artifact ceiling in the tens-of-MB, historically around 100 MB.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

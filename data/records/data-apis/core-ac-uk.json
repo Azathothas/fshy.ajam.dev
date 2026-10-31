@@ -1,0 +1,289 @@
+{
+  "topic": "data-apis",
+  "slug": "core-ac-uk",
+  "provider": "CORE (core.ac.uk)",
+  "url": "https://core.ac.uk/services/api",
+  "category": "open-access aggregator API (metadata and full text) and bulk dataset",
+  "tier": "free",
+  "free_tier": {
+    "stated": "100 tokens per day, maximum 10 per minute, with no registration and no full text; 1,000 tokens per day, maximum 25 per minute, for a registered personal user; 5,000 tokens per day, maximum 10 per minute, for a registered academic user; a simple query costs 1 token, complex ones 3 to 5",
+    "unit": "credits",
+    "metered_on": "request-count",
+    "source_url": "https://api.core.ac.uk/docs/v3",
+    "read_on": "2026-10-30",
+    "notes": "The unit is CORE's API token, a per-call credit, named tokens by CORE; it is not a model token. The service page gives a different anonymous figure, one batch request or five single requests per 10 seconds. A first anonymous search on 2026-10-30 answered 429 with X-RateLimit-Limit 10 and X-RateLimit-Remaining 0."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: JSON per query; a PDF download call counts against the token allowance and costs more than a search",
+    "bytes": null,
+    "source_url": "https://api.core.ac.uk/docs/v3",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "the API is a live index; dataset dumps are dated snapshots (latest 2024-07-12; archived 2023-03-18, 2022 and 2020-03-18)",
+    "days": null,
+    "source_url": "https://core.ac.uk/documentation/dataset",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not metered by volume: the API is metered in tokens per day, and the dataset is downloaded over HTTPS with a link and credentials sent by email",
+    "metered": false,
+    "free_allowance": "no byte allowance published",
+    "price_per_tb": null,
+    "source_url": "https://core.ac.uk/documentation/dataset"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "REST at https://api.core.ac.uk/v3 (search/works, outputs, data providers, full-text download) with an Authorization: Bearer key for registered users; the dataset as tar.gz batches over HTTPS listed in a dataset_index.xml, behind a username and password sent by email",
+  "endpoint": "https://api.core.ac.uk/v3/search/works",
+  "tooling": "curl or any HTTP client; wget -c, curl -C - or aria2 for the dataset batches",
+  "chaining": "The dataset is the bulk path: the 2024-07-12 dump is 749 GB compressed and about 2.7 TB extracted; older dumps (2020-03-18 at 400 GB compressed) are free, and the more recent datasets are a purchased licence for registering organisations. The API at 100 to 5,000 tokens a day is a lookup and freshness step.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "unauthenticated: 100 tokens per day, maximum 10 per minute, no full text",
+      "source": "https://api.core.ac.uk/docs/v3"
+    },
+    {
+      "kind": "request-rate",
+      "value": "registered personal user: 1,000 tokens per day, maximum 25 per minute",
+      "source": "https://api.core.ac.uk/docs/v3"
+    },
+    {
+      "kind": "request-rate",
+      "value": "registered academic user not at a Supporting or Sustaining institution: 5,000 tokens per day, maximum 10 per minute",
+      "source": "https://api.core.ac.uk/docs/v3"
+    },
+    {
+      "kind": "request-rate",
+      "value": "service page: one batch request or five single requests per 10 seconds",
+      "source": "https://core.ac.uk/services/api"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "At 1 token for a simple query the anonymous allowance is 100 searches a day and a personal key 1,000; the dataset dump, not the API, is the route to the full collection.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The API answers with no registration at 100 tokens a day without full text. A key, and the dataset download credentials, come from forms that ask for an email address (an institutional one when registering for an institution); the key, and the dataset link and credentials, are sent to that address. CORE asks about the registrant's circumstances during registration and may follow up to assess eligibility for a free licence.",
+    "country": null
+  },
+  "reliability_note": "The first anonymous search of 2026-10-30 answered 429 with X-RateLimit-Remaining 0 and an X-RateLimit-Retry-After 10 minutes later, so the anonymous window can be spent before a caller's first request.",
+  "confidence": "documented",
+  "confidence_note": "The token allowances, the registration forms and the dataset sizes are vendor pages read on 2026-10-30. One anonymous search was probed the same day and answered 429. No key was requested and no dataset was downloaded, so whether an individual registrant receives the 2024-07-12 dump free is unverified.",
+  "evidence": [
+    {
+      "url": "https://api.core.ac.uk/docs/v3",
+      "date": "2026-10-30",
+      "proved": "unauthenticated users get 100 tokens a day, at most 10 a minute",
+      "capture": "sha256:ede8dec9cf3c22a422ae83988eb67ff1dcb34a3d4a37c8cf7abfbcbebb2c7aed",
+      "quote": "100 tokens per day, maximum 10 per minute."
+    },
+    {
+      "url": "https://api.core.ac.uk/docs/v3",
+      "date": "2026-10-30",
+      "proved": "registered personal users get 1,000 tokens a day, at most 25 a minute",
+      "capture": "sha256:ede8dec9cf3c22a422ae83988eb67ff1dcb34a3d4a37c8cf7abfbcbebb2c7aed",
+      "quote": "1,000 tokens per day, maximum 25 per minute."
+    },
+    {
+      "url": "https://api.core.ac.uk/docs/v3",
+      "date": "2026-10-30",
+      "proved": "registered academic users get 5,000 tokens a day, at most 10 a minute",
+      "capture": "sha256:ede8dec9cf3c22a422ae83988eb67ff1dcb34a3d4a37c8cf7abfbcbebb2c7aed",
+      "quote": "5,000 tokens per day, maximum 10 per minute."
+    },
+    {
+      "url": "https://api.core.ac.uk/docs/v3",
+      "date": "2026-10-30",
+      "proved": "anonymous calls get no full text",
+      "capture": "sha256:ede8dec9cf3c22a422ae83988eb67ff1dcb34a3d4a37c8cf7abfbcbebb2c7aed",
+      "quote": "Full-text is not available for unauthenticated API users."
+    },
+    {
+      "url": "https://api.core.ac.uk/docs/v3",
+      "date": "2026-10-30",
+      "proved": "a simple query costs 1 token, complex ones 3 to 5",
+      "capture": "sha256:ede8dec9cf3c22a422ae83988eb67ff1dcb34a3d4a37c8cf7abfbcbebb2c7aed",
+      "quote": "As a rule of thumb, a simple query will cost you 1 token while more complex queries will cost you between 3 to 5 tokens."
+    },
+    {
+      "url": "https://api.core.ac.uk/docs/v3",
+      "date": "2026-10-30",
+      "proved": "the API answers without authentication",
+      "capture": "sha256:ede8dec9cf3c22a422ae83988eb67ff1dcb34a3d4a37c8cf7abfbcbebb2c7aed",
+      "quote": "Access to the CORE API is free and requires no authentication."
+    },
+    {
+      "url": "https://api.core.ac.uk/docs/v3",
+      "date": "2026-10-30",
+      "proved": "a PDF download call costs more tokens than a search",
+      "capture": "sha256:ede8dec9cf3c22a422ae83988eb67ff1dcb34a3d4a37c8cf7abfbcbebb2c7aed",
+      "quote": "This request counts against your API tokens allowance and is generally more expensive, because it has more significant data implications."
+    },
+    {
+      "url": "https://api.core.ac.uk/docs/v3",
+      "date": "2026-10-30",
+      "proved": "a registered key is sent as a Bearer token",
+      "capture": "sha256:ede8dec9cf3c22a422ae83988eb67ff1dcb34a3d4a37c8cf7abfbcbebb2c7aed",
+      "quote": "headers = {\"Authorization\": f\"Bearer {apikey}\"}"
+    },
+    {
+      "url": "https://core.ac.uk/services/api",
+      "date": "2026-10-30",
+      "proved": "the service page states one batch or five single requests per 10 seconds",
+      "capture": "sha256:e485865db4466f9d0222c65c8dcdf788ba3b8a6b85af00a27d6f5535cf104912",
+      "quote": "One batch request or five single requests per 10 seconds."
+    },
+    {
+      "url": "https://core.ac.uk/services/api",
+      "date": "2026-10-30",
+      "proved": "the API needs no registration",
+      "capture": "sha256:e485865db4466f9d0222c65c8dcdf788ba3b8a6b85af00a27d6f5535cf104912",
+      "quote": "CORE API is free and does not require registration, subject to our rate limits."
+    },
+    {
+      "url": "https://core.ac.uk/services/api",
+      "date": "2026-10-30",
+      "proved": "registration asks about circumstances and may be followed up",
+      "capture": "sha256:e485865db4466f9d0222c65c8dcdf788ba3b8a6b85af00a27d6f5535cf104912",
+      "quote": "We will ask you for your circumstances during the registration process and we might contact you afterwards to clarify any points and assess your eligibility for a free licence."
+    },
+    {
+      "url": "https://core.ac.uk/services/api",
+      "date": "2026-10-30",
+      "proved": "the key registration form starts from an email address",
+      "capture": "sha256:815d6cd5652a4f84f7e820db9521a76faaea7d4315c7d81db273a18cc9f70e24",
+      "quote": "Enter your email address to register for a new API key, or restore a previous API key."
+    },
+    {
+      "url": "https://core.ac.uk/services/dataset",
+      "date": "2026-10-30",
+      "proved": "the dataset registration form starts from an email address",
+      "capture": "sha256:f6bd665bca5e0edb19265dd1accaf55a4642aa75fc6b50227e807524105fb529",
+      "quote": "Enter your email address to register for our datasets or access the download page if you have already registered."
+    },
+    {
+      "url": "https://core.ac.uk/services/dataset",
+      "date": "2026-10-30",
+      "proved": "older dumps are free",
+      "capture": "sha256:4cc66f1904426df935703b262569355c5a0f720b28d6ded43dbee09d1ee252af",
+      "quote": "Older dumps of the CORE Dataset are free."
+    },
+    {
+      "url": "https://core.ac.uk/services/dataset",
+      "date": "2026-10-30",
+      "proved": "recent dumps are a purchased licence for organisations",
+      "capture": "sha256:4cc66f1904426df935703b262569355c5a0f720b28d6ded43dbee09d1ee252af",
+      "quote": "Organisations that register for the CORE Dataset can purchase a licence for the more recent datasets."
+    },
+    {
+      "url": "https://core.ac.uk/documentation/dataset",
+      "date": "2026-10-30",
+      "proved": "dataset download credentials are sent by email",
+      "capture": "sha256:df0a02fa517e94ead13f842f04446d2d6e75b8233ce11758a7cde87c51d4c655",
+      "quote": "The link and credentials will be shared with you via email."
+    },
+    {
+      "url": "https://core.ac.uk/documentation/dataset",
+      "date": "2026-10-30",
+      "proved": "the latest dump is dated 2024-07-12",
+      "capture": "sha256:df0a02fa517e94ead13f842f04446d2d6e75b8233ce11758a7cde87c51d4c655",
+      "quote": "Dataset 2024-07-12"
+    },
+    {
+      "url": "https://core.ac.uk/documentation/dataset",
+      "date": "2026-10-30",
+      "proved": "the 2024-07-12 dump is 749 GB compressed",
+      "capture": "sha256:df0a02fa517e94ead13f842f04446d2d6e75b8233ce11758a7cde87c51d4c655",
+      "quote": "749 GB  - compressed"
+    },
+    {
+      "url": "https://core.ac.uk/documentation/dataset",
+      "date": "2026-10-30",
+      "proved": "the 2024-07-12 dump is about 2.7 TB extracted",
+      "capture": "sha256:df0a02fa517e94ead13f842f04446d2d6e75b8233ce11758a7cde87c51d4c655",
+      "quote": "~2.7 TB  - extracted"
+    },
+    {
+      "url": "https://core.ac.uk/documentation/dataset",
+      "date": "2026-10-30",
+      "proved": "the 2020-03-18 dump is 400 GB compressed",
+      "capture": "sha256:df0a02fa517e94ead13f842f04446d2d6e75b8233ce11758a7cde87c51d4c655",
+      "quote": "400 GB - compressed"
+    },
+    {
+      "url": "probe:https://api.core.ac.uk/v3/search/works?q=open+access&limit=1",
+      "date": "2026-10-30",
+      "proved": "a first anonymous search answered 429",
+      "capture": "sha256:e0a5e9fbc55cddb85f306df0226258e4230f9b4cbb55b63db10eeb5f48f84653",
+      "quote": "\"status\": 429"
+    },
+    {
+      "url": "probe:https://api.core.ac.uk/v3/search/works?q=open+access&limit=1",
+      "date": "2026-10-30",
+      "proved": "the anonymous limit header was 10",
+      "capture": "sha256:e0a5e9fbc55cddb85f306df0226258e4230f9b4cbb55b63db10eeb5f48f84653",
+      "quote": "\"x-ratelimit-limit\": \"10\""
+    },
+    {
+      "url": "probe:https://api.core.ac.uk/v3/search/works?q=open+access&limit=1",
+      "date": "2026-10-30",
+      "proved": "no anonymous requests remained in the window",
+      "capture": "sha256:e0a5e9fbc55cddb85f306df0226258e4230f9b4cbb55b63db10eeb5f48f84653",
+      "quote": "\"x-ratelimit-remaining\": \"0\""
+    },
+    {
+      "url": "probe:https://api.core.ac.uk/v3/search/works?q=open+access&limit=1",
+      "date": "2026-10-30",
+      "proved": "the retry time was 10 minutes after the request",
+      "capture": "sha256:e0a5e9fbc55cddb85f306df0226258e4230f9b4cbb55b63db10eeb5f48f84653",
+      "quote": "\"x-ratelimit-retry-after\": \"2026-10-30T13:10:07+0000\""
+    },
+    {
+      "url": "https://api.core.ac.uk/docs/v3",
+      "date": "2026-10-31",
+      "proved": "registered personal users get 1,000 tokens a day, at most 25 a minute",
+      "capture": "sha256:ede8dec9cf3c22a422ae83988eb67ff1dcb34a3d4a37c8cf7abfbcbebb2c7aed",
+      "quote": "1,000 tokens per day, maximum 25 per minute."
+    },
+    {
+      "url": "https://api.core.ac.uk/docs/v3",
+      "date": "2026-10-31",
+      "proved": "registered academic users get 5,000 tokens a day, at most 10 a minute",
+      "capture": "sha256:ede8dec9cf3c22a422ae83988eb67ff1dcb34a3d4a37c8cf7abfbcbebb2c7aed",
+      "quote": "5,000 tokens per day, maximum 10 per minute."
+    },
+    {
+      "url": "https://core.ac.uk/services/api",
+      "date": "2026-10-31",
+      "proved": "the service page states one batch or five single requests per 10 seconds",
+      "capture": "sha256:80686ee4d28aeda3ec9a16b0fe60ce8383b1fcb88a35ffbea57cad95a2f94df9",
+      "quote": "One batch request or five single requests per 10 seconds."
+    },
+    {
+      "url": "probe:https://api.core.ac.uk/v3/search/works/?q=open+access&limit=1",
+      "date": "2026-10-31",
+      "proved": "an anonymous search on 2026-10-31 answered 200 with an x-ratelimit-limit header of 10, the documented unauthenticated maximum per minute",
+      "capture": "sha256:5ddcb2c153cf0cb8efdd97b133cd5bf1e1cc88528fee537ba175ce5a85a58c20",
+      "quote": "\"x-ratelimit-limit\": \"10\""
+    },
+    {
+      "url": "https://api.core.ac.uk/docs/v3",
+      "date": "2026-10-31",
+      "proved": "unauthenticated users get 100 tokens a day, at most 10 a minute",
+      "capture": "sha256:ede8dec9cf3c22a422ae83988eb67ff1dcb34a3d4a37c8cf7abfbcbebb2c7aed",
+      "quote": "100 tokens per day, maximum 10 per minute."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-31T10:03:34.103Z",
+  "price_per_tb_month": null,
+  "notes": "The caveat is the anonymous ceiling and the gated full text: no full text without registration, and the bulk dump arrives by emailed credentials.",
+  "extras": {
+    "anonymous_tokens_per_day": 100,
+    "personal_tokens_per_day": 1000,
+    "latest_dump": "2024-07-12",
+    "latest_dump_compressed_gb": 749
+  }
+}

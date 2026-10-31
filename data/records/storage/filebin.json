@@ -1,0 +1,88 @@
+{
+  "topic": "storage",
+  "slug": "filebin",
+  "provider": "Filebin",
+  "url": "https://filebin.net",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "no account; per-bin, no published byte cap; bins expire 6 days after creation",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://filebin.net/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://filebin.net/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "no account; per-bin, no published byte cap; bins expire 6 days after creation",
+    "days": 6,
+    "source_url": "https://filebin.net/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "unmetered; downloads redirect to a signed S3 URL (Backblaze-style hel1-dc4)",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "plain HTTP PUT — 'curl -X PUT --data-binary @file -H \"filename: probe.bin\" https://filebin.net/<bin>/probe.bin'. Open source (github.com/espebra/filebin2, BSD-3) so it can be self-hosted.",
+  "chaining": "unlimited distinct bin IDs, each with its own 6-day clock — 'N bins x 6 days' is the only multiplication, and nothing survives week 2.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "expire 6 days",
+      "source": "https://filebin.net/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "retention from bin creation ('deleted automatically 6 days",
+      "source": "https://filebin.net/"
+    }
+  ],
+  "limits_note": "6-day retention from bin creation ('deleted automatically 6 days from now' on the create page). Bin is created implicitly by the first PUT.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "IMPORTANT INVERSION: a real browser UA (Mozilla/...) gets a 5399-byte 'are you sure / proceed to download' interstitial at HTTP 200; curl's default UA gets the real bytes. Automation works better than a browser here — the opposite of the usual trap. Any client that sets a browser UA (rclone, most HTTP libs, headless Chrome) will silently receive HTML instead of the file.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://filebin.net/",
+      "date": "2026-10-21",
+      "proved": "'deleted automatically 6 days from now', no-registration flow"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: PUT /<bin>/probe.bin -> 201 (32768 B, md5 echoed); GET with curl UA -> 200 / 32768 B / sha256 match; GET with Mozilla UA -> 200 / 5399 B HTML"
+    },
+    {
+      "url": "https://filebin.net/about",
+      "date": "2026-10-21",
+      "proved": "version v1.3.1, source github.com/espebra/filebin2"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "no account; per-bin, no published byte cap; bins expire 6 days after creation",
+  "extras": {
+    "dead_end": {
+      "failure_class": "retention",
+      "why": "no account; per-bin, no published byte cap; bins expire 6 days after creation",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    },
+    "probe_reported": "PUT https://filebin.net/e1probe1792600137/probe.bin -> 201, JSON echoes bytes:32768 + md5. GET same URL with curl's default UA -> 200, 32768 B, sha256 MATCH, 302 through to storage.filebin.net signed URL (X-Amz-Expires=900)."
+  },
+  "binding": "retention-clamped",
+  "binding_note": null
+}

@@ -1,0 +1,88 @@
+{
+  "topic": "storage",
+  "slug": "github-gist",
+  "provider": "GitHub Gist",
+  "url": "https://gist.github.com",
+  "category": "paas",
+  "free_tier": {
+    "stated": "Unlimited gists per account; each gist is a full Git repo. Hard block at 100 MiB per single file; 2 GB per push. Total repo size is not capped, only 10 GB on-disk is the documented recommendation.",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://docs.github.com/en/repositories/creating-and-managing-repositories/repository-limits",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "100 MiB per single file",
+    "bytes": 104857600,
+    "source_url": "https://docs.github.com/en/repositories/creating-and-managing-repositories/repository-limits",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.github.com/en/repositories/creating-and-managing-repositories/repository-limits",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "unmetered free downloads from gist.githubusercontent.com; docs state 'We don't limit the total size of the binary files in the release or the bandwidth used to deliver them'. No egress metering observed across repeated 60 MB pulls (~1.3-2.0 s each).",
+    "metered": false
+  },
+  "interface": [
+    "s3",
+    "rest",
+    "git",
+    "rclone"
+  ],
+  "interface_detail": "git",
+  "tooling": "git clone/push against gist.github.com/<id>.git, gh gist create, REST POST /gists, github.com/bharatcj/git-unlimited-storage (S3-shaped shim over a repo, MIT, 0 stars), rclone backend 'gist' does NOT exist — use plain git plus a CDN in front.",
+  "chaining": "unlimited gists x unlimited free GitHub accounts, each gist 100 MiB/file x as many files as the push allows. Practical unit is 'one gist repo per dataset shard'.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "100 MiB per single file",
+      "source": "https://docs.github.com/en/repositories/creating-and-managing-repositories/repository-limits"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "100 MiB per file",
+      "source": "https://docs.github.com/en/repositories/creating-and-managing-repositories/repository-limits"
+    }
+  ],
+  "limits_note": "100 MiB per file hard block (pre-receive hook); ~80 writes/min, 500/hr, 5000 REST req/hr per token; API truncates file content at 1 MB and files list at 300 unless you clone; 6 pushes/min per repo recommended.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Push hook is strict and fires at 100 MiB; pushes into a repo already carrying hundreds of MB start failing before the per-file cap is reached, so keep each shard repo small. Read path was consistently fast and cache-friendly.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://docs.github.com/en/repositories/creating-and-managing-repositories/repository-limits",
+      "date": "2026-10-21",
+      "proved": "'Single object size ... is enforced at 100 MB', 'Push size: This limit is enforced at 2GB', on-disk 10 GB recommendation, 15 reads/s per repo"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: git push of 60,000,000-byte file into gist 8fafc3fc9486dc10c88b24317cffd7e9 -> rc=0, then GET gist.githubusercontent.com/.../raw/big60.bin -> 200, bytes=60000000, 1.3-2.0 s"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: 119.21 MB file push -> 'remote: error: File big125.bin is 119.21 MB; this exceeds GitHub's file size limit of 100.00 MB' / pre-receive hook declined"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: gh gist create of a 90 MB and 95 MB file -> 'failed to collect files for posting: binary file not supported' (CLI path rejects binaries; use git push instead)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Unlimited gists per account; each gist is a full Git repo. Hard block at 100 MiB per single file; 2 GB per push. Total repo size is not capped, only 10 GB on-disk is the documented recommendation.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

@@ -1,0 +1,94 @@
+{
+  "topic": "storage",
+  "slug": "upstash-redis",
+  "provider": "Upstash Redis",
+  "url": "https://upstash.com/redis",
+  "category": "paas",
+  "free_tier": {
+    "stated": "250 MB max data size on Free; 500K commands per month; 10 GB bandwidth/month",
+    "unit": "MB",
+    "metered_on": "unstated",
+    "source_url": "https://upstash.com/pricing/redis",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://upstash.com/pricing/redis",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Free DBs minted anonymously are DELETED after 3 days unless claimed.",
+    "days": 3,
+    "source_url": "https://upstash.com/pricing/redis",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free up to 10 GB/month on the Free plan (then metered on paid).",
+    "metered": false,
+    "free_allowance": "10 GB per month"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "redis-cli over TLS, any Redis client, plus a body-style REST API (`POST` a JSON array command). Verified live: a free database can be minted with no signup via `POST https://upstash.com/start-redis` with an `Idempotency-Key` header.",
+  "chaining": "Free tier is 1 database per account (pricing table: 'Max databases | 1'). 250 MB x N accounts. The command quota, not storage, is the wall: 500K commands/month = 16,667/day, and each GET returns at most 10 MB (verified), so max read throughput is 16,667 x 10 MB = 167 GB/day — 3x short of 500 GB/day even with a mythical 250 MB dataset read 667 times a day.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "DELETED after 3 days",
+      "source": "https://upstash.com/pricing/redis"
+    }
+  ],
+  "limits_note": "250 MB data; 10 MB max request size (LIVE-VERIFIED: a 20 MB SET returned 'ERR max request size exceeded. Limit: 10485760 bytes'); 100 MB max record size listed but the 10 MB request cap binds first; 10,000 max cmd/sec; 500K commands/month; 1 database",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Works and is fast; the killer is the command meter. Every GET, SET, EXISTS, and even pipelined command counts. Operational commands (PING, AUTH, INFO, CONFIG, SELECT, COMMAND, RESET, QUIT) are explicitly not charged. Free DBs minted anonymously are DELETED after 3 days unless claimed.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://upstash.com/pricing/redis",
+      "date": "2026-10-21",
+      "proved": "'Free | $0/month | 250 MB | 10 GB' (Max Data / Max Bandwidth); FAQ: 'Free tier includes 250MB data size and 500K commands per month.'; 'Max databases | 1'"
+    },
+    {
+      "url": "https://upstash.com/start-redis",
+      "date": "2026-10-21",
+      "proved": "probe: POST (Idempotency-Key header) -> 200, credentials returned, 'Expires: 2026-10-24 (3 days from creation)'"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: SET of a 1,000,000-byte value -> {\"result\":\"OK\"}; GET -> 1,000,013 bytes returned; STRLEN -> 1000000; 9 MB and 10,000,000-byte SETs also OK; a 20 MB SET -> {\"error\":\"ERR max request size exceeded. Limit: 10485760 bytes\"}"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: INFO memory on the freshly minted free DB -> maxmemory:67108864 (64 MB), maxmemory_policy:noeviction — i.e. the anonymous/agent database is provisioned at 64 MB, well under the advertised 250 MB"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "arithmetic: 500,000 commands/month / 30 = 16,667 commands/day; x 10 MB max request = 167 GB/day ceiling. At a realistic 1 KB per command it is 16.7 MB/day — 30,000x short of 500 GB/day."
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "250 MB max data size on Free; 500K commands per month; 10 GB bandwidth/month",
+  "extras": {
+    "dead_end": {
+      "failure_class": "egress",
+      "why": "250 MB max data size on Free; 500K commands per month; 10 GB bandwidth/month",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "retention-clamped",
+  "binding_note": null
+}

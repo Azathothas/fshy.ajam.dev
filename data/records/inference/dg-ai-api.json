@@ -1,0 +1,111 @@
+{
+  "topic": "inference",
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "not applicable"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "slug": "dg-ai-api",
+  "provider": "DG AI API (dg-ai.scriptsnsenses.workers.dev)",
+  "url": "https://dg-ai.scriptsnsenses.workers.dev/v1",
+  "category": "inference gateway, keyless free public beta",
+  "free_tier": {
+    "stated": "Free public beta with no key required: 18 models live, auth is optional and a placeholder of dashes is accepted; the anonymous tier is 8 requests per 10 s",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://dg-ai.scriptsnsenses.workers.dev/",
+    "read_on": "2026-10-28",
+    "notes": "GET /v1/models lists 18 ids; the page labels three backends (Cloudflare Workers AI, freeAI gateways, SurfSense) plus NVIDIA NIM, and which model actually serves an id with another vendor's name is not observed"
+  },
+  "endpoint": "https://dg-ai.scriptsnsenses.workers.dev/v1/chat",
+  "tooling": "POST /v1/chat with {\"model\": id, \"messages\": [...]}; the chat route is /v1/chat, not /v1/chat/completions, which answers \"Route not found\" to a GET. A placeholder Authorization or X-API-Key of dashes, or no header, is accepted",
+  "chaining": "pairs with prototypes that need a free OpenAI-shaped call; image and voice routes exist beside chat",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "anonymous tier 8 requests per 10 s; a verified tier is 16 per 10 s (stated as \"anon 8/10s · verified 16/10s\")",
+      "source": "https://dg-ai.scriptsnsenses.workers.dev/"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "the anonymous tier ceiling of 8 per 10 s binds; what verification requires was not read",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "none for the anonymous tier: auth is optional, and a placeholder or no header is accepted as anonymous. A verified tier raises the quota; what verifying needs was not read: unverified",
+    "country": null
+  },
+  "reliability_note": "the page claims 98.7% uptime over 90 days; no x-ratelimit header is returned on GET /v1/models, only CORS headers",
+  "confidence": "documented",
+  "confidence_note": "the model list was read by a keyless GET; no completion was sent because probe issues GET and HEAD only, so the echoed model and the answer are unverified",
+  "probe": {
+    "records": [
+      {
+        "probe_id": "dgai-v1-models-get",
+        "method": "GET",
+        "url": "https://dg-ai.scriptsnsenses.workers.dev/v1/models",
+        "http": 200,
+        "authorization_sent": false,
+        "model_count": 18,
+        "ratelimit_headers": {},
+        "probed_at": "2026-10-28T04:47:35.797Z",
+        "chat_completion_tested": false
+      },
+      {
+        "probe_id": "dgai-chat-completions-get",
+        "method": "GET",
+        "url": "https://dg-ai.scriptsnsenses.workers.dev/v1/chat/completions",
+        "http": 404,
+        "error_message": "Route not found: GET /v1/chat/completions",
+        "probed_at": "2026-10-28T04:48:01.537Z"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "url": "https://dg-ai.scriptsnsenses.workers.dev/",
+      "date": "2026-10-28",
+      "capture": "sha256:4b9965c9b012a7b854dd593f4c343b901adeed442592f84471ddde0b71e2623e",
+      "quote": "Free public beta — no key required · placeholders like \\---------- are accepted",
+      "proved": "the page states a free public beta with no key required"
+    },
+    {
+      "url": "https://dg-ai.scriptsnsenses.workers.dev/",
+      "date": "2026-10-28",
+      "capture": "sha256:4b9965c9b012a7b854dd593f4c343b901adeed442592f84471ddde0b71e2623e",
+      "quote": "Auth is optional. Send `Authorization: Bearer ----------` (any number of dashes), `X-API-Key: ----------`, or nothing — all accepted as anonymous.",
+      "proved": "auth is optional and no header at all is accepted as anonymous"
+    },
+    {
+      "url": "https://dg-ai.scriptsnsenses.workers.dev/",
+      "date": "2026-10-28",
+      "capture": "sha256:4b9965c9b012a7b854dd593f4c343b901adeed442592f84471ddde0b71e2623e",
+      "quote": "`anon 8/10s · verified 16/10s`",
+      "proved": "the published rate limit is 8 per 10 s anonymous and 16 per 10 s verified"
+    },
+    {
+      "url": "https://dg-ai.scriptsnsenses.workers.dev/",
+      "date": "2026-10-28",
+      "capture": "sha256:4b9965c9b012a7b854dd593f4c343b901adeed442592f84471ddde0b71e2623e",
+      "quote": "18models live",
+      "proved": "the page counts 18 models live"
+    },
+    {
+      "url": "https://dg-ai.scriptsnsenses.workers.dev/v1/models",
+      "date": "2026-10-28",
+      "capture": "sha256:e728e2b02f3e1d30a1f89e6625f99362cb3ed6a56f0e9b84a5989dfd6c2ae5ac",
+      "quote": "{\"object\":\"list\",\"data\":[{\"id\":\"gpt-oss\",\"object\":\"model\",\"owned_by\":\"OpenAI\"}",
+      "proved": "a keyless GET /v1/models answered 200 with the model list"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-28T04:36:18.974Z",
+  "notes": "ids such as claude-sonnet-3.5 and gemini-2.5-pro are labelled by their upstream vendor in the listing and are served through the freeAI gateway backend named on the page; the served model is unverified"
+}

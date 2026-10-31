@@ -1,0 +1,285 @@
+{
+  "topic": "compute",
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "notes": null
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "a .gitlab-ci.yml pipeline; a runner with a shell",
+  "tooling": "a shell on an ephemeral runner; package managers; a checkout",
+  "chaining": "a real machine for the length of a job and nothing after it",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "400 compute minutes a month on the Free tier, with a cost factor of 1 on the default `small` Linux x86-64 runner, 2 on `medium`, 3 on `large`, 6 on `xlarge`, 12 on `2xlarge`",
+      "source": "https://docs.gitlab.com/ci/pipelines/compute_minutes/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "'Jobs handled by hosted runners on GitLab.com time out after 3 hours, regardless of the timeout configured in a project.'",
+      "source": "https://docs.gitlab.com/ci/runners/hosted_runners/"
+    },
+    {
+      "kind": "write-gated",
+      "value": "'Inbound communication from the public internet to the ephemeral VM is not allowed.' Firewall rules 'only allow outbound communication from the ephemeral VM to the public internet'.",
+      "source": "https://docs.gitlab.com/ci/runners/hosted_runners/"
+    },
+    {
+      "kind": "write-gated",
+      "value": "A card gates the free minutes. Quoted: 'credit/debit card details are required if you choose to use GitLab.com shared runners. Credit/debit card details are not required if you bring your own runner or disable shared runners.' Verified by 'a one-dollar authorization transaction. No charge will be made and no money will transfer.'",
+      "source": "https://about.gitlab.com/pricing/"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "On quota exhaustion, instance runners stop processing new jobs; running jobs continue until the namespace is over quota by 1,000 compute minutes, then they are dropped",
+      "source": "https://docs.gitlab.com/ci/pipelines/instance_runner_compute_minutes/"
+    }
+  ],
+  "limits_note": "Three separate ceilings and the smallest is the card gate: 400 compute minutes a month, a 3-hour job timeout, and a card required to use the shared runners that the minutes are spent on. Bringing your own runner removes the card requirement and the minute quota at the same time, which needs a machine to run the runner on.",
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "verified_at": "2026-10-30T12:41:26.148Z",
+  "price_per_tb_month": null,
+  "notes": "GitLab's own FAQ says the card is required 'if you choose to use GitLab.com shared runners', and shared runners are the only way to spend the 400 minutes without a self-managed runner. So the kind is `card`, with a USD 1.00 authorisation hold and release. Identity verification on the GitLab free tier is a risk-scored three-stage scheme, and it is documented; separately and unconditionally, the shared runners need a card. Not established: whether a new account from a given country lands in the medium-risk (phone) or high-risk (card) band, because the risk score is not published; and whether a debit or prepaid card passes the one-dollar authorisation, because no page says.",
+  "slug": "gitlab-runners",
+  "provider": "GitLab Runners",
+  "url": "https://docs.gitlab.com/ci/pipelines/compute_minutes/",
+  "category": "CI runner",
+  "free_tier": {
+    "stated": "'The base monthly compute quota is determined by your subscription tier. Free tier namespaces receive 400 compute minutes per month.' The pricing page repeats it as '400 compute minutes per month'. A compute minute is not a wall-clock minute: the usage formula is 'Job duration / 60 * Cost factor', and the default `small` Linux x86-64 runner has cost factor 1, so 400 compute minutes is 400 wall-clock minutes on the default shape and less on any larger one. The card requirement is the finding: 'credit/debit card details are required if you choose to use GitLab.com shared runners', verified with 'a one-dollar authorization transaction'.",
+    "unit": "minutes",
+    "metered_on": "wall-clock",
+    "source_url": "https://docs.gitlab.com/ci/pipelines/compute_minutes/",
+    "read_on": "2026-10-24",
+    "notes": "400 compute minutes at cost factor 1 is 6 hours 40 minutes a month, which is 0.22 hours a day. The card gate is on the shared runners specifically, not on the account."
+  },
+  "retention": {
+    "stated": "'Ephemeral runner VMs serve a single job and are deleted right after the job execution.' Nothing on the VM survives the job.",
+    "days": 0,
+    "source_url": "https://docs.gitlab.com/ci/runners/hosted_runners/",
+    "notes": "0 means the VM is deleted at job end"
+  },
+  "egress": {
+    "terms": "not published on any page read: no egress quota, shaping tier or per-byte price is stated for GitLab.com hosted runners",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://docs.gitlab.com/ci/runners/hosted_runners/"
+  },
+  "identity_cost": {
+    "kind": "card",
+    "detail": "A card, for the thing this record is about. The account itself is free and the pricing page says 'No credit card required' for the Free plan, but the free compute minutes sit behind a card: 'credit/debit card details are required if you choose to use GitLab.com shared runners'. The card is verified by 'a one-dollar authorization transaction' and 'No charge will be made and no money will transfer', so the hold is USD 1.00 authorised and released, not captured. GitLab's identity-verification page adds a second, independent gate that is risk-scored: 'All users - Email verification. Medium-risk users - Phone number verification. High-risk users - Credit card verification.' Whether a new account lands in the medium or high band is not published. Debit acceptance is not stated on any page read; the pages say 'credit/debit card' without distinguishing.",
+    "country": null
+  },
+  "evidence": [
+    {
+      "url": "https://about.gitlab.com/pricing/",
+      "date": "2026-10-02",
+      "proved": "a free tier with a monthly CI minute allowance; the runner is ephemeral per job"
+    },
+    {
+      "url": "https://about.gitlab.com/pricing/",
+      "date": "2026-10-22",
+      "proved": "read live: free tier carries 400 compute minutes a month"
+    },
+    {
+      "url": "https://docs.gitlab.com/ci/pipelines/compute_minutes/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'The base monthly compute quota is determined by your subscription tier. Free tier namespaces receive 400 compute minutes per month. Paid tiers receive a higher monthly quota.'"
+    },
+    {
+      "url": "https://docs.gitlab.com/ci/pipelines/compute_minutes/",
+      "date": "2026-10-24",
+      "proved": "cost-factor table quoted row by row: '| Linux x86-64 (default) | `small` | `1` |', '| Linux x86-64 | `medium` | `2` |', '`large` | `3`', '`xlarge` | `6`', '`2xlarge` | `12`'; formula quoted: 'Job duration / 60 * Cost factor'. This row is what makes 400 compute minutes 400 wall-clock minutes on the default shape."
+    },
+    {
+      "url": "https://docs.gitlab.com/ci/runners/hosted_runners/linux/",
+      "date": "2026-10-24",
+      "proved": "quoted shape table: '`saas-linux-small-amd64` (default) | 2 | 8 GB | 30 GB' and '`saas-linux-medium-amd64` | 4 | 16 GB | 50 GB'"
+    },
+    {
+      "url": "https://docs.gitlab.com/ci/runners/hosted_runners/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Each of your jobs runs in a newly provisioned VM, which is dedicated to the specific job.' and 'Jobs handled by hosted runners on GitLab.com time out after 3 hours, regardless of the timeout configured in a project.'"
+    },
+    {
+      "url": "https://docs.gitlab.com/ci/runners/hosted_runners/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Firewall rules only allow outbound communication from the ephemeral VM to the public internet.' and 'Inbound communication from the public internet to the ephemeral VM is not allowed.' and 'Ephemeral runner VMs serve a single job and are deleted right after the job execution.'"
+    },
+    {
+      "url": "https://about.gitlab.com/pricing/",
+      "date": "2026-10-24",
+      "proved": "quoted, the card gate: 'credit/debit card details are required if you choose to use GitLab.com shared runners. Credit/debit card details are not required if you bring your own runner or disable shared runners. When you provide the card, it will be verified with a one-dollar authorization transaction. No charge will be made and no money will transfer.'"
+    },
+    {
+      "url": "https://about.gitlab.com/pricing/",
+      "date": "2026-10-24",
+      "proved": "quoted, the Free plan row: 'per user/month, No credit card required' with '5 users per top-level group', '400 compute minutes per month', '10 GiB adjustable storage'"
+    },
+    {
+      "url": "https://about.gitlab.com/free-trial/",
+      "date": "2026-10-24",
+      "proved": "quoted, the same card gate from a second first-party page: 'A credit/debit card is not required for customers who do not use GitLab.com CI/CD, bring their own runners, or disable shared runners. However, credit/debit card details are required if you choose to use GitLab.com shared runners. This change was made to discourage abuse of the free compute minutes provided on GitLab.com to mine cryptocurrencies'"
+    },
+    {
+      "url": "https://docs.gitlab.com/security/identity_verification/",
+      "date": "2026-10-24",
+      "proved": "quoted from the page's opening: 'Depending on your risk score, you might be required to perform up to' then 'three stages of verification to create a user account:' then the list items 'All users - Email verification.', 'Medium-risk users - Phone number verification.', 'High-risk users - Credit card verification.' Also quoted: 'GitLab does not store your card details directly or make any charges.'"
+    },
+    {
+      "url": "https://docs.gitlab.com/ci/pipelines/instance_runner_compute_minutes/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'When the compute quota is used for the current month, instance runners stop processing new jobs.' and 'Jobs running on instance runners can continue to run until the overall namespace usage goes over-quota by 1,000 compute minutes.'"
+    },
+    {
+      "url": "https://docs.gitlab.com/ci/debugging/",
+      "date": "2026-10-30",
+      "proved": "on GitLab.com Free the identity check before hosted-runner jobs follows a risk score: email, phone or payment method",
+      "capture": "sha256:06ffd3fc32a16dc3302960fc4c277bcb44199514d960eeee2d890f863a682d67",
+      "quote": "Depending on your risk score, you may need to verify your email, phone number, or add a payment method."
+    },
+    {
+      "url": "https://docs.gitlab.com/ci/pipelines/instance_runner_compute_minutes/",
+      "date": "2026-10-30",
+      "proved": "instance runners take no new job once the monthly quota is used",
+      "capture": "sha256:efaec0943e354db0290de9d82f6215bbaf933b99ce359a486c25d020c8d82af1",
+      "quote": "When the compute quota is used for the current month, instance runners stop processing new jobs."
+    },
+    {
+      "url": "https://docs.gitlab.com/ci/pipelines/compute_minutes/",
+      "date": "2026-10-30",
+      "proved": "a GitLab.com Free namespace gets 400 compute minutes a month on instance runners",
+      "capture": "sha256:d9b0cc2cfe13609488898aa96c54a548728d2e9b998756fbc0e272d7be7b6202",
+      "quote": "Free tier namespaces receive 400 compute minutes per month."
+    },
+    {
+      "url": "https://docs.gitlab.com/ci/runners/hosted_runners/",
+      "date": "2026-10-30",
+      "proved": "a job on GitLab.com hosted runners is capped at 3 hours",
+      "capture": "sha256:8439c8806f86d99b80dac0fefcbee596901a2682e56e19b01ae80de0aefe2e1a",
+      "quote": "Jobs handled by hosted runners on GitLab.com time out after 3 hours, regardless of the timeout configured in a project."
+    },
+    {
+      "url": "https://docs.gitlab.com/ci/pipelines/compute_minutes/",
+      "date": "2026-10-30",
+      "proved": "the default small Linux runner has cost factor 1",
+      "capture": "sha256:d9b0cc2cfe13609488898aa96c54a548728d2e9b998756fbc0e272d7be7b6202",
+      "quote": "| Linux x86-64 (default) | `small` | `1` |"
+    },
+    {
+      "url": "https://docs.gitlab.com/ci/runners/hosted_runners/",
+      "date": "2026-10-30",
+      "proved": "the runner VM accepts no inbound connection from the internet",
+      "capture": "sha256:8439c8806f86d99b80dac0fefcbee596901a2682e56e19b01ae80de0aefe2e1a",
+      "quote": "Inbound communication from the public internet to the ephemeral VM is not allowed."
+    },
+    {
+      "url": "https://docs.gitlab.com/ci/runners/hosted_runners/",
+      "date": "2026-10-30",
+      "proved": "nothing on the runner VM survives the job",
+      "capture": "sha256:8439c8806f86d99b80dac0fefcbee596901a2682e56e19b01ae80de0aefe2e1a",
+      "quote": "Ephemeral runner VMs serve a single job and are deleted right after the job execution."
+    },
+    {
+      "url": "https://about.gitlab.com/pricing/",
+      "date": "2026-10-30",
+      "proved": "the pricing FAQ requires card details to run jobs on GitLab.com shared runners",
+      "capture": "sha256:1a553ff4ad78a2b9e910d752cd0e4cc7450386e42e540da41349d65ef839be09",
+      "quote": "To discourage such abuse, credit/debit card details are required if you choose to use GitLab.com shared runners."
+    },
+    {
+      "url": "https://about.gitlab.com/pricing/",
+      "date": "2026-10-30",
+      "proved": "the card is checked with a one-dollar authorization",
+      "capture": "sha256:1a553ff4ad78a2b9e910d752cd0e4cc7450386e42e540da41349d65ef839be09",
+      "quote": "When you provide the card, it will be verified with a one-dollar authorization transaction."
+    },
+    {
+      "url": "https://docs.gitlab.com/ci/pipelines/instance_runner_compute_minutes/",
+      "date": "2026-10-30",
+      "proved": "running jobs continue until the namespace is 1,000 compute minutes over quota",
+      "capture": "sha256:efaec0943e354db0290de9d82f6215bbaf933b99ce359a486c25d020c8d82af1",
+      "quote": "Jobs running on instance runners can continue to run until the overall namespace usage goes over-quota by 1,000 compute minutes."
+    },
+    {
+      "url": "https://docs.gitlab.com/ci/runners/hosted_runners/linux/",
+      "date": "2026-10-30",
+      "proved": "the default Linux runner is 2 vCPU, 8 GB RAM and 30 GB disk",
+      "capture": "sha256:390efba081ccf0c480ede2a14ca7a00696ffdbe52a7487e6d843135446c019bd",
+      "quote": "| `saas-linux-small-amd64` (default) | 2 | 8 GB | 30 GB |"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "extras": {
+    "shape": {
+      "vcpu": 2,
+      "ram_gib": 8,
+      "disk_gib": 30,
+      "gpu_class": null,
+      "gpu_count": null,
+      "note": "`saas-linux-small-amd64`, the default for untagged jobs. RAM and disk are the vendor's decimal GB, kept unconverted: 8 GB is about 7.5 GiB and 30 GB about 27.9 GiB. Quoted caveat: 'The storage is shared by the operating system, the container image with pre-installed software, and a copy of your cloned repository. This means that the available free disk space for your jobs to use is reduced.'"
+    },
+    "billing_model": "free",
+    "session_cap": {
+      "wall_clock_min": 180,
+      "idle_reap_s": null,
+      "restart_required": true,
+      "note": "3 hours per job on GitLab.com hosted runners regardless of project setting, then the VM is deleted; 400 compute minutes a month is the other clock and it binds first"
+    },
+    "keep_rate": {
+      "value": 0.0,
+      "basis": "the VM is deleted after the job and nothing is billed for it",
+      "source": "https://docs.gitlab.com/ci/runners/hosted_runners/"
+    },
+    "persistent_storage": {
+      "included_gib": 0,
+      "price_gib_month": "not applicable: nothing on the runner survives",
+      "durability": "none: the ephemeral VM is deleted right after the job",
+      "survives_stop": false,
+      "survives_destroy": false,
+      "max_retention": "the job"
+    },
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": false,
+      "ports": "none inbound: 'Inbound communication from the public internet to the ephemeral VM is not allowed'",
+      "static_ip": false,
+      "ipv6": null,
+      "per_session_bytes": null
+    },
+    "free_tier_kind": "allowance",
+    "topic_note": "belongs to ci-cd-runners",
+    "granularity": {
+      "min_billed_s": 60,
+      "rounding_s": null
+    },
+    "burst_x": 1.0,
+    "term": "none",
+    "m10h_usd": null,
+    "m24h_usd": null,
+    "price_arithmetic": "400 compute minutes / cost factor 1 = 400 wall-clock minutes a month on the 2 vCPU default, which is 6 h 40 min, or 0.22 h a day. 10 h a day x 30 = 300 h needs 18,000 compute minutes, 45 times the quota. 24/7 x 30 = 730 h needs 43,800 compute minutes, 110 times the quota. No USD figure is given because no per-minute price was read on a page.",
+    "concurrency": {
+      "jobs_at_once": null,
+      "note": "not published on any page read: no concurrent-job number for a Free namespace was found. The 400-minute monthly quota is the ceiling that matters at this size."
+    },
+    "units": "RAM and disk are the vendor's decimal GB, kept unconverted. 8 GB reads as 8, 30 GB as 30.",
+    "checked": {
+      "verified": [
+        "400 compute minutes a month on the Free tier",
+        "2 vCPU / 8 GB / 30 GB on the default saas-linux-small-amd64",
+        "3-hour job timeout on GitLab.com hosted runners",
+        "inbound is explicitly blocked",
+        "the ephemeral VM is deleted after the job"
+      ],
+      "new": "the risk-scored three-stage identity verification (email / phone / card) is documented and is a second, independent gate"
+    }
+  },
+  "binding": "volume-quota",
+  "binding_note": "400 compute minutes a month is 400 wall-clock minutes on the default small runner at cost factor 1, and instance runners take no new job once it is used; the card check is an identity step, recorded in identity_cost",
+  "confidence_note": "the 400 minutes, the cost factors, the 2 vCPU / 8 GB / 30 GB shape, the 3-hour job timeout, the inbound block and the card requirement are each quoted from a first-party GitLab page read on 2026-10-24. The card requirement is quoted from about.gitlab.com's own FAQ twice, on the pricing page and on the free-trial page, with the same wording.",
+  "tier": "GitLab Free on GitLab.com, instance runners"
+}

@@ -1,0 +1,104 @@
+{
+  "topic": "egress",
+  "slug": "sakurafrp",
+  "provider": "SakuraFrp",
+  "url": "https://www.natfrp.com/",
+  "category": "udp port forward",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Tunnel speed limit 10 Mibps; 2 tunnels; 5 GiB traffic per month; daily check-in grants free traffic. [translated]",
+    "unit": "GiB",
+    "metered_on": "unstated",
+    "source_url": "https://www.natfrp.com/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://www.natfrp.com/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://www.natfrp.com/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "5 GiB per month on the free plan, plus whatever the daily check-in adds; the pricing page does not state the check-in amount.; ingress: udp",
+    "metered": true,
+    "free_allowance": "5 GiB per month on the free plan, plus whatever the daily check-in adds; the pricing page does not state the check-in amount.",
+    "price_per_tb": null,
+    "source_url": "https://www.natfrp.com/"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "Vendor launcher for Windows/Linux/Android/OpenWRT, or a standard frpc config; the docs publish an API token page.",
+  "tooling": "vendor launcher or frpc plus wg-quick on the local side",
+  "chaining": "Carries a WG handshake from a CGNAT box to a WG server on a free VM only if a UDP-enabled node is used and the 5 GiB lasts.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "5 GiB per month",
+      "source": "https://www.natfrp.com/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "10 Mibps per tunnel",
+      "source": "https://www.natfrp.com/"
+    }
+  ],
+  "limits_note": "",
+  "binding": "volume-quota",
+  "binding_note": "5 GiB per month is about 200 times below 1 TiB, so the byte quota fails long before the 10 Mibps shaper could matter.",
+  "identity_cost": {
+    "kind": "national-id",
+    "detail": "Real-name verification is mandatory: the FAQ says to buy a verification slot, enter name and ID number, then scan a QR code in the Alipay app with face check, and that it costs CNY 1. A Telegram status post dated 2024-07-09 says overseas nodes also require it from that date.",
+    "country": "None"
+  },
+  "reliability_note": "A Telegram status post says mainland nodes refuse to start a tunnel from a non-mainland client IP; some nodes carry a 'no UDP' marker.",
+  "confidence": "documented",
+  "confidence_note": "The quota and the real-name procedure are both on vendor pages read. Raising the rung would need a probe of an actual UDP tunnel.",
+  "evidence": [
+    {
+      "url": "https://www.natfrp.com/",
+      "date": "2026-10-23",
+      "proved": "free plan is 10 Mibps, 2 tunnels, 5 GiB per month"
+    },
+    {
+      "url": "https://doc.natfrp.com/faq/realname.html",
+      "date": "2026-10-23",
+      "proved": "real-name verification is mandatory, costs CNY 1, uses Alipay face check and an ID number"
+    },
+    {
+      "url": "https://doc.natfrp.com/frpc/manual",
+      "date": "2026-10-23",
+      "proved": "a UDP tunnel type exists with its own option set"
+    },
+    {
+      "url": "https://doc.natfrp.com/game/palworld.html",
+      "date": "2026-10-23",
+      "proved": "servers can be marked 'no UDP'; a user must pick a node without that marker"
+    },
+    {
+      "url": "https://doc.natfrp.com/game/mc/bedrock.html",
+      "date": "2026-10-23",
+      "proved": "'To use NetherNet you must tunnel both TCP and UDP' and the tunnel form takes 'Tunnel type: UDP' [translated]"
+    }
+  ],
+  "verdict": "fails-identity",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Forum roundups describe the traffic as 'claimable by daily check-in', which matches the vendor page but understates that the base allowance is 5 GiB. The overseas-node exemption claimed in the nodeloc roundup is contradicted by the vendor's own 2024-07-09 status post.",
+  "extras": {
+    "wg_path": "inside-udp",
+    "wg_detail": "Help docs list a UDP tunnel type with per-tunnel options (no_budp2, bandwidth_limit), and the Palworld guide says to pick the UDP tunnel type and to avoid servers marked 'no UDP'. A WG datagram fits inside that UDP tunnel; no WG conf is issued.",
+    "ingress": "tcp+udp",
+    "volume_tib_month": 0.0049,
+    "volume_stated": "5 GiB per month on the free plan, plus whatever the daily check-in adds; the pricing page does not state the check-in amount.",
+    "bytes_transit": "yes",
+    "transit_note": "SakuraFrp nodes carry the datagrams; the client's local service terminates them."
+  }
+}

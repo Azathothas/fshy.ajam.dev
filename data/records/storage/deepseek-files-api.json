@@ -1,0 +1,98 @@
+{
+  "topic": "storage",
+  "slug": "deepseek-files-api",
+  "provider": "DeepSeek Files API",
+  "url": "https://api-docs.deepseek.com/guides/files_api",
+  "category": "Chinese LLM platform /v1/files",
+  "free_tier": {
+    "stated": "25 GiB per user, 10,000 files, 64 MiB per file. Permanent if `expires_after` is omitted; otherwise 1 hour – 30 days.",
+    "unit": "GiB",
+    "metered_on": "unstated",
+    "source_url": "https://api-docs.deepseek.com/guides/files_api",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "64 MiB per file",
+    "bytes": 67108864,
+    "source_url": "https://api-docs.deepseek.com/guides/files_api",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "25 GiB per user, 10,000 files, 64 MiB per file. Permanent if `expires_after` is omitted; otherwise 1 hour – 30 days",
+    "days": 0,
+    "source_url": "https://api-docs.deepseek.com/guides/files_api",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Files API itself is free; only inference tokens are billed. No egress fee documented.",
+    "metered": false
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "OpenAI-compatible POST /files, and an Anthropic-compatible /anthropic/v1/files; also list/retrieve/delete",
+  "tooling": "openai-python with base_url https://api.deepseek.com; curl multipart; ai-sdk deepseek provider ships a file store",
+  "chaining": "25 GiB is per user, not per project — no obvious multiplicative axis except more accounts. Image-only format restriction (JPEG/PNG/GIF/WebP, sniffed from content) makes it a picture store rather than a blob store.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "64 MiB per file",
+      "source": "https://api-docs.deepseek.com/guides/files_api"
+    }
+  ],
+  "limits_note": "per-object-cap 64 MiB. Upload must complete within 10 minutes. Count cap 10,000 files. `purpose` must be `user_data`. Omit `expires_after` for permanence — '少写一个参数，文件就永久留在他服务器上' (omit one parameter and the file stays on their server forever).",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email",
+    "country": null
+  },
+  "reliability_note": "NO DOWNLOAD. The endpoint set is upload/list/retrieve-metadata/delete — there is no content-download route, and the docs describe retrieval as metadata only ('Retrieving file information returns metadata; it is not a request for the model to read the image'). 25 GiB of write-only image storage. Also: DeepSeek's platform forces phone binding on first login for some account classes (`platform.deepseek.com/mobile_verification` — 'please bind your phone number upon first login'), while international email+password signup is reported to work. Uncertain, hence medium.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://api-docs.deepseek.com/guides/files_api",
+      "date": "2026-10-21",
+      "proved": "'A single file may be at most 64 MiB'; 'expires_after[seconds] … between 3600 and 2592000. Omit both expires_after fields to keep the file permanently'; supported formats JPEG/PNG/GIF/WebP only"
+    },
+    {
+      "url": "https://www.datastudios.org/post/deepseek-file-uploading-supported-file-types-maximum-size-limits-upload-rules-and-document-readi",
+      "date": "2026-10-21",
+      "proved": "'25 GiB of stored files per user; up to 10,000 stored files'"
+    },
+    {
+      "url": "https://news.cnyes.com/news/id/6584205",
+      "date": "2026-10-21",
+      "proved": "'單個文件最大 64 MiB，每個用戶最多存 25 GiB、10000 個文件 … 不設定有效期則可以一直保留'"
+    },
+    {
+      "url": "https://linux.do/top?page=395",
+      "date": "2026-10-21",
+      "proved": "'DeepSeek 上线 Files API，每用户 25 GiB 永不过期！… 仅支持图片格式，单文件限制 64 MiB' (post dated 2026-08-21)"
+    },
+    {
+      "url": "https://chat-deep.ai/docs/deepseek-api-file-upload/",
+      "date": "2026-10-21",
+      "proved": "'Retrieving file information returns metadata; it is not a request for the model to read the image'"
+    },
+    {
+      "url": "https://api.deepseek.com/files",
+      "date": "2026-10-21",
+      "proved": "PROBE: curl -D - -> 401, Content-Length 31, body 'Authentication Fails (governor)' — live, ELB + CloudFront fronted"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "25 GiB per user, 10,000 files, 64 MiB per file. Permanent if `expires_after` is omitted; otherwise 1 hour – 30 days.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "retention",
+      "why": "25 GiB per user, 10,000 files, 64 MiB per file. Permanent if `expires_after` is omitted; otherwise 1 hour – 30 days.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

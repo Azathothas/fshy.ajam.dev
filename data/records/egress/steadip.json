@@ -1,0 +1,89 @@
+{
+  "topic": "egress",
+  "slug": "steadip",
+  "provider": "SteadIP",
+  "url": "https://steadip.com/",
+  "category": "tunnel",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free HTTP/HTTPS tunnels. Verified features for $19.99 USD/year.",
+    "unit": "none",
+    "metered_on": "unstated",
+    "source_url": "https://steadip.com/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://steadip.com/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://steadip.com/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No byte allowance is published for either tier. The free tier is described as random subdomains over HTTP/HTTPS.; ingress: http-only",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://steadip.com/"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "steadip login then steadip up, configured through the dashboard.",
+  "tooling": "curl -fsSL https://steadip.com/install-linux.sh | sh; steadip login; steadip up.",
+  "chaining": "Free tier fronts a web app on a free VM; UDP needs the paid verified tier, at which point a cheap VPS with frp is comparable in cost.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "TCP and UDP tunnels require the verified tier at USD 19.99/year",
+      "source": "https://steadip.com/tcp-udp-tunnel"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "no byte allowance published",
+      "source": "https://steadip.com/"
+    }
+  ],
+  "limits_note": "",
+  "binding": "write-gated",
+  "binding_note": "A verification step and a payment stand between a user and a UDP port, so nothing about volume matters until that gate is passed.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The client command is steadip login against a free account; the TCP/UDP page says the managed layer is available to verified users, and the site prices verified features at USD 19.99 per year.",
+    "country": "None"
+  },
+  "reliability_note": "Managed FRP instance shared across customers.",
+  "confidence": "documented",
+  "confidence_note": "Reading the pricing page failed twice (504, then a page with no numbers); a checkout walk would establish the verified tier's actual byte allowance.",
+  "evidence": [
+    {
+      "url": "https://steadip.com/",
+      "date": "2026-10-23",
+      "proved": "Free HTTP/HTTPS tunnels; verified features for $19.99 USD/year; free users get a random subdomain."
+    },
+    {
+      "url": "https://steadip.com/tcp-udp-tunnel",
+      "date": "2026-10-23",
+      "proved": "Managed FRP gateway with TCP and UDP options, available to verified users; examples include SSH, game and voice services and UDP telemetry."
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Pricing page at steadip.com/pricing returned a 504 and nothing was established from it. The homepage price and the TCP/UDP page agree on a paid verification gate.",
+  "extras": {
+    "wg_path": "inside-udp",
+    "wg_detail": "The managed gateway is FRP-based and the page says frp supports TCP and UDP proxy types, with TCP and UDP options selectable, but only for verified users. On the free tier there is no UDP listener.",
+    "ingress": "http-only",
+    "volume_tib_month": null,
+    "volume_stated": "No byte allowance is published for either tier. The free tier is described as random subdomains over HTTP/HTTPS.",
+    "bytes_transit": "yes",
+    "transit_note": "A SteadIP-managed FRP gateway receives public traffic and forwards it down the outbound tunnel."
+  }
+}

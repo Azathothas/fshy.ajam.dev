@@ -1,0 +1,81 @@
+{
+  "topic": "storage",
+  "slug": "gitlab-pages",
+  "provider": "GitLab Pages (gitlab.io)",
+  "url": "https://gitlab.com/groups/pages",
+  "category": "git",
+  "free_tier": {
+    "stated": "1 GB maximum site size on gitlab.com (tied to the 1 GB max artifact size); 200,000 file entries per site; unlimited projects.",
+    "unit": "objects",
+    "metered_on": "unstated",
+    "source_url": "https://docs.gitlab.com/user/gitlab_com/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.gitlab.com/user/gitlab_com/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.gitlab.com/user/gitlab_com/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "No egress charge published; rate limits are 1,000 requests/50s per IP and 5,000 requests/10s per Pages domain — generous enough for real serving but a hard ceiling if sharded heavily onto one domain.",
+    "metered": false
+  },
+  "interface": [
+    "git",
+    "rclone"
+  ],
+  "interface_detail": "git",
+  "tooling": "git push + a `pages` job in .gitlab-ci.yml (a 'pages' artifact); the git-pages v2 API also accepts a direct HTTP upload. No rclone backend.",
+  "chaining": "1 GB x unlimited projects x unlimited namespaces. 20 TiB = 20,480 projects. Per-project cap is 2x GitHub Pages but still fails a 500 GB unit test on its own.",
+  "limits": [],
+  "limits_note": "1 GB site size and 1 GB max artifact; 200,000 files/dirs/symlinks per site; 150 custom domains; 1000 parallel deployments per top-level namespace; Pages rate limits 1,000 req/50s per IP.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Self-managed default is a 100 MB Pages cap, but gitlab.com is 1 GB — do not confuse the two. CI minutes are free but shared runners now require a card on file for gitlab.com.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://docs.gitlab.com/user/gitlab_com/",
+      "date": "2026-10-21",
+      "proved": "'Maximum site size | 1 GB', 'The maximum size of your Pages site depends on the maximum artifact size'"
+    },
+    {
+      "url": "https://docs.gitlab.com/administration/instance_limits/",
+      "date": "2026-10-21",
+      "proved": "'total number of file entries (including directories and symlinks) is limited to 200,000 per GitLab Pages website'"
+    },
+    {
+      "url": "https://docs.gitlab.com/user/gitlab_com/rate_limits/",
+      "date": "2026-10-21",
+      "proved": "'GitLab Pages requests for an IP address | 1,000 requests every 50 seconds'"
+    },
+    {
+      "url": "https://gitlab-org.gitlab.io/gitlab-pages/",
+      "date": "2026-10-21",
+      "proved": "probe: curl -D - -> HTTP 302 chain, Server: cloudflare (live serving path)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "1 GB maximum site size on gitlab.com (tied to the 1 GB max artifact size); 200,000 file entries per site; unlimited projects.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "1 GB maximum site size on gitlab.com (tied to the 1 GB max artifact size); 200,000 file entries per site; unlimited projects.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": null
+}

@@ -1,0 +1,90 @@
+{
+  "topic": "storage",
+  "slug": "uguu",
+  "provider": "Uguu",
+  "url": "https://uguu.se",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "no account; 128 MiB max upload",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://uguu.se/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "128 MiB/file",
+    "bytes": 134217728,
+    "source_url": "https://uguu.se/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "128 MiB/file, expires after 3 hours (homepage: 'Max upload size is 128 MiB & files expire after 3 hours')",
+    "days": 0,
+    "source_url": "https://uguu.se/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "unmetered direct links on d.uguu.se / n.uguu.se, plain GET, no gate",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "curl -F 'files[]=@x' 'https://uguu.se/upload?output=text'",
+  "chaining": "none — per-file, no accounts. N x 128 MiB.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "128 MiB/file",
+      "source": "https://uguu.se/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "expires after 3 hours",
+      "source": "https://uguu.se/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "expire after 3 hours",
+      "source": "https://uguu.se/"
+    }
+  ],
+  "limits_note": "128 MiB/file, expires after 3 hours (homepage: 'Max upload size is 128 MiB & files expire after 3 hours'). 15-upload burst all 200.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "The canonical 'it just works' endpoint. 3-hour retention makes it useless as storage, fine as a transport shim.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://uguu.se/",
+      "date": "2026-10-21",
+      "proved": "'Max upload size is 128 MiB & files expire after 3 hours'"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: POST /upload -> 200 + d.uguu.se URL; GET -> 200 / 32768 B / sha256 match"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "no account; 128 MiB max upload",
+  "extras": {
+    "unit_note": "free_tier.unit is 'mixed' because the headline is denominated in MiB or KiB, which the schema enum does not carry; the verbatim free_tier.stated keeps the true unit.",
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "no account; 128 MiB max upload",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    },
+    "probe_reported": "POST /upload?output=text -> 200 'https://n.uguu.se/gsrTFZov.bin'; GET -> 200, 32768 bytes, application/octet-stream (nginx, Accept-Ranges), sha256 MATCH. Second run returned d.uguu.se host — both work."
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

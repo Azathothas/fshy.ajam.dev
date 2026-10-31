@@ -1,0 +1,94 @@
+{
+  "topic": "egress",
+  "slug": "cpolar",
+  "provider": "cpolar",
+  "url": "https://www.cpolar.com/pricing",
+  "category": "tcp port forward",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free edition: permanently free, 1 Mbps, random URL subdomain, random TCP port, HTTP / TCP tunnel support, 1 online cpolar process, 4 tunnels per process. [translated]",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://www.cpolar.com/pricing",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://www.cpolar.com/pricing",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://www.cpolar.com/pricing",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No byte quota on any plan: every plan is sold with traffic not limited. The free plan's 1 Mbps caps a saturated month at about 324 GB.; ingress: tcp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://www.cpolar.com/pricing"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "Web UI on localhost:9200 after install, a CLI with authtoken authentication, and a dashboard at dashboard.cpolar.com.",
+  "tooling": "vendor client on Windows/Linux/NAS/ARM, authenticating with a token from the dashboard; wg-quick cannot attach to it",
+  "chaining": "Carries HTTP and TCP only, so it composes with a web service or an SSH control channel and not with WireGuard.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "1 Mbps on the free plan",
+      "source": "https://www.cpolar.com/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "connection-rate limit per tunnel endpoint; excess HTTP connections get 429, excess TCP connections are closed",
+      "source": "https://www.cpolar.com/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "1 online process and 4 tunnels on the free plan",
+      "source": "https://www.cpolar.com/pricing"
+    }
+  ],
+  "limits_note": "",
+  "binding": "per-ip-shaping",
+  "binding_note": "Traffic is unlimited but 1 Mbps is 10.5 GB/day, about 324 GB over 30 days, against 3.24 Mbps for 1 TiB/month. The shaping binds three times.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "An account is an email address: the pricing FAQ defines one online process as one email account installing a user on one machine, and says multiple machines means registering multiple email accounts.",
+    "country": "None"
+  },
+  "reliability_note": "Exceeding the connection rate limit returns 429 on HTTP and silently closes TCP and TLS connections; the vendor documents neither the threshold nor a reset window.",
+  "confidence": "documented",
+  "confidence_note": "Pricing table read first-party and the whole documentation site searched for UDP with zero hits. A negative search is strong evidence here because the same docs page documents TCP, HTTP and TLS tunnels by name.",
+  "evidence": [
+    {
+      "url": "https://www.cpolar.com/pricing",
+      "date": "2026-10-23",
+      "proved": "free plan is 1 Mbps, random subdomain, random TCP port, HTTP/TCP tunnels only, 1 process, 4 tunnels; all plans state traffic is not limited"
+    },
+    {
+      "url": "https://www.cpolar.com/docs",
+      "date": "2026-10-23",
+      "proved": "86941-byte documentation read contains no occurrence of UDP"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The best-identified Chinese tunnel vendor in English lists, with an email-only account, and the only one here with a documentation set large enough to make the absence of UDP meaningful. No English pricing arm was found: www.cpolar.com/en/pricing returns 404 and the only pricing page is the Chinese one.",
+  "extras": {
+    "wg_path": "none",
+    "wg_detail": "No UDP reconstruction exists: the pricing page lists only HTTP and TCP tunnels, and an 87 KB full-text read of the documentation site at /docs contains no occurrence of UDP at all.",
+    "ingress": "tcp",
+    "volume_tib_month": null,
+    "volume_stated": "No byte quota on any plan: every plan is sold with traffic not limited. The free plan's 1 Mbps caps a saturated month at about 324 GB.",
+    "bytes_transit": "yes",
+    "transit_note": "Vendor relays in mainland China carry the tunnel."
+  }
+}

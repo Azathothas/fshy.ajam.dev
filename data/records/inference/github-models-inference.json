@@ -1,0 +1,105 @@
+{
+  "topic": "inference",
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "not applicable"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "any OpenAI-compatible client; curl against POST {base}/chat/completions",
+  "chaining": "no chain exists: the service was retired on 2026-07-30 and every caller must move to Azure AI Foundry or Copilot",
+  "limits": [],
+  "slug": "github-models-inference",
+  "provider": "GitHub Models inference",
+  "url": "https://models.github.ai/inference",
+  "category": "inference endpoint, dead shell",
+  "free_tier": {
+    "stated": "no completion is returned; the endpoint answers 200 with a 4-byte body 'OK'",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://models.github.ai/inference",
+    "read_on": "2026-10-22"
+  },
+  "endpoint": "https://models.github.ai/inference/chat/completions",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no key was sent; the endpoint did not ask for one",
+    "country": null
+  },
+  "reliability_note": "returns HTTP 200 with Content-Type text/plain and a 4-byte body, which a status-only probe scores as a success",
+  "confidence": "measured",
+  "confidence_note": null,
+  "probe": {
+    "records": [
+      {
+        "probe_id": "github-models",
+        "requested_model": "openai/gpt-4o-mini",
+        "http_run1": 200,
+        "http_run2": 200,
+        "answered_run1": "no",
+        "answered_run2": "no",
+        "model_echoed": "",
+        "echo_match": "yes",
+        "latency_ms_run1": 1126,
+        "latency_ms_run2": 914,
+        "ttft_ms_run1": "",
+        "completion_tokens_run1": 0,
+        "tps_run1": "",
+        "tps_run2": "",
+        "tps_basis": null,
+        "needle_echoed_run1": "no",
+        "body_bytes_run1": 4,
+        "body_sha256_16_run1": "19d8c9921b99c82d",
+        "reasoning_only": "no",
+        "error_run1": "OK\r ",
+        "error_run2": "OK\r "
+      }
+    ],
+    "runs": [
+      "probes-w.json",
+      "probes-w-run2.json"
+    ]
+  },
+  "evidence": [
+    {
+      "url": "probe:https://models.github.ai/inference/chat/completions",
+      "date": "2026-10-22",
+      "proved": "HTTP 200, 4 bytes, body 'OK', identical sha256 19d8c9921b99c82d in three separate runs"
+    },
+    {
+      "url": "https://docs.github.com/en/github-models",
+      "date": "2026-10-22",
+      "proved": "'GitHub Models has been retired. As of July 30, 2026, GitHub Models has been fully retired. The playground, model catalog, inference API, and bring your own key (BYOK) are no longer available to any customer.' That is the vendor's own statement of death, which the 4-byte body alone could not establish"
+    },
+    {
+      "url": "https://docs.github.com/en/github-models",
+      "date": "2026-10-28",
+      "proved": "the vendor states GitHub Models, including the inference API, was fully retired on July 30, 2026",
+      "capture": "sha256:a7ac45358c4db70999c6f9945215c9a440091ada92f391b410e267c8a85f602f",
+      "quote": "As of July 30, 2026, GitHub Models has been fully retired. The playground, model catalog, inference API, and bring your own key (BYOK) are no longer available to any customer."
+    },
+    {
+      "url": "probe:https://models.github.ai/inference/chat/completions",
+      "date": "2026-10-28",
+      "proved": "a GET to https://models.github.ai/inference/chat/completions returned HTTP 200, 4 bytes, text/plain, body 'OK', sha256 19d8c9921b99c82d78c985136a5e28f6382011641fb6160c0c1a7573a402ea66, the digest recorded for the earlier POST probes"
+    }
+  ],
+  "verdict": "dead",
+  "verified_at": "2026-10-28T09:47:54.948Z",
+  "notes": "This is the control row for the never-trust-200 rule: the status is a success, the body is not a completion, and the body hash is identical across three runs. The verdict is dead, and it now rests on the vendor's own retirement notice at docs.github.com/en/github-models ('fully retired as of July 30, 2026'), not only on the empty body. The distinction matters: an endpoint that gates on a key also returns 402 or 401 rather than 200 with 'OK', and this one returns 200 with 'OK' because the service is gone rather than because it wants a credential.",
+  "binding": "none",
+  "limits_note": "no rate or quota binds: the gate is access, not allowance",
+  "extras": {
+    "death": {
+      "on": "2026-07-30",
+      "cause": "dead-service"
+    }
+  }
+}

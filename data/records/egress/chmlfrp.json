@@ -1,0 +1,105 @@
+{
+  "topic": "egress",
+  "slug": "chmlfrp",
+  "provider": "ChmlFrp",
+  "url": "https://www.chmlfrp.net/",
+  "category": "udp port forward",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free plan: 8 Mbps speed limit, 4 tunnels, 1 free domain, unlimited traffic. [translated]",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://www.chmlfrp.net/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://www.chmlfrp.net/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://www.chmlfrp.net/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "The site says 'free and unlimited traffic, no need to worry about running out', while bandwidth can be limited for what the vendor calls excessive use.; ingress: udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://www.chmlfrp.net/"
+  },
+  "interface": [
+    "cli",
+    "rest"
+  ],
+  "interface_detail": "frpc client plus a documented REST API for nodes and tunnels.",
+  "tooling": "frpc with a vendor-issued config; wg-quick on the local side",
+  "chaining": "A UDP tunnel on an international node can carry a WG handshake at up to 32 Mbps, enough in principle for 1 TiB/month.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "8 Mbps domestic, 32 Mbps international",
+      "source": "https://www.chmlfrp.net/"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "none published; unlimited claimed",
+      "source": "https://www.chmlfrp.net/"
+    }
+  ],
+  "limits_note": "",
+  "binding": "per-ip-shaping",
+  "binding_note": "With no byte quota the rate cap is what bites: 8 Mbps sustained is about 2.6 TB per month, so 1 TiB/month fits under it, but any burst above 8 Mbps is shaped, and bandwidth limiting is also possible.",
+  "identity_cost": {
+    "kind": "national-id",
+    "detail": "The mapping tutorial lists 'registered a ChmlFrp account and completed real-name verification' as a precondition, and says an unverified account shows 'you are not yet real-name verified' on the home page.",
+    "country": "None"
+  },
+  "reliability_note": "Node API exposes a per-node UDP flag, so a node can silently stop carrying UDP; the FAQ documents nodes going offline or being abandoned.",
+  "confidence": "documented",
+  "confidence_note": "Unlimited traffic, the 8/32 Mbps split and the real-name precondition are all on vendor pages read. Only a probe could show the shaper's real behaviour.",
+  "evidence": [
+    {
+      "url": "https://www.chmlfrp.net/",
+      "date": "2026-10-23",
+      "proved": "free plan is 8 Mbps, 4 tunnels, unlimited traffic"
+    },
+    {
+      "url": "https://docs.chmlfrp.net/docs/use/mapping",
+      "date": "2026-10-23",
+      "proved": "real-name verification is a stated precondition; port type includes UDP"
+    },
+    {
+      "url": "https://docs.chmlfrp.net/API/v2/Node_operations/node",
+      "date": "2026-10-23",
+      "proved": "each node reports whether UDP is allowed"
+    },
+    {
+      "url": "https://docs.chmlfrp.net/terms/terms-of-service.html",
+      "date": "2026-10-23",
+      "proved": "bandwidth can be limited despite the unlimited-traffic claim"
+    },
+    {
+      "url": "https://docs.chmlfrp.net/docs/dns/a-record",
+      "date": "2026-10-23",
+      "proved": "'If you are using a TCP or UDP tunnel ... the final address is your-domain:external-port', for example test.domain.cn:12345 [translated]"
+    }
+  ],
+  "verdict": "fails-identity",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The only free frp service that publishes both unlimited traffic and a 32 Mbps international cap, which is why it is the strongest frp lead on volume. It is still blocked for a user by real-name verification. Whether verification accepts a non-Chinese document is not stated anywhere.",
+  "extras": {
+    "wg_path": "inside-udp",
+    "wg_detail": "The mapping guide lists TCP, UDP, HTTP and HTTPS as port types, and the public node API returns a per-node 'udp' boolean, so UDP carriage depends on the chosen node.",
+    "ingress": "tcp+udp",
+    "volume_tib_month": null,
+    "volume_stated": "The site says 'free and unlimited traffic, no need to worry about running out', while bandwidth can be limited for what the vendor calls excessive use.",
+    "bytes_transit": "yes",
+    "transit_note": "ChmlFrp nodes relay the datagrams."
+  }
+}

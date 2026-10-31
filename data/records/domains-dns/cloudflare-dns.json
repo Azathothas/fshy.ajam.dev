@@ -1,0 +1,88 @@
+{
+  "topic": "domains-dns",
+  "slug": "cloudflare-dns",
+  "provider": "Cloudflare DNS",
+  "url": "https://developers.cloudflare.com/dns/manage-dns-records/",
+  "category": "managed authoritative DNS",
+  "free_tier": {
+    "stated": "free zone on any plan with anycast resolution, an API, DNSSEC and 200 records per zone on zones created on or after 2024-09-01",
+    "unit": "objects",
+    "source_url": "https://developers.cloudflare.com/dns/manage-dns-records/",
+    "read_on": "2026-10-22",
+    "metered_on": "object-count",
+    "notes": "1,000 records per zone on zones created before 2024-09-01"
+  },
+  "per_object_cap": {
+    "stated": "200 DNS records per zone on a zone created on or after 2024-09-01; 1,000 on an older free zone; 3,500 on Pro and Business",
+    "bytes": null,
+    "source_url": "https://developers.cloudflare.com/dns/manage-dns-records/",
+    "notes": "records that other Cloudflare services add, such as Email Routing TXT and MX, count toward the same quota"
+  },
+  "retention": {
+    "stated": "the zone persists while it is active; a zone whose nameservers stop pointing at Cloudflare moves to a Moved state and is deleted after a long enough period",
+    "days": null,
+    "source_url": "https://developers.cloudflare.com/dns/faq/"
+  },
+  "egress": {
+    "terms": "DNS queries are never limited or capped on any plan",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://developers.cloudflare.com/dns/faq/"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "a REST API for zones and records; a DoH and DoT resolver at cloudflare-dns.com; flarectl and the Cloudflare Terraform provider",
+  "tooling": "the Cloudflare API, flarectl, Terraform, certbot with a DNS-01 plugin, acme.sh",
+  "chaining": "the only free DNS in this set that also gives a free CDN, a free tunnel, free Universal SSL and free Email Routing on the same zone",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "200 records per zone on a free zone created on or after 2024-09-01",
+      "source": "https://developers.cloudflare.com/dns/manage-dns-records/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "the API is rate limited per account; the published DNS limit is on queries, and there are none",
+      "source": "https://developers.cloudflare.com/dns/faq/"
+    }
+  ],
+  "limits_note": "the dashboard warns at 85% of the record quota and the current quota and usage are readable per zone through the API",
+  "binding": "per-object-cap",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a Cloudflare account, and the domain must use Cloudflare nameservers",
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "confidence": "measured",
+  "confidence_note": "the keyless DoH resolver answered a real query, and the record quota and the apex CNAME behaviour are both first-party pages. No zone was created.",
+  "evidence": [
+    {
+      "url": "probe:https://cloudflare-dns.com/dns-query?name=example.com&type=A",
+      "date": "2026-10-22",
+      "proved": "200, 251 bytes of JSON with Status 0 and two A records, so the keyless DoH endpoint answers programmatically without an account"
+    },
+    {
+      "url": "https://developers.cloudflare.com/dns/manage-dns-records/",
+      "date": "2026-10-22",
+      "proved": "Per-zone quota: Free zones created before 2024-09-01 00:00:00 UTC 1,000; Free zones created on or after 2024-09-01 200; Pro 3,500; Business 3,500; Enterprise per-account. Records created by other Cloudflare services count toward the quota"
+    },
+    {
+      "url": "https://developers.cloudflare.com/dns/manage-dns-records/how-to/create-zone-apex/",
+      "date": "2026-10-22",
+      "proved": "'Cloudflare's CNAME flattening allows you to create CNAME records at your zone apex'; an ANAME or ALIAS at a previous provider can be recreated as a CNAME at @"
+    },
+    {
+      "url": "https://developers.cloudflare.com/dns/faq/",
+      "date": "2026-10-22",
+      "proved": "'Cloudflare never limits or caps DNS queries'; a zone in a Moved state for long enough is deleted"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-22T03:05:00.000Z",
+  "price_per_tb_month": null,
+  "notes": "200 records is the number a per-tenant subdomain scheme meets, and it is shared with the records Cloudflare adds for Email Routing. The absence of a query cap is what makes it the default choice."
+}

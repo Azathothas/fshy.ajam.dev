@@ -1,0 +1,73 @@
+{
+  "topic": "email",
+  "slug": "tempsmail",
+  "provider": "TempsMail",
+  "url": "https://tempsmail.org/page/api",
+  "category": "disposable inbox API",
+  "free_tier": {
+    "stated": "a disposable inbox and read API, free with an account key",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://tempsmail.org/page/api",
+    "read_on": "2026-10-22",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not stated on the API page",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": "messages expire; the period is not stated on the API page",
+    "days": null,
+    "notes": "",
+    "source_url": "https://tempsmail.org/page/api"
+  },
+  "egress": {
+    "terms": "not applicable: receive-only",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://tempsmail.org/page/api"
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "curl, any HTTP client",
+  "chaining": "the same verification-code sink as mail.tm with one extra gate: an account key, and an inbox bound to the IP that created it.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "100 requests/minute per IP across the API",
+      "source": "https://tempsmail.org/page/api"
+    },
+    {
+      "kind": "request-rate",
+      "value": "30 address creations/minute per IP",
+      "source": "https://tempsmail.org/page/api"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a free account with a verified address, to obtain the API key",
+    "country": null
+  },
+  "reliability_note": "the inbox is bound to the creating IP, so it cannot be read from a second machine",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://tempsmail.org/page/api",
+      "date": "2026-10-22",
+      "proved": "'Free with an account', '100 requests / minute per IP', '30 address creations / minute per IP', and the IP binding of a created inbox"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T03:20:00.000Z",
+  "notes": "The page says an account and a personal key are required and that the inbox is IP-bound, and both change what the chain can do.",
+  "extras": {
+    "stale_after_days": 90
+  },
+  "binding": "request-rate",
+  "interface_detail": "POST /api/extension/emails/{apiKey} and the read endpoints",
+  "limits_note": "the inbox is bound to the IP and client that created it, which is a lock rather than a rate and none of the six kinds names it"
+}

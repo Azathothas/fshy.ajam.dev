@@ -1,0 +1,113 @@
+{
+  "topic": "ip-proxy",
+  "slug": "ipye-isp-network-bundle",
+  "provider": "IPYE",
+  "url": "https://my.ipye.com/products/server-ip-bundles",
+  "category": "ISP-registered prefix lease",
+  "tier": "ISP Network Bundle (RCN /22 IPv4+10 Gbps)",
+  "free_tier": {
+    "stated": "No free tier for this bundle. The Server + IP Bundles page lists 'ISP Network Bundle (RCN /22 IPv4+10 Gbps)' at $1,600.00 a month, beside 'Datacenter Bundle (/24 IPv4)' at $300.00 and four IPv6 bundles at $160.00, $300.00, $600.00 and $1,100.00. Every entry is priced; nothing in the catalogue is free.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://my.ipye.com/products/server-ip-bundles",
+    "read_on": "2026-10-24",
+    "notes": "The vendor's homepage advertises 'IPv6 Blocks $0/yr Starting at /48' as a separate leasing product, so a free IPYE offer does exist, but it is not this bundle and it is not IPv4. The free /48 belongs to the IPv6 lane; it must not be read as a free path to an ISP-registered IPv4 prefix."
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://my.ipye.com/products/server-ip-bundles",
+    "notes": "The size that matters here is the prefix. A /22 is 1,024 addresses by definition, of which the network and broadcast addresses are not usable as exits, so 1,022 usable. The bundle entry states the prefix and the port, not a usable count."
+  },
+  "retention": {
+    "stated": "not applicable: an address, not an object. No assignment period, reclaim rule or grace window is stated on the pages read.",
+    "days": null,
+    "source_url": "https://my.ipye.com/products/server-ip-bundles",
+    "notes": "A prefix is held for as long as the bundle is paid. The homepage says 'No long-term locks required' about leasing, which is a contract term rather than a retention guarantee, and it is not repeated on the bundle entry."
+  },
+  "egress": {
+    "terms": "The bundle entry prints only 'RCN /22 IPv4+10 Gbps'. The unmetered sentence sits on the sibling Datacenter Bundle ('Pure unmetered transit means you never worry about traffic limits') and on the use-cases page about the Datacenter Bundles: 'Our Datacenter Bundles come natively provisioned with 10 Gbps unmetered upstream ports, ensuring your commercial VPNs never face peak-hour throttling'. The facts carry 10 Gbps unmetered to this bundle; the bundle's own entry does not print the word.",
+    "metered": false,
+    "free_allowance": "unmetered: no allowance is published because the port is sold without a meter",
+    "price_per_tb": null,
+    "source_url": "https://ipye.com/use-cases"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "A leased server with an operating system chosen at checkout, plus a /22 routed to it, so a user's access is the server's own shell and the BGP announcement of the prefix. The vendor's own surfaces are a dashboard and an API for rDNS/PTR and GeoIP ('Take absolute control via our API and dashboard'), and an auto-generated LOA for announcing the prefix. No API for ordering, assigning or announcing a prefix was found on the pages read, and no documented SOCKS or HTTP proxy front end ships with the bundle.",
+  "tooling": "Nothing beyond a shell and a BGP speaker is needed to use the prefix, and the vendor issues the LOA itself ('Instant Auto-LOA ... Announce prefixes to your upstream providers'). No wrapper exists for leasing an IPYE prefix and none is needed: the gateway reaches the address by pointing an upstream at the included server. A missing wrapper is not a reason to reject this provider.",
+  "chaining": "The Worker keeps Cloudflare's egress and this bundle is the address it points at. A Worker that must not look like AS13335 forwards to the included server, and the server's traffic leaves from a /22 whose registration record is an ARIN direct allocation, which is the rung 5 move. At 45 GB a month across about 599,000 requests the 10 Gbps port is idle, so the bundle buys a class and not a pipe.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "none: the bundle is sold as a 10 Gbps port and the vendor's own words for the sibling bundles are 'Pure unmetered transit means you never worry about traffic limits' and '10 Gbps unmetered upstream ports'",
+      "source": "https://ipye.com/use-cases"
+    }
+  ],
+  "limits_note": "The prefix has to be announced by the buyer's side: the vendor offers an auto-generated LOA 'to announce prefixes to your upstream providers'. That is a routing requirement rather than one of the seven kinds, and it is the step that decides whether the upstream sees the class at all.",
+  "binding": "none",
+  "binding_note": "Nothing in the vocabulary fails at 45 GB a month across about 599,000 requests: the port is sold unmetered (stated for the Datacenter Bundles, carried to this one by the facts) and a /22 holds 1,024 addresses. The ceilings that do arrive are structural: all 1,024 addresses sit in one /22 announced by one ASN, so the bundle moves rung 3 and rung 5 and leaves rung 4 exactly where it is, and the only number that stops a user is $1,600 a month, which is a price rather than a constraint kind.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "The order is a paid checkout and the record prices a card. The vendor's homepage states 'No KYC/ID Verification Required' and 'Pay with crypto or bank transfer', so a card is the instrument this record assumes rather than a gate the vendor documents; which instruments the checkout actually accepts for a $1,600/mo order was not tested. An account is required to order: every catalog entry reads 'Log in to order'.",
+    "country": null
+  },
+  "reliability_note": "The ISP class is claimed only for this bundle and the $300/mo ISP /44 IPv6 bundle; every rentable /24 in the catalog resolved to a hosting LLC (SPUZE AS51082, HostFC AS402948) and the third, 101.1.16.0/24, was announced by nobody on 2026-10-24, so a /22 that arrives datacenter-registered costs what this bundle costs and buys what the $300 Datacenter Bundle buys.",
+  "confidence": "documented",
+  "confidence_note": "Price, prefix, port and the ISP sentence were read on the vendor's own pages on 2026-10-24, and the registry records of three of its prefixes were measured with RIPE and ARIN RDAP the same day, so documented. Measured would need the prefix a paying account is actually assigned and one upstream's verdict on traffic from it. The class claim is the field still unverified, and it does not change a paid-only verdict, which rests on the price.",
+  "evidence": [
+    {
+      "url": "https://my.ipye.com/products/server-ip-bundles",
+      "date": "2026-10-24",
+      "proved": "The bundle 'ISP Network Bundle (RCN /22 IPv4+10 Gbps)' is listed at $1,600.00 with the sentence 'Prefixes registered completely under eyeball ISP transit providers. Identifies cleanly as an ISP rather than Data Center/Hosting.', and its six siblings are priced $300.00 (Datacenter /24 IPv4), $160.00 (DC /44 IPv6), $300.00 (ISP /44 IPv6), $600.00 (ISP 10 Gbps /36 IPv6) and $1,100.00 (RCN ISP 10 Gbps /29 IPv6). The entry prints no metering term and no usable-address count."
+    },
+    {
+      "url": "https://ipye.com/use-cases",
+      "date": "2026-10-24",
+      "proved": "The class mechanism in the vendor's words: 'IPYE solves this via specialized ISP Network Subnets. We lease prefixes registered to eyeball broadband networks and assign them to your compute hardware.' Also the unmetered sentence, '10 Gbps unmetered upstream ports', which the page writes about the Datacenter Bundles. The page states no price and names no bundle."
+    },
+    {
+      "url": "https://my.ipye.com/ip-catalog",
+      "date": "2026-10-24",
+      "proved": "The rentable IPv4 inventory is /24s at $120.00 and $130.00 a month and IPv6 /36s at $30.00 a month, labelled NET143, NET156, NET2600 and TECHMOVED-BD; no /22 and no $1,600 bundle appears in the catalog, so the ISP bundle is sold off-catalog."
+    },
+    {
+      "url": "https://ipye.com/",
+      "date": "2026-10-24",
+      "proved": "The vendor states 'No KYC/ID Verification Required', payment by crypto or bank transfer, 'Instant Auto-LOA' to 'Announce prefixes to your upstream providers', an API and dashboard for rDNS/PTR and GeoIP, and 'IPv6 Blocks $0/yr Starting at /48' as a separate leasing product."
+    },
+    {
+      "url": "probe:stat.ripe.net prefix-overview 143.203.217.0",
+      "date": "2026-10-24",
+      "proved": "Not announced as a /24: RIPE aligns it to 143.203.216.0/22, announced by AS51082 'ISP-A1-Internet SPUZE LLC', ARIN-administered. The catalog's 'NET143' is a display label, not the registry name."
+    },
+    {
+      "url": "probe:rdap.arin.net NET-143-203-216-0-1",
+      "date": "2026-10-24",
+      "proved": "143.203.216.0/22 is a DIRECT ALLOCATION named SPUZE to SPUZE LLC. That is the registry shape of an ISP allocation held by a hosting company, which is the nearest thing to evidence for the class claim and is not the same thing as eyeball transit."
+    },
+    {
+      "url": "probe:stat.ripe.net prefix-overview 156.9.124.0",
+      "date": "2026-10-24",
+      "proved": "Aligned to 156.9.124.0/22, announced by AS402948 'HOSTFC - HostFC,'; ARIN RDAP NET-156-9-124-0-1 is a DIRECT ALLOCATION named HOSTFC to HostFC, LLC."
+    },
+    {
+      "url": "probe:stat.ripe.net prefix-overview 101.1.16.0",
+      "date": "2026-10-24",
+      "proved": "Not announced: no ASN and no less-specific prefix returned. The catalog rents 101.1.16.0/24 at $120.00/mo as 'Registered with APNIC' in South Brisbane, and nothing currently routes it."
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-24T10:07:11.000Z",
+  "price_per_tb_month": "unmetered: no per-TB price exists. $1,600 per month buys the /22, the 10 Gbps port and a server, which is $1.5625 per address per month across 1,024 addresses.",
+  "notes": "The price and the quote were verified on the product page, not on the use-cases page the commission named: use-cases carries the class mechanism and the unmetered sentence but no price and no bundle name, and /pricing returns 404. Only (1) and (3) can be tested from outside and both resolve to hosting LLCs, so the bundle's /22 is inferred rather than read. If (1) is right the arithmetic is worth having: three of the four /24s cost $390 a month retail, a fourth would make $520, and the bundle is $1,600, so about $1,080 a month is the price the vendor puts on the class claim alone, at $0.508 per address as /24s against $1.5625 as the bundle. The one-sample caveat: the class finding rests on three prefixes, two of which were checked with RIPE and ARIN RDAP and one of which returned no announcement at all, so the record can say every prefix it checked was hosting or unrouted and cannot say the /22 a buyer receives is either.",
+  "extras": {
+    "rung": 5,
+    "rung_note": "The bundle is bought for its registration class, an ARIN direct allocation announced outside Cloudflare's ASN, which is what a gate keyed on ISP versus hosting would read; neither the address count nor a byte quota is the point.",
+    "siblings": "Datacenter Bundle /24 IPv4 $300.00; DC /44 IPv6 $160.00; ISP /44 IPv6 $300.00; ISP 10 Gbps /36 IPv6 $600.00; RCN ISP 10 Gbps /29 IPv6 $1,100.00. The ISP class claim is attached to this bundle and to the $300 ISP /44 IPv6 bundle only.",
+    "price_per_address_month": "$1.5625 as the bundle (1600/1024); $0.508 if the same space is bought as four /24s at $130 (520/1024); $1.171875 for the Datacenter Bundle /24 (300/256).",
+    "class_check": "AS51082 ISP-A1-Internet SPUZE LLC, ARIN NET-143-203-216-0-1 DIRECT ALLOCATION SPUZE / SPUZE LLC; AS402948 HOSTFC - HostFC, ARIN NET-156-9-124-0-1 DIRECT ALLOCATION HOSTFC / HostFC, LLC; 101.1.16.0 unannounced, APNIC allocation.",
+    "unverified": "Whether the $1,600 bundle's /22 is genuinely eyeball-registered, and whether any upstream treats its traffic differently from the Datacenter Bundle's."
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "topic": "storage",
+  "slug": "temp-sh",
+  "provider": "temp.sh",
+  "url": "https://temp.sh",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "no account; 4 GB per file, 3-day retention",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://temp.sh/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "4 GB per file",
+    "bytes": 4000000000,
+    "source_url": "https://temp.sh/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "no account; 4 GB per file, 3-day retention | 4 GB/file, 'Files expire after 3 days' (page description: 'Temporary File Upload",
+    "days": 3,
+    "source_url": "https://temp.sh/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "unmetered but requires a POST to the file page (a form submit, not a GET)",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "curl -F 'file=@x' https://temp.sh/upload ; ShareX supported per the page",
+  "chaining": "none — per-file, 3-day expiry.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "4 GB per file",
+      "source": "https://temp.sh/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "4 GB/file",
+      "source": "https://temp.sh/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "retention 4 GB/file, 'Files expire after 3 days",
+      "source": "https://temp.sh/"
+    }
+  ],
+  "limits_note": "4 GB/file, 'Files expire after 3 days' (page description: 'Temporary File Upload. 3 days. 4GB Size Limit.').",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "The GET-returns-HTML trap in its purest form: a plain download link is not a download, it is a one-button form. Any client that only GETs (wget, rclone, a naive fetch loop, a CDN in front) gets 3165 bytes of HTML at 200 with no error.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://temp.sh/",
+      "date": "2026-10-21",
+      "proved": "'Files expire after 3 days', 4 GB, curl -F upload example"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: POST /upload -> 200 + URL; GET URL -> 200 / 3165 B HTML (form); POST URL -> 200 / 32768 B / sha256 match"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "no account; 4 GB per file, 3-day retention",
+  "extras": {
+    "dead_end": {
+      "failure_class": "retention",
+      "why": "no account; 4 GB per file, 3-day retention",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    },
+    "probe_reported": "POST /upload -> 200 'https://temp.sh/VQJJo/probe.bin'. GET that URL -> 200 but 3165 B text/html (a page with a single <form method=POST> 'Click here to download'). POST to the same URL -> 200, 32768 B, sha256 MATCH."
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

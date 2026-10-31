@@ -1,0 +1,87 @@
+{
+  "topic": "storage",
+  "slug": "bilibili-video-upload",
+  "provider": "Bilibili video upload",
+  "url": "https://bilibili.com",
+  "category": "media",
+  "free_tier": {
+    "stated": "8 GB per video reported for most accounts; some accounts higher (third-party guide, not vendor docs)",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://bilibilihelp.com/creator/bilibili-video-upload-guide/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "8 GB/file",
+    "bytes": 8000000000,
+    "source_url": "https://bilibilihelp.com/creator/bilibili-video-upload-guide/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://bilibilihelp.com/creator/bilibili-video-upload-guide/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "free playback CDN, but segment/m3u8 delivery with Referer and anti-leech checks — not a plain file GET",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "open upload API documented in Chinese (POST /arcopen/fn/archive/video/init, chunked upload above 100 MB); bilibili-API-collect and multiple uploader CLIs exist",
+  "chaining": "8 GB x unlimited videos x N verified accounts; 20 TiB = 2,560 uploads. Realistically the biggest single-file social quota found, but each video must pass transcode + review",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "8 GB/file",
+      "source": "https://bilibilihelp.com/creator/bilibili-video-upload-guide/"
+    },
+    {
+      "kind": "write-gated",
+      "value": "review gate",
+      "source": "https://bilibilihelp.com/creator/bilibili-video-upload-guide/"
+    },
+    {
+      "kind": "write-gated",
+      "value": "review rejects arbitrary data, so it is a video host, not storage",
+      "source": "https://bilibilihelp.com/creator/bilibili-video-upload-guide/"
+    }
+  ],
+  "limits_note": "8 GB/file; mandatory transcode (never byte-exact); content review gate; account must be phone-verified; playback URLs are signed and expire",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "transcoding destroys the bytes and review rejects arbitrary data, so it is a video host, not storage; CDN URLs are time-signed",
+  "confidence": "inferred",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://bilibilihelp.com/creator/bilibili-video-upload-guide/",
+      "date": "2026-10-21",
+      "proved": "'Maximum file size is reported to be 8GB for most accounts; some accounts may have higher limits' (third-party, hedged)"
+    },
+    {
+      "url": "https://bilibili.apifox.cn/api-23693239",
+      "date": "2026-10-21",
+      "proved": "/arcopen/fn/archive/video/init, '文件不超过100M时...超过100M时，须通过分片上传流程' (chunked upload above 100 MB)"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "8 GB per video reported for most accounts; some accounts higher (third-party guide, not vendor docs)",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "8 GB per video reported for most accounts; some accounts higher (third-party guide, not vendor docs)",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

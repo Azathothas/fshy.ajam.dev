@@ -1,0 +1,89 @@
+{
+  "topic": "debrid",
+  "slug": "world-bank-open-data",
+  "provider": "World Bank Open Data (Indicators API v2)",
+  "url": "https://datahelpdesk.worldbank.org/knowledgebase/articles/889392-about-the-indicators-api-documentation",
+  "category": "development statistics API",
+  "tier": "free",
+  "free_tier": {
+    "stated": "'API keys and other authentication methods are no longer necessary to access the API.' Nearly 16,000 time series indicators across over 45 databases, many series back over 50 years.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://datahelpdesk.worldbank.org/knowledgebase/articles/889392-about-the-indicators-api-documentation",
+    "read_on": "2026-10-23",
+    "notes": "No rate limit is published anywhere on the API documentation."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: JSON or XML per call, with per_page up to 32,000 rows on some indicators. The responses measured here were 9,735-13,760 bytes each at per_page=50.",
+    "bytes": null,
+    "source_url": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.MKTP.CD?format=json&per_page=50",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "the indicator series are revised in place; there is no versioned snapshot endpoint documented",
+    "days": null,
+    "source_url": "https://datahelpdesk.worldbank.org/knowledgebase/articles/889392-about-the-indicators-api-documentation",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Free and unmetered. No key, no account.",
+    "metered": false,
+    "free_allowance": "no byte allowance published",
+    "price_per_tb": null,
+    "source_url": "https://datahelpdesk.worldbank.org/knowledgebase/articles/889392-about-the-indicators-api-documentation"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "GET https://api.worldbank.org/v2/country/{codes}/indicator/{code}?format=json&per_page=N&page=N; format=xml also accepted.",
+  "endpoint": "https://api.worldbank.org/v2/",
+  "tooling": "curl/python-requests; wbgapi and pandas-datareader wrap it. No SDK needed.",
+  "chaining": "The economic and social join keys for any national-level dataset; it is metadata-density, not byte-volume, so it pairs with a large byte source rather than replacing one.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "none published; measured 24 requests in 2.061 s at 8 connections (about 18 requests/second over the request phase) with no 429, and 20 requests in 43.774 s sequentially (latency-bound at about 2.2 s per call)",
+      "source": "probe:https://api.worldbank.org/v2/country/all/indicator/NY.GDP.MKTP.CD?format=json&per_page=50"
+    }
+  ],
+  "limits_note": "",
+  "binding": "request-rate",
+  "binding_note": "The API returns about 11 KB per call, so 1 TiB would take roughly 95 million calls; per-call latency, not any byte quota, is what limits a day. Parallel calls help here, unlike on the file hosts.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No key: 'API keys and other authentication methods are no longer necessary'. Anonymous GET returned 200 and 324 bytes for per_page=1.",
+    "country": null
+  },
+  "reliability_note": "Sequential calls cost about 2.2 s each from this machine, so an unparallelised harvest spends its day in latency; the API answered all 44 calls made here without a single 429.",
+  "confidence": "measured",
+  "confidence_note": "44 calls were made and counted, at 1 and 8 connections, with bytes per response recorded. What is not measured is the point at which throttling starts, because none was reached.",
+  "evidence": [
+    {
+      "url": "https://datahelpdesk.worldbank.org/knowledgebase/articles/889392-about-the-indicators-api-documentation",
+      "date": "2026-10-23",
+      "proved": "'API keys and other authentication methods are no longer necessary to access the API' and 'nearly 16,000 time series indicators'"
+    },
+    {
+      "url": "probe:https://api.worldbank.org/v2/country/all/indicator/NY.GDP.MKTP.CD?format=json&per_page=50",
+      "date": "2026-10-23",
+      "proved": "20 sequential requests in 43,774 ms, 19x200 and 1 transport error, mean 10,615.8 bytes per response; sha256 of the first response a9dc0be3cba1c4bff059bfe695824288b4b542ddf13bb529ee2582bf5bcdadc3"
+    },
+    {
+      "url": "probe:https://api.worldbank.org/v2/country/all/indicator/NY.GDP.MKTP.CD?format=json&per_page=50 (8 connections, 3 rounds)",
+      "date": "2026-10-23",
+      "proved": "24 requests in 2,061 ms wall, all 200, 9,735-13,760 bytes per response - no 429 at about 18 requests/second"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-23T03:24:34.450Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "A useful contrast: on the file hosts, more connections made things slower; here eight connections made the same 24 calls 21 times faster than one. The difference is latency-bound JSON versus bandwidth-bound files.",
+  "extras": {
+    "one_conn_20_req_ms": 43774,
+    "eight_conn_24_req_ms": 2061,
+    "mean_bytes_per_response": 10615.8,
+    "observed_rps": 18.3,
+    "first_response_sha256": "a9dc0be3cba1c4bff059bfe695824288b4b542ddf13bb529ee2582bf5bcdadc3"
+  }
+}

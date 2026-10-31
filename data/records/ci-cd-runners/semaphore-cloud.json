@@ -1,0 +1,218 @@
+{
+  "topic": "ci-cd-runners",
+  "slug": "semaphore-cloud",
+  "provider": "Semaphore Cloud",
+  "url": "https://semaphore.io/pricing",
+  "category": "CI runner",
+  "tier": "free monthly credit",
+  "free_tier": {
+    "stated": "USD 15 of free credits per month for every organization, about 2,000 Ubuntu x64 2-vCPU minutes; 20 concurrent jobs by default; no card",
+    "unit": "credits",
+    "metered_on": "wall-clock",
+    "source_url": "https://semaphore.io/pricing",
+    "read_on": "2026-10-30",
+    "notes": "the credit is US dollars spent per minute at each machine's rate: f1-standard-2 (x64) USD 0.0075, r1-standard-2 (ARM) USD 0.003, a2-standard-4 (macOS) USD 0.09; a job under one minute is billed as one minute"
+  },
+  "per_object_cap": {
+    "stated": "execution_time_limit is 1 hour by default and at most 24 hours (1,440 minutes); jobs are terminated at the limit, and a block or job limit longer than its pipeline's is rejected",
+    "bytes": null,
+    "source_url": "https://docs.semaphore.io/reference/pipeline-yaml",
+    "notes": "no per-artifact size cap was found in the pages read"
+  },
+  "retention": {
+    "stated": "artifacts in the workflow and job namespaces are kept at most 400 days; project artifacts have no age limit; the agent and every file on it are discarded when the job ends",
+    "days": 400,
+    "source_url": "https://docs.semaphore.io/using-semaphore/artifacts"
+  },
+  "egress": {
+    "terms": "artifact egress is free up to 20 GB a month with 100 GB a month of artifact storage; beyond it USD 0.35 per GB of egress and USD 0.07 per GB of storage",
+    "metered": true,
+    "free_allowance": "20 GB of artifact egress a month",
+    "price_per_tb": null,
+    "source_url": "https://semaphore.io/pricing"
+  },
+  "interface": [
+    "git",
+    "cli"
+  ],
+  "interface_detail": "a pipeline YAML such as .semaphore/semaphore.yml in a GitHub or Bitbucket repository, or the visual workflow editor; the sem CLI opens an SSH session into a running job",
+  "tooling": "Ubuntu 22.04 and 24.04 images on F1 x86_64 machines with Docker environments, Ubuntu 24.04 on R1 ARM machines, macOS Xcode images on A2 machines; the toolbox commands checkout, cache, artifact, sem-version and sem-service; the sem-ai CLI and an MCP server. The Community Edition is Apache-2.0 software the user installs and runs on a rented or free machine, after every hosted offer",
+  "chaining": "a monthly dollar credit rather than a minute count, so the R1 ARM machine at USD 0.003 a minute stretches it furthest; artifacts leave free up to 20 GB a month, and the project artifact namespace has no age limit",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "USD 15 of credit a month: about 2,000 minutes on f1-standard-2 (2 vCPU, 8 GB RAM, 45 GB disk) at USD 0.0075 a minute; USD 15 / USD 0.003 = 5,000 minutes on r1-standard-2 (ARM, 2 vCPU, 4 GB RAM)",
+      "source": "https://semaphore.io/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "20 concurrent jobs by default; higher limits on request",
+      "source": "https://semaphore.io/pricing"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "1 hour per pipeline by default, at most 24 hours (1,440 minutes)",
+      "source": "https://docs.semaphore.io/reference/pipeline-yaml"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "20 GB a month of artifact egress and 100 GB a month of artifact storage free; then USD 0.35 per GB egress and USD 0.07 per GB storage",
+      "source": "https://semaphore.io/pricing"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "workflow and job artifacts are deleted after at most 400 days",
+      "source": "https://docs.semaphore.io/using-semaphore/artifacts"
+    }
+  ],
+  "limits_note": "9.6 GB of cache storage per project; time spent queued for a concurrency slot is not billed; the FAQ states that open-source and free plans cannot create private projects",
+  "binding": "request-rate",
+  "binding_note": "the USD 15 credit is spent at about 2,000 f1-standard-2 minutes a month, long before 20 concurrent jobs or the 24-hour job ceiling bind; a monthly minute pool has no kind of its own and sits under request-rate as in the other hosted CI records",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "sign-up needs a GitHub or Bitbucket account; the free usage is advertised as 'Start free — $15/mo, no card'; the flow then asks for an organization name and a short survey",
+    "country": null
+  },
+  "reliability_note": "a job runs on an ephemeral agent destroyed at the end of the job; a shared runner address can already be at the Docker Hub anonymous pull limit",
+  "confidence": "documented",
+  "confidence_note": "pricing, billing, machine-type, pipeline-YAML, artifact, FAQ and sign-up pages were read and quoted on 2026-10-30; no job was run. Raised to measured by a probe of a job on f1-standard-2.",
+  "evidence": [
+    {
+      "url": "https://semaphore.io/pricing",
+      "date": "2026-10-30",
+      "proved": "every organization gets USD 15 of credit a month, about 2,000 minutes on the 2-vCPU x64 machine",
+      "capture": "sha256:2b3c6afac131f727a322a2c9768bb7ecfee0512fb4490724ac745c0dd9c49e5e",
+      "quote": "Get $15 free credits per month (≈ 2,000 Ubuntu x64 2-vCPU minutes). Credits can be used across available services."
+    },
+    {
+      "url": "https://semaphore.io/pricing",
+      "date": "2026-10-30",
+      "proved": "20 concurrent jobs by default",
+      "capture": "sha256:2b3c6afac131f727a322a2c9768bb7ecfee0512fb4490724ac745c0dd9c49e5e",
+      "quote": "Includes 20 concurrent jobs by default. Higher limits are available on request based on usage."
+    },
+    {
+      "url": "https://semaphore.io/pricing",
+      "date": "2026-10-30",
+      "proved": "artifact egress free to 20 GB a month and storage to 100 GB a month, then USD 0.35 and USD 0.07 per GB",
+      "capture": "sha256:2b3c6afac131f727a322a2c9768bb7ecfee0512fb4490724ac745c0dd9c49e5e",
+      "quote": "Free up to 20 GB/month egress and 100 GB/month storage. Additional usage: $0.35/GB egress and $0.07/GB storage."
+    },
+    {
+      "url": "https://semaphore.io/pricing",
+      "date": "2026-10-30",
+      "proved": "9.6 GB of cache storage per project",
+      "capture": "sha256:2b3c6afac131f727a322a2c9768bb7ecfee0512fb4490724ac745c0dd9c49e5e",
+      "quote": "Each project includes 9.6 GB of cache storage to speed up builds and dependency installs."
+    },
+    {
+      "url": "https://docs.semaphore.io/using-semaphore/billing",
+      "date": "2026-10-30",
+      "proved": "f1-standard-2 costs USD 0.0075 a minute and f1-standard-4 USD 0.015",
+      "capture": "sha256:11a3be0abd0822855f0544416b48d483953545f875abc3453df87b9e785ff47e",
+      "quote": "| F1 (Linux) | $0.0075 | $0.015 |"
+    },
+    {
+      "url": "https://docs.semaphore.io/using-semaphore/billing",
+      "date": "2026-10-30",
+      "proved": "r1-standard-2 (ARM) costs USD 0.003 a minute",
+      "capture": "sha256:11a3be0abd0822855f0544416b48d483953545f875abc3453df87b9e785ff47e",
+      "quote": "| R1 (ARM) | $0.003 | $0.006 |"
+    },
+    {
+      "url": "https://docs.semaphore.io/using-semaphore/billing",
+      "date": "2026-10-30",
+      "proved": "a job under one minute is billed as a full minute",
+      "capture": "sha256:11a3be0abd0822855f0544416b48d483953545f875abc3453df87b9e785ff47e",
+      "quote": "Jobs that take less than one minute to complete will be rounded up to a full minute for billing purposes."
+    },
+    {
+      "url": "https://docs.semaphore.io/reference/machine-types",
+      "date": "2026-10-30",
+      "proved": "f1-standard-2 is 2 vCPU, 8 GB RAM and 45 GB disk",
+      "capture": "sha256:b6caa5ecd06c930cc98f1969747b634930e253f111b7161c520746112f4dd6a4",
+      "quote": "| `f1-standard-2` | 2 | 8 | 45 |"
+    },
+    {
+      "url": "https://docs.semaphore.io/reference/machine-types",
+      "date": "2026-10-30",
+      "proved": "r1-standard-2 (ARM) is 2 vCPU, 4 GB RAM and 50 GB disk",
+      "capture": "sha256:b6caa5ecd06c930cc98f1969747b634930e253f111b7161c520746112f4dd6a4",
+      "quote": "| `r1-standard-2` | 2 | 4 | 50 |"
+    },
+    {
+      "url": "https://docs.semaphore.io/reference/pipeline-yaml",
+      "date": "2026-10-30",
+      "proved": "the default execution time limit is 1 hour",
+      "capture": "sha256:ad170e51f97799b811d6d7972dcb0ccd8c571cc27620e7b60c95fddf0dc45aec",
+      "quote": "Jobs are forcibly terminated once the time limit is reached. The default value is 1 hour."
+    },
+    {
+      "url": "https://docs.semaphore.io/reference/pipeline-yaml",
+      "date": "2026-10-30",
+      "proved": "the execution time limit is at most 24 hours",
+      "capture": "sha256:ad170e51f97799b811d6d7972dcb0ccd8c571cc27620e7b60c95fddf0dc45aec",
+      "quote": "`hours`: time limit expressed in hours. Maximum value is 24"
+    },
+    {
+      "url": "https://docs.semaphore.io/using-semaphore/artifacts",
+      "date": "2026-10-30",
+      "proved": "workflow and job artifacts are kept at most 400 days",
+      "capture": "sha256:242a2b7c305a96009dc71d5985767eae80cf637bf233c7b7ae80c00f4800a05d",
+      "quote": "all artifacts on the workflow and job namespaces/scopes have a maximum retention of 400 days"
+    },
+    {
+      "url": "https://docs.semaphore.io/using-semaphore/jobs",
+      "date": "2026-10-30",
+      "proved": "the agent and its files are discarded after each job",
+      "capture": "sha256:7d482af06c1c18ebb3d65799a0c1bdef932b4e0503268cd7ba4ebf6e8ed3f2d8",
+      "quote": null
+    },
+    {
+      "url": "https://docs.semaphore.io/getting-started/tour/sign-up",
+      "date": "2026-10-30",
+      "proved": "sign-up needs a GitHub or Bitbucket account",
+      "capture": "sha256:9dfa56435511c2f000b11f03af28dca4149a41d52578337e1c4eb25e29b2aecf",
+      "quote": "To create your Semaphore account you need a GitHub or BitBucket account."
+    },
+    {
+      "url": "https://semaphore.io/semaphore-vs-circleci",
+      "date": "2026-10-30",
+      "proved": "the USD 15 monthly free usage needs no card",
+      "capture": "sha256:9ffd78ab1d589bc914cbcdd403c37a9b3f12ce058a20c4868e98a994125ccfdd",
+      "quote": "Start free — $15/mo, no card"
+    },
+    {
+      "url": "https://semaphore.io/semaphore-vs-circleci",
+      "date": "2026-10-30",
+      "proved": "a self-hostable free Community Edition exists beside the hosted service",
+      "capture": "sha256:9ffd78ab1d589bc914cbcdd403c37a9b3f12ce058a20c4868e98a994125ccfdd",
+      "quote": "use fully managed Semaphore Cloud, self-host the free Community Edition, or deploy Enterprise behind your firewall."
+    },
+    {
+      "url": "https://docs.semaphore.io/getting-started/faq",
+      "date": "2026-10-30",
+      "proved": "free and open-source plans cannot create private projects",
+      "capture": "sha256:b7b409007a99311272c0f0be949c2e342e0883369c51f5ce939a9414634a20fe",
+      "quote": "Open-source and free plans cannot create private projects."
+    },
+    {
+      "url": "https://docs.semaphore.io/getting-started/faq",
+      "date": "2026-10-30",
+      "proved": "a runner address can already be rate-limited by Docker Hub",
+      "capture": "sha256:b7b409007a99311272c0f0be949c2e342e0883369c51f5ce939a9414634a20fe",
+      "quote": "The machine you are running your jobs on may have been provisioned for another user, resulting in that particular IP being rate-limited."
+    },
+    {
+      "url": "https://semaphore.io/cloud",
+      "date": "2026-10-30",
+      "proved": "open-source projects are said to get free parallel CI, with no number stated",
+      "capture": "sha256:2fab7c3ea2782bcb6705f4e949ac00cf3fcadf05e988f9daa17b19bf33a65e80",
+      "quote": "Linux and macOS open-source projects get free parallel CI on Semaphore."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-30T10:47:32.273Z",
+  "price_per_tb_month": null,
+  "notes": "The pricing page names one free allowance, USD 15 a month for every organization. The Cloud page FAQ says Linux and macOS open-source projects get free parallel CI and gives no number, so any open-source allowance beyond the USD 15 is unverified. The Community Edition (Apache-2.0) is software the user installs and runs, the last resort after every hosted offer."
+}

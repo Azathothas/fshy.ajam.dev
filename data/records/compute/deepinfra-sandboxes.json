@@ -1,0 +1,117 @@
+{
+  "topic": "compute",
+  "slug": "deepinfra-sandboxes",
+  "provider": "DeepInfra Sandboxes",
+  "url": "https://deepinfra.com/blog/sandboxes",
+  "category": "microVM (Kata on QEMU/KVM) sandbox",
+  "tier": "nano",
+  "free_tier": {
+    "stated": "no free tier: 'the nano plan starts at just $0.054/hour, billed by the second'; no credit or trial is offered for sandboxes on the pages read",
+    "unit": "none",
+    "metered_on": "wall-clock",
+    "source_url": "https://deepinfra.com/blog/sandboxes",
+    "read_on": "2026-10-24"
+  },
+  "per_object_cap": {
+    "stated": "not applicable: the unit is a sandbox, not an object. Each command defaults to a 60-second timeout with a 30-minute hard cap."
+  },
+  "retention": {
+    "stated": "Stopping keeps /workspace and resets everything else; 'you've got up to 7 days to start() it again before it's permanently deleted'. Only /workspace survives a stop, and failed sandboxes lose /workspace.",
+    "days": 7,
+    "source_url": "https://deepinfra.com/blog/sandboxes"
+  },
+  "egress": {
+    "terms": "Not published. The overview page and the blog post state the compute and lifecycle meters and say nothing about a traffic allowance or a per-GB egress rate.",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://docs.deepinfra.com/sandboxes/overview"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "Python SDK ('Sandbox.create(plan=\"medium\")') and an HTTP API, with a dashboard at deepinfra.com/dash/sandboxes.",
+  "tooling": "The vendor's Python SDK and REST API; commands run inside the microVM and files move only through /workspace.",
+  "chaining": "USD 0.054 an hour for the nano plan is USD 39.42 a month if never stopped, and a sandbox auto-stops after 24 hours of continuous running, so it is not an always-on machine.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "auto-stop after 24 continuous running hours, a default 1-hour idle timeout that cannot be disabled, and 7 days of stopped retention before deletion",
+      "source": "https://deepinfra.com/blog/sandboxes"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "25 non-stopped sandboxes per account; 'shared-fleet capacity can temporarily prevent creation'",
+      "source": "https://docs.deepinfra.com/sandboxes/overview"
+    }
+  ],
+  "limits_note": "Billing runs while a sandbox is creating, starting, running or stopping, so 'per-second' includes boot and the disk save on stop. The plan shapes and rates are behind an authenticated catalog: GET /v1/sandboxes/catalog returned {\"detail\":\"User is not authorized to access this resource\"} to an unauthenticated request, and the docs say explicitly not to hardcode the numbers.",
+  "binding": "retention-clamped",
+  "binding_note": "The 24-hour auto-stop is the first hard wall: no configuration on the pages read lifts it, so the machine cannot be an always-on monitor or VPN node even before the price matters.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "A DeepInfra account is required and sandboxes draw on DeepInfra billing; the catalog endpoint refuses an unauthenticated caller, so plan shapes and prices are visible only to a signed-in account. Card types, any authorisation hold, and whether a debit or prepaid card is accepted were not established.",
+    "country": null
+  },
+  "reliability_note": "Two documented loss paths: a failed sandbox loses /workspace, and everything outside /workspace is discarded on stop. Shared-fleet capacity can refuse creation.",
+  "confidence": "documented",
+  "confidence_note": "The nano rate, the per-second meter and the whole lifecycle are quoted from DeepInfra's own blog and docs, read. The rate-to-shape mapping is not documented publicly: the vendor directs readers to an authenticated catalog, so the shape fields stay null rather than guessed. What would raise it: a signed-in read of /v1/sandboxes/catalog, which would give the exact vCPU/RAM/disk of the nano plan.",
+  "evidence": [
+    {
+      "url": "https://deepinfra.com/blog/sandboxes",
+      "date": "2026-10-24",
+      "proved": "quoted: 'the `nano` plan starts at just $0.054/hour, billed by the second' and 'Leave one running and it auto-stops after 24 hours'"
+    },
+    {
+      "url": "https://deepinfra.com/blog/sandboxes",
+      "date": "2026-10-24",
+      "proved": "retention: 'Stopping just pauses it: /workspace sticks around, everything else resets to a clean image. From there you've got up to 7 days to start() it again before it's permanently deleted.'"
+    },
+    {
+      "url": "https://docs.deepinfra.com/sandboxes/overview",
+      "date": "2026-10-24",
+      "proved": "billing: 'Billing is per-second with no minimum, and only runs while a sandbox is creating, starting, running, or stopping - a stopped sandbox costs nothing'"
+    },
+    {
+      "url": "https://docs.deepinfra.com/sandboxes/overview",
+      "date": "2026-10-24",
+      "proved": "no public shape/rate table: 'For current plan specs (vCPU, RAM, disk) and hourly pricing, don't hardcode numbers - check the live catalog'"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-24T01:54:08.000Z",
+  "price_per_tb_month": null,
+  "notes": "Arithmetic: USD 0.054 an hour × 730 = USD 39.42 a month if the auto-stop did not exist; × 300 h = USD 16.20. The auto-stop makes the 730-hour figure hypothetical, and it is recorded as the price of the meter rather than the price of a machine. What the nano shape actually contains is unverified because the catalog is authenticated.",
+  "extras": {
+    "shape": {
+      "vcpu": null,
+      "ram_gib": null,
+      "disk_gib": null,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "billing_model": "hourly",
+    "term": "per-second metering, no commitment",
+    "m10h_usd": 16.2,
+    "m24h_usd": 39.42,
+    "price_arithmetic": "0.054/hr × 730 h = USD 39.42; × 300 h = USD 16.20. Both assume the sandbox is never auto-stopped, which the vendor's 24-hour rule makes impossible in practice.",
+    "free_tier_kind": "none",
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": null,
+      "ports": "not published; the docs describe command execution and file transfer, not an inbound listener",
+      "static_ip": null,
+      "ipv6": null,
+      "per_session_bytes": null
+    },
+    "session_cap": {
+      "wall_clock_min": 1440,
+      "idle_reap_s": 3600,
+      "restart_required": true,
+      "note": "auto-stop at 24 h continuous; 1 h default idle timeout; 7-day stopped retention"
+    },
+    "aggregator_gross_usd_month": null,
+    "aggregator_note": "sandboxprices.com has a DeepInfra Sandboxes row marked unverified with no total, for the same reason recorded here: the shape-to-rate mapping is behind the authenticated catalog."
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "topic": "storage",
+  "slug": "nuget-org",
+  "provider": "NuGet.org",
+  "url": "https://www.nuget.org",
+  "category": "registry",
+  "free_tier": {
+    "stated": "250 MB per package. No documented total-storage quota and no documented cap on package count per account; organizations are free. Over 500k packages / petabytes-scale gallery in practice.",
+    "unit": "MB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://learn.microsoft.com/en-us/nuget/nuget-org/publish-a-package",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://learn.microsoft.com/en-us/nuget/nuget-org/publish-a-package",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://learn.microsoft.com/en-us/nuget/nuget-org/publish-a-package",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and unmetered, Cloudflare-fronted, CORS-open. Probe: api.nuget.org v3-flatcontainer .nupkg GET -> 200, Server: cloudflare, Access-Control-Allow-Origin: *, Cache-Control: max-age=86400.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Push via PUT/POST to the v2 endpoint (nuget.exe / dotnet nuget push); pull via the v3 flat-container URL pattern api.nuget.org/v3-flatcontainer/{id}/{version}/{id}.{version}.nupkg. First-class clients, anonymous read.",
+  "chaining": "UNBOUNDED in principle: unlimited packages x 250 MB. 10 TiB = ~44,000 packages. Rate limits are the binding constraint (HTTP 429 with Retry-After). Package IDs are globally unique per version and cannot be reused, so name-sharding has to be planned up front.",
+  "limits": [],
+  "limits_note": "250 MB per package (hard 413). API rate limited (429 + Retry-After). Deleting a package is strongly discouraged and effectively unsupported ('In general, we do not support deleting a package published to NuGet.org'); unlisting is the normal path. Signed packages are immutable including the nuspec.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "No deletion path means data does not vanish — good for archive. No total quota documented means no hard ceiling appears anywhere, but also no documented guarantee; a bulk workload has no stated allowance to point at. 429s on sustained pushes.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://learn.microsoft.com/en-us/nuget/nuget-org/publish-a-package",
+      "date": "2026-10-21",
+      "proved": "'Nuget.org has a package size limit of about 250 MB' + the 413 error text"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/nuget/nuget-org/nuget-org-faq",
+      "date": "2026-10-21",
+      "proved": "'NuGet.org allows packages up to 250MB'; 'In general, we do not support deleting a package published to NuGet.org'"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/nuget/api/rate-limits",
+      "date": "2026-10-21",
+      "proved": "429 with 'Rate limit is exceeded. Try again in N seconds.'"
+    },
+    {
+      "url": "https://api.nuget.org/v3-flatcontainer/newtonsoft.json/13.0.3/newtonsoft.json.13.0.3.nupkg",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, Content-Length: 2441966, Server: cloudflare"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "250 MB per package. No documented total-storage quota and no documented cap on package count per account; organizations are free. Over 500k packages / petabytes-scale gallery in practice.",
+  "extras": {},
+  "binding": "none",
+  "binding_note": null
+}

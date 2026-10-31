@@ -1,0 +1,100 @@
+{
+  "topic": "storage",
+  "slug": "storage-to",
+  "provider": "storage.to",
+  "url": "https://storage.to",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "No permanent free storage: anonymous 100 GB upload / 24h per visitor token (500 GB / 24h per IP), free-account token = unlimited upload bandwidth and no daily file cap, but every free file expires in 3-7 days; permanent storage starts at $5/mo for 100 GB",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://storage.to/docs/api",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "25 GB/file",
+    "bytes": 25000000000,
+    "source_url": "https://storage.to/docs/api",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "No permanent free storage: anonymous 100 GB upload / 24h per visitor token (500 GB / 24h per IP), free-account token = unlimited upload bandwidth and no daily file cap, but every free file expires in 3-7 days; permanent storage starts at $5/mo for 100 GB",
+    "days": 7,
+    "source_url": "https://storage.to/docs/api",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "downloads 'unlimited and unthrottled' — this is the most generous free egress found in the niche, it just cannot hold data",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "documented 33-endpoint REST API (init -> presigned PUT -> confirm), presigned URLs point at r2.cloudflarestorage.com; CLI + desktop app + ShareX; no rclone",
+  "chaining": "the upload quota is per visitor token AND per IP, so 100 GB/24h x N tokens (up to the 500 GB/IP ceiling) x N IPs — a throughput engine rather than a store; pairs well as the write side in front of a permanent store",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "500 GB / 24h",
+      "source": "https://storage.to/docs/api"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "100 GB/24h",
+      "source": "https://storage.to/docs/api"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "25 GB/file",
+      "source": "https://storage.to/docs/api"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "expires in 3-7 days",
+      "source": "https://storage.to/docs/api"
+    }
+  ],
+  "limits_note": "25 GB/file (100 GB paid); 100 GB/24h per visitor token, 500 GB/24h per IP; 50 files/24h anonymous; expiry 3 days default, 7 max; 60-500 req/min per endpoint",
+  "identity_cost": {
+    "kind": "card",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "objects live on Cloudflare R2 behind presigned URLs and are garbage-collected at expiry; anonymous files need the returned owner_token to mutate anything and it cannot be recovered",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://storage.to/docs/api",
+      "date": "2026-10-21",
+      "proved": "'No token: 100 GB / 24 hours (500 GB per IP), files expire after 3 days'; 'Free account token: Unlimited upload bandwidth, no daily file cap'; 'downloads are unlimited and unthrottled'"
+    },
+    {
+      "url": "https://storage.to/premium",
+      "date": "2026-10-21",
+      "proved": "permanence is paid: Personal $5/mo 100 GB, 'Files never expire'"
+    },
+    {
+      "url": "https://storage.to/b9PYWolbj",
+      "date": "2026-10-21",
+      "proved": "probe: POST /api/upload/init -> 200 presigned URL at 7291236a05b5feaef8f8a13dc7957e8b.r2.cloudflarestorage.com; PUT -> 200; POST /api/upload/confirm -> 200 {\"file\":{\"url\":\"\",\"expires_at\":\"2026-10-24T14:49:29+00:00\"}} (3-day expiry confirmed live)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No permanent free storage: anonymous 100 GB upload / 24h per visitor token (500 GB / 24h per IP), free-account token = unlimited upload bandwidth and no daily file cap, but every free file expires in 3-7 days; permanent storage starts at $5/mo for 100 GB",
+  "extras": {
+    "dead_end": {
+      "failure_class": "retention",
+      "why": "No permanent free storage: anonymous 100 GB upload / 24h per visitor token (500 GB / 24h per IP), free-account token = unlimited upload bandwidth and no daily file cap, but every free file expires in 3-7 days; permanent storage starts at $5/mo for 100 GB",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

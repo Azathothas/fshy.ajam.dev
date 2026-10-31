@@ -1,0 +1,89 @@
+{
+  "topic": "storage",
+  "slug": "selectel-object-storage-coldest-tier-is-cheap-the-traffi",
+  "provider": "Selectel Object Storage (Russia) — coldest tier is cheap, the traffic is not",
+  "url": "https://selectel.ru/services/cloud/storage/",
+  "category": "object-storage",
+  "free_tier": {
+    "stated": "Ice (ледяное) ₽0.89/GB/mo; Cold ₽1.26/GB/mo; Standard ₽2.57/GB/mo. Volume ladder: up to 10 TB ₽1.35, 10-50 TB ₽1.31, 50 TB+ lower (per Selectel's own price-change digest).",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://selectel.ru/services/cloud/storage/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://selectel.ru/services/cloud/storage/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://selectel.ru/services/cloud/storage/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "METERED at ₽1.96/GB on every class, plus paid requests — Ice requests are the most expensive in the set at ₽361 per 1 M GET/HEAD and ₽3,009 per 1 M PUT (`serverdelo.ru` table, prices verified 2026-10-03). This is the trap: the cheapest storage line in Russia pairs with the most expensive retrieval. Selectel's OWN promotional tariff does waive it — «не платите за исходящий трафик и запросы весь год» — but only at ₽2/GB storage plus a ₽10,000/month platform fee, i.e. you prepay ₽120,000/yr to buy out the egress.",
+    "metered": true
+  },
+  "interface": [
+    "s3-compatible",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "s3 + swift",
+  "tooling": "S3-compatible with IAM, S3 endpoint live (`https://s3.ru-7.storage.selcloud.ru/` -> 403 for anonymous list, expected). rclone `s3`, aws-cli, Terraform.",
+  "chaining": "Volume ladder is shallow (₽1.35 → ₽1.31 from 10 TB to 50 TB, a 3 % step) — no meaningful economy of scale.",
+  "limits": [],
+  "limits_note": "Ice has a minimum storage duration and retrieval billing, so short-lived objects cost double. Requests are billed per million and Ice's GET rate of ₽361/M makes any small-object workload (a 20 TiB corpus of 1 MB shards = 20 M GETs) cost $87 in requests per full pass on top of storage.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "card",
+    "country": null
+  },
+  "reliability_note": "Tier-1 Russian provider, 152-FZ/PCI DSS/ISO 27001/27017/27018, three copies across racks. No reliability concern; the concern is purely the egress and per-request structure.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://serverdelo.ru/rejtingi/s3-hranilishche/",
+      "date": "2026-10-21",
+      "proved": "«Цены сверены с сайтами провайдеров 3 октября 2026 года»: «Selectel, ледяное | 0,89 ₽ | 1,96 ₽ | 361 ₽ и 3 009 ₽»; «Selectel, холодное | 1,26 ₽ | 1,96 ₽ | 224 ₽ и 2 040 ₽»; «Selectel, стандартное | 2,57 ₽ | 1,38 ₽ | 54 ₽ и 714 ₽»"
+    },
+    {
+      "url": "https://selectel.ru/services/cloud/storage/",
+      "date": "2026-10-21",
+      "proved": "three-copy storage across racks, unlimited volume, S3 API, IAM, 152-FZ/PCI DSS/ISO 27001/27017/27018"
+    },
+    {
+      "url": "https://web.archive.org/web/202606/selectel.ru/services/cloud/storage/special-tariff/",
+      "date": "2026-10-21",
+      "proved": "> replay of 20250615190112: «До 31 августа подключите стандартное объектное хранилище по специальному тарифу и не платите за исходящий трафик и запросы весь год … 2 ₽ за хранение 1 ГБ данных; 10 000 ₽ за подключение ежемесячно. Исходящий трафик и запросы к API — бесплатные»"
+    },
+    {
+      "url": "https://selectel.ru/blog/digest08_23/",
+      "date": "2026-10-21",
+      "proved": "volume ladder «До 10 ТБ 1,63 ₽ → 1,35 ₽; От 10 до 50 ТБ → 1,31 ₽»"
+    },
+    {
+      "url": "https://s3.ru-7.storage.selcloud.ru/",
+      "date": "2026-10-21",
+      "proved": "probe: curl -o /dev/null -w '%{http_code}' -> 403"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "price_per_tb_month": "Ice: $11.04/TB/mo storage PLUS $24.31/TB for every full read-back (₽1.96/GB × 1024) — so one complete retrieval costs 2.2 months of storage. Realistic cold-archive usage (store 1 TB, read 250 GB per month): $11.04 + $6.08 = $17.12/TB/mo. At 50 % monthly read: $23.19/TB/mo. Identical at 5 TB and…",
+  "notes": "Ice (ледяное) ₽0.89/GB/mo; Cold ₽1.26/GB/mo; Standard ₽2.57/GB/mo. Volume ladder: up to 10 TB ₽1.35, 10-50 TB ₽1.31, 50 TB+ lower (per Selectel's own price-change digest).",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "Ice (ледяное) ₽0.89/GB/mo; Cold ₽1.26/GB/mo; Standard ₽2.57/GB/mo. Volume ladder: up to 10 TB ₽1.35, 10-50 TB ₽1.31, 50 TB+ lower (per Selectel's own price-change digest).",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    },
+    "price_verbatim": "Ice: $11.04/TB/mo storage PLUS $24.31/TB for every full read-back (₽1.96/GB × 1024) — so one complete retrieval costs 2.2 months of storage. Realistic cold-archive usage (store 1 TB, read 250 GB per month): $11.04 + $6.08 = $17.12/TB/mo. At 50 % monthly read: $23.19/TB/mo. Identical at 5 TB and 20 TB because storage is per-GB with only a 3 % volume step (₽1.35 → ₽1.31 above 10 TB). Standard class: $31.87/TB/mo storage + $17.11/TB per read-back. Ice request billing is the harsher trap for small objects: ₽361 per 1 M GET/HEAD = $4.37 per million, so a 20 TiB corpus of 1 MB shards (20 M GETs) incurs $87 in requests alone per full pass. Promo tariff (egress waived, archived capture): ₽2/GB + ₽10,000/mo flat = $36.91/TB/mo at 10 TB, $30.86/TB/mo at 20 TB, i.e. 4.0×/3.3× OVH One-Zone — the…"
+  },
+  "binding": "none",
+  "binding_note": null
+}

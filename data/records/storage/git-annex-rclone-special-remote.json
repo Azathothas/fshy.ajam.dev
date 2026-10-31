@@ -1,0 +1,77 @@
+{
+  "topic": "storage",
+  "slug": "git-annex-rclone-special-remote",
+  "provider": "git-annex rclone special remote (built into annex since 2023)",
+  "url": "https://git-annex.branchable.com/special_remotes/rclone/",
+  "category": "registry",
+  "free_tier": {
+    "stated": "The docs' own list (still current) names Drive, OneDrive, Dropbox, Mega, pCloud, Box, Yandex, Jottacloud, WebDAV, FTP, SFTP, Swift, B2, S3.",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://git-annex.branchable.com/special_remotes/rclone/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://git-annex.branchable.com/special_remotes/rclone/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://git-annex.branchable.com/special_remotes/rclone/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Rclone throttles/retries but does not pay for egress.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "git",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Two paths: (a) `git annex initremote type=rclone ...` — native, no extra install, documented via `rclone gitannex -h`; (b) the older `git-annex-remote-rclone` bash script (DanielDent, ~300 lines). rclone itself is a single static binary.",
+  "chaining": "The strongest multiplier in this slot: annex gives you versioning + hash verification + partial clone, rclone gives you ~70 free-tier backends. One annex repo can have a dozen rclone remotes across a dozen free accounts of different providers, with `git annex copy --to` fanning out. This is literally the 'google-drive-service-account' pattern applied to large-file versioning.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "750 GB/day",
+      "source": "https://git-annex.branchable.com/special_remotes/rclone/"
+    }
+  ],
+  "limits_note": "Per-backend: file size caps, per-day upload quotas, API rate limits all apply unchanged. rclone's Drive backend has its own 750 GB/day upload cap; OneDrive throttles. Encrypted annex remotes lose rclone's server-side dedupe.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Solid; the native remote removed the bash-script dependency. The failure mode is per-backend token expiry and drive-level rate limiting, which rclone surfaces as retries rather than data loss.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://git-annex.branchable.com/special_remotes/rclone/",
+      "date": "2026-10-21",
+      "proved": "'With a recent version of rclone and git-annex, it is not necessary to install anything else, just use `git-annex initremote type=rclone ...`'"
+    },
+    {
+      "url": "https://rclone.org/commands/rclone_gitannex/",
+      "date": "2026-10-21",
+      "proved": "the gitannex bridge command exists in rclone proper"
+    },
+    {
+      "url": "https://rclone.org/overview/",
+      "date": "2026-10-21",
+      "proved": "backend feature matrix (Internet Archive, Drive, OneDrive, Box, Mega, WebDAV, SFTP, S3 all Tier 1-3 with R/W)"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "The docs' own list (still current) names Drive, OneDrive, Dropbox, Mega, pCloud, Box, Yandex, Jottacloud, WebDAV, FTP, SFTP, Swift, B2, S3.",
+  "extras": {},
+  "binding": "per-ip-shaping",
+  "binding_note": null,
+  "self_hosted": true
+}

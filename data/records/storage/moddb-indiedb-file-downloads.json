@@ -1,0 +1,86 @@
+{
+  "topic": "storage",
+  "slug": "moddb-indiedb-file-downloads",
+  "provider": "ModDB / IndieDB (dbolical) file downloads",
+  "url": "https://www.moddb.com",
+  "category": "media",
+  "free_tier": {
+    "stated": "No published total quota, but a large installed base with published aggregate stats: the downloads index reports 149,920 files totalling 43,307.57 GB and 387,395,913 downloads. Mean file size is therefore ~296 MB, and the tail is much larger - a live listing for `objects3` shows '7.86gb (8,442,728,905 bytes)' on a single file. So 8 GB-class single objects are published and served today.",
+    "unit": "objects",
+    "metered_on": "unstated",
+    "source_url": "https://www.moddb.com/downloads",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "file size is therefore ~296 MB",
+    "bytes": 296000000,
+    "source_url": "https://www.moddb.com/downloads",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "per-object-cap: verified at least 8,442,728,905 bytes on a live file listing; the widely-cited 8192 MB figure is third-party (TWC wiki, marked TBC by its own author) and is contradicted by the 7.86 GB file, so treat ~8 GB as observed-not-documented. retention: indefinite; files stay downloadable for years",
+    "source_url": "https://www.moddb.com/downloads",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free, no billing, and the site is Cloudflare-fronted (Server: cloudflare on the live origin). Files are served from the site itself rather than a separate CDN hostname; the mirror endpoint (/downloads/mirror/<id>/<n>/<hash>) is the byte path and is behind the same edge.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "sftp"
+  ],
+  "interface_detail": "rest",
+  "tooling": "No upload API and no SFTP: the write path is the web 'Add File' form at /downloads/add, gated to logged-in members. There is a 'URL upload' field (fetch-from-URL) which is the closest thing to automation. Read side is plain anonymous HTTP GET from /downloads/mirror/..., plus an MD5 hash published on each file page.",
+  "chaining": "One account x unlimited game/mod profiles x unlimited files per profile. Because the unit is a mod page, not a repo, cardinality is bounded only by how many plausible mod entries you create. 8.44 GB verified per file x N files.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "file size is therefore ~296 MB",
+      "source": "https://www.moddb.com/downloads"
+    }
+  ],
+  "limits_note": "per-object-cap: verified at least 8,442,728,905 bytes on a live file listing; the widely-cited 8192 MB figure is third-party (TWC wiki, marked TBC by its own author) and is contradicted by the 7.86 GB file, so treat ~8 GB as observed-not-documented. retention: indefinite; files stay downloadable for years. request-rate: not documented.",
+  "identity_cost": {
+    "kind": "country-phone",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Also note the add-file page itself says 'Members only / You do not have permission to add the requested downloads content' when unauthenticated.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://www.moddb.com/downloads",
+      "date": "2026-10-21",
+      "proved": "(archived capture 20261006020841) - aggregate '149,920 Files / 43307.57gb Size / 387,395,913 Downloads'"
+    },
+    {
+      "url": "https://www.moddb.com/downloads/objects3",
+      "date": "2026-10-21",
+      "proved": "(search index excerpt) - 'Size 7.86gb (8,442,728,905 bytes)', uploaded Aug 22 2025, MD5 published"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "'Members only. You do not have permission to add the requested downloads content.'"
+    },
+    {
+      "url": "https://www.moddb.com/downloads",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> HTTP 503 (origin refuses proxy); direct GET /downloads/start/222436 -> 403 behind cloudflare"
+    },
+    {
+      "url": "https://wiki.twcenter.net/index.php?title=Upload_Sites",
+      "date": "2026-10-21",
+      "proved": "third-party 'Moddb File Size Limit: 8192MB (TBC)' - flagged TBC by its own author and contradicted by the 7.86 GB file above"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published total quota, but a large installed base with published aggregate stats: the downloads index reports 149,920 files totalling 43,307.57 GB and 387,395,913 downloads. Mean file size is therefore ~296 MB, and the tail is much larger - a live listing for `objects3` shows '7.86gb (8,442,728,905 bytes)' on a single file. So 8 GB-class single objects are published and served today.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

@@ -1,0 +1,93 @@
+{
+  "topic": "egress",
+  "slug": "wormhole-vpn",
+  "provider": "wormhole-vpn",
+  "url": "https://github.com/ciamshrek/wormhole-vpn",
+  "category": "tool (wireguard transport)",
+  "tier": "paid",
+  "free_tier": {
+    "stated": "no free tier: the README requires \"Cloudflare account (Workers paid plan, $5/mo)\"",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://github.com/ciamshrek/wormhole-vpn",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://github.com/ciamshrek/wormhole-vpn",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://github.com/ciamshrek/wormhole-vpn",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not applicable; the Worker plan is priced per month, not per byte, and the README states no transfer figure; ingress: tcp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://github.com/ciamshrek/wormhole-vpn"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "wrangler deploy plus a 12 MB Go bridge",
+  "tooling": "Go bridge plus pnpm and wrangler; a CA certificate must be installed on each device",
+  "chaining": "composes with a Cloudflare account and a paid Workers plan, and with cloudflare-tunnel only if the Worker is fronted by one.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "no figure stated; the Workers paid plan is billed per request and duration beyond the included allowance",
+      "source": "https://github.com/ciamshrek/wormhole-vpn"
+    }
+  ],
+  "limits_note": "",
+  "binding": "volume-quota",
+  "binding_note": "the Worker sits in the data path and every datagram becomes Worker work, so the plan's request and duration billing is what fails first at sustained volume; the README states no figure for it",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "a Cloudflare account on the Workers paid plan at $5/mo, which needs a payment method",
+    "country": "None"
+  },
+  "reliability_note": "the Worker terminates and re-originates TLS, so every upstream connection is intercepted by design; single maintainer, no releases",
+  "confidence": "documented",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://github.com/ciamshrek/wormhole-vpn",
+      "date": "2026-10-23",
+      "proved": "\"Cloudflare account (Workers paid plan, $5/mo)\" in the prerequisites"
+    },
+    {
+      "url": "https://github.com/ciamshrek/wormhole-vpn",
+      "date": "2026-10-23",
+      "proved": "the architecture line: stock WireGuard client, Go bridge over a single WebSocket, Durable Object, TLS MITM, then fetch() upstream"
+    },
+    {
+      "url": "https://github.com/ciamshrek/wormhole-vpn",
+      "date": "2026-10-23",
+      "proved": "2 stars, no releases, last push 2026-04-06; the description calls it \"Very rough\""
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 5 per month, Workers paid plan",
+  "notes": "This is the only wrapper that moves the far end off a host a user runs and onto a hosted service, and it is the reason the structural fact is worth stating precisely: replacing the far host with a Worker costs $5/mo and adds a TLS-intercepting proxy in the path, so it is a paid answer to a paid problem, not a free path. Two stars and no releases means it is a design sketch, not a deployment.",
+  "extras": {
+    "wg_path": "none",
+    "wg_detail": "device runs a stock WireGuard client against localhost:51820, a Go bridge (wireguard-go plus gvisor netstack) forwards over one WebSocket to a Cloudflare Durable Object",
+    "ingress": "tcp",
+    "volume_tib_month": null,
+    "volume_stated": "not applicable; the Worker plan is priced per month, not per byte, and the README states no transfer figure",
+    "bytes_transit": "yes",
+    "transit_note": "through a Cloudflare Durable Object, which sees the plaintext of every intercepted connection",
+    "hosting_requirement": "no host of a user's own, but a Cloudflare Workers paid plan at $5/mo, and a device able to run the Go bridge",
+    "last_release": "none; last push 2026-04-06",
+    "stars": 2
+  },
+  "self_hosted": true
+}

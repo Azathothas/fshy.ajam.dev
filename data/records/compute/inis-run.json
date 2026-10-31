@@ -1,0 +1,95 @@
+{
+  "topic": "compute",
+  "slug": "inis-run",
+  "provider": "inis.run",
+  "url": "https://inis.run/pricing",
+  "category": "container and VM sandbox",
+  "free_tier": {
+    "stated": "New accounts get EUR 1.00 in credit, no card required, and prepaid credit does not expire. Three fixed sizes metered by the millisecond while a session runs: small 1 vCPU / 1 GB at EUR 0.0144 per hour, medium 2 vCPU / 4 GB at EUR 0.036 per hour, large 4 vCPU / 8 GB at EUR 0.072 per hour. A paused session is billed storage only, about EUR 0.07 per GB per month.",
+    "unit": "hours",
+    "metered_on": "wall-clock",
+    "source_url": "https://inis.run/pricing",
+    "read_on": "2026-10-22",
+    "notes": "one-time-credit"
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://inis.run/pricing",
+    "notes": null
+  },
+  "retention": {
+    "stated": "The continuous-live backstop force-pauses any session after 24 hours live, and after 6 hours on an unverified trial account; a session paused by its own max_lifetime_ms can never be resumed (HTTP 410).",
+    "days": null,
+    "source_url": "https://inis.run/pricing",
+    "notes": null
+  },
+  "egress": {
+    "terms": "not stated",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://inis.run/pricing"
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "inferred from the tooling the provider documents; not probed",
+  "tooling": "not stated",
+  "chaining": "Prepaid credit that never expires plus millisecond billing makes this the cheapest place to park a long-lived 1 vCPU agent that idles; the paused tier (hot, warm, cold) is what lets it wake in tens of milliseconds without paying for the wait.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "The continuous-live backstop force-pauses any session after 24 hours live, and after 6 hours on an unverified trial account; a session paused by its own max_lifetime_ms can never be resumed (HTTP 410).",
+      "source": "https://inis.run/pricing"
+    }
+  ],
+  "limits_note": "The continuous-live backstop force-pauses any session after 24 hours live, and after 6 hours on an unverified trial account; a session paused by its own max_lifetime_ms can never be resumed (HTTP 410).",
+  "binding": "retention-clamped",
+  "binding_note": "The continuous-live backstop force-pauses any session after 24 hours live, and after 6 hours on an unverified trial account; a session paused by its own max_lifetime_ms can never be resumed (HTTP 410).",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "no card and no payment method: the pricing page states EUR 1.00 of starting credit with no card required, and prepaid credit does not expire, so no hold exists. The account does begin as an 'unverified trial' with tighter caps (1 live session, 5 GB disk, 6-hour continuous-live backstop), so a verification step exists, but what it asks for is not stated in the evidence",
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://inis.run/pricing",
+      "date": "2026-10-22",
+      "proved": "EUR 0.0144/hr small 1 vCPU 1 GB, EUR 0.036/hr medium 2 vCPU 4 GB, EUR 0.072/hr large 4 vCPU 8 GB, millisecond metering, EUR 1 free credit, no card required, credit does not expire, paused storage about EUR 0.07 per GB per month"
+    },
+    {
+      "url": "https://inis.run/docs/session-lifecycle",
+      "date": "2026-10-22",
+      "proved": "defaults and hard caps on the managed cloud: no default idle timeout, max_lifetime_ms hard cap 24 hours, always-on 24 hour continuous-live backstop (6 hours on a new unverified trial), paused_ttl 30 days, one exec 30 s default and 1 hour cap, 10 concurrent live sessions (1 on trial), 50 GB cumulative disk (5 GB on trial)"
+    },
+    {
+      "url": "https://inis.run/docs/session-lifecycle",
+      "date": "2026-10-22",
+      "proved": "a session paused by its own max_lifetime_ms firing cannot wake again; resume is refused with 410"
+    },
+    {
+      "url": "https://inis.run/pricing",
+      "date": "2026-10-22",
+      "proved": null
+    }
+  ],
+  "verdict": "trial-only",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "Considered as floor candidate. EUR 0.036 per hour for 2 vCPU / 4 GiB is EUR 26.28 for 730 hours, a full month of a 2 vCPU machine, and it undercuts every provider on the boat.dev and boxyard comparison tables except the ones that bill active CPU only. The unverified-trial limits (1 live session, 5 GB disk, 6 hour backstop) are the part a new account actually meets. Isolation technology was not read. GPU: none, every size is CPU only.",
+  "extras": {
+    "facets": {
+      "class": "prepaid-sandbox",
+      "free_tier_kind": "one-time-credit",
+      "shape": {
+        "vcpu": 2,
+        "ram_gib": 4,
+        "disk_gib": null,
+        "gpu_class": null,
+        "gpu_count": null
+      }
+    }
+  }
+}

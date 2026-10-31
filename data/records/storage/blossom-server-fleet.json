@@ -1,0 +1,98 @@
+{
+  "topic": "storage",
+  "slug": "blossom-server-fleet",
+  "provider": "Blossom server fleet (24242.io, blossom.oslim.dev / Lotus, blossom.nostr.build)",
+  "url": "https://24242.io/",
+  "category": "p2p-blob-storage",
+  "free_tier": {
+    "stated": "24242.io 100 MiB/file, deleted if not accessed for 60 days. blossom.oslim.dev (Lotus): 100 MB/file and 8 GB per pubkey, retention 'permanent', cost 'free'. blossom.nostr.build: 20 MiB/file free tier, 'no limit on how many files, and no expiry'.",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://24242.io/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "100 MiB/file",
+    "bytes": 104857600,
+    "source_url": "https://24242.io/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "24242.io 100 MiB/file, deleted if not accessed for 60 days",
+    "days": 60,
+    "source_url": "https://24242.io/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "unmetered / CDN-fronted. nostr.build advertises 'Global CDN delivery' on free uploads.",
+    "metered": false
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "Blossom BUD-01/02/04/05/06/10. `GET /<sha256>`, `PUT /upload`, `PUT /mirror`, `GET /list/`.",
+  "tooling": "curl; hzrd149/blossom CLI; any Blossom client. BUD-04 `/mirror` lets one server pull a blob from another given a URL, so replication is a server-side call, not a client re-upload.",
+  "chaining": "aggregate GB is the sum over the fleet x number of keypairs (oslim's 8 GB is per-pubkey, and pubkeys cost nothing). 24242.io's 60-day access-based retention is defeated by any periodic HEAD.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "100 MiB/file",
+      "source": "https://24242.io/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "100 MB/file",
+      "source": "https://24242.io/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "deleted if not accessed for 60 days",
+      "source": "https://24242.io/"
+    }
+  ],
+  "limits_note": "per-object-cap 100 MiB on most servers (20 MiB on nostr.build free). This is chunk-sized, not object-sized. 24242.io caps /list at the first 250 hits, so enumeration needs date ranges.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "anonymous",
+    "country": null
+  },
+  "reliability_note": "small volunteer hosts, several with unstated total capacity. 24242.io states 'Free and unrestricted... for now'. Prefer BUD-04 mirroring to two servers per chunk.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://24242.io/",
+      "date": "2026-10-21",
+      "proved": "'Free and unrestricted... with no warranties... for now.', 'Files are deleted if not accessed for 60 days', 'Max file size: 100MiB', 'BUD-06 /mirror will only accept a URL from another blossom server'"
+    },
+    {
+      "url": "https://blossom.oslim.dev/",
+      "date": "2026-10-21",
+      "proved": "'Max file size —, Storage per user —, Retention permanent, Cost free'; README of 0ceanSlim/lotus shows max_upload_size_bytes 104857600, max_storage_per_pubkey_bytes 8589934592"
+    },
+    {
+      "url": "https://blossom.nostr.build/",
+      "date": "2026-10-21",
+      "proved": "'A hard cap of 100 MiB per upload (20 MiB for free uploads), with no limit on the number of uploads or retention'"
+    },
+    {
+      "url": "https://oddbean.com/e/note17emh2aqsswd6fkzezpzykpus4226qkgu3z5gzqrc7p5cpslkeckq9e6882",
+      "date": "2026-10-21",
+      "proved": "agent report: nostr.download, 24242.io, files.sovbit.host and blossom.primal.net accepted BUD-06 checks at 5 MB AND 100 MB 'with a brand-new key that has never paid anywhere'"
+    },
+    {
+      "url": "https://blossom.primal.net/upload",
+      "date": "2026-10-21",
+      "proved": "HTTP 400 (endpoint live, rejects unsigned body)"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "24242.io 100 MiB/file, deleted if not accessed for 60 days. blossom.oslim.dev (Lotus): 100 MB/file and 8 GB per pubkey, retention 'permanent', cost 'free'. blossom.nostr.build: 20 MiB/file free tier, 'no limit on how many files, and no expiry'.",
+  "extras": {
+    "unit_note": "free_tier.unit is 'mixed' because the headline is denominated in MiB or KiB, which the schema enum does not carry; the verbatim free_tier.stated keeps the true unit."
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

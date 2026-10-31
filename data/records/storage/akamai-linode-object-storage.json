@@ -1,0 +1,163 @@
+{
+  "topic": "storage",
+  "slug": "akamai-linode-object-storage",
+  "provider": "Akamai / Linode Object Storage",
+  "url": "https://www.linode.com/products/object-storage/",
+  "category": "object-storage",
+  "free_tier": {
+    "stated": "USD 5 a month flat, prorated, for 250 GB of storage and 1 TB of outbound transfer added to the account's transfer pool; storage beyond 250 GB USD 0.02 per GB a month",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://www.akamai.com/cloud/pricing/object-storage",
+    "read_on": "2026-10-30",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "5 TiB per object; a single upload is at most 5 GB, larger objects by multipart upload of up to 10,000 parts of 5 MiB to 5 GiB",
+    "source_url": "https://techdocs.akamai.com/cloud-computing/docs/object-storage-product-limits",
+    "notes": "Maximum Object Size under the multipart upload limits of the first-party quotas and limits page",
+    "bytes": 5497558138880
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://www.akamai.com/products/object-storage",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "enabling Object Storage adds 1 TB a month of transfer allowance, prorated by active hours, to the account's global network transfer pool and none to region-specific pools such as Jakarta and São Paulo; all outbound transfer from Object Storage is metered, over public IPv4 and IPv6, even to other services in the same data center; inbound transfer is free; transfer beyond the pools is billed at the end of the billing period at the rate of the service region",
+    "metered": true,
+    "free_allowance": "1 TB per month",
+    "price_per_tb": "USD 0.005 per GB (about USD 5 per TB) beyond the pool; USD 0.015 per GB in Jakarta and USD 0.007 per GB in São Paulo"
+  },
+  "interface": [
+    "s3-compatible",
+    "rclone"
+  ],
+  "interface_detail": "s3",
+  "tooling": "S3 API, rclone s3 backend, any SDK. Cluster URL per region.",
+  "chaining": "The 1 TB/month included egress is the free slice: enough for 33 GB/day, matching Gcore. Its real use is as a stable S3 origin behind one of the free CDNs, not as the delivery path — $5/TB egress is good but Bunny's Volume tier matches it and CacheFly/Telnyx beat it.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "5 TiB per object",
+      "source": "https://techdocs.akamai.com/cloud-computing/docs/object-storage-product-limits"
+    },
+    {
+      "kind": "request-rate",
+      "value": "750 requests/s per bucket for all operations on E0 and E1 endpoints; on E2 and E3 by default 2,000 GET/HEAD, 500 PUT, 100 LIST and 200 DELETE requests/s per bucket; requests above the limit get HTTP 503",
+      "source": "https://techdocs.akamai.com/cloud-computing/docs/object-storage-product-limits"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "default capacity per account per endpoint 5 TB on E0, 100 TB on E1 and E2, 500 TB on E3; per bucket at most 1 TB on E0, 1 PB on E1 and E2, 5 PB on E3",
+      "source": "https://techdocs.akamai.com/cloud-computing/docs/object-storage-product-limits"
+    }
+  ],
+  "limits_note": "5 GB per single upload; multipart parts of 5 MiB to 5 GiB, up to 10,000 parts; 1,000 buckets per account per endpoint by default; default ingress and egress throughput 2 Gbps per account per endpoint on E0 and E1 and 10 Gbps on E2 and E3; on E0 and E1 delete requests are capped at 100 per second per bucket within the 750 requests/s limit; quotas are account defaults, while product limits cannot be increased",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "a valid credit card on file is a requirement of the Master Services Agreement; Visa, Mastercard, American Express and Discover are accepted, and credit can be added from a PayPal account",
+    "country": null
+  },
+  "reliability_note": "requests above a bucket's rate limit are answered with HTTP 503; spreading data across buckets gives each bucket its own limit",
+  "confidence": "documented",
+  "confidence_note": "the plan price, storage and transfer rates and the card requirement are quoted from the first-party pricing page, the transfer metering from the first-party network transfer page, and the object, request and capacity limits from the first-party quotas and limits page",
+  "evidence": [
+    {
+      "url": "https://www.linode.com/products/object-storage/",
+      "date": "2026-10-21",
+      "proved": "→ resolves to https://www.akamai.com/products/object-storage: 'Scale from 250 GB to 5 PB per bucket', 'up to 20K RPS', 'free inbound transfer and up to 1TB outbound is included'"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": null
+    },
+    {
+      "url": "https://www.akamai.com/cloud/pricing/object-storage",
+      "date": "2026-10-30",
+      "proved": "USD 5 a month flat, prorated, for 250 GB; storage beyond it USD 0.02 per GB and may vary by data center; 1 TB of transfer is added to the global pool; overage USD 0.005 per GB, Jakarta USD 0.015, Sao Paulo USD 0.007",
+      "capture": "sha256:404db7a35989f79f9cf6a42f8f9e86379810802cfe8f7ad9d4f66c831bcaa365",
+      "quote": "Object Storage costs a flat rate of $5 a month, and includes 250 GB of storage."
+    },
+    {
+      "url": "https://techdocs.akamai.com/cloud-computing/docs/network-transfer-usage-and-costs",
+      "date": "2026-10-30",
+      "proved": "all Object Storage egress is metered, even within the data center; Object Storage adds 1 TB a month to the global pool and none to Jakarta or Sao Paulo pools; inbound is free",
+      "capture": "sha256:fe9ae768d30ec941b0492ccf8138ec90573ed7daede9e19727e716b3e83857f7",
+      "quote": "* Outbound transfer from Object Storage (over both public IPv6 and public IPv4), even to other services within the same data center."
+    },
+    {
+      "url": "https://www.akamai.com/cloud/pricing/object-storage",
+      "date": "2026-10-30",
+      "proved": "outbound overage is USD 0.005 per GB, USD 0.015 in Jakarta and USD 0.007 in Sao Paulo",
+      "capture": "sha256:404db7a35989f79f9cf6a42f8f9e86379810802cfe8f7ad9d4f66c831bcaa365",
+      "quote": "Any outbound network transfer overages are billed at the rate $0.005/GB for all data centers except for Jakarta ($0.015/GB) and São Paulo ($0.007/GB)."
+    },
+    {
+      "url": "https://www.akamai.com/cloud/pricing/object-storage",
+      "date": "2026-10-30",
+      "proved": "a valid credit card on file is required by the Master Services Agreement; Visa, Mastercard, American Express and Discover are accepted and PayPal can add credit",
+      "capture": "sha256:404db7a35989f79f9cf6a42f8f9e86379810802cfe8f7ad9d4f66c831bcaa365",
+      "quote": "Maintaining a valid credit card on file with your account is a requirement of our"
+    },
+    {
+      "url": "https://techdocs.akamai.com/cloud-computing/docs/object-storage-product-limits",
+      "date": "2026-10-30",
+      "proved": "the per-object cap is 5 TiB; a single upload is at most 5 GB and multipart allows 10,000 parts of 5 MiB to 5 GiB",
+      "capture": "sha256:b56ca5428388138f0deb8eb4e6d65f61f89142ba36c16ccb18b5bd6455d8ac13",
+      "quote": "* Maximum Object Size. 5 TiB"
+    },
+    {
+      "url": "https://techdocs.akamai.com/cloud-computing/docs/object-storage-product-limits",
+      "date": "2026-10-30",
+      "proved": "E0 and E1 buckets take 750 requests/s for all operations; E2 and E3 default to 2,000 GET/HEAD, 500 PUT, 100 LIST and 200 DELETE requests/s per bucket",
+      "capture": "sha256:b56ca5428388138f0deb8eb4e6d65f61f89142ba36c16ccb18b5bd6455d8ac13",
+      "quote": "For E0 and E1 endpoints all operations count towards one rate limit for the bucket."
+    },
+    {
+      "url": "https://techdocs.akamai.com/cloud-computing/docs/object-storage-product-limits",
+      "date": "2026-10-30",
+      "proved": "default capacity per account per endpoint is 5 TB on E0, 100 TB on E1 and E2 and 500 TB on E3; per bucket 1 TB on E0, 1 PB on E1 and E2, 5 PB on E3",
+      "capture": "sha256:b56ca5428388138f0deb8eb4e6d65f61f89142ba36c16ccb18b5bd6455d8ac13",
+      "quote": "Quotas are account-level limits placed on usage for Object Storage."
+    },
+    {
+      "url": "https://techdocs.akamai.com/cloud-computing/docs/object-storage-product-limits",
+      "date": "2026-10-30",
+      "proved": "product limits are fixed while quotas are defaults; the page gives the upload, part, bucket-count and delete-rate limits",
+      "capture": "sha256:b56ca5428388138f0deb8eb4e6d65f61f89142ba36c16ccb18b5bd6455d8ac13",
+      "quote": "Unlike account-level quotas, these product limits cannot be increased."
+    },
+    {
+      "url": "https://techdocs.akamai.com/cloud-computing/docs/object-storage-product-limits",
+      "date": "2026-10-30",
+      "proved": "rate-limited requests receive HTTP 503, and each bucket has its own limit",
+      "capture": "sha256:b56ca5428388138f0deb8eb4e6d65f61f89142ba36c16ccb18b5bd6455d8ac13",
+      "quote": "Any requests that are rate limited will receive a 503 response."
+    },
+    {
+      "url": "https://www.akamai.com/cloud/pricing/object-storage",
+      "date": "2026-10-30",
+      "proved": "USD 0.02 per GB stored and USD 0.005 per GB out after the first 1 TB each month; the same page requires a credit card on file and calls the service S3-compatible",
+      "capture": "sha256:404db7a35989f79f9cf6a42f8f9e86379810802cfe8f7ad9d4f66c831bcaa365",
+      "quote": "| $0.02/GB | $0.005/GB with the first 1TB free each month. | [Sign up](https://login.linode.com/signup) |"
+    },
+    {
+      "url": "https://login.linode.com/signup",
+      "date": "2026-10-30",
+      "proved": "the sign-up form asks for an email address, a username and a password, or a Google or GitHub sign-in",
+      "capture": "sha256:55fb90e5f7d6a2b77dbcebb92a5939794cf885b051f85889d285346a5239c504",
+      "quote": "Sign up with email"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-30T18:30:36.690Z",
+  "price_per_tb_month": "USD 5 a month flat, prorated, including 250 GB of storage and 1 TB of outbound transfer added to the account's global transfer pool; storage beyond 250 GB USD 0.02 per GB a month (about USD 20 per TB), and overages may vary by data center; outbound overage USD 0.005 per GB (about USD 5 per TB), USD 0.015 per GB in Jakarta and USD 0.007 per GB in São Paulo",
+  "notes": "Scales 250 GB → 5 PB per bucket, 10 billion objects, 20K RPS. Entry plan $5/mo = 250 GB + 1 TB outbound included.",
+  "extras": {
+    "price_verbatim": "$20/TB stored + $5/TB egress beyond the included 1 TB; entry $5/mo for 250 GB + 1 TB egress."
+  },
+  "binding": "none",
+  "binding_note": "no named limit binds before the transfer price: the default capacity is 100 TB per account per endpoint on E1 and E2 and 500 TB on E3, objects reach 5 TiB, and a bucket takes at least 750 requests/s; the deciding terms are the storage and outbound transfer prices"
+}

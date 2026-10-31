@@ -1,0 +1,95 @@
+{
+  "topic": "storage",
+  "slug": "infosec-exchange-mastodon-with-a-1-35-gib-per-file-uploa",
+  "provider": "infosec.exchange — Mastodon with a 1.35 GiB per-file upload limit",
+  "url": "https://infosec.exchange",
+  "category": "fediverse-mastodon",
+  "free_tier": {
+    "stated": "Per-account storage is UNLIMITED (stock Mastodon has no per-user media quota at all — media_attachment has only a per-file size validator, no account-level counter). Per FILE: image_size_limit = video_size_limit = 1419430400 bytes = 1.32 GiB. That is a 84x relaxation of Mastodon's compiled defaults (IMAGE_LIMIT 16 MB / VIDEO_LIMIT 99 MB).",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://infosec.exchange/api/v2/instance",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "Per FILE: image_size_limit = video_size_limit = 1419430400 bytes = 1.32 GiB",
+    "bytes": 1417339207,
+    "source_url": "https://infosec.exchange/api/v2/instance",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "infosec.exchange is one of the largest and best-funded Mastodon instances (Glitch fork 4.8.0-alpha.3) and explicitly runs a relaxed upload policy; still a single volunteer operator, and a 1.3 GiB upload is exactly the kind of thing that gets noticed. Media is permanent by Mastodon semantics (no TTL, no GC), which cuts both ways.",
+    "source_url": "https://infosec.exchange/api/v2/instance",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free. No egress meter on the instance; media sits behind the instance CDN (often S3/Wasabi/B2-compatible behind a CNAME).",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Mastodon REST API v1: POST /api/v1/media (multipart `file` -> returns media id + `url`), then POST /api/v1/statuses with media_ids[] to make it permanent. OAuth2 app registration via POST /api/v1/apps (no manual approval on most instances). Any of the many existing clients work; `toot` CLI, `Mastodon.py`. Upload-from-URL: POST /api/v2/media with `url` param. rclone has no Mastodon backend but the API is 3 calls.",
+  "chaining": "The key structural fact: NO per-account quota means the ceiling is the instance's disk, and the operator absorbs it. Combined with a 1.32 GiB per-file cap and 8 attachments per status, one status carries 10.6 GiB in a single API call chain. Multiple accounts on the same instance each get the same unlimited-account treatment. Multiply over instances for isolation.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "1.9 TB/day",
+      "source": "https://infosec.exchange/api/v2/instance"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "Per FILE: image_size_limit = video_size_limit = 1419430400 bytes = 1.32 GiB",
+      "source": "https://infosec.exchange/api/v2/instance"
+    }
+  ],
+  "limits_note": "request-rate is THE binding limit, and it is severe: stock Mastodon rack_attack ships `throttle('throttle_api_media', limit: 30, period: 30.minutes)` per authenticated user — 30 media uploads per half hour = 1,440/day. At 1.32 GiB each that is a theoretical 1.9 TB/day/account, so realistically you hit GB-scale throughput only by running many accounts in parallel. Also: 8 media per status (MAX_MEDIA_ATTACHMENTS), 4 statuses/30 min soft on some instances, MAX_VIDEO_FRAMES 36,000 (≈5 min at 120 fps) and MAX_VIDEO_MATRIX_LIMIT 8,294,400 px cap video dimensions, and non-image/video MIME types are rejected by the upload validator.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "infosec.exchange is one of the largest and best-funded Mastodon instances (Glitch fork 4.8.0-alpha.3) and explicitly runs a relaxed upload policy; still a single volunteer operator, and a 1.3 GiB upload is exactly the kind of thing that gets noticed. Media is permanent by Mastodon semantics (no TTL, no GC), which cuts both ways.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://infosec.exchange/api/v2/instance",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, configuration.media_attachments.image_size_limit=1419430400, video_size_limit=1419430400, registrations.enabled=true"
+    },
+    {
+      "url": "https://infosec.exchange/api/v1/instance",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, max_toot_chars=11000, registrations=true"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/mastodon/mastodon/main/app/models/media_attachment.rb",
+      "date": "2026-10-21",
+      "proved": "`IMAGE_LIMIT = 16.megabytes`, `VIDEO_LIMIT = 99.megabytes`, `validates_attachment_size :file, less_than: ...` — confirms the cap is a per-file validator with NO per-account quota anywhere in the model"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/mastodon/mastodon/main/config/initializers/rack_attack.rb",
+      "date": "2026-10-21",
+      "proved": "`throttle('throttle_api_media', limit: 30, period: 30.minutes) { |req| req.authenticated_user_id if req.post? && req.path.match?(%r{\\A/api/v\\d+/media\\z}i) }`"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Per-account storage is UNLIMITED (stock Mastodon has no per-user media quota at all — media_attachment has only a per-file size validator, no account-level counter). Per FILE: image_size_limit = video_size_limit = 1419430400 bytes = 1.32 GiB. That is a 84x relaxation of Mastodon's compiled defaults (IMAGE_LIMIT 16 MB / VIDEO_LIMIT 99 MB).",
+  "extras": {
+    "verdict_note": null,
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "Per-account storage is UNLIMITED (stock Mastodon has no per-user media quota at all — media_attachment has only a per-file size validator, no account-level counter). Per FILE: image_size_limit = video_size_limit = 1419430400 bytes = 1.32 GiB. That is a 84x relaxation of Mastodon's compiled defaults (IMAGE_LIMIT 16 MB / VIDEO_LIMIT 99 MB).",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

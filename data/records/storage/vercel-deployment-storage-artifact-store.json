@@ -1,0 +1,95 @@
+{
+  "topic": "storage",
+  "slug": "vercel-deployment-storage-artifact-store",
+  "provider": "Vercel Deployment Storage / artifact store (Hobby, 30-day TTL)",
+  "url": "https://vercel.com/docs/deployment-storage",
+  "category": "paas",
+  "free_tier": {
+    "stated": "10 GB of Deployment Storage per Hobby team, and that pool is what every retained deployment output draws from. This is the clearest example in the whole slot of a 'free tier' that is a build-artifact store, not storage.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://vercel.com/changelog/hobby-projects-now-retain-fewer-deployments-to-free-up-storage",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://vercel.com/changelog/hobby-projects-now-retain-fewer-deployments-to-free-up-storage",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Deployment Retention defaults for Hobby are now 30 days for ALL four states — canceled, errored, pre-production, production (Pro gets 180 days preview / 1 year production)",
+    "days": 30,
+    "source_url": "https://vercel.com/changelog/hobby-projects-now-retain-fewer-deployments-to-free-up-storage",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Served by Vercel's CDN at no separate charge while the deployment exists (Fast Data Transfer Hobby allowance is 100 GB, shared across all Vercel services). Deployment URLs are public unless Deployment Protection is on.",
+    "metered": true
+  },
+  "interface": [
+    "rest",
+    "git",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "`vercel deploy` CLI / Git integration / REST Deployments API. No object-level API at all — you cannot address a file inside a deployment except by URL. No rclone backend and no possible wrapper, because there is no list/put primitive.",
+  "chaining": "None useful. 10 GB is a hard pool shared by every project on the team, and going over it 'can block you from deploying until you free some up'. 200 projects on Hobby but one shared 10 GB — the multiplier actively works against you here.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "Retention defaults for Hobby are now 30 days",
+      "source": "https://vercel.com/changelog/hobby-projects-now-retain-fewer-deployments-to-free-up-storage"
+    },
+    {
+      "kind": "write-gated",
+      "value": "review / 1 year production)",
+      "source": "https://vercel.com/changelog/hobby-projects-now-retain-fewer-deployments-to-free-up-storage"
+    },
+    {
+      "kind": "write-gated",
+      "value": "review deployments no longer get their own protection",
+      "source": "https://vercel.com/changelog/hobby-projects-now-retain-fewer-deployments-to-free-up-storage"
+    }
+  ],
+  "limits_note": "THE TTL IS THE STORY, and it tightened twice in 2026. Deployment Retention defaults for Hobby are now 30 days for ALL four states — canceled, errored, pre-production, production (Pro gets 180 days preview / 1 year production). The Sept 16, 2026 changelog cut it further: 'Each Hobby project now keeps its 3 most recent production deployments, plus its 3 most recent deployments of any type, regardless of age. Preview deployments no longer get their own protection.' Deletion runs within 48 hours of eligibility, then a recovery window, then permanent removal. CLI source upload is capped at 100 MB per deploy (Hobby), 15,000 files.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Hard, automatic, irreversible expiry after 30 days. Any file hosted only in a deployment URL is gone a month later. Treat as a 30-day hot tier and nothing else.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://vercel.com/docs/deployment-retention",
+      "date": "2026-10-21",
+      "proved": "default table: 'Hobby | 30 days | 30 days | 30 days | 30 days' vs 'Pro and Enterprise | 30 days | 90 days | 180 days | 1 year'; last_updated 2026-09-16"
+    },
+    {
+      "url": "https://vercel.com/changelog/hobby-projects-now-retain-fewer-deployments-to-free-up-storage",
+      "date": "2026-10-21",
+      "proved": "published Sep 16, 2026: 'Hobby teams get 10GB of Deployment Storage'; 'keeps its 3 most recent production deployments, plus its 3 most recent deployments of any type'; 'deployments outside those exceptions are now deleted immediately instead of after 30 days'"
+    },
+    {
+      "url": "https://vercel.com/docs/limits",
+      "date": "2026-10-21",
+      "proved": "'Projects | 200' on Hobby; 'the maximum size of the source files that can be uploaded is limited to 100 MB for Hobby'; '15,000' source files"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "10 GB of Deployment Storage per Hobby team, and that pool is what every retained deployment output draws from. This is the clearest example in the whole slot of a 'free tier' that is a build-artifact store, not storage.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "not-storage",
+      "why": "10 GB of Deployment Storage per Hobby team, and that pool is what every retained deployment output draws from. This is the clearest example in the whole slot of a 'free tier' that is a build-artifact store, not storage.",
+      "retry_when": "never; it is not storage",
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "retention-clamped",
+  "binding_note": null
+}

@@ -1,0 +1,88 @@
+{
+  "topic": "storage",
+  "slug": "national-research-platform-free-ceph-s3-to-any-namespace",
+  "provider": "National Research Platform (NRP / Nautilus, US) — free Ceph S3 to any namespace holder, multi-site",
+  "url": "https://nrp.ai/documentation/userdocs/storage/ceph-s3/",
+  "category": "academic",
+  "free_tier": {
+    "stated": "No published byte quota. The docs are explicit that the storage is donated: 'The Nautilus Ceph storage cluster can be accessed via S3 protocol. It uses our own storage, which is free for our users and is not part of Amazon or any commercial cloud.' Quota is whatever the namespace is granted by admins; CephFS carries a documented 16 TB per-file cap.",
+    "unit": "TB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://nrp.ai/documentation/userdocs/storage/ceph-s3/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: CephFS has 'a per-file size limit of 16 TB",
+    "bytes": 16000000000000,
+    "source_url": "https://nrp.ai/documentation/userdocs/storage/ceph-s3/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Retention: 'Any storage volume that was not accessed for 6 months can be purged without notification' — this is the hard floor on it as an archive",
+    "days": 180,
+    "source_url": "https://nrp.ai/documentation/userdocs/storage/ceph-s3/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and unmetered ('free for our users'), served from university-hosted Ceph RGW pods across west/central/east.",
+    "metered": false
+  },
+  "interface": [
+    "s3",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "s3",
+  "tooling": "rclone/aws cli/restic against https://s3-west|s3-central|s3-east.nrp-nautilus.io. Credentials from the User Portal S3 Tokens page (nrp.ai/s3token/) for public Ceph pools. Inside-cluster and outside-cluster endpoints documented.",
+  "chaining": "Six independent Ceph pools (west, central, east, haosu, tide, ha) each with their own S3 endpoint. 'public Ceph pools' give self-service tokens — so any CILogon-authenticated researcher can mint S3 credentials without an admin. That is the closest thing to self-service in this whole niche.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "Retention: 'Any storage volume that was not accessed for 6 months",
+      "source": "https://nrp.ai/documentation/userdocs/storage/ceph-s3/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: CephFS has 'a per-file size limit of 16 TB",
+      "source": "https://nrp.ai/documentation/userdocs/storage/ceph-s3/"
+    }
+  ],
+  "limits_note": "per-object-cap: CephFS has 'a per-file size limit of 16 TB'; S3 per-object cap not stated. Retention: 'Any storage volume that was not accessed for 6 months can be purged without notification' — this is the hard floor on it as an archive. request-rate: not published; pods are policed instead ('a user can not submit more than 4 pods' outside the utilisation rules; interactive pods 'destroyed in 6 hours'). Gate: CILogon account, then namespace admin status via 'eligible faculty members and researchers can request to become namespace admin' (at LBNL this is an email).",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "6-month untouched-data purge is documented and unannounced; namespaces under-utilising requests are closed. Treat as hot storage only, never archive.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://nrp.ai/documentation/userdocs/storage/ceph-s3/",
+      "date": "2026-10-21",
+      "proved": "'It uses our own storage, which is free for our users and is not part of Amazon or any commercial cloud'; six pool endpoints; 'You can get your credentials (key and secret) in the User Portal ... for public Ceph pools'"
+    },
+    {
+      "url": "https://nrp.ai/documentation/userdocs/start/policies/",
+      "date": "2026-10-21",
+      "proved": "'Any storage volume that was not accessed for 6 months can be purged without notification'; pod/utilisation enforcement rules"
+    },
+    {
+      "url": "https://nrp.ai/documentation/userdocs/storage/intro/",
+      "date": "2026-10-21",
+      "proved": "'There is a per-file size limit of 16 TB in CephFS'"
+    },
+    {
+      "url": "https://s3-west.nrp-nautilus.io/",
+      "date": "2026-10-21",
+      "proved": "probe: curl -> 200 (187 bytes Ceph RGW ListAllMyBucketsResult); s3-central and s3-east identical; s3-haosu/s3-tide/s3-ha documented as further endpoints. Endpoints live and answering S3."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published byte quota. The docs are explicit that the storage is donated: 'The Nautilus Ceph storage cluster can be accessed via S3 protocol. It uses our own storage, which is free for our users and is not part of Amazon or any commercial cloud.' Quota is whatever the namespace is granted by admins; CephFS carries a documented 16 TB per-file cap.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

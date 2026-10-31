@@ -1,0 +1,95 @@
+{
+  "topic": "storage",
+  "slug": "mapillary",
+  "provider": "Mapillary (Meta)",
+  "url": "https://www.mapillary.com",
+  "category": "crowdsourced street-level imagery",
+  "free_tier": {
+    "stated": "'unlimited storage' per Mapillary's own blog: 'Mapillary offers unlimited storage and makes imagery publicly available ... any organization, public or private, can store and host their archive of street-level imagery at no cost.' No published per-account byte cap. 2.4 billion images hosted.",
+    "unit": "unlimited",
+    "metered_on": "stored-bytes",
+    "source_url": "https://blog.mapillary.com/update/2024/07/08/expanding-public-street-level-imagery-access.html",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://blog.mapillary.com/update/2024/07/08/expanding-public-street-level-imagery-access.html",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://blog.mapillary.com/update/2024/07/08/expanding-public-street-level-imagery-access.html",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "free for all use, including commercial, since the Meta acquisition (2020) — but API reads are rate-limited, not byte-metered",
+    "metered": false
+  },
+  "interface": [
+    "graph",
+    "cli"
+  ],
+  "interface_detail": "Graph API at graph.mapillary.com (images, map features, detections); upload via mapillary_tools CLI or Desktop Uploader",
+  "tooling": "`mapillary_tools` (pip), Mapillary Desktop Uploader, official Python SDK, MapillaryJS",
+  "chaining": "Writes are geographically anchored, so this is a corpus, not a bucket. Read path returns tile/thumb URLs; a normal CDN in front works, but origin fetch is token-gated.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "50,000 requests/minute",
+      "source": "https://blog.mapillary.com/update/2024/07/08/expanding-public-street-level-imagery-access.html"
+    },
+    {
+      "kind": "request-rate",
+      "value": "50,000 requests/DAY",
+      "source": "https://blog.mapillary.com/update/2024/07/08/expanding-public-street-level-imagery-access.html"
+    }
+  ],
+  "limits_note": "per-image: 200 MP resolution ceiling, landscape orientation, EXIF GPS + timestamp required. Read side: graph.mapillary.com 50,000 requests/minute/app; tiles.mapillary.com 50,000 requests/DAY. The forum thread 'Can and does someone replicate the Mapillary images database?' states outright that the free plan's 50,000-image limit blocks bulk re-download.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email — confirmed: graph.mapillary.com with no token returns {\"message\":\"Invalid OAuth 2.0 Access Token\",\"code\":190}, and signup is a Meta/Facebook or email account with a free developer token; no affiliation check. help.mapillary.com article 'An Introduction to Mapillary' says 'All you need to start contributing is your smartphone and our mobile app.'",
+    "country": null
+  },
+  "reliability_note": "Upload-open / read-gated is the exact pattern: storage is unlimited but pulling your own archive back out at volume is throttled to 50k tile requests/day. Treat as an archive of record, not a working set.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://graph.mapillary.com/images?fields=thumb_2048_url&limit=1",
+      "date": "2026-10-21",
+      "proved": "200 with {\"error\":{\"message\":\"Invalid OAuth 2.0 Access Token\",\"type\":\"MLYApiException\",\"code\":190}} (token-gated read, confirmed live)"
+    },
+    {
+      "url": "https://help.mapillary.com/hc/en-us/articles/8348198426396-Mapillary-FAQ",
+      "date": "2026-10-21",
+      "proved": "'No, Mapillary is 100% free to use—for any use case! ... we have open-sourced our imagery'"
+    },
+    {
+      "url": "https://help.mapillary.com/hc/en-us/articles/115001472029",
+      "date": "2026-10-21",
+      "proved": "'upper limit of 200 MP to image resolution'"
+    },
+    {
+      "url": "https://forum.mapillary.com/t/hitting-request-limit/5820",
+      "date": "2026-10-21",
+      "proved": "50,000 requests/minute/app on graph.mapillary.com"
+    },
+    {
+      "url": "https://forum.mapillary.com/t/receiving-html-response-instead-of-json/8336",
+      "date": "2026-10-21",
+      "proved": "'The rate limit for tiles is 50,000 requests per day'"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "blog.mapillary.com 2024-07-08 — 'Mapillary offers unlimited storage' search snippet only"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "'unlimited storage' per Mapillary's own blog: 'Mapillary offers unlimited storage and makes imagery publicly available ... any organization, public or private, can store and host their archive of street-level imagery at no cost.' No published per-account byte cap. 2.4 billion images hosted.",
+  "extras": {},
+  "binding": "request-rate",
+  "binding_note": "calls are bounded rather than bytes, which is fatal to a nightly job on a monthly counter"
+}

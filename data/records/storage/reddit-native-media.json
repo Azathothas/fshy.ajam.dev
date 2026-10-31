@@ -1,0 +1,68 @@
+{
+  "topic": "storage",
+  "slug": "reddit-native-media",
+  "provider": "Reddit native media (i.redd.it)",
+  "url": "https://reddit.com",
+  "category": "media",
+  "free_tier": {
+    "stated": "20 MB per image post, ~1 GB per video post, no stated total",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://help.postpone.app/platforms/reddit/media-limits",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://help.postpone.app/platforms/reddit/media-limits",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://help.postpone.app/platforms/reddit/media-limits",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "free, direct image URLs on Fastly (probe headers show 'Fastly-Restarts' and a versioned S3-style origin); no auth on i.redd.it GETs",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "official Reddit API has a /api/submit image path (submit_image + image_path / upload lease); PRAW and Late/Zernio wrappers expose it",
+  "chaining": "20 MB x unlimited posts x unlimited subreddits x N accounts. 500 GB = 25,000 image posts; OAuth rate limits (100 QPM) make that ~4 hours of posting, far faster than a human, which is exactly what gets flagged",
+  "limits": [],
+  "limits_note": "20 MB/image; media must go through the subreddit's native uploader (no arbitrary file types at all — images and video only); spam filters and per-subreddit karma gates bite long before any byte cap",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "i.redd.it is Fastly-backed and 404s cleanly (probe returned a 2016-dated 404 with x-amz-version-id), i.e. real object storage behind CDN; but media is tied to the post lifecycle and API-scoped uploads are heavily moderated",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://help.postpone.app/platforms/reddit/media-limits",
+      "date": "2026-10-21",
+      "proved": "'Reddit accepts images up to 20 MB' / 'Reddit accepts videos up to 1 GB'"
+    },
+    {
+      "url": "https://i.redd.it/",
+      "date": "2026-10-21",
+      "proved": "probe: HEAD -> 404 with 'Fastly-Restarts' and 'x-amz-version-id' headers (Fastly + S3-style origin, image/png content-type on 404)"
+    },
+    {
+      "url": "https://www.reddit.com/dev/api/",
+      "date": "2026-10-21",
+      "proved": "/api/submit documented; submit_image present in PRAW (github.com/praw-dev/praw issue 1359 shows the API path in use)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "20 MB per image post, ~1 GB per video post, no stated total",
+  "extras": {},
+  "binding": "none",
+  "binding_note": null
+}

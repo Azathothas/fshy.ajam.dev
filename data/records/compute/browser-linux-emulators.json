@@ -1,0 +1,114 @@
+{
+  "topic": "compute",
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "notes": null
+  },
+  "interface": [
+    "ssh"
+  ],
+  "interface_detail": "a browser tab; no inbound endpoint",
+  "tooling": "a WASM Linux userland in the tab",
+  "chaining": "none: the machine is the reader's own laptop",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "closing the tab ends the environment; state survives only as an IndexedDB snapshot",
+      "source": "https://linuxontab.com/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "the guest runs on the browser's own memory, so the machine's RAM is the ceiling",
+      "source": "https://linuxontab.com/"
+    }
+  ],
+  "limits_note": "the CPU is the reader's own, so this is not remote capacity at all",
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "verified_at": "2026-10-22T04:46:26.205Z",
+  "price_per_tb_month": null,
+  "notes": "Not remote compute: the cycles are the reader's own and the state dies with the tab.",
+  "slug": "browser-linux-emulators",
+  "provider": "Browser Linux emulators",
+  "url": "https://linuxontab.com/",
+  "category": "browser host",
+  "free_tier": {
+    "stated": "a Linux userland running in the browser tab, free with no signup on some sites",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://linuxontab.com/",
+    "read_on": "2026-10-06",
+    "notes": "WebVM is the strongest: real Debian x86 and real Tailscale networking, and it dies with the tab"
+  },
+  "retention": {
+    "stated": "dies with the tab",
+    "days": 0,
+    "source_url": "https://linuxontab.com/"
+  },
+  "egress": {
+    "terms": "a user's own connection",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://linuxontab.com/"
+  },
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no signup on the sites that offer it",
+    "country": null
+  },
+  "evidence": [
+    {
+      "url": "https://linuxontab.com/",
+      "date": "2026-10-06",
+      "proved": "'Free, no signup'; the machine is the browser tab"
+    },
+    {
+      "url": "https://linuxontab.com/",
+      "date": "2026-10-22",
+      "proved": "'Real x86 kernel. Runs offline. Open source stack. Free, no signup.' and 'State after closing tab: IndexedDB snapshots' and 'Networking is opt-in ... gets full TCP egress' and 'Free, no signup' with a pairing-code tunnel for SSH, quoted"
+    }
+  ],
+  "verdict": "dead",
+  "extras": {
+    "shape": {
+      "vcpu": null,
+      "ram": null,
+      "disk": null,
+      "gpu_class": null,
+      "gpu_count": null,
+      "note": "emulated x86 in the browser tab; the host's RAM bounds it"
+    },
+    "billing_model": "flat-pool",
+    "session_cap": {
+      "wall_clock_min": null,
+      "idle_reap_s": null,
+      "restart_required": false,
+      "note": "the tab's lifetime is the session; there is no vendor clock"
+    },
+    "keep_rate": null,
+    "persistent_storage": null,
+    "network_out": null,
+    "free_tier_kind": "allowance",
+    "ps": {
+      "gib": null,
+      "price": "free",
+      "durability": "IndexedDB snapshot taken on close",
+      "on_stop": true,
+      "on_destroy": false,
+      "retention": "the browser's storage quota"
+    },
+    "net": {
+      "out": true,
+      "in": true,
+      "ports": "in-guest ports tunnelled out over a pairing-code WebSocket; SSH, SCP, SFTP and rsync",
+      "static_ip": false,
+      "ipv6": null,
+      "allowance": "WISP v1 over WebSocket, opt-in"
+    }
+  },
+  "binding": "retention-clamped",
+  "confidence_note": "the site was read on 2026-10-22 and states the free no-signup path, the IndexedDB snapshot on tab close, the opt-in WISP TCP egress and the guest-port tunnel. The record was already `dead` with a note that the environment ends when the tab closes, which the page confirms is a snapshot rather than a loss",
+  "self_hosted": true
+}

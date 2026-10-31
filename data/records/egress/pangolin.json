@@ -1,0 +1,89 @@
+{
+  "topic": "egress",
+  "slug": "pangolin",
+  "provider": "Pangolin",
+  "url": "https://pangolin.net/pricing",
+  "category": "zero trust overlay with public TCP/UDP ingress",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Basic Free: 'Up to 5 users', 'Custom domains', 'All resource types', 'No credit card required.' The limits row reads Users 5, Sites 5, Domains 5, Organizations 1, Public resources 15, Private resources 15, Machine clients 5.",
+    "unit": "users",
+    "metered_on": "identity-count",
+    "source_url": "https://pangolin.net/pricing",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://pangolin.net/pricing",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://pangolin.net/pricing",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No byte allowance is published on any plan. The free tier is metered on users, sites, resources and machine clients, not bytes.; ingress: tcp+udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://pangolin.net/pricing"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "the dashboard creates the resource and the newt connector joins the site to it",
+  "tooling": "newt site connector, browser dashboard, Docker",
+  "chaining": "The VPS egress allowance then binds.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "the software imposes no byte meter; what runs out is the monthly allowance of the host it runs on, and that host is a separate provider",
+      "source": "https://pangolin.net/pricing"
+    }
+  ],
+  "limits_note": "",
+  "binding": "volume-quota",
+  "binding_note": "the software imposes no byte meter; what runs out is the monthly allowance of the host it runs on, and that host is a separate provider",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "'No credit card required.' The Cloud account is an email signup; the self-hosted Community Edition needs no vendor account at all.",
+    "country": "None"
+  },
+  "reliability_note": "TCP and UDP resources 'do not enforce Pangolin authentication or access rules', so the listener is unauthenticated at the proxy layer.",
+  "confidence": "documented",
+  "confidence_note": "A live 1 GiB UDP transfer through a raw resource would raise this to measured. No host was stood up.",
+  "evidence": [
+    {
+      "url": "https://pangolin.net/pricing",
+      "date": "2026-10-23",
+      "proved": "'Basic' is 'Free' with 'Up to 5 users', 'All resource types' and 'No credit card required.'; the limits table gives Public resources 15"
+    },
+    {
+      "url": "https://docs.pangolin.net/manage/resources/public/raw-resources.md",
+      "date": "2026-10-23",
+      "proved": "'TCP and UDP public resources are protocol-agnostic proxies'; 'each resource binds to a port on the Pangolin server host'; 'This feature is only available in self-hosted Pangolin instances. If you're using Pangolin Cloud, you will need to deploy a remote node.'"
+    },
+    {
+      "url": "https://docs.pangolin.net/about/pangolin-cloud-vs-self-hosted.md",
+      "date": "2026-10-23",
+      "proved": "'Public TCP/UDP listeners that bind a port on the Pangolin host are a self-hosted-server feature. On Cloud, deploy a remote node for that.'"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The count caps have no kind in the seven-value vocabulary, so limits[] is empty and the numbers are in free_stated: 15 public resources is what a reader hits first if they need many services. Three candidate readings of the Cloud/free conflict were tested: (1) the free tier ships raw resources, (2) raw resources are self-hosted only, (3) the docs are stale. The raw-resources page and the Cloud-vs-self-hosted page agree with each other and are dated after the pricing page, so (2) holds and 'All resource types' on the pricing page means the HTTP, SSH, RDP, VNC and AI Gateway families on Cloud.",
+  "extras": {
+    "wg_path": "none",
+    "wg_detail": "The site connector (newt) holds the WireGuard tunnel and no page read documents a .conf export, so only the vendor connector joins. The public listener is a port bound on the server host: 'Clients connect to <pangolin-server>:<port> and traffic is forwarded to the downstream service through a site connector.'",
+    "ingress": "tcp+udp",
+    "volume_tib_month": null,
+    "volume_stated": "No byte allowance is published on any plan. The free tier is metered on users, sites, resources and machine clients, not bytes.",
+    "bytes_transit": "yes",
+    "transit_note": "traffic enters the Pangolin server's public port, crosses the WireGuard tunnel to the site, and leaves from the site's own NIC"
+  }
+}

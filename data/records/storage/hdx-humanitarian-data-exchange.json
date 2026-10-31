@@ -1,0 +1,84 @@
+{
+  "topic": "storage",
+  "slug": "hdx-humanitarian-data-exchange",
+  "provider": "HDX — Humanitarian Data Exchange (UN OCHA)",
+  "url": "https://data.humdata.org/",
+  "category": "gov-igo-data-portal",
+  "free_tier": {
+    "stated": "No published per-user or per-file quota anywhere in the docs. The platform hosts the files itself ('upload the data file directly to the HDX platform'), S3-backed. Aggregate catalog is 28,359 datasets and growing at organisational pace.",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://docs.humdata.org/publish/publish-data/preparing-and-publishing-data",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.humdata.org/publish/publish-data/preparing-and-publishing-data",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.humdata.org/publish/publish-data/preparing-and-publishing-data",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "unmetered public download. Direct GET on /dataset/<slug>/resource/<id>/download/<file>; no egress counter, no rate card, no CDN token. Files are anonymous to read — no login to download.",
+    "metered": false
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "CKAN 2.x action API (package_search / package_create / resource_create) plus the `hdx-python-api` wrapper, which is the documented write path.",
+  "tooling": "curl + API token, or `pip install hdx-python-api`. Write operations need an API token from the user profile; token is per-user, free, issued on signup.",
+  "chaining": "CKAN resource_create accepts a URL as well as a local file, so HDX can act as a metadata+mirror layer over another host. Public download URLs are stable and content-addressable by resource id — reasonable as a serving tier.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "reviewed by OCHA",
+      "source": "https://docs.humdata.org/publish/publish-data/preparing-and-publishing-data"
+    },
+    {
+      "kind": "write-gated",
+      "value": "approval, not identity or payment",
+      "source": "https://docs.humdata.org/publish/publish-data/preparing-and-publishing-data"
+    }
+  ],
+  "limits_note": "write-gated: you must belong to an HDX organisation with publishing rights. Any registered user may REQUEST a new organisation (`/org/request/new`) and the request is human-reviewed by OCHA. So the gate is editorial approval, not identity or payment.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email",
+    "country": null
+  },
+  "reliability_note": "UN-operated, 10+ years of uptime, but editorial review means a rejection is silent and unbounded — no SLA on org approval, and an org can be removed for content outside humanitarian scope. Do not treat as primary durable storage.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://docs.humdata.org/publish/publish-data/organizations-on-hdx",
+      "date": "2026-10-21",
+      "proved": "'Only registered users can request to create a new organization. Open: https://data.humdata.org/org/request/new. If you are not logged in, you will see an error page.'"
+    },
+    {
+      "url": "https://docs.humdata.org/publish/publish-data/preparing-and-publishing-data",
+      "date": "2026-10-21",
+      "proved": "'To publish manually, you will need to upload the data file directly to the HDX platform... you must be logged in and belong to an HDX organization with publishing permissions.'"
+    },
+    {
+      "url": "https://data.humdata.org/api/3/action/package_search?rows=0",
+      "date": "2026-10-21",
+      "proved": "HTTP 200, success:true, count 28359, i.e. the CKAN write API family is live on the same host"
+    },
+    {
+      "url": "https://docs.humdata.org/build/hdx-python-library",
+      "date": "2026-10-21",
+      "proved": "'Your organization must exist on HDX, and you need to be an editor or admin of it' — confirms programmatic publish is real, not UI-only"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published per-user or per-file quota anywhere in the docs. The platform hosts the files itself ('upload the data file directly to the HDX platform'), S3-backed. Aggregate catalog is 28,359 datasets and growing at organisational pace.",
+  "extras": {},
+  "binding": "write-gated",
+  "binding_note": null
+}

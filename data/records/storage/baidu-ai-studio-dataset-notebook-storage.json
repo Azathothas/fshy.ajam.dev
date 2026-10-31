@@ -1,0 +1,84 @@
+{
+  "topic": "storage",
+  "slug": "baidu-ai-studio-dataset-notebook-storage",
+  "provider": "Baidu AI Studio 星河社区 (aistudio.baidu.com) — dataset + notebook storage",
+  "url": "https://aistudio.baidu.com",
+  "category": "model-hub",
+  "free_tier": {
+    "stated": "Two separate pools, which is the interesting part: (1) Notebook persistent workspace — verbatim 'Notebook每个用户提供 100G 的云端持久化存储空间作为个人工作区，访问路径为 /home/aistudio/work' (100 GB per user, persisted in real time); (2) Datasets — '单个文件大小要小于50GB，一个数据集最多可上传50G数据内容' (single file under 50 GB, one dataset holds at most 50 GB of content). So 100 GB standing + 50 GB per dataset, and datasets are a separately-created object, not a folder in the workspace.",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://ai.baidu.com/ai-doc/AISTUDIO/5k39vd65f",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "50 GB per file",
+    "bytes": 50000000000,
+    "source_url": "https://ai.baidu.com/ai-doc/AISTUDIO/5k39vd65f",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://ai.baidu.com/ai-doc/AISTUDIO/5k39vd65f",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free for public datasets — downloads are anonymous HTTP from Baidu's CDN with no egress line and no per-GB charge anywhere in the docs. No metered-egress surface exists because AI Studio is not a cloud-storage product with a billing meter.",
+    "metered": false
+  },
+  "interface": [
+    "s3-compatible",
+    "rest",
+    "git",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "First-party pip package aistudio-sdk: `aistudio upload --repo-type {model,dataset} --include ... --max-workers N` with a User Access Token from aistudio.baidu.com/account/accessToken. Also git+LFS, and a web uploader. Python SDK + CLI both documented. No rclone backend, no S3 API.",
+  "chaining": "This is the multiplier case §1 describes: 50 GB is per DATASET, and the quota field explicitly separates the 100 GB workspace from dataset storage. N datasets x 50 GB is the intended pattern (people mount several datasets into one project simultaneously — Q21 '添加数据集' shows multiple datasets attached to a single project). 20 TiB = ~410 datasets.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "50 GB per file",
+      "source": "https://ai.baidu.com/ai-doc/AISTUDIO/5k39vd65f"
+    },
+    {
+      "kind": "write-gated",
+      "value": "review purposes",
+      "source": "https://ai.baidu.com/ai-doc/AISTUDIO/5k39vd65f"
+    }
+  ],
+  "limits_note": "50 GB per file, 50 GB per dataset, 100 GB persistent workspace. Notebook main file (.ipynb) capped at 10 MB for preview purposes. Free GPU is 12 h/day with an 8-point/day sign-in economy, but compute is irrelevant here. Dataset uploads above 150 MB must go through the dataset path rather than direct project upload. No documented retention/expiry on datasets.",
+  "identity_cost": {
+    "kind": "country-phone",
+    "detail": "email + any-phone, but the platform is China-facing and prior rounds recorded Chinese pans demanding +86 real-name verification and Alipay. Treat as country-phone until a registration attempt proves otherwise.",
+    "country": null
+  },
+  "reliability_note": "Datasets are mutable (versions exist — '生成新版本'). Notebook containers are recycled when idle and have a forced maximum lifetime, but /home/aistudio/work is described as real-time persistent, so the workspace is the durable part. Heavily China-network-oriented; download speeds from outside CN are untested here.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://ai.baidu.com/ai-doc/AISTUDIO/5k39vd65f",
+      "date": "2026-10-21",
+      "proved": "Q1 '单个文件大小要小于50GB，一个数据集最多可上传50G数据内容'"
+    },
+    {
+      "url": "https://ai.baidu.com/ai-doc/AISTUDIO/nme7yirqi",
+      "date": "2026-10-21",
+      "proved": "read live: five upload methods; `aistudio upload -h` showing --repo-type {model,dataset} and --max-workers; token at /account/accessToken"
+    },
+    {
+      "url": "https://aistudio.baidu.com/datasetoverview",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200 (13,685 bytes); GET https://aistudio.baidu.com/api/v1/datasets?per=2 -> 302 (API versioned/redirected, no anonymous JSON)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Two separate pools, which is the interesting part: (1) Notebook persistent workspace — verbatim 'Notebook每个用户提供 100G 的云端持久化存储空间作为个人工作区，访问路径为 /home/aistudio/work' (100 GB per user, persisted in real time); (2) Datasets — '单个文件大小要小于50GB，一个数据集最多可上传50G数据内容' (single file under 50 GB, one dataset holds at most 50 GB of content). So 100 GB standing + 50 GB per dataset, and datasets are a separately-created object, not a folder in the workspace.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

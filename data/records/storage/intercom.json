@@ -1,0 +1,87 @@
+{
+  "topic": "storage",
+  "slug": "intercom",
+  "provider": "Intercom (article/Messenger attachments)",
+  "url": "https://www.intercom.com",
+  "category": "paas",
+  "free_tier": {
+    "stated": "'The size limit on individual attachments is 100mb for uploads via Messenger and there is currently no limit on the number of attachments that can be uploaded.' No account storage figure published.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://www.intercom.com/help/en/articles/2339426-control-how-attachments-are-uploaded-and-used",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: 100 MB",
+    "bytes": 100000000,
+    "source_url": "https://www.intercom.com/help/en/articles/2339426-control-how-attachments-are-uploaded-and-used",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Fetching the same object with the signature stripped and the filename changed still returned 200 with the identical 498,804 bytes — so Intercom CDN URLs are effectively unauthenticated and permanent, which is a reusable pattern (and means 'signed' URLs elsewhere may also be decorative).",
+    "source_url": "https://www.intercom.com/help/en/articles/2339426-control-how-attachments-are-uploaded-and-used",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free, Intercom CDN. Signed URLs with `expires` + `signature` params.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Intercom REST API (`/articles`, `/files`), official SDKs.",
+  "chaining": "100 MB x unlimited attachments would be per-record-unlimited, but there is no free plan — all tiers start with 'Start free trial'. Cannot be multiplied into free storage.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: 100 MB",
+      "source": "https://www.intercom.com/help/en/articles/2339426-control-how-attachments-are-uploaded-and-used"
+    }
+  ],
+  "limits_note": "per-object-cap: 100 MB (Messenger), 20 MB total per incoming email including all files. request-rate: Intercom API rate limits apply. Retention: no expiry documented.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Important control: the CDN `signature` is NOT verified. Fetching the same object with the signature stripped and the filename changed still returned 200 with the identical 498,804 bytes — so Intercom CDN URLs are effectively unauthenticated and permanent, which is a reusable pattern (and means 'signed' URLs elsewhere may also be decorative).",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://www.intercom.com/help/en/articles/2339426-control-how-attachments-are-uploaded-and-used",
+      "date": "2026-10-21",
+      "proved": "'no limit on the number of attachments that can be uploaded'"
+    },
+    {
+      "url": "https://downloads.intercomcdn.com/i/o/tx2p130c/.../CleanShot...png?expires=...&signature=",
+      "date": "2026-10-21",
+      "proved": "probe: GET ... -> 200, 498,804 bytes"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: same path with no query string and a truncated filename -> 200, 498,804 bytes, byte-identical — signature not enforced"
+    },
+    {
+      "url": "https://www.intercom.com/pricing",
+      "date": "2026-10-21",
+      "proved": "no free plan; every tier shows 'Start free trial'"
+    }
+  ],
+  "verdict": "trial-only",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "'The size limit on individual attachments is 100mb for uploads via Messenger and there is currently no limit on the number of attachments that can be uploaded.' No account storage figure published.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "'The size limit on individual attachments is 100mb for uploads via Messenger and there is currently no limit on the number of attachments that can be uploaded.' No account storage figure published.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

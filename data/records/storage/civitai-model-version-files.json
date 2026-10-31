@@ -1,0 +1,97 @@
+{
+  "topic": "storage",
+  "slug": "civitai-model-version-files",
+  "provider": "Civitai — model version files (the 'arbitrary 65 GiB blob' hub)",
+  "url": "https://civitai.com",
+  "category": "media",
+  "free_tier": {
+    "stated": "No published per-account or per-file byte quota. Its own Data Storage Policy states: 'By default, uploaded content will be stored indefinitely with the exception of input and output files related to model training.' Empirically: a single file of 65.83 GiB exists in production, and single free accounts hold 453 GiB (Lykon, 212 models) and 97 GiB (NanashiAnon, 412 models).",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://civitai.com/content/training/data-policy",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "single file of 65.83 GiB",
+    "bytes": 70684424273,
+    "source_url": "https://civitai.com/content/training/data-policy",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "No published per-account or per-file byte quota. Its own Data Storage Policy states: 'By default, uploaded content will be stored indefinitely with the exception of input and output files related to model training.' Empirically: a single file of 65.83 GiB exists in production, and single free accounts hold 453 GiB (Lykon, 212 models) and 97 GiB (NanashiAnon, 412 models)",
+    "source_url": "https://civitai.com/content/training/data-policy",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered; downloads 307-redirect to civitai-delivery-worker-prod...r2.cloudflarestorage.com with a 24 h X-Amz-Expires, then serve 206 with Accept-Ranges: bytes. No per-GB egress charge exists on any Civitai page.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Public REST API v1 (no auth for reads/metadata): /api/v1/models, /api/v1/model-versions/{id}, /api/v1/model-versions/by-hash/{sha256}. Download via GET /api/download/models/{versionId}. Working clients: civitai/cli (official, `civitai download` needs a token), RtypeStudios/CivitAI-Model-Archiver. No rclone backend.",
+  "chaining": "Free accounts carry no stated limit and each holds the same allowance. Models per account and versions per model are unlimited, with a per-file ceiling >=65.8 GiB. 30 TiB = ~460 files at the observed 65.8 GiB ceiling, i.e. one account pushing ~460 'models'. Verified excess-use precedent already on the platform: model 1219185 is literally titled 'hunyuanvideo-lora-training-wsl-ubuntu-system-backup' and is a 65.83 GiB zip of a WSL Ubuntu install uploaded as type 'Other'.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "single file of 65.83 GiB",
+      "source": "https://civitai.com/content/training/data-policy"
+    }
+  ],
+  "limits_note": "per-object-cap: >=65.83 GiB observed, no published number. THE BINDING CONSTRAINT IS NOT SIZE — it is a per-object access flag plus NSFW gating: creators may set 'require login to download', and such files return HTTP 401 with body {\"error\":\"Unauthorized\",\"message\":\"The creator of this asset requires you to be logged in to download it\"} on BOTH ranged and full GETs (verified consistent — no ranged-lies-while-full-gates behaviour, unlike some round-1 hosts). Of 20 large models sampled, 12 were anonymous-206 and 8 were 401. Training-data retention is a separate, much shorter clause: inputs and training outputs are 30 days. Published per-account storage: Vault is paid-only (Bronze 100 GB / Silver 250 GB / Gold 500 GB) and is a separate product from model hosting.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Downloads are reliable and hash-exact when ungated: a full 13,649,928-byte fetch matched the API-advertised SHA-256 exactly (8184D4BA...). Rate: sustained 20 ranged GETs with no 429. The trap is silent partial bodies — a curl without -f writes the 106-byte JSON 401 body to disk as if it were your file, so every download must be hash-checked.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET civitai.com/api/v1/model-versions/2752735 -> file 46,149,344,974 bytes (43.0 GiB); GET /api/download/models/2752735 -r 0-1023 -L -> 307 -> 206 Content-Range: bytes 0-1023/46149344974"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: full GET /api/download/models/171989 -> 13,649,928 bytes, sha256sum = 8184D4BA9DA2B849638531F3DEF563AD2A0AB695B97FBB74F80AC099F2EB7396 = API hashes.SHA256 (MATCH)"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET /api/download/models/493690 -> 401, 106 bytes, {\"error\":\"Unauthorized\",\"message\":\"The creator of this asset requires you to be logged in to download it\"}"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: 20-model sample of >35 GiB files -> 12x 206 anonymous, 8x 401 (creator-gated); size is not the gate"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: model 1219185 = 'hunyuanvideo-lora-training-wsl-ubuntu-system-backup', 65.83 GiB zip, type 'Other'"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: paginated /api/v1/models?username=Lykon -> 212 models, 358 files, 452.7 GiB in ONE free account"
+    },
+    {
+      "url": "https://civitai.com/content/training/data-policy",
+      "date": "2026-10-21",
+      "proved": "'uploaded content will be stored indefinitely ... except input and output files related to model training' (30 days for those)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published per-account or per-file byte quota. Its own Data Storage Policy states: 'By default, uploaded content will be stored indefinitely with the exception of input and output files related to model training.' Empirically: a single file of 65.83 GiB exists in production, and single free accounts hold 453 GiB (Lykon, 212 models) and 97 GiB (NanashiAnon, 412 models).",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

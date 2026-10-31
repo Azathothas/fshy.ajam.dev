@@ -1,0 +1,100 @@
+{
+  "topic": "inference",
+  "slug": "huggingface-zerogpu-spaces-api",
+  "provider": "Hugging Face ZeroGPU Spaces (public Spaces called through the Gradio client)",
+  "url": "https://huggingface.co/docs/hub/en/spaces-zerogpu",
+  "category": "inference via hosted demos, GPU quota",
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "not applicable"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "free_tier": {
+    "stated": "ZeroGPU Spaces are available to use for free to all users: 2 minutes of GPU a day unauthenticated and 5 minutes a day on a free account, reset exactly 24 hours after the first GPU usage",
+    "unit": "minutes",
+    "metered_on": "wall-clock",
+    "source_url": "https://huggingface.co/docs/hub/en/spaces-zerogpu",
+    "read_on": "2026-10-28",
+    "notes": "the model served is whatever the Space's author runs; the quota counts GPU time of the function call, and the xlarge size costs twice the quota"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "the Gradio API of a public Space, called with gradio_client.Client(space_id, token=...).predict()",
+  "tooling": "gradio_client (pip install --upgrade gradio_client); huggingface_hub for the token",
+  "chaining": "the hosting side of the same GPU pool is recorded at compute/huggingface-spaces-zerogpu; duplicating a Space to a private one moves the cost to the caller's account",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "2 minutes of GPU a day unauthenticated (queue priority Low) and 5 minutes a day on a free account (Medium); PRO is 40 minutes",
+      "source": "https://huggingface.co/docs/hub/en/spaces-zerogpu"
+    },
+    {
+      "kind": "request-rate",
+      "value": "a public Space used as an API may be rate limited by Hugging Face if too many requests are made; no number is published",
+      "source": "https://www.gradio.app/guides/getting-started-with-the-python-client"
+    }
+  ],
+  "binding": "volume-quota",
+  "binding_note": "minutes of GPU a day bind long before any request count does",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "the Unauthenticated tier needs no account and gets 2 minutes a day; a free Hugging Face account is the 5-minute tier. What a free account signup requires is unverified on the pages read",
+    "country": null
+  },
+  "reliability_note": "quota left lowers queue priority, and whether a gradio_client call made with a token is counted against that account's quota is not stated on the pages read",
+  "confidence": "documented",
+  "confidence_note": "the daily quota table is quoted from the vendor documentation; no Space was called",
+  "evidence": [
+    {
+      "url": "https://huggingface.co/docs/hub/en/spaces-zerogpu",
+      "date": "2026-10-28",
+      "capture": "sha256:949c22d45251350837459dc32cd16a8713d43068105dd2e610515a6e41af513b",
+      "quote": "ZeroGPU Spaces are available to use for free to all users.",
+      "proved": "ZeroGPU Spaces are free to use for all users"
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/en/spaces-zerogpu",
+      "date": "2026-10-28",
+      "capture": "sha256:949c22d45251350837459dc32cd16a8713d43068105dd2e610515a6e41af513b",
+      "quote": "| Unauthenticated                | 2 minutes                | Low             |",
+      "proved": "unauthenticated use gets 2 minutes of GPU a day at low queue priority"
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/en/spaces-zerogpu",
+      "date": "2026-10-28",
+      "capture": "sha256:949c22d45251350837459dc32cd16a8713d43068105dd2e610515a6e41af513b",
+      "quote": "| Free account                   | 5 minutes                | Medium          |",
+      "proved": "a free account gets 5 minutes of GPU a day at medium queue priority"
+    },
+    {
+      "url": "https://huggingface.co/docs/hub/en/spaces-zerogpu",
+      "date": "2026-10-28",
+      "capture": "sha256:949c22d45251350837459dc32cd16a8713d43068105dd2e610515a6e41af513b",
+      "quote": "Included daily quota resets exactly 24 hours after your first GPU usage.",
+      "proved": "the daily quota resets 24 hours after the first GPU use"
+    },
+    {
+      "url": "https://www.gradio.app/guides/getting-started-with-the-python-client",
+      "date": "2026-10-28",
+      "capture": "sha256:8a90d469d8566c355d893f13f1aad48eb103eca956ffcd588f05e9c923a6bf0b",
+      "quote": "While you can use any public Space as an API, you may get rate limited by Hugging Face if you make too many requests.",
+      "proved": "a public Space can be used as an API through the Gradio client and may be rate limited"
+    },
+    {
+      "url": "https://www.gradio.app/guides/getting-started-with-the-python-client",
+      "date": "2026-10-28",
+      "capture": "sha256:8a90d469d8566c355d893f13f1aad48eb103eca956ffcd588f05e9c923a6bf0b",
+      "quote": "client = Client(\"abidlabs/my-private-space\", token=\"...\")",
+      "proved": "the Gradio client takes a Hugging Face token with the token parameter"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-28T04:36:19.143Z",
+  "notes": "Whether the Gradio API path draws on the same daily quota as the web page is unverified."
+}

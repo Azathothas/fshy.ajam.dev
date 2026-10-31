@@ -1,0 +1,95 @@
+{
+  "topic": "egress",
+  "slug": "woiden",
+  "provider": "Woiden",
+  "url": "https://woiden.id/",
+  "category": "free nat vps",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Unmetered Bandwidth: all data centers provide unlimited bandwidth. Shared IPv4: a NAT VPS shares one IPv4 and assigns a different port for each user. [vendor page]",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://woiden.id/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://woiden.id/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://woiden.id/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Unmetered bandwidth, stated on the vendor page.; ingress: udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://woiden.id/"
+  },
+  "interface": [
+    "ssh",
+    "cli"
+  ],
+  "interface_detail": "SSH with root and a web panel with console, reinstall and port request.",
+  "tooling": "ssh, wg-quick; the panel issues the public port range",
+  "chaining": "Full root means WG terminates here and a conf is generated locally, so this is an ingress endpoint plus relay in one free box.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "8 to 10 shared IPv4 ports",
+      "source": "https://woiden.id/vps-nat"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "7-day life, renewed by hand",
+      "source": "https://woiden.id/vps-renew/"
+    }
+  ],
+  "limits_note": "",
+  "binding": "retention-clamped",
+  "binding_note": "Unmetered bandwidth means no byte quota exists, so nothing in the volume sense fails at 1 TiB/month. What stops a month-long run is the 7-day instance life: miss one renewal and the machine and its address are gone. The vocabulary has no kind for instance lifetime, so retention-clamped carries it, with the caveat that the vendor discloses the 7 days rather than clamping silently.",
+  "identity_cost": {
+    "kind": "any-phone",
+    "detail": "Registration plus a Telegram account for the renewal code; the renewal flow sends a code through Telegram and adds an arithmetic captcha.",
+    "country": "None"
+  },
+  "reliability_note": "Third-party write-ups record the provider's NAT VPS being unusable during outages; a missed 7-day renewal deletes the instance and its address.",
+  "confidence": "documented",
+  "confidence_note": "Unmetered bandwidth and the shared-IPv4 model are on the vendor page today; the port count and 7-day renewal come from third-party write-ups.",
+  "evidence": [
+    {
+      "url": "https://woiden.id/",
+      "date": "2026-10-23",
+      "proved": "unmetered bandwidth at all data centers, shared IPv4 with a port per user"
+    },
+    {
+      "url": "https://woiden.id/vps-nat",
+      "date": "2026-10-23",
+      "proved": "public port request uses iptables to pass data from the public IP to the VPS"
+    },
+    {
+      "url": "https://wiki.woiden.id/2022/04/12/how-to-connect-nat-vps-via-android/",
+      "date": "2026-10-23",
+      "proved": "a shared-IPv4 port range is issued per VPS"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The best volume story in the sweep: unlimited bandwidth, full root, no card. Against it: 7-day manual renewal through a Telegram code, a 8-10 port shared IPv4, and a history of the provider's servers going down. A user's no-hardware premise is satisfied because this is a rented-free VM, not owned iron.",
+  "extras": {
+    "wg_path": "native-conf",
+    "wg_detail": "A full root VPS with a dedicated IPv6 and a DNAT port range on a shared IPv4; WireGuard can be installed and a peer conf generated on the box. The vendor panel forwards 'data from public ip address to your vps' by iptables without naming a protocol.",
+    "ingress": "udp",
+    "volume_tib_month": null,
+    "volume_stated": "Unmetered bandwidth, stated on the vendor page.",
+    "bytes_transit": "yes",
+    "transit_note": "The provider's European hosts carry the traffic."
+  }
+}

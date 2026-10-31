@@ -1,0 +1,111 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "quark-cloud-drive",
+  "provider": "Quark Cloud Drive (夸克网盘)",
+  "url": "https://pan.quark.cn",
+  "category": "consumer-pan",
+  "free_tier": {
+    "stated": "10 GB free; VIP 3 TB and SVIP 6 TB. A new account that saves one shared file gets 1 TB: '新用户保存一次别人分享的文件，可获取1TB的空间容量'",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://www.quark.cn/articles/003.html",
+    "read_on": "2026-10-21"
+  },
+  "per_object_cap": {
+    "stated": "Not published for the free tier. Downloads above 50 MB need a desktop-client user agent and a cookie, else the API answers 23018 download file size limit",
+    "bytes": null,
+    "source_url": "https://github.com/woshihoujinxin/quarkpan-skill"
+  },
+  "retention": {
+    "stated": "Accounts frozen after 12 months without a login, with the storage reclaimed if not unfrozen within a month: '超过1年未登录 … 回收存储容量 … 文件丢失、数据清空'",
+    "days": 365,
+    "source_url": "https://terms.alicdn.com/legal-agreement/terms/b_end_product_protocol/20230516173016165/20230516173016165.html"
+  },
+  "egress": {
+    "terms": "No per-GB fee, but the free tier is shaped to 2 to 4 MB/s against about 50 MB/s on SVIP, and a third-party fetch service measured a free account at about 60 KB/s. Downloads above 50 MB need a client user agent and a cookie",
+    "metered": true,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://kuake.ijinshan.com/membership/index.html"
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "no official open API. The reverse-engineered web API at drive-pc.quark.cn is what the OpenList quark driver uses; the netdisk-fast-download qk parser states that a logged-in cookie is mandatory; the OpenList docs warn quick-transfer now needs a local agent because of the speed limit",
+  "chaining": "10 GB times N phone-verified accounts, and the 1 TB saved-from-a-share bonus is per account and time-limited rather than a durable multiply.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "2 to 4 MB/s on the free tier",
+      "source": "https://kuake.ijinshan.com/membership/index.html"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "12 months without a login freezes the account and reclaims the capacity",
+      "source": "https://terms.alicdn.com/legal-agreement/terms/b_end_product_protocol/20230516173016165/20230516173016165.html"
+    },
+    {
+      "kind": "write-gated",
+      "value": "share downloads above 50 MB need a desktop-client user agent and a cookie",
+      "source": "https://github.com/woshihoujinxin/quarkpan-skill"
+    }
+  ],
+  "identity_cost": {
+    "kind": "country-phone",
+    "detail": "mainland +86 only, and SVIP payment needs a Chinese identity document",
+    "country": "86"
+  },
+  "reliability_note": "The anonymous path gets metadata and not bytes: a share token and a full file listing with fid and share_fid_token come back with no cookie at all, and the download call is 404 on all four documented hosts. Download tickets are IP-bound, so a link minted on one host dies when replayed from another, which is why every public Quark parser rots within weeks",
+  "confidence": "reported",
+  "evidence": [
+    {
+      "url": "https://www.quark.cn/articles/003.html",
+      "date": "2026-10-21",
+      "proved": "'SVIP用户6TB空间，VIP用户3TB空间，普通用户初始容量10GB空间'"
+    },
+    {
+      "url": "https://terms.alicdn.com/legal-agreement/terms/b_end_product_protocol/20230516173016165/20230516173016165.html",
+      "date": "2026-10-21",
+      "proved": "'超过1年未登录 … 回收存储容量 … 文件丢失、数据清空'"
+    },
+    {
+      "url": "probe:POST https://pan.quark.cn/1/clouddrive/share/sharepage/token",
+      "date": "2026-10-21",
+      "proved": "200, 756 B, data.stoken returned with a share title and no cookie"
+    },
+    {
+      "url": "probe:GET https://pan.quark.cn/1/clouddrive/share/sharepage/detail",
+      "date": "2026-10-21",
+      "proved": "200, 3,016 B, list[0] with a file name, size 31614114, fid and share_fid_token, no cookie"
+    },
+    {
+      "url": "probe:POST https://pan.quark.cn/1/clouddrive/share/sharepage/download",
+      "date": "2026-10-21",
+      "proved": "404 on pan.quark.cn, drive-pc.quark.cn, drive-h.quark.cn and drive.quark.cn, all four"
+    },
+    {
+      "url": "probe:GET https://drive-pc.quark.cn/1/clouddrive/config?pr=ucpro&fr=pc",
+      "date": "2026-10-21",
+      "proved": "401 with {\"code\":31001,\"message\":\"require login [guest]\"}"
+    },
+    {
+      "url": "https://github.com/woshihoujinxin/quarkpan-skill",
+      "date": "2026-10-21",
+      "proved": "'分享通道绕过 无效, PC API 上 share/sharepage/download 等均 404'; downloads above 50 MB need a client UA and a cookie"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "binding": "per-ip-shaping",
+  "binding_note": "10 GB free, and 2 to 4 MB/s is 170 to 340 GB a day at best, so the quota and the shaping both fail. The shaping is the one that would still bind on a paid tier, and the identity gate sits in front of both.",
+  "notes": "Quark has largely replaced Baidu Pan as the default share host on Chinese forums, which is why it is recorded in full. The finding that matters for a bridge builder is that the anonymous token lists a whole share and cannot move a byte, and that download tickets are IP-bound so a harvested cookie does not survive a replay.",
+  "extras": {
+    "access_mode": "registration-gated",
+    "anonymous_read": "metadata yes, bytes no",
+    "freeze_after_days": 365,
+    "aliases": [
+      "Quark Cloud Drive / 夸克网盘"
+    ],
+    "ip_bound_download_tickets": true
+  }
+}

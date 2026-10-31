@@ -1,0 +1,84 @@
+{
+  "topic": "debrid",
+  "slug": "rclone-premiumizeme",
+  "provider": "rclone - premiumizeme backend",
+  "url": "https://rclone.org/premiumizeme/",
+  "category": "client: mount and sync (rclone backend)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "A user is free software with no account and no quota of its own; every byte is counted by the debrid account behind it. The backend is 'added in v1.49' and carries Tier 3 in rclone's support table.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://rclone.org/premiumizeme/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable for a user; the object cap is the debrid account's.",
+    "bytes": null,
+    "source_url": "https://rclone.org/premiumizeme/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: a mount reflects the remote's contents live.",
+    "days": null,
+    "source_url": "https://rclone.org/premiumizeme/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "rclone does not meter or bill; it reads through the debrid account and therefore spends that account's fair-use budget.",
+    "metered": false,
+    "free_allowance": "none of its own",
+    "price_per_tb": null,
+    "source_url": "https://rclone.org/premiumizeme/"
+  },
+  "interface": [
+    "rclone",
+    "webdav"
+  ],
+  "interface_detail": "Configured with 'rclone config' -> 'premiumizeme'; authentication is an interactive OAuth token in a browser, not the raw API key, so a headless box needs the token copied in. The backend is read-only.",
+  "endpoint": "https://www.premiumize.me/api",
+  "tooling": "rclone itself, plus anything that speaks to an rclone mount: Plex, Jellyfin, Emby, restic, rsync over the mount.",
+  "chaining": null,
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "none published by rclone; the upstream Premiumize rate limit is unpublished and surfaces as a 200-with-rate_limit_reached envelope the backend must interpret",
+      "source": "https://rclone.org/premiumizeme/"
+    }
+  ],
+  "limits_note": "Read-only: no upload path exists in this backend, so a workflow that writes into debrid cloud cannot use it.",
+  "binding": "none",
+  "binding_note": "The client imposes nothing; at 1 TiB/month the binding constraint is the Premiumize fair-use meter, not the mount.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No registration with rclone; it inherits the debrid account's identity. Installing it needs no account at all.",
+    "country": "None"
+  },
+  "reliability_note": "A mount is only as stable as the upstream API; a Premiumize throttle comes back as a success-shaped JSON envelope and shows up as a stalled read rather than an error.",
+  "confidence": "documented",
+  "confidence_note": "The backend page and the backend table were read. Nothing was mounted, so the throughput claim is absent rather than estimated.",
+  "evidence": [
+    {
+      "url": "https://rclone.org/premiumizeme/",
+      "date": "2026-10-23",
+      "proved": "'added in v1.49', Tier 3, and the browser OAuth configuration flow for the premiumizeme backend"
+    },
+    {
+      "url": "https://rclone.org/overview/",
+      "date": "2026-10-23",
+      "proved": "the full backend table lists premiumizeme as read-only ('R') and lists no other debrid service"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T01:51:00.000Z",
+  "price_per_tb_month": "USD 0 for a user; the storage behind it is EUR 9.99/month",
+  "notes": "Named as a separate record because 'which debrid service has an rclone backend' is a question six of the eight answer 'none' and one answers 'yes'.",
+  "extras": {
+    "backend_status": "Tier 3 in rclone's own table, which is the lowest support tier for a backend",
+    "write_support": "none: read-only backend",
+    "alternative_route": "TorBox publishes a first-party WebDAV endpoint (https://webdav.torbox.app), which rclone can mount as a generic WebDAV remote with no backend at all",
+    "shim_route": "Real-Debrid reaches rclone only through zurg's WebDAV, which is a separate binary and a separate record"
+  },
+  "self_hosted": true
+}

@@ -1,0 +1,171 @@
+{
+  "topic": "crawler-scraper",
+  "slug": "openalex",
+  "provider": "OpenAlex",
+  "url": "https://help.openalex.org/access/pricing/",
+  "category": "scholarly index",
+  "verdict": "qualifies",
+  "confidence": "documented",
+  "confidence_note": "the quota and the rate limit are documented; the works API was called directly on 2026-10-22 (200, 30,469 bytes, meta.count 189601, X-RateLimit-Cost-USD 0.001), so the read path is probed and the verdict is unqualified",
+  "verified_at": "2026-10-31T10:03:28.418Z",
+  "free_tier": {
+    "stated": "USD 1 of API usage a day with a free key; USD 0.10 a day with no key; the budget is priced per call, so it buys 10,000 list-and-filter calls or 1,000 searches a day, and single-entity lookups are free",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://help.openalex.org/access/pricing/",
+    "read_on": "2026-10-31",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: the unit is a request",
+    "bytes": null,
+    "source_url": "https://help.openalex.org/access/pricing/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "the daily budget resets at midnight UTC",
+    "days": null,
+    "source_url": "https://help.openalex.org/access/pricing/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not applicable",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://help.openalex.org/access/pricing/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "REST; cursor paging past the first page needs a free key",
+  "tooling": "curl or any HTTP client; the key goes in the api_key query parameter or an Authorization: Bearer header; each answer reports the day's budget and the call's cost in X-RateLimit-* headers",
+  "chaining": "Results past 10,000 for one query need cursor paging, which needs a free key; a full copy of the index comes from the quarterly S3 snapshot recorded in data-apis/openalex rather than from the API.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "10 requests a second keyless, 30 with a free key, 50 on an annual plan",
+      "source": "https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "basic paging stops at 10,000 results; beyond that needs cursor paging and a key; per_page maximum 100",
+      "source": "https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication"
+    },
+    {
+      "kind": "request-rate",
+      "value": "daily budget USD 1 with a free key, no payment method; prepaid usage in USD 1 increments is drawn only after the free budget runs out and expires 3 months after the most recent purchase; the budget resets every midnight UTC",
+      "source": "https://help.openalex.org/access/pricing/"
+    }
+  ],
+  "binding": "request-rate",
+  "limits_note": "",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The API answers with no key on a smaller daily budget. The free key comes from an account on openalex.org or from a POST to https://api.openalex.org/api-keys with an email address, and works only once that email address is verified. No payment method required.",
+    "country": null
+  },
+  "reliability_note": "Exceeding the daily budget or the per-second limit answers 429; a per-second 429 costs nothing and clears on retry.",
+  "price_per_tb_month": null,
+  "evidence": [
+    {
+      "url": "https://help.openalex.org/access/pricing/",
+      "date": "2026-10-22",
+      "proved": "every account gets USD 1 of API usage per day for free; no payment method required; prepaid usage expires 3 months after the most recent purchase"
+    },
+    {
+      "url": "https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication",
+      "date": "2026-10-22",
+      "proved": "no key 10 requests a second, free key or prepaid 30, annual 50; per_page maximum 100; basic paging limit 10,000 results; cursor paging requires a key"
+    },
+    {
+      "url": null,
+      "date": "2026-10-22",
+      "proved": "200, provider openalex, 3 works, a cursor, and page 2 returned three different DOIs"
+    },
+    {
+      "url": "probe:https://api.openalex.org/works?search=retrieval+augmented+generation&per-page=2",
+      "date": "2026-10-22",
+      "proved": "direct call: 200, 30,469 bytes, meta.count 189601, X-RateLimit-Cost-USD 0.001 and X-RateLimit-Credits-Used 10, X-RateLimit-Limit 1000"
+    },
+    {
+      "url": "https://help.openalex.org/access/example-costs/",
+      "date": "2026-10-31",
+      "proved": "the keyless daily budget is USD 0.10, a tenth of the free-key USD 1",
+      "capture": "sha256:4dde64f6a026bf01b07b0bf97a98ee91c7c1525eb8e0ae58c401f1a886e93e4f",
+      "quote": "Without a key you get $0.10/day"
+    },
+    {
+      "url": "https://help.openalex.org/access/example-costs/",
+      "date": "2026-10-31",
+      "proved": "USD 1 a day buys 10,000 list-and-filter calls returning 1,000,000 results",
+      "capture": "sha256:4dde64f6a026bf01b07b0bf97a98ee91c7c1525eb8e0ae58c401f1a886e93e4f",
+      "quote": "| List + filter | 10,000 | 1,000,000 | All works from MIT in 2024 |"
+    },
+    {
+      "url": "https://help.openalex.org/access/pricing/",
+      "date": "2026-10-31",
+      "proved": "prepaid usage is drawn after the free budget and expires 3 months after the most recent purchase",
+      "capture": "sha256:cb417b31318ad09da10b92d8db4fd7c090c822a2762b603f2aa144c6c203c11b",
+      "quote": "Prepaid usage is only drawn down after your free daily budget runs out, and it expires 3 months after your most recent purchase."
+    },
+    {
+      "url": "https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication",
+      "date": "2026-10-31",
+      "proved": "a free key, from the website or from POST /api-keys, works only after its email address is verified",
+      "capture": "sha256:264605d06eac1553d48284579c4f66ad65c6f900dac548f06917ccf66513eeb5",
+      "quote": "Either way, a key works only once its email address is verified."
+    },
+    {
+      "url": "https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication",
+      "date": "2026-10-31",
+      "proved": "the key is sent as the api_key query parameter or a bearer token",
+      "capture": "sha256:264605d06eac1553d48284579c4f66ad65c6f900dac548f06917ccf66513eeb5",
+      "quote": "Add it as an `api_key` query parameter:"
+    },
+    {
+      "url": "https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication",
+      "date": "2026-10-31",
+      "proved": "a per-second 429 is free and clears on retry; the daily budget also answers 429 when spent",
+      "capture": "sha256:264605d06eac1553d48284579c4f66ad65c6f900dac548f06917ccf66513eeb5",
+      "quote": "A per-second 429 costs nothing; wait a moment and retry."
+    },
+    {
+      "url": "https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication",
+      "date": "2026-10-31",
+      "proved": "cursor paging past the first page needs a free key; basic paging stops at 10,000 results",
+      "capture": "sha256:264605d06eac1553d48284579c4f66ad65c6f900dac548f06917ccf66513eeb5",
+      "quote": "with a free key: without one, only the first page works"
+    },
+    {
+      "url": "https://help.openalex.org/access/example-costs/",
+      "date": "2026-10-31",
+      "proved": "USD 1 a day buys 10,000 list-and-filter calls returning 1,000,000 results, that is 100 a call",
+      "capture": "sha256:4dde64f6a026bf01b07b0bf97a98ee91c7c1525eb8e0ae58c401f1a886e93e4f",
+      "quote": "| List + filter | 10,000 | 1,000,000 | All works from MIT in 2024 |"
+    },
+    {
+      "url": "https://docs.openalex.org/download-all-data/openalex-snapshot",
+      "date": "2026-10-31",
+      "proved": "the free public snapshot is released quarterly",
+      "capture": "sha256:9fb07ebedcdcaea4ccbc54f3d9f07deae5b28207539e9a8d3e4eeaf670715aee",
+      "quote": "quarterly for the free public snapshot, on the second Wednesday of January, April, July and October"
+    },
+    {
+      "url": "probe:https://api.openalex.org/works?filter=publication_year:2024&per_page=1&select=id,doi",
+      "date": "2026-10-31",
+      "proved": "a keyless list call on 2026-10-31 answered 200 with a daily budget header of USD 0.1",
+      "capture": "sha256:64e1f4b760ce488a16f4339400ac18b655b9c8eaae152dfac236f3089efdb94e",
+      "quote": "\"x-ratelimit-limit-usd\": \"0.1\""
+    },
+    {
+      "url": "https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication",
+      "date": "2026-10-31",
+      "proved": "the per-second limits are unchanged: 10 with no key, 30 with a free key or prepaid usage, 50 on an annual plan",
+      "capture": "sha256:264605d06eac1553d48284579c4f66ad65c6f900dac548f06917ccf66513eeb5",
+      "quote": "| Free API key, or prepaid usage | 30 |"
+    }
+  ],
+  "notes": "A dollar a day is a large allowance for this index because a search costs a few credits. The 10,000-result paging wall is the constraint that matters for a literature sweep.",
+  "binding_note": "The daily credit budget runs out first: USD 1 buys 10,000 list calls of up to 100 results, or 1,000 searches, a day."
+}

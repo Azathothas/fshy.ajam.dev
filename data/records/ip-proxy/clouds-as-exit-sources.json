@@ -1,0 +1,229 @@
+{
+  "topic": "ip-proxy",
+  "slug": "clouds-as-exit-sources",
+  "provider": "Oracle Cloud, Google Cloud, AWS, Microsoft Azure, Hetzner",
+  "url": "https://stat.ripe.net/resource/AS31898",
+  "category": "cloud egress",
+  "tier": "mixed: Always Free tiers on Oracle, Google Cloud and AWS; paid addresses on Azure and Hetzner",
+  "free_tier": {
+    "stated": "Oracle Always Free includes 1,500 OCPU-hours and 9,000 GB-hours a month plus 10 TB/month of egress, on a card that takes a USD 1.00 authorisation and reverses it. Google Cloud's free tier includes an e2-micro with 1 GB/month of egress. AWS includes 750 public-IPv4 hours a month. Azure and Hetzner record no free allowance: Azure's price cells all render as $- and Hetzner's /29 is sold at EUR 13.60/month plus EUR 34.90 setup.",
+    "unit": "mixed",
+    "metered_on": "wall-clock",
+    "source_url": "https://www.oracle.com/cloud/free/",
+    "read_on": "2026-10-24",
+    "notes": "The unit is genuinely mixed: Oracle's and AWS's free allowances are hour-denominated (OCPU-hours, GB-hours, 750 hours) and the egress allowances are byte-denominated (10 TB/month, 1 GB/month). metered_on names the hour because that is the shape of the headline quota."
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://stat.ripe.net/resource/AS31898",
+    "notes": "The nearest equivalent is the smallest unit that can be allocated: a /29 prefix on Azure and Hetzner, one external IPv4 on Google Cloud, one public IPv4 on AWS. Hetzner's own figure of EUR 2.27 per usable IP against EUR 13.60 a month implies six usable addresses in the eight."
+  },
+  "retention": {
+    "stated": "not applicable: an address, not an object. The nearest equivalent is the instance holding it: Oracle reclaims an Always Free compute instance that sits at 7-day p95 idle, and the address goes with the machine.",
+    "days": null,
+    "source_url": "https://www.oracle.com/cloud/free/",
+    "notes": "Activity-based, so days is null rather than 7: the clock is a rolling idle percentile, not a fixed lease. The facts record no reclaim rule for the other four providers; Oracle's is the only one with a clock, and it is the constraint the binding field names."
+  },
+  "egress": {
+    "terms": "Metered, with a large free allowance on Oracle and a small one on Google Cloud: Oracle includes 10 TB/month on Always Free, Google Cloud's free e2-micro includes 1 GB/month, and AWS bills the address itself at USD 0.005/h with 750 free hours. Hetzner bills a /29 at EUR 13.60/month plus EUR 34.90 setup. Azure's address prices render as $- and are unverified.",
+    "metered": true,
+    "free_allowance": "Oracle 10 TB/month on Always Free; Google Cloud free e2-micro 1 GB/month; AWS 750 public-IPv4 hours/month",
+    "price_per_tb": null,
+    "source_url": "https://www.oracle.com/cloud/free/"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "Each provider exposes its own REST API and CLI for address objects, so rest is the nearest token in the closed set and cli is the other half. The schema's enum has no token for a cloud provider API and none for a subnet product. The address is a resource in the account: an external IPv4 on Google Cloud, a public IPv4 on AWS, a public IP prefix on Azure, a subnet on Hetzner, a public IP on an Oracle VNIC.",
+  "tooling": "The provider's own REST API, SDK and CLI. No third-party wrapper exists or is needed, because the address is a resource in the account rather than a product with its own protocol. A user's work is a small driver that creates an instance, attaches the address, and recreates it when the provider takes the machine back — access is not the problem here.",
+  "chaining": "One of these sits behind the Workers AI gateway as the egress hop: the Worker calls the instance, the instance dials out from a cloud address, and because every one of the five is a single ASN the chain buys a second provider rather than a second network.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "7-day p95 idle reclaim on Oracle Always Free: the machine is taken back and the address with it",
+      "source": "https://www.oracle.com/cloud/free/"
+    },
+    {
+      "kind": "volume-quota",
+      "value": null,
+      "source": "https://www.oracle.com/cloud/free/"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "Google Cloud free e2-micro includes 1 GB/month of egress, which 45 GB/month exceeds about 45 times over",
+      "source": "https://cloud.google.com/free/docs/free-cloud-features"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "AWS includes 750 public-IPv4 hours a month, which covers one address continuously (744 hours in a 31-day month) with 6 hours spare",
+      "source": "https://aws.amazon.com/free/"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "Google Cloud external IPv4 costs USD 0.005/h while in use, USD 3.65/month, with no free allowance stated",
+      "source": "https://cloud.google.com/vpc/pricing"
+    }
+  ],
+  "limits_note": "Three constraints fit none of the seven. Cost: Hetzner's /29 is EUR 13.60 a month plus EUR 34.90 setup, EUR 2.27 per usable IP, and AWS and Google Cloud charge USD 0.005/h per address, USD 3.65 a month. Unverified price: Azure offers a /29 public IP prefix but every price cell on its pricing page renders as $-, so the price of that prefix is unverified rather than zero. Denominator: the five publish different address products — a prefix, a single address, a subnet — so the per-address cost is comparable and the capacity is not.",
+  "binding": "retention-clamped",
+  "binding_note": "At 45 GB a month across about 599,000 requests nothing here is near a byte or request ceiling except Google Cloud's 1 GB/month free egress, and crossing that produces a bill rather than a stop; Oracle's 7-day p95 idle reclaim is the only constraint that removes the address, so it is the one that ends the arrangement.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "Oracle's Always Free tier takes a card and reverses a USD 1.00 authorisation; that is the signup gate the facts establish, and it is recorded for Oracle only. The other four providers' signup gates were not re-tested, so nothing here claims they are lighter or heavier.",
+    "country": null
+  },
+  "reliability_note": "All five are datacenter ranges inside a provider's own direct allocation, so an exit carries that cloud ASN's reputation, and on Oracle the address disappears with the reclaimed machine.",
+  "confidence": "documented",
+  "confidence_note": "The ASN numbers and holders are measured here with RIPE prefix-overview. The allocation CLASS is measured for Oracle only (RDAP on 129.146.0.1) and inferred for the other four from ASN ownership, and the verdict rests on the class. The weakest rung therefore decides: documented, not measured.",
+  "evidence": [
+    {
+      "url": "probe:stat.ripe.net/data/as-overview?resource=AS31898",
+      "date": "2026-10-24",
+      "proved": "AS31898 holder is ORACLE-BMC-31898 - Oracle Corporation and the ASN is announced; re-read, so the AS name is measured rather than remembered."
+    },
+    {
+      "url": "probe:stat.ripe.net/data/announced-prefixes?resource=AS31898",
+      "date": "2026-10-24",
+      "proved": "3,861 prefixes announced, of which 2,852 are IPv4, so the record's 3,861 is a total and not a v4 count."
+    },
+    {
+      "url": "https://rdap.arin.net/registry/ip/129.146.0.1",
+      "date": "2026-10-24",
+      "proved": "RDAP object NET-129-144-0-0-1, name OPC1, type DIRECT ALLOCATION, covering 129.144.0.0-129.159.255.255: the address is a provider direct allocation, not a resold end-user block."
+    },
+    {
+      "url": "probe:stat.ripe.net/data/as-overview?resource=AS396982",
+      "date": "2026-10-24",
+      "proved": "AS396982 holder is GOOGLE-CLOUD-PLATFORM - Google LLC."
+    },
+    {
+      "url": "probe:stat.ripe.net/data/announced-prefixes?resource=AS396982",
+      "date": "2026-10-24",
+      "proved": "3,558 IPv4 prefixes out of 3,924 announced, reproducing the assigned v4 figure exactly."
+    },
+    {
+      "url": "probe:stat.ripe.net/data/as-overview?resource=AS16509",
+      "date": "2026-10-24",
+      "proved": "AS16509 holder is AMAZON-02 - Amazon.com, Inc."
+    },
+    {
+      "url": "probe:stat.ripe.net/data/announced-prefixes?resource=AS16509",
+      "date": "2026-10-24",
+      "proved": "19,416 IPv4 prefixes out of 25,440 announced at re-check, against 19,507 assigned earlier the same day, so the count is a snapshot that moves within a day and the finding is order of magnitude."
+    },
+    {
+      "url": "probe:stat.ripe.net/data/as-overview?resource=AS8075",
+      "date": "2026-10-24",
+      "proved": "AS8075 holder is MICROSOFT-CORP-MSN-AS-BLOCK - Microsoft Corporation."
+    },
+    {
+      "url": "probe:stat.ripe.net/data/announced-prefixes?resource=AS8075",
+      "date": "2026-10-24",
+      "proved": "1,233 IPv4 prefixes out of 1,355 announced, reproducing the assigned v4 figure exactly."
+    },
+    {
+      "url": "probe:stat.ripe.net/data/as-overview?resource=AS24940",
+      "date": "2026-10-24",
+      "proved": "AS24940 holder is HETZNER-AS Hetzner Online GmbH; this ASN was not in the assigned facts and was read, so the fifth provider's registration is measured rather than assumed."
+    },
+    {
+      "url": "probe:stat.ripe.net/data/announced-prefixes?resource=AS24940",
+      "date": "2026-10-24",
+      "proved": "96 prefixes announced, 91 of them IPv4, an order of magnitude smaller than any of the four clouds and the whole of Hetzner's single registration."
+    },
+    {
+      "url": "https://www.oracle.com/cloud/free/",
+      "date": "2026-10-24",
+      "proved": "Oracle Always Free states 1,500 OCPU-hours and 9,000 GB-hours a month plus 10 TB/month of egress, with a card and a reversed USD 1.00 authorisation; the served HTML carries no static copy of those figures, so re-proving them needs the rendered page."
+    },
+    {
+      "url": "https://cloud.google.com/vpc/pricing",
+      "date": "2026-10-24",
+      "proved": "The external IP address pricing line reads 0.005 / 1 hour in the static HTML, which is USD 0.005 per external IPv4 hour, about USD 3.65 a month."
+    },
+    {
+      "url": "https://aws.amazon.com/free/",
+      "date": "2026-10-24",
+      "proved": "AWS's free tier lists 750 public-IPv4 hours a month and public IPv4 at USD 0.005/h."
+    },
+    {
+      "url": "https://azure.microsoft.com/en-us/pricing/details/ip-addresses/",
+      "date": "2026-10-24",
+      "proved": "Every price cell renders as <span class='price-value'>$-</span> carrying data-hide-meter-type-if-no-price='true', so the Azure address price is unverified rather than zero; the /29 public IP prefix product is the assigned fact and the string did not appear in the static HTML, so that half is not re-proved here."
+    },
+    {
+      "url": "https://www.hetzner.com/cloud/",
+      "date": "2026-10-24",
+      "proved": "Hetzner's cloud page is the price source for the contiguous /29 at EUR 13.60/month plus EUR 34.90 setup, EUR 2.27 per usable IP."
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-24T10:07:11.000Z",
+  "price_per_tb_month": "not a per-TB product: addresses are billed per hour or per prefix — USD 0.005/h, USD 3.65/month, per address on Google Cloud and AWS; EUR 2.27 per usable IP per month on Hetzner; Azure unverified",
+  "notes": "What this record is for. The compute topic owns the prices: compute/oracle-cloud, compute/google-cloud-free-tier, compute/aws-free-plan-t4g and compute/hetzner-cloud each carry the free-tier shape and the egress terms, and this record does not correct any of them. A reader wanting a price goes there; a reader wanting the network position comes here, and neither record is a view of the other. One sample, said plainly. The RDAP read is a single address, 129.146.0.1, from a single provider, and the allocation class of the other four is inferred from their ASN ownership plus the fact that each sells cloud compute out of its own ranges rather than from an RDAP object of their own. The class claim would be measured for all five with one RDAP lookup per provider, which was not run; nothing in the verdict turns on which of them is a direct allocation, only that none of them is a residential or resold-end-user network. Denominators, recorded rather than smoothed. The assigned facts count Oracle's 3,861 as announced prefixes and the other three as IPv4 only. Re-read: AS31898 3,861 total and 2,852 v4; AS396982 3,924 total and 3,558 v4; AS16509 25,440 total and 19,416 v4; AS8075 1,355 total and 1,233 v4; AS24940 96 total and 91 v4. So Google Cloud's 3,558 and Azure's 1,233 reproduce exactly, Oracle's 3,861 is the total, and AWS's 19,507 had become 19,416 within the same day, which is announcement churn rather than a contradiction. The conclusion does not turn on any of these numbers being exact: it turns on each provider having one ASN and one allocation. Hetzner's ASN was not in the assigned facts. It was read as AS24940 HETZNER-AS Hetzner Online GmbH, 96 announced prefixes, so the fifth provider's registration is measured rather than borrowed, and the record says where the addition came from. Nothing else was added to the assigned facts. What a static fetch can and cannot re-prove.",
+  "extras": {
+    "rung": 4,
+    "rung_note": "Rung 4 is confirmed for all five providers by ASN and announced-prefix reads on 2026-10-24, and rung 5 was tested and is not a diversity route, because a bigger prefix out of one direct allocation is the same registration rather than a second network.",
+    "asns": {
+      "AS31898": "ORACLE-BMC-31898 - Oracle Corporation",
+      "AS396982": "GOOGLE-CLOUD-PLATFORM - Google LLC",
+      "AS16509": "AMAZON-02 - Amazon.com, Inc.",
+      "AS8075": "MICROSOFT-CORP-MSN-AS-BLOCK - Microsoft Corporation",
+      "AS24940": "HETZNER-AS Hetzner Online GmbH, read and not in the assigned facts"
+    },
+    "prefix_counts": {
+      "AS31898": {
+        "announced": 3861,
+        "ipv4": 2852
+      },
+      "AS396982": {
+        "announced": 3924,
+        "ipv4": 3558
+      },
+      "AS16509": {
+        "announced": 25440,
+        "ipv4": 19416
+      },
+      "AS8075": {
+        "announced": 1355,
+        "ipv4": 1233
+      },
+      "AS24940": {
+        "announced": 96,
+        "ipv4": 91
+      },
+      "assigned_v4_counts": {
+        "AS396982": 3558,
+        "AS16509": 19507,
+        "AS8075": 1233
+      },
+      "note": "Oracle's assigned 3,861 is the announced total, the other three assigned figures are IPv4 only, and AWS moved from 19,507 to 19,416 between the first count and the re-check."
+    },
+    "rdap_allocation": {
+      "address": "129.146.0.1",
+      "handle": "NET-129-144-0-0-1",
+      "netname": "OPC1",
+      "type": "DIRECT ALLOCATION",
+      "range": "129.144.0.0-129.159.255.255",
+      "source": "https://rdap.arin.net/registry/ip/129.146.0.1"
+    },
+    "address_products": {
+      "oracle": "public IP on a VNIC, inside the Always Free allowance",
+      "google_cloud": "external IPv4, USD 0.005/h in use",
+      "aws": "public IPv4, USD 0.005/h, 750 free hours a month",
+      "azure": "/29 public IP prefix, price unverified",
+      "hetzner": "contiguous /29, EUR 13.60/month plus EUR 34.90 setup, EUR 2.27 per usable IP"
+    },
+    "azure_price_render": "every price cell is <span class='price-value'>$-</span> with data-hide-meter-type-if-no-price='true', so the prefix price is unverified rather than zero",
+    "interface_enum_gap": null,
+    "prices_owned_elsewhere": [
+      "compute/oracle-cloud",
+      "compute/google-cloud-free-tier",
+      "compute/aws-free-plan-t4g",
+      "compute/hetzner-cloud"
+    ],
+    "confidence_corrected": "Was measured."
+  }
+}

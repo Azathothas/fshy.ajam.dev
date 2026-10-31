@@ -1,0 +1,77 @@
+{
+  "topic": "databases-kv",
+  "slug": "cloudflare-kv",
+  "provider": "Cloudflare Workers KV",
+  "url": "https://developers.cloudflare.com/kv/platform/limits/",
+  "category": "edge key-value store",
+  "free_tier": {
+    "stated": "100,000 reads per day; 1,000 writes per day; 1 GB per account; 1,000 namespaces",
+    "unit": "requests",
+    "source_url": "https://developers.cloudflare.com/kv/platform/limits/",
+    "read_on": "2026-10-22",
+    "metered_on": "request-count"
+  },
+  "per_object_cap": {
+    "stated": "25 MiB per value; 512 bytes per key",
+    "bytes": null,
+    "source_url": "https://developers.cloudflare.com/kv/platform/limits/",
+    "notes": "keys per namespace are unlimited, so the value size is the object cap"
+  },
+  "retention": {
+    "stated": "no expiry on a stored key unless the write sets one; the free tier does not delete",
+    "days": null,
+    "source_url": "https://developers.cloudflare.com/kv/platform/limits/"
+  },
+  "egress": {
+    "terms": "reads are counted, not metered by byte; no egress charge on any plan",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://developers.cloudflare.com/kv/platform/limits/"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "a REST API and a Worker binding; access through wrangler",
+  "tooling": "wrangler kv; the Cloudflare API; a Worker binding in code",
+  "chaining": "a read cache in front of a free database: 100,000 reads a day is 100 times the write budget, which is the ratio that makes it a cache and not a store",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "1,000 writes per day to different keys",
+      "source": "https://developers.cloudflare.com/kv/platform/limits/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "1 write per second to the same key",
+      "source": "https://developers.cloudflare.com/kv/platform/limits/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "25 MiB per value; 1 GB per account",
+      "source": "https://developers.cloudflare.com/kv/platform/limits/"
+    }
+  ],
+  "limits_note": "100,000 reads per day are unlimited on the paid plan; the minimum cacheTtl is 30 seconds",
+  "binding": "request-rate",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a Cloudflare account",
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "confidence_note": "the limits page was read; no namespace was created.",
+  "evidence": [
+    {
+      "url": "https://developers.cloudflare.com/kv/platform/limits/",
+      "date": "2026-10-22",
+      "proved": "Free column: 100,000 reads/day, 1,000 writes/day to different keys, 1 write/second to the same key, 1,000 namespaces, 1 GB/account, 1 GB/namespace, 512-byte keys, 25 MiB values, 30-second minimum cacheTtl"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T03:05:00.000Z",
+  "price_per_tb_month": null,
+  "notes": "The asymmetry is the finding: reads are plentiful and writes are not, by two orders of magnitude. Any design that treats KV as the store hits 1,000 writes a day and stops."
+}

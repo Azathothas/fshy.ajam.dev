@@ -1,0 +1,87 @@
+{
+  "topic": "storage",
+  "slug": "slack",
+  "provider": "Slack (free plan)",
+  "url": "https://slack.com",
+  "category": "messaging",
+  "free_tier": {
+    "stated": "5 GB per free workspace (hard cap), 1 GB max per file, plus a 90-day visibility window and permanent deletion of anything over one year old",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://docs.slack.dev/reference/methods/files.getUploadURLExternal/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "1 GB max per file",
+    "bytes": 1000000000,
+    "source_url": "https://docs.slack.dev/reference/methods/files.getUploadURLExternal/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.slack.dev/reference/methods/files.getUploadURLExternal/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free; files served from files.slack.com -> files-origin.slack.com behind CloudFront",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Slack Web API (files.getUploadURLExternal + files.completeUploadExternal), 1 GB per file; jeremy46231/slackfs (FUSE mount, 6 stars) exists but only mounts, does not add capacity",
+  "chaining": "5 GB x N free workspaces, but the one-year deletion makes it useless as an archive and the 90-day hide makes it useless as storage. Only viable as a transient relay.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "1 GB per file",
+      "source": "https://docs.slack.dev/reference/methods/files.getUploadURLExternal/"
+    }
+  ],
+  "limits_note": "5 GB workspace total; 1 GB per file; 10 apps max; content older than 90 days is hidden, content older than 1 year is permanently deleted (rolling, since 2024-08-26); high-volume upload throttling is explicitly mentioned in the free-plan limits",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Data loss on deletion is by design, not accidental: Slack states it 'will not be possible to restore messages and files once deletion occurs'. Also explicitly throttles 'use for storage and spam'.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://docs.slack.dev/reference/methods/files.getUploadURLExternal/",
+      "date": "2026-10-21",
+      "proved": "error table: 'storage_limit_reached - File storage limit has been reached. This occurs when free teams have uploaded 5GB of files.'"
+    },
+    {
+      "url": "https://slack.com/help/articles/115002422943-Usage-limits-for-free-workspaces",
+      "date": "2026-10-21",
+      "proved": "'You can view and search messages and files from the last 90 days... Messages and files more than one year old will be permanently deleted'"
+    },
+    {
+      "url": "https://slack.com/help/articles/201330736-Add-files-to-Slack",
+      "date": "2026-10-21",
+      "proved": "'Members and guests can add files up to 1GB in size.'"
+    },
+    {
+      "url": "https://slack.com/api/files.getUploadURLExternal",
+      "date": "2026-10-21",
+      "proved": "probe: POST -> HTTP 200 {\"ok\":false,\"error\":\"not_authed\"} (API live)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "5 GB per free workspace (hard cap), 1 GB max per file, plus a 90-day visibility window and permanent deletion of anything over one year old",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "5 GB per free workspace (hard cap), 1 GB max per file, plus a 90-day visibility window and permanent deletion of anything over one year old",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

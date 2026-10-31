@@ -1,0 +1,239 @@
+{
+  "topic": "data-apis",
+  "slug": "ipinfo",
+  "provider": "IPinfo",
+  "url": "https://ipinfo.io/pricing",
+  "category": "IP geolocation API and database download",
+  "tier": "IPinfo Lite",
+  "free_tier": {
+    "stated": "IPinfo Lite: unlimited API requests with no daily or monthly limit, free forever with no credit card; country and continent geolocation plus ASN number, name and domain; the same Lite data as a daily database download (4,380,245 lines; CSV, MMDB, JSON and Parquet)",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://ipinfo.io/developers/lite-api",
+    "read_on": "2026-10-30",
+    "notes": "city-level fields need IPinfo Core (USD 26 a month, 150k requests a month) or the legacy ipinfo.io endpoint, which answers without a token and is limited to 50k requests a month"
+  },
+  "per_object_cap": {
+    "stated": "the batch endpoint enriches up to 1,000 IPs per call; the Lite MMDB file is 25.12 MB",
+    "bytes": null,
+    "source_url": "https://ipinfo.io/developers/lite-api"
+  },
+  "retention": {
+    "stated": null,
+    "days": null,
+    "source_url": "https://ipinfo.io/developers/ipinfo-lite-database"
+  },
+  "egress": {
+    "terms": "not applicable",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://ipinfo.io/pricing"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "HTTPS GET api.ipinfo.io/lite/{ip}?token=TOKEN (also v4. and v6. hosts), POST api.ipinfo.io/batch/lite with a JSON array of up to 1,000 IPs; the Lite files at ipinfo.io/data/ipinfo_lite.{csv.gz,mmdb,json.gz,parquet}?token=TOKEN. Without a token the Lite API answers HTTP 403 Unknown token and the Lite file HTTP 401; the legacy ipinfo.io/{ip}/json answers without a token with city-level fields",
+  "endpoint": "https://api.ipinfo.io/lite/",
+  "tooling": "any HTTP client (curl), any MMDB reader for the database file, the vendor's mmdbctl tool",
+  "chaining": "one free account gives unlimited country and ASN lookups over the API and the whole Lite dataset as a daily file for local lookups at any rate; city-level data comes from the paid Core plan or from the legacy keyless endpoint at 50k requests a month. Bulk path: the daily Lite database download, plus the 1,000-IP batch endpoint",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "up to 1,000 IPs per batch call",
+      "source": "https://ipinfo.io/developers/lite-api"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "none on IPinfo Lite (no daily or monthly limit); 50k requests a month on the legacy keyless API; 150k a month on Core",
+      "source": "https://ipinfo.io/pricing"
+    }
+  ],
+  "binding": "none",
+  "binding_note": "Lite has no request quota and no concurrency cap, and the batch cap only sizes a call; what limits it is depth, country and ASN only",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an IPinfo account with first name, last name, email and password, or GitHub sign-in; no credit card",
+    "country": null
+  },
+  "reliability_note": "the legacy keyless API may be discontinued; paid plans answer HTTP 429 past their monthly quota; no rate limit is published for Lite",
+  "confidence": "documented",
+  "confidence_note": "the pricing, Lite API, Lite database, developer and signup pages were quoted on 2026-10-30; keyless requests were probed (legacy API HTTP 200 with city fields, Lite API HTTP 403, Lite file HTTP 401). No account was opened, so no keyed Lite lookup or file download was made; one would move it to measured.",
+  "evidence": [
+    {
+      "url": "https://ipinfo.io/pricing",
+      "date": "2026-10-30",
+      "proved": "IPinfo Lite costs nothing and needs no credit card",
+      "capture": "sha256:92aff9d8c00a3b7e011a9321173c4b9b2f1175997e62c8da04126481a1fc5ff6",
+      "quote": "Free forever · no credit card"
+    },
+    {
+      "url": "https://ipinfo.io/pricing",
+      "date": "2026-10-30",
+      "proved": "Lite has unlimited API requests a month; Core starts at 150k",
+      "capture": "sha256:92aff9d8c00a3b7e011a9321173c4b9b2f1175997e62c8da04126481a1fc5ff6",
+      "quote": "| API Requests per Month | Unlimited | 150k - 5M | 250k - 5M | Custom |"
+    },
+    {
+      "url": "https://ipinfo.io/pricing",
+      "date": "2026-10-30",
+      "proved": "Lite geolocation is country level",
+      "capture": "sha256:92aff9d8c00a3b7e011a9321173c4b9b2f1175997e62c8da04126481a1fc5ff6",
+      "quote": "Country-level only"
+    },
+    {
+      "url": "https://ipinfo.io/pricing",
+      "date": "2026-10-30",
+      "proved": "IPinfo Core is USD 26 a month",
+      "capture": "sha256:92aff9d8c00a3b7e011a9321173c4b9b2f1175997e62c8da04126481a1fc5ff6",
+      "quote": "$26/mo"
+    },
+    {
+      "url": "https://ipinfo.io/pricing",
+      "date": "2026-10-30",
+      "proved": null,
+      "capture": "sha256:92aff9d8c00a3b7e011a9321173c4b9b2f1175997e62c8da04126481a1fc5ff6",
+      "quote": null
+    },
+    {
+      "url": "https://ipinfo.io/developers/lite-api",
+      "date": "2026-10-30",
+      "proved": "the Lite API has no daily or monthly limit",
+      "capture": "sha256:6ddc913946ca952d772ef5ba35f7d376547b28c9cc833bd074bc57b95848b4f9",
+      "quote": "The API has no daily or monthly limit and provides unlimited access."
+    },
+    {
+      "url": "https://ipinfo.io/developers/lite-api",
+      "date": "2026-10-30",
+      "proved": "a batch call takes up to 1,000 IPs",
+      "capture": "sha256:6ddc913946ca952d772ef5ba35f7d376547b28c9cc833bd074bc57b95848b4f9",
+      "quote": "The bulk API endpoint can enrich up to 1,000 requests per call."
+    },
+    {
+      "url": "https://ipinfo.io/developers/lite-api",
+      "date": "2026-10-30",
+      "proved": "the Lite endpoint and its token parameter",
+      "capture": "sha256:6ddc913946ca952d772ef5ba35f7d376547b28c9cc833bd074bc57b95848b4f9",
+      "quote": "curl https://api.ipinfo.io/lite/8.8.8.8?token=$TOKEN"
+    },
+    {
+      "url": "https://ipinfo.io/developers",
+      "date": "2026-10-30",
+      "proved": "no concurrency cap is enforced",
+      "capture": "sha256:18386bcc3b34973163c6ffad6ba2e5301a53999058a08cb592808df44a468c36",
+      "quote": "No concurrent request limits. There is no enforced cap on parallel requests."
+    },
+    {
+      "url": "https://ipinfo.io/developers",
+      "date": "2026-10-30",
+      "proved": "paid plans answer HTTP 429 past their limit",
+      "capture": "sha256:18386bcc3b34973163c6ffad6ba2e5301a53999058a08cb592808df44a468c36",
+      "quote": "If you exceed your plan's limit, you'll receive a `429` HTTP status code."
+    },
+    {
+      "url": "https://ipinfo.io/products/free-ip-database",
+      "date": "2026-10-30",
+      "proved": "Lite is free, with no card and unlimited requests",
+      "capture": "sha256:204b218355bd69d600c89f4a9cd07b8559c5834a3a5ae8b93c37caa7efe0a1b9",
+      "quote": "Accurate country-level geolocation and ASN details for free. No monthly fees, no credit card required, and unlimited API requests."
+    },
+    {
+      "url": "https://ipinfo.io/products/free-ip-database",
+      "date": "2026-10-30",
+      "proved": "Lite data is updated daily and covers IPv4 and IPv6",
+      "capture": "sha256:204b218355bd69d600c89f4a9cd07b8559c5834a3a5ae8b93c37caa7efe0a1b9",
+      "quote": "IPinfo Lite gives you unlimited access to accurate, daily-updated country-level geolocation and ASN data for IPv4 and IPv6 addresses."
+    },
+    {
+      "url": "https://ipinfo.io/developers/ipinfo-lite-database",
+      "date": "2026-10-30",
+      "proved": "the Lite database had 4,380,245 lines on 2026-10-29",
+      "capture": "sha256:458fc22213a8ba0d8e1a5baedebb046a982f90d635e13b0a75a75f9ccfc2b071",
+      "quote": "Last Updated: Oct 29, 2026 | Lines: 4,380,245"
+    },
+    {
+      "url": "https://ipinfo.io/developers/ipinfo-lite-database",
+      "date": "2026-10-30",
+      "proved": "the Lite MMDB file is 25.12 MB",
+      "capture": "sha256:458fc22213a8ba0d8e1a5baedebb046a982f90d635e13b0a75a75f9ccfc2b071",
+      "quote": "| MMDB | `ipinfo_lite.mmdb` | 25.12 MB |"
+    },
+    {
+      "url": "https://ipinfo.io/developers/ipinfo-lite-database",
+      "date": "2026-10-30",
+      "proved": "the Lite file is downloaded with the account token",
+      "capture": "sha256:458fc22213a8ba0d8e1a5baedebb046a982f90d635e13b0a75a75f9ccfc2b071",
+      "quote": "curl -L https://ipinfo.io/data/ipinfo_lite.mmdb?token=$TOKEN -o ipinfo_lite.mmdb"
+    },
+    {
+      "url": "https://ipinfo.io/developers/ipinfo-lite-database",
+      "date": "2026-10-30",
+      "proved": "Lite data reuse asks for a link to ipinfo.io",
+      "capture": "sha256:458fc22213a8ba0d8e1a5baedebb046a982f90d635e13b0a75a75f9ccfc2b071",
+      "quote": "Simply credit IPinfo as your data source by including a link to our website on your platform."
+    },
+    {
+      "url": "https://ipinfo.io/signup",
+      "date": "2026-10-30",
+      "proved": "a free account opens the Lite API and database with no card",
+      "capture": "sha256:000aa14c8f2a5ceaf1334d49af69042db3b8e14af3e0e0dd90863167b8c2f91d",
+      "quote": "Get instant access to our tools and IPinfo Lite on API and Database - no credit card required"
+    },
+    {
+      "url": "https://ipinfo.io/signup",
+      "date": "2026-10-30",
+      "proved": "the signup form asks first name, last name, email and password",
+      "capture": "sha256:000aa14c8f2a5ceaf1334d49af69042db3b8e14af3e0e0dd90863167b8c2f91d",
+      "quote": "First name Last name Your email Password"
+    },
+    {
+      "url": "https://ipinfo.io/signup",
+      "date": "2026-10-30",
+      "proved": "GitHub sign-in is offered",
+      "capture": "sha256:000aa14c8f2a5ceaf1334d49af69042db3b8e14af3e0e0dd90863167b8c2f91d",
+      "quote": "Continue with GitHub"
+    },
+    {
+      "url": "https://ipinfo.io/missingauth",
+      "date": "2026-10-30",
+      "proved": "the legacy keyless API is limited to 50k requests a month",
+      "capture": "sha256:24a1a3243a03ae86b8e9928150484e56025e71de216b370beddd52964f2039e1",
+      "quote": "API requests limited to 50k requests/month"
+    },
+    {
+      "url": "https://ipinfo.io/missingauth",
+      "date": "2026-10-30",
+      "proved": "the legacy keyless API may be discontinued",
+      "capture": "sha256:24a1a3243a03ae86b8e9928150484e56025e71de216b370beddd52964f2039e1",
+      "quote": "Our legacy free API will continue to work in the short term, but might receive less updates and be discontinued in the future."
+    },
+    {
+      "url": "probe:https://ipinfo.io/8.8.8.8/json",
+      "date": "2026-10-30",
+      "proved": "the legacy ipinfo.io endpoint answered a keyless request with city-level data",
+      "capture": "sha256:c6c3a679d03fd8a6b3f84f5956a6d39b0214cbceade57f05efb1f7af6edf48a8",
+      "quote": "\"city\": \"Mountain View\""
+    },
+    {
+      "url": "probe:https://api.ipinfo.io/lite/8.8.8.8",
+      "date": "2026-10-30",
+      "proved": "the Lite API refuses a request with no token",
+      "capture": "sha256:163bd9fe1fa4322de5c531569ac5275accd2c65df6abacc080ed1dc556ff15ca",
+      "quote": "\"title\": \"Unknown token\""
+    },
+    {
+      "url": "probe:https://ipinfo.io/data/ipinfo_lite.mmdb",
+      "date": "2026-10-31",
+      "proved": "the Lite database file refuses a download with no token",
+      "capture": "sha256:75858e0672611a703a051312eefca646ff4ae95d24984434c2cbf45419f31009",
+      "quote": "\"status\": 401"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-31T06:24:05.368Z",
+  "notes": "Free requests: unlimited (no daily or monthly limit) on IPinfo Lite with a free account. Rate limit: none published; no concurrency cap. Bulk path: the daily Lite database download in CSV, MMDB, JSON or Parquet, and 1,000-IP batch calls. The caveat is depth: Lite carries country, continent and ASN only.",
+  "extras": {
+    "bulk_path": "daily IPinfo Lite database download (CSV, MMDB, JSON, Parquet) with the account token; 1,000-IP batch endpoint",
+    "free_requests": "unlimited on Lite; 50k a month on the legacy keyless API"
+  }
+}

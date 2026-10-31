@@ -1,0 +1,99 @@
+{
+  "topic": "storage",
+  "slug": "together-ai-files-api",
+  "provider": "Together AI Files API (with 100 GB fine-tune objects)",
+  "url": "https://docs.together.ai/docs/fine-tuning/data-preparation",
+  "category": "LLM provider /v1/files",
+  "free_tier": {
+    "stated": "100 GB per training file (JSONL or Parquet); SDK constant MAX_FILE_SIZE_GB = 50.1 and MULTIPART_THRESHOLD_GB = 5.0. No published total-storage quota.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.together.ai/docs/fine-tuning/data-preparation",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap 100 GB",
+    "bytes": 100000000000,
+    "source_url": "https://docs.together.ai/docs/fine-tuning/data-preparation",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.together.ai/docs/fine-tuning/data-preparation",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "No egress fee on the Files API. Their separate Managed Storage product is explicitly advertised with 'zero egress fees'.",
+    "metered": false
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "POST https://api.together.xyz/v1/files/upload (and /v1/files/{id}/content); OpenAI-ish, `purpose` in {fine-tune, calibration, eval, batch-api}",
+  "tooling": "together-python (`tg files upload`), curl multipart",
+  "chaining": "100 GB single objects are the largest per-object cap found in the entire LLM-provider lane — 200x OpenAI's 512 MB. Unverified.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap 100 GB",
+      "source": "https://docs.together.ai/docs/fine-tuning/data-preparation"
+    }
+  ],
+  "limits_note": "per-object-cap 100 GB. Multipart kicks in above 5 GB; per-part upload timeout 300 s. A client-side check (`check_file`) validates JSONL structure before upload, which is a soft write gate for the fine-tune purpose.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "card",
+    "country": null
+  },
+  "reliability_note": "Together has no free tier — 'no free trials', $5 minimum prepaid credit required. That already fails a user's constraint. Read path unverified: /v1/files/{id}/content exists but every probe returns 401.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://docs.together.ai/docs/fine-tuning/data-preparation",
+      "date": "2026-10-21",
+      "proved": "'The file size limit for either format is 100 GB.'"
+    },
+    {
+      "url": "https://github.com/togethercomputer/together-python/blob/main/src/together/constants.py",
+      "date": "2026-10-21",
+      "proved": "'MAX_FILE_SIZE_GB = 50.1', 'MULTIPART_THRESHOLD_GB = 5.0', 'MULTIPART_UPLOAD_TIMEOUT = 300'"
+    },
+    {
+      "url": "https://www.together.ai/managed-storage",
+      "date": "2026-10-21",
+      "proved": "'Object storage and parallel filesystems optimized for AI, provisioned and fully managed … with zero egress fees'"
+    },
+    {
+      "url": "https://markaicode.com/pricing/together-ai-pricing/",
+      "date": "2026-10-21",
+      "proved": "'storage ($0.16/GiB/month for the parallel filesystem used by GPU Clusters)'"
+    },
+    {
+      "url": "https://www.flowtools.co/alternatives/openrouter",
+      "date": "2026-10-21",
+      "proved": "'Together AI does not currently offer free trials … minimum $5 purchase'"
+    },
+    {
+      "url": "https://api.together.xyz/v1/files",
+      "date": "2026-10-21",
+      "proved": "PROBE: curl -D - -> 401, Content-Length 148, {\"error\":{\"message\":\"No API key provided…\"}}; /v1/files/abc/content -> 401/148"
+    }
+  ],
+  "verdict": "fails-identity",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "price_per_tb_month": "$163.84 (Managed Storage at $0.16/GiB/mo) — 40-80x the cheap-paid floor; egress free",
+  "notes": "100 GB per training file (JSONL or Parquet); SDK constant MAX_FILE_SIZE_GB = 50.1 and MULTIPART_THRESHOLD_GB = 5.0. No published total-storage quota.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "100 GB per training file (JSONL or Parquet); SDK constant MAX_FILE_SIZE_GB = 50.1 and MULTIPART_THRESHOLD_GB = 5.0. No published total-storage quota.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    },
+    "price_verbatim": "$163.84 (Managed Storage at $0.16/GiB/mo) — 40-80x the cheap-paid floor; egress free"
+  },
+  "binding": "none",
+  "binding_note": null
+}

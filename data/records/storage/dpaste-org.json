@@ -1,0 +1,75 @@
+{
+  "topic": "storage",
+  "slug": "dpaste-org",
+  "provider": "dpaste.org",
+  "url": "https://dpaste.org",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "approx. 1 MiB per paste (measured: 1,040,000 chars accepted, 1,133,336 chars -> HTTP 413). No account, no quota, no count limit observed.",
+    "unit": "unlimited",
+    "metered_on": "unstated",
+    "source_url": "https://docs.dpaste.org/api/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.dpaste.org/api/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.dpaste.org/api/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "free direct GET, no metering, no redirect; pastes served as HTML with a raw path.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "curl -X POST -F 'format=url' -F 'content=<file' https://dpaste.org/api/ returns a plain URL. dpaste is the open-source Django app (github.com/bartTC/dpaste), so the same client works against any instance in the network.",
+  "chaining": "unlimited anonymous pastes x ~1 MiB. Cross-instance: dpaste.org, dpaste.com, dpaste.de and any self-hosted dpaste all share one API shape, so the same shard writer hits N independent operators. 1 TiB = ~1M pastes; only sane as a metadata/thumbnail tier.",
+  "limits": [],
+  "limits_note": "~1 MiB per paste; expiry options 1 hour to never; no delete without the deletion key; a report about excess use routes to the operator.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Stable across a dozen API calls with no throttling observed. The URL slug is only 4 characters by default (SLUG_LENGTH=4), so paste URLs are enumerable — do not treat content as private without local encryption.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://docs.dpaste.org/api/",
+      "date": "2026-10-21",
+      "proved": "'POST /api/ ... returns the full URL that snippet was created'; form parameters content, lexer"
+    },
+    {
+      "url": "https://dpaste.org/api/",
+      "date": "2026-10-21",
+      "proved": "probe: curl -X POST -F format=url -F 'content=<dd.txt' -> 1,040,000 chars = 200; 1,133,336 chars = 413 Request Entity Too Large"
+    },
+    {
+      "url": "https://dpaste.org/GWLh0",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, bytes=3023518 (666,668-char payload stored and served in full)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "approx. 1 MiB per paste (measured: 1,040,000 chars accepted, 1,133,336 chars -> HTTP 413). No account, no quota, no count limit observed.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "approx. 1 MiB per paste (measured: 1,040,000 chars accepted, 1,133,336 chars -> HTTP 413). No account, no quota, no count limit observed.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": null
+}

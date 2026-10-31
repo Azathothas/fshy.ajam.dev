@@ -1,0 +1,86 @@
+{
+  "topic": "storage",
+  "slug": "dingtalk-drive",
+  "provider": "DingTalk Drive (DingTalk Docs / 钉盘)",
+  "url": "https://www.dingtalk.io",
+  "category": "paas",
+  "free_tier": {
+    "stated": "100 GB of permanently free Drive capacity per organization by default; 8 GB max per uploaded file",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://help.dingtalk.io/docs/admin-guide/storage-quota",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "8 GB max per upload",
+    "bytes": 8000000000,
+    "source_url": "https://help.dingtalk.io/docs/admin-guide/storage-quota",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "100 GB of permanently free Drive capacity per organization by default; 8 GB max per uploaded file | 8 GB per file (upload); 20 MB per file for 'import' to online docs; only pdf/office/zip/image/AV media preview - other binaries upload fine but get no preview; attachments inside online docs count toward quota since 2023-07-30",
+    "source_url": "https://help.dingtalk.io/docs/admin-guide/storage-quota",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "No egress line item; files are served from DingTalk's own CDN/OSS, share links only",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Official OpenAPI (api.dingtalk.com, media upload + drive) plus the first-party CLI DingTalk-Real-AI/dingtalk-workspace-cli (3,766 stars, pushed 2026-10-21) exposing `dws drive upload|download|list|stats`",
+  "chaining": "100 GB x N free organizations. The grant is per organization, not per account, so N orgs is linear; also supports org-internal knowledge bases so a single org can be subdivided without extra accounts.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "8 GB per file",
+      "source": "https://help.dingtalk.io/docs/admin-guide/storage-quota"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "20 MB per file",
+      "source": "https://help.dingtalk.io/docs/admin-guide/storage-quota"
+    },
+    {
+      "kind": "write-gated",
+      "value": "review - other binaries upload fine but get no preview",
+      "source": "https://help.dingtalk.io/docs/admin-guide/storage-quota"
+    }
+  ],
+  "limits_note": "8 GB per file (upload); 20 MB per file for 'import' to online docs; only pdf/office/zip/image/AV media preview - other binaries upload fine but get no preview; attachments inside online docs count toward quota since 2023-07-30",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Quota accounting changed in 2023 to count in-document attachments, so a previously-fine account can silently blow its 100 GB; CLI is brand new (same-day commits) and unversioned.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://help.dingtalk.io/docs/admin-guide/storage-quota",
+      "date": "2026-10-21",
+      "proved": "'DingTalk grants every organization 100 GB of permanently free Drive capacity by default. If this is insufficient, the organization can purchase additional capacity.'"
+    },
+    {
+      "url": "https://help.dingtalk.io/docs/admin-guide/storage-quota",
+      "date": "2026-10-21",
+      "proved": "'maximum size of 8 GB per file' (upload), '20 MB per file' (import)"
+    },
+    {
+      "url": "https://api.dingtalk.com/v1.0/oauth2/accessToken",
+      "date": "2026-10-21",
+      "proved": "probe: POST (via fetch proxy) -> HTTP 400 - API live, keyless reachable"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "100 GB of permanently free Drive capacity per organization by default; 8 GB max per uploaded file",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

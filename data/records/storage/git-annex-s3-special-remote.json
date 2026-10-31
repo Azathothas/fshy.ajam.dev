@@ -1,0 +1,75 @@
+{
+  "topic": "storage",
+  "slug": "git-annex-s3-special-remote",
+  "provider": "git-annex S3 special remote (backend-agnostic)",
+  "url": "https://git-annex.branchable.com/special_remotes/S3/",
+  "category": "registry",
+  "free_tier": {
+    "stated": "N/A by itself — inherits whatever S3-compatible store you point it at. This is the multiplier: any free S3 endpoint (Internet Archive s3.us.archive.org, HF s3.hf.co, Oracle/Cloudflare-adjacent object tiers, MinIO on a free VM) becomes a versioned large-file store with git-annex's own manifest.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://git-annex.branchable.com/special_remotes/S3/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://git-annex.branchable.com/special_remotes/S3/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://git-annex.branchable.com/special_remotes/S3/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Two client options matter: `publicurl=` lets downloads skip the S3 API entirely (bucket policy + plain HTTP GET, hence cacheable/CDN-able), and `signature=anonymous` allows read-only public access with no credentials at all.",
+    "metered": false
+  },
+  "interface": [
+    "s3",
+    "git"
+  ],
+  "interface_detail": "s3",
+  "tooling": "git-annex (Haskell, standalone Linux/macOS builds, ~1.5k stars on the mirror). Config via `git annex initremote type=S3 host=... bucket=... requeststyle=path`. Internet Archive has a documented special mode (`host=s3.us.archive.org`) where git-annex writes x-archive-meta-* headers and records the public URL, so every annexed file is also fetchable from archive.org with no login.",
+  "chaining": "One special remote per bucket; `fileprefix=` lets many remotes share one bucket. The allowance is per account, so each free S3 account adds one bucket. Because git-annex keys content by hash, the S3 side is a dumb blob store. A client can shard the same dataset across several free stores, and git-annex tracks which copy is where (`git annex whereis`). Chunking (`chunk=1MiB`) avoids per-object size caps on the backing store.",
+  "limits": [],
+  "limits_note": "Depends on backend. Practical: `partsize=1GiB` needed for multipart; parts under 100 MiB are rejected by S3; `versioning=yes` means git-annex cannot drop content. No delete-resume; interrupted uploads restart. For IA specifically, uploads to the test collection vanish after 30 days and public visibility lags.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Mature and boring — the special remote has existed for over a decade. Failure mode is backend-side (IA's S3 endpoint was unreachable: connect timeout on s3.us.archive.org:443, and archive.org/help/abouts3.txt returned 522 through the proxy), not annex-side.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://git-annex.branchable.com/special_remotes/S3/",
+      "date": "2026-10-21",
+      "proved": "full parameter list including `host`, `requeststyle=path`, `publicurl`, `signature=anonymous`, `chunk`, `fileprefix`"
+    },
+    {
+      "url": "https://git-annex.branchable.com/tips/Internet_Archive_via_S3/",
+      "date": "2026-10-21",
+      "proved": "'git annex initremote archive type=S3 protocol=https host=s3.us.archive.org bucket=...' with x-archive-meta headers"
+    },
+    {
+      "url": "https://git-annex.branchable.com/special_remotes/",
+      "date": "2026-10-21",
+      "proved": "built-in list: S3, rclone, webdav, rsync, directory, bup, ddar, git-lfs, httpalso, gcrypt"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: TCP connect to s3.us.archive.org:443 -> timeout after 21s (backend flaky, tooling fine)"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "N/A by itself — inherits whatever S3-compatible store you point it at. This is the multiplier: any free S3 endpoint (Internet Archive s3.us.archive.org, HF s3.hf.co, Oracle/Cloudflare-adjacent object tiers, MinIO on a free VM) becomes a versioned large-file store with git-annex's own manifest.",
+  "extras": {},
+  "binding": "none",
+  "binding_note": null,
+  "self_hosted": true
+}

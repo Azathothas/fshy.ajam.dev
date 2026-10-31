@@ -1,0 +1,104 @@
+{
+  "topic": "egress",
+  "slug": "airvpn",
+  "provider": "AirVPN",
+  "url": "https://airvpn.org/faq/port_forwarding/",
+  "category": "vpn port forward",
+  "tier": "paid",
+  "free_tier": {
+    "stated": "No free tier. Buy page on 2026-10-23 lists: Three days 2 EUR, One month 7 EUR, Three months 15 EUR, Six months 29 EUR, One year 49 EUR, Two years 79 EUR, Three years 99 EUR, and states: Every plan includes all AirVPN features.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://airvpn.org/buy/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://airvpn.org/faq/port_forwarding/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://airvpn.org/faq/port_forwarding/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No, there are no traffic limits.; ingress: tcp+udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://airvpn.org/faq/port_forwarding/"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "Web Client Area for ports and config generation; no documented public API for port reservation.",
+  "tooling": "wg-quick with the generated config, or the Eddie client; ports are set in the web Client Area.",
+  "chaining": "A free VM or a home box runs the service; AirVPN supplies the routable address and the reserved port, and the tunnel is the only thing the provider carries.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "none: FAQ answer is No, there are no traffic limits (last update 2022-11-21)",
+      "source": "https://airvpn.org/faq/traffic/"
+    },
+    {
+      "kind": "write-gated",
+      "value": "ports are opened by hand in the Client Area, 5 at a time, and only for ports >= 2048: You can forward up to 5 ports simultaneously. You can use ports >= 2048. Lower ports are already reserved.",
+      "source": "https://airvpn.org/faq/port_forwarding/"
+    }
+  ],
+  "limits_note": "",
+  "binding": "none",
+  "binding_note": "Nothing in the vocabulary fails at 1 TiB/month: the vendor states no traffic limit, so no byte quota exists to hit. The ceilings that arrive first are structural and not in the vocabulary: 5 simultaneous forwarded ports, ports below 2048 unavailable, and a public address shared with every other user of the same exit server.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "An account is required to buy and to open ports: You need an account to buy a plan. Registration asks for an email address; payment by card or PayPal.",
+    "country": "None"
+  },
+  "reliability_note": "Outbound port 25 is blocked on every server. The public address is the exit IP of the server, shared with its other users, so reputation follows the server, not the account.",
+  "confidence": "documented",
+  "confidence_note": "Measured would need a live account, a bound UDP port and a byte count through the tunnel. The no-traffic-limit sentence last carries a 2022 update date, so it is documented rather than measured.",
+  "evidence": [
+    {
+      "url": "https://airvpn.org/faq/port_forwarding/",
+      "date": "2026-10-23",
+      "proved": "Remote port forwarding opens TCP, UDP or both on the server exit IP; up to 5 ports; ports >= 2048; a port stays reserved while the subscription is valid, so it does not move on reconnect."
+    },
+    {
+      "url": "https://airvpn.org/faq/traffic/",
+      "date": "2026-10-23",
+      "proved": "No, there are no traffic limits. Page records Created 04/10/2013, last update 11/21/2022."
+    },
+    {
+      "url": "https://airvpn.org/buy/",
+      "date": "2026-10-23",
+      "proved": "Plan prices in EUR and the sentence Every plan includes all AirVPN features; no free plan exists, the shortest purchase is 3 days at 2 EUR."
+    },
+    {
+      "url": "https://airvpn.org/forums/topic/56342-solved-wireguard-port-forwarding-doesnt-appear-to-work/",
+      "date": "2026-10-23",
+      "proved": "Staff post 2023-05-30: port forwarding is protocol independent and works with WireGuard; the Configuration Generator produces a file usable by the official WireGuard client."
+    },
+    {
+      "url": "https://airvpn.org/specs/",
+      "date": "2026-10-23",
+      "proved": "WireGuard listed as an available protocol with a 10.128.0.0/10 tunnel range; the only stated restriction is outbound port 25 blocked."
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "EUR 49 per year list, EUR 31.85 per year with the coupon shown 2026-10-23; EUR 7 per month; EUR 2 for three days",
+  "notes": "The marketing pages are a JavaScript shell: the body is a noscript apology and a wait animation, so the content pages under /faq/ are the real source. /faq/ paths returned 200 with article text, so there is no WAF challenge and no geo-blocking. The reservation sentence matters more than the price: a port that stays with the account is the difference between a stable public endpoint and a nightly reconfigure.",
+  "extras": {
+    "wg_path": "native-conf",
+    "wg_detail": "A WireGuard configuration generator emits a file for the official client. AirVPN staff, 2023-05-30: The file name of a configuration generated by the Configuration Generator is descriptive, and if you use WireGuard official client and userspace utilities you must rename it with a very short name. Same post: Remote port forwarding is not a WireGuard or OpenVPN related feature, obviously it is a server side feature, and it is available regardless of your connection mode and both in IPv4 and IPv6.",
+    "ingress": "tcp+udp",
+    "volume_tib_month": null,
+    "volume_stated": "No, there are no traffic limits.",
+    "bytes_transit": "yes",
+    "transit_note": "All client traffic crosses AirVPN servers at the exit IP the port is opened on."
+  }
+}

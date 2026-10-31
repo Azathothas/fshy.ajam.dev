@@ -1,0 +1,76 @@
+{
+  "topic": "storage",
+  "slug": "trello-card-attachments",
+  "provider": "Trello card attachments",
+  "url": "https://trello.com",
+  "category": "paas",
+  "free_tier": {
+    "stated": "10 MB per attachment on Free, 250 MB on Standard — and explicitly 'there is no total limit for storage, just a per-file limit'",
+    "unit": "unlimited",
+    "metered_on": "stored-bytes",
+    "source_url": "https://support.atlassian.com/trello/docs/which-trello-plan-is-best-for-me/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "10 MB/file",
+    "bytes": 10000000,
+    "source_url": "https://support.atlassian.com/trello/docs/which-trello-plan-is-best-for-me/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://support.atlassian.com/trello/docs/which-trello-plan-is-best-for-me/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "free direct download links, Atlassian CDN; no egress metering published",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "documented Trello REST API: POST /1/cards/{id}/attachments (multipart file or url), plus GET /1/cards/{id}/attachments; py-trello and trello-rclone-style wrappers exist",
+  "chaining": "unlimited cards x 10 MB x unlimited boards x unlimited free Workspaces (10 members each). This is genuinely 'per-record unlimited': no bucket cap, only a per-file cap. 500 GB = 51,200 attachments",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "10 MB/file",
+      "source": "https://support.atlassian.com/trello/docs/which-trello-plan-is-best-for-me/"
+    }
+  ],
+  "limits_note": "10 MB/file on Free; per-board attachment ceiling exists in the API response model (limits.attachments.perBoard warnAt 32400 / disableAt 36000) — i.e. ~32k attachments/board before hard stop; 10 MB is small for bulk data",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "attachments are real copies inside Trello ('Attachments from your computer create an actual copy within Trello'); Atlassian has deprecated/changed API auth (key+token still works) but attachments have been stable for a decade",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://support.atlassian.com/trello/docs/which-trello-plan-is-best-for-me/",
+      "date": "2026-10-21",
+      "proved": "'10MB limit for each attachment (there is no total limit for storage, just a per-file limit)' and '250MB limit for each attachment' on Standard"
+    },
+    {
+      "url": "https://developer.atlassian.com/cloud/trello/rest/api-group-cards/#api-cards-id-attachments-post",
+      "date": "2026-10-21",
+      "proved": "POST attachments, live API reference"
+    },
+    {
+      "url": "https://support.atlassian.com/trello/docs/adding-attachments-to-cards/",
+      "date": "2026-10-21",
+      "proved": "'Attachments from your computer create an actual copy within Trello'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "10 MB per attachment on Free, 250 MB on Standard — and explicitly 'there is no total limit for storage, just a per-file limit'",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

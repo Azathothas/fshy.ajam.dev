@@ -1,0 +1,81 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "weiyun",
+  "provider": "Weiyun (腾讯微云)",
+  "url": "https://share.weiyun.com",
+  "category": "consumer-pan",
+  "free_tier": {
+    "stated": "About 10 GB free",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://share.weiyun.com/5BPnTh7",
+    "read_on": "2026-10-21"
+  },
+  "per_object_cap": {
+    "stated": "Not published",
+    "bytes": null,
+    "source_url": "https://share.weiyun.com"
+  },
+  "retention": {
+    "stated": "Not published. Tencent has left Weiyun on minimal maintenance",
+    "days": null,
+    "source_url": "https://share.weiyun.com"
+  },
+  "egress": {
+    "terms": "Member-gated speed, with free downloads heavily throttled",
+    "metered": true,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://share.weiyun.com"
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "the OpenList weiyun driver, which is cookie-based; github.com/billzhong/weiyun scrapes the share page and then wgets. No rclone backend",
+  "chaining": "Nothing to chain. A QQ or WeChat account is required, which is +86-gated in practice, and the share endpoints answer with a null body to an unauthenticated caller",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "10 GB is the free tier total, which is the cap in practice",
+      "source": "https://share.weiyun.com/5BPnTh7"
+    },
+    {
+      "kind": "write-gated",
+      "value": "need_pwd=1 shares require the password before any listing, and the CGI endpoint wants a signed request",
+      "source": "https://share.weiyun.com"
+    }
+  ],
+  "identity_cost": {
+    "kind": "country-phone",
+    "detail": "a QQ or WeChat account",
+    "country": "86"
+  },
+  "reliability_note": "The share page ships the share record in a JavaScript blob, so the metadata is embedded and public, and the CGI then answers ret 102027 with a null body. Tencent has left the product on minimal maintenance and the old scrapers work only where the markup has not changed",
+  "confidence": "reported",
+  "evidence": [
+    {
+      "url": "probe:https://share.weiyun.com/5BPnTh7",
+      "date": "2026-10-21",
+      "proved": "200, 17,276 B, with inline JSON \"share_name\":\"...rar\", \"store_cnt\":1570, \"need_pwd\":1, \"short_url\":\"https://share.weiyun.com/5BPnTh7\""
+    },
+    {
+      "url": "probe:https://web.cgi.weiyun.com/wy_share.fcg?cmd=get_share_info&share_id=5BPnTh7",
+      "date": "2026-10-21",
+      "proved": "200, 55 B, {\"rsp_body\":null,\"rsp_header\":{\"cmd\":\"\",\"ret\":102027}}, so metadata is refused"
+    },
+    {
+      "url": "probe:POST https://share.weiyun.com/api/v4/weiyun/share/queryShareInfo",
+      "date": "2026-10-21",
+      "proved": "returned HTML and not JSON, so the endpoint does not exist"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "binding": "per-object-cap",
+  "binding_note": "Either number closes it; the quota is the one a reader can check without an account.",
+  "notes": null,
+  "extras": {
+    "access_mode": "registration-gated",
+    "anonymous_read": "metadata embedded in the page, API refused"
+  }
+}

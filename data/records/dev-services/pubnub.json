@@ -1,0 +1,227 @@
+{
+  "topic": "dev-services",
+  "slug": "pubnub",
+  "provider": "PubNub",
+  "tier": "Free",
+  "url": "https://www.pubnub.com/pricing/",
+  "category": "realtime pub/sub messaging over an HTTP API",
+  "free_tier": {
+    "stated": "Free: 200 monthly active users or 1 million transactions a month, whichever is reached first, with 1GB data storage kept 7 days, no credit card",
+    "unit": "mixed",
+    "source_url": "https://www.pubnub.com/pricing/",
+    "read_on": "2026-10-30",
+    "notes": "The two units are monthly active users and transactions. A transaction is one API request, and a payload above 2,048 bytes is billed as one transaction per 2 KiB part. A Free account creates only Testing keysets, which are rate-limited and not meant for live traffic; a Production keyset needs the Starter plan. A Free account holds up to 10 active keysets. A Function deployed on Free pauses 7 days after deployment. Past a Free limit PubNub emails a request to upgrade or reduce usage."
+  },
+  "per_object_cap": {
+    "stated": "32 KiB default message payload, channel name and metadata included (up to 2 MB for contract customers); 5 MB per file",
+    "bytes": 32768,
+    "source_url": "https://www.pubnub.com/docs/architecture/limits"
+  },
+  "retention": {
+    "stated": "Message Persistence 1 or 7 days on Free, capped at 7 days; files kept 1 or 7 days",
+    "days": 7,
+    "source_url": "https://www.pubnub.com/docs/pricing/quotas",
+    "notes": "Starter offers 30 days to 6 months and Pro 1 year or unlimited."
+  },
+  "egress": {
+    "terms": "The pricing page lists storage and bandwidth as included in the plan; usage is counted in transactions, 1 million a month on Free",
+    "metered": true,
+    "free_allowance": "1 million transactions a month; a payload above 2,048 bytes counts once per 2 KiB part",
+    "price_per_tb": null,
+    "source_url": "https://www.pubnub.com/pricing/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "REST API over HTTP GET with a publish and subscribe key pair from the Admin Portal; subscribe is an HTTP long-poll. The time endpoint at ps.pndsn.com answered 200 without a key.",
+  "endpoint": "https://ps.pndsn.com",
+  "tooling": "PubNub SDKs, or any HTTP client against the REST API with a publish key and a subscribe key.",
+  "chaining": "A fan-out layer for a prototype with few users, with 7 days of message history for a consumer that reconnects.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "1 million transactions per month, a payload above 2,048 bytes counting once per 2 KiB part",
+      "source": "https://www.pubnub.com/docs/pricing/quotas"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "32 KiB default message payload; 5 MB per file",
+      "source": "https://www.pubnub.com/docs/architecture/limits"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "message and file retention capped at 7 days on Free",
+      "source": "https://www.pubnub.com/docs/pricing/quotas"
+    }
+  ],
+  "limits_note": "200 monthly active users, 10 active keysets, and Testing keysets only, which are rate-limited at a rate no page states. The vocabulary has no kind for a user count.",
+  "binding": "request-rate",
+  "binding_note": "1 million transactions a month is about 33,000 a day (1,000,000 / 30), and a 32 KiB payload is 16 transactions (32 / 2), so payload size moves this cap more than the 200-user limit does for a single-user workload.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The registration form asks for a first name, a last name, an email, a contact email and a password, or a Google sign-in, behind reCAPTCHA; the pricing and registration pages state no credit card is required.",
+    "country": null
+  },
+  "reliability_note": "Free accounts create only Testing keysets, which are rate-limited at an unpublished rate; abnormal traffic on a keyset can draw a temporary rate limit.",
+  "confidence": "documented",
+  "confidence_note": "Every limit is quoted from first-party pricing and documentation pages; the REST host was probed and its time endpoint answered 200 without a key. No message was published, because publishing needs a keyset. A publish and history read on a Testing keyset would move it to measured and could measure its rate limit.",
+  "evidence": [
+    {
+      "url": "https://www.pubnub.com/pricing/",
+      "date": "2026-10-30",
+      "proved": "the Free plan is free forever with no credit card",
+      "capture": "sha256:f6a108f172cc311ea5e80e087f01221c143d77170dc98b2082c908dcc8c39eac",
+      "quote": "Forever free • No credit card required"
+    },
+    {
+      "url": "https://www.pubnub.com/pricing/",
+      "date": "2026-10-30",
+      "proved": "the Free plan includes 1GB of data storage kept 7 days",
+      "capture": "sha256:f6a108f172cc311ea5e80e087f01221c143d77170dc98b2082c908dcc8c39eac",
+      "quote": "1GB data storage (7 days)"
+    },
+    {
+      "url": "https://www.pubnub.com/pricing/",
+      "date": "2026-10-30",
+      "proved": "the pricing page lists storage and bandwidth as included",
+      "capture": "sha256:f6a108f172cc311ea5e80e087f01221c143d77170dc98b2082c908dcc8c39eac",
+      "quote": "| Storage & Bandwidth | PubNub  Included | Other platform  Extra Cost |"
+    },
+    {
+      "url": "https://www.pubnub.com/pricing/",
+      "date": "2026-10-30",
+      "proved": "the Starter plan is USD 98 a month for 1,000 MAU",
+      "capture": "sha256:f6a108f172cc311ea5e80e087f01221c143d77170dc98b2082c908dcc8c39eac",
+      "quote": "Starter Plan ### $98/month for 1,000 MAU"
+    },
+    {
+      "url": "https://www.pubnub.com/docs/pricing/quotas",
+      "date": "2026-10-30",
+      "proved": "Free covers 200 MAU or 1 million transactions, whichever comes first",
+      "capture": "sha256:3d4bfbadb4b63019e998f74606b4f7ebb04be421cd16799bf6f6c64b9442ecff",
+      "quote": "A free PubNub account covers up to 200 monthly active users (MAUs) or 1 million transactions at no cost, whichever limit you reach first."
+    },
+    {
+      "url": "https://www.pubnub.com/docs/pricing/quotas",
+      "date": "2026-10-30",
+      "proved": "Free accounts create only Testing keysets, capped at 7 days of retention",
+      "capture": "sha256:3d4bfbadb4b63019e998f74606b4f7ebb04be421cd16799bf6f6c64b9442ecff",
+      "quote": "Testing keysets default to 7-day retention. Free plan accounts can only create Testing keysets, so this is also the effective retention ceiling for the Free plan."
+    },
+    {
+      "url": "https://www.pubnub.com/docs/pricing/quotas",
+      "date": "2026-10-30",
+      "proved": "a Production keyset needs Starter and Testing keysets are rate-limited",
+      "capture": "sha256:3d4bfbadb4b63019e998f74606b4f7ebb04be421cd16799bf6f6c64b9442ecff",
+      "quote": "Creating a Production keyset requires at least the Starter plan. Testing keysets are rate-limited and aren't suitable for live traffic."
+    },
+    {
+      "url": "https://www.pubnub.com/docs/pricing/quotas",
+      "date": "2026-10-30",
+      "proved": "a Free account holds up to 10 active keysets",
+      "capture": "sha256:3d4bfbadb4b63019e998f74606b4f7ebb04be421cd16799bf6f6c64b9442ecff",
+      "quote": "A Free account can have up to 10 active keysets."
+    },
+    {
+      "url": "https://www.pubnub.com/docs/pricing/quotas",
+      "date": "2026-10-30",
+      "proved": "a Function on Free pauses 7 days after deployment",
+      "capture": "sha256:3d4bfbadb4b63019e998f74606b4f7ebb04be421cd16799bf6f6c64b9442ecff",
+      "quote": "On the Free plan, a Function deployment pauses 7 days after it's deployed."
+    },
+    {
+      "url": "https://www.pubnub.com/docs/architecture/limits",
+      "date": "2026-10-30",
+      "proved": "the default message payload is 32 KiB",
+      "capture": "sha256:804cfd541cfeffa59866a2b2ae7cb427a8c266c8897e8286557291bd9a5d9411",
+      "quote": "PubNub can process messages up to 2 MB in size, but the default message payload is limited to 32 KiB."
+    },
+    {
+      "url": "https://www.pubnub.com/docs/architecture/limits",
+      "date": "2026-10-30",
+      "proved": "a file is at most 5 MB",
+      "capture": "sha256:804cfd541cfeffa59866a2b2ae7cb427a8c266c8897e8286557291bd9a5d9411",
+      "quote": "| File size | 5 MB |"
+    },
+    {
+      "url": "https://www.pubnub.com/docs/architecture/limits",
+      "date": "2026-10-30",
+      "proved": "files are kept 1 or 7 days on Free",
+      "capture": "sha256:804cfd541cfeffa59866a2b2ae7cb427a8c266c8897e8286557291bd9a5d9411",
+      "quote": "File retention is 1 or 7 days on the Free plan, 30 days on Starter, and Unlimited on Pro."
+    },
+    {
+      "url": "https://www.pubnub.com/docs/architecture/limits",
+      "date": "2026-10-30",
+      "proved": "abnormal traffic can draw a temporary rate limit",
+      "capture": "sha256:804cfd541cfeffa59866a2b2ae7cb427a8c266c8897e8286557291bd9a5d9411",
+      "quote": "If PubNub detects abnormal or abusive traffic on a keyset, it may also apply a temporary rate limit to the affected APIs."
+    },
+    {
+      "url": "https://www.pubnub.com/docs/architecture/limits",
+      "date": "2026-10-30",
+      "proved": "subscribe holds an HTTP long-poll",
+      "capture": "sha256:804cfd541cfeffa59866a2b2ae7cb427a8c266c8897e8286557291bd9a5d9411",
+      "quote": "One is dedicated to the subscribe long-poll, and one or more handle all other operations."
+    },
+    {
+      "url": "https://support.pubnub.com/hc/en-us/articles/360051974051-What-happens-if-usage-exceeds-my-plan-s-limit",
+      "date": "2026-10-30",
+      "proved": "a payload above 2,048 bytes is billed per 2 KiB part",
+      "capture": "sha256:9b3b3d93df986a3045838182f08dc074a1adc2b77b6ed2e20d65075a50bf92c9",
+      "quote": "PubNub splits a request whose payload exceeds 2,048 bytes into 2,048-byte (2 KiB) parts and bills each part as its own transaction."
+    },
+    {
+      "url": "https://support.pubnub.com/hc/en-us/articles/360051974051-What-happens-if-usage-exceeds-my-plan-s-limit",
+      "date": "2026-10-30",
+      "proved": "past a Free limit PubNub emails a request to upgrade or reduce usage",
+      "capture": "sha256:9b3b3d93df986a3045838182f08dc074a1adc2b77b6ed2e20d65075a50bf92c9",
+      "quote": "If you exceed the Free plan limits, PubNub emails you to ask you to upgrade to the Starter plan or reduce your usage."
+    },
+    {
+      "url": "https://admin.pubnub.com/register",
+      "date": "2026-10-30",
+      "proved": "registration needs no credit card",
+      "capture": "sha256:edbf428c896e9ec8ee2c2d9bbfb2447a535ea140efe0c957d2c8a0631ba5356f",
+      "quote": "No credit card required"
+    },
+    {
+      "url": "https://admin.pubnub.com/register",
+      "date": "2026-10-30",
+      "proved": "the form asks for a first name, last name, email, contact email and password",
+      "capture": "sha256:edbf428c896e9ec8ee2c2d9bbfb2447a535ea140efe0c957d2c8a0631ba5356f",
+      "quote": "First name Last name Email * Contact Email Password *"
+    },
+    {
+      "url": "https://admin.pubnub.com/register",
+      "date": "2026-10-30",
+      "proved": "the form is protected by reCAPTCHA",
+      "capture": "sha256:edbf428c896e9ec8ee2c2d9bbfb2447a535ea140efe0c957d2c8a0631ba5356f",
+      "quote": "This site is protected by reCAPTCHA"
+    },
+    {
+      "url": "https://www.pubnub.com/docs/sdks/rest-api/publish-message-to-channel",
+      "date": "2026-10-30",
+      "proved": "publish is an HTTP GET in the REST API",
+      "capture": "sha256:9b87665ae80c89d607bf871952792ce797f80c2c0debb1e6b7f0e23cc6cd5fc7",
+      "quote": "Publish JSON to a channel using the GET request."
+    },
+    {
+      "url": "https://www.pubnub.com/docs/sdks/rest-api/publish-message-to-channel",
+      "date": "2026-10-30",
+      "proved": "a publish needs the publish key from the Admin Portal",
+      "capture": "sha256:9b87665ae80c89d607bf871952792ce797f80c2c0debb1e6b7f0e23cc6cd5fc7",
+      "quote": "You app’s publish key from Admin Portal."
+    },
+    {
+      "url": "probe:https://ps.pndsn.com/time/0",
+      "date": "2026-10-30",
+      "proved": "the REST host answers its time endpoint without a key",
+      "capture": "sha256:a63f8ebb3b5569db2faea49c2712d4384891801520183741b9d237a52a4b6163",
+      "quote": "\"status\": 200"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-31T00:43:05.347Z",
+  "notes": "Beyond Free, pricing is per monthly active user: the Starter plan is USD 98 a month for 1,000 MAU."
+}

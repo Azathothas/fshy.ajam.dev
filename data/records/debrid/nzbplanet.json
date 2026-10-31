@@ -1,0 +1,108 @@
+{
+  "slug": "nzbplanet",
+  "provider": "NZBPlanet",
+  "url": "https://nzbplanet.net/",
+  "category": "Usenet indexer (Newznab API, free browse only)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "A free account is browse-only. The register page says 'Join NzbPlanet - free to browse, premium to download', and a vendor page cached in search results says 'The site is free to look around, you only need to pay for premium if you want to download nzb's'. caps declares <registration available=\"yes\" open=\"no\"/> and <limits max=\"100\" default=\"100\"/>.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://nzbplanet.net/register",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: an NZB pointer file",
+    "bytes": null,
+    "source_url": "https://nzbplanet.net/api?t=caps",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "Free tier reported as 200 days, VIP or Platinum 2,500 days (nzbhydra.com, 2026-10-23). Not stated on the pages read from the vendor.",
+    "days": null,
+    "source_url": "https://nzbhydra.com/indexers/",
+    "notes": "reported"
+  },
+  "egress": {
+    "terms": "No byte metering; the API returns pointers.",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://nzbplanet.net/api?t=caps"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "Newznab API at /api, capped at 100 results per request. Registration is invitation-gated: the register page accepts an invitecode and rejects a bad one with 'Bad or invite code older than 7 days'.",
+  "endpoint": "https://nzbplanet.net/api?t=caps ; https://nzbplanet.net/api?t=search&q=<query>&apikey=<key>",
+  "tooling": "Native Newznab on paper; in practice the key belongs to an account that cannot download without a paid tier, so Prowlarr and NZBHydra2 can add it and still get nothing useful on free.",
+  "chaining": "A paid-only index from a user's position: nothing on the free side contributes to a 1 TiB/month habit.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "0 NZB downloads on the free tier; premium required for any download",
+      "source": "https://nzbplanet.net/register"
+    },
+    {
+      "kind": "write-gated",
+      "value": "invite code required at registration; a stale code is rejected",
+      "source": "https://nzbplanet.net/register?invitecode=INVITECODEHERE"
+    },
+    {
+      "kind": "request-rate",
+      "value": "100 results per request maximum",
+      "source": "https://nzbplanet.net/api?t=caps"
+    }
+  ],
+  "limits_note": "",
+  "binding": "request-rate",
+  "binding_note": "The first thing that fails is the download allowance, which is zero on free: not a counter that runs out but one that never starts. The invite gate sits in front of it and would bind first only if registration were open.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Email plus an invitation. caps says open=no, and the register page's invitecode field rejects an invented code; premium signup is the documented bypass.",
+    "country": null
+  },
+  "reliability_note": "Free accounts keep full search and zero grabs, so a misconfigured arr stack sees results and fails every download rather than failing at search time.",
+  "confidence": "documented",
+  "confidence_note": "The browse-only free tier and the invite gate are quoted from the vendor's own register pages read. Prices are third-party.",
+  "evidence": [
+    {
+      "url": "https://nzbplanet.net/register",
+      "date": "2026-10-23",
+      "proved": "vendor text read: 'Join NzbPlanet - free to browse, premium to download', plus the email and password rules"
+    },
+    {
+      "url": "probe:https://nzbplanet.net/api?t=caps&x=1",
+      "date": "2026-10-23",
+      "proved": "caps returned 200 and 7,128 bytes: title 'Nzb Planet - NZB', <limits max=\"100\" default=\"100\"/>, <registration available=\"yes\" open=\"no\"/>"
+    },
+    {
+      "url": "probe:https://nzbplanet.net/api?t=search&q=linux&x=1",
+      "date": "2026-10-23",
+      "proved": "unkeyed search returned <error code=\"200\" description=\"Missing parameter\"/>, 91 bytes, so the API needs a key"
+    },
+    {
+      "url": "https://nzbplanet.net/register?invitecode=INVITECODEHERE",
+      "date": "2026-10-23",
+      "proved": "vendor page (search snippet): 'Bad or invite code older than 7 days'"
+    },
+    {
+      "url": "https://nzbhydra.com/indexers/",
+      "date": "2026-10-23",
+      "proved": "third-party: VIP USD 10/year, Platinum USD 24/year, free 200 days retention, free tier '0 calls'"
+    }
+  ],
+  "verdict": "fails-quota",
+  "extras": {
+    "price": "USD 10/year VIP (reported)",
+    "nzb_is_newznab": true,
+    "caps_limits": 100,
+    "registration_open": false,
+    "free_downloads": 0
+  },
+  "notes": "The registerpremium page that search engines still hold returned 404 to a direct request, so its wording is cited as a snippet and not as a page read.",
+  "verified_at": "2026-10-23T02:11:54.066Z",
+  "topic": "debrid",
+  "price_per_tb_month": null
+}

@@ -1,0 +1,168 @@
+{
+  "topic": "email",
+  "slug": "brevo",
+  "provider": "Brevo",
+  "url": "https://www.brevo.com/pricing/",
+  "category": "transactional sender",
+  "free_tier": {
+    "stated": "300 email sends per day with no time limit; 100,000 contacts stored",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://www.brevo.com/pricing/",
+    "read_on": "2026-10-22",
+    "notes": "Every email sent from the Free plan carries the Sent with Brevo sticker; up to 2,000 unique contacts can enter active automations; one user. Once the 300 daily sends are used, no campaign can be scheduled for the next day. The Free plan's limits page names no restriction on recipients."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: a send count rather than an object",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": "unused sends do not roll over",
+    "days": null,
+    "notes": "",
+    "source_url": "https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan"
+  },
+  "egress": {
+    "terms": "not applicable: an outbound sender",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.brevo.com/pricing/"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "tooling": "any SMTP client, or the Brevo API",
+  "chaining": "the highest card-free daily cap found: 300/day, which is three times Resend's. It is the outbound half of the inbound-plus-outbound chain and its scarce link is the day.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "300 sends per day, resetting daily, with no carry-over",
+      "source": "https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan"
+    },
+    {
+      "kind": "request-rate",
+      "value": "a campaign to more than 300 recipients delivers to 300 that day and needs a manual requeue, so the daily send counter is the campaign's limit too",
+      "source": "https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan"
+    },
+    {
+      "kind": "write-gated",
+      "value": "transactional sending over SMTP or the API needs a separate activation by the vendor, requested by a support ticket from the account, before the first send; the time it takes is unverified: behind a sign-up",
+      "source": "https://help.brevo.com/hc/en-us/articles/115000188150-Troubleshooting-Issues-with-Brevo-SMTP"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Signup asks for an email and a password, or a Google or Apple sign-in, with no card; the account then verifies the email and asks for basic business information. Whether a mobile phone number with an SMS code is also required is unverified: behind a sign-up; users on the vendor's community forum report a phone number and SMS code step during registration. A sender on a free domain such as gmail.com cannot be authenticated, and the vendor states that mail from a free address is rejected or filtered to spam, so delivery needs a domain the sender controls.",
+    "country": null
+  },
+  "reliability_note": "once the daily limit is hit, up to 1,000 transactional emails are held in a retry queue and anything beyond that is not delivered",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan",
+      "date": "2026-10-22",
+      "proved": "'The Free plan includes 300 email sends per day', unused sends do not roll over, and a campaign above 300 recipients needs the Requeue option on successive days"
+    },
+    {
+      "url": "https://www.brevo.com/free-smtp-server/",
+      "date": "2026-10-22",
+      "proved": "'Send 300 emails a day with the best free SMTP server'"
+    },
+    {
+      "url": "probe:smtp://smtp-relay.brevo.com:587",
+      "date": "2026-10-22",
+      "proved": "banner 250, EHLO advertises SIZE and 8BITMIME, STARTTLS completed against the system trust store, and AUTH LOGIN returned 334. The submission endpoint answers; no message was sent"
+    },
+    {
+      "url": "https://onboarding.brevo.com/account/register",
+      "date": "2026-10-30",
+      "proved": "the registration form asks for an email and a password, or a Google or Apple sign-in, and no card",
+      "capture": "sha256:bedc35b85d45d43681738cde4c72b43117fecf4e79f99f97ab88ab4fb50e3e25",
+      "quote": "Create your account. No credit card needed."
+    },
+    {
+      "url": "https://www.brevo.com/blog/wp-mail-smtp/",
+      "date": "2026-10-30",
+      "proved": "after the first form the account verifies the email and asks for basic business information",
+      "capture": "sha256:3c5192e4e2aeca6304cd39ca6348e5176ad3cbfdd2c9fa7cbf10a9c8863f59ec",
+      "quote": "You'll be asked to verify your email address and provide some basic information about your business."
+    },
+    {
+      "url": "https://community.brevo.com/t/sms-does-not-arrive-upon-registration/567",
+      "date": "2026-10-30",
+      "proved": "users report a phone number and SMS code step during registration; a user report, not a vendor statement",
+      "capture": "sha256:a98f4edd332ee21c38fb1e8d0dd629c004f7f037092c3d1cbcca54d049f79993",
+      "quote": "In the process of new account registration, the website ask the phone number to setup a two-factor authentication."
+    },
+    {
+      "url": "https://help.brevo.com/hc/en-us/articles/208836149-Create-a-new-sender-From-name-and-From-email",
+      "date": "2026-10-30",
+      "proved": "a sender on a free domain such as gmail.com cannot be authenticated",
+      "capture": "sha256:ec6f9ed0807b65d5f3d18e584de375ff3237a22a25b62d09350c4b4baa1ec7bb",
+      "quote": "Note that free sender domains cannot be authenticated, so you’ll need to purchase your own domain."
+    },
+    {
+      "url": "https://help.brevo.com/hc/en-us/articles/14925263522578-Comply-with-Gmail-Yahoo-and-Microsoft-s-requirements-for-email-senders",
+      "date": "2026-10-30",
+      "proved": "mail from a free address is rejected or filtered to spam, so the sender needs its own domain",
+      "capture": "sha256:01c5435176f2f412aee54bf35d4ea30bf964188b5c508d7703d505818b765e10",
+      "quote": "Sending from a free email address (@gmail.com, @yahoo.com, @outlook.com, etc.) will cause your emails to be rejected or filtered to spam."
+    },
+    {
+      "url": "https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan",
+      "date": "2026-10-30",
+      "proved": "the Free plan always adds the Sent with Brevo sticker; the same page gives the 2,000-contact automation cap, the single user and the scheduling rule, and lists no recipient restriction",
+      "capture": "sha256:6132ddcef8072155da48c608bcc35b052d473ab446b40d8a7d6e6f328b33801f",
+      "quote": "Emails sent from the Free plan always include the Sent with Brevo sticker."
+    },
+    {
+      "url": "https://help.brevo.com/hc/en-us/articles/115000188150-Troubleshooting-Issues-with-Brevo-SMTP",
+      "date": "2026-10-30",
+      "proved": "a new account cannot send transactional mail until the vendor activates the transactional platform on request",
+      "capture": "sha256:a37ed440dff04247ef626ecd7ed36bb1de4347642cd9db2e0aa556993a8f20d2",
+      "quote": "Transactional email sending requires a separate activation step from Brevo. If you've never sent transactional emails from your account, contact our support team by creating a ticket from your account to request activation."
+    },
+    {
+      "url": "https://www.brevo.com/pricing/",
+      "date": "2026-10-30",
+      "proved": "the Free plan has no time limit and needs no card",
+      "capture": "sha256:95abab98e579e97f6793282adc571780d960b8cc35c1af70f4289ae8b1bfdbf5",
+      "quote": "Free forever, no credit card needed"
+    },
+    {
+      "url": "https://help.brevo.com/hc/en-us/articles/208589409-About-Brevo-s-pricing-plans",
+      "date": "2026-10-30",
+      "proved": "the Free plan is 300 sends per day and up to 100,000 contacts",
+      "capture": "sha256:739ecab960d07828b325802a7d7a83a9b90ae46c86a939d6492ab1e601a46c9d",
+      "quote": "The Free plan includes 300 daily email sends and storage for up to 100,000 contacts."
+    },
+    {
+      "url": "https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan",
+      "date": "2026-10-30",
+      "proved": "past the daily limit up to 1,000 transactional emails wait in a retry queue and the rest are not delivered",
+      "capture": "sha256:6132ddcef8072155da48c608bcc35b052d473ab446b40d8a7d6e6f328b33801f",
+      "quote": "once you reach your daily limit, up to 1,000 additional emails are held in a retry queue. Emails beyond this queue are not delivered."
+    },
+    {
+      "url": "https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan",
+      "date": "2026-10-30",
+      "proved": "the Free plan is still 300 sends per day with no carry-over",
+      "capture": "sha256:6132ddcef8072155da48c608bcc35b052d473ab446b40d8a7d6e6f328b33801f",
+      "quote": "The Free plan includes 300 email sends per day. The daily limit resets every day, and unused emails do not roll over to the next day."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-30T09:26:49.193Z",
+  "notes": "The help page states the campaign behaviour explicitly, which is why the 300/day figure is not the whole answer for a marketing send.",
+  "extras": {
+    "stale_after_days": 90
+  },
+  "binding": "request-rate",
+  "binding_note": "300/day. The campaign path is the trap: a 1,000-contact list takes four days.",
+  "interface_detail": "the SMTP relay and the transactional API; SMTP is the documented path",
+  "confidence_note": "no message was sent, so no delivery is proved. The submission path was probed: smtp-relay.brevo.com:587 answered 250, STARTTLS completed against the system trust store, and AUTH LOGIN returned 334",
+  "limits_note": "counts of things, not rates, so no vocabulary kind names them: 100,000 contacts stored on the free plan. The campaign entry is a rate: the same 300-a-day counter is what a campaign meets, so it stays request-rate"
+}

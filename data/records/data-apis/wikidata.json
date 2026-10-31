@@ -1,0 +1,347 @@
+{
+  "topic": "data-apis",
+  "slug": "wikidata",
+  "provider": "Wikidata",
+  "url": "https://www.wikidata.org/wiki/Wikidata:Data_access",
+  "category": "open knowledge graph: SPARQL, REST, GraphQL and Action APIs, with weekly full dumps",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Reads need no account and no key. Wikimedia API limits are per minute: 10 requests for an unidentified client, 200 for an unauthenticated client with a compliant User-Agent, 200 for a new account and 2000 for an established editor. The Wikidata Query Service allows 60 seconds of processing per 60 seconds per User-Agent and IP. The whole graph is a weekly JSON dump; latest-all.json.bz2 is 103,565,615,653 bytes.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits",
+    "read_on": "2026-10-30",
+    "notes": "The per-minute limits are new in 2026 and stated to be subject to experimentation and change. A compliant User-Agent carries contact information. Accounts with a bot flag are exempt. The query service at query.wikidata.org holds the main graph; scholarly-article items are in a separate service at query-scholarly.wikidata.org. Daily incremental dumps carry the last 24 hours of additions."
+  },
+  "per_object_cap": {
+    "stated": "a SPARQL query stops at a hard 60-second deadline; the Action API returns entities in groups of up to 50 per request; the full JSON dump is one 103,565,615,653-byte bz2 file read with HTTP ranges",
+    "bytes": null,
+    "source_url": "https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "the entity-dump index listed dated directories from 20260914 to 20261028 on 2026-10-30; older RDF and JSON dumps from April 20, 2015 on are kept on the Internet Archive",
+    "days": null,
+    "source_url": "https://dumps.wikimedia.org/wikidatawiki/entities/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Free, with no byte price; dump downloads are rate limited and capped at 3 connections per IP, and a client without an informative User-Agent may be blocked without notice",
+    "metered": false,
+    "free_allowance": "no byte allowance published",
+    "price_per_tb": null,
+    "source_url": "https://dumps.wikimedia.org/"
+  },
+  "interface": [
+    "rest",
+    "graphql"
+  ],
+  "interface_detail": "SPARQL over HTTP GET or POST at https://query.wikidata.org/sparql (the vocabulary has no SPARQL term, so it is filed under rest), the Wikibase REST API, the MediaWiki Action API, the Wikibase GraphQL API, and dumps over HTTPS with Range support: JSON, Turtle and N-Triples (all and truthy), lexemes, and daily incremental dumps.",
+  "endpoint": "https://query.wikidata.org/sparql",
+  "tooling": "Any HTTP client that sends a descriptive User-Agent; SPARQL clients against the query service; JSON dump readers named on the download page (qwikidata and simple-wikidata-db in Python, wd2sql in Rust, JsonDumpReader in PHP); lbzip2 for the parallel-compressed bz2 dumps.",
+  "chaining": "The weekly JSON dump is the bulk path for a whole-graph read and the per-minute APIs answer targeted lookups; the Wikimedia Enterprise free account (50,000 on-demand requests and 30 snapshot requests a month, no card) is a second, keyed bulk route to the same data.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "10 requests per minute for an unidentified client, identified by nothing but its IP address",
+      "source": "https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits"
+    },
+    {
+      "kind": "request-rate",
+      "value": "200 requests per minute for an unauthenticated client with a compliant User-Agent, and for a new account; 2000 per minute for an established editor",
+      "source": "https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits"
+    },
+    {
+      "kind": "request-rate",
+      "value": "Wikidata Query Service: 60 seconds of processing time per 60 seconds per User-Agent and IP, 30 error queries per minute, 5 parallel queries per IP",
+      "source": "https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "dump downloads rate limited and capped at 3 connections per IP; one connection read 16,777,216 bytes in 5501.7 ms",
+      "source": "https://dumps.wikimedia.org/"
+    }
+  ],
+  "limits_note": "Every SPARQL query has a hard 60-second deadline. A client that keeps sending past a 429 can be temporarily banned from the query service. The rate-limit page asks for 3 or fewer concurrent requests. Fifteen parallel REST reads sent with a User-Agent that names no contact answered 13 times 200 and twice 404, with no 429. A request with a generic library User-Agent (python-requests) answered 403 with a request to set a User-Agent, and 30 such parallel reads all answered 403.",
+  "binding": "request-rate",
+  "binding_note": "An unidentified client gets 10 requests per minute and a compliant User-Agent 200, so a whole-graph read goes to the weekly dump, which is shaped per IP rather than counted.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account and no key for the APIs or the dumps: the query service and the REST API answered 200 to requests sent without an account. A descriptive User-Agent is required in practice: a generic library User-Agent answered 403. A User-Agent with contact information moves a client from the 10 to the 200 requests-per-minute class; an account adds rate only for an established editor (2000 per minute) or an account with a bot flag (exempt).",
+    "country": null
+  },
+  "reliability_note": "The 2026 per-minute limits are stated to be subject to change; a client that ignores 429 answers can be temporarily banned, and a request with a generic library User-Agent answered 403 at once.",
+  "confidence": "documented",
+  "confidence_note": "The rate classes are documented, not exhausted. The read path was probed: the SPARQL endpoint and the REST API answered 200 with no account, the JSON dump answered a HEAD with its size and a 206 to a 16 MiB range, 15 parallel REST reads with a User-Agent that names no contact met no 429, and reads with a generic library User-Agent answered 403. Reading a 429 at the 10 and 200 per-minute ceilings would raise the limits to measured.",
+  "evidence": [
+    {
+      "url": "https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits",
+      "date": "2026-10-30",
+      "proved": "an unidentified client, identified by nothing but its IP address, is limited to 10 requests per minute",
+      "capture": "sha256:f1362fe46e9b28afabfc2d2d299740fcb53b0c5bd39df2d6f3e8beb86e209dee",
+      "quote": "| Unidentified | Requests with no identifying characteristics other than IP address | 10 |"
+    },
+    {
+      "url": "https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits",
+      "date": "2026-10-30",
+      "proved": "an unauthenticated client with a compliant User-Agent is limited to 200 requests per minute",
+      "capture": "sha256:f1362fe46e9b28afabfc2d2d299740fcb53b0c5bd39df2d6f3e8beb86e209dee",
+      "quote": "| User-Agent only | Unauthenticated bot requests with a [compliant User-Agent](https://foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_User-Agent_Policy) header | 200 |"
+    },
+    {
+      "url": "https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits",
+      "date": "2026-10-30",
+      "proved": "a new or low-edit account is limited to 200 requests per minute",
+      "capture": "sha256:f1362fe46e9b28afabfc2d2d299740fcb53b0c5bd39df2d6f3e8beb86e209dee",
+      "quote": "| Authenticated | Authenticated requests from users who are new or have few edits | 200 |"
+    },
+    {
+      "url": "https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits",
+      "date": "2026-10-30",
+      "proved": "an established editor's account is limited to 2000 requests per minute",
+      "capture": "sha256:f1362fe46e9b28afabfc2d2d299740fcb53b0c5bd39df2d6f3e8beb86e209dee",
+      "quote": "| Authenticated requests from users who are established editors | 2000 |"
+    },
+    {
+      "url": "https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits",
+      "date": "2026-10-30",
+      "proved": "accounts with a bot flag are exempt from the per-minute API limits",
+      "capture": "sha256:f1362fe46e9b28afabfc2d2d299740fcb53b0c5bd39df2d6f3e8beb86e209dee",
+      "quote": "Authenticated requests from bots accounts with a [bot flag](https://www.mediawiki.org/wiki/Manual:Bots) on any wiki | Exempt [limits 1]"
+    },
+    {
+      "url": "https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits",
+      "date": "2026-10-30",
+      "proved": "the limits are counted per minute",
+      "capture": "sha256:f1362fe46e9b28afabfc2d2d299740fcb53b0c5bd39df2d6f3e8beb86e209dee",
+      "quote": "They are enforced per-minute to help to smooth out API traffic and minimize the impact on any user that inadvertently hits a rate limit."
+    },
+    {
+      "url": "https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits",
+      "date": "2026-10-30",
+      "proved": "the per-minute limits are new in 2026 and may change",
+      "capture": "sha256:f1362fe46e9b28afabfc2d2d299740fcb53b0c5bd39df2d6f3e8beb86e209dee",
+      "quote": "The rate limits described on this page are new in 2026 and are subject to experimentation and change."
+    },
+    {
+      "url": "https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits",
+      "date": "2026-10-30",
+      "proved": "clients are asked to keep 3 or fewer concurrent requests",
+      "capture": "sha256:f1362fe46e9b28afabfc2d2d299740fcb53b0c5bd39df2d6f3e8beb86e209dee",
+      "quote": "limit the number of concurrent requests to 3 or fewer."
+    },
+    {
+      "url": "https://foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_User-Agent_Policy",
+      "date": "2026-10-30",
+      "proved": "a compliant User-Agent carries contact information, and a script without one may be blocked",
+      "capture": "sha256:7acce4bd97558353416492f021264f16dcf292881ed5e2118891cad3eac1c117",
+      "quote": "Scripts should use an informative User-Agent string with contact information, or they may be blocked without notice."
+    },
+    {
+      "url": "https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual",
+      "date": "2026-10-30",
+      "proved": "the query service allows 60 seconds of processing per 60 seconds per User-Agent and IP",
+      "capture": "sha256:b9dd0ab1d4f658aeb7d4e64559b112e4b38059d82b76533e6ab82033599a78d6",
+      "quote": "One client (user agent + IP) is allowed 60 seconds of processing time each 60 seconds"
+    },
+    {
+      "url": "https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual",
+      "date": "2026-10-30",
+      "proved": "the query service allows 30 error queries per minute",
+      "capture": "sha256:b9dd0ab1d4f658aeb7d4e64559b112e4b38059d82b76533e6ab82033599a78d6",
+      "quote": "One client is allowed 30 error queries per minute"
+    },
+    {
+      "url": "https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual",
+      "date": "2026-10-30",
+      "proved": "the query service allows 5 parallel queries per IP",
+      "capture": "sha256:b9dd0ab1d4f658aeb7d4e64559b112e4b38059d82b76533e6ab82033599a78d6",
+      "quote": "Also note that currently access to the service is limited to 5 parallel queries per IP."
+    },
+    {
+      "url": "https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual",
+      "date": "2026-10-30",
+      "proved": "every SPARQL query has a hard 60-second deadline",
+      "capture": "sha256:b9dd0ab1d4f658aeb7d4e64559b112e4b38059d82b76533e6ab82033599a78d6",
+      "quote": "There is a hard query deadline configured which is set to 60 seconds."
+    },
+    {
+      "url": "https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual",
+      "date": "2026-10-30",
+      "proved": "a client that keeps sending past 429 answers can be temporarily banned",
+      "capture": "sha256:b9dd0ab1d4f658aeb7d4e64559b112e4b38059d82b76533e6ab82033599a78d6",
+      "quote": "If the client ignores 429 responses and continues to produce requests over the limits, it can be temporarily banned from the service."
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Wikidata:Data_access",
+      "date": "2026-10-30",
+      "proved": "the query service is reached programmatically by GET or POST at https://query.wikidata.org/sparql",
+      "capture": "sha256:ca0fd4b634f17415742088b84962a473396c63283c10932ec05ed51e2b600cb8",
+      "quote": "programmatically by submitting `GET` or `POST` requests to `https://query.wikidata.org/sparql`"
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Wikidata:Data_access",
+      "date": "2026-10-30",
+      "proved": "query.wikidata.org holds the main graph; scholarly-article items are on query-scholarly.wikidata.org",
+      "capture": "sha256:ca0fd4b634f17415742088b84962a473396c63283c10932ec05ed51e2b600cb8",
+      "quote": "The query service at query.wikidata.org only contains the main graph of Wikidata. The Items related to scholarly articles are in a separate query service at query-scholarly.wikidata.org."
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Wikidata:Data_access",
+      "date": "2026-10-30",
+      "proved": "the Action API returns entities in groups of up to 50 per request",
+      "capture": "sha256:ca0fd4b634f17415742088b84962a473396c63283c10932ec05ed51e2b600cb8",
+      "quote": "Getting all of the data of an entity in JSON format, in small groups of entities (up to 50 entities per request)."
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Wikidata:Data_access",
+      "date": "2026-10-30",
+      "proved": "a GraphQL API exists for Wikidata",
+      "capture": "sha256:ca0fd4b634f17415742088b84962a473396c63283c10932ec05ed51e2b600cb8",
+      "quote": "Wikibase GraphQL is a GraphQL API for Wikidata."
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Wikidata:Database_download",
+      "date": "2026-10-30",
+      "proved": "the JSON entity dumps are produced weekly",
+      "capture": "sha256:be135099f39f2a5c8d00f3f505e7cf05991ed46773ec43837966c6859d131112",
+      "quote": "The dumps are being created on a weekly basis."
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Wikidata:Database_download",
+      "date": "2026-10-30",
+      "proved": "daily incremental dumps carry the last 24 hours of additions",
+      "capture": "sha256:be135099f39f2a5c8d00f3f505e7cf05991ed46773ec43837966c6859d131112",
+      "quote": "These dumps contain stuff that was added in the last 24 hours, reducing the need of having to download the full database dump."
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Wikidata:Database_download",
+      "date": "2026-10-30",
+      "proved": "JSON and RDF dumps are stable interfaces and XML dumps are not",
+      "capture": "sha256:be135099f39f2a5c8d00f3f505e7cf05991ed46773ec43837966c6859d131112",
+      "quote": "Note that while JSON and RDF dumps are considered stable interfaces, XML dumps are not."
+    },
+    {
+      "url": "https://www.wikidata.org/wiki/Wikidata:Database_download",
+      "date": "2026-10-30",
+      "proved": "older RDF and JSON dumps from April 20, 2015 on are on the Internet Archive",
+      "capture": "sha256:be135099f39f2a5c8d00f3f505e7cf05991ed46773ec43837966c6859d131112",
+      "quote": "[RDF and JSON dumps from April 20, 2015 on](https://archive.org/details/wikimediadownloads?and%5B%5D=%22Wikidata%20entity%20dumps%22)"
+    },
+    {
+      "url": "https://dumps.wikimedia.org/wikidatawiki/entities/",
+      "date": "2026-10-30",
+      "proved": "latest-all.json.bz2 is 103,565,615,653 bytes, dated 27-Oct-2026",
+      "capture": "sha256:f5c2bda34a8bd359e9303cdcc1cfda876a7e40e3737d1ad53026efa8678605e1",
+      "quote": "latest-all.json.bz2                                27-Oct-2026 16:38        103565615653"
+    },
+    {
+      "url": "https://dumps.wikimedia.org/wikidatawiki/entities/",
+      "date": "2026-10-30",
+      "proved": "the oldest dated entity-dump directory listed is 20260914",
+      "capture": "sha256:f5c2bda34a8bd359e9303cdcc1cfda876a7e40e3737d1ad53026efa8678605e1",
+      "quote": "20260914/                                          17-Sep-2026 09:19                   -"
+    },
+    {
+      "url": "https://dumps.wikimedia.org/",
+      "date": "2026-10-30",
+      "proved": "dump downloads are rate limited and capped at 3 connections per IP",
+      "capture": "sha256:e2df3aca2f01d55eeba935d7a50a223bf84b565f8b42105bb71bf5aa331d4438",
+      "quote": "Downloads are also rate limited and capped at 3 connections per-IP."
+    },
+    {
+      "url": "https://dumps.wikimedia.org/",
+      "date": "2026-10-30",
+      "proved": "the XML dumps of all wikis are deprecated with a January 2027 sunset",
+      "capture": "sha256:e2df3aca2f01d55eeba935d7a50a223bf84b565f8b42105bb71bf5aa331d4438",
+      "quote": "These XML dumps are deprecated and will be sunset in January 2027"
+    },
+    {
+      "url": "probe:https://dumps.wikimedia.org/wikidatawiki/entities/latest-all.json.bz2",
+      "date": "2026-10-30",
+      "proved": "a HEAD with no account answered 200 with content-length 103565615653 and accept-ranges bytes",
+      "capture": "sha256:68aab3f843ebef464c0eccf6f4bba1b178dba93897e742c4f26898c871019b42",
+      "quote": "\"content-length\": \"103565615653\""
+    },
+    {
+      "url": "probe:https://dumps.wikimedia.org/wikidatawiki/entities/latest-all.json.bz2",
+      "date": "2026-10-30",
+      "proved": "a ranged GET of the first 16 MiB answered 206 with 16,777,216 bytes",
+      "capture": "sha256:42a7ac5b0fb93f9d6d15bad869d4b9af4b4e52b794f9596d0049d5bbab39559e",
+      "quote": "\"status\": 206, \"bytes\": 16777216"
+    },
+    {
+      "url": "probe:https://dumps.wikimedia.org/wikidatawiki/entities/latest-all.json.bz2",
+      "date": "2026-10-30",
+      "proved": "the 16 MiB range took 5501.7 ms on one connection",
+      "capture": "sha256:42a7ac5b0fb93f9d6d15bad869d4b9af4b4e52b794f9596d0049d5bbab39559e",
+      "quote": "\"elapsed_ms\": 5501.7"
+    },
+    {
+      "url": "probe:https://query.wikidata.org/sparql",
+      "date": "2026-10-30",
+      "proved": "a SPARQL GET with no account and no contact User-Agent answered 200 with sparql-results JSON",
+      "capture": "sha256:1eb34ad71a716e9ecb7df6e49cf7d2ad7f3d2313b173e824b06c5c78c0d287aa",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/rest.php/wikibase/v1/entities/items/Q146/labels/en",
+      "date": "2026-10-30",
+      "proved": "the Wikibase REST API answered 200 to a label read with no account",
+      "capture": "sha256:4f5597c0e03ffac1f5515ff6221ded45145e4f74795a24d68c7810585a23cb44",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "https://enterprise.wikimedia.com/pricing/",
+      "date": "2026-10-30",
+      "proved": "the Wikimedia Enterprise free account covers Wikidata and needs no card",
+      "capture": "sha256:e6dd72b830f4cb50d32fc35850f518e0cf771c53f6913cddef7adc01fd9dccb6",
+      "quote": "Structured Wikipedia and Wikidata data at scale, plus a generous free account, no credit card."
+    },
+    {
+      "url": "https://enterprise.wikimedia.com/pricing/",
+      "date": "2026-10-30",
+      "proved": "the free Enterprise account allows up to 50,000 on-demand requests a month",
+      "capture": "sha256:e6dd72b830f4cb50d32fc35850f518e0cf771c53f6913cddef7adc01fd9dccb6",
+      "quote": "- Requests: up to 50,000/mo"
+    },
+    {
+      "url": "https://enterprise.wikimedia.com/pricing/",
+      "date": "2026-10-30",
+      "proved": "the free Enterprise account allows up to 30 snapshot requests a month",
+      "capture": "sha256:e6dd72b830f4cb50d32fc35850f518e0cf771c53f6913cddef7adc01fd9dccb6",
+      "quote": "- Requests: up to 30/mo"
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/rest.php/wikibase/v1/entities/items/Q101/labels/en",
+      "date": "2026-10-31",
+      "proved": "15 parallel Wikibase REST label reads with a User-Agent that names no contact answered 13 times 200 and twice 404, none 429",
+      "capture": "sha256:6ad4e39a6fa25729c2b5ab569d545cf3cd58655e9f582a5e967e4b27109c3040",
+      "quote": "\"statuses\": [ 200, 200, 200, 200, 404, 200, 404, 200, 200, 200, 200, 200, 200, 200, 200 ]"
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/rest.php/wikibase/v1/entities/items/Q101/labels/en",
+      "date": "2026-10-31",
+      "proved": "the reads were sent 15 at a time",
+      "capture": "sha256:6ad4e39a6fa25729c2b5ab569d545cf3cd58655e9f582a5e967e4b27109c3040",
+      "quote": "\"concurrency\": 15"
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/rest.php/wikibase/v1/entities/items/Q42/labels/en",
+      "date": "2026-10-31",
+      "proved": "a REST read sent with a generic library User-Agent (python-requests) answered 403 asking for a User-Agent",
+      "capture": "sha256:165da4d5af47d0a2008597750d184a3cef870aff9d0a5005b71d6bd17a75672e",
+      "quote": "Please set a user-agent and respect our robot policy https://w.wiki/4wJS."
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/rest.php/wikibase/v1/entities/items/Q207/labels",
+      "date": "2026-10-31",
+      "proved": "30 parallel REST reads sent with a generic library User-Agent all answered 403",
+      "capture": "sha256:f74e686a02df0f5263f79e930ec5d358a2e8548307f6c5036a6a84cc1c8076c8",
+      "quote": "\"statuses\": [ 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403 ]"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-31T05:06:55.547Z",
+  "notes": "Caveat: an unidentified client is held to 10 requests per minute, and the per-minute classes are new in 2026. The JSON and RDF entity dumps are stable interfaces; the XML dumps are not, and the XML dumps of all wikis are deprecated with a January 2027 sunset."
+}

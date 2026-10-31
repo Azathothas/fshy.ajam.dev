@@ -1,0 +1,318 @@
+{
+  "topic": "data-apis",
+  "slug": "pubmed-central-open-access",
+  "provider": "PubMed Central Open Access Subset",
+  "url": "https://pmc.ncbi.nlm.nih.gov/tools/pmcaws/",
+  "category": "open-access full-text article corpus (public S3 bucket) with E-utilities and OAI-PMH APIs",
+  "tier": "free",
+  "free_tier": {
+    "stated": "The PMC Article Datasets are free on AWS through an HTTPS or S3 URL with no log-in; E-utilities allow 3 requests a second per IP address without an API key and 10 a second with a free key; the OAI-PMH service allows 3 requests a second with no concurrent requests",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://pmc.ncbi.nlm.nih.gov/tools/pmcaws/",
+    "read_on": "2026-10-30",
+    "notes": "The bucket itself publishes no request or byte cap; the request limits are those of the E-utilities and OAI-PMH services. An anonymous esearch on 2026-10-30 answered x-ratelimit-limit 3."
+  },
+  "per_object_cap": {
+    "stated": "one prefix per article version holding its files; ESearch returns at most 10,000 records per query, and the daily inventory CSV has no record limit",
+    "bytes": null,
+    "source_url": "https://pmc.ncbi.nlm.nih.gov/tools/pmcaws/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "the bucket is live: a removed article version's prefix and files are deleted with no notification, detectable only by reconciling the daily inventory; inventory reports are kept 30 days; the legacy baseline packages on FTP and the Cloud Service were removed the week of August 24, 2026",
+    "days": null,
+    "source_url": "https://pmc.ncbi.nlm.nih.gov/tools/pmcaws/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Free: NLM provides the bucket through the AWS Open Data Sponsorship Program without charge, over HTTPS or S3, with no log-in.",
+    "metered": false,
+    "free_allowance": "no byte cap published",
+    "price_per_tb": null,
+    "source_url": "https://pmc.ncbi.nlm.nih.gov/tools/pmcaws/"
+  },
+  "interface": [
+    "s3",
+    "rest"
+  ],
+  "interface_detail": "S3 bucket pmc-oa-opendata (arn:aws:s3:::pmc-oa-opendata) read with --no-sign-request, or https://pmc-oa-opendata.s3.amazonaws.com/ over HTTPS, with a daily S3 inventory CSV; E-utilities at https://eutils.ncbi.nlm.nih.gov/entrez/eutils/ (esearch with open access[filter]); OAI-PMH at https://pmc.ncbi.nlm.nih.gov/api/oai/v1/mh/; BioC API. The PMC OA Web Service is no longer available and there are no baseline bulk packages.",
+  "endpoint": "https://pmc-oa-opendata.s3.amazonaws.com/",
+  "tooling": "aws s3 cp or sync with --no-sign-request, or curl over HTTPS; the daily inventory CSV as the list of article versions; EDirect to page past 10,000 ESearch results",
+  "chaining": "The bucket is the bulk path: objects for roughly 8 million article versions, listed in a daily inventory CSV with no record limit; an esearch on open access[filter] counted 8357213 records on 2026-10-30; E-utilities or OAI-PMH select articles by date or licence before the S3 fetch.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "E-utilities: more than 3 requests a second per IP address without an API key answers an error; up to 10 a second by default with a key",
+      "source": "https://www.ncbi.nlm.nih.gov/books/NBK25497/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "OAI-PMH: 3 requests a second, no concurrent requests",
+      "source": "https://pmc.ncbi.nlm.nih.gov/tools/oai/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "ESearch: at most 10,000 returned records per query",
+      "source": "https://pmc.ncbi.nlm.nih.gov/tools/pmcaws/"
+    }
+  ],
+  "binding": "none",
+  "binding_note": "The bucket publishes no request or byte cap and needs no key; the 3 a second E-utilities limit binds only on selection, which the daily inventory replaces.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account or key for the bucket: it is read without any log-in. An E-utilities key, for 10 requests a second, comes from the Settings page of an NCBI account, which signs in through federated logins such as Login.gov, Google, Microsoft live.com, ORCiD or an institution.",
+    "country": null
+  },
+  "reliability_note": "Removed article versions vanish from the bucket with no notification; exceeding the E-utilities limits can get an IP address blocked from NCBI.",
+  "confidence": "documented",
+  "confidence_note": "The bucket terms, the inventory and the API limits are NLM pages. An anonymous HTTPS GET of one article's full-text XML answered 200 with 109,974 bytes on 2026-10-31, and the bucket README answered 200 to an anonymous request; the E-utilities and OAI-PMH limits are documented, not measured.",
+  "evidence": [
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/tools/pmcaws/",
+      "date": "2026-10-30",
+      "proved": "the bucket is free over HTTPS or S3 with no log-in",
+      "capture": "sha256:6c9e149dc5c8448a92bbf5018c90bfeb9bf4897da68f15e7b7a4e2cf09709123",
+      "quote": "PMC makes the datasets described below freely accessible on Amazon Web Services (AWS), without charge, through either an HTTPS or S3 URL, and without any log-in requirement for retrieval."
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/tools/pmcaws/",
+      "date": "2026-10-30",
+      "proved": "the bucket is read anonymously with --no-sign-request",
+      "capture": "sha256:6c9e149dc5c8448a92bbf5018c90bfeb9bf4897da68f15e7b7a4e2cf09709123",
+      "quote": "Add --no-sign-request to any AWS CLI command to access the bucket anonymously."
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/tools/pmcaws/",
+      "date": "2026-10-30",
+      "proved": "the bucket is pmc-oa-opendata",
+      "capture": "sha256:6c9e149dc5c8448a92bbf5018c90bfeb9bf4897da68f15e7b7a4e2cf09709123",
+      "quote": "| Amazon Resource Name (ARN) | arn:aws:s3:::pmc-oa-opendata |"
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/tools/pmcaws/",
+      "date": "2026-10-30",
+      "proved": "removed versions are deleted with no notification",
+      "capture": "sha256:6c9e149dc5c8448a92bbf5018c90bfeb9bf4897da68f15e7b7a4e2cf09709123",
+      "quote": "If a version is removed from the S3 bucket, its prefix and all associated files are deleted from the bucket with no explicit notification."
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/tools/pmcaws/",
+      "date": "2026-10-30",
+      "proved": "removals show only in the inventory",
+      "capture": "sha256:6c9e149dc5c8448a92bbf5018c90bfeb9bf4897da68f15e7b7a4e2cf09709123",
+      "quote": "Inventory reconciliation is the only supported way to detect removals."
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/tools/pmcaws/",
+      "date": "2026-10-30",
+      "proved": "the inventory is daily",
+      "capture": "sha256:6c9e149dc5c8448a92bbf5018c90bfeb9bf4897da68f15e7b7a4e2cf09709123",
+      "quote": "The S3 Inventory is generated once per day."
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/tools/pmcaws/",
+      "date": "2026-10-30",
+      "proved": "ESearch returns at most 10,000 records per query",
+      "capture": "sha256:6c9e149dc5c8448a92bbf5018c90bfeb9bf4897da68f15e7b7a4e2cf09709123",
+      "quote": "ESearch is capped at 10,000 returned records per query."
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/tools/pmcaws/",
+      "date": "2026-10-30",
+      "proved": "the inventory has no record limit",
+      "capture": "sha256:6c9e149dc5c8448a92bbf5018c90bfeb9bf4897da68f15e7b7a4e2cf09709123",
+      "quote": "the inventory is a complete snapshot and has no record limit"
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/tools/pmcaws/",
+      "date": "2026-10-30",
+      "proved": "there are no baseline bulk packages",
+      "capture": "sha256:6c9e149dc5c8448a92bbf5018c90bfeb9bf4897da68f15e7b7a4e2cf09709123",
+      "quote": "There are no longer baseline bulk file packages that contain the XML or TXT for millions of articles."
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/tools/pmcaws/",
+      "date": "2026-10-30",
+      "proved": "the legacy files were removed the week of August 24, 2026",
+      "capture": "sha256:6c9e149dc5c8448a92bbf5018c90bfeb9bf4897da68f15e7b7a4e2cf09709123",
+      "quote": "All legacy PMC Article Dataset files on the FTP and Cloud Services were removed the week of August 24, 2026."
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/tools/pmcaws/",
+      "date": "2026-10-30",
+      "proved": "the AWS Open Data Sponsorship Program funds the access",
+      "capture": "sha256:6c9e149dc5c8448a92bbf5018c90bfeb9bf4897da68f15e7b7a4e2cf09709123",
+      "quote": "The National Library of Medicine works with the [AWS Open Data Sponsorship Program](https://aws.amazon.com/opendata/open-data-sponsorship-program/) to provide this access."
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/tools/openftlist/",
+      "date": "2026-10-30",
+      "proved": "the OA subset is articles",
+      "capture": "sha256:4c95150fcb039515510f73bd970da472adb3e5cbc0f9dd61070676a85034e5ba",
+      "quote": "The PMC Open Access Subset includes journal articles and preprints that are made available"
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/tools/oa-service/",
+      "date": "2026-10-30",
+      "proved": "the OA Web Service is gone",
+      "capture": "sha256:574dc97c6c1fc61c4fed0b37f275fbb5849532bc2f0a0f40fdbd764b4c974373",
+      "quote": "the PMC OA Web Service is no longer available"
+    },
+    {
+      "url": "https://www.ncbi.nlm.nih.gov/books/NBK25497/",
+      "date": "2026-10-30",
+      "proved": "E-utilities allow 3 requests a second per IP without a key",
+      "capture": "sha256:d12077540445d95fab60de6efdd733de5228da247d87d36da2b285d33ef7aac2",
+      "quote": "Without an API key, any site (IP address) posting more than 3 requests per second to the E-utilities will receive an error message."
+    },
+    {
+      "url": "https://www.ncbi.nlm.nih.gov/books/NBK25497/",
+      "date": "2026-10-30",
+      "proved": "a key allows 10 requests a second",
+      "capture": "sha256:d12077540445d95fab60de6efdd733de5228da247d87d36da2b285d33ef7aac2",
+      "quote": "By including an API key, a site can post up to 10 requests per second by default."
+    },
+    {
+      "url": "https://www.ncbi.nlm.nih.gov/books/NBK25497/",
+      "date": "2026-10-30",
+      "proved": "the key comes from an NCBI account",
+      "capture": "sha256:d12077540445d95fab60de6efdd733de5228da247d87d36da2b285d33ef7aac2",
+      "quote": "Users can obtain an API key now from the Settings page of their NCBI account"
+    },
+    {
+      "url": "https://www.ncbi.nlm.nih.gov/books/NBK25497/",
+      "date": "2026-10-30",
+      "proved": "an IP address can be blocked",
+      "capture": "sha256:d12077540445d95fab60de6efdd733de5228da247d87d36da2b285d33ef7aac2",
+      "quote": "Failure to comply with this policy may result in an IP address being blocked from accessing NCBI."
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/tools/oai/",
+      "date": "2026-10-30",
+      "proved": "OAI-PMH allows 3 requests a second",
+      "capture": "sha256:9a892fab12539bd02acf0b63083a2a2a3cdf16ccf36be90eacea2fc8ca984512",
+      "quote": "Requests are limited to 3 requests per second (rps); rates higher than that will receive an error message."
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/tools/oai/",
+      "date": "2026-10-30",
+      "proved": "OAI-PMH allows no concurrent requests",
+      "capture": "sha256:9a892fab12539bd02acf0b63083a2a2a3cdf16ccf36be90eacea2fc8ca984512",
+      "quote": "please make sure that your system does not make concurrent requests, even at off-peak times"
+    },
+    {
+      "url": "https://www.ncbi.nlm.nih.gov/account/",
+      "date": "2026-10-30",
+      "proved": "NCBI sign-in offers Login.gov",
+      "capture": "sha256:8bb890f3a4e8f457301248ba55bf002c04b516dec1c6b8adac5e36b7a8e907de",
+      "quote": "Login.Gov, USA"
+    },
+    {
+      "url": "https://www.ncbi.nlm.nih.gov/account/",
+      "date": "2026-10-30",
+      "proved": "NCBI sign-in offers Microsoft live.com",
+      "capture": "sha256:8bb890f3a4e8f457301248ba55bf002c04b516dec1c6b8adac5e36b7a8e907de",
+      "quote": "Microsoft live.com"
+    },
+    {
+      "url": "https://www.ncbi.nlm.nih.gov/account/",
+      "date": "2026-10-30",
+      "proved": "NCBI sign-in offers ORCiD",
+      "capture": "sha256:8bb890f3a4e8f457301248ba55bf002c04b516dec1c6b8adac5e36b7a8e907de",
+      "quote": "ORCiD"
+    },
+    {
+      "url": "probe:https://pmc-oa-opendata.s3.amazonaws.com/README.txt",
+      "date": "2026-10-30",
+      "proved": "the bucket holds roughly 8 million article versions",
+      "capture": "sha256:4b3eb24a238ccc5f81fab1cb06c0aadf19402980ece8f24d8a6a57360068259b",
+      "quote": "Objects for each of the roughly 8 million PMC article versions are"
+    },
+    {
+      "url": "probe:https://pmc-oa-opendata.s3.amazonaws.com/README.txt",
+      "date": "2026-10-30",
+      "proved": "inventory reports are kept 30 days",
+      "capture": "sha256:4b3eb24a238ccc5f81fab1cb06c0aadf19402980ece8f24d8a6a57360068259b",
+      "quote": "Inventory reports are retained for 30 days and then automatically removed."
+    },
+    {
+      "url": "probe:https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pmc&term=open+access%5Bfilter%5D&retmax=0&retmode=json",
+      "date": "2026-10-30",
+      "proved": "esearch counted 8357213 open-access records",
+      "capture": "sha256:286bb38591781b7a2fc0fd0fb0cdae37cdf4841f8478b0e521769c2953e4326f",
+      "quote": "\"count\":\"8357213\""
+    },
+    {
+      "url": "probe:https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pmc&term=open+access%5Bfilter%5D&retmax=0&retmode=json",
+      "date": "2026-10-30",
+      "proved": "an anonymous esearch was limited to 3 requests",
+      "capture": "sha256:871ff2dbb6869d8fdfa08a7f76a378a12e13c166a20425dc5d1ed8c73d38b7f7",
+      "quote": "\"x-ratelimit-limit\": \"3\""
+    },
+    {
+      "url": "probe:https://pmc-oa-opendata.s3.amazonaws.com/PMC10009402.1/PMC10009402.1.xml",
+      "date": "2026-10-31",
+      "proved": "an anonymous GET of one full-text XML answered 200 with 109,974 bytes on 2026-10-31",
+      "capture": "sha256:fad04ab29934065a0d3640bc5212928dc32a2a8e443b7b2c4bce34d8d717e44c",
+      "quote": "\"bytes\": 109974"
+    },
+    {
+      "url": "probe:https://pmc-oa-opendata.s3.amazonaws.com/PMC10009402.1/PMC10009402.1.xml",
+      "date": "2026-10-31",
+      "proved": "the full-text XML hashes to the sha256 the record holds",
+      "capture": "sha256:fad04ab29934065a0d3640bc5212928dc32a2a8e443b7b2c4bce34d8d717e44c",
+      "quote": "\"sha256\": \"75d9e0ab27e80e8660296e33bb1832dd8237080d5782b229bbd81fb4919c323a\""
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/tools/oai/",
+      "date": "2026-10-31",
+      "proved": "OAI-PMH allows 3 requests a second",
+      "capture": "sha256:9a892fab12539bd02acf0b63083a2a2a3cdf16ccf36be90eacea2fc8ca984512",
+      "quote": "Requests are limited to 3 requests per second (rps); rates higher than that will receive an error message."
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/tools/pmcaws/",
+      "date": "2026-10-31",
+      "proved": "ESearch returns at most 10,000 records per query",
+      "capture": "sha256:6c9e149dc5c8448a92bbf5018c90bfeb9bf4897da68f15e7b7a4e2cf09709123",
+      "quote": "ESearch is capped at 10,000 returned records per query."
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/tools/pmcaws/",
+      "date": "2026-10-31",
+      "proved": "the bucket is free over HTTPS or S3 with no log-in",
+      "capture": "sha256:6c9e149dc5c8448a92bbf5018c90bfeb9bf4897da68f15e7b7a4e2cf09709123",
+      "quote": "PMC makes the datasets described below freely accessible on Amazon Web Services (AWS), without charge, through either an HTTPS or S3 URL, and without any log-in requirement for retrieval."
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/tools/pmcaws/",
+      "date": "2026-10-31",
+      "proved": "removed versions are deleted with no notification",
+      "capture": "sha256:6c9e149dc5c8448a92bbf5018c90bfeb9bf4897da68f15e7b7a4e2cf09709123",
+      "quote": "If a version is removed from the S3 bucket, its prefix and all associated files are deleted from the bucket with no explicit notification."
+    },
+    {
+      "url": "probe:https://pmc-oa-opendata.s3.amazonaws.com/README.txt",
+      "date": "2026-10-31",
+      "proved": "the bucket holds roughly 8 million article versions",
+      "capture": "sha256:4b3eb24a238ccc5f81fab1cb06c0aadf19402980ece8f24d8a6a57360068259b",
+      "quote": "Objects for each of the roughly 8 million PMC article versions are"
+    },
+    {
+      "url": "https://www.ncbi.nlm.nih.gov/books/NBK25497/",
+      "date": "2026-10-31",
+      "proved": "E-utilities allow 3 requests a second per IP address without a key",
+      "capture": "sha256:d12077540445d95fab60de6efdd733de5228da247d87d36da2b285d33ef7aac2",
+      "quote": "Without an API key, any site (IP address) posting more than 3 requests per second to the E-utilities will receive an error message."
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-31T10:03:34.105Z",
+  "price_per_tb_month": null,
+  "notes": "The record debrid/pmc-oa-opendata describes the same bucket; this record adds the API limits and the removal of the baseline packages and the OA Web Service.",
+  "extras": {
+    "article_versions": "roughly 8 million",
+    "esearch_open_access_count_2026_10_30": 8357213
+  }
+}

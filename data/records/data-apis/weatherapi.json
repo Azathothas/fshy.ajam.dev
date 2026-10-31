@@ -1,0 +1,250 @@
+{
+  "topic": "data-apis",
+  "slug": "weatherapi",
+  "provider": "WeatherAPI.com",
+  "url": "https://www.weatherapi.com/pricing.aspx",
+  "category": "weather API",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free plan: 100,000 calls a month, with realtime weather, a 3-day forecast, the past 1 day of history, 1-day marine weather, and the search, astronomy and IP lookup APIs.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://www.weatherapi.com/pricing.aspx",
+    "read_on": "2026-10-31",
+    "notes": "Past 100,000 calls no data is served until the quota resets at 00:00 UTC on the 1st of the month. No bulk path on the Free plan: Bulk Request (up to 50 locations a call) starts at Pro+."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: the unit is a request",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: the unit is a request",
+    "days": null,
+    "notes": "",
+    "source_url": "https://www.weatherapi.com/pricing.aspx"
+  },
+  "egress": {
+    "terms": "not applicable",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.weatherapi.com/pricing.aspx"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "REST over HTTPS with the key in the key query parameter; JSON or XML answers",
+  "endpoint": "https://api.weatherapi.com/v1/current.json",
+  "tooling": "any HTTP client; the key goes in the key query parameter",
+  "chaining": "A keyed point-weather source with one monthly count: current conditions and 3-day forecasts per location, with only the previous day of history on the Free plan.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "100,000 calls a month; past it no data until 00:00 UTC on the 1st",
+      "source": "https://www.weatherapi.com/pricing.aspx"
+    },
+    {
+      "kind": "request-rate",
+      "value": "unverified: the terms name a per-minute burst limit and a blog post a per-second ceiling by plan, but no number for the Free plan is published",
+      "source": "https://www.weatherapi.com/terms.aspx"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "100,000 calls a month is about 3,333 a day over 30 days and is the only published ceiling; the burst limit has no published number.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The sign-up form asks for a website, an email that becomes the username, a password twice, an arithmetic check and acceptance of the terms, or a Google sign-in; the home page says no credit card is required. A new account starts on a 7-day Business trial and moves to the Free plan when it ends.",
+    "country": null
+  },
+  "reliability_note": "A call with no key answers HTTP 401 with error code 1002; exceeding the monthly count or the burst limit can suspend API access for a time.",
+  "confidence": "documented",
+  "confidence_note": "Quota, plan contents, caching limits and sign-up fields are read from first-party pages; a call with no key answered HTTP 401, so the free key was not exercised.",
+  "evidence": [
+    {
+      "url": "https://www.weatherapi.com/pricing.aspx",
+      "date": "2026-10-31",
+      "proved": "the Free plan has 100,000 calls a month",
+      "capture": "sha256:44fed3288b77b3f4d26062eb88bcd5dd792ddd3292b0dc803eb5d159aa16e7df",
+      "quote": "| Calls per month | 100K | 3 Million | 5 Million | 10 Million<br>[Need more? Up to 500 Million](https://www.weatherapi.com/pricing#high-volume) | Custom |"
+    },
+    {
+      "url": "https://www.weatherapi.com/",
+      "date": "2026-10-31",
+      "proved": "the home page states 100,000 free calls a month",
+      "capture": "sha256:872282cd59e2ecce1a3631d75b256f5b35162d98257103de7310438d9da72f32",
+      "quote": "100,000 free calls a month"
+    },
+    {
+      "url": "https://www.weatherapi.com/pricing.aspx",
+      "date": "2026-10-31",
+      "proved": "the Free plan reaches 1 day of history",
+      "capture": "sha256:44fed3288b77b3f4d26062eb88bcd5dd792ddd3292b0dc803eb5d159aa16e7df",
+      "quote": "| Historical Weather | Past 1 days | Past 7 days | Past 365 days | 1st Jan 2010 onwards | 1st Jan 2010 onwards |"
+    },
+    {
+      "url": "https://www.weatherapi.com/pricing.aspx",
+      "date": "2026-10-31",
+      "proved": "the Free plan forecasts 3 days",
+      "capture": "sha256:44fed3288b77b3f4d26062eb88bcd5dd792ddd3292b0dc803eb5d159aa16e7df",
+      "quote": "| Forecast/Future Weather | 3 Day | 7 Day | 300 days ahead | 300 days ahead | 365 days ahead |"
+    },
+    {
+      "url": "https://www.weatherapi.com/pricing.aspx",
+      "date": "2026-10-31",
+      "proved": "the Free plan has 1 day of marine weather",
+      "capture": "sha256:44fed3288b77b3f4d26062eb88bcd5dd792ddd3292b0dc803eb5d159aa16e7df",
+      "quote": "| Marine Weather New | 1 Day. No Tide Data | 3 Day. No Tide Data | 5 Day + Tide Data | 7 Day + Tide Data | 7 Day + Tide Data |"
+    },
+    {
+      "url": "https://www.weatherapi.com/",
+      "date": "2026-10-31",
+      "proved": "the Free plan includes the search, astronomy and IP lookup APIs",
+      "capture": "sha256:872282cd59e2ecce1a3631d75b256f5b35162d98257103de7310438d9da72f32",
+      "quote": "- Search, astronomy, IP lookup"
+    },
+    {
+      "url": "https://www.weatherapi.com/",
+      "date": "2026-10-31",
+      "proved": "answers come in JSON or XML",
+      "capture": "sha256:872282cd59e2ecce1a3631d75b256f5b35162d98257103de7310438d9da72f32",
+      "quote": "Free Weather Forecast in JSON and XML"
+    },
+    {
+      "url": "https://www.weatherapi.com/docs/",
+      "date": "2026-10-31",
+      "proved": "the key goes in the key query parameter",
+      "capture": "sha256:da409dfd17fc225dd3799c40363d13e0d61e278084db00677d1e303dd2cbe3d5",
+      "quote": "`https://api.weatherapi.com/v1/current.json?key=YOUR_API_KEY&q=London`"
+    },
+    {
+      "url": "https://www.weatherapi.com/pricing.aspx",
+      "date": "2026-10-31",
+      "proved": "Pro+ costs USD 25 a month",
+      "capture": "sha256:44fed3288b77b3f4d26062eb88bcd5dd792ddd3292b0dc803eb5d159aa16e7df",
+      "quote": "### Pro+<br>$ 25<br>per month"
+    },
+    {
+      "url": "https://www.weatherapi.com/pricing.aspx",
+      "date": "2026-10-31",
+      "proved": "past the monthly count no data is served",
+      "capture": "sha256:44fed3288b77b3f4d26062eb88bcd5dd792ddd3292b0dc803eb5d159aa16e7df",
+      "quote": "If you go over your calls or request per month then you will stop receiving data for that month."
+    },
+    {
+      "url": "https://www.weatherapi.com/pricing.aspx",
+      "date": "2026-10-31",
+      "proved": "the quota resets at 00:00 UTC on the 1st",
+      "capture": "sha256:44fed3288b77b3f4d26062eb88bcd5dd792ddd3292b0dc803eb5d159aa16e7df",
+      "quote": "The quota is reset at midnight on 1st of each month UTC."
+    },
+    {
+      "url": "https://www.weatherapi.com/pricing.aspx",
+      "date": "2026-10-31",
+      "proved": "the Free column of the Bulk Request row is a cross: no bulk request on Free",
+      "capture": "sha256:f5defbb00577f329408bbb3b692aec74a1472a72081fd0a18a1d0c1a55b2c5c1",
+      "quote": "<th scope=\"row\">Bulk Request</th> <td> <img src=\"/staticv2/images/cross.png\" alt=\"No\" class=\"\" loading=\"lazy\" /></td>"
+    },
+    {
+      "url": "https://www.weatherapi.com/docs/",
+      "date": "2026-10-31",
+      "proved": "bulk requests take up to 50 locations and start at Pro+",
+      "capture": "sha256:da409dfd17fc225dd3799c40363d13e0d61e278084db00677d1e303dd2cbe3d5",
+      "quote": "Get weather for up to 50 locations in one WeatherAPI.com call with a bulk POST request (Pro+, Business and Enterprise)."
+    },
+    {
+      "url": "https://www.weatherapi.com/terms.aspx",
+      "date": "2026-10-31",
+      "proved": null,
+      "capture": "sha256:54f50a1e6fe20d039206a9cfdd1756b1fada3ffa23f1e5fac725a712272a347f",
+      "quote": "Forecast data — maximum 24 hours; historical data — no restriction."
+    },
+    {
+      "url": "https://www.weatherapi.com/terms.aspx",
+      "date": "2026-10-31",
+      "proved": null,
+      "capture": "sha256:54f50a1e6fe20d039206a9cfdd1756b1fada3ffa23f1e5fac725a712272a347f",
+      "quote": "If you are a Free API user then for all uses of the data, you will credit WeatherAPI.com by name or brand logo as the source of the data."
+    },
+    {
+      "url": "https://www.weatherapi.com/terms.aspx",
+      "date": "2026-10-31",
+      "proved": "a per-minute burst limit exists and exceeding it can suspend access",
+      "capture": "sha256:54f50a1e6fe20d039206a9cfdd1756b1fada3ffa23f1e5fac725a712272a347f",
+      "quote": "Exceeding your plan’s monthly API call allocation or per-minute burst limit may result in temporary suspension of API access"
+    },
+    {
+      "url": "https://blog.weatherapi.com/rate-limit-aware-request-queue-weatherapi",
+      "date": "2026-10-31",
+      "proved": "the monthly count is per account, with a per-second ceiling that varies by plan",
+      "capture": "sha256:4cdcf5c1903cba530750888d91242af489edb0e726876eea9fc623e860e781bb",
+      "quote": "WeatherAPI’s limits are per-account per-month (total call volume) plus a per-second ceiling depending on plan."
+    },
+    {
+      "url": "https://www.weatherapi.com/signup.aspx",
+      "date": "2026-10-31",
+      "proved": "the sign-up form takes an email as the username",
+      "capture": "sha256:350f4717f223fe2412e0c0c38f1c444ab52ea85bba47d61fa191a7cf4d12b430",
+      "quote": "Email (_Your email is your username_)"
+    },
+    {
+      "url": "https://www.weatherapi.com/signup.aspx",
+      "date": "2026-10-31",
+      "proved": "the sign-up form has an arithmetic check",
+      "capture": "sha256:350f4717f223fe2412e0c0c38f1c444ab52ea85bba47d61fa191a7cf4d12b430",
+      "quote": "Are you human? What is 2 + 5?"
+    },
+    {
+      "url": "https://www.weatherapi.com/signup.aspx",
+      "date": "2026-10-31",
+      "proved": "the sign-up form has a Website field",
+      "capture": "sha256:350f4717f223fe2412e0c0c38f1c444ab52ea85bba47d61fa191a7cf4d12b430",
+      "quote": "Website"
+    },
+    {
+      "url": "https://www.weatherapi.com/signup.aspx",
+      "date": "2026-10-31",
+      "proved": "the sign-up form asks for the password twice",
+      "capture": "sha256:350f4717f223fe2412e0c0c38f1c444ab52ea85bba47d61fa191a7cf4d12b430",
+      "quote": "Retype Password Show password"
+    },
+    {
+      "url": "https://www.weatherapi.com/signup.aspx",
+      "date": "2026-10-31",
+      "proved": "a Google sign-in is offered",
+      "capture": "sha256:350f4717f223fe2412e0c0c38f1c444ab52ea85bba47d61fa191a7cf4d12b430",
+      "quote": "[Sign up with Google](https://www.weatherapi.com/login/google?mode=signup)"
+    },
+    {
+      "url": "https://www.weatherapi.com/signup.aspx",
+      "date": "2026-10-31",
+      "proved": "a new account starts on a 7-day Business trial and then moves to Free",
+      "capture": "sha256:350f4717f223fe2412e0c0c38f1c444ab52ea85bba47d61fa191a7cf4d12b430",
+      "quote": "Start with a free, no-obligation 7-day Business plan trial. When it ends you are moved to the Free plan automatically."
+    },
+    {
+      "url": "https://www.weatherapi.com/",
+      "date": "2026-10-31",
+      "proved": "no credit card is asked for",
+      "capture": "sha256:872282cd59e2ecce1a3631d75b256f5b35162d98257103de7310438d9da72f32",
+      "quote": "No credit card required"
+    },
+    {
+      "url": "probe:https://api.weatherapi.com/v1/current.json",
+      "date": "2026-10-31",
+      "proved": "a call with no key answers HTTP 401 with error code 1002",
+      "capture": "sha256:a879bdc36adb2572131297784dfaef13b7d432a620887b62cd838d3974be80aa",
+      "quote": "{\"error\":{\"code\":1002,\"message\":\"API key is invalid or not provided.\"}}"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/public-apis/public-apis/master/README.md",
+      "date": "2026-10-31",
+      "proved": "listed under Weather in the public-apis list with an apiKey",
+      "capture": "sha256:7c0d65a75227ba9bd3f8576a39262f7af32373d3eca4190cd91e66329ca1d059",
+      "quote": "| [WeatherAPI](https://www.weatherapi.com/) | Weather API with other stuff like Astronomy and Geolocation API | `apiKey` | Yes | Yes |"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-31T10:04:05.824Z",
+  "notes": "Storage: cached responses are bounded at 60 minutes for current conditions and 24 hours for forecasts; historical data has no caching limit. Bulk path: none on Free; Bulk Request starts at Pro+ (USD 25 a month on the pricing page)."
+}

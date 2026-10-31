@@ -1,0 +1,83 @@
+{
+  "topic": "storage",
+  "slug": "figshare",
+  "provider": "figshare (figshare.com free accounts)",
+  "url": "https://figshare.com",
+  "category": "academic",
+  "free_tier": {
+    "stated": "20 GB storage quota per account. Items 500, files per item 500, collections 100, projects 100.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://info.figshare.com/user-guide/account-limits/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "5 GB per file",
+    "bytes": 5000000000,
+    "source_url": "https://info.figshare.com/user-guide/account-limits/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Stable commercial service (Digital Science); the binding constraint is the 20 GB pool, and published items are permanent/citable, so it behaves more like a publication endpoint than a bucket.",
+    "source_url": "https://info.figshare.com/user-guide/account-limits/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and CDN-friendly. Download path: ndownloader.figshare.com -> 302 -> S3 object (Server: AmazonS3), with Accept-Ranges/Content-Range exposed. No egress metering on free accounts.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "figshare REST API v2 (live: GET api.figshare.com/v2/articles -> 200 JSON; per-file download_url at ndownloader.figshare.com). OAI-PMH available. figshare Python client (official, github.com/figshare/figshare-python). No rclone backend.",
+  "chaining": "20 GB x unlimited free accounts. Weak multiplication within an account: the 20 GB is a single pool and the 500-item cap binds long before the bytes do at 20 GB/item.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "5 GB per file",
+      "source": "https://info.figshare.com/user-guide/account-limits/"
+    }
+  ],
+  "limits_note": "20 GB total storage and 20 GB max single file; 500 items, 500 files per item, 50 versions; virus scan only up to 10 MB. Exceeding 20 GB requires figshare+ (paid) or an institutional subscription.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Stable commercial service (Digital Science); the binding constraint is the 20 GB pool, and published items are permanent/citable, so it behaves more like a publication endpoint than a bucket.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://info.figshare.com/user-guide/account-limits/",
+      "date": "2026-10-21",
+      "proved": "'storage quota: 20GB', 'max individual file size: 20GB', 'max number of items: 500'"
+    },
+    {
+      "url": "https://info.figshare.com/user-guide/file-size-limits-and-storage/",
+      "date": "2026-10-21",
+      "proved": "'All figshare.com accounts are provided with 20GB of private storage and are able to upload individual files up to 20GB'"
+    },
+    {
+      "url": "https://ndownloader.figshare.com/files/69259858",
+      "date": "2026-10-21",
+      "proved": "probe: GET -L -> 302 then 200, 1512608 bytes, Server: AmazonS3"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "20 GB storage quota per account. Items 500, files per item 500, collections 100, projects 100.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "20 GB storage quota per account. Items 500, files per item 500, collections 100, projects 100.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

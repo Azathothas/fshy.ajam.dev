@@ -1,0 +1,87 @@
+{
+  "topic": "storage",
+  "slug": "archive-org-download-web-serving-path",
+  "provider": "archive.org /download web serving path (the free CDN)",
+  "url": "https://archive.org/download/<identifier>/<filename>",
+  "category": "academic",
+  "free_tier": {
+    "stated": "Serving is unmetered and free; no per-file download cap and no egress fee. Practical ceiling is throughput, not quota.",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://archive.org/developers/items.html",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://archive.org/developers/items.html",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://archive.org/developers/items.html",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free / unmetered. Docs: 'high performance downloads are achieved via the archive web infrastructure' — i.e. GET https://archive.org/download/<item>/<file>, which 302s to an iaNNNNNN.us.archive.org datanode. BitTorrent webseeds supplement it.",
+    "metered": false,
+    "source_url": "https://archive.org/download/<item>/<file>"
+  },
+  "interface": [
+    "rest",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "plain HTTPS GET with Range (measured: 206 + accept-ranges: bytes); ia CLI download w/ --checksum resume; rclone 'internetarchive' reads back through the same front end",
+  "chaining": "Parallelise across items — different items can be pinned to different iaNNNNNN datanodes, so aggregate throughput scales with item count rather than with connections to one item.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "1.19 MB/s",
+      "source": "https://archive.org/developers/items.html"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "1.66 MB/s",
+      "source": "https://archive.org/developers/items.html"
+    }
+  ],
+  "limits_note": "Canonical URLs 302 at least once (clients need --location-trusted when sending Authorization); do NOT link iaNNNNNN.us.archive.org directly (nodes move); 429/503 under load; no auth on GET, so everything is world-readable.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "inferred from the category 'academic'; the source record states no identity cost, so this is a class assumption, not evidence",
+    "country": null
+  },
+  "reliability_note": "Throughput is the binding constraint, not quota: measured 1.19 MB/s on one 90s stream and 1.66 MB/s aggregate across 8 parallel range requests to one datanode from one IP (~145 GB/day) — against a local link calibrated at 27.6 MB/s, so this is server-side shaping, not a user.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://archive.org/developers/ias3.html",
+      "date": "2026-10-21",
+      "proved": "'Fast GET downloads ... high performance downloads are achieved via the archive web infrastructure: curl --location http://archive.org/download/sam-s3-test-08/demo-intro-to-k.pdf'"
+    },
+    {
+      "url": "https://archive.org/developers/items.html",
+      "date": "2026-10-21",
+      "proved": "(snapshot 2025-11-08) — 'A particular file can always be downloaded from https://archive.org/download/<identifier>/<filename>'"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: curl -r 0-1048575 web.archive.org replay of a 406MB ISO -> HTTP 206, content-range honoured, accept-ranges: bytes, cache-control: max-age=1800"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: 8 parallel 5MB range GETs to one replay target -> 40,000,000 bytes in 23s = ~1.7 MB/s aggregate; single 90s stream -> 1.19 MB/s; Cloudflare 50MB control download -> 27.6 MB/s"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Serving is unmetered and free; no per-file download cap and no egress fee. Practical ceiling is throughput, not quota.",
+  "extras": {},
+  "binding": "per-ip-shaping",
+  "binding_note": null
+}

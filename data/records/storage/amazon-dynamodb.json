@@ -1,0 +1,92 @@
+{
+  "topic": "storage",
+  "slug": "amazon-dynamodb",
+  "provider": "Amazon DynamoDB",
+  "url": "https://aws.amazon.com/dynamodb/",
+  "category": "iaas",
+  "free_tier": {
+    "stated": "25 GB of storage, always free (does not expire), plus 25 WCU and 25 RCU provisioned capacity and ~200M requests/month",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://aws.amazon.com/dynamodb/pricing/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://aws.amazon.com/dynamodb/pricing/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://aws.amazon.com/dynamodb/pricing/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Metered — AWS gives 100 GB/month of data transfer out free, aggregated across all AWS services. 100 GB/month = ~3.3 GB/day vs 500 GB/day: 150x short. Beyond that, standard internet DTO rates.",
+    "metered": true,
+    "free_allowance": "100 GB per month"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "AWS SDKs (boto3 etc.), `aws dynamodb` CLI, PartiQL; native `Binary` attribute type (raw bytes, base64 on the wire only); DynamoDB Streams + Lambda for processing",
+  "chaining": "25 GB per account per region, and the docs confirm 'the first 25 GB of storage are included in the AWS Free Tier in each AWS Region' — so N regions x 25 GB. 20 regions = 500 GB in principle, all under one account. This is the single largest structured-store byte allowance found. But the 25 RCU cap is region-global per table, so serving is throttled regardless.",
+  "limits": [],
+  "limits_note": "400 KB max item (including attribute names); 25 RCU + 25 WCU provisioned; 100 bytes storage overhead per item; 25 GB/region free; binary values must be base64-encoded for transport but are sized by raw bytes",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "inferred from the category 'iaas'; the source record states no identity cost, so this is a class assumption, not evidence",
+    "country": null
+  },
+  "reliability_note": "The catch is throughput: 25 RCU is 25 strongly-consistent 4 KB reads/sec, which is a hard ceiling no amount of sharding within the free tier escapes.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://docs.aws.amazon.com/whitepapers/latest/how-aws-pricing-works/get-started-with-the-aws-free-tier.html",
+      "date": "2026-10-21",
+      "proved": "'Always Free ... Amazon DynamoDB: Up to 200 million requests per month (25 write capacity units (WCUs) and 25 read capacity units (RCUs)); 25 GB of storage.'"
+    },
+    {
+      "url": "https://aws.amazon.com/dynamodb/pricing/",
+      "date": "2026-10-21",
+      "proved": "'the first 25 GB of storage are included in the AWS Free Tier'; 'The first 25 GB of storage are included in the AWS Free Tier in each AWS Region'; 'The AWS Free Tier includes 25 WCUs and 25 RCUs'"
+    },
+    {
+      "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Constraints.html",
+      "date": "2026-10-21",
+      "proved": "'The maximum item size in DynamoDB is 400 KB, which includes both attribute name binary length (UTF-8 length) and attribute value lengths'"
+    },
+    {
+      "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/CapacityUnitCalculations.html",
+      "date": "2026-10-21",
+      "proved": "'A binary value must be encoded in base64 format before it can be sent to DynamoDB, but the value's raw byte length is used for calculating size'; 'All items in DynamoDB require 100 bytes of storage overhead per item'"
+    },
+    {
+      "url": "https://aws.amazon.com/ec2/pricing/on-demand/",
+      "date": "2026-10-21",
+      "proved": "'AWS customers receive 100 GB of free data transfer out to the internet free each month, aggregated across all AWS Services and Regions'"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "arithmetic: 25 RCU x 4 KB = 100 KB/s = 8.64 GB/day of reads — 58x short of 500 GB/day, and this is the BEST op-to-byte ratio among the metered-capacity stores"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "25 GB of storage, always free (does not expire), plus 25 WCU and 25 RCU provisioned capacity and ~200M requests/month",
+  "extras": {
+    "dead_end": {
+      "failure_class": "retention",
+      "why": "25 GB of storage, always free (does not expire), plus 25 WCU and 25 RCU provisioned capacity and ~200M requests/month",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": null
+}

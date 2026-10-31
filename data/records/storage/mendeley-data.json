@@ -1,0 +1,87 @@
+{
+  "topic": "storage",
+  "slug": "mendeley-data",
+  "provider": "Mendeley Data (Elsevier)",
+  "url": "https://data.mendeley.com",
+  "category": "academic",
+  "free_tier": {
+    "stated": "10 GB per dataset, free, unlimited datasets per account ('you can split your datasets into small sizes'; 'we can reference datasets within datasets'). Institutional Digital Commons Data raises this to 100 GB/dataset.",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://www.elsevier.support/mendeley/answer/what-can-i-do-when-my-dataset-exceeds-the-10gb-per-dataset-limit",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: 10 GB",
+    "bytes": 10000000000,
+    "source_url": "https://www.elsevier.support/mendeley/answer/what-can-i-do-when-my-dataset-exceeds-the-10gb-per-dataset-limit",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "| Published datasets cannot be edited or deleted (versioning only) — a write-once archive, not a mutable store",
+    "source_url": "https://www.elsevier.support/mendeley/answer/what-can-i-do-when-my-dataset-exceeds-the-10gb-per-dataset-limit",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free, public datasets downloadable without login. Backed by AWS S3 eu-west-1 plus DANS long-term archive (three replicas).",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Documented REST API (data.mendeley.com/api/docs) with OAuth2 client-credentials; search endpoint `/api/datasets/v2/search` is anonymous. Download URLs are `/public-files/datasets/<id>/files/<fileid>/file_downloaded`.",
+  "chaining": "10 GB per dataset × unlimited datasets per account = effectively unbounded per identity; multiple free accounts multiply further. This is the cleanest 'per-record unlimited' shape in the niche.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: 10 GB",
+      "source": "https://www.elsevier.support/mendeley/answer/what-can-i-do-when-my-dataset-exceeds-the-10gb-per-dataset-limit"
+    }
+  ],
+  "limits_note": "per-object-cap: 10 GB per dataset (100 GB institutional). Retention: published datasets are immutable and 'archived with DANS ... in perpetuity', no expiry. Read path caveat: the download URL pattern returns a JSON envelope rather than bytes for non-existent file IDs, so anonymous bulk scraping needs real file UUIDs from the dataset API.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Published datasets cannot be edited or deleted (versioning only) — a write-once archive, not a mutable store. Download endpoint resolves via JSON for bad IDs, so naive crawlers must parse the API first.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://data.mendeley.com/faq",
+      "date": "2026-10-21",
+      "proved": "100 GB institutional cap, DANS perpetuity archiving, 'once a dataset is published, it is not possible to edit or delete it'"
+    },
+    {
+      "url": "https://www.elsevier.support/mendeley/answer/what-can-i-do-when-my-dataset-exceeds-the-10gb-per-dataset-limit",
+      "date": "2026-10-21",
+      "proved": "'10GB per dataset limit', with the vendor's split-and-reference alternative route"
+    },
+    {
+      "url": "https://data.mendeley.com/api/datasets/v2/search?query=test&limit=1",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, real dataset JSON with doi 10.17632/..."
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET .../public-files/datasets/jxj8bn2vyf/files/1/file_downloaded -> 200 but Content-Type application/json, code 400 envelope (not bytes) — read path needs real file UUIDs"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "10 GB per dataset, free, unlimited datasets per account ('you can split your datasets into small sizes'; 'we can reference datasets within datasets'). Institutional Digital Commons Data raises this to 100 GB/dataset.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "10 GB per dataset, free, unlimited datasets per account ('you can split your datasets into small sizes'; 'we can reference datasets within datasets'). Institutional Digital Commons Data raises this to 100 GB/dataset.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

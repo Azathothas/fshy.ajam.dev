@@ -1,0 +1,123 @@
+{
+  "topic": "crawler-scraper",
+  "slug": "arquivo",
+  "provider": "Arquivo.pt",
+  "url": "https://arquivo.pt/",
+  "category": "archive",
+  "verdict": "qualifies-with-caveat",
+  "confidence": "documented",
+  "confidence_note": "per-IP limits read on the vendor's API page; the CDX endpoint read with no key",
+  "verified_at": "2026-10-30T11:10:03.630Z",
+  "free_tier": {
+    "stated": "keyless CDX server, full-text and URL search API, Memento API, image search and replay of the Portuguese web archive, each limited per IP address",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://github.com/arquivo/pwa-technologies/wiki/APIs",
+    "read_on": "2026-10-30",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: the unit is a capture",
+    "bytes": null,
+    "source_url": "https://arquivo.pt/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "no expiry stated",
+    "days": null,
+    "source_url": "https://arquivo.pt/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not applicable: the archived body",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://arquivo.pt/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "CDX server answering JSON lines, the Arquivo.pt API for full-text and URL search, the Memento API, image search, replay at /wayback and /noFrame/replay, and CDXJ index files for bulk access",
+  "tooling": "plain HTTP with no key; the CDX server takes output=json and limit parameters",
+  "chaining": "It has no closest operation, so it answers only a listing",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "CDX server and the full-text and URL search API 250 requests a minute per IP address; Memento and image search 400 a minute; replay at /wayback 4,000 a minute",
+      "source": "https://github.com/arquivo/pwa-technologies/wiki/APIs"
+    },
+    {
+      "kind": "request-rate",
+      "value": "an IP address over any of these limits is blocked permanently; a 429 answer means slow down",
+      "source": "https://github.com/arquivo/pwa-technologies/wiki/APIs"
+    }
+  ],
+  "binding": "request-rate",
+  "limits_note": "",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "keyless; the limits are counted per IP address",
+    "country": null
+  },
+  "reliability_note": "the CDX endpoint answered 200 with a capture row and no key, with x-ratelimit-policy 250;w=60",
+  "price_per_tb_month": null,
+  "evidence": [
+    {
+      "url": null,
+      "date": "2026-10-22",
+      "proved": "probe ok at 2026-10-22T01:40Z, 0 consecutive failures"
+    },
+    {
+      "url": "https://github.com/arquivo/pwa-technologies/wiki/APIs",
+      "date": "2026-10-30",
+      "proved": "the CDX server allows 250 requests a minute from one IP address",
+      "capture": "sha256:ad20a6a219fc6b73becdd0eea0acb0e887f92da37f673a1cce621363af1e97b4",
+      "quote": "- [CDX-server API (URL search)](https://github.com/arquivo/pwa-technologies/wiki/URL-search:-CDX-server-API): 250 requests/60s from the same IP address"
+    },
+    {
+      "url": "https://github.com/arquivo/pwa-technologies/wiki/APIs",
+      "date": "2026-10-30",
+      "proved": "an IP address over the limits is blocked permanently",
+      "capture": "sha256:ad20a6a219fc6b73becdd0eea0acb0e887f92da37f673a1cce621363af1e97b4",
+      "quote": "IP addresses that exceed these limits will be permanently blocked from using Arquivo.pt."
+    },
+    {
+      "url": "https://github.com/arquivo/pwa-technologies/wiki/APIs",
+      "date": "2026-10-30",
+      "proved": "CDXJ index files are offered for bulk access beside the APIs",
+      "capture": "sha256:ad20a6a219fc6b73becdd0eea0acb0e887f92da37f673a1cce621363af1e97b4",
+      "quote": "- [CDXJ index files are available to support bulk access](https://sobre.arquivo.pt/en/cdxj-index-files-are-available-to-suppport-bulk-access/)"
+    },
+    {
+      "url": "https://arquivo.pt/wayback/cdx?url=example.com&output=json&limit=1",
+      "date": "2026-10-30",
+      "proved": "a keyless CDX answer carries a rate limit scoped to the IP address",
+      "capture": "sha256:b38ed2dbc6afd9e1390f008b9e07604126fb33bdb322a49ea8b216c09e2bf07f",
+      "quote": "x-ratelimit-scope: ip"
+    },
+    {
+      "url": "https://arquivo.pt/wayback/cdx?url=example.com&output=json&limit=1",
+      "date": "2026-10-30",
+      "proved": "a keyless CDX query answered 200 with one JSON line and a 250-a-minute policy header",
+      "capture": "sha256:b38ed2dbc6afd9e1390f008b9e07604126fb33bdb322a49ea8b216c09e2bf07f",
+      "quote": "x-ratelimit-policy: 250;w=60"
+    },
+    {
+      "url": "https://arquivo.pt/wayback/cdx?url=example.com&output=json&limit=1",
+      "date": "2026-10-30",
+      "proved": "a keyless CDX query with output=json returned a JSON line with its collection",
+      "capture": "sha256:b38ed2dbc6afd9e1390f008b9e07604126fb33bdb322a49ea8b216c09e2bf07f",
+      "quote": "\"collection\": \"AWP5\""
+    },
+    {
+      "url": "https://github.com/arquivo/pwa-technologies/wiki/APIs",
+      "date": "2026-10-30",
+      "proved": "replay at /wayback allows 4,000 requests a minute from one IP address",
+      "capture": "sha256:ad20a6a219fc6b73becdd0eea0acb0e887f92da37f673a1cce621363af1e97b4",
+      "quote": "- [https://arquivo.pt/wayback](https://arquivo.pt/wayback): 4000 requests/60s from the same IP address"
+    }
+  ],
+  "notes": "It holds far fewer pages than the Wayback Machine but more of the non-English web.",
+  "binding_note": "250 CDX requests a minute per IP address, and a permanent block past the limit"
+}

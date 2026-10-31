@@ -1,0 +1,238 @@
+{
+  "topic": "data-apis",
+  "slug": "maptiler",
+  "provider": "MapTiler",
+  "url": "https://www.maptiler.com/cloud/pricing/",
+  "category": "geocoding and maps API",
+  "tier": "Free",
+  "free_tier": {
+    "stated": "100,000 API requests a month (each geocoding call, and each query inside a batch call, counts as one request; map tiles count from the same pool), 1,000 search sessions and 5,000 map sessions a month through the SDK, 5 GB of storage in one file; no credit card",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://www.maptiler.com/cloud/pricing/",
+    "read_on": "2026-10-30",
+    "notes": "at either monthly limit the Free plan's maps are suspended for the rest of the month; the Free plan has no paid extra usage. The next plan, Flex, is USD 30 a month for 500,000 API requests and 3,000 search sessions, then USD 0.15 per 1,000 requests."
+  },
+  "per_object_cap": {
+    "stated": "a batch geocoding call takes at most 50 semicolon-separated queries, each counted as one request",
+    "bytes": null,
+    "source_url": "https://docs.maptiler.com/cloud/api/geocoding/"
+  },
+  "retention": {
+    "stated": null,
+    "days": null,
+    "source_url": "https://www.maptiler.com/search/",
+    "notes": null
+  },
+  "egress": {
+    "terms": "not applicable: a query API metered in requests and sessions, not bytes",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.maptiler.com/cloud/pricing/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "HTTPS GET to api.maptiler.com/geocoding/{query}.json (forward, reverse by longitude,latitude, by feature id, and batch with semicolon-separated queries) with the key in the key parameter; an EU-based endpoint is offered; a request without a key answers HTTP 403 Missing key",
+  "endpoint": "https://api.maptiler.com/geocoding/{query}.json",
+  "tooling": "any HTTP client; the MapTiler Client JS library (geocoding.batch) and the MapTiler SDK JS geocoding control, which is metered in sessions rather than requests",
+  "chaining": "100,000 storable geocodes a month with no card, shared with map tile requests, so a stored table of up to that many addresses a month can be built through batch calls of 50; past the limit the Free plan stops for the rest of the month, and more is Flex at USD 30 a month or the Geoapify free plan (data-apis/geoapify). Bulk path: the batch endpoint only; no hosted geocoding data download. The last resort is self-hosted: the On-prem Free tile download (OpenStreetMap vectors of 2020) that the user installs and runs with MapTiler Server, tiles only, with no geocoder",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "100,000 API requests a month on the Free plan, geocoding and map tiles together; at the limit maps are suspended for the rest of the month",
+      "source": "https://www.maptiler.com/cloud/pricing/"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "1,000 search sessions a month on the Free plan for the SDK search control",
+      "source": "https://www.maptiler.com/cloud/pricing/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "at most 50 queries in one batch geocoding call, each counted as one request",
+      "source": "https://docs.maptiler.com/cloud/api/geocoding/"
+    }
+  ],
+  "limits_note": "unverified: no per-second request rate was found on the pricing page, the Cloud terms, the Geocoding API reference or the sessions guide",
+  "binding": "volume-quota",
+  "binding_note": "the 100,000 monthly requests are shared between geocoding and map tiles, and reaching them suspends the Free plan for the rest of the month",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a MapTiler Cloud account with an email and a password, or Google sign-in; no credit card for the Free plan. Fields beyond the sign-in providers are unverified: the form is rendered by…",
+    "country": null
+  },
+  "reliability_note": "usage beyond the Free plan limits can bring a temporary suspension of the account, and at either monthly limit the Free plan's maps are suspended for the rest of the month",
+  "confidence": "documented",
+  "confidence_note": "the Cloud pricing page, the Cloud terms, the Geocoding API reference, the batch guide, the sessions guide, the search product page and the sign-in page were quoted on 2026-10-30 and 2026-10-31; a keyless geocode answered HTTP 403 Missing key. No account was opened, so no keyed geocode was made; one would move it to measured.",
+  "evidence": [
+    {
+      "url": "https://www.maptiler.com/cloud/pricing/",
+      "date": "2026-10-30",
+      "proved": "the Free plan gives 100,000 API requests a month (Flex 500,000)",
+      "capture": "sha256:f83ae2598712f8cdc6b50ac88c4688c670a100a5936dbffd7e34717c414c3398",
+      "quote": "| API requests | 100k/month | 500k/month | Custom |"
+    },
+    {
+      "url": "https://www.maptiler.com/cloud/pricing/",
+      "date": "2026-10-30",
+      "proved": "the Free plan gives 1,000 search sessions a month (Flex 3,000)",
+      "capture": "sha256:f83ae2598712f8cdc6b50ac88c4688c670a100a5936dbffd7e34717c414c3398",
+      "quote": "| Search sessions | 1k/month | 3k/month | Custom |"
+    },
+    {
+      "url": "https://www.maptiler.com/cloud/pricing/",
+      "date": "2026-10-30",
+      "proved": "the Free plan gives 5,000 map sessions a month",
+      "capture": "sha256:f83ae2598712f8cdc6b50ac88c4688c670a100a5936dbffd7e34717c414c3398",
+      "quote": "| Sessions | 5k/month | 25k/month | Custom |"
+    },
+    {
+      "url": "https://www.maptiler.com/cloud/pricing/",
+      "date": "2026-10-30",
+      "proved": "the Free plan has 5 GB of storage in one file",
+      "capture": "sha256:f83ae2598712f8cdc6b50ac88c4688c670a100a5936dbffd7e34717c414c3398",
+      "quote": "5 GB storage (1 file limit)"
+    },
+    {
+      "url": "https://www.maptiler.com/cloud/pricing/",
+      "date": "2026-10-30",
+      "proved": "the Free plan needs no credit card",
+      "capture": "sha256:f83ae2598712f8cdc6b50ac88c4688c670a100a5936dbffd7e34717c414c3398",
+      "quote": "No credit card needed"
+    },
+    {
+      "url": "https://www.maptiler.com/cloud/pricing/",
+      "date": "2026-10-30",
+      "proved": "the Flex plan is USD 30 a month",
+      "capture": "sha256:f83ae2598712f8cdc6b50ac88c4688c670a100a5936dbffd7e34717c414c3398",
+      "quote": "$30/month (USD)"
+    },
+    {
+      "url": "https://www.maptiler.com/cloud/pricing/",
+      "date": "2026-10-30",
+      "proved": "extra API requests are not available on Free and cost USD 0.15 per 1,000 on Flex",
+      "capture": "sha256:f83ae2598712f8cdc6b50ac88c4688c670a100a5936dbffd7e34717c414c3398",
+      "quote": "| API requests | N/A | $0.15/1k requests | Custom |"
+    },
+    {
+      "url": "https://docs.maptiler.com/guides/maps-apis/maps-platform/tile-requests-and-map-sessions-compared/",
+      "date": "2026-10-31",
+      "proved": "at either monthly limit a Free plan's maps are suspended for the rest of the month",
+      "capture": "sha256:b8707fa71f5882885dcdd4373089ef392ff75895f3cdf35fb095edef2f4477c3",
+      "quote": "When you hit either of these two limits, you get charged extra (on a paid plan) or your maps get suspended for the rest of the month (on a free plan)."
+    },
+    {
+      "url": "https://docs.maptiler.com/guides/maps-apis/maps-platform/tile-requests-and-map-sessions-compared/",
+      "date": "2026-10-31",
+      "proved": "each query inside a batch call counts as one request",
+      "capture": "sha256:b8707fa71f5882885dcdd4373089ef392ff75895f3cdf35fb095edef2f4477c3",
+      "quote": "For example, a batch of 20 queries counts as 20 requests, even though it’s technically one API call."
+    },
+    {
+      "url": "https://docs.maptiler.com/guides/maps-apis/maps-platform/tile-requests-and-map-sessions-compared/",
+      "date": "2026-10-31",
+      "proved": "a geocoding session covers all search-box interactions in one sitting",
+      "capture": "sha256:b8707fa71f5882885dcdd4373089ef392ff75895f3cdf35fb095edef2f4477c3",
+      "quote": "Similarly, in case of [geocoding](https://docs.maptiler.com/guides/developer/location-services/geocoding-search/), a session includes all interactions with a search field in one sitting."
+    },
+    {
+      "url": "https://docs.maptiler.com/cloud/api/geocoding/",
+      "date": "2026-10-30",
+      "proved": "a batch call takes at most 50 queries",
+      "capture": "sha256:61fbf5c45fb8f5e3fe1ca639af8cf037c244c57f799576dc9c902f4fa83894f5",
+      "quote": "Each query may be forward, reverse or by feature ID. Maximum of 50 queries are supported."
+    },
+    {
+      "url": "https://docs.maptiler.com/cloud/api/geocoding/",
+      "date": "2026-10-30",
+      "proved": "every geocoding call needs a MapTiler API key",
+      "capture": "sha256:61fbf5c45fb8f5e3fe1ca639af8cf037c244c57f799576dc9c902f4fa83894f5",
+      "quote": "You need a MapTiler API key to use this service."
+    },
+    {
+      "url": "https://docs.maptiler.com/guides/geocoding/batch-geocoding-api/",
+      "date": "2026-10-30",
+      "proved": "batch geocoding uses the standard endpoint with semicolon-separated queries",
+      "capture": "sha256:1ba112d8ae155d3324125ebd52aa1b3c4a419f1fbb9dc787574232c7096fc313",
+      "quote": "Just make sure you use semicolons `;` to separate individual requests when sending multiple requests at once."
+    },
+    {
+      "url": "https://www.maptiler.com/search/",
+      "date": "2026-10-30",
+      "proved": null,
+      "capture": "sha256:aed811301dc0076b68c61006d2daa125f8efbb2ee553d6a0875d08efd0f0c323",
+      "quote": null
+    },
+    {
+      "url": "https://www.maptiler.com/search/",
+      "date": "2026-10-30",
+      "proved": "each HTTPS geocoding call counts as one request against the plan",
+      "capture": "sha256:aed811301dc0076b68c61006d2daa125f8efbb2ee553d6a0875d08efd0f0c323",
+      "quote": "The geocoding API is part of Cloud. You need to have a [free or paid plan](https://www.maptiler.com/cloud/pricing/); each HTTPS API call is counted as an individual request."
+    },
+    {
+      "url": "https://www.maptiler.com/terms/cloud/",
+      "date": "2026-10-30",
+      "proved": null,
+      "capture": "sha256:58eff6a6fa0cdde5d3b37e206f836b62b308db174ef08a4eef4525356354dcba",
+      "quote": null
+    },
+    {
+      "url": "https://www.maptiler.com/terms/cloud/",
+      "date": "2026-10-30",
+      "proved": null,
+      "capture": "sha256:58eff6a6fa0cdde5d3b37e206f836b62b308db174ef08a4eef4525356354dcba",
+      "quote": null
+    },
+    {
+      "url": "https://www.maptiler.com/terms/cloud/",
+      "date": "2026-10-30",
+      "proved": null,
+      "capture": "sha256:58eff6a6fa0cdde5d3b37e206f836b62b308db174ef08a4eef4525356354dcba",
+      "quote": null
+    },
+    {
+      "url": "https://www.maptiler.com/terms/cloud/",
+      "date": "2026-10-30",
+      "proved": "usage beyond the Free plan limits can suspend the account temporarily",
+      "capture": "sha256:58eff6a6fa0cdde5d3b37e206f836b62b308db174ef08a4eef4525356354dcba",
+      "quote": "Usage of the Service beyond these limits may result in temporary suspension of the Service for your account."
+    },
+    {
+      "url": "https://cloud.maptiler.com/auth/widget?mode=signup",
+      "date": "2026-10-31",
+      "proved": "the sign-up widget offers email and password, or Google",
+      "capture": "sha256:aaae0a72014e8f54b3d0970c5d8ff4b843bfef7f28395336b7e9d358ba8979b7",
+      "quote": "\"signInOptions\": [{\"provider\": \"password\"}, {\"provider\": \"google.com\"}]"
+    },
+    {
+      "url": "https://www.maptiler.com/data/pricing/",
+      "date": "2026-10-30",
+      "proved": "the On-prem Free plan for self-hosted maps is limited to 100 monthly active users",
+      "capture": "sha256:56ba21ac42c79dab2b5ff93b0848ff2a2577c2b990fdbc387868601ddf4ed483",
+      "quote": "- maximum 100 MAU"
+    },
+    {
+      "url": "https://www.maptiler.com/data/pricing/",
+      "date": "2026-10-30",
+      "proved": "the On-prem Free maps are the 2020 OpenStreetMap vectors and low-resolution satellite",
+      "capture": "sha256:56ba21ac42c79dab2b5ff93b0848ff2a2577c2b990fdbc387868601ddf4ed483",
+      "quote": "OpenStreetMap Vectors (2020)"
+    },
+    {
+      "url": "probe:https://api.maptiler.com/geocoding/Zurich.json#body",
+      "date": "2026-10-30",
+      "proved": "the geocoding endpoint answers and refuses a request with no key",
+      "capture": "sha256:9a206e23b36aee1b80d6b8e4cd1056a849cffba58713dfe1ef9160dbfb3a775f",
+      "quote": "Missing key - Get your FREE key at https://cloud.maptiler.com/account/keys/"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-31T00:48:53.808Z",
+  "notes": "Bulk path: batch geocoding calls of up to 50 queries, each one request; no hosted data download for geocoding.",
+  "extras": {
+    "bulk_path": "batch geocoding calls of up to 50 queries, each counted as one request; no geocoding data download"
+  }
+}

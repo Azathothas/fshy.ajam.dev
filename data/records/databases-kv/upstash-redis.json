@@ -1,0 +1,91 @@
+{
+  "topic": "databases-kv",
+  "slug": "upstash-redis",
+  "provider": "Upstash Redis",
+  "url": "https://upstash.com/docs/redis/overall/billing",
+  "category": "serverless Redis and KV",
+  "free_tier": {
+    "stated": "250 MB data; 500,000 commands per month; 10 GB bandwidth per month; 10,000 commands per second; one database",
+    "unit": "mixed",
+    "source_url": "https://upstash.com/docs/redis/overall/billing",
+    "read_on": "2026-10-22",
+    "metered_on": "request-count"
+  },
+  "per_object_cap": {
+    "stated": "100 MB per record on Free; 10 MB per request",
+    "bytes": null,
+    "source_url": "https://upstash.com/docs/redis/overall/billing"
+  },
+  "retention": {
+    "stated": "a database on a free account persists while the account is active. An anonymous database created with no account is deleted after 3 days unless claimed",
+    "days": 3,
+    "source_url": "https://upstash.com/start-redis"
+  },
+  "egress": {
+    "terms": "10 GB bandwidth per month included on Free; pay as you go includes 200 GB then USD 0.03/GB",
+    "metered": true,
+    "free_allowance": "10 GB per month",
+    "price_per_tb": "USD 0.03/GB beyond 200 GB",
+    "source_url": "https://upstash.com/docs/redis/overall/billing"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "a body-style REST API that takes the command as a JSON array; the Redis protocol on the same endpoint; a developer API",
+  "tooling": "redis-cli against the TLS endpoint, or any HTTP client against the REST form; @upstash/redis SDKs",
+  "chaining": "the cheapest free cache in front of a free Postgres: 100,000 reads a day off the database, if the write path fits 1,000 a day",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "500,000 commands per month on Free, about 16,600 a day",
+      "source": "https://upstash.com/docs/redis/overall/billing"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "100 MB per record; 250 MB total data",
+      "source": "https://upstash.com/docs/redis/overall/billing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "10 GB bandwidth per month",
+      "source": "https://upstash.com/docs/redis/overall/billing"
+    }
+  ],
+  "limits_note": "adding a payment method moves every database to paid, and 'an account with a payment method cannot have free databases'",
+  "binding": "request-rate",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "POST upstash.com/start-redis with an Idempotency-Key provisions a database with no account, no email and no card; the database is deleted after 3 days unless claimed in a browser. A permanent free database needs an email",
+    "country": null
+  },
+  "reliability_note": "an unclaimed database carries a warning not to store sensitive data because it is not tied to an account; the documented developer API host api.upstash.com did not resolve on 2026-10-22 while the per-database endpoint worked",
+  "confidence": "measured",
+  "confidence_note": "a database was provisioned anonymously, PING/SET/GET/DBSIZE were run against it, and the 3-day expiry was read from the response. The free-plan limits are a first-party page.",
+  "evidence": [
+    {
+      "url": "probe:https://upstash.com/start-redis",
+      "date": "2026-10-22",
+      "proved": "POST with Idempotency-Key 5f4fd5c1-7624-43b4-bfc9-94192920d977 returned 200, 3239 bytes, in 7.0 s, with endpoint optimal-spaniel-201484.upstash.io, a bearer token, a console URL and 'Expires: 2026-10-25 (3 days from creation)'"
+    },
+    {
+      "url": "probe:https://optimal-spaniel-201484.upstash.io",
+      "date": "2026-10-22",
+      "proved": "body-style REST calls returned PING -> PONG, SET k1 v1 -> OK, GET k1 -> v1, DBSIZE -> 1; each round trip 0.73 to 0.92 s"
+    },
+    {
+      "url": "https://upstash.com/docs/redis/overall/billing",
+      "date": "2026-10-22",
+      "proved": "Free: 250 MB data, 500K monthly commands, 10 GB monthly bandwidth, 10,000 commands/s, 10 MB request, 100 MB record, 1 database, no credit card"
+    },
+    {
+      "url": "probe:https://api.upstash.com/v2/redis/databases",
+      "date": "2026-10-22",
+      "proved": "curl could not resolve api.upstash.com on 2026-10-22, so the documented developer API host is not reachable from this network even though the per-database endpoint is"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-22T03:05:00.000Z",
+  "price_per_tb_month": "USD 0.20 per 100K commands; storage USD 0.25/GB-month beyond the first 1 GB",
+  "notes": "The 10,000-commands-per-day figure in circulation is the pre-2025-03 plan. 500,000 a month is 16,600 a day, which is a different shape: a burst is fine and a steady 1/second is not."
+}

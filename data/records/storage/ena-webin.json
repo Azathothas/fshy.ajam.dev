@@ -1,0 +1,88 @@
+{
+  "topic": "storage",
+  "slug": "ena-webin",
+  "provider": "ENA (European Nucleotide Archive) — Webin",
+  "url": "https://www.ebi.ac.uk/ena",
+  "category": "academic",
+  "free_tier": {
+    "stated": "No fixed quota. Own fair-use policy: 'We place no absolute limit within the 2-month period on the total volume of user data that may exist in a data upload area at any one time' and 'we ... expect that volumes would not exceed 10 Terabytes under normal circumstances.'",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://ena-docs.readthedocs.io/en/latest/submit/fileprep/upload.html",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://ena-docs.readthedocs.io/en/latest/submit/fileprep/upload.html",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Retention: transit area purged after 2 months if not submitted; once submitted, ENA is permanent",
+    "days": 60,
+    "source_url": "https://ena-docs.readthedocs.io/en/latest/submit/fileprep/upload.html",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered and anonymous. ftp.sra.ebi.ac.uk is CORS-open (`Access-Control-Allow-Origin: *`) and already served through Cloudflare (`Server: cloudflare`), so CF is in front by default.",
+    "metered": false
+  },
+  "interface": [
+    "sftp",
+    "ftp",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "sftp",
+  "tooling": "Webin-CLI (github.com/enasequence/webin-cli), plus plain FTP/Aspera. Read side is plain HTTPS/FTP with HTTP range support — works with rclone's http/`sftp` remotes and curl.",
+  "chaining": "One Webin account = unlimited studies. The upload area is a transit buffer (10 TB documented expectation), while published accessions are permanent and unmetered on the read side. Multiply across accounts/centres; read side needs no account at all, so the fetch workload is uncapped regardless of how many deposit accounts exist.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "45 KB/s",
+      "source": "https://ena-docs.readthedocs.io/en/latest/submit/fileprep/upload.html"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "430 KB/s",
+      "source": "https://ena-docs.readthedocs.io/en/latest/submit/fileprep/upload.html"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "Retention: transit area purged after 2 months",
+      "source": "https://ena-docs.readthedocs.io/en/latest/submit/fileprep/upload.html"
+    }
+  ],
+  "limits_note": "per-object-cap: none documented per file; per-request volume soft-capped at ~10 TB per 2-month window per upload area, and upload areas are not backed up. Retention: transit area purged after 2 months if not submitted; once submitted, ENA is permanent. Binding constraint on READ is per-ip-shaping: single stream 45 KB/s, 8 parallel ranged GETs 430 KB/s (9.6x).",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Upload path is the weak side — FTP sessions drop out, Aspera recommended; upload area is explicitly 'not backed up'.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://ena-docs.readthedocs.io/en/latest/submit/fileprep/upload.html",
+      "date": "2026-10-21",
+      "proved": "quotes 'no absolute limit within the 2-month period', 'would not exceed 10 Terabytes under normal circumstances', 'temporary transit area which is not backed up'"
+    },
+    {
+      "url": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR000/SRR000001/SRR000001_1.fastq.gz",
+      "date": "2026-10-21",
+      "proved": "probe: GET -r 0-1023 -> 206 Partial Content, Content-Range: bytes 0-1023/23319983, body starts 1f 8b 08 00 (real gzip magic), Server: cloudflare"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: 8 parallel ranged GETs -> 8,000,000 bytes in 18.6s (430 KB/s) vs 1 connection 1,001,024 bytes in 22.2s (45 KB/s)"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No fixed quota. Own fair-use policy: 'We place no absolute limit within the 2-month period on the total volume of user data that may exist in a data upload area at any one time' and 'we ... expect that volumes would not exceed 10 Terabytes under normal circumstances.'",
+  "extras": {},
+  "binding": "retention-clamped",
+  "binding_note": null
+}

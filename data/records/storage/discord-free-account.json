@@ -1,0 +1,81 @@
+{
+  "topic": "storage",
+  "slug": "discord-free-account",
+  "provider": "Discord free account (attachment CDN)",
+  "url": "https://discord.com",
+  "category": "messaging",
+  "free_tier": {
+    "stated": "No total storage cap documented anywhere. Per-file only: 20 MiB per attachment on a free account since 2026-09-03 (raised from 10 MiB). 10 files per message. Server Boost tiers raise it for all members in that server: Tier 2 = 50 MB, Tier 3 = 100 MB; Nitro Basic 50 MB, Nitro 500 MB (1 GB per the Nitro marketing page).",
+    "unit": "objects",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.discord.com/developers/change-log",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "20 MiB per file",
+    "bytes": 20971520,
+    "source_url": "https://docs.discord.com/developers/change-log",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "| Attachment CDN URLs are signed and expire in exactly 24 h; the bytes stay on Discord's servers indefinitely but the link must be re-derived via `POST /api/v10/attachments/refresh-urls` (401 without a token) or by re-reading the message",
+    "source_url": "https://docs.discord.com/developers/change-log",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered and free — cdn.discordapp.com is Cloudflare-fronted and there is no bandwidth metering or egress billing of any kind. This is the strongest egress position in the whole survey.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Official Bot HTTP API (`POST /channels/{id}/messages` with files[], or the two-step cloud-upload path). Mature wrappers: forscht/ddrive (533 stars, Discord-as-filesystem with REST + OpenAPI 3.1), missuo/discord-image (212 stars, Go, refreshes CDN links), ShufflePerson/Discord_CDN (link refresher proxy), DisboxApp/server. No rclone backend.",
+  "chaining": "100 servers per free account (200 with Nitro) x 500 channels per server = 50,000 text channels per account, and every channel takes unlimited messages. This is the multiplier: not per-file size but per-message count. ddrive's author reports storing 4,000 GB in a single Discord channel, so the practical ceiling is account count x rate limit, not storage.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "20 MiB per file",
+      "source": "https://docs.discord.com/developers/change-log"
+    }
+  ],
+  "limits_note": "20 MiB per file is the hard bite. Message create is ~5 messages / 5 s per channel; global ~50 req/s per token; 10,000 invalid requests per 10 min triggers a 24 h Cloudflare ban. Attachment URLs carry `ex`/`is`/`hm` and stop working after 24 h — see reliability_note.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Attachment CDN URLs are signed and expire in exactly 24 h; the bytes stay on Discord's servers indefinitely but the link must be re-derived via `POST /api/v10/attachments/refresh-urls` (401 without a token) or by re-reading the message. Any un-refreshed link returns 404 'This content is no longer available.'",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://docs.discord.com/developers/change-log",
+      "date": "2026-10-21",
+      "proved": "'September 3, 2026 — Default File Upload Limit Increase: The default file upload limit has been increased from 10 MiB to 20 MiB for users, bots, webhooks, and interaction responses'"
+    },
+    {
+      "url": "https://docs.discord.com/developers/reference",
+      "date": "2026-10-21",
+      "proved": "'Attachments uploaded to Discord's CDN have signed URLs with a preset expiry time'; example `?ex=65d903de&is=65c68ede&hm=...`; 'ex — Hex timestamp indicating when an attachment CDN URL will expire'"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: decoded ex/is from a real signed URL (ex=66424c96, is=6640fb16) -> ex-is = 86400 s = exactly 24.0 h; GET that URL today -> 404; GET the same path with no query string -> 404 'This content is no longer available.'"
+    },
+    {
+      "url": "https://support.discord.com/hc/en-us/articles/33694251638295",
+      "date": "2026-10-21",
+      "proved": "'Number of servers: 100 | Number of servers Nitro: 200 | Channels (includes voice/text/categories): 500 | Upload Base 10MB, Level 2 50MB for all members, Level 3 100MB for all members'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No total storage cap documented anywhere. Per-file only: 20 MiB per attachment on a free account since 2026-09-03 (raised from 10 MiB). 10 files per message. Server Boost tiers raise it for all members in that server: Tier 2 = 50 MB, Tier 3 = 100 MB; Nitro Basic 50 MB, Nitro 500 MB (1 GB per the Nitro marketing page).",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

@@ -1,0 +1,118 @@
+{
+  "topic": "compute",
+  "slug": "tembo-computer",
+  "provider": "Tembo",
+  "url": "https://docs.tembo.io/resources/pricing",
+  "category": "full VM (dedicated Linux VM per session)",
+  "tier": "Nano: 2 vCPU / 2 GiB",
+  "free_tier": {
+    "stated": "Free trial: 'included usage allowance, up to 10 users, sandbox size up to xl, and priority support'. The size of the allowance and its duration are not stated on the pricing page.",
+    "unit": "mixed",
+    "metered_on": "wall-clock",
+    "source_url": "https://docs.tembo.io/resources/pricing",
+    "read_on": "2026-10-24",
+    "notes": "a dollar-denominated allowance, amount unpublished"
+  },
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "unknown: 'Stopped, snapshotted, and otherwise non-running VMs do not accrue compute', and projects can cache reusable environments, but no page read states how long a stopped VM or its cached environment survives",
+    "days": null,
+    "source_url": "https://docs.tembo.io/resources/pricing"
+  },
+  "egress": {
+    "terms": "Not published on the pricing page. Tembo Gateway model traffic and cloud VM compute 'draw from the same balance', but no traffic allowance or per-GB egress rate is stated.",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://docs.tembo.io/resources/pricing"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "Agent sessions execute in dedicated ephemeral Linux VMs; the workspace is driven through Tembo's own gateway and model routing rather than a machine you connect to directly.",
+  "tooling": "Tembo's own workspace. It is a coding-agent product that happens to run a VM, not a VPS: no SSH contract is published on the pricing page.",
+  "chaining": "A full VM at USD 0.1066 an hour for the smallest shape is USD 77.82 a month, so it is not an answer to the cheap-machine questions. It matters here as the case where a full VM is priced by the running second and the binding cost is the USD 60 a month plan that must sit underneath it.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "Pro USD 60 a month buys a USD 60 usage allowance; Max USD 200 buys USD 200; compute draws at USD 0.0403/vCPU-hour + USD 0.0130/GiB-RAM-hour",
+      "source": "https://docs.tembo.io/resources/pricing"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "the Pro plan caps sandbox size at 'medium' (4 vCPU / 8 GiB); only Max and the trial reach 'xl' (16 vCPU / 32 GiB)",
+      "source": "https://docs.tembo.io/resources/pricing"
+    }
+  ],
+  "limits_note": "'Included monthly allowance expires at the end of each billing cycle and does not roll over. Prepaid balance does not expire.' Overage billing is optional and capped by a user-set maximum.",
+  "binding": "volume-quota",
+  "binding_note": "The dollar allowance is what runs out first: the cheapest always-on shape spends USD 77.82 of it a month, so a USD 60 Pro allowance covers about 23 days of a Nano VM and every larger shape less.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Account signup for the free trial; Pro (USD 60) and Max (USD 200) are paid plans. Whether the trial requires a card, what card types are accepted, and whether any authorisation is held are not stated on the pricing page read.",
+    "country": null
+  },
+  "reliability_note": "No reliability event observed. Each session runs in a dedicated ephemeral VM, so state that is not in a cached project environment does not outlive the session.",
+  "confidence": "documented",
+  "confidence_note": "Rates, the size table and the plan floors are quoted from the vendor's own pricing documentation read. The free-trial amount is explicitly unpublished, so no value is recorded for it. What would raise it: a trial run that reads the granted allowance, and the egress terms.",
+  "evidence": [
+    {
+      "url": "https://docs.tembo.io/resources/pricing",
+      "date": "2026-10-24",
+      "proved": "quoted: 'VM compute ... at $0.0403/vCPU-hour + $0.0130/GiB-RAM-hour' with 'Nano | 2 | 2 GiB | $0.1066' per hour"
+    },
+    {
+      "url": "https://docs.tembo.io/resources/pricing",
+      "date": "2026-10-24",
+      "proved": "plans: 'Pro ($60/month): $60 monthly usage allowance, up to 5 users, sandbox size up to medium', 'Max ($200/month): $200 monthly usage allowance ... up to xl'"
+    },
+    {
+      "url": "https://docs.tembo.io/resources/pricing",
+      "date": "2026-10-24",
+      "proved": "metering: 'Tembo measures each running VM in seconds and bills its actual running time at the per-second equivalent of the hourly rate. Stopped, snapshotted, and otherwise non-running VMs do not accrue compute.'"
+    },
+    {
+      "url": "https://docs.tembo.io/resources/pricing",
+      "date": "2026-10-24",
+      "proved": "free trial: 'Free trial: included usage allowance, up to 10 users, sandbox size up to xl, and priority support' - no amount given"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-24T01:54:08.000Z",
+  "price_per_tb_month": null,
+  "notes": "Arithmetic: Nano at USD 0.1066 an hour × 730 = USD 77.818 a month, against a USD 60 Pro allowance, so the allowance covers 563 hours. At 10 h a day (300 h) it is USD 31.98. Verified against the component rates: 2 × 0.0403 + 2 × 0.0130 = USD 0.1066 an hour, which matches the size table exactly. Larger shapes: Micro (2/4) USD 0.1326/hr, Medium (4/8) USD 0.2652, Large (8/16) USD 0.5304, XL (16/32) USD 1.0608, XXL (16/64) USD 1.4768, Ultra (32/128) USD 2.9536. Region, egress and stopped-VM retention are unverified. sandboxprices.com could not price this row at all, so the site contributes discovery only.",
+  "extras": {
+    "shape": {
+      "vcpu": 2,
+      "ram_gib": 2,
+      "disk_gib": null,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "billing_model": "hourly",
+    "term": "monthly plan plus per-second metering",
+    "m10h_usd": 31.98,
+    "m24h_usd": 77.82,
+    "price_arithmetic": "0.1066/hr × 730 h = USD 77.818; × 300 h = USD 31.98. Component check: 2 vCPU × 0.0403 + 2 GiB × 0.0130 = 0.1066/hr.",
+    "free_tier_kind": "trial",
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": null,
+      "ports": "not published",
+      "static_ip": null,
+      "ipv6": null,
+      "per_session_bytes": null
+    },
+    "session_cap": {
+      "wall_clock_min": null,
+      "idle_reap_s": null,
+      "restart_required": false,
+      "note": "no lifetime cap published; non-running VMs accrue no compute"
+    },
+    "aggregator_gross_usd_month": null,
+    "aggregator_note": "sandboxprices.com lists Tembo Computer as a Full VM row with no modelled total ('workload eligibility incomplete'); the vendor rate card prices it at USD 77.82 a month for the smallest shape."
+  }
+}

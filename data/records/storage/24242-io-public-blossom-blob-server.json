@@ -1,0 +1,86 @@
+{
+  "topic": "storage",
+  "slug": "24242-io-public-blossom-blob-server",
+  "provider": "24242.io — public Blossom blob server (Nostr)",
+  "url": "https://24242.io",
+  "category": "content-addressed blob server (BUD-01/02/06)",
+  "free_tier": {
+    "stated": "No account, no quota, no total cap stated — 'Free and unrestricted... with no warranties... for now.' Per-file 100 MiB. First person to upload an object owns it (SHA-256 addressed).",
+    "unit": "unlimited",
+    "metered_on": "unstated",
+    "source_url": "https://24242.io/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "100 MiB/file",
+    "bytes": 104857600,
+    "source_url": "https://24242.io/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "100 MiB/file; files deleted if not accessed for 60 days; /list returns only the first 250 hits; BUD-08 (NIP-94) not implemented",
+    "days": 60,
+    "source_url": "https://24242.io/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "free, unauthenticated GET by SHA-256; served from a public host with no metering published",
+    "metered": false
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "BUD-01 HTTP: PUT /upload (NIP-98 auth header), GET /<sha256>, HEAD /upload for BUD-06 pre-flight, /mirror for BUD-06",
+  "tooling": "any Blossom client (nostr.build, ditto, Amethyst); `nak` for key generation; plain curl once you can sign a NIP-98 event",
+  "chaining": "Content-addressed means a chunk map is trivial: `(sha256 → server)` is a complete locator, and BUD-06 /mirror lets one server pull a blob from another — so replication is a one-request operation per chunk.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "100 MiB/file",
+      "source": "https://24242.io/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "deleted if not accessed for 60 days",
+      "source": "https://24242.io/"
+    }
+  ],
+  "limits_note": "100 MiB/file; files deleted if not accessed for 60 days; /list returns only the first 250 hits; BUD-08 (NIP-94) not implemented",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "anonymous — a Nostr keypair is the credential; no email, no phone. Verified: HEAD /upload with a BUD-06 pre-flight but no auth header returns 401 'x-reason: Authorization header missing, when required'.",
+    "country": null
+  },
+  "reliability_note": "60-day access-decay retention makes this an ephemeral tier, not an archive. 100 MiB/file means ~5,000 objects per 500 GB.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://24242.io/",
+      "date": "2026-10-21",
+      "proved": "'Max file size: 100MiB'; 'Files are deleted if not accessed for 60 days'; 'First person to upload an object owns it'; BUD-06 /mirror accepts only another blossom URL"
+    },
+    {
+      "url": "https://24242.io/upload",
+      "date": "2026-10-21",
+      "proved": "HEAD (BUD-06 headers) — 401, x-reason: 'Authorization header missing, when required'"
+    },
+    {
+      "url": "https://files.sovbit.host/upload",
+      "date": "2026-10-21",
+      "proved": "HEAD — 401 (same BUD-06 shape)"
+    },
+    {
+      "url": "https://blossom.ditto.pub/upload",
+      "date": "2026-10-21",
+      "proved": "HEAD — 401, X-Reason: 'This needs a Nostr auth token (BUD-11)'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No account, no quota, no total cap stated — 'Free and unrestricted... with no warranties... for now.' Per-file 100 MiB. First person to upload an object owns it (SHA-256 addressed).",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

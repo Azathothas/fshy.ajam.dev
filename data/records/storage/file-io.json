@@ -1,0 +1,78 @@
+{
+  "topic": "storage",
+  "slug": "file-io",
+  "provider": "File.io",
+  "url": "https://file.io",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "no account; 4 GB per transfer ('file transfers are limited to a total of 4 GB')",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://www.file.io/about",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://www.file.io/about",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "4 GB/transfer; default 14-day expiry, override with ?expires=N[day|w|M|y]; file is DELETED after the first download ('after it is downloaded, the file is completely deleted').",
+    "days": 14,
+    "source_url": "https://www.file.io/about",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "unmetered direct link, but files self-destruct on first download",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "documented REST: curl -F 'file=@x' https://file.io/?expires=1w -> {\"success\":true,\"link\":...,\"expiry\":\"7 days\"}",
+  "chaining": "none — one-download-then-delete semantics make it anti-storage by design.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "transfer ('file transfers are limited to a total of 4 GB') 4 GB/transfer",
+      "source": "https://www.file.io/about"
+    }
+  ],
+  "limits_note": "4 GB/transfer; default 14-day expiry, override with ?expires=N[day|w|M|y]; file is DELETED after the first download ('after it is downloaded, the file is completely deleted').",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Docs still describe a working API, but both the apex and www return 301/405 today. The 405 comes from an object-store front end, so the API has been re-plumbed and the documented POST is stale. Would need browser/session cookies to find the new path.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://www.file.io/about",
+      "date": "2026-10-21",
+      "proved": "'file transfers are limited to a total of 4 GB', expires syntax, sample JSON responses"
+    },
+    {
+      "url": "https://file.io/",
+      "date": "2026-10-21",
+      "proved": "probe: POST -> 301; POST https://www.file.io/ -> 405 MethodNotAllowed (ResourceType: OBJECT)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "no account; 4 GB per transfer ('file transfers are limited to a total of 4 GB')",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "no account; 4 GB per transfer ('file transfers are limited to a total of 4 GB')",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    },
+    "probe_reported": "POST https://file.io/ -> 301 to https://www.file.io/; POST https://www.file.io/ -> 405 MethodNotAllowed from an S3-style backend ('ResourceType: OBJECT'). The documented endpoint no longer accepts uploads from a user. Upload path FAILED."
+  },
+  "binding": "per-ip-shaping",
+  "binding_note": null
+}

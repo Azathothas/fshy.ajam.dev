@@ -1,0 +1,95 @@
+{
+  "topic": "egress",
+  "slug": "proxlane",
+  "provider": "Proxlane",
+  "url": "https://proxlane.com/",
+  "category": "developer tunnel (HTTP, TCP, UDP)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free: Active tunnels 1, Connected devices 3, Protocols HTTP / TCP, Monthly transfer 5 GB, Fixed TCP ports 0, Fixed UDP ports 0, UDP Not included.",
+    "unit": "GB",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://proxlane.com/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://proxlane.com/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://proxlane.com/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "5 GB monthly transfer on Free, 50 GB on Plus at CNY 390 per month, 200 GB on Pro at CNY 980 per month.; ingress: tcp",
+    "metered": true,
+    "free_allowance": "5 GB monthly transfer on Free, 50 GB on Plus at CNY 390 per month, 200 GB on Pro at CNY 980 per month.",
+    "price_per_tb": null,
+    "source_url": "https://proxlane.com/"
+  },
+  "interface": [
+    "cli",
+    "rest"
+  ],
+  "interface_detail": "'The CLI supports Windows and Linux; Launcher is for Windows.', plus automation tokens on the pricing table",
+  "tooling": "Proxlane CLI and a Windows Launcher",
+  "chaining": "The CLI runs on Linux, so a free VM can host the origin; the UDP port still needs Plus.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "5 GB per month on Free",
+      "source": "https://proxlane.com/"
+    },
+    {
+      "kind": "write-gated",
+      "value": "UDP is 'Not included' on Free and 'Fixed UDP ports' is 0; Plus is required",
+      "source": "https://proxlane.com/"
+    }
+  ],
+  "limits_note": "",
+  "binding": "write-gated",
+  "binding_note": "At 1 TiB/month the byte allowance is irrelevant because the free tier carries no UDP at all: the plan is what fails first, and the earliest plan with one fixed UDP port is Plus.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "An account plus a device approval: 'proxlane login' and 'approve this device with proxlane login'.",
+    "country": "None"
+  },
+  "reliability_note": "Free tier is one active tunnel and one device-attached agent; the public UDP port on Plus is a fixed port, one per account.",
+  "confidence": "documented",
+  "confidence_note": "The free plan's protocol list and the vendor's own Bedrock answer both state the gate, so the verdict is settled; only a paid account would show the port behaviour.",
+  "evidence": [
+    {
+      "url": "https://proxlane.com/",
+      "date": "2026-10-23",
+      "proved": "Free plan rows: 'Protocols HTTP / TCP', 'Fixed UDP ports 0', 'UDP Not included', 'Monthly transfer 5 GB'; Plus lists 'Protocols HTTP / TCP / UDP', 'Fixed UDP ports 1', 'Monthly transfer 50 GB'"
+    },
+    {
+      "url": "https://proxlane.com/guides/minecraft-bedrock-server",
+      "date": "2026-10-23",
+      "proved": "'UDP forwarding and public port allocation are enabled on Plus and Pro. Free can publish HTTP and TCP within its active-tunnel limit but cannot start a Bedrock UDP profile.'"
+    },
+    {
+      "url": "https://proxlane.com/guides/minecraft-bedrock-server",
+      "date": "2026-10-23",
+      "proved": "'The public port may not be the same as local port 19132.', so even a paid plan hands out a rewritten port on a shared edge"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "CNY 0 free; Plus CNY 390/month",
+  "notes": "The paid Plus plan does carry one fixed UDP port, so this vendor is a free-tier gap rather than a protocol refusal. Prices are quoted in CNY on an English page. The free tier's 5 GB is, so the plan gate and the quota both fail the tests and the plan gate is the one met first.",
+  "extras": {
+    "wg_path": "none",
+    "wg_detail": "No WireGuard, and the free tier has no UDP endpoint to put one behind.",
+    "ingress": "tcp",
+    "volume_tib_month": 0.0045,
+    "volume_stated": "5 GB monthly transfer on Free, 50 GB on Plus at CNY 390 per month, 200 GB on Pro at CNY 980 per month.",
+    "bytes_transit": "yes",
+    "transit_note": "Proxlane's relay carries the bytes and rewrites the port."
+  }
+}

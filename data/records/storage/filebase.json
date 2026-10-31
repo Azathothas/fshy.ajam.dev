@@ -1,0 +1,78 @@
+{
+  "topic": "storage",
+  "slug": "filebase",
+  "provider": "Filebase (IPFS tier)",
+  "url": "https://filebase.com",
+  "category": "p2p",
+  "free_tier": {
+    "stated": "Free: 5 GB pooled storage across Object Storage and IPFS, 500 pinned files, 10 GB/month IPFS bandwidth, object egress free. Pro $7.50/mo: 500 GB pooled.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://filebase.com/pricing/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://filebase.com/pricing/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://filebase.com/pricing/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Split, and the split is the trap. 'For S3-compatible object storage buckets on the non-IPFS tier at s3.filebase.io, egress is free on every paid plan.' But 'IPFS bandwidth is not free... On the free tier, there is a 5 GB / month egress cap' — and the pricing page states 10 GB IPFS Egress. Either way it is single-digit-to-10 GB/month.",
+    "metered": false,
+    "free_allowance": "5 GB per month"
+  },
+  "interface": [
+    "s3-compatible",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "s3",
+  "tooling": "S3 API at s3.filebase.io, region 'auto', SigV4; rclone s3 backend works; IPFS Pinning Service API; dedicated gateways; docs list rclone/boto3/aws-cli explicitly.",
+  "chaining": "1 bucket on Free, no limit on object count within it. 5 GB per account is not repeatable to 500 GB in any practical way, and each account needs its own S3 keys.",
+  "limits": [],
+  "limits_note": "Single PUT 5 GB; multipart total 5 TB (1 TB recommended); 500 req/s S3 API; 1 bucket on Free; 500 pinned files.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "S3 API held up live: the public gateway served the test CID at 200 (414,201 bytes, Server: Filebase) but throttled during a rapid burst (2 of 8 answered before the burst ran long). The 'no egress fees' headline applies to the S3 tier, not the IPFS tier — a genuinely confusing pricing page and the single most common misread in this niche.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://filebase.com/pricing/",
+      "date": "2026-10-21",
+      "proved": "Free: 'Storage 5 GB', 'Shared across Object Storage and IPFS', 'Pinned Files 500', 'IPFS Egress 10 GB', 'Object Egress Free'"
+    },
+    {
+      "url": "https://filebase.com/docs/concepts/bandwidth",
+      "date": "2026-10-21",
+      "proved": "'IPFS bandwidth is not free. IPFS buckets, gateways, Bitswap, trustless gateway responses, RPC responses, and Filebase Sites have separate IPFS bandwidth accounting.'"
+    },
+    {
+      "url": "https://ipfs.filebase.io/ipfs/bafybei...5u4",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, 414201 bytes, Server: Filebase"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Free: 5 GB pooled storage across Object Storage and IPFS, 500 pinned files, 10 GB/month IPFS bandwidth, object egress free. Pro $7.50/mo: 500 GB pooled.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "egress",
+      "why": "Free: 5 GB pooled storage across Object Storage and IPFS, 500 pinned files, 10 GB/month IPFS bandwidth, object egress free. Pro $7.50/mo: 500 GB pooled.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": null
+}

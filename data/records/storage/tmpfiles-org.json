@@ -1,0 +1,83 @@
+{
+  "topic": "storage",
+  "slug": "tmpfiles-org",
+  "provider": "tmpfiles.org",
+  "url": "https://tmpfiles.org",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "no account; 100 MB per file",
+    "unit": "MB",
+    "metered_on": "unstated",
+    "source_url": "https://tmpfiles.org/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "100 MB per file",
+    "bytes": 100000000,
+    "source_url": "https://tmpfiles.org/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://tmpfiles.org/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "unmetered; byte path requires a signed token scraped from the landing page",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "POST /api/v1/upload -F file=@x -> JSON; then GET the /dl/<token>/<id>/<name> URL extracted from the HTML",
+  "chaining": "none — 1-hour retention, no accounts.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "100 MB per file",
+      "source": "https://tmpfiles.org/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "100 MB/file",
+      "source": "https://tmpfiles.org/"
+    }
+  ],
+  "limits_note": "100 MB/file; expires in 60 minutes (page rendered 'File expires in 59 minutes'). 10-upload burst all 200.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Textbook trap candidate: the API's own returned URL does NOT serve bytes. You must make a second request, scrape a timestamp+hash-signed /dl/ URL, and use that — and the signature expires. Also the API host did not resolve on this machine's DNS (0.0.0.0 answer); needed --resolve. Many resolvers/ISPs sinkhole it.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: POST /api/v1/upload -> 200 with /wLA4MTMv84dY/ URL; GET it -> 200 / 2792 B HTML, not the file"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET signed /dl/1792600426.d39cd846.../ URL -> 200 / 32768 B / sha256 match"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "no account; 100 MB per file",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "no account; 100 MB per file",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    },
+    "probe_reported": "POST /api/v1/upload -> 200 {\"url\":\"https://tmpfiles.org/wLA4MTMv84dY/probe.bin\"}. GET that URL -> 200 but 2792 B text/html. GET /dl/<id>/<name> -> 200, 2792 B text/html. Only the SIGNED URL parsed out of that HTML (https://tmpfiles.org/dl/1792600426.d39cd846db4b4014/wLA4MTMv84dY/probe.bin) -> 200, 32768 B, sha256 MATCH."
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

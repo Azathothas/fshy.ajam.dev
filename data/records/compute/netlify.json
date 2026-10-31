@@ -1,0 +1,182 @@
+{
+  "topic": "compute",
+  "slug": "netlify",
+  "provider": "Netlify",
+  "url": "https://www.netlify.com/pricing/",
+  "category": "platform host",
+  "free_tier": {
+    "stated": "Free at USD 0 forever with a 300-credit monthly limit and a credit hard limit; credits are spent by deploys, compute, bandwidth and requests from one pool.",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://www.netlify.com/pricing/",
+    "read_on": "2026-10-24"
+  },
+  "per_object_cap": {
+    "stated": "not stated on the pricing page; the pool is total credits, not a per-object size"
+  },
+  "retention": {
+    "stated": "not stated on the pricing page read"
+  },
+  "egress": {
+    "terms": "bandwidth costs 20 credits per GB from the 300-credit pool",
+    "metered": true,
+    "free_allowance": "300 credits, about 15 GB of bandwidth",
+    "source_url": "https://www.netlify.com/pricing/"
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "inferred from the tooling the provider documents; not probed",
+  "tooling": "not stated",
+  "chaining": "300 credits a month is 30 GB-hours, which is 30 hours of a 1 GiB function, or about an hour a day across a month; Netlify Database and Blob storage draw from the same pool, so a storage backend must live elsewhere.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "300 credits a month, one pool for deploys, compute, bandwidth and requests",
+      "source": "https://www.netlify.com/pricing/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "compute 10 credits per GB-hour, bandwidth 20 credits per GB, requests 2 credits per 10k, production deploys 15 credits each",
+      "source": "https://www.netlify.com/pricing/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "15 minutes per build by default, plus up to 5 more minutes for post-processing; a build that runs past the limit is stopped",
+      "source": "https://answers.netlify.com/t/support-guide-how-to-use-the-api-to-increase-your-sites-build-time-limit/52805"
+    },
+    {
+      "kind": "request-rate",
+      "value": "1 concurrent build on Free, counted across the whole team",
+      "source": "https://docs.netlify.com/manage/accounts-and-billing/billing/billing-for-credit-based-plans/credit-based-pricing-plans"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "no monthly build-minute allowance on the credit plans: build minutes are not metered, each production deploy costs 15 credits, and deploy previews and branch deploys cost 0 credits",
+      "source": "https://docs.netlify.com/manage/accounts-and-billing/billing/billing-for-credit-based-plans/how-credits-work"
+    }
+  ],
+  "limits_note": "one 300-credit monthly pool is shared by deploys, compute, bandwidth and requests, and the free plan has a hard limit with no recharge, so a site that serves 15 GB of bandwidth in a month has spent its whole allowance and then pauses.",
+  "binding": "volume-quota",
+  "binding_note": "300 credits is 30 GB-hours of compute or 15 GB of bandwidth, and both come out of the same 300.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a Netlify account; no card on the Free plan, and the plan has a hard credit limit rather than an overage",
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://www.netlify.com/pricing/",
+      "date": "2026-10-22",
+      "proved": "Free plan: 300 credit limit; rates 15 credits per production deploy, 10 credits per GB-hour compute, 20 credits per GB bandwidth, 2 credits per 10k requests, quoted"
+    },
+    {
+      "url": "https://docs.netlify.com/manage/accounts-and-billing/billing/billing-for-credit-based-plans/credit-based-pricing-plans",
+      "date": "2026-10-22",
+      "proved": "Free plan is 300 credits/month with a credit hard limit and no auto recharge; monthly credits reset at the start of each cycle and do not roll over; accounts created from 2025-09-04 use credit plans, quoted"
+    },
+    {
+      "url": "https://www.netlify.com/pricing/pro-vs-free/",
+      "date": "2026-10-22",
+      "proved": "Free includes 300 credits per month and 1 concurrent build; when credits run out, projects pause until the next billing cycle, quoted"
+    },
+    {
+      "url": "https://www.netlify.com/pricing/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Free — $0 forever ... Credits: 300 credit limit'"
+    },
+    {
+      "url": "https://www.netlify.com/pricing/",
+      "date": "2026-10-24",
+      "proved": "quoted usage credit costs: 'Production deploys 15 credits each', 'Compute 10 credits per GB-hour', 'Bandwidth 20 credits per GB', 'Web requests 2 credits per 10k requests'"
+    },
+    {
+      "url": "https://answers.netlify.com/t/support-guide-how-to-use-the-api-to-increase-your-sites-build-time-limit/52805",
+      "date": "2026-10-30",
+      "proved": "the default build time limit is 15 minutes plus 5 minutes of post-processing, in a Netlify support guide last reviewed by Netlify Support Staff in November 2024",
+      "capture": "sha256:240f8bb48d8faf74477ecadb088cf45d1bcfe89a59a6a06ad9e027b3ab750b29",
+      "quote": "The default build time limit for all sites at Netlify is 15 minutes with 5 additional minutes allowed for any post-processing being done by the build system."
+    },
+    {
+      "url": "https://docs.netlify.com/manage/accounts-and-billing/billing/billing-for-credit-based-plans/credit-based-pricing-plans",
+      "date": "2026-10-30",
+      "proved": "the Free credit plan allows 1 concurrent build for the entire team",
+      "capture": "sha256:56ebe6d5a1de8088460cf80dc7bc2e1e1a3a3c8f5dac42182ecf87c8080219ec",
+      "quote": "1 concurrent build means that you can only run one build at a time for your entire Netlify team."
+    },
+    {
+      "url": "https://docs.netlify.com/manage/accounts-and-billing/billing/billing-for-credit-based-plans/how-credits-work",
+      "date": "2026-10-30",
+      "proved": "credit plans meter a production deploy at 15 credits and no longer count build minutes; the same table prices deploy previews and branch deploys at 0 credits",
+      "capture": "sha256:f393f12cc32635bd9d946c936379dc3516c835bf947e620b9283bdc185c37f52",
+      "quote": "| [Production deploys](#credit-usage-for-production-deploys) | 15 credits each | Deploying your project to production, build minutes no longer calculated |"
+    },
+    {
+      "url": "https://docs.netlify.com/manage/accounts-and-billing/billing/billing-for-legacy-plans/legacy-pricing-plans",
+      "date": "2026-10-30",
+      "proved": "the legacy Free and Starter plans held 300 build minutes a month, a hard limit on Free; the credit plans that replaced them for new accounts no longer meter build minutes",
+      "capture": "sha256:7e6044039b308749e48fbe1747264efcc954cd93e5d9fabe05649f5e4ae3112d",
+      "quote": "| Build minutes | 300 minutes/month <br /> <br /> (If Free plan, hard limit) <br /> <br /> (If Starter plan, $7 per 500 when exceeded) | 25,000 minutes/month <br /> <br /> (then $7 per 500) | Custom |"
+    },
+    {
+      "url": "https://docs.netlify.com/manage/accounts-and-billing/billing/billing-for-credit-based-plans/billing-faq-for-credit-based-plans/",
+      "date": "2026-10-30",
+      "proved": "the credit plans have no build-minute meter",
+      "capture": "sha256:6ec3964c3cc182b49443c725824e0225d1b8915b30b7334ad94b993b5aaa0042",
+      "quote": "Build minutes are not calculated as their own metric in our Credit-based pricing plans."
+    },
+    {
+      "url": "https://docs.netlify.com/manage/accounts-and-billing/billing/billing-for-credit-based-plans/credit-based-pricing-plans",
+      "date": "2026-10-30",
+      "proved": "the Free plan is 300 credits a month with a credit hard limit",
+      "capture": "sha256:56ebe6d5a1de8088460cf80dc7bc2e1e1a3a3c8f5dac42182ecf87c8080219ec",
+      "quote": "| Monthly credits | 300 credits/month with credit hard limit | 1,000 credits/month with auto recharge option | 3,000 credits/month with auto recharge option |"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-30T12:41:29.104Z",
+  "notes": "The legacy 100 GB bandwidth and 125k invocation figures do not appear on this page. Netlify functions are request-scoped like Vercel's, so it is not an always-on row either.",
+  "extras": {
+    "facets": {
+      "class": "perpetual-allowance",
+      "free_tier_kind": "monthly-credit",
+      "shape": {
+        "vcpu": null,
+        "ram_gib": null,
+        "gpu_class": null,
+        "gpu_count": null
+      }
+    },
+    "shape": {
+      "vcpu": null,
+      "ram_gib": null,
+      "disk_gib": null,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "billing_model": "free",
+    "term": "none",
+    "m10h_usd": 0.0,
+    "m24h_usd": 0.0,
+    "price_arithmetic": "no charge inside 300 credits",
+    "free_tier_kind": "credit-pool",
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": false,
+      "ports": "HTTP only",
+      "static_ip": false,
+      "ipv6": false,
+      "per_session_bytes": null
+    },
+    "session_cap": {
+      "wall_clock_min": null,
+      "idle_reap_s": null,
+      "restart_required": false,
+      "note": "functions are request-scoped; no resident process"
+    }
+  },
+  "tier": "Free",
+  "confidence_note": "the Free plan line and the credit cost table were read on the pricing page"
+}

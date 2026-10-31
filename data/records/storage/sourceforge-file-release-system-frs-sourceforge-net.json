@@ -1,0 +1,117 @@
+{
+  "topic": "storage",
+  "slug": "sourceforge-file-release-system-frs-sourceforge-net",
+  "provider": "SourceForge File Release System (FRS) — frs.sourceforge.net",
+  "url": "https://sourceforge.net/p/forge/documentation/Release%20Files%20for%20Download/",
+  "category": "paas",
+  "free_tier": {
+    "stated": "No fixed quota. SourceForge's own docs: 'There are currently no fixed capacity limits around usage of our services. In lieu of specific disk usage caps (quotas), we may contact projects if they are using significant storage.' Guidance: '5GB or less is ideal. 20-30GB may be permissible (limits may vary and be flexible depending on the situation)'. So ~20-30 GB per project as a practical band, with no hard number.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://sourceforge.net/p/forge/documentation/Disk%20Quotas/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "10 GB per file",
+    "bytes": 10000000000,
+    "source_url": "https://sourceforge.net/p/forge/documentation/Disk%20Quotas/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "SourceForge.net will not restore individual files', and releases persist indefinitely (OpenOffice's mirror alone carries 166.4 MB files from 2015)",
+    "source_url": "https://sourceforge.net/p/forge/documentation/Disk%20Quotas/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and unmetered. Every release is 'automatically distributed to our worldwide network of download mirrors'. Downloads are served from per-mirror hostnames (zenlayer.dl / twds.dl / cfhcable.dl).sourceforge.net behind Cloudflare. Project Web states 'Unlimited bandwidth for Open Source projects' and 'Our project web servers frequently handle more than 50M hits per day'.",
+    "metered": false
+  },
+  "interface": [
+    "sftp",
+    "scp",
+    "rsync",
+    "rclone"
+  ],
+  "interface_detail": "sftp",
+  "tooling": "Native SFTP, SCP and rsync — all three documented with working example commands on the FRS page ('scp file.zip [address removed]:/home/frs/project/fooproject/release1'). Reaches rclone via its built-in `sftp` backend (rclone.org/sftp), and restic/borg/rsync directly. No third-party wrapper needed. Probe: TCP to frs.sourceforge.net:22 -> open.",
+  "chaining": "One account, many projects. Each project gets an independent tree at /home/frs/project/<unixname>/ and its own mirror distribution; one project admin can hold release-technician rights on many projects. Chained: (20-30 GB practical per project) x (N projects per account) x (N accounts). At 20 projects that is already 400-600 GB; the 10 GB/file mirror limit forces sharding, which is free because FRS is directory-based. Second chain: the same upload endpoint feeds project web space at /home/project-web/<unixname>/htdocs served as <unixname>.sourceforge.io, which is a separate quota-less static origin.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "10 GB per file",
+      "source": "https://sourceforge.net/p/forge/documentation/Disk%20Quotas/"
+    }
+  ],
+  "limits_note": "per-object-cap: 10 GB per file — 'Individual files larger than 10 GB will not replicate out to our mirrors and can not be downloaded', so the only way past it is to shard. Request-rate: none published; upload is plain SFTP so it is limited by SSH session count, not an API quota. Retention: none — 'Users are responsible for backing up all of their files. SourceForge.net will not restore individual files', and releases persist indefinitely (OpenOffice's mirror alone carries 166.4 MB files from 2015). Reliability: signed mirror redirects are short-lived (see reliability_note).",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Two real hazards found by probing. (1) The signed mirror URL from downloads.sourceforge.net 301s to a per-mirror host with an expiring token; You must re-resolve the redirect per session, or the mirror silently returns HTML. (2) There is no hard cap, which means the cap is discretionary — SourceForge mails 'over-quota' notices (the 2006 Inkscape notice shows a 100 MB soft quota on the shell/group dir) and can contact projects using 'significant storage'. Treat it as a soft ceiling that a human can raise or lower.",
+  "confidence": "documented",
+  "confidence_note": "The page states the number in the record; the claim is documented, not measured.",
+  "evidence": [
+    {
+      "url": "https://sourceforge.net/p/forge/documentation/Disk%20Quotas/",
+      "date": "2026-10-22",
+      "proved": "no fixed capacity limits, 10 GB per file soft. Re-read https://sourceforge.net/p/forge/documentation/Disk%20Quotas/: HTTP 200, 3189 bytes, sha256 5e5877b1fd03b2c6. Quoted: sourceforge.net/p/forge/documentation/Disk%20Quotas/feed.atom 'RSS') [Search](https://sourceforge.net/p/forge/documentation/search 'Search') # Service Quotas There are currently no fixed capacity limits around usage of our services. In lieu of specific disk usage caps (quotas), we may contact projects if they are using significant storage. Projects should: - Keep disk usage to a reasonable level: 5GB or less is ideal. 20-30GB may be permissible. (limits may"
+    },
+    {
+      "url": "https://sourceforge.net/p/forge/documentation/Disk%20Quotas/",
+      "date": "2026-10-21",
+      "proved": "'There are currently no fixed capacity limits around usage of our services... 5GB or less is ideal. 20-30GB may be permissible'"
+    },
+    {
+      "url": "https://sourceforge.net/p/forge/documentation/Release%20Files%20for%20Download/",
+      "date": "2026-10-21",
+      "proved": "SFTP/SCP/rsync example commands; 'Individual files larger than 10 GB will not replicate out to our mirrors and can not be downloaded'"
+    },
+    {
+      "url": "https://downloads.sourceforge.net/project/sevenzip/7-Zip/24.09/7z2409-x64.exe",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 302 -> zenlayer.dl.sourceforge.net -> 206 Partial Content, Content-Range: bytes 0-1023/1637343, body starts 4d5a 9000 ('MZ') — real PE bytes, not an error page"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: 32 parallel ranged GETs on Apache_OpenOffice_4.1.15 (4000000-byte ranges) -> 68,311,515 bytes in 4632 ms = 14.06 MB/s aggregate"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe concurrency curve on the same file: N=4 -> 2.52 MB/s, N=8 -> 8.18 MB/s, N=16 -> 7.77 MB/s, N=32 -> 14.06 MB/s. Non-linear and still climbing at 32; the cap is per-connection, not per-IP."
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: TCP connect frs.sourceforge.net:22 -> open (SFTP/SCP/rsync upload path live); :873 (plain rsync) -> timeout, so use rsync-over-SSH"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: one 166.4 MB release listed on sourceforge.net/projects/openofficeorg.mirror/files/ (200) — large files really are hosted, not theoretical"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "No fixed quota. SourceForge's own docs: 'There are currently no fixed capacity limits around usage of our services. In lieu of specific disk usage caps (quotas), we may contact projects if they are using significant storage.' Guidance: '5GB or less is ideal. 20-30GB may be permissible (limits may vary and be flexible depending on the situation)'. So ~20-30 GB per project as a practical band, with no hard number.",
+  "extras": {
+    "verified": [
+      {
+        "url": "https://sourceforge.net/p/forge/documentation/Disk%20Quotas/",
+        "date": "2026-10-22",
+        "via": null,
+        "http_status": 200,
+        "bytes": 3189,
+        "sha256": "5e5877b1fd03b2c60d57741e1636a2a8ac1e848dfaab19f9f5a0a02f00054ea2",
+        "pattern_found": true,
+        "what_changed": "no change: the page still states the claim",
+        "capture": "captures\\sourceforge-frs-sourceforge-net-p-forge-documentation-disk-20quotas-.txt"
+      }
+    ]
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

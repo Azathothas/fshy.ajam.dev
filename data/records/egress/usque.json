@@ -1,0 +1,92 @@
+{
+  "topic": "egress",
+  "slug": "usque",
+  "provider": "usque",
+  "url": "https://github.com/Diniboy1123/usque",
+  "category": "tool (wireguard transport)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "no service and no account; \"an open-source reimplementation of the Cloudflare WARP client's MASQUE mode\"",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://github.com/Diniboy1123/usque",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://github.com/Diniboy1123/usque",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://github.com/Diniboy1123/usque",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not stated by this tool; the traffic reaches Cloudflare WARP; ingress: none",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://github.com/Diniboy1123/usque"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "usque register / enroll / native-tun / socks5 / http-proxy / l4-proxy / port-forward",
+  "tooling": "single Go binary; SOCKS5, HTTP, native TUN and port-forward modes",
+  "chaining": "composes with any free compute host that blocks WireGuard but allows QUIC or TCP 443, and with the cloudflare-warp record.",
+  "limits": [],
+  "limits_note": "",
+  "binding": "none",
+  "binding_note": "it adds no quota; its value is that it reaches WARP over TCP or HTTP/2 where WireGuard over UDP fails",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no account; registration is performed by the tool",
+    "country": "None"
+  },
+  "reliability_note": "the README says only the Linux amd64 binary was tested; userspace QUIC is slower than kernel WireGuard by the author's own statement",
+  "confidence": "documented",
+  "confidence_note": "a probe through the native tunnel or the SOCKS5 mode would raise it",
+  "evidence": [
+    {
+      "url": "https://github.com/Diniboy1123/usque",
+      "date": "2026-10-23",
+      "proved": "\"leverages the Connect-IP (RFC 9484) protocol\" with native tunnel, SOCKS5, HTTP and L4 proxy modes"
+    },
+    {
+      "url": "https://github.com/Diniboy1123/usque",
+      "date": "2026-10-23",
+      "proved": "\"reports that WARP+ doesn't work anymore over WireGuard arose lately\" citing wgcf issue 459, and \"certain networks block WireGuard, but don't block QUIC\""
+    },
+    {
+      "url": "https://github.com/Diniboy1123/usque",
+      "date": "2026-10-23",
+      "proved": "release v4.2.1 published 2026-07-20; last push 2026-07-20; 1493 stars"
+    },
+    {
+      "url": "https://github.com/Diniboy1123/usque",
+      "date": "2026-10-23",
+      "proved": "\"MASQUE is userspace, and so is QUIC, the underlying protocol, making the implementation slower\""
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The only client that replaces the UDP transport without a second host: it speaks MASQUE over TCP or HTTP/2 to Cloudflare's own edge, so there is no wrapper at the far end. That makes it the one answer to a UDP block that needs nothing but the device. It is also the honest no for the router question, since no .conf exists. Port forward mode is documented, which is the closest it comes to ingress.",
+  "extras": {
+    "wg_path": "registration-api",
+    "wg_detail": "it registers its own WARP device and then carries traffic over MASQUE (Connect-IP, RFC 9484) instead of WireGuard, so there is no .conf and no UDP",
+    "ingress": "none",
+    "volume_tib_month": null,
+    "volume_stated": "not stated by this tool; the traffic reaches Cloudflare WARP",
+    "bytes_transit": "yes",
+    "transit_note": "through Cloudflare's MASQUE endpoint",
+    "hosting_requirement": "none; runs on the device and dials Cloudflare's edge",
+    "last_release": "v4.2.1 2026-07-20",
+    "stars": 1493
+  },
+  "self_hosted": true
+}

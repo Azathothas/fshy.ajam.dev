@@ -1,0 +1,80 @@
+{
+  "topic": "storage",
+  "slug": "audius-original-file-is-served-byte-for-byte",
+  "provider": "Audius (Open Audio Protocol) — original file is served byte-for-byte",
+  "url": "https://audius.co",
+  "category": "p2p",
+  "free_tier": {
+    "stated": "'There is no limit to the number of tracks you can upload to your Audius profile' and 'no limit on the duration of your tracks'; per-upload file size cap is 2 GB. Unlimited tracks x 2 GB = unbounded, free, no paid tier exists.",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://help.audius.co/faq/is-there-a-limit-to-how-much-i-can-upload-to-my-audius-profile",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "file size cap is 2 GB",
+    "bytes": 2000000000,
+    "source_url": "https://help.audius.co/faq/is-there-a-limit-to-how-much-i-can-upload-to-my-audius-profile",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://help.audius.co/faq/is-there-a-limit-to-how-much-i-can-upload-to-my-audius-profile",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free. Content is served by creator nodes / the open-audio validator network; no egress meter, no account-level bandwidth cap, no paid tier to upgrade to.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Public discovery-provider REST API (discoveryprovider.audius.co/v1) — keyless with app_name. Track objects expose orig_file_cid, orig_filename, is_original_available, is_downloadable. /v1/tracks/{id}/stream returns a 302 to a creator-node cidstream; /v1/tracks/{id}/download returns a 302 to the ORIGINAL file. JS SDK (@audius/sdk), docs.audius.co/api.",
+  "chaining": "Unlimited tracks per account x unlimited accounts; each track independently 2 GB. Because /download serves orig_file_cid and not the 320k transcode, this is the only host in this slot where the uploaded bytes come back out intact.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "file size cap is 2 GB",
+      "source": "https://help.audius.co/faq/is-there-a-limit-to-how-much-i-can-upload-to-my-audius-profile"
+    }
+  ],
+  "limits_note": "2 GB per track. is_downloadable must be true for the /download path artist-controlled flag.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "No transcoding on the download path. Verified live: GET /v1/tracks/7AVQpPA/download -> 302 to val007.open-audio-validator.com/tracks/cidstream/<orig_file_cid>?filename=....wav -> 206, Content-Type audio/wave, Content-Disposition attachment; filename='...wav', Content-Range bytes 0-1023/54711220, body starts 'RIFF....WAVEJUNK'. The stream path, by contrast, is a 128 kbps mp3 re-encode. Retrieval depends on the discovery provider being up; the network is decentralised so a single node going down is survivable.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://help.audius.co/faq/is-there-a-limit-to-how-much-i-can-upload-to-my-audius-profile",
+      "date": "2026-10-21",
+      "proved": "'no limit to the number of tracks'; 'file size limit for each upload ... currently set at 2GB'; page footer 'Updated April 30, 2026'"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET discoveryprovider.audius.co/v1/tracks/7AVQpPA?app_name=test -> 200, orig_filename 'Cartel De Santa - Tomala Cochino (Shavezz Remix).wav', duration 310, is_downloadable true, is_original_available true, orig_file_cid baeaaaiqsebqzfbbf2id64h6rtnfuhedc3h2qyrxhch4axr7tonaeq77novlzo"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET /v1/tracks/7AVQpPA/download -L -> 206, Content-Type audio/wave, Content-Range 0-1023/54711220, magic bytes RIFF/WAVE"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET /v1/tracks/a5aXGmz/stream -> 302 to creator-node .../tracks/cidstream/<track_cid> (the transcode, not the original)"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "'There is no limit to the number of tracks you can upload to your Audius profile' and 'no limit on the duration of your tracks'; per-upload file size cap is 2 GB. Unlimited tracks x 2 GB = unbounded, free, no paid tier exists.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

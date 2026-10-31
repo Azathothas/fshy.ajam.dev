@@ -1,0 +1,94 @@
+{
+  "topic": "egress",
+  "slug": "google-cloud-free-tier",
+  "provider": "Google Cloud Free Tier (e2-micro)",
+  "url": "https://cloud.google.com/free/docs/free-cloud-features",
+  "category": "origin VM (free tier)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "1 non-preemptible e2-micro VM instance per month in one of the following US regions: Oregon: us-west1. Iowa: us-central1. South Carolina: us-east1. 30 GB-months standard persistent disk. 1 GB of outbound data transfer from North America to all region destinations (excluding China and Australia) per month.",
+    "unit": "GB",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://cloud.google.com/free/docs/free-cloud-features",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://cloud.google.com/free/docs/free-cloud-features",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://cloud.google.com/free/docs/free-cloud-features",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "1 GB of outbound data transfer from North America to all region destinations (excluding China and Australia) per month; ingress: udp",
+    "metered": true,
+    "free_allowance": "1 GB of outbound data transfer from North America to all region destinations (excluding China and Australia) per month",
+    "price_per_tb": null,
+    "source_url": "https://cloud.google.com/free/docs/free-cloud-features"
+  },
+  "interface": [
+    "ssh"
+  ],
+  "interface_detail": "SSH to the instance's external IP, with a firewall rule for any further port",
+  "tooling": "wg-quick, nothing vendor-specific",
+  "chaining": "1 GB a month cannot carry bulk traffic; it composes as a control plane or a stable WireGuard endpoint that hands off to Oracle, not as an origin",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "1 GB a month of outbound transfer from North America, excluding China and Australia",
+      "source": "https://cloud.google.com/free/docs/free-cloud-features"
+    }
+  ],
+  "limits_note": "",
+  "binding": "volume-quota",
+  "binding_note": "1 GB a month is 33.3 MB a day, 0.09% of 1 TiB a month, so a run at a 1 TiB/month pace exhausts the allowance in about 39 minutes, which makes the byte allowance the first wall by three orders of magnitude; the second wall is the address: 'Static and ephemeral IP addresses in use on standard VM instances - USD 0.005 / 1 hour', which the Free Tier usage table does not list among the free amounts, so the free instance carries a public IPv4 bill of about USD 3.65 a month",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "'A Google Cloud billing account is required to access the Google Cloud Free Tier'; the account is created through the Free Trial, which preloads USD 300 of credit for 90 days and takes a payment method",
+    "country": "None"
+  },
+  "reliability_note": "no idle reclamation was found; the Free Tier has no end date, so the ceiling is the 1 GB allowance rather than the offer expiring",
+  "confidence": "documented",
+  "confidence_note": "both figures are on Google's own pages read",
+  "evidence": [
+    {
+      "url": "https://cloud.google.com/free/docs/free-cloud-features",
+      "date": "2026-10-23",
+      "proved": "Compute Engine Free Tier reads '1 GB of outbound data transfer from North America to all region destinations (excluding China and Australia) per month' and names the three US regions for the e2-micro"
+    },
+    {
+      "url": "https://cloud.google.com/vpc/pricing",
+      "date": "2026-10-23",
+      "proved": "'Static and ephemeral IP addresses in use on standard VM instances - USD 0.005 / 1 hour', and the same page's internet egress table, so the public address is billed separately from the free instance"
+    },
+    {
+      "url": "https://cloud.google.com/firewall/docs/firewalls",
+      "date": "2026-10-23",
+      "proved": "a firewall rule carries an IP protocol and a UDP destination port, and the default rules use udp:0-65535, so UDP ingress including 51820 is allowed by rule and not blocked by the platform"
+    },
+    {
+      "url": "https://cloud.google.com/free/docs/free-cloud-features",
+      "date": "2026-10-23",
+      "proved": "'The Free Tier has no end date, but Google reserves the right to change the offering, including changing or eliminating usage limits, with 30 days advance notice.'"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0 for the instance; about USD 3.65 a month for the external IPv4 at USD 0.005 an hour",
+  "notes": "The 1 GB figure is stated on the Free Tier page, not inferred, and it is the Compute Engine line rather than the Cloud Storage or Cloud Run line, which are also 1 GB and 100 GB respectively. No reclamation rule for an idle e2-micro appears on the page: unlike Oracle's Always Free, the instance is not taken back for being idle. The address charge is an inference from two documented facts, the USD 0.005 an hour line and the absence of an address line in the Free Tier table.",
+  "extras": {
+    "wg_path": "native-conf",
+    "wg_detail": "an e2-micro is an ordinary Linux VM; VPC firewall rules accept a UDP protocol and a destination port ('IP Protocol' plus 'Destination port ... For TCP or UDP, you can specify all destination ports, or optionally specify a single destination port number'), and the default-allow-internal row in the same document shows udp:0-65535, so udp:51820 is one rule away and wg-quick runs natively",
+    "ingress": "udp",
+    "volume_tib_month": 0.00091,
+    "volume_stated": "1 GB of outbound data transfer from North America to all region destinations (excluding China and Australia) per month",
+    "bytes_transit": "yes",
+    "transit_note": "bytes leave through the VM's external address on Google's network and count against the 1 GB monthly allowance"
+  }
+}

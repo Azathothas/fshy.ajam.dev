@@ -1,0 +1,81 @@
+{
+  "topic": "debrid",
+  "slug": "oxylabs",
+  "provider": "Oxylabs",
+  "url": "https://oxylabs.io/pricing/residential-proxy-pool",
+  "category": "residential egress: rotating residential, metered per GB, with a target blocklist",
+  "tier": "Residential Proxies, subscription",
+  "free_tier": {
+    "stated": "'Welcome credits FREE $5 toward any product' - a credit, not an allowance: at $6/GB it buys 0.8 GB.",
+    "unit": "GB",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://oxylabs.io/pricing/residential-proxy-pool",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: a byte stream, not an object",
+    "bytes": null,
+    "source_url": "https://oxylabs.io/pricing/residential-proxy-pool",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: a live endpoint, not stored bytes",
+    "days": null,
+    "source_url": "https://oxylabs.io/pricing/residential-proxy-pool",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Metered per GB with the rate set by the monthly plan: '$30/mo ... $6/GB', '$100/mo ... $5/GB', '$500/mo ... $4/GB', Enterprise '$2.5/GB 1K+ GB'. The network also refuses whole target classes: 'Some websites are restricted on our Residential Proxy network to avoid abuse', and the list includes 'Streaming'.",
+    "metered": true,
+    "free_allowance": "USD 5 welcome credit",
+    "price_per_tb": "USD 2.50/GB at 1,000 GB, USD 2,560 for 1 TiB",
+    "source_url": "https://oxylabs.io/pricing/residential-proxy-pool"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "HTTP(S), HTTP3 and SOCKS5 endpoints; 'Unlimited concurrent sessions', '3 proxy users', '10 whitelisted IPs' on the subscription.",
+  "endpoint": "https://ip.oxylabs.io/",
+  "tooling": "any HTTP/SOCKS5 client; the vendor publishes a proxy list endpoint that returns a JSON array of addresses",
+  "chaining": "The most expensive metered rate of the five vendors read, and the only one that publishes a target blocklist which includes streaming: a debrid download is a direct file fetch, so it is not the blocked class, but the blocklist is a reminder that the proxy vendor is a second gatekeeper with terms of its own.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "GB allowance set by plan; $30 buys 5 GB at $6/GB, $2,500+ opens $2.5/GB",
+      "source": "https://oxylabs.io/pricing/residential-proxy-pool"
+    },
+    {
+      "kind": "request-rate",
+      "value": "target blocklist rather than a rate: streaming and a named set of domains are refused on the residential network",
+      "source": "https://oxylabs.io/pricing/residential-proxy-pool"
+    }
+  ],
+  "limits_note": "The blocklist is a refusal that arrives as a failed request, not as a 4xx with a reason, so a client that only checks its own status codes will read it as a dead source.",
+  "binding": "volume-quota",
+  "binding_note": null,
+  "identity_cost": {
+    "kind": "card",
+    "detail": "Self-service subscription with card; the Enterprise tier is sold through sales, which adds a contract step.",
+    "country": null
+  },
+  "reliability_note": "The residential pool's target blocklist includes streaming, and the vendor says 'Some websites are restricted ... to avoid abuse and unclear activities'; a refused target looks like a failed fetch.",
+  "confidence": "documented",
+  "confidence_note": "Both the ladder and the blocklist are on the vendor page read. The blocklist's exact effect on a debrid file host was not tested.",
+  "evidence": [
+    {
+      "url": "https://oxylabs.io/pricing/residential-proxy-pool",
+      "date": "2026-10-23",
+      "proved": "'$6/GB', '$5/GB', '$4/GB', '$2.5/GB 1K+ GB' against $30/$100/$500/month plans; 'Unlimited concurrent sessions'; and the FAQ blocklist naming 'Streaming' among restricted targets"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T02:21:34.000Z",
+  "price_per_tb_month": "USD 2,560 per TiB (USD 2.50/GB at the 1,000 GB tier)",
+  "notes": "Kept as the top of the metered market. The useful fact is not the price but the blocklist: the same vendor that sells anonymity sells a list of destinations it will not carry, which no debrid service documents about itself.",
+  "extras": {
+    "ladder": "$6 (5 GB) / $5 (20 GB) / $4 (125 GB) / $2.50 (1,000 GB+) per GB",
+    "blocked_targets": "Apple domains, entertainment (Playstation), banking, some Google domains, government, streaming, ticketing, mailing",
+    "pool": "100M+ residential IPs"
+  }
+}

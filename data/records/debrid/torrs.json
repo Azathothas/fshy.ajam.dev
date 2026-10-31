@@ -1,0 +1,84 @@
+{
+  "topic": "debrid",
+  "slug": "torrs",
+  "provider": "Torrs (self-hosted torrent-to-Telegram bot)",
+  "url": "https://github.com/stxlvn/Torrs",
+  "category": "software (torrent to Telegram file, self-hosted)",
+  "tier": "self-hosted",
+  "free_tier": {
+    "stated": "No fee. A self-run bot: magnet, hash or .torrent in, selected files out into the chat. Requires a Telegram bot token and, for the full path, a local Bot API server.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://github.com/stxlvn/Torrs",
+    "read_on": "2026-10-23"
+  },
+  "per_object_cap": {
+    "stated": "Files above 1.9 GB are split into 7-Zip volumes because 'the self-hosted Bot API server limit is 2 GB per file'.",
+    "bytes": null,
+    "source_url": "https://github.com/stxlvn/Torrs",
+    "notes": "1.9 GB is the project's own safety margin under the 2 GB ceiling"
+  },
+  "retention": {
+    "stated": "Whatever the chat keeps; the project caches by Telegram file_id so a repeat request re-sends instead of re-downloading.",
+    "days": null,
+    "source_url": "https://github.com/stxlvn/Torrs"
+  },
+  "egress": {
+    "terms": "Telegram's; the bot's host carries the swarm traffic and the upload.",
+    "metered": false,
+    "free_allowance": "no allowance published",
+    "price_per_tb": null,
+    "source_url": "https://telegram.org/faq"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "A Telegram chat in front of TorrServer, plus a CLI-style configuration; lossless FLAC needs a second, user-account (MTProto) session because the Bot API only accepts .mp3/.m4a audio.",
+  "tooling": "Docker or source, TorrServer, and the tdlib Bot API server for the >50 MB path; 7-Zip is mandatory for objects above 1.9 GB.",
+  "chaining": "The reference implementation of the whole lane: a torrent leeched on somebody else's VM, uploaded to Telegram through a local Bot API server, split at 1.9 GB, and re-sent by file_id on request.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "1.9 GB split threshold under the 2 GB local Bot API limit",
+      "source": "https://github.com/stxlvn/Torrs"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "50 MB without a local Bot API server",
+      "source": "https://github.com/stxlvn/Torrs"
+    }
+  ],
+  "binding": "per-object-cap",
+  "binding_note": "The project documents the sequence exactly: 50 MB without a local server, 2 GB with one, and a 1.9 GB split above that. Nothing about flood control appears, because at these object counts it does not bind.",
+  "identity_cost": {
+    "kind": "any-phone",
+    "detail": "api_id/api_hash from my.telegram.org, hence a phone-registered Telegram account, plus a host to run TorrServer and the Bot API server.",
+    "country": null
+  },
+  "reliability_note": "A ban risk the project acknowledges in its own README; a self-run stack also means the Bot API server must be moved with logOut or updates are lost.",
+  "confidence": "documented",
+  "confidence_note": "The 50 MB / 2 GB / 1.9 GB progression is stated in the project's README read. Nothing was built.",
+  "evidence": [
+    {
+      "url": "https://github.com/stxlvn/Torrs",
+      "date": "2026-10-23",
+      "proved": "'files larger than 1.9 GB are automatically split into 7-Zip volumes (the self-hosted Bot API server limit is 2 GB per file)'"
+    },
+    {
+      "url": "https://github.com/stxlvn/Torrs",
+      "date": "2026-10-23",
+      "proved": "'without it Telegram cuts file uploads to 50 MB, with it the limit is 2 GB'"
+    },
+    {
+      "url": "https://github.com/stxlvn/Torrs",
+      "date": "2026-10-23",
+      "proved": "for lossless FLAC a second Telegram account ('userbot', via MTProto) is used because the Bot API only accepts .mp3/.m4a for sendAudio"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "price_per_tb_month": null,
+  "notes": "Software, not hosted. It is the only source found that states the 50 MB -> 2 GB -> 1.9 GB-split chain in one place, which makes it the best independent confirmation of the platform caps. Abandon if the README's limit table changes.",
+  "verified_at": "2026-10-23T01:52:23.000Z",
+  "self_hosted": true
+}

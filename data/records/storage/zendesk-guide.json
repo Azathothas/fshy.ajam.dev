@@ -1,0 +1,88 @@
+{
+  "topic": "storage",
+  "slug": "zendesk-guide",
+  "provider": "Zendesk Guide (help center article attachments)",
+  "url": "https://www.zendesk.com",
+  "category": "paas",
+  "free_tier": {
+    "stated": "'Each article has no limit on overall storage or total number of attached files.' Per-file 20 MB. But account-level file storage is separately capped at 10 GB base + 2 GB/agent (Team) — the article-level 'no limit' sits inside that account bucket.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://support.zendesk.com/hc/en-us/articles/4408884048794-What-are-the-attachment-limits-and-supported-file-types-in-my-help-center",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "20 MB per file",
+    "bytes": 20000000,
+    "source_url": "https://support.zendesk.com/hc/en-us/articles/4408884048794-What-are-the-attachment-limits-and-supported-file-types-in-my-help-center",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://support.zendesk.com/hc/en-us/articles/4408884048794-What-are-the-attachment-limits-and-supported-file-types-in-my-help-center",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and unranged-open. Article attachments are served from `support.zendesk.com/hc/article_attachments/<id>` with no auth, no referer check, `Accept-Ranges: bytes`, `Access-Control-Allow-Origin` permissive, `x-amz-replication-status: COMPLETED`, AES256 at rest.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Help Center API (`/api/v2/help_center/articles/{id}/attachments.json` returns the public `content_url`). Third-party CLI `tukaelu/zgsync` adds a Guide media subcommand.",
+  "chaining": "20 MB per file x unbounded attachments per article, but the 10 GB account file-storage pool is the wall. Trial-only for a free account, so the multiplier is trial instances, which is a bad trade.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "20 MB per file",
+      "source": "https://support.zendesk.com/hc/en-us/articles/4408884048794-What-are-the-attachment-limits-and-supported-file-types-in-my-help-center"
+    }
+  ],
+  "limits_note": "per-object-cap: 20 MB per file/image in articles (2 MB for community images). Quota: account file storage 10 GB base + 2 GB/agent. request-rate: Guide API is rate limited; an unauthenticated write probe `POST /api/v2/help_center/articles.json` returned 403 (good — no open write). Retention: archived tickets still count toward storage.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "The read path is the cleanest in this whole niche — public, ranged, unauthenticated, no expiry — but Zendesk has no free plan (14-day trial), so it cannot be a free-storage answer, only a pattern to copy.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://support.zendesk.com/hc/en-us/articles/4408884048794-",
+      "date": "2026-10-21",
+      "proved": "... — 'Articles: 20MB limit per file or image upload' and 'Each article has no limit on overall storage or total number of attached files'"
+    },
+    {
+      "url": "https://support.zendesk.com/hc/en-us/articles/4408835043994-Managing-data-storage-in-your-Zendesk-account",
+      "date": "2026-10-21",
+      "proved": "default storage '10 GB base' + '2 GB per agent' (Team)"
+    },
+    {
+      "url": "https://support.zendesk.com/hc/article_attachments/11203045835930",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, 365,146 bytes, image/png, no referer/UA needed (also 200 with `curl/8`), `Range: bytes=0-99` -> 206"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: 8 parallel ranged GETs x 45,000 B -> all 206, 360,000 B in 0.63 s"
+    }
+  ],
+  "verdict": "trial-only",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "'Each article has no limit on overall storage or total number of attached files.' Per-file 20 MB. But account-level file storage is separately capped at 10 GB base + 2 GB/agent (Team) — the article-level 'no limit' sits inside that account bucket.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "'Each article has no limit on overall storage or total number of attached files.' Per-file 20 MB. But account-level file storage is separately capped at 10 GB base + 2 GB/agent (Team) — the article-level 'no limit' sits inside that account bucket.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

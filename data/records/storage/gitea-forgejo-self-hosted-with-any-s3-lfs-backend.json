@@ -1,0 +1,72 @@
+{
+  "topic": "storage",
+  "slug": "gitea-forgejo-self-hosted-with-any-s3-lfs-backend",
+  "provider": "Gitea / Forgejo self-hosted with any S3 LFS backend",
+  "url": "https://forgejo.org/docs/latest/admin/advanced/quota/",
+  "category": "paas",
+  "free_tier": {
+    "stated": "Unlimited by default: `quota.default.TOTAL = -1` means unlimited, and the soft-quota feature is 'currently not yet enabled by default'. You supply the disk/object store, so bytes = your infrastructure.",
+    "unit": "unlimited",
+    "metered_on": "stored-bytes",
+    "source_url": "https://forgejo.org/docs/latest/admin/advanced/quota/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "No per-file cap unless you set one",
+    "source_url": "https://forgejo.org/docs/latest/admin/advanced/quota/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://forgejo.org/docs/latest/admin/advanced/quota/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Yours to pay for — unless the LFS backend is one of the free S3 endpoints (HF buckets, IA), in which case egress is the backend's and is free/CDN.",
+    "metered": false
+  },
+  "interface": [
+    "s3-compatible",
+    "rest",
+    "git"
+  ],
+  "interface_detail": "git",
+  "tooling": "Gitea/Forgejo binaries (single Go binary), `git-lfs` client, S3-compatible LFS storage config (`[lfs] STORAGE_TYPE=minio`). REST API + Swagger for full automation. Gitea Cloud offers a 30-day trial, not free.",
+  "chaining": "The pattern that makes 500 GB+ real: self-host the forge on a free-tier VM (or any always-on box) and set LFS storage to a free S3 endpoint. The forge holds ~metadata only; the bytes never touch your disk. Gitea's `LFS_MAX_FILE_SIZE`/`LFS_START_SERVER` are config, not policy.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "No per-file cap unless you set one",
+      "source": "https://forgejo.org/docs/latest/admin/advanced/quota/"
+    }
+  ],
+  "limits_note": "Soft-quota only: 'Forgejo checks the quota usage only before an action is executed, but it will allow a started action to complete' — so it can be overshot. No per-file cap unless you set one.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Quota feature is explicitly 'still in development' with 'little support for early prevention of operations in the UI'. Self-hosted means a dead VM = dead forge, but the LFS blobs survive in the object store.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://forgejo.org/docs/latest/admin/advanced/quota/",
+      "date": "2026-10-21",
+      "proved": "'quota.default.TOTAL is -1 (unlimited) by default'; soft-quota semantics quoted"
+    },
+    {
+      "url": "https://forgejo.org/docs/latest/admin/setup/storage/",
+      "date": "2026-10-21",
+      "proved": "storage backend configuration for LFS/attachments"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Unlimited by default: `quota.default.TOTAL = -1` means unlimited, and the soft-quota feature is 'currently not yet enabled by default'. You supply the disk/object store, so bytes = your infrastructure.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null,
+  "self_hosted": true
+}

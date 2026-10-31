@@ -1,0 +1,133 @@
+{
+  "topic": "compute",
+  "slug": "oracle-cloud-vpn-node",
+  "provider": "Oracle Cloud Always Free",
+  "url": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm",
+  "category": "cloud VM",
+  "tier": "Always Free, VM.Standard.E2.1.Micro and A1.Flex",
+  "free_tier": {
+    "stated": "up to two VM.Standard.E2.1.Micro instances, plus the first 1,500 OCPU hours and 9,000 GB hours a month on VM.Standard.A1.Flex, which Oracle states is equivalent to 2 OCPUs and 12 GB",
+    "unit": "hours",
+    "metered_on": "wall-clock",
+    "source_url": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm",
+    "read_on": "2026-10-24"
+  },
+  "per_object_cap": {
+    "stated": "200 GB of combined boot and block volume; the stated minimum boot volume is 47 GB on A1 and 50 GB is the default"
+  },
+  "retention": {
+    "stated": "'Idle Always Free compute instances may be reclaimed by Oracle.' The test is a 7-day window with 95th-percentile CPU below 20 percent, network below 20 percent and, on A1, memory below 20 percent",
+    "days": 7,
+    "source_url": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm",
+    "notes": "the reclamation test is the technical risk for this workload, not a deletion clock"
+  },
+  "egress": {
+    "terms": "the first 10 TB a month of public internet egress is not charged, in every region",
+    "metered": true,
+    "free_allowance": "10 TB a month",
+    "price_per_tb": null,
+    "source_url": "https://www.oracle.com/cloud/networking/virtual-cloud-network/pricing/"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "OCI console, CLI and API; SSH key installed at instance creation",
+  "tooling": "oci CLI or console; a real Linux VM with a public IPv4 and IPv6 on a VCN",
+  "chaining": "the only free tier that gives a full VM with a public address and 10 TB a month, and the one most likely to be reaped because a tunnel is idle by nature",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "reclaimable when 7-day p95 CPU, network and A1 memory all sit below 20 percent",
+      "source": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm"
+    },
+    {
+      "kind": "request-rate",
+      "value": "1,500 OCPU hours a month on A1: 2 OCPUs run 24/7 uses 1,460 and leaves 40",
+      "source": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "200 GB combined boot and block volume",
+      "source": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "10 TB a month of public egress, then metered",
+      "source": "https://www.oracle.com/cloud/networking/virtual-cloud-network/pricing/"
+    }
+  ],
+  "binding": "retention-clamped",
+  "binding_note": "a WireGuard endpoint carries almost no traffic and almost no CPU, which is exactly the profile Oracle's 7-day percentile test treats as idle, so the machine is at risk of reclamation while it is doing its job correctly.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "card at signup even at zero charge; Oracle states it may periodically check the card and place a temporary authorisation hold that the bank removes in three to five days. Prepaid, single-use and virtual cards are refused, and debit cards must work like credit cards without a PIN.",
+    "country": null
+  },
+  "reliability_note": "'out of host capacity' on A1 is a documented condition when Always Free shapes are unavailable in the home region",
+  "confidence": "documented",
+  "confidence_note": "reclamation rule, free-tier shapes and card terms quoted from Oracle pages read; the 10 TB figure is quoted from the networking pricing page, not from the Always Free resources page",
+  "evidence": [
+    {
+      "url": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Idle Always Free compute instances may be reclaimed by Oracle. Oracle will deem virtual machine and bare metal compute instances as idle if, during a 7-day period, the following are true: CPU utilization for the 95th percentile is less than 20%; Network utilization is less than 20%; Memory utilization is less than 20% (applies to A1 shapes only)'"
+    },
+    {
+      "url": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm",
+      "date": "2026-10-24",
+      "proved": "quoted: 'All tenancies get the first 1,500 OCPU hours and 9,000 GB hours per month for free for VM instances using the VM.Standard.A1.Flex shape ... For Always Free tenancies, this is equivalent to 2 OCPUs and 12 GB of memory.'"
+    },
+    {
+      "url": "https://www.oracle.com/cloud/networking/virtual-cloud-network/pricing/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Customers are not charged for the first 10 TB of data egress per month.'"
+    },
+    {
+      "url": "https://www.oracle.com/cloud/free/faq/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'We accept credit cards and debit cards that function like credit cards. We do not accept debit cards with a PIN or virtual, single-use, or prepaid cards.' and 'Oracle may periodically check the validity of your card, resulting in a temporary authorization hold. These holds are removed by your bank, typically within three to five days'"
+    },
+    {
+      "url": "https://www.oracle.com/cloud/free/",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Accounts left idle for 30 days or more may be deemed abandoned and become eligible for suspension or termination.'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-24T01:53:22.000Z",
+  "price_per_tb_month": null,
+  "notes": "The 10 TB egress figure is not on the Always Free Resources page: a full read of that page returned 2,119 words and no data-transfer section. The figure is on the VCN pricing page and in the price table on the networking pricing page. Any record that cites the Always Free document for the 10 TB figure has cited a page that does not carry it. Whether Oracle blocks inbound UDP 51820 by default on a VCN security list was not tested; the security list is a user's to configure and the docs do not single out UDP.",
+  "extras": {
+    "shape": {
+      "vcpu": 1,
+      "ram_gib": 1,
+      "disk_gib": 47,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "billing_model": "free tier, no charge while inside the allowance",
+    "term": "monthly allowance, no minimum term",
+    "m10h_usd": 0,
+    "m24h_usd": 0,
+    "price_arithmetic": "USD 0 while the tenancy stays inside the Always Free allowance; a card is required but not charged",
+    "free_tier_kind": "always-free",
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": true,
+      "ports": "all, subject to the VCN security list a user writes",
+      "static_ip": true,
+      "ipv6": true,
+      "per_session_bytes": null
+    },
+    "session_cap": {
+      "wall_clock_min": null,
+      "idle_reap_s": null,
+      "restart_required": false,
+      "note": "reclamation is a 7-day percentile test, not a timer"
+    },
+    "ipv6_prefix": "a VCN can carry IPv6; the prefix width per instance is not stated on the pages read",
+    "renewal_usd": "USD 0",
+    "renewal_note": "Always Free resources stay free while the tenancy qualifies; there is no renewal step"
+  }
+}

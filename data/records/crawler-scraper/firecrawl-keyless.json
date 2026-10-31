@@ -1,0 +1,123 @@
+{
+  "topic": "crawler-scraper",
+  "slug": "firecrawl-keyless",
+  "provider": "Firecrawl keyless route",
+  "url": "https://www.firecrawl.dev/",
+  "category": "search API",
+  "verdict": "qualifies-with-caveat",
+  "confidence": "documented",
+  "confidence_note": "free tier and caps quoted from the vendor's rate-limit page; the refusal of a VPN or proxy address measured with a keyless probe",
+  "verified_at": "2026-10-30T11:10:02.159Z",
+  "free_tier": {
+    "stated": "free with no API key: Search, Scrape and Parse on the hosted MCP endpoint, Interact as well from official clients, the CLI, SDKs and REST API, and the research, developer and government search endpoints on Firecrawl Cloud; capped per IP address per day by a request count and a credit count, neither published",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://docs.firecrawl.dev/rate-limits",
+    "read_on": "2026-10-30",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: the unit is a request",
+    "bytes": null,
+    "source_url": "https://www.firecrawl.dev/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "the per-IP caps reset every day",
+    "days": null,
+    "source_url": "https://www.firecrawl.dev/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not applicable",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.firecrawl.dev/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "REST at api.firecrawl.dev with no key (the Research Index at GET /v2/search/research/papers, Search, Scrape and Interact) and the hosted MCP keyless endpoint",
+  "tooling": "not stated",
+  "chaining": "The works index's last leg, after OpenAlex, TinyFish and Exa",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "two per-IP daily caps, a request count and a credit count, neither published; exceeding either answers 429",
+      "source": "https://docs.firecrawl.dev/rate-limits"
+    },
+    {
+      "kind": "request-rate",
+      "value": "a keyless call from an address the vendor classes as VPN or proxy is refused, with a message naming the address as a VPN or proxy and pointing to a free API key",
+      "source": "probe:https://api.firecrawl.dev/v2/search/research/papers"
+    }
+  ],
+  "binding": "request-rate",
+  "limits_note": "",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no account and no API key",
+    "country": null
+  },
+  "reliability_note": "a keyless call from a VPN or proxy address is refused outright, so the route depends on the class of the egress address",
+  "price_per_tb_month": null,
+  "evidence": [
+    {
+      "url": null,
+      "date": "2026-10-22",
+      "proved": "caps works, two keyless-ip pools, limit null: the cap is not published"
+    },
+    {
+      "url": "https://docs.firecrawl.dev/rate-limits",
+      "date": "2026-10-30",
+      "proved": "keyless use is free, capped per IP address per day by a request count and a credit count, neither number published; Search, Scrape and Parse on the hosted MCP, Interact from official clients and REST, and the research search endpoints are keyless",
+      "capture": "sha256:6867c1561cc51e8baee2be6a360f73e7bc4cfeff7ffec16ca2b438b06e5d2d82",
+      "quote": "Keyless usage is free and capped per IP address per day by two limits, and exceeding either returns a 429:"
+    },
+    {
+      "url": "https://docs.firecrawl.dev/rate-limits",
+      "date": "2026-10-30",
+      "proved": "the research search endpoints are keyless on Firecrawl Cloud",
+      "capture": "sha256:6867c1561cc51e8baee2be6a360f73e7bc4cfeff7ffec16ca2b438b06e5d2d82",
+      "quote": "On Firecrawl Cloud, research, developer, and government search endpoints can also be used without an API key."
+    },
+    {
+      "url": "https://www.firecrawl.dev/blog/firecrawl-keyless-launch",
+      "date": "2026-10-30",
+      "proved": "the keyless caps reset every day",
+      "capture": "sha256:092c5f0aa29a0ab58bd73ad769c58b3b6ee8dec6e5bb491041ad4baa2f24d929",
+      "quote": "Keyless usage is free and resets every day, so you can start building right away and sign up only when you need more."
+    },
+    {
+      "url": "probe:https://api.firecrawl.dev/v2/search/research/papers?query=attention%20is%20all%20you%20need&k=3",
+      "date": "2026-10-30",
+      "proved": "a keyless call from an address the vendor classes as VPN or proxy is refused, with a pointer to a free API key",
+      "capture": "sha256:5b31bf16bc7ecf9d25f65bf75d09fe9c74fb97fae071166273978dc85a61b182",
+      "quote": "Unfortunately, your IP address looks like a VPN or proxy, so Firecrawl can't be used without an API key from here."
+    },
+    {
+      "url": "https://www.firecrawl.dev/blog/firecrawl-keyless-launch",
+      "date": "2026-10-30",
+      "proved": "keyless use needs no account and no key",
+      "capture": "sha256:092c5f0aa29a0ab58bd73ad769c58b3b6ee8dec6e5bb491041ad4baa2f24d929",
+      "quote": "Firecrawl is now keyless. Search, scrape, and interact with the web for free without an account, setup or key rotation."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/firecrawl/firecrawl/main/apps/api/src/config.ts",
+      "date": "2026-10-30",
+      "proved": "the server refuses keyless calls from VPN, proxy or TOR addresses when its address-reputation check is configured",
+      "capture": "sha256:40e2e6fa85194e0b399b6d3fa42866b3119016ec1fe703b574d478c0e43c1544",
+      "quote": "keyless requests have their client IP checked against Spur and are refused if the IP fronts anonymizing/rotating infrastructure (VPN/proxy/"
+    },
+    {
+      "url": "probe:https://api.firecrawl.dev/v2/search/research/papers?query=attention%20is%20all%20you%20need&k=3",
+      "date": "2026-10-30",
+      "proved": "the refusal of the keyless research search from a VPN or proxy address is HTTP 403",
+      "capture": "sha256:65866a233a3388d6fb3d98f0a95c61a4ca73d4abe35925dd8a91ce1934c16e3e",
+      "quote": "\"status\": 403"
+    }
+  ],
+  "notes": "Two caps and no number is worse than one cap with a number: there is no threshold to design against.",
+  "binding_note": "the per-IP daily request and credit caps bind first, and their numbers are not published"
+}

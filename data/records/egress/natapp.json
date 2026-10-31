@@ -1,0 +1,89 @@
+{
+  "topic": "egress",
+  "slug": "natapp",
+  "provider": "NATAPP",
+  "url": "https://natapp.cn/",
+  "category": "udp port forward",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free tunnel (registered users): permanently free, 1M bandwidth, 2 GB traffic per month, HTTP/TCP/UDP tunnels, random domain or random TCP/UDP port, forced domain/port change at intervals. [translated]",
+    "unit": "GB",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://natapp.cn/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://natapp.cn/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://natapp.cn/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "2 GB per month on the free tunnel.; ingress: udp",
+    "metered": true,
+    "free_allowance": "2 GB per month on the free tunnel.",
+    "price_per_tb": null,
+    "source_url": "https://natapp.cn/"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "Vendor client for Windows/Linux/macOS plus a web console.",
+  "tooling": "vendor client plus frpc-compatible config",
+  "chaining": "Not viable as a WG endpoint because the port is not stable.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "2 GB per month",
+      "source": "https://natapp.cn/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "1 Mbps",
+      "source": "https://natapp.cn/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "random port is reassigned at intervals",
+      "source": "https://natapp.cn/"
+    }
+  ],
+  "limits_note": "",
+  "binding": "volume-quota",
+  "binding_note": "2 GB per month fails 1 TiB by a factor of about 550, and the 1 Mbps cap would fail it too: 1 Mbps sustained is roughly 0.32 TB per month.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Registration with a Chinese phone number is the normal path; the free tier is labelled 'registered users'.",
+    "country": "None"
+  },
+  "reliability_note": "Random public port is reassigned at intervals, so any fixed endpoint stops resolving.",
+  "confidence": "documented",
+  "confidence_note": "All three numbers are on the vendor's own pricing block. A probe would only confirm the port rotation interval.",
+  "evidence": [
+    {
+      "url": "https://natapp.cn/",
+      "date": "2026-10-23",
+      "proved": "free tunnel is 1 Mbps, 2 GB per month, random port, force-changed at intervals"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The port-insecurity sentence is the interesting part for UDP: a WG endpoint written into a conf file goes stale without notice. The nodeloc roundup separately warns each free tunnel lasts only 3 days, which contradicts the vendor's 'permanently free' label; the vendor says the tunnel persists but the address changes.",
+  "extras": {
+    "wg_path": "inside-udp",
+    "wg_detail": "The free tier advertises UDP tunnels on a random port; a WG handshake can be carried, but the port is reassigned at intervals, so a WG endpoint would need reconfiguration each time.",
+    "ingress": "udp",
+    "volume_tib_month": 0.0018,
+    "volume_stated": "2 GB per month on the free tunnel.",
+    "bytes_transit": "yes",
+    "transit_note": "NATAPP relays through domestic nodes."
+  }
+}

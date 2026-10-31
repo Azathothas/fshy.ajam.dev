@@ -1,0 +1,102 @@
+{
+  "topic": "crawler-scraper",
+  "slug": "brave-search",
+  "provider": "Brave Search API",
+  "url": "https://api-dashboard.search.brave.com/app/subscriptions/subscribe",
+  "category": "search API",
+  "verdict": "fails-identity",
+  "confidence": "documented",
+  "confidence_note": "free tier, capacity and the card requirement quoted from first-party pages; whether the card is asked at account creation or at plan activation is behind a sign-up",
+  "verified_at": "2026-10-30T11:10:02.156Z",
+  "free_tier": {
+    "stated": "USD 5 of free credits every month, applied automatically; Search is priced at USD 5.00 per 1,000 requests, so the credit covers about 1,000 Search requests a month",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://api-dashboard.search.brave.com/documentation/pricing",
+    "read_on": "2026-10-30",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: the unit is a query",
+    "bytes": null,
+    "source_url": "https://api-dashboard.search.brave.com/app/subscriptions/subscribe",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "credit resets monthly",
+    "days": null,
+    "source_url": "https://api-dashboard.search.brave.com/app/subscriptions/subscribe",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not applicable",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://api-dashboard.search.brave.com/app/subscriptions/subscribe"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "REST search API, 50 QPS on search, 2 QPS on answers",
+  "tooling": "not stated",
+  "chaining": "not established",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "Search 50 requests per second and Answers 2 requests per second, drawn from a monthly credit of USD 5",
+      "source": "https://api-dashboard.search.brave.com/documentation/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "a 1-second sliding window counts requests per plan, beside a monthly window; a request over the limit answers 429",
+      "source": "https://api-dashboard.search.brave.com/documentation/guides/rate-limiting"
+    }
+  ],
+  "binding": "request-rate",
+  "limits_note": "",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "a credit card is asked: the product FAQ answers 'Why do you ask for a credit card?' with 'To prevent abuse', and only prepaid credits that are bought are charged",
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "price_per_tb_month": null,
+  "evidence": [
+    {
+      "url": "https://api-dashboard.search.brave.com/app/subscriptions/subscribe",
+      "date": "2026-10-22",
+      "proved": "409 from the reader: the page is behind an authenticated dashboard and could not be read"
+    },
+    {
+      "url": "https://api-dashboard.search.brave.com/documentation/pricing",
+      "date": "2026-10-30",
+      "proved": "the Search plan includes USD 5 of free credits every month, at USD 5.00 per 1,000 requests",
+      "capture": "sha256:7f5e060da618c003c472a509d73e6fde83dcf1df901ae49413577cd7236c2196",
+      "quote": "Includes free $5 in credits every month."
+    },
+    {
+      "url": "https://api-dashboard.search.brave.com/documentation/pricing",
+      "date": "2026-10-30",
+      "proved": "Search capacity is 50 requests per second; the Answers plan on the same page states 2 requests per second",
+      "capture": "sha256:7f5e060da618c003c472a509d73e6fde83dcf1df901ae49413577cd7236c2196",
+      "quote": "Capacity  50 requests per second"
+    },
+    {
+      "url": "https://api-dashboard.search.brave.com/documentation/guides/rate-limiting",
+      "date": "2026-10-30",
+      "proved": "a 1-second sliding window counts requests per plan; the same page states that an over-limit request answers 429 and that plans also carry a monthly window",
+      "capture": "sha256:54eaa26e22e436f81ac3c9055833140c1e3358bc5efcdaca18db5ab608672f73",
+      "quote": "Rate limits are enforced using a 1-second sliding window to count requests per plan."
+    },
+    {
+      "url": "https://brave.com/search/api/",
+      "date": "2026-10-30",
+      "proved": "the FAQ entry 'Why do you ask for a credit card?' answers that a card is asked to prevent abuse and only bought prepaid credits are charged",
+      "capture": "sha256:04f88c46ab5236eaf90554a74584e5ccddfea320daeac3f752dd800fcd41e45d",
+      "quote": "To prevent abuse. Brave uses prepaid credits, not subscriptions, so you’re only charged for credits you choose to buy."
+    }
+  ],
+  "notes": "The one provider in the search class where the signup gate is the whole finding: the allowance is real, the dashboard is closed to a reader, and the card requirement is inherited rather than read.",
+  "binding_note": "the monthly USD 5 credit, about 1,000 Search requests, is spent long before 50 requests per second binds"
+}

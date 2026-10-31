@@ -1,0 +1,98 @@
+{
+  "topic": "debrid",
+  "slug": "megabasterd",
+  "provider": "MegaBasterd",
+  "url": "https://github.com/tonikelope/megabasterd",
+  "category": "MEGA-only downloader/uploader/streaming client (Java desktop app)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "'Yet another unofficial (and ugly) cross-platform MEGA downloader/uploader/streaming suite.' GPL-3.0, latest release 8.61 on 2026-09-24, distributed as an executable or a jar that 'requires Java 8 or later'.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://github.com/tonikelope/megabasterd",
+    "read_on": "2026-10-23",
+    "notes": "No hosted version by the author. Anything presented as 'MegaBasterd online' is either a third-party container the user runs or an unofficial redistribution site."
+  },
+  "per_object_cap": {
+    "stated": "MEGA publishes no per-file cap: 'MEGA does not have any file size limits. The only limitations you face are the amount of free space on your local device (if downloading) or in your Cloud drive (if uploading).'",
+    "bytes": null,
+    "source_url": "https://help.mega.io/files-folders/transfers/no-file-size-limits"
+  },
+  "retention": {
+    "stated": "not applicable: a user writes to local disk. The MEGA-side file lives until the owner deletes it.",
+    "days": null,
+    "source_url": "https://github.com/tonikelope/megabasterd"
+  },
+  "egress": {
+    "terms": "MEGA meters downloads per IP for free and anonymous users, not per file: the limit is 'based on the amount of data downloaded from your IP address over the past six hours' and has no fixed byte value.",
+    "metered": true,
+    "free_allowance": "dynamic, IP-based, six-hour window; no published number",
+    "price_per_tb": null,
+    "source_url": "https://help.mega.io/plans-storage/space-storage/transfer-quota"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "A Java Swing desktop application launched from the jar or the packaged executable. No API documentation and no server mode were found in the repository or README; the closest thing to a machine interface is driving the jar under a virtual framebuffer, or the third-party Docker images that expose its window over VNC.",
+  "tooling": "Jar plus platform executables; AppImage build; community Docker images (vttc08/megabasterd) that wrap the GUI in noVNC. Automating it needs a display server or a wrapper around its GUI, which is a tooling note and not a reason to reject the provider.",
+  "chaining": "It is the MEGA leg of a pipeline: pair it with a hosted relay (saveindrive-style MEGA-to-Drive streaming) when no machine of a user's own can run the jar.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "MEGA transfer quota counted per IP over six hours; over-quota downloads stall with HTTP 509 until the window resets",
+      "source": "https://help.mega.io/plans-storage/space-storage/transfer-quota"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "quota only starts applying to a file once it has been transferred in full more than 10 times",
+      "source": "https://help.mega.io/plans-storage/space-storage/transfer-quota"
+    }
+  ],
+  "limits_note": "The app's headline feature is working around the 509: it rotates a proxy list when MEGA blocks an IP. MEGA's own help page warns that third-party tools 'can't detect your quota', which is exactly why a client sees stalls rather than an error.",
+  "binding": "per-ip-shaping",
+  "binding_note": "At 1 TiB/month the IP-based six-hour window is what stops a MEGA download; the workaround is proxy rotation, which the app implements, and the fallback is waiting for the window to reset. Nothing else in the vocabulary binds because MEGA has no per-file cap.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "Public MEGA links download without a MEGA account. An account is only needed for private content or to raise the quota, and the app's own proxy rotation exists because the anonymous quota is the binding limit.",
+    "country": null
+  },
+  "reliability_note": "MEGA answers over-quota requests with HTTP 509 and the window is per IP, so a shared or datacentre address exhausts it fast. MEGA's help page also warns third-party clients can lock an account when used with credentials.",
+  "confidence": "documented",
+  "confidence_note": "Repository, README, release date and MEGA's own quota page were read. The proxy-rotation behaviour is a third-party description (deepwiki) and is marked reported. A measured rung needs a real MEGA link downloaded twice, once to quota.",
+  "evidence": [
+    {
+      "url": "https://github.com/tonikelope/megabasterd",
+      "date": "2026-10-23",
+      "proved": "GPL-3.0 MEGA downloader/uploader/streaming suite; 5.8k stars; release 8.61 dated 2026-09-24; 'requires Java 8 or later'"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tonikelope/megabasterd/master/README.md",
+      "date": "2026-10-23",
+      "proved": "README offers 'Download latest build' and a DEMO video; no hosted/online instance is offered"
+    },
+    {
+      "url": "https://help.mega.io/plans-storage/space-storage/transfer-quota",
+      "date": "2026-10-23",
+      "proved": "the limit is 'based on the amount of data downloaded from your IP address over the past six hours'; 'MEGA does not have a fixed download limit'; quota starts after 10 full transfers; incomplete transfers discarded after 48 hours"
+    },
+    {
+      "url": "https://help.mega.io/files-folders/transfers/no-file-size-limits",
+      "date": "2026-10-23",
+      "proved": "'MEGA does not have any file size limits.'"
+    },
+    {
+      "url": "https://deepwiki.com/tonikelope/megabasterd/4-advanced-features",
+      "date": "2026-10-23",
+      "proved": "reported, third-party: 'Smart Proxy System helps bypass MEGA's download limitations by automatically rotating through a list of proxies' when MEGA returns 509"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T01:52:41.420Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The 'hosted fork' search turned up containers (self-hosted Docker with noVNC) and an unofficial site megabasterd.com that redistributes builds; neither is a hosted service that accepts a URL. The unofficial site was not used and its binaries were not downloaded.",
+  "extras": {
+    "hosted_forks_found": "vttc08/megabasterd (Docker + noVNC, user-run); JairoQuispe/docker-megabasterd-app (Docker); megabasterd.com (unofficial redistribution site, unverified provenance)",
+    "quota_workaround": "proxy rotation on HTTP 509, per third-party documentation"
+  },
+  "self_hosted": true
+}

@@ -1,0 +1,82 @@
+{
+  "topic": "debrid",
+  "slug": "copernicus-cds",
+  "provider": "Copernicus Climate Data Store (CDS) API",
+  "url": "https://cds.climate.copernicus.eu/how-to-api",
+  "category": "climate reanalysis and forecast archive (token-gated API)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free data, account required: 'If you do not have an account yet, please register ... Once logged in, copy the code displayed below to the file $HOME/.cdsapirc' with url https://cds.climate.copernicus.eu/api and a personal access token.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://cds.climate.copernicus.eu/how-to-api",
+    "read_on": "2026-10-23",
+    "notes": "No price, no byte allowance and no quota is published on the API setup page."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: a retrieval request returns a packaged file (NetCDF, GRIB or ZIP) built from the requested variable, area and period",
+    "bytes": null,
+    "source_url": "https://cds.climate.copernicus.eu/how-to-api",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "the archive is the product: ERA5 and the other datasets are reissued, not deleted, and a retrieval result is held for a limited period before it must be re-requested",
+    "days": null,
+    "source_url": "https://cds.climate.copernicus.eu/how-to-api",
+    "notes": "The result-retention window is not stated on the page read; do not treat this row as a measured value."
+  },
+  "egress": {
+    "terms": "Free. The token is identity, not payment.",
+    "metered": false,
+    "free_allowance": "no byte allowance published",
+    "price_per_tb": null,
+    "source_url": "https://cds.climate.copernicus.eu/how-to-api"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "HTTPS API at https://cds.climate.copernicus.eu/api with the cdsapi python client; the token goes in $HOME/.cdsapirc. Process listing at /api/retrieve/v1/processes.",
+  "endpoint": "https://cds.climate.copernicus.eu/api",
+  "tooling": "cdsapi (pip install 'cdsapi>=0.7.7') is the vendor's own client; curl can drive the same endpoints with the PRIVATE-TOKEN header.",
+  "chaining": "The only free ERA5-class reanalysis source; pair it with a compute sandbox because a full reanalysis pull is tens of GB and needs processing where it lands.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "no numeric limit published on the setup page; retrievals are queued server-side and the queue position is the observable wait",
+      "source": "https://cds.climate.copernicus.eu/how-to-api"
+    }
+  ],
+  "limits_note": "The real gate is identity: registration plus a token plus, per dataset, a licence acceptance. The token is a credential and was not created here, so no retrieval was attempted.",
+  "binding": "none",
+  "binding_note": "Nothing in the seven-kind vocabulary fails at 1 TiB/month that could be measured here; the gate that does fail is identity, which the vocabulary carries in identity_cost rather than in limits.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "A CDS account (email registration) plus a personal access token copied into .cdsapirc, plus a licence acceptance per dataset. No card and no institution.",
+    "country": null
+  },
+  "reliability_note": "Retrievals are queued and can take minutes to hours at peak; a client must poll a request id rather than expect a stream. No rate was measured because no token exists here.",
+  "confidence": "documented",
+  "confidence_note": "The setup page was read and the process listing answered anonymously, which proves the service is live but not that a retrieval works. A retrieval with a real token would move this to measured.",
+  "evidence": [
+    {
+      "url": "https://cds.climate.copernicus.eu/how-to-api",
+      "date": "2026-10-23",
+      "proved": "account registration, personal access token in $HOME/.cdsapirc, cdsapi>=0.7.7, url https://cds.climate.copernicus.eu/api"
+    },
+    {
+      "url": "probe:https://cds.climate.copernicus.eu/api/retrieve/v1/processes",
+      "date": "2026-10-23",
+      "proved": "200 with 25,713 bytes of JSON to an anonymous client - the process catalogue is public even though retrieval is not"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T03:24:34.450Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Caveat is the account and the queue, not the price. This is the clearest example of a resource that is free but not anonymous: the bytes cost nothing and the token is mandatory.",
+  "extras": {
+    "auth": "personal access token in ~/.cdsapirc",
+    "client": "cdsapi>=0.7.7",
+    "process_list_bytes": 25713
+  }
+}

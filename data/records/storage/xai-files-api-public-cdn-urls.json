@@ -1,0 +1,97 @@
+{
+  "topic": "storage",
+  "slug": "xai-files-api-public-cdn-urls",
+  "provider": "xAI Files API (Grok) + public CDN URLs",
+  "url": "https://docs.x.ai/developers/files/managing-files",
+  "category": "LLM provider /v1/files with CDN",
+  "free_tier": {
+    "stated": "No published total-storage quota. Per-file 512 MB (some pages say 50 MB for the upload reference and 50 MiB for public URLs). Files are PERMANENT by default — `expires_after` is opt-in.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.x.ai/developers/files",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "Per-file 512 MB",
+    "bytes": 512000000,
+    "source_url": "https://docs.x.ai/developers/files",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Per-file 512 MB (some pages say 50 MB for the upload reference and 50 MiB for public URLs). Files are PERMANENT by default — `expires_after` is opt-in",
+    "source_url": "https://docs.x.ai/developers/files",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Every file can mint a public URL on files-cdn.x.ai, Cloudflare-fronted, no API key needed to fetch, no egress charge documented. URL is permanent if the file has no expiry and no expires_after is passed.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "OpenAI-compatible REST at https://api.x.ai/v1/files — POST upload, GET list, GET {id}, GET {id}/content (streams raw bytes, Content-Type application/octet-stream), DELETE, plus POST {id}/public-url and /public-url/revoke",
+  "tooling": "openai-python with base_url swapped to https://api.x.ai/v1; xai_sdk; curl",
+  "chaining": "One active public URL per file at a time, but it is idempotent — re-calling returns the existing URL.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "100 MB/file",
+      "source": "https://docs.x.ai/developers/files"
+    }
+  ],
+  "limits_note": "per-object-cap 512 MB (50 MB if you want a public URL — public URLs are limited to images/video mime types). 'A file can have at most one active public URL at a time.' Public-URL creation can fail if the team hits its active-URL quota.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email",
+    "country": null
+  },
+  "reliability_note": "The absence of a published total quota is the finding, not an oversight — a third-party comparison site says outright 'no storage limit is stated. xAI says only that limits may vary slightly by platform or subscription'. Treat unverified. Files persist 'until you delete them'. Collections is a separate product with a 100 MB/file cap and requires credits in the account. Public URLs only cover image/png, image/jpeg, image/gif, image/webp, video/mp4, video/webm — so the CDN path is media-only; arbitrary blobs must go through the authenticated content endpoint.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://docs.x.ai/developers/files/managing-files",
+      "date": "2026-10-21",
+      "proved": "'Files default to permanent storage until you delete them'; expires_after range 3600–2592000; 'Stream the raw bytes'; 'The endpoint streams the response, so it works for files of any supported size'"
+    },
+    {
+      "url": "https://docs.x.ai/developers/files/public-urls",
+      "date": "2026-10-21",
+      "proved": "'Every file you upload through the Files API lives in private storage by default … Public URLs turn a stored file into a permanent, shareable link on the SpaceXSI CDN that anyone can open — no API key required'; 'File has no expiration, expires_after omitted — URL never expires'; limitations: max 50 MiB, restricted content types"
+    },
+    {
+      "url": "https://docs.x.ai/developers/files",
+      "date": "2026-10-21",
+      "proved": "'File size: Maximum 512 MB per file'"
+    },
+    {
+      "url": "https://docs.x.ai/developers/rest-api-reference/files/download",
+      "date": "2026-10-21",
+      "proved": "'GET /v1/files/{file_id}/content … Content-Type application/octet-stream'"
+    },
+    {
+      "url": "https://docs.x.ai/developers/files/collections",
+      "date": "2026-10-21",
+      "proved": "'Maximum file size: 100MB'; 'you must have credits in your account'"
+    },
+    {
+      "url": "https://felloai.com/ai-file-upload-limits/",
+      "date": "2026-10-21",
+      "proved": "'no storage limit is stated' for xAI"
+    },
+    {
+      "url": "https://api.x.ai/v1/files",
+      "date": "2026-10-21",
+      "proved": "PROBE: curl -D - -> 401, Content-Length 35, body {\"code\":\"unauthenticated:no-credentials\"}; /v1/files/abc/content -> 401/35; /v1/collections -> 401/77; https://files-cdn.x.ai/test/file_abc.png -> 404 from Cloudflare (host live, CF-fronted)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published total-storage quota. Per-file 512 MB (some pages say 50 MB for the upload reference and 50 MiB for public URLs). Files are PERMANENT by default — `expires_after` is opt-in.",
+  "extras": {
+    "unit_note": "free_tier.unit is 'mixed' because the headline is denominated in MiB or KiB, which the schema enum does not carry; the verbatim free_tier.stated keeps the true unit."
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

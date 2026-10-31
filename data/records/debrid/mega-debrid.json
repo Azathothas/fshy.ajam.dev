@@ -1,0 +1,463 @@
+{
+  "topic": "debrid",
+  "slug": "mega-debrid",
+  "provider": "Mega-Debrid",
+  "url": "https://www.mega-debrid.eu/index.php?page=api",
+  "category": "multi-hoster / debrid (link unrestrict + torrent converter)",
+  "tier": "premium",
+  "free_tier": {
+    "stated": "A free account exists but cannot use the API: 'Only Premium members can use this API. If free members try to connect on their accounts with this API, we return \"vip_end\" at the token generation and debrid link doesn't work.'",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://www.mega-debrid.eu/index.php?page=api",
+    "read_on": "2026-10-23",
+    "notes": "The conditions page describes a free quota at signup for testing; its size is not stated."
+  },
+  "per_object_cap": {
+    "stated": "Not published on any page read.",
+    "bytes": null,
+    "source_url": "https://www.mega-debrid.eu/index.php?page=api"
+  },
+  "retention": {
+    "stated": "Not published; torrent status is polled and the token, not the torrent, is the documented expiry.",
+    "days": null,
+    "source_url": "https://www.mega-debrid.eu/index.php?page=api"
+  },
+  "egress": {
+    "terms": "Subscriptions are 'limités en temps et de trafic' (limited in time and traffic) per the conditions; no byte figure is published on the pages read.",
+    "metered": true,
+    "free_allowance": "a free test quota at signup, size unstated",
+    "price_per_tb": null,
+    "source_url": "https://www.mega-debrid.eu/index.php?page=conditionsutilisation&lang=en"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "GET/POST against https://www.mega-debrid.eu/api.php?action=<name>; every response carries 'response_code' ('ok' or an error code) and 'response_text'.",
+  "endpoint": "https://www.mega-debrid.eu/api.php",
+  "tooling": "first-party apps listed at /index.php?page=applications; JDownloader; no rclone backend found",
+  "chaining": "The French-market multi-hoster with 100 hosters on every plan tier; its API is the simplest of the set, so it is easy to wrap, but the token model makes a long-running daemon fragile.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "'If you send more than 50 requests per seconds, your IP address will be banned for some minutes'",
+      "source": "https://www.mega-debrid.eu/index.php?page=api"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "'After 4 login failed (bad login/password), your IP address will be banned for some minutes'",
+      "source": "https://www.mega-debrid.eu/index.php?page=api"
+    },
+    {
+      "kind": "write-gated",
+      "value": "the token is invalidated by the next login attempt, so a second client logging in kills the first client's session",
+      "source": "https://www.mega-debrid.eu/index.php?page=api"
+    },
+    {
+      "kind": "request-rate",
+      "value": "50 requests per second per IP: 'If you send more than 50 requests per seconds, your IP address will be banned for some minutes'",
+      "source": "https://www.mega-debrid.eu/?page=api"
+    },
+    {
+      "kind": "write-gated",
+      "value": "4 failed logins from one IP and the IP is banned: 'After 4 login failed (bad login/password), your IP address will be banned for some minutes'. Login is the write gate, because it mints the token.",
+      "source": "https://www.mega-debrid.eu/?page=api"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "per host per day: 5 GB (shareonline, wdupload) to 1000 GB (rapidgator)",
+      "source": "https://www.mega-debrid.eu/?lang=en&page=register"
+    },
+    {
+      "kind": "request-rate",
+      "value": "200 links/day and 250 GB/day on easybytez",
+      "source": "https://www.mega-debrid.eu/?lang=en&page=register"
+    },
+    {
+      "kind": "request-rate",
+      "value": "more than 50 requests/second from one IP bans it for minutes",
+      "source": "https://www.mega-debrid.eu/index.php?lang=en&page=api"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "per-host daily caps: ddownload 10GB/day, Uploady 10GB/day, Isra.cloud 20GB/day, Filestore.me 50GB/day, Turbobit 80GB/day",
+      "source": "https://www.mega-debrid.eu/index.php?page=hosters"
+    },
+    {
+      "kind": "request-rate",
+      "value": "'After 4 login failed (bad login/password), your IP address will be banned for some minutes'",
+      "source": "https://www.mega-debrid.eu/index.php?page=api"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "subscription traffic, counted and reported for a user",
+      "source": "https://www.mega-debrid.eu/index.php?page=conditionsutilisation&lang=en"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "not published; the page names no quota at any tier",
+      "source": "https://www.mega-debrid.biz/?lang=es"
+    }
+  ],
+  "limits_note": "The token is the failure surface: 'The token will be valid until the next connection attempt' and an obsolete one returns 'Token error, please log-in' at the debrid-link call rather than at authentication.",
+  "binding": "volume-quota",
+  "binding_note": "One token per account and a new login invalidates the old one, so the first thing that breaks a 1 TiB/month automation is a second client or a restart that logs in again; the 50 req/s ban is far above a download client's call rate.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Email validation is the activation step ('Mega-Debrid commence la prestation à compter de la validation de l'adresse email'); card or Allopass/Rentabiliweb code to pay.",
+    "country": null
+  },
+  "reliability_note": "A second login silently invalidates the running session's token; four bad logins or more than 50 requests a second ban the IP for minutes; a free account is indistinguishable from a broken one until the token call returns vip_end.",
+  "confidence": "documented",
+  "confidence_note": "The API behaviour, the token rule and both ban conditions are on the vendor's own API page. Prices and per-plan traffic are not published on the pages read, so they are absent rather than guessed.",
+  "evidence": [
+    {
+      "url": "https://www.mega-debrid.eu/index.php?page=api",
+      "date": "2026-10-23",
+      "proved": "'Only Premium members can use this API. If free members try to connect on their accounts with this API, we return \"vip_end\" at the token generation and debrid link doesn't work'; 'After 4 login failed ... your IP address will be banned for some minutes'; 'If you send more than 50 requests per seconds, your IP address will be banned for some minutes'; 'The token will be valid until the next connection attempt ... (API return \"Token error, please log-in\" at the debrid link)'."
+    },
+    {
+      "url": "https://www.mega-debrid.eu/index.php?page=conditionsutilisation&lang=en",
+      "date": "2026-10-23",
+      "proved": "Subscriptions are 'limités en temps et de trafic'; the account is personal and can be suspended immediately without prior notice ('décâbler et/ou d'interrompre sans délai et sans mise en demeure préalable')."
+    },
+    {
+      "url": "https://www.mega-debrid.eu/index.php?page=offres",
+      "date": "2026-10-23",
+      "proved": "Every duration tier lists '100 Hosters available', streaming, torrent-to-DDL conversion and app access; the price blocks extracted out of order, so no price is quoted."
+    },
+    {
+      "url": "https://www.mega-debrid.eu/?page=api",
+      "date": "2026-10-23",
+      "proved": "'Only Premium members can use this API. If free members try to connect on their accounts with this API, we return \"vip_end\"'; 'If you send more than 50 requests per seconds, your IP address will be banned for some minutes'; 'After 4 login failed ... your IP address will be banned'; the action list connectUser, getUserHistory, getHostersList, getLink, uploadTorrent, getTorrents, getTorrent"
+    },
+    {
+      "url": "probe:https://www.mega-debrid.eu/api.php?action=getHostersList",
+      "date": "2026-10-23",
+      "proved": "the registry answers with no token: 200 and 'response_code: ok' with hosters carrying name, url, img, domains, status and regexps"
+    },
+    {
+      "url": "probe:https://www.mega-debrid.eu/?lang=en&page=register",
+      "date": "2026-10-23",
+      "proved": "the 'Membre Gratuit / Membre VIP' table, 60875 bytes, with 16 VIP caps from 'ShareOnline 5 Go / jour' to 'Rapidgator 1000 Go / jour'"
+    },
+    {
+      "url": "probe:https://www.mega-debrid.eu/api.php?action=getHostersList",
+      "date": "2026-10-23",
+      "proved": "100 hosters with domains, status 'up' and regexps - GET 200, 27234 bytes, response_code ok"
+    },
+    {
+      "url": "probe:https://www.mega-debrid.eu/index.php?lang=en&page=api",
+      "date": "2026-10-23",
+      "proved": "'Only Premium members can use this API', the 4-failure IP ban, and the 50 requests/second IP ban"
+    },
+    {
+      "url": "https://www.mega-debrid.eu/index.php?page=offres&lang=en",
+      "date": "2026-10-23",
+      "proved": "'4 € / 30 Days', '9 € / 90 Days', '16 € / 180 Days', '100 Hosters available'"
+    },
+    {
+      "url": "probe:https://www.mega-debrid.eu/index.php?page=hebergeurs&lang=en",
+      "date": "2026-10-23",
+      "proved": "the hosters page carries no caps: 11271 bytes of marketing ('100 Hosters supported', four logos)"
+    },
+    {
+      "url": "https://www.mega-debrid.eu/index.php?page=offres",
+      "date": "2026-10-23",
+      "proved": "'4€ 30 Days', '9€ 90 Days', '16€ 180 Days', '100 Hosters available', streaming and torrent-to-DDL conversion"
+    },
+    {
+      "url": "https://www.mega-debrid.eu/index.php?page=hosters",
+      "date": "2026-10-23",
+      "proved": "85 host rows with per-host Premium allowances: ddownload 10GB/day, Filestore.me 50GB/day, Isra.cloud 20GB/day, Turbobit 80GB/day, Uploady 10GB/day, rest Unlimited"
+    },
+    {
+      "url": "https://help.mega-debrid.eu/index.php?action=faq&artlang=en&cat=3&id=28",
+      "date": "2026-10-23",
+      "proved": "'Some hosts may contain a daily limit ... (for example 30GB)' and 'Limits are reset every day at midnight'"
+    },
+    {
+      "url": "https://www.mega-debrid.eu/index.php?page=api",
+      "date": "2026-10-23",
+      "proved": "the query-string API, premium-only access with 'vip_end' for free accounts, the 50 requests-per-second ban and the 4-login ban"
+    },
+    {
+      "url": "https://www.mega-debrid.eu/index.php?page=freeregister",
+      "date": "2026-10-23",
+      "proved": "the free registration fields, including the captcha and 'Every account with a trash email will be banned'"
+    },
+    {
+      "url": "https://www.mega-debrid.eu/index.php?page=conditionsutilisation&lang=en",
+      "date": "2026-10-23",
+      "proved": "the 'proxy non anonyme' definition, 'abonnements mensuels... limités en temps et de trafic', the undertaking to inform the client of consumption and expiry, and 'ne participe pas à... l'administration des données'"
+    },
+    {
+      "url": "https://www.mega-debrid.eu/",
+      "date": "2026-10-23",
+      "proved": "100 supported hosters, torrent converter that sends results to hosters, no storage claim"
+    },
+    {
+      "url": "https://www.mega-debrid.eu/index.php?page=offres",
+      "date": "2026-10-23",
+      "proved": "30/90/180 days at 4/9/16 EUR and '100 Hosters available'"
+    },
+    {
+      "url": "https://web.archive.org/web/20231206113657/https://www.mega-debrid.eu/index.php?page=offres",
+      "date": "2023-12-06",
+      "proved": "the identical three prices and '162 Hosters available'"
+    },
+    {
+      "url": "https://web.archive.org/web/20241004025733/https://www.mega-debrid.eu/index.php?page=offres",
+      "date": "2024-10-04",
+      "proved": "identical prices, 161 hosters"
+    },
+    {
+      "url": "https://web.archive.org/web/20251018122312/https://www.mega-debrid.eu/index.php?page=offres",
+      "date": "2025-10-18",
+      "proved": "identical prices, 152 hosters"
+    },
+    {
+      "url": "https://www.mega-debrid.eu/index.php?page=payregister",
+      "date": "2026-10-23",
+      "proved": "the paid registration form and its fields ('Nom d'utilisateur', 'Email', 'Liaison du compte forum au compte site'), with no payment rail shown pre-submit"
+    },
+    {
+      "url": "https://www.mega-debrid.eu/index.php?lang=en&page=conditionsutilisation",
+      "date": "2026-10-23",
+      "proved": null
+    },
+    {
+      "url": "https://keyoneclick.com/mega-debrid-premium.html",
+      "date": "2026-10-23",
+      "proved": "a reseller selling 'Mega-Debrid.eu Premium Key Account Voucher via Visa/MasterCard' with 'Non-Recurring payment' - from the search index, page not opened"
+    },
+    {
+      "url": "https://www.mega-debrid.biz/?lang=es",
+      "date": "2026-10-23",
+      "proved": null
+    },
+    {
+      "url": "https://www.mega-debrid.biz/?lang=es",
+      "date": "2026-10-23",
+      "proved": "the four headline hosts in the table: RapidGator, Turbobit, Filefactory, 1Fichier; and 'Torrent Converter' as a named feature"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-23T02:22:02.000Z",
+  "price_per_tb_month": null,
+  "notes": "Token invalidation is the only one that hits an otherwise healthy paid account, and it is documented as a property of the token, not an error. The conditions page is French-only in content even on the lang=en URL, so the quota clauses are quoted in the original. Two vendor findings worth carrying: the API is premium-only by design, and authentication is credential-based with a token that dies on re-login. That combination makes it the worst of the eight for an unattended script, independent of price. The hosters page (/index.php?page=hebergeurs) is marketing only - '100 Hosters supported' and four logos - while the cap table lives on the registration page, where nobody looking for limits would think to go. Three host counts from one vendor: 100 on the offers page, 'over 200 hosts' in the meta description, 85 rows in the hosters table. The 85 is what a reader can count, so it is the figure to use. No annual plan: the ladder stops at 180 days for 16 EUR. A French proxy with a contract written for a traffic-limited subscription. Nothing in it promises a file will be there tomorrow. Same pattern as Debrid-Link, less severe: price identical to the euro for 35 months, host count down 162 -> 161 -> 152 -> 100, a 38% loss. The service is the cheapest 30-day term in the set alongside Debrid-Link and the least observed. Classified card-or-PayPal in the matrix because the vendor's own rail list could not be read and every reseller listing leads with card or PayPal; the Bitcoin leg exists at resellers and is recorded here rather than counted in the crypto group. Included as the Spanish-language breadth point, not as a recommendation: found no Latin American operator of a full multi-host. Every Spanish or Portuguese storefront read here resolves to a European operator (AllDebrid, MultiDebrid, Mega-Debrid) or to a Brazilian reseller of somebody else's accounts.",
+  "extras": {
+    "failure_angle": "single-token session",
+    "strongest_signal": "vip_end at token generation; 'Token error, please log-in' mid-transfer",
+    "account_states": "vip_end (free or lapsed); 'Token error, please log-in' (session replaced); IP banned for minutes (4 bad logins or >50 req/s); expired premium",
+    "cache_miss": "no cache-status endpoint in the API page read; getTorrent returns status and progress only",
+    "host_removal": "hosters are enumerated per request by getHostersList with a status field, which is a live list rather than an announcement",
+    "simultaneous_use": "No multi-IP rule on the API or conditions pages read. The token is single-session by construction and is the effective limit: a second login invalidates the first client's token.",
+    "auth_flows": "one: action=connectUser&login=&password= in the query string, returning 'token' plus 'vip_end' (premium expiry timestamp). No key, no OAuth, no refresh.",
+    "unrestrict_endpoint": "POST action=getLink&token= with 'link' and optional 'password'",
+    "torrent_endpoints": "action=uploadTorrent (POST 'file' or 'magnet'), action=getTorrents, action=getTorrent&hash=",
+    "account_endpoints": "action=getUserHistory&token= (start, limit)",
+    "public_endpoints_no_account": "action=getHostersList",
+    "mirror_domain": "www.unrestrict.link serves the same operator's pages, including the same API documentation text - the same content read through a second domain",
+    "host_matrix": {
+      "published_daily_caps": true,
+      "source": "https://www.mega-debrid.eu/?lang=en&page=register",
+      "hosts_listed": 100,
+      "rows": [
+        {
+          "host": "share-online.biz",
+          "daily_gb": 5,
+          "daily_links": null
+        },
+        {
+          "host": "wdupload.com",
+          "daily_gb": 5,
+          "daily_links": null
+        },
+        {
+          "host": "ddownload.com",
+          "daily_gb": 10,
+          "daily_links": null
+        },
+        {
+          "host": "uploady.io",
+          "daily_gb": 10,
+          "daily_links": null
+        },
+        {
+          "host": "isra.cloud",
+          "daily_gb": 20,
+          "daily_links": null
+        },
+        {
+          "host": "filefactory.com",
+          "daily_gb": 50,
+          "daily_links": null
+        },
+        {
+          "host": "filestore.me",
+          "daily_gb": 50,
+          "daily_links": null
+        },
+        {
+          "host": "hitfile.net",
+          "daily_gb": 50,
+          "daily_links": null
+        },
+        {
+          "host": "katfile.com",
+          "daily_gb": 50,
+          "daily_links": null
+        },
+        {
+          "host": "filer.net",
+          "daily_gb": 80,
+          "daily_links": null
+        },
+        {
+          "host": "turbobit.net",
+          "daily_gb": 80,
+          "daily_links": null
+        },
+        {
+          "host": "dailyuploads.net",
+          "daily_gb": 100,
+          "daily_links": null
+        },
+        {
+          "host": "ulozto.net",
+          "daily_gb": 150,
+          "daily_links": null
+        },
+        {
+          "host": "easybytez.com",
+          "daily_gb": 250,
+          "daily_links": 200
+        },
+        {
+          "host": "oboom.com",
+          "daily_gb": 300,
+          "daily_links": null
+        },
+        {
+          "host": "rapidgator.net",
+          "daily_gb": 1000,
+          "daily_links": null
+        }
+      ],
+      "unit": "GB/day and links/day as printed ('Go / jour', 'liens / jour')"
+    },
+    "host_count_claimed": "100 (offers page) / 'over 200' (meta description)",
+    "host_count_measured": "85 rows in the published hosters table",
+    "usenet": "no",
+    "torrent": "yes, torrent to direct download",
+    "annual_plan": "none; 180 days is the longest term",
+    "retention_map": {
+      "fetched_files": {
+        "stated": "not published; contract says the data is not administered by Mega-Debrid",
+        "days": null,
+        "source_url": "https://www.mega-debrid.eu/index.php?page=conditionsutilisation&lang=en"
+      },
+      "lapse_grace": {
+        "stated": "not published",
+        "days": null,
+        "source_url": "https://www.mega-debrid.eu/index.php?page=conditionsutilisation&lang=en"
+      }
+    },
+    "account_deletion": {
+      "stated": "not published",
+      "days": null,
+      "source_url": "https://www.mega-debrid.eu/index.php?page=conditionsutilisation&lang=en"
+    },
+    "reactivation": "not published; expected to be a re-fetch",
+    "storage_model": "proxy, no storage quota in the contract",
+    "price_history": [
+      {
+        "date": "2023-12-06",
+        "price": "EUR 4 / 30 days",
+        "plan": "30 Days",
+        "source_url": "https://web.archive.org/web/20231206113657/https://www.mega-debrid.eu/index.php?page=offres"
+      },
+      {
+        "date": "2023-12-06",
+        "price": "EUR 9 / 90 days",
+        "plan": "90 Days",
+        "source_url": "https://web.archive.org/web/20231206113657/https://www.mega-debrid.eu/index.php?page=offres"
+      },
+      {
+        "date": "2024-10-04",
+        "price": "EUR 4 / 30 days",
+        "plan": "30 Days",
+        "source_url": "https://web.archive.org/web/20241004025733/https://www.mega-debrid.eu/index.php?page=offres",
+        "change_pct": 0.0
+      },
+      {
+        "date": "2025-10-18",
+        "price": "EUR 4 / 30 days",
+        "plan": "30 Days",
+        "source_url": "https://web.archive.org/web/20251018122312/https://www.mega-debrid.eu/index.php?page=offres",
+        "change_pct": 0.0
+      },
+      {
+        "date": "2026-10-23",
+        "price": "EUR 4 / 30 days",
+        "plan": "30 Days",
+        "source_url": "https://www.mega-debrid.eu/index.php?page=offres",
+        "change_pct": 0.0
+      },
+      {
+        "date": "2026-10-23",
+        "price": "EUR 16 / 180 days",
+        "plan": "180 Days",
+        "source_url": "https://www.mega-debrid.eu/index.php?page=offres",
+        "change_pct": 0.0
+      }
+    ],
+    "change_36m": "0.0% on every term, 2023-12-06 to 2026-10-23",
+    "host_count_history": [
+      {
+        "date": "2023-12-06",
+        "hosts": 162
+      },
+      {
+        "date": "2024-10-04",
+        "hosts": 161
+      },
+      {
+        "date": "2025-10-18",
+        "hosts": 152
+      },
+      {
+        "date": "2026-10-23",
+        "hosts": 100
+      }
+    ],
+    "host_count_change": "-38.3% since 2023-12-06",
+    "currency": "EUR",
+    "merge_conflicts": {
+      "usenet": [
+        "no",
+        {
+          "lane": "pricing-history",
+          "value": false
+        }
+      ]
+    },
+    "payment_group": "card",
+    "payment": {
+      "card": true,
+      "paypal": true,
+      "crypto": [
+        "BTC (reseller only)"
+      ],
+      "crypto_processor": "reseller-dependent",
+      "local_rails": [],
+      "voucher": true,
+      "voucher_detail": "KeyOneClick (PayPal, Visa/MasterCard) and PremiumKeys (PayPal, Visa/MasterCard, BitCoin, WebMoney, PaySera) sell Mega-Debrid vouchers",
+      "entry_price": "not read"
+    },
+    "hosts_claimed": "200+",
+    "author_meta": "Xtrem Developpement",
+    "price_status": "unverified: no price on the home page"
+  }
+}

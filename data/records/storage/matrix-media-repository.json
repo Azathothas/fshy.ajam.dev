@@ -1,0 +1,81 @@
+{
+  "topic": "storage",
+  "slug": "matrix-media-repository",
+  "provider": "Matrix media repository (matrix.org homeserver)",
+  "url": "https://matrix.org/homeserver/pricing/",
+  "category": "messaging",
+  "free_tier": {
+    "stated": "Free plan: 10 MB maximum per attachment, 100 MB of attachments per 24 hours, up to 500 MB per 28 days. Premium: 100 MB per attachment, 1 GB/24h, 5 GB/28d. Accounts not on any plan get 500 MB/24h up to 2 GB/28d. So the total is a few GB per month — not a storage provider at all.",
+    "unit": "MB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://matrix.org/homeserver/pricing/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://matrix.org/homeserver/pricing/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://matrix.org/homeserver/pricing/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Egress itself is free ('the HTTPS data transfer to/from the matrix.org homeserver' does not count towards limits), but that is irrelevant at a 500 MB/28-day ingest rate.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Excellent — the Content Repository API is a real spec, mxc:// URIs, every Matrix client library implements it. Self-hosted Synapse has no such caps (only max_upload_size, default 10M historically).",
+  "chaining": "Any federation of homeservers multiplies it, but you are then running the homeservers yourself, which is just 'buy a server'. On the public homeserver there is no chaining path: limits are per-account and the 28-day cap is the binding one.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "1 GB/24h",
+      "source": "https://matrix.org/homeserver/pricing/"
+    }
+  ],
+  "limits_note": "Unauthenticated media download is deprecated and already frozen: the spec says servers SHOULD 'freeze' the old /_matrix/media/* endpoints so post-freeze uploads are only reachable via authenticated endpoints. Probed: matrix.org /_matrix/client/v1/media/config -> 401 M_MISSING_TOKEN, unauthenticated /_matrix/media/v3/download/... -> 404. So no anonymous CDN reads.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Stable, but the 28-day rolling cap means an upload-heavy workload simply stops. matrix.org also states pricing is not final and free users 'may be changed to a free plan in the future'.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://matrix.org/homeserver/pricing/",
+      "date": "2026-10-21",
+      "proved": "'Size of attachment that can be sent | 10MB maximum per attachment ... Total size of attachments | 100MB per 24 hours, up to 500MB per 28 days'"
+    },
+    {
+      "url": "https://spec.matrix.org/latest/client-server-api/#content-repository",
+      "date": "2026-10-21",
+      "proved": "'The unauthenticated download endpoints have been deprecated ... servers SHOULD freeze'"
+    },
+    {
+      "url": "https://matrix.org/_matrix/client/v1/media/config",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 401 M_MISSING_TOKEN; unauth media download -> 404"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Free plan: 10 MB maximum per attachment, 100 MB of attachments per 24 hours, up to 500 MB per 28 days. Premium: 100 MB per attachment, 1 GB/24h, 5 GB/28d. Accounts not on any plan get 500 MB/24h up to 2 GB/28d. So the total is a few GB per month — not a storage provider at all.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "Free plan: 10 MB maximum per attachment, 100 MB of attachments per 24 hours, up to 500 MB per 28 days. Premium: 100 MB per attachment, 1 GB/24h, 5 GB/28d. Accounts not on any plan get 500 MB/24h up to 2 GB/28d. So the total is a few GB per month — not a storage provider at all.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-ip-shaping",
+  "binding_note": null
+}

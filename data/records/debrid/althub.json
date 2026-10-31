@@ -1,0 +1,102 @@
+{
+  "slug": "althub",
+  "provider": "altHUB",
+  "url": "https://althub.co.za/",
+  "category": "Usenet indexer (Newznab API, open registration)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Vendor: 'Register and use altHUB without paying first. Upgrade later if you want higher limits.' A third-party table describes the free side as a '14-day trial: 5,000 downloads and 5,000 API calls' and lists AltPRO USD 5/year and AltUNLIMITED USD 10/year.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://althub.co.za/",
+    "read_on": "2026-10-23",
+    "notes": "The vendor promises a free start without a number; the only number is third-party and describes a trial. Both readings are recorded because they lead to different verdicts."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: an NZB pointer file",
+    "bytes": null,
+    "source_url": "https://althub.co.za/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not published on the pages reachable today; a third-party table claims '900,000+ NZBs from 80 newsgroups indexed'.",
+    "days": null,
+    "source_url": "https://nzbhydra.com/indexers/",
+    "notes": "reported"
+  },
+  "egress": {
+    "terms": "No byte metering; the API returns pointers.",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://althub.co.za/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "Newznab API. The site's own pages advertise 'Fast API', 'Works with SABnzbd and NZBGet, using the same API your client already speaks' and a response-time claim. An unauthenticated /api?t=caps returned 403 with text/plain, so the API refuses anonymous callers.",
+  "endpoint": "https://althub.co.za/api",
+  "tooling": "Native Newznab, explicitly built for SABnzbd and NZBGet; Prowlarr and NZBHydra2 add it with URL plus key.",
+  "chaining": "At USD 5/year it is the cheapest paid escape from a 25-call free tier; the free start is what makes it worth trying before paying.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "5,000 API calls and 5,000 downloads during a reported 14-day trial",
+      "source": "https://nzbhydra.com/indexers/"
+    },
+    {
+      "kind": "write-gated",
+      "value": "the plans page is behind a Cloudflare challenge, so the allowance a free account actually keeps after a trial was not readable",
+      "source": "probe:https://althub.co.za/plans"
+    }
+  ],
+  "limits_note": "",
+  "binding": "request-rate",
+  "binding_note": "A daily counter is the only kind of limit this service has been reported to run, and the free side is either generous (5,000) or time-boxed (14 days). Which of those is true decides whether it binds at all.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Registration is open: /register serves username, password, confirm and email fields, with no invite field and no card.",
+    "country": null
+  },
+  "reliability_note": "The domain moved from althub.ovh, which now returns a Cloudflare 530 to every request; a saved config pointing at the old host fails at DNS, not at auth.",
+  "confidence": "reported",
+  "confidence_note": "The registration form and the 403 on the API were observed today. The allowance is third-party because the plans page is challenged.",
+  "evidence": [
+    {
+      "url": "probe:https://althub.co.za/",
+      "date": "2026-10-23",
+      "proved": "vendor text read: 'Fast API', 'Free to start - Register and use altHUB without paying first. Upgrade later if you want higher limits.'"
+    },
+    {
+      "url": "probe:https://althub.co.za/register",
+      "date": "2026-10-23",
+      "proved": "registration form with username, password, confirm and email; no invitecode field"
+    },
+    {
+      "url": "probe:https://althub.co.za/api?t=caps",
+      "date": "2026-10-23",
+      "proved": "unauthenticated caps returned 403 with text/plain, so the API rejects anonymous callers"
+    },
+    {
+      "url": "probe:https://althub.co.za/plans",
+      "date": "2026-10-23",
+      "proved": "the plans page returned a Cloudflare 'Just a moment' interstitial (403); a pinned browserless retry also failed"
+    },
+    {
+      "url": "https://nzbhydra.com/indexers/",
+      "date": "2026-10-23",
+      "proved": "third-party: 'Open registration', 'AltPRO USD 5/year, AltUNLIMITED USD 10/year', '14-day trial: 5,000 downloads and 5,000 API calls'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "extras": {
+    "price": "USD 5/year AltPRO (reported)",
+    "nzb_is_newznab": true,
+    "old_host": "althub.ovh returns Cloudflare 530",
+    "registration_open": true
+  },
+  "notes": "The old spelling altHUB.ovh is still circulating in lists; it answers 530, which reads like a dead service and is not one.",
+  "verified_at": "2026-10-23T02:11:54.066Z",
+  "topic": "debrid",
+  "price_per_tb_month": null
+}

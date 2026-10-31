@@ -1,0 +1,102 @@
+{
+  "topic": "storage",
+  "slug": "gigafile",
+  "provider": "GigaFile (ギガファイル便)",
+  "url": "https://gigafile.nu",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "300 GB per file, unlimited number of files, no account required ('1ファイル300Gまで、個数無制限')",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://gigafile.nu/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "300 GB per file",
+    "bytes": 300000000000,
+    "source_url": "https://gigafile.nu/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "300 GB/file; retention selectable 3/5/7/14/30/60/100 days (default 5); 2 GB/day download per file per IP; optional 4-char download key and email notification; files expire hard after retention, no inactivity reset",
+    "days": 100,
+    "source_url": "https://gigafile.nu/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "free direct download via /download.php?file=<id>; no metering page exists, no bandwidth cap published; per-IP daily cap = 2 GB per file (5 downloads/day of the same file)",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "no rclone backend; plain multipart POST to https://<nn>.gigafile.nu/upload_chunk.php (id, name, chunk, chunks, lifetime, file); chunk_size=100mb, max_size=300gb are published as JS vars in the page source; own client is ~40 lines of python/curl",
+  "chaining": "quota is per record, not per account — 10 TiB = 35 uploads of 300 GB, 20 TiB = ~70; no account, no identity, so nothing to register and nothing to shard around. Only the 100-day retention forces a re-upload cycle.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "2 GB/day",
+      "source": "https://gigafile.nu/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "300 GB per file",
+      "source": "https://gigafile.nu/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "300 GB/file",
+      "source": "https://gigafile.nu/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "retention selectable 3/5/7/14/30/60/100 days",
+      "source": "https://gigafile.nu/"
+    }
+  ],
+  "limits_note": "300 GB/file; retention selectable 3/5/7/14/30/60/100 days (default 5); 2 GB/day download per file per IP; optional 4-char download key and email notification; files expire hard after retention, no inactivity reset",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Download endpoint only serves when called with the referer/cookie chain from the file page (a bare GET returns an 'open the proper download screen' interstitial); datacenter IPs are ad-walled but the byte path itself worked",
+  "confidence": "documented",
+  "confidence_note": "The per-object cap and the retention band are stated on the page as re-read. Was reported; now documented.",
+  "evidence": [
+    {
+      "url": "https://gigafile.nu/",
+      "date": "2026-10-21",
+      "proved": "'1ファイル300Gまで、個数無制限' (up to 300G per file, unlimited count), retention 3–100 days"
+    },
+    {
+      "url": "https://gigafile.nu/",
+      "date": "2026-10-21",
+      "proved": "page source of — var max_size = \"300gb\"; var chunk_size = \"100mb\"; var server = \"10.gigafile.nu\""
+    },
+    {
+      "url": "https://10.gigafile.nu/upload_chunk.php",
+      "date": "2026-10-21",
+      "proved": "probe: POST (id,name,chunk=0,chunks=1,lifetime=7,file=probe.bin) -> 200 {\"status\":0,\"url\":\"https://10.gigafile.nu/1029-b775394042aa285673c0da77eb508b1b5\",\"delkey\":\"62fb\"}"
+    },
+    {
+      "url": "https://10.gigafile.nu/download.php?file=1029-b77",
+      "date": "2026-10-21",
+      "proved": "probe: GET ... with referer+session cookie -> 200, application/octet-stream, 2048 bytes, byte-identical to uploaded file"
+    },
+    {
+      "url": "https://gigafile.nu/",
+      "date": "2026-10-22",
+      "proved": "200, 48,407 B on 2026-10-22; page description: '3 days to 100 days, seven selectable retention periods' and '300G per file'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "300 GB per file, unlimited number of files, no account required ('1ファイル300Gまで、個数無制限')",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

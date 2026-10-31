@@ -1,0 +1,303 @@
+{
+  "topic": "data-apis",
+  "slug": "crossref",
+  "provider": "Crossref",
+  "url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/access-and-authentication/",
+  "category": "scholarly metadata API (DOI registry) and annual public data file",
+  "tier": "free",
+  "free_tier": {
+    "stated": "No sign-up: the public pool allows 5 requests a second for a single record and 1 a second for lists of records, 1 at a time; the polite pool, selected by an email address in the mailto parameter or the agent header, allows 10 a second for single DOI records and 3 a second for lists, 3 at a time; no daily cap is published",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/access-and-authentication/",
+    "read_on": "2026-10-30",
+    "notes": "Measured on 2026-10-30: an anonymous list call answered x-rate-limit-limit 1, x-rate-limit-interval 1s, x-concurrency-limit 1 in pool public-array; an anonymous single-DOI call answered x-rate-limit-limit 5 in pool public-single."
+  },
+  "per_object_cap": {
+    "stated": "rows default 20, maximum 1000 per call; cursor paging for deeper result sets",
+    "bytes": null,
+    "source_url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/tips-for-using-the-crossref-rest-api/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "the API is a live index; the public data file is released once a year (the 2026 file on 2026 March 17); monthly snapshots for Metadata Plus subscribers stay available until the end of the following quarter",
+    "days": null,
+    "source_url": "https://www.crossref.org/documentation/retrieve-metadata/bulk-downloads/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "The API is not metered by bytes. The annual public data file is distributed over Academic Torrents; its copy in the S3 bucket api-snapshots-reqpays-crossref is Requester Pays, so the downloader's AWS account pays the transfer, estimated by Crossref at USD 18 for the 2025 file of about 200 GB.",
+    "metered": false,
+    "free_allowance": "the torrent has no published cap; the Requester Pays copy has no free allowance",
+    "price_per_tb": null,
+    "source_url": "https://www.crossref.org/documentation/retrieve-metadata/bulk-downloads/"
+  },
+  "interface": [
+    "rest",
+    "s3"
+  ],
+  "interface_detail": "REST at https://api.crossref.org (works, members, funders, journals; JSON; cursor paging); the annual public data file as gzip JSONL over BitTorrent (Academic Torrents, doi:10.13003/nggf-vt1j) or from the Requester Pays S3 bucket api-snapshots-reqpays-crossref with --request-payer requester; monthly snapshots at https://api.crossref.org/snapshots/monthly/ for Metadata Plus tokens only",
+  "endpoint": "https://api.crossref.org/works",
+  "tooling": "curl or any HTTP client for the API; a BitTorrent client for the public data file; aws s3api get-object --request-payer requester for the S3 copy, which needs an AWS account",
+  "chaining": "The annual public data file is the bulk path: the 2026 file holds nearly 180 million records in 208 GB of compressed JSONL across 35909 files, free over Academic Torrents; the REST API with update-date or index-date filters, rows=1000 and a cursor brings a copy current between releases.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "public pool: 5 requests a second for a single record, 1 a second for lists of records; concurrency 1",
+      "source": "https://www.crossref.org/blog/announcing-changes-to-rest-api-rate-limits/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "polite pool (email in mailto or the agent header): 10 requests a second for a single DOI record, 3 a second for lists; concurrency 3",
+      "source": "https://www.crossref.org/blog/announcing-changes-to-rest-api-rate-limits/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "Metadata Plus: 150 requests a second, no concurrency limit; annual subscription from USD 550",
+      "source": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/access-and-authentication/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "rows maximum 1000 per call; cursor paging beyond",
+      "source": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/tips-for-using-the-crossref-rest-api/"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "One list call a second anonymously, or 3 in the polite pool, makes a full harvest through the API slow; the annual file is the route to the whole registry.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No signup or registration. An email address in the mailto parameter or the agent header selects the polite pool with higher limits. Metadata Plus is an annual subscription that issues an API key.",
+    "country": null
+  },
+  "reliability_note": "Over the limit answers 429; a manual block answers 403 and is lifted through support. The public and polite limits were revised from 1 December 2025.",
+  "confidence": "documented",
+  "confidence_note": "The pool limits, the bulk file and its size are vendor pages read on 2026-10-30; two anonymous calls the same day returned the public-pool limits in their headers (1 a second for a list, 5 for a single DOI). The torrent was not downloaded.",
+  "evidence": [
+    {
+      "url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/access-and-authentication/",
+      "date": "2026-10-30",
+      "proved": "the REST API needs no signup",
+      "capture": "sha256:64d202bd8d19736cd1c43b60733776a9b61dce700b78336079312cced9bff4b8",
+      "quote": "Anyone can access the REST API, no signup or registration is required."
+    },
+    {
+      "url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/access-and-authentication/",
+      "date": "2026-10-30",
+      "proved": "the polite pool is selected by an email address in mailto or the agent header",
+      "capture": "sha256:64d202bd8d19736cd1c43b60733776a9b61dce700b78336079312cced9bff4b8",
+      "quote": "| Polite | Include your email address in the `mailto` parameter or `agent` header. |"
+    },
+    {
+      "url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/access-and-authentication/",
+      "date": "2026-10-30",
+      "proved": "the public pool allows 5 requests a second, concurrency 1",
+      "capture": "sha256:64d202bd8d19736cd1c43b60733776a9b61dce700b78336079312cced9bff4b8",
+      "quote": "| Public | 5 | 1 |"
+    },
+    {
+      "url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/access-and-authentication/",
+      "date": "2026-10-30",
+      "proved": "the polite pool allows 10 requests a second, concurrency 3",
+      "capture": "sha256:64d202bd8d19736cd1c43b60733776a9b61dce700b78336079312cced9bff4b8",
+      "quote": "| Polite | 10 | 3 |"
+    },
+    {
+      "url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/access-and-authentication/",
+      "date": "2026-10-30",
+      "proved": "Metadata Plus allows 150 requests a second with no concurrency limit",
+      "capture": "sha256:64d202bd8d19736cd1c43b60733776a9b61dce700b78336079312cced9bff4b8",
+      "quote": "| Plus | 150 | None |"
+    },
+    {
+      "url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/access-and-authentication/",
+      "date": "2026-10-30",
+      "proved": "over the limit answers 429",
+      "capture": "sha256:64d202bd8d19736cd1c43b60733776a9b61dce700b78336079312cced9bff4b8",
+      "quote": "If you exceed the rate limits, you will receive a 429 HTTP response."
+    },
+    {
+      "url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/access-and-authentication/",
+      "date": "2026-10-30",
+      "proved": "a manual block answers 403",
+      "capture": "sha256:64d202bd8d19736cd1c43b60733776a9b61dce700b78336079312cced9bff4b8",
+      "quote": "Blocked users will receive a 403 HTTP response and you can contact our support team to ask for a block to be removed."
+    },
+    {
+      "url": "https://www.crossref.org/blog/announcing-changes-to-rest-api-rate-limits/",
+      "date": "2026-10-30",
+      "proved": "the public pool allows 5 single-record requests a second",
+      "capture": "sha256:fe96b5289973429e7da77dd88540afaea50af1c3ddd60c80526a100c06f817d1",
+      "quote": "| Single record | 5 | 1 |"
+    },
+    {
+      "url": "https://www.crossref.org/blog/announcing-changes-to-rest-api-rate-limits/",
+      "date": "2026-10-30",
+      "proved": "the public pool allows 1 list request a second",
+      "capture": "sha256:fe96b5289973429e7da77dd88540afaea50af1c3ddd60c80526a100c06f817d1",
+      "quote": "| List of records (queries, filters, etc.) | 1 | 1 |"
+    },
+    {
+      "url": "https://www.crossref.org/blog/announcing-changes-to-rest-api-rate-limits/",
+      "date": "2026-10-30",
+      "proved": "the polite pool allows 10 single-DOI requests a second",
+      "capture": "sha256:fe96b5289973429e7da77dd88540afaea50af1c3ddd60c80526a100c06f817d1",
+      "quote": "| Single DOI record | 10 | 3 |"
+    },
+    {
+      "url": "https://www.crossref.org/blog/announcing-changes-to-rest-api-rate-limits/",
+      "date": "2026-10-30",
+      "proved": "the polite pool allows 3 list requests a second",
+      "capture": "sha256:fe96b5289973429e7da77dd88540afaea50af1c3ddd60c80526a100c06f817d1",
+      "quote": "| List of records (queries, filters, etc.) | 3 | 3 |"
+    },
+    {
+      "url": "https://www.crossref.org/blog/announcing-changes-to-rest-api-rate-limits/",
+      "date": "2026-10-30",
+      "proved": "the limits are per second",
+      "capture": "sha256:fe96b5289973429e7da77dd88540afaea50af1c3ddd60c80526a100c06f817d1",
+      "quote": "The rate limit is the number of total requests that can be made per second."
+    },
+    {
+      "url": "https://www.crossref.org/blog/announcing-changes-to-rest-api-rate-limits/",
+      "date": "2026-10-30",
+      "proved": "the limits were revised from 1 December 2025",
+      "capture": "sha256:fe96b5289973429e7da77dd88540afaea50af1c3ddd60c80526a100c06f817d1",
+      "quote": "From 1 December 2025, we will be revising the rate limits for the public and polite pools of the REST API"
+    },
+    {
+      "url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/tips-for-using-the-crossref-rest-api/",
+      "date": "2026-10-30",
+      "proved": "a call returns at most 1000 rows",
+      "capture": "sha256:a50e76ab45183f2ff178f2668b8e5ebbce284fa1d79b87232b523fdba732066a",
+      "quote": "The default number of rows returned is 20 and you can increase it up to 1000."
+    },
+    {
+      "url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/tips-for-using-the-crossref-rest-api/",
+      "date": "2026-10-30",
+      "proved": "deep result sets use cursor paging",
+      "capture": "sha256:a50e76ab45183f2ff178f2668b8e5ebbce284fa1d79b87232b523fdba732066a",
+      "quote": "Paginating through multiple pages of results is possible through the cursor parameter."
+    },
+    {
+      "url": "https://www.crossref.org/documentation/retrieve-metadata/bulk-downloads/",
+      "date": "2026-10-30",
+      "proved": "the public data file is released once a year",
+      "capture": "sha256:874ebdfcc449154810696ed324d9d702f289eb248537431a7350b53bcad7ad91",
+      "quote": "Once a year we release files that include the metadata for all Crossref-registered DOIs."
+    },
+    {
+      "url": "https://www.crossref.org/documentation/retrieve-metadata/bulk-downloads/",
+      "date": "2026-10-30",
+      "proved": "the S3 copy is the bucket api-snapshots-reqpays-crossref",
+      "capture": "sha256:874ebdfcc449154810696ed324d9d702f289eb248537431a7350b53bcad7ad91",
+      "quote": "The bucket is called `api-snapshots-reqpays-crossref`."
+    },
+    {
+      "url": "https://www.crossref.org/documentation/retrieve-metadata/bulk-downloads/",
+      "date": "2026-10-30",
+      "proved": "the S3 copy is Requester Pays",
+      "capture": "sha256:874ebdfcc449154810696ed324d9d702f289eb248537431a7350b53bcad7ad91",
+      "quote": "This means that rather than the bucket owner (Crossref) paying for bandwidth and transfer costs when downloading objects, the requester pays instead."
+    },
+    {
+      "url": "https://www.crossref.org/documentation/retrieve-metadata/bulk-downloads/",
+      "date": "2026-10-30",
+      "proved": "the S3 copy of the 2025 file costs about USD 18",
+      "capture": "sha256:874ebdfcc449154810696ed324d9d702f289eb248537431a7350b53bcad7ad91",
+      "quote": "The 2025 file is approximately 200 GB, and plugging that into [this calculator](https://calculator.aws/#/createCalculator/S3) results in an estimated cost of $18 USD."
+    },
+    {
+      "url": "https://www.crossref.org/documentation/retrieve-metadata/bulk-downloads/",
+      "date": "2026-10-30",
+      "proved": "monthly snapshots are removed after the following quarter",
+      "capture": "sha256:874ebdfcc449154810696ed324d9d702f289eb248537431a7350b53bcad7ad91",
+      "quote": "Snapshots remain available until the end of the following quarter, after which they are removed"
+    },
+    {
+      "url": "https://www.crossref.org/documentation/retrieve-metadata/bulk-downloads/",
+      "date": "2026-10-30",
+      "proved": "the public data file is distributed over Academic Torrents",
+      "capture": "sha256:874ebdfcc449154810696ed324d9d702f289eb248537431a7350b53bcad7ad91",
+      "quote": "The most recent public data file is accessible via [Academic Torrents](https://academictorrents.com/) at [https://doi.org/10.13003/nggf-vt1j](https://doi.org/10.13003/nggf-vt1j)."
+    },
+    {
+      "url": "https://doi.org/10.13003/nggf-vt1j",
+      "date": "2026-10-30",
+      "proved": "the 2026 public data file is 35909 files",
+      "capture": "sha256:62819228f36fef8d65e52d6776e58160d4f1cf7e9933b03fda8923050de38b09",
+      "quote": "folder March 2026 Public Data File from Crossref (35909 files)"
+    },
+    {
+      "url": "https://doi.org/10.64000/7s70g-drz77",
+      "date": "2026-10-30",
+      "proved": "the 2026 public data file is 208 GB compressed",
+      "capture": "sha256:c6e92f956393d951a3b9ac5f418437906721c0c8544d7b08e1c1a344d98ab471",
+      "quote": "The complete, compressed files are 208 GB."
+    },
+    {
+      "url": "https://doi.org/10.64000/7s70g-drz77",
+      "date": "2026-10-30",
+      "proved": "the 2026 public data file holds nearly 180 million records",
+      "capture": "sha256:c6e92f956393d951a3b9ac5f418437906721c0c8544d7b08e1c1a344d98ab471",
+      "quote": "containing nearly 180 million records, is now available."
+    },
+    {
+      "url": "https://doi.org/10.64000/7s70g-drz77",
+      "date": "2026-10-30",
+      "proved": "the 2026 public data file was announced on 2026 March 17",
+      "capture": "sha256:c6e92f956393d951a3b9ac5f418437906721c0c8544d7b08e1c1a344d98ab471",
+      "quote": "2026 March 17"
+    },
+    {
+      "url": "https://www.crossref.org/fees/",
+      "date": "2026-10-30",
+      "proved": "the lowest Metadata Plus annual fee is USD 550",
+      "capture": "sha256:04d5988ac640a82f46faa71b80a088e7146eec583e3dbead9d6555caa5966eab",
+      "quote": "| < 500,000 USD | 550 USD |"
+    },
+    {
+      "url": "probe:https://api.crossref.org/works?rows=1&select=DOI",
+      "date": "2026-10-30",
+      "proved": "an anonymous list call was limited to 1 request",
+      "capture": "sha256:5c102531347b36b2538a01541ba34cbb3f23f0b7a387d26669afc5c2d7f1ce34",
+      "quote": "\"x-rate-limit-limit\": \"1\""
+    },
+    {
+      "url": "probe:https://api.crossref.org/works?rows=1&select=DOI",
+      "date": "2026-10-30",
+      "proved": "the limit interval was 1 second",
+      "capture": "sha256:5c102531347b36b2538a01541ba34cbb3f23f0b7a387d26669afc5c2d7f1ce34",
+      "quote": "\"x-rate-limit-interval\": \"1s\""
+    },
+    {
+      "url": "probe:https://api.crossref.org/works?rows=1&select=DOI",
+      "date": "2026-10-30",
+      "proved": "the anonymous list call went to the public pool",
+      "capture": "sha256:5c102531347b36b2538a01541ba34cbb3f23f0b7a387d26669afc5c2d7f1ce34",
+      "quote": "\"x-api-pool\": \"public-array\""
+    },
+    {
+      "url": "probe:https://api.crossref.org/works/10.1128/mbio.01735-25",
+      "date": "2026-10-30",
+      "proved": "an anonymous single-DOI call was limited to 5 requests a second",
+      "capture": "sha256:127ca95c26a908ac6cb795080dbe35971cece5d9898cf8960011e892a74074e9",
+      "quote": "\"x-rate-limit-limit\": \"5\""
+    },
+    {
+      "url": "probe:https://api.crossref.org/works/10.1128/mbio.01735-25",
+      "date": "2026-10-30",
+      "proved": "the anonymous single-DOI call went to the public pool",
+      "capture": "sha256:127ca95c26a908ac6cb795080dbe35971cece5d9898cf8960011e892a74074e9",
+      "quote": "\"x-api-pool\": \"public-single\""
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-31T00:48:58.884Z",
+  "price_per_tb_month": null,
+  "notes": "The record debrid/crossref-rest-api describes the same REST API; this record adds the published pool limits and the bulk paths.",
+  "extras": {
+    "public_file_2026_gb": 208,
+    "public_file_2026_files": 35909,
+    "metadata_plus_min_usd_year": 550
+  }
+}

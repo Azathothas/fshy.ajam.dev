@@ -1,0 +1,113 @@
+{
+  "topic": "compute",
+  "slug": "google-cloud-spot",
+  "provider": "Google Cloud Spot",
+  "url": "https://cloud.google.com/compute/docs/instances/view-vm-availability",
+  "category": "GPU cloud",
+  "free_tier": {
+    "stated": "Google publishes two numbers that answer the survival question directly and neither is an interruption rate. Estimated uptime is 'the minimum amount of time that you can expect most of your Spot VMs to run before Compute Engine preempts them', and it is bucketed into exactly three values: '60 minutes (3,600 seconds)', '10 minutes (600 seconds)' and '1 minute (60 seconds)'. Obtainability is a separate score from 0.0 to 1.0 for whether the creation request succeeds at all. The preemption rate from advice.capacityHistory is defined as 'Total preempted Spot VMs in a day' divided by 'Total Spot VMs that stopped running in a day'.",
+    "unit": "hours",
+    "metered_on": "wall-clock",
+    "source_url": "https://cloud.google.com/compute/docs/instances/view-vm-availability",
+    "read_on": "2026-10-22",
+    "notes": "none"
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://cloud.google.com/compute/docs/instances/view-vm-availability",
+    "notes": null
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://cloud.google.com/compute/docs/instances/view-vm-availability",
+    "notes": null
+  },
+  "egress": {
+    "terms": "not stated",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://cloud.google.com/compute/docs/instances/view-vm-availability"
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "inferred from the tooling the provider documents; not probed",
+  "tooling": "not stated",
+  "chaining": "Estimated uptime is the one vendor-published figure a scheduler can gate on before launching: if it returns 10 minutes and the checkpoint interval is 10 minutes, is not worth the setup cost and the scheduler should move zone.",
+  "limits": [],
+  "limits_note": "Estimated uptime is bucketed to three values and is a floor for the majority of VMs, so it cannot be converted into a per-hour probability without assuming a distribution.",
+  "binding": "none",
+  "binding_note": "Estimated uptime is bucketed to three values and is a floor for the majority of VMs, so it cannot be converted into a per-hour probability without assuming a distribution.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "card: 'the Free Trial is USD 300 over 90 days and requires a credit card or other payment method at signup'. No authorisation or hold amount is stated in the evidence, so the hold is unknown, and whether debit or prepaid is accepted is not stated: unknown. Spot VMs sit outside the Free Tier - 'The Google Cloud Free Tier credits for Compute Engine don't apply to Spot VMs' - and a non-billable Free trial account cannot add GPUs or request a quota increase.",
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://cloud.google.com/compute/docs/instances/view-vm-availability",
+      "date": "2026-10-22",
+      "proved": "estimated uptime is 'the minimum amount of time that you can expect most of your Spot VMs to run' and takes only the values 60 minutes, 10 minutes or 1 minute, quoted"
+    },
+    {
+      "url": "https://cloud.google.com/compute/docs/instances/view-spot-preemption-price",
+      "date": "2026-10-22",
+      "proved": "the preemption rate formula is total preempted Spot VMs in a day divided by total Spot VMs that stopped running in a day, and the rate is expressed as a fraction of VMs rather than of time, quoted"
+    },
+    {
+      "url": "https://cloud.google.com/compute/docs/instances/view-spot-preemption-price",
+      "date": "2026-10-22",
+      "proved": "preemption history covers 30 days per machine type and zone, and the feature cannot report N1 machine types with GPUs attached, custom machine types or TPUs"
+    },
+    {
+      "url": "https://cloud.google.com/compute/docs/instances/spot",
+      "date": "2026-10-22",
+      "proved": "the preemption notice duration can be set to 120 seconds or 0 seconds, 120 is recommended for workloads needing more than 30 seconds, and the shutdown period is best effort up to 30 seconds, quoted"
+    },
+    {
+      "url": "https://cloud.google.com/compute/docs/instances/create-use-spot",
+      "date": "2026-10-22",
+      "proved": "the gcloud flag is --preemption-notice-duration and the value must be either 120s or 0s, quoted"
+    },
+    {
+      "url": "https://cloud.google.com/compute/docs/instances/spot",
+      "date": "2026-10-22",
+      "proved": "'The Google Cloud Free Tier credits for Compute Engine don't apply to Spot VMs', quoted in the Spot VMs limitations list"
+    },
+    {
+      "url": "https://cloud.google.com/free/docs/free-cloud-features",
+      "date": "2026-10-22",
+      "proved": "on a non-billable Free trial account you cannot 'Add GPUs to your VM instances' and cannot 'Request a quota increase', quoted"
+    },
+    {
+      "url": "https://cloud.google.com/free/docs/free-cloud-features",
+      "date": "2026-10-22",
+      "proved": "the Free Trial is USD 300 over 90 days and requires a credit card or other payment method at signup, quoted"
+    },
+    {
+      "url": "https://cloud.google.com/spot-vms/pricing",
+      "date": "2026-10-22",
+      "proved": "the accelerator table lists 'Current Spot pricing (USD)' per machine type, including a2-highgpu-1g at $2.20401, a3-highgpu-1g at $6.273932575 and g2-standard-4 at $0.423016, all for 1 hour"
+    },
+    {
+      "url": "https://cloud.google.com/compute/docs/instances/spot",
+      "date": "2026-10-22",
+      "proved": "Spot VMs offer 'up to 91% discounts for many machine types, GPUs, TPUs, and Local SSDs', and 'The Google Cloud Free Tier credits for Compute Engine don't apply to Spot VMs', quoted"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "The comparability trap is the denominator. A GCP preemption rate of 0.50 does not mean a VM has a 50 per cent chance of preemption in an hour; it means half of the VMs that stopped that day were stopped by preemption rather than by their owner. Published third-party tables that put 'GCP ~2.3 per cent per hour' next to an Azure per-hour eviction probability are mixing two statistics. Also of note: preemption history is unavailable for N1 machine types with GPUs attached, which is exactly the cheap GPU lane, and the whole feature is marked Preview. fails-identity via a05-spot. The one recorded is the better-evidenced.",
+  "extras": {
+    "facets": {
+      "class": "spot-arbitrage",
+      "free_tier_kind": "none",
+      "shape": null
+    }
+  }
+}

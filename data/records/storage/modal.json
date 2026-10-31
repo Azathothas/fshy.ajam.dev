@@ -1,0 +1,82 @@
+{
+  "topic": "storage",
+  "slug": "modal",
+  "provider": "Modal",
+  "url": "https://modal.com",
+  "category": "iaas",
+  "free_tier": {
+    "stated": "Volumes: 'Volumes include up to 1 TiB free' on the Starter plan, then $0.09/GiB/mo (per PricingSaaS capture of the Jun 2026 pricing change). Starter also includes $30/mo of compute.",
+    "unit": "TiB",
+    "metered_on": "unstated",
+    "source_url": "https://modal.com/pricing",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://modal.com/pricing",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "500,000 inodes per Volume; 1 TiB free per workspace; volumes snapshot once/day for billing (deleted data can bill up to 4 days); $30/mo compute is the real ceiling — serving costs CPU-seconds, so throughput is bounded by the credit, not the disk.",
+    "days": 4,
+    "source_url": "https://modal.com/pricing",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "1 TiB/billing cycle included on Starter, then $0.04/GiB — metered but with a 1 TiB monthly floor. Explicitly: 'Reads from and writes to Modal Volumes do not count as network egress.'",
+    "metered": true
+  },
+  "interface": [
+    "s3",
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "`modal` Python SDK + `modal volume put/get/ls` CLI; volumes mount as a POSIX filesystem inside containers. Anyone who needs S3 semantics writes a tiny FastAPI shim on a web endpoint.",
+  "chaining": "1 TiB free volume per workspace x N free workspaces (Starter allows 3 users/workspace, workspaces themselves are free) => multi-TiB at zero cost. Each TiB is fully read-write and persists with no session attached.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "deleted data can bill up to 4 days",
+      "source": "https://modal.com/pricing"
+    }
+  ],
+  "limits_note": "500,000 inodes per Volume; 1 TiB free per workspace; volumes snapshot once/day for billing (deleted data can bill up to 4 days); $30/mo compute is the real ceiling — serving costs CPU-seconds, so throughput is bounded by the credit, not the disk.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Data persists independent of compute and survives container shutdown; the failure mode is billing, not deletion — exceed $30/mo of compute and the workspace needs a card.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://modal.com/pricing",
+      "date": "2026-10-21",
+      "proved": "'Volumes include up to 1 TiB free'; 'Starter has no monthly fee and includes $30 of compute'"
+    },
+    {
+      "url": "https://modal.com/docs/guide/network-egress-billing",
+      "date": "2026-10-21",
+      "proved": "egress pricing table: Starter 1 TiB included, $0.04/GiB after; volumes I/O not counted as egress"
+    },
+    {
+      "url": "https://modal.com/docs/guide/volumes",
+      "date": "2026-10-21",
+      "proved": "500k inode cap, sub_path mounts, read-only mounts"
+    },
+    {
+      "url": "https://pricingsaas.com/companies/modal/diffs/2026Q2",
+      "date": "2026-10-21",
+      "proved": "'Added Volumes storage pricing ($0.09/GiB/mo, 1 TiB/mo free)'"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Volumes: 'Volumes include up to 1 TiB free' on the Starter plan, then $0.09/GiB/mo (per PricingSaaS capture of the Jun 2026 pricing change). Starter also includes $30/mo of compute.",
+  "extras": {},
+  "binding": "retention-clamped",
+  "binding_note": null
+}

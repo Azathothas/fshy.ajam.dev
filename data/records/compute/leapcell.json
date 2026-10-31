@@ -1,0 +1,125 @@
+{
+  "topic": "compute",
+  "slug": "leapcell",
+  "provider": "Leapcell",
+  "url": "https://leapcell.io/pricing",
+  "category": "serverless runtime",
+  "free_tier": {
+    "stated": "Hobby at USD 0 per seat a month: 20 projects, up to 3 vCPUs and 4 GB RAM per project, 1 free PostgreSQL database, custom domains with SSL, a global CDN; 'Persistent Servers' appear only on the paid Plus plan, so the free tier is serverless.",
+    "unit": "none",
+    "metered_on": "unstated",
+    "source_url": "https://leapcell.io/pricing",
+    "read_on": "2026-10-24"
+  },
+  "per_object_cap": {
+    "stated": "up to 3 vCPUs and 4 GB RAM per project on Hobby"
+  },
+  "retention": {
+    "stated": "not stated on the pricing page; the free tier has no persistent server"
+  },
+  "egress": {
+    "terms": "not stated on the pricing page; traffic is served through the vendor's CDN",
+    "metered": false,
+    "free_allowance": "unstated",
+    "source_url": "https://leapcell.io/pricing"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "inferred from the tooling the provider documents; not probed",
+  "tooling": "not stated",
+  "chaining": "a 3 vCPU / 4 GB serverless project with a free Postgres is a complete model-serving stack with no card, and it composes with a Kaggle or Colab notebook that trains the weights; what breaks is the 3 GB-hour monthly compute pool, which is about one full-size inference hour.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "3 vCPU and 4 GB RAM per project, 20 projects",
+      "source": "https://leapcell.io/pricing"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "no persistent servers on the free tier: the Hobby plan is serverless and scales to zero",
+      "source": "https://leapcell.io/pricing"
+    }
+  ],
+  "limits_note": "3 GB-hours of compute a month at 3 vCPU per project is roughly one hour of the full-size worker per month, so a model-inference endpoint on the advertised shape exhausts the allowance almost immediately; requests past the limit return 429 and nothing is charged.",
+  "binding": "retention-clamped",
+  "binding_note": "'Persistent Servers' is a paid-tier line item, so the free tier cannot hold a process between requests.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an account; the pricing page states no card for the Hobby plan",
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://leapcell.io/pricing",
+      "date": "2026-10-22",
+      "proved": "Hobby: 20 projects, up to 3 vCPUs per project (3 vCPUs, 4 GB RAM), 1 free PostgreSQL database, custom domains and SSL, quoted"
+    },
+    {
+      "url": "https://freetier.wiki/services/leapcell/",
+      "date": "2026-10-21",
+      "proved": "free tier: 100,000 invocations a month, 3 GB-hours serverless compute, 2 GB networking, 60 build minutes, 10-minute deployment cap, 7-day log retention; a fair-use policy against multiple accounts; last checked 2026-10-21"
+    },
+    {
+      "url": "https://whichdevtool.com/tools/leapcell/",
+      "date": "2026-10-22",
+      "proved": "Hobby requests past a limit get a 429 error and nothing is charged; 3 vCPU / 4 GB per project"
+    },
+    {
+      "url": "https://leapcell.io/pricing",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Hobby ... 20 Projects (Services) ... Up to 3 vCPUs per project (3 vCPUs, 4GB RAM) ... 1 Free PostgreSQL database'"
+    },
+    {
+      "url": "https://leapcell.io/pricing",
+      "date": "2026-10-24",
+      "proved": "quoted: 'All the benefits of Hobby, plus: Persistent Servers' on the Plus plan, which places persistent servers outside the free tier"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-24T01:55:00.000Z",
+  "notes": "The pricing page read still does not print those numbers, so the quota remains unverified; what is new is the tier comparison, which places persistent servers on Plus and therefore shows the free tier scales to zero.",
+  "extras": {
+    "facets": {
+      "class": "perpetual-free-allowance",
+      "free_tier_kind": "perpetual-free",
+      "shape": {
+        "vcpu": 3,
+        "ram_gib": 4,
+        "gpu_class": null,
+        "gpu_count": 0
+      }
+    },
+    "shape": {
+      "vcpu": 3,
+      "ram_gib": 4,
+      "disk_gib": null,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "billing_model": "free",
+    "term": "none",
+    "m10h_usd": 0.0,
+    "m24h_usd": 0.0,
+    "price_arithmetic": "USD 0 for the Hobby plan; metered usage beyond it is not published",
+    "free_tier_kind": "free-plan",
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": false,
+      "ports": "serverless HTTP through the CDN",
+      "static_ip": false,
+      "ipv6": false,
+      "per_session_bytes": null
+    },
+    "session_cap": {
+      "wall_clock_min": null,
+      "idle_reap_s": null,
+      "restart_required": false,
+      "note": "scales to zero; the idle interval is not published"
+    }
+  },
+  "tier": "Hobby",
+  "confidence_note": "the plan contents and the absence of persistent servers on Hobby were read on the pricing page; the invocation and GB-hour quota is still not printed there"
+}

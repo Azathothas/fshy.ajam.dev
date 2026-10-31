@@ -1,0 +1,270 @@
+{
+  "topic": "ip-proxy",
+  "slug": "brightdata-residential",
+  "provider": "Bright Data",
+  "url": "https://brightdata.com/pricing/proxy-network",
+  "category": "residential proxy network",
+  "tier": "paid: metered rotating residential and per-IP ISP",
+  "free_tier": {
+    "stated": "No recurring free allowance for proxy traffic: Datacenter, ISP and Residential proxies are not covered by the 5,000 monthly free credits. New accounts get a one-time USD 2 trial credit for the proxy products (valid 7 days) and a USD 5 bonus on adding a payment method (valid 30 days).",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://docs.brightdata.com/general/account/billing-and-pricing/free-tier",
+    "read_on": "2026-10-30",
+    "notes": "The 5,000 monthly free credits (about USD 7.50) cover the Web Unlocker API, SERP API, Web Scraper API, Scraper Studio and Browser API, renew on the first of each month and do not roll over. Unfunded accounts are limited to 1,000 requests per minute across the SERP API, Web Unlocker API and proxy products; adding funds removes the limit."
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://brightdata.com/pricing/proxy-network",
+    "notes": "The unit sold is bandwidth (GB through the proxy) or an address (one ISP IP), never a stored object."
+  },
+  "retention": {
+    "stated": "not applicable: a live proxy session, not stored bytes",
+    "days": null,
+    "source_url": "https://brightdata.com/pricing/proxy-network",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Rotating residential traffic is metered per GB: $8/GB list, $4/GB with code RESIGB50, then plan volume of $499/month for 141 GB, $999/month for 332 GB and $1,999/month for 798 GB with no rollover. ISP proxies are priced per IP instead of per byte: $1.80/IP shared at 10 IPs down to $1.30 at 1,000, and $3.50/IP dedicated at 10 down to $2.50 at 1,000.",
+    "metered": true,
+    "free_allowance": "none published",
+    "price_per_tb": "$8,192/TB at the $8/GB list rate and $4,096/TB at the $4/GB coupon rate, by arithmetic on the per-GB price the vendor states; the vendor prices in GB, not TB",
+    "source_url": "https://brightdata.com/pricing/proxy-network"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "HTTP/S and SOCKS5 forward proxy; residential traffic also over the QUIC protocol (HTTP/3). Zones and IPs are managed from the Control Panel or the API, and ISP proxies keep one static address per IP. No interface term names a proxy transport, so the transports are listed here.",
+  "tooling": "Any HTTP client that accepts a proxy: curl --proxy brd.superproxy.io:44445 --proxy-user brd-customer-<customer_id>-zone-<zone_name>:<zone_password>, or a SOCKS5 client. Targeting and sessions are options in the proxy username (-country-, -city-, -asn-, -os-, -session-). A session string keeps one peer while it is unchanged and for up to 5 minutes idle, a keep-alive request every 30 seconds holds it longer, and an unavailable peer answers 502 No peers available once before a new peer is assigned. Residential and Web Unlocker traffic needs the Bright Data SSL certificate for end-to-end TLS.",
+  "chaining": "A Cloudflare Worker sends its outbound request to the proxy endpoint; Bright Data supplies the exit address the target sees, so the Worker's own egress is unchanged and the address is the only thing bought.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "residential plans with included traffic: USD 499 billed monthly for 141 GB (USD 3.50/GB with code RESIGB50, USD 7 list), USD 999 for 332 GB (USD 3.00/GB, USD 6 list) and USD 1,999 for 798 GB (USD 2.50/GB, USD 5 list); pay as you go at USD 4.00/GB (USD 8 list) carries no monthly commitment",
+      "source": "https://brightdata.com/pricing/proxy-network"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "metered per GB with no allowance: $8/GB list, $4/GB with code RESIGB50",
+      "source": "https://brightdata.com/pricing/proxy-network"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "ISP proxies are sold and shaped per IP: $1.80/IP shared at 10 IPs down to $1.30 at 1,000; dedicated $3.50/IP at 10 down to $2.50 at 1,000",
+      "source": "https://brightdata.com/proxy-types/isp-proxies"
+    }
+  ],
+  "limits_note": "Residential zones created after July 7, 2026 need a human-reviewed KYC approval, open only to registered companies that verify a corporate email domain, started only after real funds are added, and submitted with a company registration document; ISP and Datacenter proxies and the Web Unlocker API need no KYC. Approved residential traffic is scoped to the KYC use case: requests to domains or categories outside it return an Access denied error. Government websites are blocked on every network.",
+  "binding": "volume-quota",
+  "binding_note": "Residential access is gated by a KYC review open only to registered companies, a gate that no limits[] kind names. Of the kinds, volume-quota binds: residential traffic is billed per GB from the first byte, USD 4.00/GB with code RESIGB50 (USD 8 list) on pay as you go, and no recurring free allowance covers proxy traffic.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "Residential: a registered company that verifies a corporate email domain, funds on the account balance, and a KYC form with the business, the use case and a company registration document, reviewed by a person; the status is updated within 48 hours of completing the process. The compliance team may ask for a government-issued ID of the point of contact, such as a driver's license or passport, and for a brief video call. Accounts on a personal email (Gmail, Outlook, iCloud) cannot be approved. ISP and Datacenter proxies and the Web Unlocker API need no KYC; adding a payment method verifies an account.",
+    "country": "registered company with a verified corporate email domain"
+  },
+  "reliability_note": "The mobile proxy product page https://brightdata.com/proxy-types/mobile-proxies answers with a temporary redirect to https://brightdata.com/proxy-types, which lists Residential, Datacenter and ISP proxies; the proxy documentation lists Residential, Data Center and ISP networks only. The withdrawal month of April 2026 is unverified: no dated source for it is held.",
+  "confidence": "documented",
+  "confidence_note": "Documented: prices, free-credit terms and KYC conditions are quoted from Bright Data's pricing page, product pages and documentation captured on 2026-10-30. The measured rung needs a byte count through a residential zone, which only a KYC-approved account can open.",
+  "evidence": [
+    {
+      "url": "https://brightdata.com/pricing/proxy-network",
+      "date": "2026-10-24",
+      "proved": "Rotating residential is $8/GB list and $4/GB with code RESIGB50; plans are $499/month for 141 GB, $999 for 332 GB and $1,999 for 798 GB; the $499 monthly minimum is the entry price with no rollover."
+    },
+    {
+      "url": "https://brightdata.com/pricing/proxy-network",
+      "date": "2026-10-24",
+      "proved": "The KYC paragraph quoted in identity_cost.detail, captured from the Bright Data residential pages on 2026-10-24."
+    },
+    {
+      "url": "https://brightdata.com/proxy-types/isp-proxies",
+      "date": "2026-10-24",
+      "proved": "ISP proxies are priced per IP, not per byte: $1.80/IP shared at 10 IPs down to $1.30 at 1,000, and $3.50/IP dedicated at 10 down to $2.50 at 1,000."
+    },
+    {
+      "url": "https://docs.brightdata.com/general/account/billing-and-pricing/free-tier",
+      "date": "2026-10-30",
+      "proved": "proxy products sit outside the 5,000 monthly free credits; a one-time USD 2 trial credit (7 days) and a USD 5 bonus on adding a payment method (30 days) apply",
+      "capture": "sha256:ce1b4bfa4d4e90044a3a813a0caff974283750b81fa9c16303452f22208c486a",
+      "quote": "A separate one-time \\$2 trial credit is available for the proxy products upon signup, with an additional \\$5 bonus when you add a payment method."
+    },
+    {
+      "url": "https://docs.brightdata.com/general/account/billing-and-pricing/free-tier",
+      "date": "2026-10-30",
+      "proved": "unfunded accounts are capped at 1,000 requests per minute across SERP API, Web Unlocker API and proxy products",
+      "capture": "sha256:ce1b4bfa4d4e90044a3a813a0caff974283750b81fa9c16303452f22208c486a",
+      "quote": "Accounts operating on the free tier (unfunded) are restricted to a default rate limit of 1,000 requests per minute across the SERP API, Web Unlocker API and Proxy products."
+    },
+    {
+      "url": "https://docs.brightdata.com/general/account/billing-and-pricing/free-tier",
+      "date": "2026-10-30",
+      "proved": "the free-tier page is the source of the free-allowance statement",
+      "capture": "sha256:ce1b4bfa4d4e90044a3a813a0caff974283750b81fa9c16303452f22208c486a",
+      "quote": "No. Datacenter, ISP and Residential proxies are not covered by the monthly free credits."
+    },
+    {
+      "url": "https://docs.brightdata.com/general/account/billing-and-pricing/free-tier",
+      "date": "2026-10-30",
+      "proved": "the free-tier page was captured on 2026-10-30",
+      "capture": "sha256:ce1b4bfa4d4e90044a3a813a0caff974283750b81fa9c16303452f22208c486a",
+      "quote": "No. Datacenter, ISP and Residential proxies are not covered by the monthly free credits."
+    },
+    {
+      "url": "https://brightdata.com/pricing/proxy-network",
+      "date": "2026-10-30",
+      "proved": "pay as you go has no monthly commitment; the plan table lists 141, 332 and 798 GB at USD 499, 999 and 1,999",
+      "capture": "sha256:1beeef38f8cc42fb1f7fbc6acbca0a0980b8cb8006605e328ba70d9b84da798a",
+      "quote": "Yes, you can buy proxies without commitment."
+    },
+    {
+      "url": "https://brightdata.com/pricing/proxy-network",
+      "date": "2026-10-30",
+      "proved": "residential pay as you go is USD 8/GB list and USD 4.00/GB with the coupon",
+      "capture": "sha256:1beeef38f8cc42fb1f7fbc6acbca0a0980b8cb8006605e328ba70d9b84da798a",
+      "quote": "$8 $4.00 / GB"
+    },
+    {
+      "url": "https://docs.brightdata.com/proxy-networks/residential/network-access",
+      "date": "2026-10-30",
+      "proved": "new residential zones after July 7, 2026 need KYC; ISP, Datacenter and Web Unlocker need none",
+      "capture": "sha256:ef726aeb871c6a8420f16c68d06fdcd07cbb13756d960922a51d74a628c3d1e7",
+      "quote": "The KYC requirement applies only to new Residential zones created after July 7, 2026."
+    },
+    {
+      "url": "https://docs.brightdata.com/proxy-networks/residential/network-access",
+      "date": "2026-10-30",
+      "proved": "residential access is limited to registered companies approved through KYC",
+      "capture": "sha256:ef726aeb871c6a8420f16c68d06fdcd07cbb13756d960922a51d74a628c3d1e7",
+      "quote": "Residential access is granted only to registered companies, and only after the Bright Data compliance team reviews and approves your KYC submission."
+    },
+    {
+      "url": "https://docs.brightdata.com/proxy-networks/residential/network-access",
+      "date": "2026-10-30",
+      "proved": "the institution class is a registered company with a verified corporate email domain",
+      "capture": "sha256:ef726aeb871c6a8420f16c68d06fdcd07cbb13756d960922a51d74a628c3d1e7",
+      "quote": "You must sign up on behalf of a registered company and verify a corporate email domain."
+    },
+    {
+      "url": "https://docs.brightdata.com/proxy-networks/residential/network-access",
+      "date": "2026-10-30",
+      "proved": "residential KYC is open only to registered businesses with a corporate email domain; personal-email accounts are refused",
+      "capture": "sha256:ef726aeb871c6a8420f16c68d06fdcd07cbb13756d960922a51d74a628c3d1e7",
+      "quote": "KYC applications are accepted only from registered businesses with a corporate email domain, so a personal-email account (for example Gmail, Outlook or iCloud) cannot be approved for Residential access."
+    },
+    {
+      "url": "https://docs.brightdata.com/products/residential/quickstart",
+      "date": "2026-10-30",
+      "proved": "adding a payment method verifies an account and grants a USD 5 credit without a charge",
+      "capture": "sha256:535281d5ac7dee6b077f391c9fb6db86dca5c9698bcfd2fbd7f320bc0f90f093",
+      "quote": "Add a payment method to verify your account and receive a \\$5 credit."
+    },
+    {
+      "url": "https://brightdata.com/trustcenter/kyc-faq-residential-proxy-network",
+      "date": "2026-10-30",
+      "proved": "the trust-center KYC FAQ limits KYC to registered businesses with a company domain",
+      "capture": "sha256:c3998c0fd0e8980ae7781a06b5cb6b776dcfb2b1fb0fa938ea459635ed24576b",
+      "quote": "Bright Data accepts KYC applications from registered businesses with a company domain."
+    },
+    {
+      "url": "https://brightdata.com/proxy-types/mobile-proxies",
+      "date": "2026-10-30",
+      "proved": "the mobile proxy URL ends at the general proxy-types page",
+      "capture": "sha256:b609e4635535864e57a439cc58eb008d5e2c8ab26f84e8a8920785b5a892ce43",
+      "quote": "x-web-final-url: https://brightdata.com/proxy-types"
+    },
+    {
+      "url": "https://docs.brightdata.com/proxy-networks/introduction",
+      "date": "2026-10-30",
+      "proved": "the proxy documentation index lists Residential, Data Center and ISP networks, with no mobile network",
+      "capture": "sha256:6a11612ffec752debbc4990dfd8dd2f0b8c2d5a0f0c8248c9f9588886e549d60",
+      "quote": "Use internet service provider IPs with a guaranteed long session peers and static addresses."
+    },
+    {
+      "url": "https://docs.brightdata.com/products/residential/faqs",
+      "date": "2026-10-30",
+      "proved": "the proxy endpoint, username options and session persistence of the residential network",
+      "capture": "sha256:b8be90abed1b8af5af6a26c46ce3378d42f80d76a90b063d22b4734bdc2528b1",
+      "quote": "The Session IP is kept persistent for up to 5 minute of idle time."
+    },
+    {
+      "url": "https://brightdata.com/proxy-types/residential-proxies",
+      "date": "2026-10-30",
+      "proved": "residential proxies speak HTTP/S and SOCKS5",
+      "capture": "sha256:b0432238a4227864f6dbd8a51506164330252c3fe3463886bd130abac161832e",
+      "quote": "Bright Data's residential proxies support the HTTP/S and SOCKS5 protocols."
+    },
+    {
+      "url": "https://brightdata.com/pricing/proxy-network",
+      "date": "2026-10-30",
+      "proved": "the pricing page carries the prices and the KYC paragraph",
+      "capture": "sha256:1beeef38f8cc42fb1f7fbc6acbca0a0980b8cb8006605e328ba70d9b84da798a",
+      "quote": "We work hard to keep our network and our customers safe and strive to prevent abuse on the Bright Data network."
+    },
+    {
+      "url": "https://brightdata.com/proxy-types/isp-proxies",
+      "date": "2026-10-30",
+      "proved": "ISP proxies are priced per IP (shared and dedicated) or per GB, and the first deposit is matched up to USD 500",
+      "capture": "sha256:fc94c4ab3cb6a0241d7eb4935e3ec8896ea42aef464780140c4f442db52eeeb9",
+      "quote": "Sign-up now and we’ll match your first deposit dollar for dollar, up to $500!"
+    },
+    {
+      "url": "https://docs.brightdata.com/proxy-networks/residential/network-access",
+      "date": "2026-10-30",
+      "proved": "ISP proxies, Datacenter proxies and the Web Unlocker API need no KYC",
+      "capture": "sha256:ef726aeb871c6a8420f16c68d06fdcd07cbb13756d960922a51d74a628c3d1e7",
+      "quote": "If you have not completed KYC, or your use case does not need Residential IPs, use one of these alternatives."
+    },
+    {
+      "url": "https://docs.brightdata.com/proxy-networks/residential/network-access",
+      "date": "2026-10-30",
+      "proved": "the KYC form needs business details, the use case and a company registration document",
+      "capture": "sha256:ef726aeb871c6a8420f16c68d06fdcd07cbb13756d960922a51d74a628c3d1e7",
+      "quote": "Submit the KYC form with details about your business and scraping use case, plus a company registration document."
+    },
+    {
+      "url": "https://brightdata.com/pricing/proxy-network",
+      "date": "2026-10-30",
+      "proved": "residential pay as you go is USD 4.00/GB with the coupon",
+      "capture": "sha256:1beeef38f8cc42fb1f7fbc6acbca0a0980b8cb8006605e328ba70d9b84da798a",
+      "quote": "$8 $4.00 / GB"
+    },
+    {
+      "url": "https://brightdata.com/pricing/proxy-network",
+      "date": "2026-10-30",
+      "proved": "residential pay as you go is USD 8/GB list and USD 4.00/GB with code RESIGB50",
+      "capture": "sha256:1beeef38f8cc42fb1f7fbc6acbca0a0980b8cb8006605e328ba70d9b84da798a",
+      "quote": "$8 $4.00 / GB"
+    },
+    {
+      "url": "https://brightdata.com/proxy-types/isp-proxies",
+      "date": "2026-10-30",
+      "proved": "ISP proxies are priced per IP",
+      "capture": "sha256:fc94c4ab3cb6a0241d7eb4935e3ec8896ea42aef464780140c4f442db52eeeb9",
+      "quote": "Pay only for the IP, no hidden costs."
+    }
+  ],
+  "verdict": "fails-identity",
+  "verified_at": "2026-10-30T18:28:31.738Z",
+  "price_per_tb_month": "$8/GB list, $4/GB with code RESIGB50 (= $8,192/TB and $4,096/TB by arithmetic); plans $499/month for 141 GB, $999 for 332 GB, $1,999 for 798 GB; ISP per IP $1.80 shared at 10 down to $1.30 at 1,000, $3.50 dedicated at 10 down to $2.50 at 1,000",
+  "notes": "ISP proxies (static residential-registered addresses) are the Bright Data proxy product reachable without KYC: USD 1.8/IP shared at 10 IPs (USD 18 billed monthly), USD 1.45 at 100, USD 1.4 at 500 and USD 1.3 at 1,000; dedicated USD 3.5/IP at 10 (USD 35), USD 2.75 at 100, USD 2.6 at 500 and USD 2.5 at 1,000; or per GB at USD 8 pay as you go, USD 499/month for 71 GB, USD 999 for 166 GB and USD 1,999 for 399 GB. The first deposit is matched dollar for dollar up to USD 500. Residential bandwidth counts request headers and data plus response headers and data. The mobile proxy product page redirects to the general proxy page.",
+  "extras": {
+    "rung": 3,
+    "rung_note": "Rotating residential exits sit at rung 2/3 (a single address, then a subnet) and ISP proxies at rung 5 (a registration class behind a hosting ASN); recorded as 3, the coarser of the two rotating rungs.",
+    "rung_by_product": {
+      "rotating_residential": "2/3",
+      "isp": 5
+    },
+    "identity_gate": "registered company with a verified corporate email domain, funded balance, human-reviewed KYC with a company registration document; government-issued ID and a video call may be requested",
+    "decisive_quote": "Residential access is granted only to registered companies, and only after the Bright Data compliance team reviews and approves your KYC submission.",
+    "monthly_minimum_usd": 499,
+    "cost_at_45gb_month_usd": 180,
+    "coupon": "RESIGB50",
+    "mobile_product": "withdrawn: https://brightdata.com/proxy-types/mobile-proxies redirects to https://brightdata.com/proxy-types, which lists Residential, Datacenter and ISP proxies; withdrawal month April 2026…",
+    "isp_price_basis": "per IP, not per byte",
+    "withdrawn_products": [
+      "mobile"
+    ]
+  }
+}

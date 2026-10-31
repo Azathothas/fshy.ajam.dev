@@ -1,0 +1,118 @@
+{
+  "topic": "ip-proxy",
+  "slug": "protonvpn-exits",
+  "provider": "Proton VPN",
+  "url": "https://protonvpn.com/pricing",
+  "category": "VPN subscription (exit source)",
+  "tier": "paid",
+  "free_tier": {
+    "stated": "Free plan, quoted from the pricing page: Connect to servers in 10 countries (randomly selected) and Secure 1 device at a time.",
+    "unit": "users",
+    "metered_on": "identity-count",
+    "source_url": "https://protonvpn.com/pricing",
+    "read_on": "2026-10-24",
+    "notes": "One device at a time, not one account. The 10 countries are drawn at random, so the free tier does not let a client choose its country."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: an exit address, not an object",
+    "bytes": null,
+    "source_url": "https://protonvpn.com/pricing",
+    "notes": "The address is the whole product; there is no object whose size could be capped."
+  },
+  "retention": {
+    "stated": "not applicable: a live tunnel and a rented exit address, not stored bytes",
+    "days": null,
+    "source_url": "https://protonvpn.com/pricing",
+    "notes": "Nothing of a user's is stored at the exit; the address persists only for the life of the connection."
+  },
+  "egress": {
+    "terms": "Proton VPN offers a Free plan with no data limits, no artificial speed limits, and no compromises on your privacy and security; a feature blurb on the same page offers fast download speeds and unlimited bandwidth. The page publishes no byte allowance and no overage price for any plan it lists.",
+    "metered": false,
+    "free_allowance": "none published: the vendor states no data limits rather than a volume",
+    "price_per_tb": null,
+    "source_url": "https://protonvpn.com/pricing"
+  },
+  "interface": [
+    "cli",
+    "rest"
+  ],
+  "interface_detail": "The Linux CLI and the authenticated REST API at /vpn/logicals. The desktop and mobile apps and a web UI reach the same servers, and WireGuard and OpenVPN configurations are offered.",
+  "endpoint": "/vpn/logicals — requires an authenticated session: HTTP 400 with Code 5002 Missing x-pm-appversion header when the app-version header is absent, HTTP 422 when it is present and the token is not valid.",
+  "tooling": "A Cloudflare Worker fetches through the exit with plain HTTP; nothing bespoke is needed and no wrapper exists for exit selection. The CLI and generated WireGuard or OpenVPN configurations reach the same servers, but picking a specific exit needs an authenticated session, because /vpn/logicals refuses unauthenticated reads.",
+  "chaining": "Secure Core is a hop topology, not a class change: it inserts an entry hop and leaves the exit's registration class where it was.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "none published: the vendor states no data limits and no artificial speed limits on the Free plan, and a feature blurb offers unlimited bandwidth; no byte allowance or overage price is…",
+      "source": "https://protonvpn.com/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "unmeasured: one Worker request through the exit returned HTTP 200 with a 14-byte body on 2026-10-03; no sustained rate was tested, so no rate limit is known either way",
+      "source": null
+    }
+  ],
+  "limits_note": "Three constraints were found that the vocabulary has no kind for: the Free plan allows one device at a time; its server pool is 10 countries selected at random, so the exit cannot be chosen; and /vpn/logicals requires an authenticated session, so the 21,202-server fleet cannot be enumerated without an account. The measured exit sits in a hosting ASN (AS212238), which is why the record stops at rung 4.",
+  "binding": "none",
+  "binding_note": "Nothing in the vocabulary fails at 45 GB/month across about 599,000 requests: the vendor states no data limit, no rate was observed to be shaped, and the exit answered a Worker request at HTTP 200. What does bind sits outside the vocabulary — the Free plan's one device at a time, its random 10-country pool, and an authenticated session for /vpn/logicals. The caveat that keeps this off rung 5 is the ASN's class, not a quota.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "An account registered with an email address. The facts record email as the only registration cost and name no second gate; the paid plans are sold against that account.",
+    "country": null
+  },
+  "reliability_note": "One exit was measured once: 149.50.216.236 answered a Cloudflare Worker request at HTTP 200 with a 14-byte body on 2026-10-03, and RIPE still maps the address to AS212238 on 2026-10-24; the fleet could not be enumerated, so nothing is claimed about the other servers' exits.",
+  "confidence": "documented",
+  "confidence_note": "The exit, its prefix and its ASN are measured: a Worker request returned the address and RIPE maps the /24 to AS212238. The price, the free-tier terms and the no-data-limit sentence are vendor-page reads, and the fleet count could not be enumerated, so the weakest rung the verdict rests on is documented. A paid account, a 45 GB transfer through one exit with a byte count at both ends, and an authenticated fleet listing would move the record to measured throughout.",
+  "evidence": [
+    {
+      "url": "https://protonvpn.com/pricing",
+      "date": "2026-10-24",
+      "proved": "List price $9.99 per month and $3.49 per month on the 24-month plan; Free plan is 1 device at a time in 10 randomly selected countries with no data limits and no artificial speed limits; the FAQ answer recommends a paid plan with servers in over 140 countries; a feature blurb offers unlimited bandwidth."
+    },
+    {
+      "url": "probe:149.50.216.236",
+      "date": "2026-10-03",
+      "proved": "A Cloudflare Worker request left through the Proton exit: HTTP 200, 14 bytes, body 149.50.216.236."
+    },
+    {
+      "url": "https://stat.ripe.net/data/prefix-overview/data.json?resource=149.50.216.0/24",
+      "date": "2026-10-24",
+      "proved": "149.50.216.0/24 is announced and its announcing AS is 212238, holder CDNEXT Datacamp Limited; related prefix 149.50.0.0/15; query_time 2026-10-24T08:00:00."
+    },
+    {
+      "url": "https://rest.db.ripe.net/ripe/aut-num/AS212238.json",
+      "date": "2026-10-24",
+      "proved": "AS212238 has as-name CDNEXT and org ORG-DL201-RIPE, status ASSIGNED, created 2020-12-02, last-modified 2026-07-14; org ORG-DL201-RIPE is Datacamp Limited, GB. RIPE carries no IP-type field, so the hosting classification is read from the holder, not from a registry class."
+    },
+    {
+      "url": "probe:/vpn/logicals",
+      "date": "2026-10-24",
+      "proved": "Unauthenticated /vpn/logicals returns HTTP 400 with Code 5002 Missing x-pm-appversion header, and HTTP 422 once an app-version header is sent without a valid token, so the fleet cannot be enumerated without an account."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-24T10:07:11.000Z",
+  "price_per_tb_month": "$9.99 per month list; $3.49 per month on a 24-month plan; a subscription price, not a per-TB price",
+  "notes": "Proton VPN is the topic's baseline: it is the one non-Cloudflare exit measured working inside a Cloudflare Worker, so every other exit is judged against it. The measurement is a single sample — one exit, one request, HTTP 200, a 14-byte body — and the fleet could not be enumerated, because /vpn/logicals refuses unauthenticated reads. The endpoint answered HTTP 400 with Code 5002 Missing x-pm-appversion header, then HTTP 422 once an app-version header was present and the token was not, which is the same conclusion by a different status. It does not clear rung 5: AS212238 is a hosting ASN, so the exit is a datacenter address and the class question is answered no. RIPE establishes the ASN and its holder (CDNEXT, Datacamp Limited, ORG-DL201-RIPE, GB) and carries no IP-type field, so the hosting classification is read from the holder's identity, one step above the registry; that step is the weakest link in the rung-5 judgement. Secure Core is a hop topology, not a class change: it inserts an entry hop and leaves the exit's registration class exactly where it was, so it cannot be used to reach rung 5. The pricing page states the Free plan has no data limits and no artificial speed limits, and a feature blurb on the same page offers unlimited bandwidth.",
+  "extras": {
+    "rung": 4,
+    "rung_note": "The exit address, its /24 and its announcing ASN are measured, but the ASN belongs to a hosting provider, so the record stops at ASN and does not reach registration class.",
+    "exit_ip": "149.50.216.236",
+    "asn": "AS212238",
+    "asn_name": "CDNEXT",
+    "asn_holder": "CDNEXT Datacamp Limited",
+    "asn_org": "ORG-DL201-RIPE",
+    "prefix": "149.50.216.0/24",
+    "related_prefix": "149.50.0.0/15",
+    "measured_in": "Cloudflare Worker",
+    "measurement_log": null,
+    "measurement_at": "2026-10-03T19:09:40Z",
+    "response_bytes": 14,
+    "fleet_stated": "servers in over 140 countries per the pricing page read 2026-10-24",
+    "secure_core": "hop topology, not a class change",
+    "price_usd": {
+      "monthly_list": 9.99,
+      "per_month_on_24": 3.49
+    }
+  }
+}

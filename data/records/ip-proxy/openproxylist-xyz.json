@@ -1,0 +1,116 @@
+{
+  "topic": "ip-proxy",
+  "slug": "openproxylist-xyz",
+  "provider": "openproxylist.xyz",
+  "url": "https://openproxylist.xyz/",
+  "category": "public proxy list",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free and registration-free: the front page offers Download HTTP, HTTPS, SOCKS4, and SOCKS5 proxies without limitations, and the SOCKS5 file held 8,046 lines when harvested on 2026-10-24.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://openproxylist.xyz/",
+    "read_on": "2026-10-24",
+    "notes": "Nothing is counted, sold or metered, so the unit is none: the product is a text file of third-party addresses. A second fetch of socks5.txt on the same day returned 7,877 lines against the 8,047 harvested, so the line count moves between fetches."
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://openproxylist.xyz/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: a list of live addresses, not stored bytes. The vendor states the list is rebuilt every 10 minutes.",
+    "days": null,
+    "source_url": "https://openproxylist.xyz/",
+    "notes": "The decay that matters is line lifetime, not byte retention: of 60 lines sampled from a same-day snapshot, 12 carried a payload and 46 failed at the handshake."
+  },
+  "egress": {
+    "terms": "The vendor publishes no traffic terms because it carries no traffic: each line is a third-party SOCKS5 endpoint and the bytes cross that endpoint's operator, not a vendor network. What the vendor does state, about requests to the list itself, is: No, you can send as many requests as you want. As long as you don't harm our webserver, we don't care.",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://openproxylist.xyz/"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "A plain-text file at /socks5.txt, one host:port per line, served as text/plain with no header row and no field beyond host and port. The front page links four such files (http.txt, https.txt, socks4.txt, socks5.txt) and no API.",
+  "tooling": "Any HTTP client to fetch /socks5.txt, then any SOCKS5-capable client per line: curl --socks5-hostname, or a raw handshake-plus-payload probe of the kind ran, which recorded a handshake and a payload boolean for every line. No wrapper exists for this list specifically and none is needed, because the list is host:port text.",
+  "chaining": "A disposable exit pool behind a crawler or the AI gateway: draw a line, retry across lines on failure, keep no state. It chains with nothing else because no line carries a country, an ASN, a protocol or an uptime to select on, so the only selection signal a caller has is a failed request.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "none stated by the vendor: No, you can send as many requests as you want. As long as you don't harm our webserver, we don't care.",
+      "source": "https://openproxylist.xyz/"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "none: free, unpriced and unmetered; no byte quota exists because the bytes do not cross a vendor network",
+      "source": "https://openproxylist.xyz/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "unstated and unknowable before use: no line carries a rate, a country, an ASN or an uptime, so the throttling done by the operator behind each address is discovered only by hitting it",
+      "source": null
+    }
+  ],
+  "limits_note": "The constraint that decides this record names no vocabulary kind: yield. Twelve of 60 sampled lines carried a payload (20.0%), and a same-fraction extrapolation over 8,047 lines is about 1,600 addresses, labelled an extrapolation from 60 lines rather than a measurement. The measured pool is smaller again, because the 12 successes sat on 7 distinct addresses.",
+  "binding": "none",
+  "binding_note": "Nothing in the vocabulary fails first at 45 GB a month across 599,000 requests: the list is free, unpriced and states no request limit, so there is no quota or rate to reach. What fails first is yield and address diversity, which the vocabulary has no kind for: 12 of 60 sampled lines carried a payload and those 12 sat on 7 distinct hosts, 6 of them ports on one address.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No registration, no email, no card: the list is fetched directly, and the site's own description states No signup required.",
+    "country": null
+  },
+  "reliability_note": "Failures are silent and mostly by timeout: of 60 sampled lines, 35 timed out, 4 answered the SOCKS5 greeting with no acceptable method (authentication demanded), and 1 handshook then returned a Synology DiskStation login page in place of the target body.",
+  "confidence": "measured",
+  "confidence_note": "The rung does not rise with a larger sample: the pool is rebuilt every 10 minutes, so any count is one day's snapshot.",
+  "evidence": [
+    {
+      "url": "https://openproxylist.xyz/",
+      "date": "2026-10-24",
+      "proved": "The site answered 200 with 7,799 bytes and offers four plain-text downloads with no signup; its FAQ states Updated every 10 minutes, All proxies are tested before being listed, and No, you can send as many requests as you want."
+    },
+    {
+      "url": "https://openproxylist.xyz/socks5.txt",
+      "date": "2026-10-24",
+      "proved": "Served text/plain at 141,636 bytes, 7,877 lines, each a bare host:port with no protocol, country, ASN, uptime or authentication field; the first three lines match the harvested snapshot, so the harvested file is this list at an earlier moment."
+    },
+    {
+      "url": "probe:kept-privately",
+      "date": "2026-10-24",
+      "proved": "60 lines sampled from the openproxylist/socks5 list: 14 completed a SOCKS5 handshake, 12 carried a payload to an exit IP (20.0%), 35 timed out, 4 returned no acceptable method, 3 EOF, 3 connection refused, 1 reset, 1 an HTML body in place of the target."
+    },
+    {
+      "url": "probe:kept-privately",
+      "date": "2026-10-24",
+      "proved": "The harvested list is 8,046 lines by wc -l and 8,047 host:port entries, because the last line has no trailing newline; all 8,047 are unique and they cover 2,107 distinct addresses, with no metadata on any line."
+    }
+  ],
+  "verdict": "dead",
+  "verified_at": "2026-10-24T10:07:11.000Z",
+  "price_per_tb_month": null,
+  "notes": "Dead here means the list yields no usable exit capacity, not that the domain has lapsed. openproxylist.xyz answered 200 on 2026-10-24 with 7,799 bytes, and /socks5.txt answered 200 as text/plain at 141,636 bytes. A re-check of this verdict must test yield, not uptime, or it will read a live site as a live source. The 20.0% is a ceiling, not a floor. The 12 payload successes sat on 7 distinct addresses, 6 of them ports on 45.74.31.42 alone, so the working pool is one relay with several doors. Nine of the 12 exited from an address other than the one listed (45.74.31.42's exits were GoDaddy, Contabo and Google addresses), so the address a caller picks is not the address the target sees, and with no metadata on any line there is nothing else to pick by. A 60-line single-day draw cannot separate (1) from (4); 500 lines twice in one day could. The list is not the worst of the metadata-free lists: the two runs on TheSpeedX's list measured 8.0% payload on 100 lines in each of two runs, against 20.0% here on 60, so openproxylist is second-lowest of the five lists measured, not lowest. The ranking is weaker evidence than it looks for a second reason: 5,087 of the 8,047 openproxylist lines are byte-identical host:port pairs with TheSpeedX's socks5 list and all 1,730 of its addresses appear here, so the two lists share 63.2% of this list's lines and are not independent draws of capacity. Adding lists of this kind adds lines, not exits. The vendor's claim is not what the probe found: the FAQ states All proxies are tested before being listed, while 12 of 60 carried a payload on the day they were listed. That sentence is quoted as the vendor's position and is not treated as a fact about the pool. Line count: wc -l reports 8,046 on the harvested snapshot because the final line carries no trailing newline; the entry count is 8,047. The live file served 7,877 lines the same day, which is consistent with the stated 10-minute rebuild and means the count is not stable enough to quote without a date. One sample, one day: the yield rests on a single 60-line draw taken on 2026-10-24.",
+  "extras": {
+    "rung": 2,
+    "rung_note": "Rung 2: every claim here is about individual addresses in a list, one host:port per line, with no subnet, ASN or registration-class structure to measure.",
+    "protocols_offered": [
+      "http",
+      "https",
+      "socks4",
+      "socks5"
+    ],
+    "list_url": "https://openproxylist.xyz/socks5.txt",
+    "lines_harvested": 8047,
+    "lines_wc": 8046,
+    "distinct_hosts_harvested": 2107,
+    "live_lines_same_day": 7877,
+    "sample_size": 60,
+    "payload_rate_pct": 20.0,
+    "distinct_working_hosts": 7,
+    "exit_ip_differs_from_listed": "9 of 12",
+    "overlap_with_speedx_socks5": "5,087 of 8,047 lines byte-identical; all 1,730 TheSpeedX addresses present",
+    "interface_enum_note": "The schema's interface enum has no token for a proxy endpoint or a tunnel, so this record follows the convention the egress records use: a proxy client or tunnel is 'cli', a vendor API is 'rest'. Previous value: ['socks5']"
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "topic": "storage",
+  "slug": "neocities",
+  "provider": "Neocities",
+  "url": "https://neocities.org",
+  "category": "paas",
+  "free_tier": {
+    "stated": "Free: 1 GB storage, 200 GB/month bandwidth, WebDAV and API on Free (WebDAV is listed on the Supporter table as a Free-tier feature).",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://neocities.org/supporter",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://neocities.org/supporter",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://neocities.org/supporter",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "200 GB/month soft bandwidth cap on Free: 'Don't worry—these are soft limits. Temporary surges are fine, we won't take your site down automatically'.",
+    "metered": false,
+    "free_allowance": "200 GB per month"
+  },
+  "interface": [
+    "rest",
+    "webdav",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Documented REST API: POST /api/upload (multipart, Bearer API key), plus WebDAV and an official CLI; rclone has no neocities backend but the WebDAV mount covers it.",
+  "chaining": "1 GB per site x unlimited sites per account ('Multiple Site Creation' is listed as a free feature) x unlimited free accounts. 20 TiB = 20,480 sites — operationally absurd, so this only works as a shard for a small hot set, not the archive.",
+  "limits": [],
+  "limits_note": "1 GB per site on Free (50 GB Supporter); 200 GB/month bandwidth on Free; file-type restrictions on Free (no arbitrary binary types — 'No File Upload Type Restrictions' is a Supporter-only row); API requires a key per site.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Bandwidth is internally enforced and will throttle, not delete; static file serving goes through Cloudflare with a 300s edge cache.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://neocities.org/supporter",
+      "date": "2026-10-21",
+      "proved": "plan table: 'Storage 1 GB / 50 GB', 'Bandwidth 200 GB / 3000 GB', WebDAV listed under Supporter-only features"
+    },
+    {
+      "url": "https://neocities.org/api",
+      "date": "2026-10-21",
+      "proved": "'curl -H \"Authorization: Bearer YOUR_API_KEY\" -F \"hello.html=@local.html\" https://neocities.org/api/upload' (documented programmatic upload)"
+    },
+    {
+      "url": "https://neocities.org/img/neocities-logo.svg",
+      "date": "2026-10-21",
+      "proved": "probe: curl -D - -> 200, Content-Type: image/svg+xml, Cache-Control: max-age=300, Server: cloudflare"
+    },
+    {
+      "url": "https://neocities.org/api/info?site=neocities",
+      "date": "2026-10-21",
+      "proved": "probe: curl -> {\"result\":\"error\",\"error_type\":\"invalid_auth\"} (API is live and key-gated, not open)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Free: 1 GB storage, 200 GB/month bandwidth, WebDAV and API on Free (WebDAV is listed on the Supporter table as a Free-tier feature).",
+  "extras": {},
+  "binding": "none",
+  "binding_note": null
+}

@@ -1,0 +1,86 @@
+{
+  "topic": "storage",
+  "slug": "telegram-mtproto-user-account-unlimited-channels-as-the",
+  "provider": "Telegram — MTProto user account + unlimited channels as the volume",
+  "url": "https://telegram.org",
+  "category": "messaging",
+  "free_tier": {
+    "stated": "No total storage cap, quoted from Telegram: 'you can ... share an unlimited number of photos, videos and files (doc, zip, mp3, etc.) of up to 2 GB each'. Per-file 2 GB free, 4 GB with Premium. Per-account volume is effectively unbounded because you can hold up to 500 channels/supergroups (1000 with Premium) and create up to 50 channels per day, and each channel is a separate unbounded blob store.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://telegram.org/faq",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "Per-file 2 GB",
+    "bytes": 2000000000,
+    "source_url": "https://telegram.org/faq",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://telegram.org/faq",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and unmetered. Telegram charges nothing for downloads and imposes no transfer quota; the only egress cost is Telegram's own speed shaping. Downloads are free even for files uploaded by Premium users: 'any user can download large 2+ GB files uploaded by premium users'.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Strongest tooling of any provider in this whole research area. MTProto clients: TDLib (github.com/tdlib/td, 9.2k stars, pushed 2026-10-21), MadelineProto (github.com/danog/MadelineProto, 3.5k stars, pushed 2026-10-21, alive). Field-proven storage layer: Teldrive (github.com/tgdrive/teldrive, 3.1k stars) with its own rclone backend (github.com/tgdrive/rclone). CAUTION: Telethon (12.1k) and Pyrogram (4.6k) are both ARCHIVED (Telethon read-only since 2026-02-21, Pyrogram since 2024-12-23) — do not start a new build on either.",
+  "chaining": "Unbounded by construction: 1 account x 500 channels x unlimited posts = unlimited. A second account carries a second read allowance, not a second storage allowance. Teldrive adds its own layer: 'channel-part-limit: 500000' parts per channel with 'auto-channel-create: true' — it opens a NEW channel automatically when the active one fills, so the sharding is already automated. A 2 GB file is 4000 x 512KB parts, so one channel holds ~250 TB of max-size files before rotation.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "speed is throttled for non-Premium by an explicit server error, FLOOD_PREMIUM_",
+      "source": "https://telegram.org/faq"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "speed is limited because the current account does not have a Premium subscri",
+      "source": "https://telegram.org/faq"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "Per-file 2 GB",
+      "source": "https://telegram.org/faq"
+    }
+  ],
+  "limits_note": "Per-file 2 GB free / 4 GB Premium — verified against Telegram's own config, not a blog: upload_max_fileparts_default = 4000 and upload_max_fileparts_premium = 8000, times the max part size 524288 bytes = 2,097,152,000 B and 4,194,304,000 B. Upload speed is throttled for non-Premium by an explicit server error, FLOOD_PREMIUM_WAIT_X, which signals 'upload speed is limited because the current account does not have a Premium subscription'; upload_premium_speedup_upload = 10, i.e. Premium is ~10x faster. No published daily byte cap exists — Telegram documents none, and the empirical field report (Teldrive issue #561) is 10-50 GB/day for one user, with a maintainer answering 'I have seen user posting that they upload 400-500gb daily no issues. It depends on how many bots you have.' Treat 20 GB/day as folklore: no primary source found.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Throttling is the real risk, not deletion: FLOOD_PREMIUM_WAIT_X caps non-Premium throughput and FLOOD_WAIT_X backs off per method. Files persist indefinitely in practice, but a closed account takes its channels with it, and Teldrive's own README warns accounts and stored files 'can become unavailable', so a store that spans several accounts loses only the parts one account holds.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://telegram.org/faq",
+      "date": "2026-10-21",
+      "proved": "'share an unlimited number of photos, videos and files ... of up to 2 GB each' (line 77) and 'files of any type, up to 2 GB in size each (or 4 GB with Premium)' (line 338)"
+    },
+    {
+      "url": "https://core.telegram.org/api/config",
+      "date": "2026-10-21",
+      "proved": "live JSON: upload_max_fileparts_default=4000, upload_max_fileparts_premium=8000; descriptions state max file size = value x 524288"
+    },
+    {
+      "url": "https://core.telegram.org/api/files",
+      "date": "2026-10-21",
+      "proved": "FLOOD_PREMIUM_WAIT_X: 'upload speed is limited because the current account does not have a Premium subscription ... upload_premium_speedup_upload times'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No total storage cap, quoted from Telegram: 'you can ... share an unlimited number of photos, videos and files (doc, zip, mp3, etc.) of up to 2 GB each'. Per-file 2 GB free, 4 GB with Premium. Per-account volume is effectively unbounded because you can hold up to 500 channels/supergroups (1000 with Premium) and create up to 50 channels per day, and each channel is a separate unbounded blob store.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

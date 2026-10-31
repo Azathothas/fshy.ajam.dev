@@ -1,0 +1,75 @@
+{
+  "topic": "storage",
+  "slug": "matrix-org-homeserver",
+  "provider": "Matrix.org homeserver (media repository)",
+  "url": "https://matrix.org/homeserver/pricing/",
+  "category": "messaging",
+  "free_tier": {
+    "stated": "Free plan: 10 MB max per attachment, 100 MB per 24 h, capped at 500 MB per 28 days. Premium: 100 MB per attachment, 1 GB/24 h up to 5 GB/28 days. Accounts not yet on a plan get fair-use 500 MB/24 h and 2 GB/28 days.",
+    "unit": "MB",
+    "metered_on": "unstated",
+    "source_url": "https://matrix.org/homeserver/pricing/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://matrix.org/homeserver/pricing/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://matrix.org/homeserver/pricing/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free, no metered egress, and media is served through the homeserver so you can front it with Cloudflare.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Matrix client-server API `/_matrix/media/v3/upload` and `/_matrix/client/v1/media/download`. Every SDK supports it (matrix-nio, matrix-js-sdk, mautrix-*); Element is the reference client.",
+  "chaining": "Federated: N accounts on N homeservers each get their own 500 MB/28-day allowance, and media federates across servers. But per-account throughput is the binding constraint, not the divisor.",
+  "limits": [],
+  "limits_note": "The 500 MB per 28 days is the killer — it is a rolling-window transfer cap, not just storage. Uploads are now authenticated-media only: an anonymous GET to `/_matrix/media/v3/download/...` returns 404 and a user/v1 route returns 401.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "matrix.org introduced paid plans in 2025 and explicitly reserves the right to move existing users onto the free plan's tighter limits, so quotas can shrink under you. Synapse also purges unreferenced media.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://matrix.org/homeserver/pricing/",
+      "date": "2026-10-21",
+      "proved": "'Size of attachment that can be sent: 10MB maximum per attachment (Free) / Total size of attachments and data usage: 100MB per 24 hours, up to 500MB per 28 days (Free)'"
+    },
+    {
+      "url": "https://matrix.org/homeserver/pricing/",
+      "date": "2026-10-21",
+      "proved": "'Data usage limit of 500MB per 24 hour period, up to a limit of 2GB per 28 days apply' (fair use, no plan)"
+    },
+    {
+      "url": "https://matrix.org/_matrix/media/v3/download/matrix.org/abc",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 404 M_NOT_FOUND; GET https://matrix.org/_matrix/client/v1/media/download/matrix.org/abc -> 401 M_MISSING_TOKEN (authenticated media enforced)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Free plan: 10 MB max per attachment, 100 MB per 24 h, capped at 500 MB per 28 days. Premium: 100 MB per attachment, 1 GB/24 h up to 5 GB/28 days. Accounts not yet on a plan get fair-use 500 MB/24 h and 2 GB/28 days.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "Free plan: 10 MB max per attachment, 100 MB per 24 h, capped at 500 MB per 28 days. Premium: 100 MB per attachment, 1 GB/24 h up to 5 GB/28 days. Accounts not yet on a plan get fair-use 500 MB/24 h and 2 GB/28 days.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": null
+}

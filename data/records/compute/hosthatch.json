@@ -1,0 +1,151 @@
+{
+  "topic": "compute",
+  "slug": "hosthatch",
+  "provider": "HostHatch",
+  "url": "https://hosthatch.com/products",
+  "category": "cloud VM",
+  "free_tier": {
+    "stated": "The cheapest NVMe compute VM in the standing catalogue is 'NVMe 2 GB' at 'from $4.00 / month': 1 AMD EPYC core on fair share, 2 GB DDR4, 10 GB NVMe, 1 TB monthly transfer. The ladder above it, all quoted from the same table: 4 GB / 20 GB NVMe / 1 TB at $6.00; 8 GB / 35 GB / 2 TB at $9.00; 12 GB / 50 GB / 3 TB at $12.00 (4 cores, 1 dedicated); 16 GB / 75 GB / 4 TB at $15.00; 24 GB / 100 GB / 6 TB at $22.00; 32 GB / 125 GB / 8 TB at $29.00; 48 GB / 150 GB / 12 TB at $39.00; 64 GB / 200 GB / 15 TB at $49.00; 96 GB / 250 GB / 20 TB at $69.00. A second product line, Storage VMs on spinning disk, starts at 'Storage 1TB from $5.00 / month' with 1 vCPU core, 1024 MB RAM, 1000 GB disk and 2500 GB transfer, up to 10 TB disk with 25000 GB transfer for $38.00, in 8 locations. The homepage states the entry price twice over: 'Our smallest plan costs $4 per month (less than a cup of coffee).'",
+    "unit": "GiB",
+    "metered_on": "wall-clock",
+    "source_url": "https://hosthatch.com/products",
+    "read_on": "2026-10-22",
+    "notes": "none"
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://hosthatch.com/products",
+    "notes": null
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://hosthatch.com/products",
+    "notes": null
+  },
+  "egress": {
+    "terms": "each plan carries a monthly transfer allowance rather than an unlimited port: 1 TB on the NVMe 2 GB plan, rising with the plan to 2, 3, 4, 6, 8, 12, 15 and 20 TB. The page states in a footnote that APAC limits are lower and are shown only on hover, and the vendor's own anniversary post gives the shape of that gap: '5 TB bandwidth (3 TB in APAC, 1.5TB in Seoul)'. Extra bandwidth is sold on top in fixed sizes through the API and the console.",
+    "metered": false,
+    "free_allowance": "1024 GB per month on the NVMe 2 GB plan; lower in APAC, by an amount this read could not capture",
+    "price_per_tb": "not published on any page read: the API exposes an extra_bandwidth price list per product, and the documented values are explicitly illustrative ('The examples' prices are illustrations'), so no rate is recorded",
+    "source_url": "https://hosthatch.com/products"
+  },
+  "interface": [
+    "ssh",
+    "rest"
+  ],
+  "interface_detail": "inferred from the tooling the provider documents; not probed",
+  "tooling": "root KVM on the vendor's own hardware, so any client runs inside the VM and no wrapper is needed. The vendor documents its own control panel (Peregrine) and a REST API at https://docs.hosthatch.com/api/ covering orders, server power and reinstall, snapshots, firewalls, SSH keys, ISO mounting, IPv6 and reverse DNS, with an idempotency key on orders. Two API surfaces exist, the new console API and a legacy Peregrine API, which is a second write path to the same resource.",
+  "chaining": "This is a control-plane machine, not a data machine: 2 GB of RAM and 10 GB of NVMe run a scheduler, a broker client, a DNS primary or a tunnel endpoint, while the 1 TB a month moves control traffic only. HostHatch's $4.00 sits between them as the cheapest monthly-in-advance 2 GB box with 40 GbE public networking (100 GbE in some regions, per the vendor's own matrix) and a documented API.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "behind it sit a 10 GB NVMe disk that holds no working set and a single fair-share core, which makes this a control node rather than a data node.",
+      "source": "https://hosthatch.com/products"
+    }
+  ],
+  "limits_note": "behind it sit a 10 GB NVMe disk that holds no working set and a single fair-share core, which makes this a control node rather than a data node.",
+  "binding": "volume-quota",
+  "binding_note": "behind it sit a 10 GB NVMe disk that holds no working set and a single fair-share core, which makes this a control node rather than a data node.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "not stated on the page read, and stated precisely: no page read lists the accepted payment methods. What is documented is that an order ships only against money. The API docs say an order 'pays for itself from the project owner's account credit when the credit covers it. Otherwise it waits while its invoice is paid in the console', so either prepaid credit or a payment instrument is needed before any server exists. The older signup form asks for 'your personal information as accurately as possible to avoid false-positives by our fraud detection system' and says it is used 'for your invoices and any other billing related processes'. The new console signup asks only for email, password and an optional project id, so nothing is charged at registration; the charge lands on the first invoice. A third-party benchmark table lists Stripe, PayPal and bank transfer as accepted, which is reported and was not verified here.",
+    "country": null
+  },
+  "reliability_note": "no incident observed; the vendor's own anniversary post states that on promotional plans 'It can take several days to resolve issues', that promotional servers have a 10-working-day setup, and that promo plans carry no refunds or credits.",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://hosthatch.com/products",
+      "date": "2026-10-22",
+      "proved": "cheapest compute row quoted as a table: 'NVMe 2 GB' / 'from $4.00 / month' / '1 AMD EPYC core ( fair share )' / '2 GB DDR4' / '10 GB NVMe' / '1 TB'"
+    },
+    {
+      "url": "https://hosthatch.com/products",
+      "date": "2026-10-22",
+      "proved": "the rest of the compute ladder in the same table: 4 GB at $6.00, 8 GB at $9.00, 12 GB at $12.00, 16 GB at $15.00, 24 GB at $22.00, 32 GB at $29.00, 48 GB at $39.00, 64 GB at $49.00, 96 GB at $69.00, each with the NVMe and transfer figure recorded in offer"
+    },
+    {
+      "url": "https://hosthatch.com/products",
+      "date": "2026-10-22",
+      "proved": "'Storage 1TB from $5.00 / month' with '1 vCPU core', '1024 MB', '1000 GB', '2500 GB', and the line 'Available in 8 strategic locations. Built for mass storage and backups and running large enterprise-grade spinning hard disk drives.'"
+    },
+    {
+      "url": "https://hosthatch.com/",
+      "date": "2026-10-22",
+      "proved": "'Our smallest plan costs $4 per month (less than a cup of coffee). Deploy it and see for yourself'"
+    },
+    {
+      "url": "https://hosthatch.com/products",
+      "date": "2026-10-22",
+      "proved": "the bandwidth column carries footnote 1: 'Bandwidth limits are different for the APAC region. Hover over the bandwidth to see them.' The APAC figures are behind a hover and were not captured by a text read, so no APAC number is recorded here from this page."
+    },
+    {
+      "url": "https://docs.hosthatch.com/api/orders-and-payment/",
+      "date": "2026-10-22",
+      "proved": "'The order pays for itself from the project owner's account credit when the credit covers it. Otherwise it waits while its invoice is paid in the console.' Also, of the catalogue's example values: 'The examples' prices are illustrations: the endpoints answer with yours.'"
+    },
+    {
+      "url": "https://docs.hosthatch.com/llms-full.txt",
+      "date": "2026-10-22",
+      "proved": "the whole documentation bundle, 228991 bytes read, contains no occurrence of the word 'trial' (grep -c -i trial returned 0), and no page offers signup credit: 'credit' appears only as billing_account.credit_balance, a balance the customer pays in"
+    },
+    {
+      "url": "https://cloud.hosthatch.com/signup",
+      "date": "2026-10-22",
+      "proved": "'Please enter your personal information as accurately as possible to avoid false-positives by our fraud detection system. The information you provide us with will be used for your invoices and any other billing related processes.' and 'An email will be sent to your email address with a verification link.'"
+    },
+    {
+      "url": "https://console.hosthatch.com/accounts/signup/",
+      "date": "2026-10-22",
+      "proved": "the new console registration form asks for 'Email', 'Password' and 'Project ID (Optional)' plus agreement to the terms, and asks for no payment detail at signup"
+    },
+    {
+      "url": "https://lowendtalk.com/discussion/216524/calmly-celebrating-15-years-in-business",
+      "date": "2026-10-22",
+      "proved": "first-party promotional post: 2 cores, '4 GB RAM', '50 GB NVMe storage', '5 TB bandwidth (3 TB in APAC, 1.5TB in Seoul)', '$35 per year, $95 per 3 years'; with 'All sales are final. We cannot change with another service. We do not provide refunds (or credits) for these plans.' and 'The setup time is 10 working days (2 weeks).'"
+    },
+    {
+      "url": "https://lowendtalk.com/discussion/216524/calmly-celebrating-15-years-in-business",
+      "date": "2026-10-22",
+      "proved": "'We no longer aim for the ultra low spec/price deadpool deals.' and 'Our promotional services are provided at near-cost pricing to fill up excess capacity and should be used accordingly.', plus 'It can take several days to resolve issues, especially issues that require complex investigation.'"
+    },
+    {
+      "url": "https://cloud.hosthatch.com/sale/current-promotions",
+      "date": "2026-10-22",
+      "proved": null
+    },
+    {
+      "url": "https://hosthatch.com/products",
+      "date": "2026-10-22",
+      "proved": "Storage VMs block quoted: 'Storage 1TB from $5.00 / month', '1 vCPU core', '1024 MB', '1000 GB', '2500 GB'; and 'Storage 10TB from $38.00 / month', '2 vCPU cores', '2048 MB', '10000 GB', '25000 GB'"
+    },
+    {
+      "url": "https://hosthatch.com/products",
+      "date": "2026-10-22",
+      "proved": "the storage line is described as 'Built for mass storage and backups and running large enterprise-grade spinning hard disk drives', available in 8 locations"
+    },
+    {
+      "url": "https://hosthatch.com/storage-vps",
+      "date": "2026-10-22",
+      "proved": "the storage path redirects to /products, which is the page carrying both the compute and the storage tables; there is no separate storage page"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "Every price here is the vendor's standing catalogue, not a third-party table. No trial and no signup credit exist on any page read: the documentation bundle has zero occurrences of 'trial', and credit appears only as a balance the customer funds. A coupon aggregator advertises a '$100 Free Trial for 30 Days on VPS Hosting' against HostHatch, which is a template line repeated across that site's coupon pages and appears on no HostHatch page; it is unverified and contradicted by the vendor's own documentation, so it is not recorded as an offer. The login wall is recorded, not worked around. Two further observations: the vendor's own pages disagree on how many locations exist (16 on the products page, 13 on the homepage and features page, 16 data centers on the company page, and 14 rows including Seoul in the docs matrix), and console.hosthatch.com/products/ answered 404.",
+  "extras": {
+    "facets": {
+      "class": null,
+      "free_tier_kind": "none",
+      "shape": {
+        "vcpu": 1,
+        "ram_gib": 2,
+        "disk_gib": 10,
+        "gpu_class": null,
+        "gpu_count": null
+      }
+    }
+  }
+}

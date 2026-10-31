@@ -1,0 +1,169 @@
+{
+  "topic": "storage",
+  "slug": "zenodo-anonymous-download-throughput",
+  "provider": "Zenodo anonymous download throughput (the fetch-serving question)",
+  "url": "https://zenodo.org/api/records/5656641/files/iPS.zip/content",
+  "category": "academic",
+  "free_tier": {
+    "stated": "Each record has a default storage quota of 50 GB, with an unlimited number of records under 50 GB, plus an additional allowance of up to 150 GB to distribute across uploads; no period is stated.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://help.zenodo.org/docs/deposit/manage-quota/",
+    "read_on": "2026-10-30",
+    "notes": "The 50 GB quota applies per record; the 150 GB is one total allowance assigned to records from the storage settings. The per-record cap, the request rate and the retention window are in limits[]."
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://help.zenodo.org/docs/deposit/manage-quota/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://help.zenodo.org/docs/deposit/manage-quota/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and unmetered, and HTTP Range (206) is supported anonymously, which is what makes the parallel read possible: 'accept-ranges: bytes', 'content-range: bytes 0-1023/81165133690'.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "zenodo_get (pip) already parallelises; any HTTP client with range support (aria2c -x/-s, rclone non-backend http, curl --parallel) will do.",
+  "chaining": "Per-connection shaping ~350-480 KB/s means you need concurrency, not accounts. Measured scaling: 1 conn 0.3 MB/s -> 6 conns 2.33 MB/s -> 16 conns 6.01 MB/s -> 32 conns 11.95 MB/s -> 64 conns 23.07 MB/s. Essentially linear, no knee up to 64.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "1TiB/day",
+      "source": "https://help.zenodo.org/docs/deposit/manage-quota/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "215 KB/s",
+      "source": "https://help.zenodo.org/docs/deposit/manage-quota/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "60 requests per minute",
+      "source": "https://help.zenodo.org/docs/deposit/manage-quota/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "50 GB per record default; 200 GB absolute ceiling on a single record with the 150 GB allowance pooled in; max 100 files per record (new API: 'a limit of 50GB total in the record (and any given file), and up to 100 files in the record').",
+      "source": "https://help.zenodo.org/docs/deposit/manage-quota/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "30-day post-publication deletion window",
+      "source": "https://help.zenodo.org/docs/deposit/manage-quota/"
+    }
+  ],
+  "limits_note": "No aggregate cap observed.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "inferred from the category 'academic'; the source record states no identity cost, so this is a class assumption, not evidence",
+    "country": null
+  },
+  "reliability_note": "Single-stream downloads are painfully slow (~215 KB/s on a 100MB range; the same range took 120s to deliver 45MB). Anything that does not parallelise will appear broken. Reading one file sequentially is a ~50x underuse of the link.",
+  "confidence": "documented",
+  "confidence_note": "The read path and the served byte count were measured against the record's own object. The quota is still a page claim, so the record is documented and carries the probe. Was documented; now documented.",
+  "evidence": [
+    {
+      "url": "https://help.zenodo.org/docs/deposit/manage-quota/",
+      "date": "2026-10-22",
+      "proved": "50 GB per record by default, unlimited records, plus a 150 GB pool. Re-read https://help.zenodo.org/docs/deposit/manage-quota/: HTTP 200, 2413 bytes, sha256 c11445727085cd20. Quoted: l: \"https://help.zenodo.org/docs/deposit/manage-quota/\" fetched_at: \"2026-10-22T02:56:33.001Z\" --- # Manage storage quota --- Each record comes with a default storage quota of 50GB and you can upload an unlimited number of records under 50GB. For larger files, you also have an additional allowance of up to 150GB that can be distributed across your uploads as needed. You can view detailed information about your quota usage in your"
+    },
+    {
+      "url": "https://help.zenodo.org/docs/deposit/manage-quota/",
+      "date": "2026-10-22",
+      "proved": "50 GB per record by default, unlimited records, plus a 150 GB pool. Re-read https://help.zenodo.org/docs/deposit/manage-quota/: HTTP 200, 2413 bytes, sha256 c11445727085cd20. Quoted: l: \"https://help.zenodo.org/docs/deposit/manage-quota/\" fetched_at: \"2026-10-22T02:56:33.001Z\" --- # Manage storage quota --- Each record comes with a default storage quota of 50GB and you can upload an unlimited number of records under 50GB. For larger files, you also have an additional allowance of up to 150GB that can be distributed across your uploads as needed. You can view detailed information about your quota usage in your"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: control baseline versus same link — speed.cloudflare.com 10MB -> 23.67 MB/s line rate"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: curl -r 0-8388607 zenodo record 5656641 iPS.zip -> 206, 388 KB/s, 8.39 MB, 21.6s (single stream)"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: 32 parallel 2MiB ranges on the same file -> all 206, aggregate 11.95 MB/s, 365 KB/s each"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: 64 parallel 2MiB ranges on the same file -> all 206, aggregate 23.07 MB/s, 352 KB/s each — i.e. full line rate, linear scaling, no per-IP aggregate cap"
+    },
+    {
+      "url": "probe:https://zenodo.org/api/records/5656641/files/iPS.zip/content",
+      "date": "2026-10-21",
+      "proved": "throughput re-probe: parallel ranged GET https://zenodo.org/api/records/5656641/files/iPS.zip/content (7.77 GB file, 15 s each) -> 1 conn 0.48 MB/s, 8 conns 4.93 MB/s, 32 conns 19.68 MB/s, all 206"
+    },
+    {
+      "url": "https://zenodo.org/policies",
+      "date": "2026-10-21",
+      "proved": "read live 2026-10-21: 'Total files size limit per record is 50GB. Higher quotas can be requested'"
+    },
+    {
+      "url": "https://developers.zenodo.org/",
+      "date": "2026-10-21",
+      "proved": "read live 2026-10-21: 'a limit of 50GB total in the record (and any given file), and up to 100 files in the record'; rate-limit table 60/min guest, 100/min auth, 30/min search"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: 1/8/32 parallel range GETs -> 0.48 / 4.93 / 19.68 MB/s, all HTTP 206, server: nginx, content-length 7772590480"
+    },
+    {
+      "url": "probe:https://zenodo.org/api/records/23488904/files/Manual%20T%C3%A9cnico%20Higiene%20Alimentar%20e%20Preven%C3%A7%C3%A3o%20da%20Contamina%C3%A7%C3%A3o%20Cruzada_.pdf/content",
+      "date": "2026-10-22",
+      "proved": "ranged GET 2026-10-22: 206 PARTIAL_CONTENT, 1,024 bytes, content-range bytes 0-1023/2556616, accept-ranges: bytes, server nginx; anonymous, no key"
+    },
+    {
+      "url": "https://help.zenodo.org/docs/deposit/manage-quota/",
+      "date": "2026-10-30",
+      "proved": "50 GB per record, unlimited records, plus up to 150 GB additional allowance",
+      "capture": "sha256:ca5c17d3a544ec3b7e5bce9b5946469b1ae8051ce90a4489fa482dee94ecaa5b",
+      "quote": "Each record comes with a default storage quota of 50GB and you can upload an unlimited number of records under 50GB. For larger files, you also have an additional allowance of up to 150GB that can be distributed across your uploads as needed."
+    },
+    {
+      "url": "https://help.zenodo.org/docs/deposit/manage-quota/",
+      "date": "2026-10-30",
+      "proved": "the 150 GB is a total allowance assigned to records",
+      "capture": "sha256:ca5c17d3a544ec3b7e5bce9b5946469b1ae8051ce90a4489fa482dee94ecaa5b",
+      "quote": "Available quota: Remaining additional quota you can assign out of the 150GB total allowance."
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-30T18:09:53.249Z",
+  "notes": null,
+  "extras": {
+    "verified": [
+      {
+        "url": "https://help.zenodo.org/docs/deposit/manage-quota/",
+        "date": "2026-10-22",
+        "via": null,
+        "http_status": 200,
+        "bytes": 2413,
+        "sha256": "c11445727085cd202d2e0dbbb89721aec071253db935a3816fc347ef0228c92e",
+        "pattern_found": true,
+        "what_changed": "no change: the page still states the claim",
+        "capture": "captures\\zenodo-cern-help-zenodo-org-docs-deposit-manage-quota-.txt"
+      }
+    ],
+    "verify_quota": "50 GB per record by default, unlimited records, plus a 150 GB per-account allowance that can be pooled onto a single record (=> 200 GB max for one record). Verbatim: 'Each record comes with a default storage quota of 50GB and you can upload an unlimited number of records under 50GB. For larger files, you also have an additional allowance of up to 150GB that can be distributed across your uploads as needed.' Policy page: 'Total files size limit per record is 50GB. Higher quotas can be requested and granted on a case-by-case basis.'",
+    "verify_per_unit_cap": "50 GB per record default; 200 GB absolute ceiling on a single record with the 150 GB allowance pooled in; max 100 files per record (new API: 'a limit of 50GB total in the record (and any given file), and up to 100 files in the record').",
+    "verify_probe": "parallel ranged GET https://zenodo.org/api/records/5656641/files/iPS.zip/content (7.77 GB file, 15 s each) -> 1 conn 0.48 MB/s, 8 conns 4.93 MB/s, 32 conns 19.68 MB/s, all 206",
+    "verify_notes": "All quota numbers confirmed unchanged. 1 conn 0.48 MB/s -> 8 conns 4.93 MB/s (10.3x for 8x) -> 32 conns 19.68 MB/s (4.0x for 4x, perfectly linear). The new-API file cap: 100 files per record, which matters for sharding — 50 GB must be split into no more than 100 files, i.e. >=500 MB per file.",
+    "verify_verdict": "qualifies-with-caveat",
+    "verify_confidence": "high"
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

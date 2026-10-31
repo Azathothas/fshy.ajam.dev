@@ -1,0 +1,81 @@
+{
+  "topic": "egress",
+  "slug": "libp2p-circuit-relay-v2",
+  "provider": "libp2p circuit-relay v2",
+  "url": "https://github.com/libp2p/specs/blob/master/relay/circuit-v2.md",
+  "category": "relay (protocol)",
+  "free_tier": {
+    "stated": "whatever the relay operator allows; the reference implementations cap a circuit by default",
+    "unit": "none",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://github.com/libp2p/js-libp2p/blob/master/packages/transport-circuit-relay-v2/src/constants.ts",
+    "read_on": "2026-10-22",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "128 KiB per direction per relayed connection by default",
+    "bytes": 131072,
+    "notes": "",
+    "source_url": "https://github.com/libp2p/js-libp2p/blob/master/packages/transport-circuit-relay-v2/src/constants.ts"
+  },
+  "retention": {
+    "stated": "2 minutes per relayed connection by default",
+    "days": null,
+    "notes": "",
+    "source_url": "https://github.com/libp2p/js-libp2p/blob/master/packages/transport-circuit-relay-v2/src/constants.ts"
+  },
+  "egress": {
+    "terms": "not applicable: the protocol's own default ends a circuit at 128 KiB per direction",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://github.com/libp2p/js-libp2p/blob/master/packages/transport-circuit-relay-v2/src/constants.ts"
+  },
+  "interface": [
+    "unknown"
+  ],
+  "tooling": "js-libp2p, go-libp2p",
+  "chaining": "composes with nothing at this volume: 128 KiB per circuit means a 1 GiB object needs 8,192 relayed connections, so it is a NAT-traversal primitive and not a transport.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "128 KiB per direction per relayed connection by default",
+      "source": "https://github.com/libp2p/go-libp2p/blob/master/p2p/protocol/circuitv2/relay/resources.go"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "2 minutes per relayed connection by default",
+      "source": "https://github.com/libp2p/js-libp2p/blob/master/packages/transport-circuit-relay-v2/src/constants.ts"
+    }
+  ],
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "peers are identified by a generated keypair",
+    "country": null
+  },
+  "reliability_note": "the limits are defaults an operator can raise; the reference implementations ship them at these values",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://github.com/libp2p/js-libp2p/blob/master/packages/transport-circuit-relay-v2/src/constants.ts",
+      "date": "2026-10-22",
+      "proved": "DEFAULT_DATA_LIMIT = BigInt(1 << 17) and DEFAULT_DURATION_LIMIT = 2 * minute, with the comment '128k is the default data limit'"
+    },
+    {
+      "url": "https://github.com/libp2p/go-libp2p/blob/master/p2p/protocol/circuitv2/relay/resources.go",
+      "date": "2026-10-22",
+      "proved": "quoted from the Data field comment: 'Data is the limit of data relayed (on each direction) before resetting the connection', 'Defaults to 128KB', with Data: 1 << 17 in the default Resources literal"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-22T03:20:00.000Z",
+  "notes": "Architecturally excluded from bulk, not merely slow: 128 KiB is 2^17 bytes, so 1 TiB needs 8.4 million relayed connections. The free tier is genuine and the capacity is zero.",
+  "extras": {
+    "stale_after_days": 180,
+    "bytes_transit": "yes",
+    "transit_note": "a relayed circuit carries bytes in both directions, capped at 128 KiB per direction by default"
+  },
+  "binding": "per-object-cap",
+  "interface_detail": "/libp2p/circuit/relay/0.2.0/hop and /stop",
+  "limits_note": "the 128 KiB value is defined in both reference implementations and their wording differs. go-libp2p's Data field comment reads 'The limit of data relayed (on each direction) before resetting the connection', which is where the per-direction qualifier comes from; js-libp2p defines DEFAULT_DATA_LIMIT = 1 << 17 with '128k is the default data limit' and no per-direction language"
+}

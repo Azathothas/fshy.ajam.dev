@@ -1,0 +1,106 @@
+{
+  "topic": "storage",
+  "slug": "decdn",
+  "provider": "deCDN",
+  "url": "https://decdn.org/",
+  "category": "Decentralized CDN — paid per MB in USDC, iroh transport",
+  "free_tier": {
+    "stated": "No free capacity. No storage tier at all: 'Not a blockchain or storage network — durability relies on cheap, reliable object storage (S3-class) owned by origin operators.' Target delivery price $0.01/GB (node default rate `payment.rate_per_mb = 10` = $0.00001/MB).",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.decdn.org/overview/introduction",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.decdn.org/overview/introduction",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.decdn.org/overview/introduction",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "$0.01/GB target, set per node and signed into every quote; client sets a ceiling. Testnet is sponsor-funded with a capped allowance — 'there is nothing to pay and no account to make' — but that is testnet money on Arbitrum Sepolia.",
+    "metered": true
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "Client SDK (Rust; macOS/Linux/Windows, phone/browser in testing) + `decdn` CLI: `decdn get 'decdn:<blake3hash>/?ns=1'`. One human-verification step in a browser on first install.",
+  "tooling": "Install via `curl -fsSL https://up.decdn.org/decdn.sh | sh -s -- get '<uri>'` (both scripts returned HTTP 200); PowerShell variant; node operator side is `decdn setup` / `decdn node bond`.",
+  "chaining": "Origin node in front of your own S3/R2/B2/NFS/local disk stays hidden; bonded nodes cache and re-serve over iroh QUIC with bao-encoded verified streaming. Multi-source fetch splits blobs >64 MiB across up to 4 nodes, one per operator. Publisher's own origin pulls are free — cache misses cost the serving node, not the publisher.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "1 Gbps",
+      "source": "https://docs.decdn.org/overview/introduction"
+    },
+    {
+      "kind": "write-gated",
+      "value": "approved, the rest of the network accepts your nodes as origins'), so publishing is writ",
+      "source": "https://docs.decdn.org/overview/introduction"
+    },
+    {
+      "kind": "write-gated",
+      "value": "approval-gated",
+      "source": "https://docs.decdn.org/overview/introduction"
+    }
+  ],
+  "limits_note": "Per-MB payment is mandatory for clients on mainnet — there is no free reader tier. Namespaces gate the origin role ('Once you get approved, the rest of the network accepts your nodes as origins'), so publishing is write-gated by a human. Node bond on testnet is 50,000 TOKEN for anything up to ~1 Gbps; unbonding takes 14 days. 0.4% verification overhead plus node-to-node pull costs.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email",
+    "country": null
+  },
+  "reliability_note": "Public testnet only (Arbitrum Sepolia, launched 2026-10-13); governance hash blacklist forces nodes to stop serving a listed hash within 24 h, and the origin role is approval-gated.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://docs.decdn.org/overview/introduction",
+      "date": "2026-10-21",
+      "proved": "content-addressed, paid per MB, origin-hidden, bonded/slashable, 'Not a blockchain or storage network'"
+    },
+    {
+      "url": "https://decdn.org/",
+      "date": "2026-10-21",
+      "proved": "'$0.01/GB' target, split fetch over >64 MiB with ≥2 holders across up to 4 operators, origin 'Once you get approved'"
+    },
+    {
+      "url": "https://decdn.org/blog/testnet-is-live/",
+      "date": "2026-10-13",
+      "proved": "2026-10-13 public testnet, sponsor-capped allowance, 'nothing to pay and no account to make', pilots by email"
+    },
+    {
+      "url": "https://docs.decdn.org/run-a-node/bond-and-earnings",
+      "date": "2026-10-21",
+      "proved": "bond curve 12.6 x Mbps^1.2, testnet minBond 50,000 TOKEN, 14-day unbond, operator share 60% testnet / 90% at mainnet launch"
+    },
+    {
+      "url": "https://docs.decdn.org/run-a-node/requirements",
+      "date": "2026-10-21",
+      "proved": "UDP 4433 public, 5 TB/month egress recommended, cache 250 GB-1 TB"
+    },
+    {
+      "url": "https://decdn.org/blog/who-actually-needs-this/",
+      "date": "2026-10-21",
+      "proved": "'no single vendor can reprice you'; the pitch is verified delivery, not free bytes"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No free capacity. No storage tier at all: 'Not a blockchain or storage network — durability relies on cheap, reliable object storage (S3-class) owned by origin operators.' Target delivery price $0.01/GB (node default rate `payment.rate_per_mb = 10` = $0.00001/MB).",
+  "extras": {
+    "dead_end": {
+      "failure_class": "paid",
+      "why": "No free capacity. No storage tier at all: 'Not a blockchain or storage network — durability relies on cheap, reliable object storage (S3-class) owned by origin operators.' Target delivery price $0.01/GB (node default rate `payment.rate_per_mb = 10` = $0.00001/MB).",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "write-gated",
+  "binding_note": null
+}

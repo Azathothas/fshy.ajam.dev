@@ -1,0 +1,83 @@
+{
+  "topic": "storage",
+  "slug": "hf-mirror-com-hf-mirror-net",
+  "provider": "hf-mirror.com / hf-mirror.net (Hugging Face mirror — read-only proxy)",
+  "url": "https://hf-mirror.com",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "None of its own — it is a transparent reverse proxy.",
+    "unit": "none",
+    "metered_on": "unstated",
+    "source_url": "https://hf-mirror.net/terms.html",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "50 GB/file",
+    "bytes": 50000000000,
+    "source_url": "https://hf-mirror.net/terms.html",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://hf-mirror.net/terms.html",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and anonymous for reads; resolves to HF's own CDN. Not applicable as a storage delta — the bytes live on HF, which is already known and excluded as a discovery.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Drop-in hostname swap: HF_ENDPOINT=https://hf-mirror.com for huggingface_hub / hf_transfer / rclone (rclone 'hf' backend points at it).",
+  "chaining": "Only as an egress accelerator for an HF dataset you already have — it is a CDN in front of a host already on the known list, not a new quota.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "50 GB/file",
+      "source": "https://hf-mirror.net/terms.html"
+    }
+  ],
+  "limits_note": "per-object-cap: inherits HF (50 GB/file at the time of the linked HF issues). Retention: inherits HF. Write path is redirected straight to huggingface.co, not mirrored: probe POST /api/repos/create -> 308 Location: https://huggingface.co/api/repos/create. So the mirror gives you nothing new to store INTO.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Reads work; One probe returned a bare 200 with an HTML body from the LFS batch endpoint rather than JSON — parse the body, not the status.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://hf-mirror.net/terms.html",
+      "date": "2026-10-21",
+      "proved": "(last revised 2026-09-11) — proxy-only positioning, no storage offered, no upload surface"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET hf-mirror.com/HPAI-BSC/Llama3.1-Aloe-Beta-8B/resolve/main/LICENSE -r 0-99 -L -> 308 (Caddy) -> 307 to HF CDN"
+    },
+    {
+      "url": "https://huggingface.co/api/repos/create",
+      "date": "2026-10-21",
+      "proved": "probe: POST hf-mirror.com/api/repos/create -> 308 Location: (writes are not mirrored)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "None of its own — it is a transparent reverse proxy.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "None of its own — it is a transparent reverse proxy.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

@@ -1,0 +1,92 @@
+{
+  "slug": "simply-nzbs",
+  "provider": "SimplyNZBs",
+  "url": "https://simplynzbs.com/",
+  "category": "Usenet indexer (Newznab API, closed)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "None: the domain no longer hosts the indexer. A request for https://simplynzbs.com/ redirects to http://ww80.simplynzbs.com/?subid1=<uuid> - the shape of a lapsed domain on a parking service - and that host fails to answer (Cloudflare 520, 'the origin returned an unknown or empty response'). A review states the service is 'no longer operational as of 2024-2025'. The last published free tier was 10 API hits and 5 downloads per day, invite-gated.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://simplynzbs.com/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: an NZB pointer file",
+    "bytes": null,
+    "source_url": "https://simplynzbs.com/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "last claimed 'up to 2,145 days retention' while operating; no longer served",
+    "days": null,
+    "source_url": "https://nzbhydra.com/indexers/",
+    "notes": "reported, historical"
+  },
+  "egress": {
+    "terms": "none: every request is answered by a redirect to a parking host that does not respond",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://simplynzbs.com/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "Was Newznab-compatible ('The SimplyNZBs API is compatible with ...' in its own invite page). Today the host redirects to a parking subdomain and /api?t=caps is answered by the same non-API redirect.",
+  "endpoint": "https://simplynzbs.com/api",
+  "tooling": "Nothing to configure: Prowlarr and NZBHydra2 cannot reach an indexer that does not answer.",
+  "chaining": "Nothing: removed from the stack.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "10 API hits and 5 NZB downloads per day (historical, invite-gated)",
+      "source": "https://www.cabalcartel.net/phpbb/viewtopic.php?p=15679"
+    }
+  ],
+  "limits_note": "",
+  "binding": "write-gated",
+  "binding_note": "The service is gone, so the binding constraint is the one that killed it: no reachable write path at all.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Was invite-only: 'weekly 50 users get 10 invites each' plus a paid bypass. Today no registration path answers.",
+    "country": null
+  },
+  "reliability_note": "Dead: the name now redirects to a parking host. A client that still has it configured follows the redirect and gets a Cloudflare 520 or an empty result, not an auth error.",
+  "confidence": "reported",
+  "confidence_note": "The redirect to a parking subdomain was observed today, and that is strong evidence of a lapsed domain. The rung stays reported because the authoritative statement of death ('no longer operational as of 2024-2025') is third-party; the redirect alone does not date it.",
+  "evidence": [
+    {
+      "url": "probe:https://simplynzbs.com/",
+      "date": "2026-10-23",
+      "proved": "the request redirects to http://ww80.simplynzbs.com/?subid1=ba516fd4-ce86-11f1-9da0-c6ff21bde0c4, a parking host, which then fails with Cloudflare 520 'origin returned an unknown or empty response'"
+    },
+    {
+      "url": "probe:https://simplynzbs.com/api?t=caps",
+      "date": "2026-10-23",
+      "proved": "no Newznab document: the same redirect applies, so no API is served"
+    },
+    {
+      "url": "https://usenetreviewz.com/simplynzb-review/",
+      "date": "2026-10-23",
+      "proved": "third-party: 'SimplyNZB is no longer operational as of 2024-2025'"
+    },
+    {
+      "url": "https://nzbhydra.com/indexers/",
+      "date": "2026-10-23",
+      "proved": "third-party, still listing it: 'registration closed', 'VIP GBP 5 donation', '10 hits'"
+    }
+  ],
+  "verdict": "dead",
+  "extras": {
+    "price": "GBP 5 lifetime VIP (historical)",
+    "nzb_is_newznab": true,
+    "death_signal": "domain redirects to a parking host (ww80.simplynzbs.com) which answers 520",
+    "probe_sequence": "an earlier request returned a 504; the later one showed the redirect. Both were kept rather than the first one reported as the truth."
+  },
+  "notes": "The verdict changed while the record was being written: the first two probes returned a 504, which reads as 'down', and a later probe returned 200 on the first hop, which looked like 'up'. Reading the redirect target settled it - the 200 was a redirect to a parking service. A session that stopped at the first probe would have written a different and wrong reason.",
+  "verified_at": "2026-10-23T02:11:54.066Z",
+  "topic": "debrid",
+  "price_per_tb_month": null
+}

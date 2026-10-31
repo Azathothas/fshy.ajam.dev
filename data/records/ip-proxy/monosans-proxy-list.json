@@ -1,0 +1,129 @@
+{
+  "topic": "ip-proxy",
+  "slug": "monosans-proxy-list",
+  "provider": "monosans/proxy-list",
+  "url": "https://api.github.com/repos/monosans/proxy-list",
+  "category": "public proxy list",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free, no key: an unauthenticated GET returned 1,751 proxies in one JSON document, 1,178 SOCKS5, 434 HTTP and 139 SOCKS4, each row carrying its response time, exit IP, ASN number and organisation, and a geolocation block, and the list is regenerated hourly with a full-fetch verification.",
+    "unit": "objects",
+    "metered_on": "none",
+    "source_url": "https://api.github.com/repos/monosans/proxy-list",
+    "read_on": "2026-10-24",
+    "notes": "The unit is addresses: the 1,751 is the whole published list, counted row by row from the response read on 2026-10-24, not an allowance. Nothing is charged and nothing is counted against a user. The schema's unit enum has no token for an address, so the nearest one is used and the count is stated here in full."
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://api.github.com/repos/monosans/proxy-list",
+    "notes": "The nearest thing to an object cap is the size of one response: the entire list arrives as a single JSON document of 1,751 rows, so the document and the pool are the same thing."
+  },
+  "retention": {
+    "stated": "not applicable: a live proxy address, not stored bytes",
+    "days": null,
+    "source_url": "https://api.github.com/repos/monosans/proxy-list",
+    "notes": "An entry is not durable. The list is regenerated hourly, and measured survival is shorter than that: of the 35 addresses that carried a payload at the first check, 10 carried one 22 minutes later."
+  },
+  "egress": {
+    "terms": "The publisher meters nothing and states no traffic term: the bytes cross the third-party address that the row names, so the exit network belongs to the proxy's operator and no allowance, cap or price for it is published with the list.",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://api.github.com/repos/monosans/proxy-list"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "The addresses it returns speak socks5, http and socks4 (1,178, 434 and 139 of the 1,751 rows). The schema's interface enum has no token for a proxy protocol, so the three protocols are named here rather than in the array.",
+  "endpoint": null,
+  "tooling": "A single curl, or any HTTP client, pulls the JSON; no account, key, SDK or wrapper is involved. Filtering by registration class is a few lines against the asn.autonomous_system_number field, which is the point of this list: the choice can be made before a request is spent. Using an address afterwards needs a client that speaks its protocol, which curl -x and rclone --http-proxy both do for http and socks5, and which curl -x socks4 does for the SOCKS4 rows.",
+  "chaining": "A supply of egress addresses for the Workers AI gateway that can be filtered before use: the row's ASN lets the measured exits be split into consumer ISP and mobile networks against hosting, which is the split no other free list in this topic publishes, so the gateway can aim at a registration class instead of taking whatever the list returns.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "regenerated hourly with a full-fetch verification, so a row is at most one hour old and each regeneration replaces the set rather than appending to it",
+      "source": "https://api.github.com/repos/monosans/proxy-list"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "measured churn: 35 of 100 sampled addresses carried a payload at the first check and 21 of 100 22 minutes later, but only 10 of the first 35 worked again, so 29% of a verified working set survived 22 minutes while 25 addresses stopped and 11 started",
+      "source": "probe:kept-privately"
+    }
+  ],
+  "limits_note": "",
+  "binding": "retention-clamped",
+  "binding_note": "Nothing the vendor meters fails first: no key, no account, no published rate limit and no byte quota exist to hit. The ceiling is how long an address stays usable. 29% of a verified working set was still working 22 minutes later, and 11 of the 21 addresses working at the second check had failed at the first, so the list has to be re-pulled and re-verified far more often than the vendor's hourly refresh, and that churn rather than any allowance is what limits the gateway.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account, key or email: the endpoint answered an unauthenticated GET on 2026-10-24 and the 1,751-row JSON was used as returned. Nothing identifies a user and nothing about the list costs a registration.",
+    "country": null
+  },
+  "reliability_note": "Open proxies of unknown ownership that churn as well as shrink: 35 of 100 sampled addresses carried a payload at the first check and 21 of 100 22 minutes later, with 25 stopping and 11 starting, and 24 of the 59 measured exits sat in consumer ISP or mobile ASNs (China Mobile AS9808, Viettel AS7552, Cox AS22773, Biznet AS17451, TATTELECOM AS28840, Superonline AS34984) rather than in datacentres.",
+  "confidence": "measured",
+  "confidence_note": "Every field the verdict rests on was measured on 2026-10-24: the anonymous unauthenticated fetch, the 1,751 rows and their protocol split, the per-row ASN and geolocation fields, and the two payload rates over the identical 100 endpoints. The hourly regeneration is documented from the publisher's own schedule and was not observed; the verdict does not turn on it, because the 22-minute decay already bounds the usable window. Moving up would need a larger sample and runs spread across a day, so that a diurnal effect can be told apart from a list that is simply thin.",
+  "evidence": [
+    {
+      "url": "https://api.github.com/repos/monosans/proxy-list",
+      "date": "2026-10-24",
+      "proved": "An unauthenticated GET returned the whole list as JSON: 1,751 rows, 1,178 socks5, 434 http, 139 socks4, each row carrying host, port, response time in a timeout field, exit_ip, an asn object with number and organisation, and a geolocation block. The response headers were HTTP 200, Content-Type text/plain, Cache-Control max-age=300, with no key or account involved."
+    },
+    {
+      "url": "probe:kept-privately",
+      "date": "2026-10-24",
+      "proved": "First run over 100 stratified random lines (40 http, 40 socks5, 20 socks4): 38 completed a handshake and 35 carried a payload, 35%, from 28 distinct exits."
+    },
+    {
+      "url": "probe:kept-privately",
+      "date": "2026-10-24",
+      "proved": "The identical 100 endpoints re-run 22 minutes later: 25 handshakes and 21 payloads, 21%. Intersected on host and port, only 10 of the 35 addresses that carried a payload at the first run did so again, while 11 of the 21 working at the second run had failed at the first."
+    },
+    {
+      "url": "probe:kept-privately",
+      "date": "2026-10-24",
+      "proved": "59 measured exit addresses resolved to a prefix, an ASN and an organisation: 45 distinct ASNs and 58 distinct prefixes, with Cox AS22773 appearing 5 times, Viettel AS7552 4 times, China Mobile AS9808 and Biznet AS17451 twice each, and TATTELECOM AS28840 and Superonline AS34984 once each."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-24T10:07:11.000Z",
+  "price_per_tb_month": null,
+  "notes": "The verdict rests on (2) with (3) open. Intersected on host and port, 10 of the 35 addresses that worked at the first check worked at the second, which is 29%, and 11 of the 21 working at the second check had failed at the first. Both results files carry host and port, so the intersection is reproducible in one pass, and the difference matters because a reader planning a pull schedule acts on the survival number and not on the yield ratio. The 59 exit addresses are not the mono sample alone: the mono runs produced 39 distinct exits between them and 29 of those appear in this set, so the file aggregates measured exits from the whole lane and the composition figures describe that population. Why this list is qualifies-with-caveat while ip-proxy/proxyscrape-free-list is dead at a comparable yield, 32% against 35%: the ASN field. Proxyscrape publishes no ASN, so its addresses are indistinguishable until one is spent; here the registration class is on the row, which is rung 5 reachable before the first request, and that is the whole difference between a blind pool and a pool that can be aimed. Weight: each rate is one pair of runs over 100 of 1,751 lines, so the churn is a point estimate with no interval, though 25 addresses stopping against 11 starting is a net fall the sample is large enough to show. None exists outside .tmp, so this record corrects nothing outside itself.",
+  "extras": {
+    "rung": 2,
+    "rung_note": "The unit is a single address, so the list starts at rung 2; the per-row ASN field is what also reaches rung 5, because the registration class of an address is knowable before a request is spent, which no other free list in this topic publishes.",
+    "protocol_split": {
+      "socks5": 1178,
+      "http": 434,
+      "socks4": 139,
+      "total": 1751
+    },
+    "handshake_rate_run1": "38 of 100",
+    "handshake_rate_run2": "25 of 100",
+    "payload_rate_run1": "35 of 100",
+    "payload_rate_run2": "21 of 100",
+    "survival_same_addresses": "10 of the 35 that carried a payload at run 1 carried one at run 2, 29%; 25 stopped and 11 started",
+    "asn_composition": {
+      "exits": 59,
+      "asns": 45,
+      "prefixes": 58,
+      "isp_or_mobile": 24,
+      "scope": "measured exits, not the mono sample alone, whose two runs gave 39 distinct exits"
+    },
+    "row_fields": [
+      "protocol",
+      "host",
+      "port",
+      "timeout",
+      "exit_ip",
+      "asn.autonomous_system_number",
+      "asn.autonomous_system_organization",
+      "geolocation.country.iso_code",
+      "geolocation.city.names",
+      "geolocation.location"
+    ],
+    "asn_field": true,
+    "geolocation_field": true,
+    "regeneration": "hourly, with a full-fetch verification",
+    "sample_size": "100 stratified random lines, run twice 22 minutes apart over the identical endpoint set, 40 http, 40 socks5, 20 socks4"
+  }
+}

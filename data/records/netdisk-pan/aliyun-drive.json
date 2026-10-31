@@ -1,0 +1,100 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "aliyun-drive",
+  "provider": "Aliyun Drive (阿里云盘, alipan)",
+  "url": "https://www.alipan.com",
+  "category": "consumer-pan",
+  "free_tier": {
+    "stated": "100 GB free; paid tiers 100 GB, 200 GB, 2 TB and above",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://zh.wikipedia.org/wiki/中国大陆网盘列表",
+    "read_on": "2026-10-21"
+  },
+  "per_object_cap": {
+    "stated": "Not published",
+    "bytes": null,
+    "source_url": "https://www.alipan.com"
+  },
+  "retention": {
+    "stated": "Capacity grants are re-evaluated and expire; over-quota accounts are functional-restricted rather than deleted",
+    "days": null,
+    "source_url": "https://www.alipan.com"
+  },
+  "egress": {
+    "terms": "No per-GB charge; free accounts are throttled to about 0.5 MB/s per the Wikipedia table",
+    "metered": true,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://zh.wikipedia.org/wiki/中国大陆网盘列表"
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "an open platform at alipan.com/developer with OAuth and app review; the OpenList aliyundrive_open driver ships a built-in key pair so no app registration is needed; no official rclone backend",
+  "chaining": "100 GB per phone-verified Alibaba account is 200 accounts per 20 TiB, which is a non-starter against the effort. The anonymous API surface exists and answers structured NotFound errors, which proves the routes resolve, but every share token needs a share that exists",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "about 0.5 MB/s on a free account",
+      "source": "https://zh.wikipedia.org/wiki/中国大陆网盘列表"
+    },
+    {
+      "kind": "request-rate",
+      "value": "60-minute and 10-request refresh-token rate limit on the token broker",
+      "source": "https://github.com/liupan1890/aliyunpan"
+    },
+    {
+      "kind": "write-gated",
+      "value": "the open platform needs an application reviewed by Alibaba on top of an existing account",
+      "source": "https://www.alipan.com/developer"
+    }
+  ],
+  "identity_cost": {
+    "kind": "country-phone",
+    "detail": "+86 only, and the open platform needs an application reviewed on top of that. The token-exchange tool still requires you to log into an Aliyun Drive account to mint the refresh token",
+    "country": "86"
+  },
+  "reliability_note": "Over-quota accounts are restricted from playback, upload, download and transfer rather than deleted, so the bytes survive the quota change and the access does not. The docs warn 请勿将阿里云盘进行公开分享，禁止帐号被多IP访问, which is the exact pattern a bridge uses",
+  "confidence": "reported",
+  "evidence": [
+    {
+      "url": "https://zh.wikipedia.org/wiki/中国大陆网盘列表",
+      "date": "2026-10-21",
+      "proved": "table row '阿里云盘, 100G, 无, 有, 0.5M/s, 是, 是'"
+    },
+    {
+      "url": "https://www.alipan.com/",
+      "date": "2026-10-21",
+      "proved": "the navigation exposes 开放平台 (/developer), 开通会员 and desktop clients"
+    },
+    {
+      "url": "probe:POST https://api.aliyundrive.com/adrive/v2/share_link/get_share_by_anonymous",
+      "date": "2026-10-21",
+      "proved": "404 with {\"code\":\"NotFound.ShareLink\"} for a share_id that does not exist, so the route exists"
+    },
+    {
+      "url": "probe:POST https://api.aliyundrive.com/v2/share_link/get_share_token",
+      "date": "2026-10-21",
+      "proved": "404 NotFound.ShareLink; /adrive/v3/... answered 'uri(...) not exist', so the working prefix has no /adrive"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/liupan1890/aliyunpan/main/adrive sdk/share.md",
+      "date": "2026-10-21",
+      "proved": "documents get_share_token returning a JWT whose payload contains \"user_id\":\"anonymous\""
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "binding": "per-ip-shaping",
+  "binding_note": "100 GB free, and 0.5 MB/s is 43 GB a day at best, so the shaping binds before the identity gate is even reached. The identity gate is the second lock.",
+  "notes": "The free capacity has been adjusted repeatedly and each change moved it down.",
+  "extras": {
+    "access_mode": "registration-gated",
+    "anonymous_read": "routes resolve, shares refused",
+    "free_capacity_changes": [
+      "2022 bug showed 100 GB on every account",
+      "2024 over-capacity accounts restricted"
+    ]
+  }
+}

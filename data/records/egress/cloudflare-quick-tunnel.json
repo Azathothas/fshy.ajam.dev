@@ -1,0 +1,102 @@
+{
+  "topic": "egress",
+  "slug": "cloudflare-quick-tunnel",
+  "provider": "Cloudflare Quick Tunnel",
+  "url": "https://developers.cloudflare.com/tunnel/setup/",
+  "category": "tunnel (hosted, ephemeral)",
+  "free_tier": {
+    "stated": "one ephemeral trycloudflare.com hostname per cloudflared run; no account, no card",
+    "unit": "unlimited",
+    "metered_on": "request-count",
+    "source_url": "https://developers.cloudflare.com/tunnel/setup/",
+    "read_on": "2026-10-22",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "no proxy body cap observed: a 400 MiB POST body traversed byte-identically",
+    "bytes": null,
+    "notes": "",
+    "source_url": "https://developers.cloudflare.com/workers/platform/limits/"
+  },
+  "retention": {
+    "stated": "the hostname dies with the process; a new run gets a new random name",
+    "days": null,
+    "notes": "",
+    "source_url": "https://developers.cloudflare.com/tunnel/setup/"
+  },
+  "egress": {
+    "terms": "not metered; no byte quota published or observed",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://developers.cloudflare.com/tunnel/setup/"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "tooling": "cloudflared 2026.10.3",
+  "chaining": "the front half of the free public-endpoint chain: origin -> cloudflared -> a random trycloudflare hostname, with no account and no domain. The chain's scarce link is the hostname's lifetime, so it serves a test or a handover, not a stable address.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "hostname lifetime equals process lifetime; a restart invalidates every URL",
+      "source": "probe"
+    },
+    {
+      "kind": "request-rate",
+      "value": "400 concurrent GETs of a 3-byte object all returned 200; no 429 seen",
+      "source": "probe"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "no proxy body cap: a 400 MiB POST body was accepted",
+      "source": "probe"
+    }
+  ],
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no account, no card; measured by running cloudflared with no login",
+    "country": null
+  },
+  "reliability_note": "at 32 concurrent 100 MiB ranged GETs, 8 returned 522 and aggregate throughput fell to 3.79 MiB/s, below the 6.27 MiB/s single-stream baseline",
+  "confidence": "measured",
+  "evidence": [
+    {
+      "url": "probe:https://ace-wheel-basement-participated.trycloudflare.com/blob100m.bin",
+      "date": "2026-10-22",
+      "proved": "100 MiB read back: 200, 104,857,600 bytes in 15.948 s, which is 6.27 MiB/s; 3 earlier sequential runs logged 9.32, 7.87 and 10.64 with no unit, byte count or elapsed time kept, so the divisor is unrecoverable and none of the three is used in any arithmetic"
+    },
+    {
+      "url": "probe:https://favors-davis-charges-epic.trycloudflare.com/",
+      "date": "2026-10-22",
+      "proved": "400 MiB POST: 200, got=419,430,400 bytes, sha256 d491a95d...1839 matched the source"
+    },
+    {
+      "url": "probe:https://numbers-bras-calculator-quebec.trycloudflare.com/small.txt",
+      "date": "2026-10-22",
+      "proved": "400 concurrent GETs of a 3-byte object: 400 x 200 in 6.5 s"
+    },
+    {
+      "url": "probe:https://ace-wheel-basement-participated.trycloudflare.com/blob100m.bin",
+      "date": "2026-10-22",
+      "proved": "8 and 32 concurrent 100 MiB ranged GETs: 6/8 and 24/32 returned 206, the rest 522; 3.72 and 3.79 MiB/s aggregate"
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/platform/limits/",
+      "date": "2026-10-22",
+      "proved": "the 100 MB request-body cap is stated for a request through the Cloudflare proxy on a zone plan, not for a tunnel transport"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-22T03:20:00.000Z",
+  "notes": "Measured 6.27 MiB/s single stream (104,857,600 bytes in 15.948 s), which is 0.52 TiB/day. The earlier figure of 0.55 TiB/day here was the egress topic's row for a different host at 6.72 MiB/s. The concurrency ceiling is real and the 522s are the honest number.",
+  "extras": {
+    "stale_after_days": 180,
+    "bytes_transit": "yes",
+    "transit_note": "the tunnel carries the origin's bytes both ways; a 400 MiB POST traversed it byte-identically"
+  },
+  "binding": "retention-clamped",
+  "binding_note": "the hostname's lifetime binds the shape of the workload; the 522 rate under concurrency binds its throughput, but a new run restores a fresh hostname and cannot restore a stable one.",
+  "interface_detail": "cloudflared tunnel --url, then https://<random>.trycloudflare.com"
+}

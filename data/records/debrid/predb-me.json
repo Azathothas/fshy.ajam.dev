@@ -1,0 +1,79 @@
+{
+  "topic": "debrid",
+  "slug": "predb-me",
+  "provider": "PreDB.me",
+  "url": "https://predb.me/",
+  "category": "scene pre-release database (public, no account)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "A public, unauthenticated feed of scene release names with relative timestamps ('5 mins', '6 mins'), newest first.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://predb.me/",
+    "read_on": "2026-10-23",
+    "notes": "No account, query cap or price appears on the page served."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: names and timestamps, not bytes",
+    "bytes": null,
+    "source_url": "https://predb.me/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not stated; the front page lists only the most recent releases",
+    "days": null,
+    "source_url": "https://predb.me/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Nothing is downloadable: the site publishes release names and times, not files.",
+    "metered": false,
+    "free_allowance": "none",
+    "price_per_tb": null,
+    "source_url": "https://predb.me/"
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "A web listing. /about and /api both return nginx 404 on the origin, so no documented API exists at those paths.",
+  "tooling": "Browser only as read. A crawler can parse the front page; there is no documented API to call.",
+  "chaining": "The 'does this exist yet' layer: it answers whether a named release is real and how old it is, before a client spends a debrid pull on a search. Pairs with a torrent indexer (which release to fetch) or a DDL index (which post to look for).",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "unstated; the origin answered a plain read with HTTP 403 and the content still rendered",
+      "source": "https://predb.me/"
+    }
+  ],
+  "limits_note": "",
+  "binding": "none",
+  "binding_note": "A name index transfers nothing, so no byte constraint binds.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account on the page served.",
+    "country": null
+  },
+  "reliability_note": "The origin returned HTTP 403 to the reader while still serving the listing through it, so a client that trusts status codes alone will record this site as blocked when it is not.",
+  "confidence": "documented",
+  "confidence_note": "The listing was read with releases minutes old. The 403-with-content behaviour is the same observation, and it is why the confidence note says 'served' rather than 'reachable'.",
+  "evidence": [
+    {
+      "url": "https://predb.me/",
+      "date": "2026-10-23",
+      "proved": "the live release feed with '5 mins' / '6 mins' timestamps, and the upstream 403 that still returned content"
+    },
+    {
+      "url": "https://predb.me/api",
+      "date": "2026-10-23",
+      "proved": "no documented API at /api: the origin returns '404 Not Found' from nginx"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-23T03:18:17.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "It is a pre database, so it belongs in the chain that decides what to fetch, not in the set of things that store bytes.",
+  "extras": {
+    "api_paths_tried": "/about and /api, both 404",
+    "upstream_status_on_success": 403
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "topic": "storage",
+  "slug": "gitlab-com-snippets",
+  "provider": "GitLab.com snippets",
+  "url": "https://docs.gitlab.com/user/snippets/",
+  "category": "registry",
+  "free_tier": {
+    "stated": "No documented per-snippet storage cap; snippets are git-backed and unlimited in count, but contribute to namespace storage accounting",
+    "unit": "unlimited",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free, Cloudflare-fronted like all of GitLab.com; snippets are cloneable and downloadable via API.",
+    "metered": false
+  },
+  "interface": [
+    "git",
+    "cli"
+  ],
+  "interface_detail": "git",
+  "tooling": "Snippets API (POST /snippets), git clone of the snippet repo, glab CLI, VS Code extension. Rate limited to 300 creates/hour/authenticated user.",
+  "chaining": "Snippets are versioned git repos -> unlimited snippets x unlimited versions. The 300/hour creation limit is the only throttle, which is trivially high for a bulk loader. Storage counts toward namespace storage but is NOT enforced.",
+  "limits": [],
+  "limits_note": "300 creations/hour/user, shared with the GraphQL createSnippet mutation. No documented file or snippet size cap found on the snippet docs page. Worth treating as 'unbounded but undocumented' rather than verified bulk capacity.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Snippets are visible/searchable by other users when public; storage is accounted at namespace level so it is the most likely subject to be capped first if GitLab ever enforces namespace quotas.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+      "date": "2026-10-21",
+      "proved": "'The cost factor applies to the project repository, LFS objects, job artifacts, packages, snippets, and the wiki' (snippets are namespace-accounted)"
+    },
+    {
+      "url": "https://docs.gitlab.com/api/snippets/",
+      "date": "2026-10-21",
+      "proved": "'Creating snippets is rate limited to 300 requests every hour for each authenticated user'"
+    },
+    {
+      "url": "https://docs.gitlab.com/user/snippets/",
+      "date": "2026-10-21",
+      "proved": "'They can contain multiple files', 'use version control', 'clone ... and download'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No documented per-snippet storage cap; snippets are git-backed and unlimited in count, but contribute to namespace storage accounting",
+  "extras": {},
+  "binding": "none",
+  "binding_note": null
+}

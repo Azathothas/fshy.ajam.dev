@@ -1,0 +1,95 @@
+{
+  "topic": "egress",
+  "slug": "stunl",
+  "provider": "stunl",
+  "url": "https://www.stunl.com/",
+  "category": "tunnel",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free $0 /month - 2GB bandwidth/month - 1 tunnels - 1 hour sessions - HTTP/HTTPS, WebSocket tunneling - Multi-port tunnels - Custom tunnel IDs - 1 reserved subdomain - HTTP Inspector with webhook verification.",
+    "unit": "GB",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://www.stunl.com/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://www.stunl.com/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://www.stunl.com/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "2GB bandwidth/month on Free; the docs add Anonymous Mode at 100 MB and 30 minutes.; ingress: http-only",
+    "metered": true,
+    "free_allowance": "2GB bandwidth/month on Free; the docs add Anonymous Mode at 100 MB and 30 minutes.",
+    "price_per_tb": null,
+    "source_url": "https://www.stunl.com/"
+  },
+  "interface": [
+    "cli",
+    "rest"
+  ],
+  "interface_detail": "stunl -port 3000 -id myapp; API key from portal.stunl.com.",
+  "tooling": "brew install stunl/tap/stunl or stunl.com/install.sh; stunl.yaml config file.",
+  "chaining": "Hosts an MCP or webhook endpoint on a free VM; for UDP it requires the $10 plan, which is cheaper than most VPS options but still a bill.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "2 GB monthly bandwidth",
+      "source": "https://www.stunl.com/"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "100 MB and 30 minutes in anonymous mode",
+      "source": "https://stunl.com/docs/anonymous"
+    }
+  ],
+  "limits_note": "",
+  "binding": "volume-quota",
+  "binding_note": "2 GB is 0.0018 TiB, so the monthly allowance is spent in about an hour of 1 TiB/month traffic; the 1-hour session cap binds even earlier on a long transfer.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "An API key from portal.stunl.com. The docs say: Free tier with no credit card required. Anonymous mode needs no key at all.",
+    "country": "None"
+  },
+  "reliability_note": "Free tunnels expire after an hour; anonymous tunnels after 30 minutes and 100 MB.",
+  "confidence": "documented",
+  "confidence_note": "UDP on Pro is documented but not tested; a Pro trial run would confirm the UDP listener is a real raw port rather than a WebSocket frame.",
+  "evidence": [
+    {
+      "url": "https://www.stunl.com/",
+      "date": "2026-10-23",
+      "proved": "Free tier 2 GB/month, 1 tunnel, HTTP/HTTPS and WebSocket only; Pro at $10/month adds TCP and UDP, 50 GB and no session limit."
+    },
+    {
+      "url": "https://stunl.com/docs/getting-started",
+      "date": "2026-10-23",
+      "proved": "Free Tier: HTTP and WebSocket tunnels, 2GB monthly bandwidth, 60-minute sessions, no credit card."
+    },
+    {
+      "url": "https://stunl.com/docs/cli-reference",
+      "date": "2026-10-23",
+      "proved": "Protocol flag accepts http, tcp and udp; anonymous mode is limited to HTTP, 100MB and 30 minutes."
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The service markets itself at AI agents and MCP servers, which explains the HTTP-first free tier. UDP exists but is two tiers above free.",
+  "extras": {
+    "wg_path": "inside-udp",
+    "wg_detail": "UDP is a Pro feature. The CLI reference documents -protocol with the values http, tcp and udp, and the Pro tier lists HTTP, HTTPS, WebSocket, TCP, UDP tunneling, so a WireGuard datagram can only be carried on a paid plan.",
+    "ingress": "http-only",
+    "volume_tib_month": 0.0018,
+    "volume_stated": "2GB bandwidth/month on Free; the docs add Anonymous Mode at 100 MB and 30 minutes.",
+    "bytes_transit": "yes",
+    "transit_note": "The stunl.io edge terminates TLS and relays to the local agent."
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "topic": "storage",
+  "slug": "crates-io",
+  "provider": "crates.io",
+  "url": "https://crates.io",
+  "category": "registry",
+  "free_tier": {
+    "stated": "10 MB per .crate file. No limit on versions per crate ('There is no limit to the number of versions which can be published'), no documented cap on total crates or total bytes per account.",
+    "unit": "MB",
+    "metered_on": "unstated",
+    "source_url": "https://doc.rust-lang.org/cargo/reference/publishing.html",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://doc.rust-lang.org/cargo/reference/publishing.html",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "| Effectively permanent — 'the code cannot be deleted', 'publish is generally permanent'",
+    "source_url": "https://doc.rust-lang.org/cargo/reference/publishing.html",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and unmetered, Cloudflare-fronted, CORS-open. Probe: static.crates.io .crate GET -> 200, Server: cloudflare, Cache-Control: 'public,max-age=31536000,immutable', Access-Control-Allow-Origin: *, Accept-Ranges: bytes.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "PUT /api/v1/crates/new (binary metadata+body protocol), GET https://static.crates.io/crates/<name>/<name>-<ver>.crate. Clients: cargo publish, cargo-upload style wrappers. No rclone backend.",
+  "chaining": "UNBOUNDED on crates x versions but throttled hard: 5 new crates burst then 1 per 10 minutes; 30 versions burst then 1 per minute. At 10 MB/crate, 10 TiB needs ~1,048,576 crates — at 1 new crate per 10 min that is ~20 years, so crates.io is capacity-unlimited and throughput-useless for bulk. Use it as a low-priority shard, not the primary.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "1000 downloads/month",
+      "source": "https://doc.rust-lang.org/cargo/reference/publishing.html"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "1.4 GB/day",
+      "source": "https://doc.rust-lang.org/cargo/reference/publishing.html"
+    },
+    {
+      "kind": "pull-count",
+      "value": "1000 downloads/month",
+      "source": "https://doc.rust-lang.org/cargo/reference/publishing.html"
+    }
+  ],
+  "limits_note": "10 MB per .crate. Publish rate: burst 5 new crates, then 1 per 10 min; burst 30 new versions, then 1 per minute (documented, leaky-bucket). No delete after 72h unless <1000 downloads/month-per-month AND no dependents AND single owner. Version numbers can never be reused or overwritten.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Effectively permanent — 'the code cannot be deleted', 'publish is generally permanent'. Excellent durability, terrible write throughput: ~144 crates/day sustained, i.e. ~1.4 GB/day at 10 MB. Never disappears, but you cannot fill it fast.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://doc.rust-lang.org/cargo/reference/publishing.html",
+      "date": "2026-10-21",
+      "proved": "'crates.io currently has a 10MB size limit on the .crate file'; 'There is no limit to the number of versions which can be published'; 'the version can never be overwritten, and the code cannot be deleted'"
+    },
+    {
+      "url": "https://crates.io/docs/rate-limits",
+      "date": "2026-10-21",
+      "proved": "'allow a burst of 5 new crates published at once by a single user account, with a rate limit of 1 crate every 10 minutes'; 'burst of 30 new versions ... 1 crate per minute'"
+    },
+    {
+      "url": "https://crates.io/policies",
+      "date": "2026-10-21",
+      "proved": "deletion only if published <72h, or <1000 downloads per month published, and no dependents"
+    },
+    {
+      "url": "https://static.crates.io/crates/serde/serde-1.0.0.crate",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, Content-Length: 58433, Server: cloudflare, Cache-Control: public,max-age=31536000,immutable"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "10 MB per .crate file. No limit on versions per crate ('There is no limit to the number of versions which can be published'), no documented cap on total crates or total bytes per account.",
+  "extras": {},
+  "binding": "pull-count",
+  "binding_note": null
+}

@@ -1,0 +1,82 @@
+{
+  "topic": "storage",
+  "slug": "stoat-autumn-file-service",
+  "provider": "Stoat (formerly Revolt) + Autumn file service",
+  "url": "https://stoat.chat/",
+  "category": "messaging",
+  "free_tier": {
+    "stated": "20 MB per file, no subscription: 'Custom emojis, a 20MB file upload limit and a server-specific profile picture with no subscription required.' No published total-storage cap and no paid tier that raises the file size.",
+    "unit": "MB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://stoat.chat/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "20 MB per file",
+    "bytes": 20000000,
+    "source_url": "https://stoat.chat/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://stoat.chat/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and — importantly — UNSIGNED. Autumn 301s to cdn.stoatusercontent.com and the object URL is a bare path with no expiry parameters, unlike Discord. So a stored URL stays valid and is trivially Cloudflare-cacheable.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Genuinely open: 'Our public API is so powerful that we use it ourselves for the official apps', API root answers live (GET https://api.revolt.chat/ -> {\"stoat\":\"0.16.2\",\"revolt\":\"0.16.2\", features...}). Backend is open source (revoltchat/autumn, stoatchat/*). Self-hostable, which is both the appeal and the caveat.",
+  "chaining": "Unlimited servers x unlimited channels with a 20 MB cap, so 1 TB needs ~52,000 uploads. With no signed URLs, the reads are the easy part; the writes are the bottleneck.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "20 MB per file",
+      "source": "https://stoat.chat/"
+    }
+  ],
+  "limits_note": "20 MB per file is fixed and low; there is no path to a bigger unit. Upload limits are server-configurable only on SELF-hosted instances ('Upload limits are controlled via the Autumn config'), so on the public instance you are stuck at 20 MB.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Smaller operator, recent rebrand to Stoat, and the public instance runs human-verification step on signup. Data longevity is a real question for a 20 TiB cold archive; treat as experimental.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://stoat.chat/",
+      "date": "2026-10-21",
+      "proved": "'Custom emojis, a 20MB file upload limit and a server-specific profile picture with no subscription required'"
+    },
+    {
+      "url": "https://autumn.revolt.chat/attachments/abc123",
+      "date": "2026-10-21",
+      "proved": "probe: curl -D - -> 301 location: https://cdn.stoatusercontent.com/attachments/abc123 (no signature, no expiry params)"
+    },
+    {
+      "url": "https://api.revolt.chat/",
+      "date": "2026-10-21",
+      "proved": "probe: curl -> 200, {\"stoat\":\"0.16.2\",...} — public API live"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "20 MB per file, no subscription: 'Custom emojis, a 20MB file upload limit and a server-specific profile picture with no subscription required.' No published total-storage cap and no paid tier that raises the file size.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "20 MB per file, no subscription: 'Custom emojis, a 20MB file upload limit and a server-specific profile picture with no subscription required.' No published total-storage cap and no paid tier that raises the file size.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

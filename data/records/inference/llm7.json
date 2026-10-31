@@ -1,0 +1,223 @@
+{
+  "topic": "inference",
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "not applicable"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "tooling": "any OpenAI-compatible client; curl against POST {base}/chat/completions",
+  "chaining": "pairs with a free-standing agent; the undocumented rate ceiling is the scarce link, because a retry loop is needed and the ceiling it loops against is not published",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "unpublished. One 429 with retry_after 1 was observed on codestral-latest on 2026-10-22 after the same call answered; no rate-limit header is returned",
+      "source": "probe:https://api.llm7.io/v1/chat/completions, 2026-10-22"
+    },
+    {
+      "kind": "request-rate",
+      "value": "free token (issued at dash.llm7.io): 1 request per second, 60 requests per minute, 250 requests per hour; the vendor publishes no keyless row",
+      "source": "https://llm7.io/ and https://docs.llm7.io/limits"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "100,000 tokens per 24 hours, input plus output, on the free token",
+      "source": "https://llm7.io/ and https://docs.llm7.io/limits"
+    }
+  ],
+  "slug": "llm7",
+  "provider": "LLM7",
+  "url": "https://api.llm7.io/v1",
+  "category": "inference endpoint, keyless",
+  "free_tier": {
+    "stated": "no key required for the ids probed; /v1/models lists 68 ids, none with a zero price",
+    "unit": "tokens",
+    "metered_on": "request-count",
+    "source_url": "https://api.llm7.io/v1/models",
+    "read_on": "2026-10-22",
+    "notes": "the catalogue carries a per-model pricing object in USD per 1M tokens and every one is above zero, which makes the free access a quota rather than a price"
+  },
+  "endpoint": "https://api.llm7.io/v1/chat/completions",
+  "limits_note": "no rate-limit header was returned on a live call, and the ceiling was not probed by provoking 429s, which would spend an allowance belonging to someone else's service.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no Authorization header sent and none required for the calls that answered.",
+    "country": null
+  },
+  "reliability_note": "one id was refused with 429 'Rate limit exceeded. Retry after 1 seconds' in the second run after answering in the first, eight minutes apart",
+  "confidence": "measured",
+  "confidence_note": "four ids were called twice. The answer rate is third-party; No quota is published, so the ceiling is measured only as 'it answered now'.",
+  "probe": {
+    "records": [
+      {
+        "probe_id": "llm7-nemotron-nano",
+        "requested_model": "nemotron-3-nano:30b",
+        "http_run1": 200,
+        "http_run2": 200,
+        "answered_run1": "yes",
+        "answered_run2": "yes",
+        "model_echoed": "nemotron-3-nano:30b",
+        "echo_match": "yes",
+        "latency_ms_run1": 817,
+        "latency_ms_run2": 631,
+        "ttft_ms_run1": 596,
+        "completion_tokens_run1": 100,
+        "tps_run1": "53.12",
+        "tps_run2": "86.43",
+        "tps_basis": null,
+        "needle_echoed_run1": "yes",
+        "body_bytes_run1": 687,
+        "body_sha256_16_run1": "95f1fdbbb16a9651",
+        "reasoning_only": "no",
+        "error_run1": "",
+        "error_run2": ""
+      },
+      {
+        "probe_id": "llm7-minimax-m27",
+        "requested_model": "minimax-m2.7",
+        "http_run1": 200,
+        "http_run2": 200,
+        "answered_run1": "yes",
+        "answered_run2": "yes",
+        "model_echoed": "minimax-m2.7",
+        "echo_match": "yes",
+        "latency_ms_run1": 806,
+        "latency_ms_run2": 875,
+        "ttft_ms_run1": 648,
+        "completion_tokens_run1": 130,
+        "tps_run1": "",
+        "tps_run2": "",
+        "tps_basis": null,
+        "needle_echoed_run1": "yes",
+        "body_bytes_run1": 845,
+        "body_sha256_16_run1": "49ae7d6baf65bb5e",
+        "reasoning_only": "no",
+        "error_run1": "",
+        "error_run2": ""
+      },
+      {
+        "probe_id": "llm7-glm53-flash",
+        "requested_model": "GLM-5.3-Flash",
+        "http_run1": 400,
+        "http_run2": 400,
+        "answered_run1": "no",
+        "answered_run2": "no",
+        "model_echoed": "",
+        "echo_match": "yes",
+        "latency_ms_run1": 339,
+        "latency_ms_run2": 339,
+        "ttft_ms_run1": "",
+        "completion_tokens_run1": 0,
+        "tps_run1": "",
+        "tps_run2": "",
+        "tps_basis": null,
+        "needle_echoed_run1": "no",
+        "body_bytes_run1": 142,
+        "body_sha256_16_run1": "d4857eb8fd0fa135",
+        "reasoning_only": "no",
+        "error_run1": "{\"message\": \"Model 'GLM-5.3-Flash' is currently unavailable.\", \"type\": \"invalid_request_error\", \"param\": null, \"code\": \"model_unavailable\"}",
+        "error_run2": "{\"message\": \"Model 'GLM-5.3-Flash' is currently unavailable.\", \"type\": \"invalid_request_error\", \"param\": null, \"code\": \"model_unavailable\"}"
+      },
+      {
+        "probe_id": "llm7-codestral",
+        "requested_model": "codestral-latest",
+        "http_run1": 200,
+        "http_run2": 429,
+        "answered_run1": "yes",
+        "answered_run2": "no",
+        "model_echoed": "codestral-latest",
+        "echo_match": "yes",
+        "latency_ms_run1": 775,
+        "latency_ms_run2": 349,
+        "ttft_ms_run1": 537,
+        "completion_tokens_run1": 9,
+        "tps_run1": "",
+        "tps_run2": "",
+        "tps_basis": null,
+        "needle_echoed_run1": "yes",
+        "body_bytes_run1": 435,
+        "body_sha256_16_run1": "e7633aa478740074",
+        "reasoning_only": "no",
+        "error_run1": "",
+        "error_run2": "{\"message\": \"Rate limit exceeded. Retry after 1 seconds.\", \"type\": \"rate_limit_error\", \"param\": null, \"code\": \"rate_limit_exceeded\", \"retry_after\": 1}"
+      },
+      {
+        "probe_id": "llm7-deepseek-v4-flash",
+        "requested_model": "DeepSeek-V4-Flash-0731",
+        "http_run1": 400,
+        "http_run2": 400,
+        "answered_run1": "no",
+        "answered_run2": "no",
+        "model_echoed": "",
+        "echo_match": "yes",
+        "latency_ms_run1": 437,
+        "latency_ms_run2": 319,
+        "ttft_ms_run1": "",
+        "completion_tokens_run1": 0,
+        "tps_run1": "",
+        "tps_run2": "",
+        "tps_basis": null,
+        "needle_echoed_run1": "no",
+        "body_bytes_run1": 151,
+        "body_sha256_16_run1": "bbe8badf4f6bc8aa",
+        "reasoning_only": "no",
+        "error_run1": "{\"message\": \"Model 'DeepSeek-V4-Flash-0731' is currently unavailable.\", \"type\": \"invalid_request_error\", \"param\": null, \"code\": \"model_unavailable\"}",
+        "error_run2": "{\"message\": \"Model 'DeepSeek-V4-Flash-0731' is currently unavailable.\", \"type\": \"invalid_request_error\", \"param\": null, \"code\": \"model_unavailable\"}"
+      }
+    ],
+    "runs": [
+      "probes-w.json",
+      "probes-w-run2.json"
+    ],
+    "timing_note": "latency_ms and ttft_ms were taken from two different requests by the original instrument, so this record carried a row where ttft_ms exceeded latency_ms, which cannot happen on one call. The row is corrected from a re-probe on 2026-10-22T04:38:22Z with probe3.py, which derives both fields from one streaming request. The tps figures were always computed inside a single call and are unchanged."
+  },
+  "evidence": [
+    {
+      "url": "probe:https://api.llm7.io/v1/chat/completions",
+      "date": "2026-10-22",
+      "proved": "nemotron-3-nano:30b answered 200 with the model echoed and the needle present, 67 completion tokens, 672 ms in run 1 and 631 ms in run 2; codestral-latest answered in run 1 and returned 429 rate_limit_exceeded in run 2"
+    },
+    {
+      "url": "https://api.llm7.io/v1/models",
+      "date": "2026-10-22",
+      "proved": "68 model ids each carrying a pricing object with input, output and cached_input in USD per 1M tokens; no id is priced at zero; glm-5.3 and deepseek-v4-flash:0731 are listed, while the two slugs the sweep sent, GLM-5.3-Flash and DeepSeek-V4-Flash-0731, are absent"
+    },
+    {
+      "url": "https://llm7.io/",
+      "date": "2026-10-28",
+      "proved": "the free-token limits are 1 request per second, 60 per minute, 250 per hour and 100,000 tokens per day",
+      "capture": "sha256:3f2fd3e14171126c618fe8b147de4a0a8a55e6d3ec1e03a945a7969a2736960f",
+      "quote": "Free token access is limited to 100,000 tokens/day with 250 r/h, 60 r/m, and 1 r/s."
+    },
+    {
+      "url": "https://docs.llm7.io/limits",
+      "date": "2026-10-28",
+      "proved": "the first-party limits table for /v1/chat/completions lists a Free token row (1 per second, 60 per minute, 250 per hour) and a Pro row, and no anonymous or keyless row",
+      "capture": "sha256:35bd7cb6ef72aeeaeb5b1cfe5da0785f407192394bee7bdbabbd724ab9fadc21",
+      "quote": "| Free token | 1 | 60 | 250 |"
+    },
+    {
+      "url": "https://llm7.io/",
+      "date": "2026-10-28",
+      "proved": "the documented free token is issued at dash.llm7.io against an email address; the keyless call is not documented",
+      "capture": "sha256:3f2fd3e14171126c618fe8b147de4a0a8a55e6d3ec1e03a945a7969a2736960f",
+      "quote": "we will store your email address (and minimal related metadata) for the purpose of issuing, managing, and securing those tokens, enforcing rate limits, and preventing abuse."
+    },
+    {
+      "url": "probe:https://api.llm7.io/v1/chat/completions",
+      "date": "2026-10-28",
+      "proved": "one POST with no Authorization header for nemotron-3-nano:30b answered 200 and echoed model nemotron-3-nano:30b; content was empty with a reasoning field and finish_reason length at max_tokens 64; no rate-limit header was returned (headers: server cloudflare, x-llm-gateway-cache MISS, x-request-id)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-28T05:28:44.127Z",
+  "notes": "The cleanest available ordering in the sweep: nemotron-3-nano:30b measured 53.12 and 86.43 tok/s and codestral-latest 127.60 and a 429. The two ids recorded as listed-but-refusing, GLM-5.3-Flash and DeepSeek-V4-Flash-0731, do not appear in /v1/models at all; the catalogue carries glm-5.3 and deepseek-v4-flash:0731, so a 400 on the unpublished slug proves nothing about the catalogue's honesty.",
+  "binding": "request-rate"
+}

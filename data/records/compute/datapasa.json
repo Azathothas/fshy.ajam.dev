@@ -1,0 +1,262 @@
+{
+  "topic": "compute",
+  "slug": "datapasa",
+  "provider": "DataPasa",
+  "url": "https://datapasa.com/en/pricing",
+  "category": "cloud VM",
+  "tier": "VPS-1 (Cheap)",
+  "free_tier": {
+    "stated": "No free tier. Cheapest paid offer: VPS-1, 1 vCPU, 1 GB RAM, 16 GB SSD, 900 Mbit/s shared port, 1 TB traffic, KVM, in Germany (Falkenstein), USD 1.81 per month, which is USD 0.0025 per hour; the monthly figure is the hourly rate over 730 hours. Servers are billed by the hour from a prepaid USD balance, with no setup fee and no minimum term, and prices exclude VAT.",
+    "unit": "none",
+    "metered_on": "wall-clock",
+    "source_url": "https://datapasa.com/en/pricing",
+    "read_on": "2026-10-28",
+    "notes": "VPS-2 is 1 vCPU, 2 GB RAM, 32 GB SSD and 32 TB traffic at USD 3.54 per month; the unmetered n1.micro is 2 vCPU, 2 GB RAM, 32 GB SSD and a 50 Mbit/s guaranteed port at USD 29.20 per month; dedicated servers show out of stock"
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://datapasa.com/en/pricing"
+  },
+  "retention": {
+    "stated": "a server is billed by the hour until it is deleted; the vendor's billing wiki covers suspension after the balance runs out, and the suspension period was not read",
+    "days": null,
+    "source_url": "https://datapasa.com/llms.txt",
+    "notes": "a machine record: what is lost on deletion is the running process and its disk, not a stored object"
+  },
+  "egress": {
+    "terms": "VPS-1 includes 1 TB of traffic on a 900 Mbit/s shared port; traffic beyond a plan's included limit costs USD 2.00 per TB; unmetered plans exist from USD 29.20 per month with a guaranteed port instead of a shared one",
+    "metered": true,
+    "free_allowance": "1 TB on VPS-1 (the period is not stated on the pricing page)",
+    "price_per_tb": "USD 2.00",
+    "source_url": "https://datapasa.com/en/pricing"
+  },
+  "interface": [
+    "rest",
+    "ssh"
+  ],
+  "interface_detail": "REST API at https://cloud.datapasa.com/api described by an OpenAPI document at https://datapasa.com/openapi.json; SSH access and a VMmanager panel are listed in the vendor's server-management wiki; the plans table states a VNC console on all plans",
+  "tooling": "bearer-token REST API: POST /api/auth/login returns a 15-minute access token and a 30-day refresh token; no API keys or OAuth are issued; /api/public/catalog lists locations, plans and USD prices without credentials; authenticated endpoints other than /api/me answer 403 FINGERPRINT_REQUIRED until a device check is completed in the control panel",
+  "chaining": "A German KVM box that is created and deleted through a documented REST API and billed by the hour from a USD 5 minimum balance, with cryptocurrency top-ups accepted, fits short-lived workers and proxies; the 32 TB traffic plans start at USD 3.54 per month.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "1 TB of traffic included on VPS-1; USD 2.00 per TB beyond the plan limit",
+      "source": "https://datapasa.com/en/pricing"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "900 Mbit/s shared port on VPS-1; the unmetered plans guarantee 50, 100 or 250 Mbit/s",
+      "source": "https://datapasa.com/en/pricing"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "16 GB of SSD on VPS-1; 32 GB on VPS-2",
+      "source": "https://datapasa.com/en/pricing"
+    }
+  ],
+  "limits_note": "Registration is limited to 10 attempts per hour per IP address and login to 10 attempts per 15 minutes per email and IP address.",
+  "binding": "volume-quota",
+  "binding_note": "1 TB of included traffic on the cheapest plan is smaller than the 32 TB on the next plan up, so traffic is the limit that binds before disk or port speed.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Registration takes first name, last name, email, password and an accepted-terms flag; the request has no phone or identity-document field. A verified email address is required before ordering. The prepaid USD balance is topped up from USD 5 by card, Apple Pay or Google Pay through Stripe, PayPal, PIX, or about 100 cryptocurrencies, so no card is needed. Authenticated API calls other than /api/me return 403 FINGERPRINT_REQUIRED until a device check is completed in the control panel.",
+    "country": null
+  },
+  "reliability_note": "unverified: no outage history was read; the site states a 99.9% uptime SLA.",
+  "confidence": "documented",
+  "confidence_note": "Price, shape, location, top-up rules and registration fields come from first-party pages read on 2026-10-28; the browser sign-up page returned no text, so the registration fields rest on the vendor's auth.md. A measured read needs one provisioned server.",
+  "evidence": [
+    {
+      "url": "https://datapasa.com/en/pricing",
+      "date": "2026-10-28",
+      "proved": "VPS-1 is the cheapest listed plan: 1 vCPU, 1 GB RAM, 16 GB SSD, 900 Mbit/s shared, 1 TB traffic, USD 1.81 per month and USD 0.0025 per hour",
+      "capture": "sha256:730ad96fd8a854e4c2a1df52002d14c93aed052ee50d33dd419f2757e02aa5bd",
+      "quote": "| VPS-1 | 1 vCPU | 1 GB | 16 GB SSD | 900 Mbit/s shared | 1 TB | $1.81/mo $0.0025/hr |"
+    },
+    {
+      "url": "https://datapasa.com/en/pricing",
+      "date": "2026-10-28",
+      "proved": "billing is hourly from a prepaid USD balance and the monthly figure is the hourly rate over 730 hours",
+      "capture": "sha256:730ad96fd8a854e4c2a1df52002d14c93aed052ee50d33dd419f2757e02aa5bd",
+      "quote": "Every server is charged hourly from your prepaid USD balance. The monthly price shown below is the hourly rate over 730 hours."
+    },
+    {
+      "url": "https://datapasa.com/en/pricing",
+      "date": "2026-10-28",
+      "proved": "listed prices exclude VAT",
+      "capture": "sha256:730ad96fd8a854e4c2a1df52002d14c93aed052ee50d33dd419f2757e02aa5bd",
+      "quote": "Prices shown exclude VAT."
+    },
+    {
+      "url": "https://datapasa.com/en/pricing",
+      "date": "2026-10-28",
+      "proved": "the minimum balance top-up is USD 5",
+      "capture": "sha256:730ad96fd8a854e4c2a1df52002d14c93aed052ee50d33dd419f2757e02aa5bd",
+      "quote": "The minimum top-up is $5."
+    },
+    {
+      "url": "https://datapasa.com/en/pricing",
+      "date": "2026-10-28",
+      "proved": "top-ups accept cards through Stripe and about 100 cryptocurrencies, so a card is not the only rail",
+      "capture": "sha256:730ad96fd8a854e4c2a1df52002d14c93aed052ee50d33dd419f2757e02aa5bd",
+      "quote": "Cards, Apple Pay and Google Pay through Stripe, and about 100 cryptocurrencies and networks including USDT on TRON, Ethereum, BSC, Solana and TON, as well as BTC, ETH, XMR and LTC."
+    },
+    {
+      "url": "https://datapasa.com/en/pricing",
+      "date": "2026-10-28",
+      "proved": "traffic beyond the plan limit costs USD 2.00 per TB",
+      "capture": "sha256:730ad96fd8a854e4c2a1df52002d14c93aed052ee50d33dd419f2757e02aa5bd",
+      "quote": "| Extra traffic | Additional traffic beyond the included plan limit. | $2.00 / TB |"
+    },
+    {
+      "url": "https://datapasa.com/en/pricing",
+      "date": "2026-10-28",
+      "proved": "no setup fee, no contract and no minimum term",
+      "capture": "sha256:730ad96fd8a854e4c2a1df52002d14c93aed052ee50d33dd419f2757e02aa5bd",
+      "quote": "No. There is no setup fee, no contract and no minimum term."
+    },
+    {
+      "url": "https://datapasa.com/en/pricing",
+      "date": "2026-10-28",
+      "proved": "the next plan up has 2 GB RAM, 32 GB SSD and 32 TB traffic at USD 3.54 per month",
+      "capture": "sha256:730ad96fd8a854e4c2a1df52002d14c93aed052ee50d33dd419f2757e02aa5bd",
+      "quote": "| VPS-2 | 1 vCPU | 2 GB | 32 GB SSD | 900 Mbit/s shared | 32 TB | $3.54/mo $0.0048/hr |"
+    },
+    {
+      "url": "https://datapasa.com/en/pricing",
+      "date": "2026-10-28",
+      "proved": "dedicated servers are listed as out of stock",
+      "capture": "sha256:730ad96fd8a854e4c2a1df52002d14c93aed052ee50d33dd419f2757e02aa5bd",
+      "quote": "Currently out of stock"
+    },
+    {
+      "url": "https://datapasa.com/en",
+      "date": "2026-10-28",
+      "proved": "the home page states the same starting price of USD 1.81 per month and a 99.9% uptime SLA",
+      "capture": "sha256:8e57c343fba8d3d710d69a3db0969fdbda07dc31e6650f2ab35d647e29c8f40b",
+      "quote": "From $1.81/month Deploy in minutes 99.9% uptime SLA"
+    },
+    {
+      "url": "https://datapasa.com/llms.txt",
+      "date": "2026-10-28",
+      "proved": "servers are KVM with NVMe SSD and up to 1 Gbps uplink in a Falkenstein, Germany data center",
+      "capture": "sha256:837ddca7f71cc40c27f6108b8c125af8be68b170c3758a327e1f8d73b0b7a1bc",
+      "quote": "KVM virtual servers with NVMe SSD storage and up to 1 Gbps uplink, hosted in a Falkenstein, Germany data center."
+    },
+    {
+      "url": "https://datapasa.com/llms.txt",
+      "date": "2026-10-28",
+      "proved": "the server-management wiki covers SSH access and a VMmanager panel",
+      "capture": "sha256:837ddca7f71cc40c27f6108b8c125af8be68b170c3758a327e1f8d73b0b7a1bc",
+      "quote": "SSH access, VMmanager, outgoing mail ports, deleting servers"
+    },
+    {
+      "url": "https://datapasa.com/llms.txt",
+      "date": "2026-10-28",
+      "proved": "the billing wiki covers suspension after the balance runs out",
+      "capture": "sha256:837ddca7f71cc40c27f6108b8c125af8be68b170c3758a327e1f8d73b0b7a1bc",
+      "quote": "top ups, hourly charges, suspension after the balance runs out, promo codes, refunds"
+    },
+    {
+      "url": "https://datapasa.com/llms.txt",
+      "date": "2026-10-28",
+      "proved": "the operator is DataPasa Limited, company number 17164297",
+      "capture": "sha256:837ddca7f71cc40c27f6108b8c125af8be68b170c3758a327e1f8d73b0b7a1bc",
+      "quote": "Operated by DataPasa Limited, registered in England and Wales, company number 17164297."
+    },
+    {
+      "url": "https://datapasa.com/auth.md",
+      "date": "2026-10-28",
+      "proved": "the registration request carries name, email, password and an accepted-terms flag, with no phone or document field",
+      "capture": "sha256:23bfbbbb533672fe5ae570299ed6c03520dc6ea2419ed2b6b8ebec8edec2d18a",
+      "quote": "\"firstname\": \"Ada\", \"lastname\": \"Lovelace\", \"email\": \"ada@example.com\", \"password\": \"at least 8 characters\", \"acceptedTerms\": true"
+    },
+    {
+      "url": "https://datapasa.com/auth.md",
+      "date": "2026-10-28",
+      "proved": "ordering requires a verified email address",
+      "capture": "sha256:23bfbbbb533672fe5ae570299ed6c03520dc6ea2419ed2b6b8ebec8edec2d18a",
+      "quote": "A verification email is sent immediately. Ordering servers requires a verified email address, so the customer has to open the link from that email."
+    },
+    {
+      "url": "https://datapasa.com/auth.md",
+      "date": "2026-10-28",
+      "proved": "authenticated API endpoints stay blocked until a device check is completed in the control panel",
+      "capture": "sha256:23bfbbbb533672fe5ae570299ed6c03520dc6ea2419ed2b6b8ebec8edec2d18a",
+      "quote": "Until the customer completes it in the control panel at `https://cloud.datapasa.com`, those endpoints answer `403` with `{\"code\": \"FINGERPRINT_REQUIRED\"}`."
+    },
+    {
+      "url": "https://datapasa.com/auth.md",
+      "date": "2026-10-28",
+      "proved": "the API uses account bearer tokens, with no API keys and no OAuth",
+      "capture": "sha256:23bfbbbb533672fe5ae570299ed6c03520dc6ea2419ed2b6b8ebec8edec2d18a",
+      "quote": "DataPasa does not run an OAuth 2.0 authorization server and does not issue API keys. Access is based on a customer account and short lived bearer tokens."
+    },
+    {
+      "url": "https://datapasa.com/auth.md",
+      "date": "2026-10-28",
+      "proved": "registration is rate limited to 10 attempts per hour per IP address",
+      "capture": "sha256:23bfbbbb533672fe5ae570299ed6c03520dc6ea2419ed2b6b8ebec8edec2d18a",
+      "quote": "Registration is limited to 10 attempts per hour per IP address."
+    },
+    {
+      "url": "https://lowendtalk.com/categories/offers",
+      "date": "2026-10-28",
+      "proved": "the offers feed lists a promotional price of USD 1.79 per month with a coupon, against the USD 1.81 list price",
+      "capture": "sha256:a81634ee720527577633ad596d622494e62345d37e8729b0246a1522923386f6",
+      "quote": "[DataPasa - Germany KVM VPS | 1GB RAM from $1.79/mo | LET10 coupon]"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-10-28T04:25:21.642Z",
+  "notes": "Hourly-billed German KVM VPS reseller operated by DataPasa Limited. The same site also sells game servers, domains and RIPE NCC ASN registration or sponsorship at USD 99 per year. A second location, Sao Paulo, is listed as coming soon. The offers-feed title quotes USD 1.79 per month with a coupon; the list price on the pricing page is USD 1.81.",
+  "extras": {
+    "shape": {
+      "vcpu": 1,
+      "ram_gib": 1,
+      "disk_gib": 16,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "billing_model": "allocated",
+    "granularity": {
+      "min_billed_s": 3600,
+      "rounding_s": 3600
+    },
+    "monthly_usd": 1.81,
+    "price": {
+      "amount": 1.81,
+      "currency": "USD",
+      "term": "month (hourly rate x 730 h)",
+      "hourly": 0.0025,
+      "vat": "excluded"
+    },
+    "location": "Falkenstein, Germany",
+    "payment_methods": {
+      "card": "Stripe: cards, Apple Pay, Google Pay",
+      "wallet": "PayPal",
+      "qr": "PIX",
+      "crypto": "about 100 coins and networks",
+      "min_top_up": "USD 5",
+      "source_url": "https://datapasa.com/en/pricing",
+      "read_on": "2026-10-28"
+    },
+    "signup": {
+      "url": "https://cloud.datapasa.com/register",
+      "fields": [
+        "first name",
+        "last name",
+        "email",
+        "password",
+        "terms accepted"
+      ],
+      "email_verification": true,
+      "phone_required": false,
+      "id_document_required": false,
+      "source_url": "https://datapasa.com/auth.md",
+      "read_on": "2026-10-28"
+    },
+    "free_tier_kind": "none"
+  }
+}

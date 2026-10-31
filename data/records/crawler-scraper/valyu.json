@@ -1,0 +1,133 @@
+{
+  "topic": "crawler-scraper",
+  "slug": "valyu",
+  "provider": "Valyu",
+  "url": "https://docs.valyu.ai/pricing.md",
+  "category": "search API",
+  "verdict": "trial-only",
+  "confidence": "documented",
+  "confidence_note": "the signup credit, its 12-month expiry, the no-card statement and the per-result price are quoted from first-party documentation; no keyed search was made, so the read path is unprobed; a keyed call that returns results would raise it to measured",
+  "verified_at": "2026-10-30T10:46:44.796Z",
+  "free_tier": {
+    "stated": "USD 10 of free credits on signup, USD 20 with a company email, no card; the free credits expire 12 months after signup",
+    "unit": "credits",
+    "metered_on": "request-count",
+    "source_url": "https://docs.valyu.ai/pricing.md",
+    "read_on": "2026-10-30",
+    "notes": "Search is billed per result returned, not per request: a 10-result web search is 1 credit, and pay-as-you-go buys 1,600 credits per USD 10. The nearest metered_on term is request-count; the true basis is the count of results returned."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: the unit is a search result",
+    "bytes": null,
+    "source_url": "https://docs.valyu.ai/pricing.md",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "one-time signup credit; it expires 12 months after signup and does not renew",
+    "days": null,
+    "source_url": "https://docs.valyu.ai/pricing.md",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not applicable",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://docs.valyu.ai/pricing.md"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "POST https://api.valyu.ai/v1/search with an x-api-key header; Contents, Answer and DeepResearch endpoints draw on the same key and balance; a hosted MCP server is offered",
+  "endpoint": "https://api.valyu.ai/v1/search",
+  "tooling": "Python SDK (pip install valyu), TypeScript SDK (valyu-js), Rust SDK, a CLI and a hosted MCP server",
+  "chaining": "A bounded search leg whose one key also reaches SEC filings, arXiv, PubMed, patents and clinical trials, priced per result; the signup balance is spent once, so it suits a finite job rather than a standing crawl",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "USD 10 one-time (USD 20 with a company email), about 1,600 ten-result web searches at 1 credit each; a request the balance cannot cover answers 402 and nothing is billed as overage",
+      "source": "https://docs.valyu.ai/pricing.md"
+    },
+    {
+      "kind": "request-rate",
+      "value": "5 search requests a second on the Pay-as-you-go plan, per the documented 429 example; limits are per organisation and per endpoint, with no daily quota",
+      "source": "https://docs.valyu.ai/api-reference/overview.md"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "the one-time signup balance is exhausted long before the 5-a-second rate limit is reached",
+  "limits_note": "",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "signup by email, Google or GitHub with no card; a company email doubles the signup credit to USD 20",
+    "country": null
+  },
+  "reliability_note": "a keyless GET to /v1/search answered 403 with a missing-token message, so there is no anonymous route; no throttle or ban event recorded",
+  "price_per_tb_month": null,
+  "evidence": [
+    {
+      "url": "https://docs.valyu.ai/pricing.md",
+      "date": "2026-10-30",
+      "proved": "the signup credit is one-time and expires 12 months after signup",
+      "capture": "sha256:ae12968c52ddd9186c828089f7eabf23e44126359e8b7cf03df0f6828a8f7114",
+      "quote": "Free credits expire 12 months after signup."
+    },
+    {
+      "url": "https://docs.valyu.ai/pricing.md",
+      "date": "2026-10-30",
+      "proved": "USD 10 free on signup, USD 20 with a company email, no card",
+      "capture": "sha256:ae12968c52ddd9186c828089f7eabf23e44126359e8b7cf03df0f6828a8f7114",
+      "quote": "New accounts get \\$10 of free credits, or \\$20 when you sign up with a company email. No card is required."
+    },
+    {
+      "url": "https://docs.valyu.ai/pricing.md",
+      "date": "2026-10-30",
+      "proved": "a 10-result web search costs 1 credit",
+      "capture": "sha256:ae12968c52ddd9186c828089f7eabf23e44126359e8b7cf03df0f6828a8f7114",
+      "quote": "A web search that returns 10 results uses 1 credit, and a `standard` DeepResearch task uses 100."
+    },
+    {
+      "url": "https://docs.valyu.ai/pricing.md",
+      "date": "2026-10-30",
+      "proved": "pay-as-you-go buys 1,600 credits per USD 10, which is 1,600 ten-result web searches",
+      "capture": "sha256:ae12968c52ddd9186c828089f7eabf23e44126359e8b7cf03df0f6828a8f7114",
+      "quote": "| Pay-as-you-go | 1,600 per \\$10 | 1,600 | 16 |"
+    },
+    {
+      "url": "https://docs.valyu.ai/api-reference/overview.md",
+      "date": "2026-10-30",
+      "proved": "the documented 429 example sets 5 search requests a second on the Pay-as-you-go plan",
+      "capture": "sha256:d068625575a023ea4db8a86f9bfb223f344b383e79be5dd3c637b088bbcf0b6c",
+      "quote": "Search rate limit reached: your Pay-as-you-go plan allows 5 requests per second."
+    },
+    {
+      "url": "https://docs.valyu.ai/api-reference/overview.md",
+      "date": "2026-10-30",
+      "proved": "rate limits are per second with no daily quota",
+      "capture": "sha256:d068625575a023ea4db8a86f9bfb223f344b383e79be5dd3c637b088bbcf0b6c",
+      "quote": "There is no daily quota."
+    },
+    {
+      "url": "https://platform.valyu.ai/",
+      "date": "2026-10-30",
+      "proved": "the signup page offers email, Google or GitHub with free credits and no card",
+      "capture": "sha256:4af3a59ebb4f2c042a3088fdf1847d471cce73920dda4a90175388218ce77619",
+      "quote": "Free credits on signup · no card required"
+    },
+    {
+      "url": "https://www.valyu.ai/pricing",
+      "date": "2026-10-30",
+      "proved": "an exhausted balance pauses requests rather than billing overage",
+      "capture": "sha256:16efefb6579935b281711f692429c18fad8efad203afe6558182d2ddf6de54d3",
+      "quote": "When your balance hits zero, new requests are paused until you add credits, so you never get a surprise overage bill."
+    },
+    {
+      "url": "probe:api.valyu.ai/v1/search",
+      "date": "2026-10-30",
+      "proved": "a keyless GET to the search endpoint answered 403 with a missing-token body",
+      "capture": "sha256:f249b63cb2fcb66b47e86f906c98f8fd912e82dd035b4e53d7e72fc1960cfd16",
+      "quote": "{\"message\":\"Missing Authentication Token\"}"
+    }
+  ],
+  "notes": "Search is priced per result by source: 0.1 credit per web or news result, 0.05 for arXiv and PubMed, 1.92 for SEC filings, 4.8 for Wiley publications. Monthly plans start at USD 29 for 5,000 credits. The free balance reaches every source on the standard plans while it lasts."
+}

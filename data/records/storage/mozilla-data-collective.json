@@ -1,0 +1,116 @@
+{
+  "topic": "storage",
+  "slug": "mozilla-data-collective",
+  "provider": "Mozilla Data Collective (MDC)",
+  "url": "https://mozilladatacollective.com",
+  "category": "research-data-repository",
+  "free_tier": {
+    "stated": "150 GB per uploaded file — raised from a lower value in the Python SDK on 2026-03-24 ('Increase upload file size limit to 150GB'). No published per-account or total quota anywhere in the provider terms, FAQ, or API reference; the archive in the public catalogue runs to multi-GB objects (one measured dataset is 9,786,006,314 bytes = 9.79 GB as a single .tar.gz). Uploads are multipart with a hard 10,000-part ceiling, so a 1 TB object would need ≥100 MB parts — the SDK enforces this and names the minimum part size rather than failing mid-upload.",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://mozilla-data-collective.github.io/datacollective-python/upload/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "150 GB per upload",
+    "bytes": 150000000000,
+    "source_url": "https://mozilla-data-collective.github.io/datacollective-python/upload/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://mozilla-data-collective.github.io/datacollective-python/upload/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free to the consumer; storage is Cloudflare R2 in the EU plus AWS in Ireland per their own subprocessor table. Downloads are short-lived presigned URLs, and downloads are rate-limited to 30 per organisation per day (429 beyond that).",
+    "metered": false
+  },
+  "interface": [
+    "s3",
+    "rest"
+  ],
+  "interface_detail": "rest + s3",
+  "tooling": "Best-in-slot for a scripted pipeline: a documented REST API at https://mozilladatacollective.com/api (bearer API key), plus a first-party Python SDK with resumable multipart uploads, configurable part_size and max_workers, and a .mdc-sample-upload.json resume-state file. Verified live: GET /api/health -> 200 (15 bytes), GET /api/datasets?limit=1 -> 200 with full metadata including sizeBytes and a SHA-256 checksum field.",
+  "chaining": "One dataset = one submission = one archive file plus one sample file. Nothing in the published terms caps the number of submissions per account, so the multiplier is submissions. The catalogue is browsable and enumerable anonymously through /api/datasets, which means the read side can be driven entirely from a script.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "30 downloads/day",
+      "source": "https://mozilla-data-collective.github.io/datacollective-python/upload/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "150 GB per upload",
+      "source": "https://mozilla-data-collective.github.io/datacollective-python/upload/"
+    },
+    {
+      "kind": "pull-count",
+      "value": "30 downloads/day",
+      "source": "https://mozilla-data-collective.github.io/datacollective-python/upload/"
+    },
+    {
+      "kind": "write-gated",
+      "value": "review every request to upload' — you file a Request to Upload, wait days, and are int",
+      "source": "https://mozilla-data-collective.github.io/datacollective-python/upload/"
+    },
+    {
+      "kind": "write-gated",
+      "value": "skipping the approval flow ends the account",
+      "source": "https://mozilla-data-collective.github.io/datacollective-python/upload/"
+    }
+  ],
+  "limits_note": "write-gated, hard. 'we manually review every request to upload' — you file a Request to Upload, wait days, and are interviewed by email about 'yourself, the organization you are representing, the data you want to upload and what are your goals'. Every dataset must carry a datasheet. API upload calls are rate-limited at their discretion and skipping the approval flow ends the account.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email",
+    "country": null
+  },
+  "reliability_note": "The gate is a human reviewer, not a form — treat acceptance as the scarce resource. 30 downloads/day/org will throttle any mirroring plan. Hash field is present in metadata, so a checksum roundtrip is cheap to automate.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://community.mozilladatacollective.com/uploading-your-dataset-to-the-mozilla-data-collective-platform/",
+      "date": "2026-10-21",
+      "proved": "opened: 'In order to ensure that the datasets hosted in our platform are aligned with the Mozilla Data Collective values & manifesto we manually review every request to upload'; 'please allow for a few days to get back to you'."
+    },
+    {
+      "url": "https://github.com/Mozilla-Data-Collective/datacollective-python/compare/0.4.3...0.4.4",
+      "date": "2026-10-21",
+      "proved": "opened: commit 'Increase upload file size limit to 150GB' dated 2026-03-24. This is the only published per-file number and it is a code change, not marketing copy."
+    },
+    {
+      "url": "https://mozilla-data-collective.github.io/datacollective-python/upload/",
+      "date": "2026-10-21",
+      "proved": "opened: 'A single upload can have at most 10,000 parts … a 1 TB file needs parts of at least ~100 MB'; multipart, resumable, part floor 5 MB."
+    },
+    {
+      "url": "https://mozilladatacollective.com/api-reference/docs",
+      "date": "2026-10-21",
+      "proved": "opened: POST /datasets/{datasetId}/download returns a presigned downloadUrl with expiresAt, sizeBytes and checksum; 'Organizations are limited to 30 dataset downloads per day … 429'; 'Returns a presigned storage URL.'"
+    },
+    {
+      "url": "https://mozilladatacollective.com/terms/providers",
+      "date": "2026-10-21",
+      "proved": "opened: 'MDC reserves the right to implement and enforce limits on MDC API upload calls'; subprocessor table lists 'Cloudflare R2 — Dataset storage of uploaded files — EU' and AWS Ireland."
+    },
+    {
+      "url": "https://mozilladatacollective.com/api/health",
+      "date": "2026-10-21",
+      "proved": "PROBED: curl -> HTTP 200, 15 bytes. curl https://mozilladatacollective.com/api/datasets?limit=1 -> HTTP 200, 1,626 bytes, real JSON. The API is live and needs no key for the catalogue."
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "PROBED: GET /api/datasets/bibletts-luo-aligned-bible-speech-4118962a -> 200, datasetUrl, filename bibletts-luo-aligned-bible-speech-4118962a.tar.gz, sizeBytes 9786006314, checksum 221a7218f72a8fd106459d95dfd9341d3ff626e7456c2912336c0047bc96143f, isPaid false. Proves multi-GB single-object hosting actually exists on the platform."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "150 GB per uploaded file — raised from a lower value in the Python SDK on 2026-03-24 ('Increase upload file size limit to 150GB'). No published per-account or total quota anywhere in the provider terms, FAQ, or API reference; the archive in the public catalogue runs to multi-GB objects (one measured dataset is 9,786,006,314 bytes = 9.79 GB as a single .tar.gz). Uploads are multipart with a hard 10,000-part ceiling, so a 1 TB object would need ≥100 MB parts — the SDK enforces this and names the minimum part size rather than failing mid-upload.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

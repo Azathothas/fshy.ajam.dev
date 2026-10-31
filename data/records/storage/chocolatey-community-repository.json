@@ -1,0 +1,83 @@
+{
+  "topic": "storage",
+  "slug": "chocolatey-community-repository",
+  "provider": "Chocolatey Community Repository",
+  "url": "https://community.chocolatey.org",
+  "category": "registry",
+  "free_tier": {
+    "stated": "200 MB hard per package: 'NOTE: 200MB is the maximum size of a package on the Chocolatey Community Repository. The package must download larger tools from a vendor site or mirror, or if possible, create semi-embedded packages.'",
+    "unit": "MB",
+    "metered_on": "unstated",
+    "source_url": "https://github.com/chocolatey-community/chocolatey-packages/blob/master/CONTRIBUTING.md",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: 200 MB",
+    "bytes": 200000000,
+    "source_url": "https://github.com/chocolatey-community/chocolatey-packages/blob/master/CONTRIBUTING.md",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "per-object-cap: 200 MB per .nupkg. retention: indefinite for moderated packages; unlisted packages remain downloadable",
+    "source_url": "https://github.com/chocolatey-community/chocolatey-packages/blob/master/CONTRIBUTING.md",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free serving, but every package is human-moderated before publication (CPMR rule set, VirusTotal scanning).",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "`choco push` (write, needs API key), `choco install/download` (read), NuGet v2 OData at community.chocolatey.org/api/v2/. No rclone backend.",
+  "chaining": "unlimited packages x unlimited versions x 200 MB, but each package is virus-scanned and moderated. The 2 GB NuGet limitation means large content must be fetched at install time from elsewhere - which is the opposite of storage.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: 200 MB",
+      "source": "https://github.com/chocolatey-community/chocolatey-packages/blob/master/CONTRIBUTING.md"
+    }
+  ],
+  "limits_note": "per-object-cap: 200 MB per .nupkg. retention: indefinite for moderated packages; unlisted packages remain downloadable. request-rate: push is rate-limited per API key; moderation queue is the real gate.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "200 MB plus mandatory malware scanning plus human moderation. Cannot hold large binaries at all - Chocolatey's own docs route >2 GB content to external hosting.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://github.com/chocolatey-community/chocolatey-packages/blob/master/CONTRIBUTING.md",
+      "date": "2026-10-21",
+      "proved": "'200MB is the maximum size of a package on the Chocolatey Community Repository.'"
+    },
+    {
+      "url": "https://docs.chocolatey.org/en-us/guides/create/create-large-files-package/",
+      "date": "2026-10-21",
+      "proved": "'Chocolatey is built on top of NuGet, which itself does not gracefully handle packages that contain files over 2GB'"
+    },
+    {
+      "url": "https://community.chocolatey.org/api/v2/",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, 408 bytes (NuGet v2 OData service document live)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "200 MB hard per package: 'NOTE: 200MB is the maximum size of a package on the Chocolatey Community Repository. The package must download larger tools from a vendor site or mirror, or if possible, create semi-embedded packages.'",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "200 MB hard per package: 'NOTE: 200MB is the maximum size of a package on the Chocolatey Community Repository. The package must download larger tools from a vendor site or mirror, or if possible, create semi-embedded packages.'",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

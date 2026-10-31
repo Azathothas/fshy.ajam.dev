@@ -1,0 +1,212 @@
+{
+  "topic": "crawler-scraper",
+  "slug": "spider",
+  "provider": "Spider",
+  "url": "https://spider.cloud/",
+  "category": "reader and extractor API",
+  "verdict": "qualifies-with-caveat",
+  "confidence": "measured",
+  "confidence_note": "liveness and the keyless RateLimit-Limit are measured; the keyless POST /scrape, the account credits and the paid rates are documented, not measured",
+  "verified_at": "2026-10-30T12:34:28.810Z",
+  "free_tier": {
+    "stated": "keyless /scrape: no key and no account, at a RateLimit-Limit of 4 with a RateLimit-Reset of 52 seconds, which the docs read as requests a minute; the documented keyless call is POST with a JSON body",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://api.spider.cloud/scrape?url=https://example.com",
+    "read_on": "2026-10-30",
+    "notes": "an account that passes the vendor's signup checks gets 2,500 credits worth USD 0.25 once, with no card; the balance does not expire; pay as you go is USD 1 a GB of bandwidth plus USD 0.0001 a CPU minute"
+  },
+  "per_object_cap": {
+    "stated": "not applicable: the unit is a request",
+    "bytes": null,
+    "source_url": "https://spider.cloud/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://spider.cloud/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not applicable: Markdown or JSON answers",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://spider.cloud/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "REST /scrape",
+  "tooling": "REST over HTTPS with JSON bodies and a Bearer key, or no key on /scrape; official clients spider-client on PyPI and @spider-cloud/spider-client on npm, with Rust, Go and CLI clients in spider-rs/spider-clients; a hosted MCP server at mcp.spider.cloud; per-request USDC payment with an EVM wallet and an x402 client",
+  "chaining": "One page per keyless call through POST /scrape with a JSON body, for a first call or a connectivity check; a GET with a url query answers 400, and crawls, searches and sustained use move to a key or a per-request USDC payment",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "keyless /scrape: RateLimit-Limit 4 with RateLimit-Reset 52 seconds on a keyless response, the header the docs define as requests allowed a minute",
+      "source": "probe:https://api.spider.cloud/scrape?url=https://example.com"
+    },
+    {
+      "kind": "request-rate",
+      "value": "an account starts at 10,000 core API requests a minute and rises through four levels to 80,000",
+      "source": "https://spider.cloud/docs/core/rate-limits/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "keyless runs from the documentation playground: 25 a day with no account",
+      "source": "https://spider.cloud/docs/overview/"
+    }
+  ],
+  "binding": "request-rate",
+  "limits_note": "a keyless GET of /scrape with a url query answered 400 with a zero-byte body and RateLimit-Limit 4, RateLimit-Remaining 3, RateLimit-Reset 52; the docs answer a GET on a POST route with 400 and define RateLimit-Limit as requests allowed a minute",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "/scrape takes no key and no account; keyless /crawl answers Payment Required with an offer to pay per request in USDC on Base with no account, key or signup; an account takes an email and password, or Google, GitHub or Discord",
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "price_per_tb_month": null,
+  "evidence": [
+    {
+      "url": "https://api.spider.cloud/scrape?url=https://example.com",
+      "date": "2026-10-22",
+      "proved": "400 with a zero byte body: the keyless route refused the request and sent no reason"
+    },
+    {
+      "url": "https://spider.cloud/register/",
+      "date": "2026-10-30",
+      "proved": "a new account gets 2,500 credits worth USD 0.25 with no card, subject to signup checks",
+      "capture": "sha256:a60c5b3656f7ebd7ca045aff380bf2e3673efc0c9299ef08f8115bc822075380",
+      "quote": "2,500 free credits, worth $0.25, if your signup passes our checks. No card required."
+    },
+    {
+      "url": "probe:https://api.spider.cloud/scrape?url=https://example.com",
+      "date": "2026-10-30",
+      "proved": "GET /scrape?url=... with no key answered 400, 0 bytes, with RateLimit-Limit 4 and RateLimit-Reset 7 headers",
+      "capture": "sha256:eb90acf260b33fe73581a0bfa875f24d0f96696098ea88733d300d2bfab9f07b",
+      "quote": "\"status\": 400"
+    },
+    {
+      "url": "https://spider.cloud/register/",
+      "date": "2026-10-30",
+      "proved": "the sign-up form takes an email and password, or Google, GitHub or Discord",
+      "capture": "sha256:a60c5b3656f7ebd7ca045aff380bf2e3673efc0c9299ef08f8115bc822075380",
+      "quote": "Email"
+    },
+    {
+      "url": "https://spider.cloud/faq/",
+      "date": "2026-10-30",
+      "proved": "a credit balance does not expire",
+      "capture": "sha256:284d82c5da7443a114f78a655c6f60102b960176ba0f560ac04958d91738b97f",
+      "quote": "No. There is no monthly subscription. Top up once and use the balance whenever you need it."
+    },
+    {
+      "url": "https://spider.cloud/",
+      "date": "2026-10-30",
+      "proved": "pay as you go bills USD 1 a GB plus USD 0.0001 a CPU minute",
+      "capture": "sha256:e58254eb9b468c931999e556cfd195b20558996d4b33882abee411bf0a966312",
+      "quote": "Plus $0.0001 per CPU minute."
+    },
+    {
+      "url": "https://spider.cloud/llms.txt",
+      "date": "2026-10-30",
+      "proved": "POST /scrape is documented as working with no key and no account",
+      "capture": "sha256:819b7bad4847657a5e2bccf0bfaabc25bc6910cff00c3cb816d90638fcac6ed1",
+      "quote": "`POST /scrape` works with no API key and no signup. Nothing else does."
+    },
+    {
+      "url": "probe:https://api.spider.cloud/scrape?url=https://example.com",
+      "date": "2026-10-30",
+      "proved": "a keyless GET of /scrape with a url query answered 400, 0 bytes, with RateLimit-Limit 4, RateLimit-Remaining 3 and RateLimit-Reset 52 and no payment demand: the API is live and admits a keyless /scrape request",
+      "capture": "sha256:b416d5f3ab37952ddc5a1e8ce3ca0c28fc40b04e1c9d09eb9aad8c08b7260d63",
+      "quote": "\"ratelimit-limit\": \"4\""
+    },
+    {
+      "url": "probe:https://api.spider.cloud/crawl",
+      "date": "2026-10-30",
+      "proved": "a keyless GET of /crawl answered with an x402 offer to pay per request in USDC on Base with no account, key or signup, priced USD 0.005 for up to 5 MB",
+      "capture": "sha256:e3a857227bb254623f3f8af8505c0818a6d86cf9d7f2465506bcc40c6c1d9157",
+      "quote": "Pay per request in USDC on Base with no account, no API key, and no signup."
+    },
+    {
+      "url": "https://spider.cloud/docs/core/rate-limits/",
+      "date": "2026-10-30",
+      "proved": "an account starts at 10,000 core API requests a minute and rises through four levels, the fourth at 80,000",
+      "capture": "sha256:849dd493370e642933620329fddc40abaca31e6ee9df4a8c44e87497d915c0b0",
+      "quote": "Every account gets at least 10,000 requests per minute on the core API, and it goes up through four levels as you use more."
+    },
+    {
+      "url": "https://spider.cloud/docs/overview/",
+      "date": "2026-10-30",
+      "proved": "keyless runs from the documentation playground need no account and are capped at 25 a day",
+      "capture": "sha256:40c1ac1772ed082d9dca458c448ee3bfee5191fd8905acfe50973f18f4766208",
+      "quote": "Keyless runs work without an account, capped at 25 a day."
+    },
+    {
+      "url": "probe:https://pypi.org/pypi/spider_client/json",
+      "date": "2026-10-30",
+      "proved": "PyPI serves spider-client 0.1.93, a Python SDK for the Spider Cloud API whose home page is spider-rs/spider-clients",
+      "capture": "sha256:07c316b079aaf1b11ddd47dbf37afd02c8e8317b38eb8f7980fc9d228f5777dc",
+      "quote": "\"summary\":\"Python SDK for Spider Cloud API\""
+    },
+    {
+      "url": "probe:https://api.spider.cloud/crawl",
+      "date": "2026-10-30",
+      "proved": "a keyless GET of /crawl answered 402 with 791 bytes of JSON and a PAYMENT-REQUIRED header",
+      "capture": "sha256:27cf74a6752e50ecce3c10da1481308bb0814a19f341f660e6e3de9b84524e93",
+      "quote": "\"status\": 402"
+    },
+    {
+      "url": "probe:https://api.spider.cloud/data/credits",
+      "date": "2026-10-30",
+      "proved": "a keyless GET of /data/credits answered 401 with an Unauthorized JSON body, not the 402 the docs give for keyless routes other than /scrape",
+      "capture": "sha256:4aaa3b950759d28cf21bd9fb19e22be4243b082a796da6b5eda80ebcd0c53b41",
+      "quote": "\"status\": 401"
+    },
+    {
+      "url": "probe:https://registry.npmjs.org/@spider-cloud%2Fspider-client/latest",
+      "date": "2026-10-30",
+      "proved": "npm serves @spider-cloud/spider-client 0.2.5 from the spider-rs/spider-clients repository",
+      "capture": "sha256:51cf681e69cbcfbffd6dd54c16e325cc5fc2ab2e9747ed96e7f5e10da78b65a6",
+      "quote": "Isomorphic Javascript SDK for Spider Cloud services"
+    },
+    {
+      "url": "https://spider.cloud/llms.txt",
+      "date": "2026-10-30",
+      "proved": "a GET to any content route answers 400, so a GET of /scrape tests the method and not the keyless route",
+      "capture": "sha256:819b7bad4847657a5e2bccf0bfaabc25bc6910cff00c3cb816d90638fcac6ed1",
+      "quote": "Every content route is POST only. A GET or PUT to one returns `400`."
+    },
+    {
+      "url": "https://spider.cloud/llms-full.txt",
+      "date": "2026-10-30",
+      "proved": "the keyless tier is documented as a first call and connectivity check; sustained use needs a key",
+      "capture": "sha256:1565f1f0993deb63fbe37ef69d88d4c1bbb2c3b096d03556858d9a8a27886cf1",
+      "quote": "Treat it as a way to make a first call and confirm connectivity. Anything sustained needs a key."
+    },
+    {
+      "url": "https://spider.cloud/docs/core/rate-limits/",
+      "date": "2026-10-30",
+      "proved": "the docs define the RateLimit-Limit header as requests allowed a minute",
+      "capture": "sha256:849dd493370e642933620329fddc40abaca31e6ee9df4a8c44e87497d915c0b0",
+      "quote": "| RateLimit-Limit | Requests allowed per minute on your account. |"
+    },
+    {
+      "url": "https://spider.cloud/docs/integrations/x402/",
+      "date": "2026-10-30",
+      "proved": "per-request payment in USDC on Base through x402 needs no account, key or signup",
+      "capture": "sha256:248382d58ea2af6750b9b030f9f2e9fad31c80c627862d008cabc9e424bf06f6",
+      "quote": "Pay per request in USDC on Base. No account, no API key, no signup."
+    },
+    {
+      "url": "https://spider.cloud/docs/libraries/",
+      "date": "2026-10-30",
+      "proved": "official SDKs exist for Python, JavaScript, Rust and Go, and a CLI installs with cargo",
+      "capture": "sha256:d0615be4624b269ecd34ffdebe67f6e9cd6532c90550aca57e81672fed9f59df",
+      "quote": "Official SDKs for Python, JavaScript, Rust, and Go."
+    }
+  ],
+  "notes": "A keyless GET of /scrape with a url query answers 400 with a zero-byte body, the documented answer to a GET on a POST route, so it does not test the keyless route; keyless POST /scrape with a JSON body is documented and not measured.",
+  "binding_note": "the keyless RateLimit-Limit of 4 binds before any volume; past it, a key or a per-request payment is needed"
+}

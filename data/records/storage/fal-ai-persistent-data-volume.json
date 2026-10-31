@@ -1,0 +1,88 @@
+{
+  "topic": "storage",
+  "slug": "fal-ai-persistent-data-volume",
+  "provider": "fal.ai persistent /data volume",
+  "url": "https://fal.ai",
+  "category": "paas",
+  "free_tier": {
+    "stated": "No published byte quota on the /data volume — the docs state only 'Files written to /data persist between requests, across runner restarts, and across deployments' and 'Files you write there persist until you delete them. Runner shutdown does not delete these files.' Capacity is bounded only by what you pay to keep a runner alive; there is no free storage allowance and no documented ceiling.",
+    "unit": "none",
+    "metered_on": "stored-bytes",
+    "source_url": "https://fal.ai/docs/documentation/development/use-persistent-storage",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "100 GB per file",
+    "bytes": 100000000000,
+    "source_url": "https://fal.ai/docs/documentation/development/use-persistent-storage",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "No published byte quota on the /data volume — the docs state only 'Files written to /data persist between requests, across runner restarts, and across deployments' and 'Files you write there persist until you delete them",
+    "source_url": "https://fal.ai/docs/documentation/development/use-persistent-storage",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "NOT free and NOT anonymous: '/data' files are 'not URL-accessible' — there is no public download URL, so the egress question does not arise. Bulk in/out is via `fal files` CLI or the REST storage API.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "`fal` Python CLI (`fal files upload/download/list/remove`), @fal-ai/client JS storage API, `fal.download_file(url, target_dir='/data/...')` in-app. Chunked at 4 MB into a global object store; parallel reads hit a distributed cache (docs claim 6-8 GB/s distributed, 10-15 GB/s local NVMe).",
+  "chaining": "Not a free-storage chain — it is a paid-compute chain.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "100 GB per file",
+      "source": "https://fal.ai/docs/documentation/development/use-persistent-storage"
+    },
+    {
+      "kind": "write-gated",
+      "value": "approval (request at fal",
+      "source": "https://fal.ai/docs/documentation/development/use-persistent-storage"
+    }
+  ],
+  "limits_note": "per-object-cap is upload-method-dependent (this is the useful part): `fal files upload` CLI ~100 GB per file (10 MB parts, max 10,000 parts); dashboard drag-and-drop 1 GB; upload-from-URL 5 GB and must complete in 10 minutes; POST /serverless/files/file/local/{path} ~4.5 MB per request; writes from inside a running app are exempt ('Not subject to these limits. The runner writes straight to the volume'). Retention: indefinite, self-managed. Billing: you are billed per second for every runner state except PENDING, DOCKER_PULL and TERMINATED — SETUP and IDLE are both billed, so holding storage open costs GPU-time.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Serverless access is gated by per-account approval (request at fal.ai/dashboard/serverless-get-started), so this is not a self-serve multiplier. Docs warn that streaming a multi-GB artifact in small chunks to /data is much slower than one bulk copy.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://fal.ai/docs/documentation/development/use-persistent-storage",
+      "date": "2026-10-21",
+      "proved": "'Files written to /data persist between requests, across runner restarts, and across deployments'; no quota stated"
+    },
+    {
+      "url": "https://fal.ai/docs/documentation/development/file-storage",
+      "date": "2026-10-21",
+      "proved": "upload size table: CLI ~100 GB, dashboard 1 GB, from-URL 5 GB/10 min, local API ~4.5 MB"
+    },
+    {
+      "url": "https://fal.ai/docs/documentation/serverless/pricing",
+      "date": "2026-10-21",
+      "proved": "billed states table (SETUP/IDLE/RUNNING billed; PENDING/DOCKER_PULL not)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published byte quota on the /data volume — the docs state only 'Files written to /data persist between requests, across runner restarts, and across deployments' and 'Files you write there persist until you delete them. Runner shutdown does not delete these files.' Capacity is bounded only by what you pay to keep a runner alive; there is no free storage allowance and no documented ceiling.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "dead-service",
+      "why": "No published byte quota on the /data volume — the docs state only 'Files written to /data persist between requests, across runner restarts, and across deployments' and 'Files you write there persist until you delete them. Runner shutdown does not delete these files.' Capacity is bounded only by what you pay to keep a runner alive; there is no free storage allowance and no documented ceiling.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

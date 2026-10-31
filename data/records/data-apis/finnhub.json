@@ -1,0 +1,254 @@
+{
+  "topic": "data-apis",
+  "slug": "finnhub",
+  "provider": "Finnhub",
+  "url": "https://finnhub.io/pricing",
+  "category": "market data API (US quotes, company news, fundamentals, WebSocket)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free plan USD 0/month: 60 API calls/minute; on top of every plan's limit, 30 API calls/second",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://finnhub.io/pricing",
+    "read_on": "2026-10-30",
+    "notes": "No daily cap is stated. The free column covers US data: company news for 1 year, earnings calendar for 1 month, EPS surprises for 4 quarters, and a WebSocket of 50 symbols. The Quote endpoint is marked High Usage, not Premium. Candles (OHLCV), tick data, historical NBBO, last bid-ask, splits and most estimates endpoints are marked Premium in the API documentation, so the free plan carries no historical price bars. The All-In-One plan is USD 3500/month."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: one JSON response per call; the filings endpoint returns up to 250 documents per call",
+    "bytes": null,
+    "source_url": "https://finnhub.io/docs/api/rate-limit",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: a query API with no stored objects",
+    "days": null,
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not metered in bytes; the call rate bounds what a free key can pull",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://finnhub.io/pricing"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "REST under https://finnhub.io/api/v1 with token=KEY in the URL or an X-Finnhub-Token header; a WebSocket stream of up to 50 symbols on the free plan.",
+  "endpoint": "https://finnhub.io/api/v1",
+  "tooling": "curl or any HTTP client; a WebSocket client for the stream",
+  "chaining": "A free real-time US quote and news feed at 60 calls a minute with no historical bars; history comes from another record, such as Alpha Vantage weekly or monthly series, Twelve Data daily series or Massive Basic end-of-day bars.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "60 API calls per minute on the free plan",
+      "source": "https://finnhub.io/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "30 API calls per second on every plan",
+      "source": "https://finnhub.io/docs/api/rate-limit"
+    }
+  ],
+  "limits_note": "Bulk path: filings metadata only. The filings endpoint names a Kaggle dataset, SEC Filings 1994-2020, published by Finnhub for bulk download; prices, candles and news have no bulk path.",
+  "binding": "request-rate",
+  "binding_note": "60 calls a minute is the ceiling a free key meets; the 30-per-second limit binds only bursts.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The signup form asks for a name, an email and a password, behind a reCAPTCHA; it has no card field. Signing up confirms non-professional status, and the terms use the name and email to file a non-professional subscriber form. A third-party integration guide reports an email verification link before the key is shown. A call without a key answers HTTP 401 with 'Please use an API key.'",
+    "country": null
+  },
+  "reliability_note": "Inactive users are deleted from time to time; a deleted account needs a new signup.",
+  "confidence": "documented",
+  "confidence_note": "The rate and the plan columns are documented on the pricing page and the API documentation. A keyless probe confirmed the API answers and demands a key; the 60-per-minute cut-off needs a free key to measure.",
+  "evidence": [
+    {
+      "url": "https://finnhub.io/pricing",
+      "date": "2026-10-30",
+      "proved": "the free plan allows 60 API calls per minute",
+      "capture": "sha256:4f425bac9a7212fed2d127c40a16d6236b3ff3cab233ea2478b824b695eeb39f",
+      "quote": "| Limit | 60 API calls/minute | Market data: 900 API calls/minute Fundamental: 300 API calls/minute |"
+    },
+    {
+      "url": "https://finnhub.io/pricing",
+      "date": "2026-10-30",
+      "proved": "the free plan is USD 0 a month and the All-In-One plan USD 3500 a month",
+      "capture": "sha256:4f425bac9a7212fed2d127c40a16d6236b3ff3cab233ea2478b824b695eeb39f",
+      "quote": "| Pricing | $0/month [Start Free](https://finnhub.io/register) | $3500/month [Contact Us](mailto:support@finnhub.io) |"
+    },
+    {
+      "url": "https://finnhub.io/pricing",
+      "date": "2026-10-30",
+      "proved": null,
+      "capture": "sha256:4f425bac9a7212fed2d127c40a16d6236b3ff3cab233ea2478b824b695eeb39f",
+      "quote": null
+    },
+    {
+      "url": "https://finnhub.io/pricing",
+      "date": "2026-10-30",
+      "proved": "the free plan streams up to 50 symbols over the WebSocket",
+      "capture": "sha256:4f425bac9a7212fed2d127c40a16d6236b3ff3cab233ea2478b824b695eeb39f",
+      "quote": "| Websocket | 50 symbols | Unlimited symbols |"
+    },
+    {
+      "url": "https://finnhub.io/pricing",
+      "date": "2026-10-30",
+      "proved": "the free plan carries 1 year of company news",
+      "capture": "sha256:4f425bac9a7212fed2d127c40a16d6236b3ff3cab233ea2478b824b695eeb39f",
+      "quote": "| Company News | 1 year and real-time updates | 20 years and real-time updates |"
+    },
+    {
+      "url": "https://finnhub.io/pricing",
+      "date": "2026-10-30",
+      "proved": "the free plan carries 1 month of the US earnings calendar",
+      "capture": "sha256:4f425bac9a7212fed2d127c40a16d6236b3ff3cab233ea2478b824b695eeb39f",
+      "quote": "| Earnings Calendar | 1 month and real-time updates (US) | 20 years and real-time updates |"
+    },
+    {
+      "url": "https://finnhub.io/pricing",
+      "date": "2026-10-30",
+      "proved": "the free plan carries 4 quarters of EPS surprises",
+      "capture": "sha256:4f425bac9a7212fed2d127c40a16d6236b3ff3cab233ea2478b824b695eeb39f",
+      "quote": "| EPS Surprises | 4 quarters | 20+ years |"
+    },
+    {
+      "url": "https://finnhub.io/docs/api/rate-limit",
+      "date": "2026-10-30",
+      "proved": "every plan is also held to 30 API calls per second",
+      "capture": "sha256:b993fbe55a0a474a5095b221d2312dad92826e297fbd73306c51e2a2875d7318",
+      "quote": "On top of all plan's limit, there is a 30 API calls/ second limit."
+    },
+    {
+      "url": "https://finnhub.io/docs/api/rate-limit",
+      "date": "2026-10-30",
+      "proved": "a call over the limit answers HTTP 429",
+      "capture": "sha256:b993fbe55a0a474a5095b221d2312dad92826e297fbd73306c51e2a2875d7318",
+      "quote": "If your limit is exceeded, you will receive a response with status code `429`."
+    },
+    {
+      "url": "https://finnhub.io/docs/api/rate-limit",
+      "date": "2026-10-30",
+      "proved": "every call needs the key as a token parameter or an X-Finnhub-Token header",
+      "capture": "sha256:b993fbe55a0a474a5095b221d2312dad92826e297fbd73306c51e2a2875d7318",
+      "quote": "All GET request require a token parameter `token=apiKey` in the URL or a header `X-Finnhub-Token : apiKey`."
+    },
+    {
+      "url": "https://finnhub.io/docs/api/rate-limit",
+      "date": "2026-10-30",
+      "proved": "stock candles (OHLCV) are a premium endpoint",
+      "capture": "sha256:b993fbe55a0a474a5095b221d2312dad92826e297fbd73306c51e2a2875d7318",
+      "quote": "- [Candles (OHLCV)](https://finnhub.io/docs/api/stock-candles) Premium"
+    },
+    {
+      "url": "https://finnhub.io/docs/api/rate-limit",
+      "date": "2026-10-30",
+      "proved": "the quote endpoint is marked High Usage, not Premium",
+      "capture": "sha256:b993fbe55a0a474a5095b221d2312dad92826e297fbd73306c51e2a2875d7318",
+      "quote": "- [Quote](https://finnhub.io/docs/api/quote) High Usage"
+    },
+    {
+      "url": "https://finnhub.io/docs/api/rate-limit",
+      "date": "2026-10-30",
+      "proved": "filings return up to 250 documents per call and are offered for bulk download on Kaggle",
+      "capture": "sha256:b993fbe55a0a474a5095b221d2312dad92826e297fbd73306c51e2a2875d7318",
+      "quote": "List company's filing. Limit to 250 documents at a time. This data is available for bulk download on [Kaggle SEC Filings database](https://www.kaggle.com/finnhub/sec-filings)."
+    },
+    {
+      "url": "https://www.kaggle.com/datasets/finnhub/sec-filings",
+      "date": "2026-10-30",
+      "proved": "the Kaggle dataset is a Finnhub release of filings metadata for bulk download",
+      "capture": "sha256:a74216c55199661d394796fa81ecf4e693a8dca71e95dd87eb2e8f4870a53e00",
+      "quote": "With the sole mission to democratize financial data, Finnhub is excited to release the new Filings metadata dataset for bulk download."
+    },
+    {
+      "url": "https://www.kaggle.com/datasets/finnhub/sec-filings",
+      "date": "2026-10-30",
+      "proved": "the bulk dataset covers SEC filings from 1994 to 2020",
+      "capture": "sha256:a74216c55199661d394796fa81ecf4e693a8dca71e95dd87eb2e8f4870a53e00",
+      "quote": "The data is cleaned and sourced directly from SEC filings from 1994-2020."
+    },
+    {
+      "url": "https://finnhub.io/static/js/webpack/dist/main.bundle.7d2d142701ec3d925af0.js",
+      "date": "2026-10-30",
+      "proved": "the signup form has a name field; the same form has email and password fields and no card field",
+      "capture": "sha256:673ecaec616b71825311bc98b4b5dd9d483e5d017ecb50000b4445ed757401a8",
+      "quote": "React.createElement(\"input\",{type:\"text\",placeholder:\"Name\",value:e.state.name,onChange:e.onTextChange.bind(e,\"name\")})"
+    },
+    {
+      "url": "https://finnhub.io/static/js/webpack/dist/main.bundle.7d2d142701ec3d925af0.js",
+      "date": "2026-10-30",
+      "proved": "the signup form has an email field",
+      "capture": "sha256:673ecaec616b71825311bc98b4b5dd9d483e5d017ecb50000b4445ed757401a8",
+      "quote": "React.createElement(\"input\",{type:\"text\",placeholder:\"Email\",value:e.state.email,onChange:e.onTextChange.bind(e,\"email\")})"
+    },
+    {
+      "url": "https://finnhub.io/register",
+      "date": "2026-10-30",
+      "proved": "signing up confirms non-professional status",
+      "capture": "sha256:e741d4d2456df8d20a3fda3d4cb97c8560edafde0f8a1368ae3da1b3b7dd91ca",
+      "quote": null
+    },
+    {
+      "url": "https://finnhub.io/register",
+      "date": "2026-10-30",
+      "proved": "the signup page sits behind a reCAPTCHA",
+      "capture": "sha256:318458060a0c1cd74e8aa960dbcf48785784fbf8f037720ad5306b7d306539c0",
+      "quote": "Recaptcha requires verification."
+    },
+    {
+      "url": "https://finnhub.io/terms-of-service",
+      "date": "2026-10-30",
+      "proved": null,
+      "capture": "sha256:0cc2993c29a8050214c6416f9679cc668fa32444b5153f276e0b7f269009bcd8",
+      "quote": null
+    },
+    {
+      "url": "https://finnhub.io/terms-of-service",
+      "date": "2026-10-30",
+      "proved": null,
+      "capture": "sha256:0cc2993c29a8050214c6416f9679cc668fa32444b5153f276e0b7f269009bcd8",
+      "quote": null
+    },
+    {
+      "url": "https://finnhub.io/terms-of-service",
+      "date": "2026-10-30",
+      "proved": "a personal-use signup is used to file a non-professional subscriber form",
+      "capture": "sha256:0cc2993c29a8050214c6416f9679cc668fa32444b5153f276e0b7f269009bcd8",
+      "quote": null
+    },
+    {
+      "url": "https://finnhub.io/terms-of-service",
+      "date": "2026-10-30",
+      "proved": "inactive accounts are deleted from time to time",
+      "capture": "sha256:0cc2993c29a8050214c6416f9679cc668fa32444b5153f276e0b7f269009bcd8",
+      "quote": "Finnhub will automatically delete inactive users from time to time."
+    },
+    {
+      "url": "https://docs.nexla.com/user-guides/connectors/finnhub_api",
+      "date": "2026-10-30",
+      "proved": "a third-party guide reports an email verification step before the account is active",
+      "capture": "sha256:d3c48def98a2bfcc3418b7c2c2c54354aab384b222ad25938be450d815ddf201",
+      "quote": "Check your email inbox for a verification message from Finnhub and click the verification link to activate your account."
+    },
+    {
+      "url": "probe:https://finnhub.io/api/v1/quote?symbol=AAPL",
+      "date": "2026-10-30",
+      "proved": "the quote endpoint answered HTTP 401 to a call without a key",
+      "capture": "sha256:eb42e6751937c738920feedb81ccfb1f56bab838f1d7c8a9984e4f6a7ced214e",
+      "quote": "\"status\": 401"
+    },
+    {
+      "url": "probe:https://finnhub.io/api/v1/quote?symbol=AAPL",
+      "date": "2026-10-30",
+      "proved": "the keyless call is refused with a request for an API key",
+      "capture": "sha256:f2906267f693bd6aaa3cbe886b1530adff776082a85e4b7a6b69db55900a7174",
+      "quote": "{\"error\":\"Please use an API key.\"}"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-30T12:52:12.830Z",
+  "notes": "The most generous call rate of the four market data records, but the free plan is a live-data plan: quotes, news, calendars and a 50-symbol stream, with candles and tick history behind Premium.",
+  "extras": {
+    "bulk_path": "Kaggle dataset SEC Filings 1994-2020 (filings metadata only); no bulk path for prices"
+  }
+}

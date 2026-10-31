@@ -1,0 +1,99 @@
+{
+  "topic": "egress",
+  "slug": "portwarp",
+  "provider": "Portwarp",
+  "url": "https://portwarp.com/pricing",
+  "category": "udp port forward (game tunnel, hosted)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "1 active tunnel, 2 extra ports per tunnel, TCP and UDP support, Unlimited bandwidth",
+    "unit": "unlimited",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://portwarp.com/pricing",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://portwarp.com/pricing",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://portwarp.com/pricing",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Unlimited bandwidth, stated for every plan: 'Every plan includes TCP, UDP, encrypted tunnels, and unlimited bandwidth.' No rate, meter or tolerated tolerance is published.; ingress: udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://portwarp.com/pricing"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "pwrp login, pwrp tunnels, pwrp connect",
+  "tooling": "pwrp CLI, Portwarp Desktop, Docker",
+  "chaining": "one free UDP port is exactly one WireGuard endpoint: run wg-quick on the origin, point a free VM or a second tunnel at it, and the relay carries the datagrams",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "no number published; 'unlimited bandwidth' is the whole of the stated allowance",
+      "source": "https://portwarp.com/pricing"
+    }
+  ],
+  "limits_note": "",
+  "binding": "per-ip-shaping",
+  "binding_note": "Nothing countable is published, so no quota can be designed against. At 1 TiB/month the thing that fails is an unpublished per-relay tolerance, and the free plan's second limiter is structural rather than a byte count: one active tunnel. Auto-reconnect is listed only under PRO, so a free tunnel that drops is re-established by the operator and not by a user.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a free account with browser device-code approval: 'Create an account in 30 seconds. No credit card.' https://portwarp.com/ ; 'The CLI opens a browser approval flow and displays a short code.' https://portwarp.com/docs/cli/quickstart",
+    "country": "None"
+  },
+  "reliability_note": "auto-reconnect is a PRO feature, so a free tunnel that drops stays down until a user is restarted; 'unlimited' is a marketing word with no rate behind it",
+  "confidence": "documented",
+  "confidence_note": "Raise to measured by running the CLI on a free account, holding a UDP port, reconnecting, and confirming the public port is unchanged after a restart; then pushing a counted byte volume through it for an hour and reading the transfer counter.",
+  "evidence": [
+    {
+      "url": "https://portwarp.com/pricing",
+      "date": "2026-10-23",
+      "proved": "free plan is 1 active tunnel with TCP and UDP support and unlimited bandwidth; PRO is USD 2.99/month with 32 tunnels"
+    },
+    {
+      "url": "https://portwarp.com/docs/cli/quickstart",
+      "date": "2026-10-23",
+      "proved": "the tunnel's public port is listed as a stored property of the tunnel, not a per-session allocation; login is a browser device-code flow"
+    },
+    {
+      "url": "https://portwarp.com/docs/cli",
+      "date": "2026-10-23",
+      "proved": "'The CLI supports TCP, UDP, and tunnels that use both protocols. It only makes outbound connections'"
+    },
+    {
+      "url": "https://portwarp.com/",
+      "date": "2026-10-23",
+      "proved": "'Native UDP & TCP Tunneling' and a LOCAL PORT 27015 to TUNNEL PORT 27015 mapping, plus 'No credit card'"
+    },
+    {
+      "url": "probe:https://portwarp.com/ tcp:443",
+      "date": "2026-10-23",
+      "proved": "portwarp.com:443 accepts a TCP connection from this host and the pricing page returns HTTP 200"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The strongest free-tier UDP candidate found that is not a game-preset tunnel: UDP is in the base plan, the port is configured rather than allocated, and the allowance is stated as unlimited. Not measured. The free tier's one-tunnel cap is a plan limit outside the constraint vocabulary and lives in binding_note. Re-read 2026-10-23: PRO adds 90-day traffic history and connection insights, so the edge counts bytes even though every plan is sold as unlimited.",
+  "extras": {
+    "wg_path": "inside-udp",
+    "wg_detail": "UDP is a native free-tier protocol and the public port is a property of the tunnel configured in the dashboard, not an allocation made at connect time: 'The list shows a number, name, protocol, local port, public port, and current state for each tunnel.' https://portwarp.com/docs/cli/quickstart",
+    "ingress": "udp",
+    "volume_tib_month": null,
+    "volume_stated": "Unlimited bandwidth, stated for every plan: 'Every plan includes TCP, UDP, encrypted tunnels, and unlimited bandwidth.' No rate, meter or tolerated tolerance is published.",
+    "bytes_transit": "yes",
+    "transit_note": "the anycast edge carries the datagrams; the operator's POP is the single point of failure"
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "topic": "storage",
+  "slug": "discord-cloud-uploads",
+  "provider": "Discord cloud uploads (direct-to-GCS, 500 MiB reservation)",
+  "url": "https://docs.discord.food/topics/cloud-uploads",
+  "category": "messaging",
+  "free_tier": {
+    "stated": "Reserve an upload slot with `POST /channels/{id}/attachments` and PUT the body straight into Discord's Google Cloud Storage bucket — the reservation path accepts up to 500 MiB per file, independent of the 20 MiB message-time limit. Note the file still hits the per-message limit when you actually send it, so 500 MiB only helps if the channel/boost tier allows it.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.discord.food/topics/cloud-uploads",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "500 MiB per file",
+    "bytes": 524288000,
+    "source_url": "https://docs.discord.food/topics/cloud-uploads",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.discord.food/topics/cloud-uploads",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free, unmetered, served from cdn.discordapp.com.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Documented unofficial-API reference (docs.discord.food, formerly 'userdoccers'); Python pseudocode in the page; used in production by large bots. No dedicated library needed — two HTTP calls.",
+  "chaining": "Upload slots are per-channel, so the 500 MiB ceiling multiplies by channel count (500/server) rather than by account.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "500 MiB per file",
+      "source": "https://docs.discord.food/topics/cloud-uploads"
+    }
+  ],
+  "limits_note": "1-10 files per reservation call; `is_clip` flag grants a 100 MiB default; requires same permissions as normal attach; `DELETE /attachments/{upload_filename}` to clean up unused reservations.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Endpoints are undocumented-but-stable and have moved URL shape before; a reservation you do not consume needs explicit deletion or it lingers.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://docs.discord.food/topics/cloud-uploads",
+      "date": "2026-10-21",
+      "proved": "'This allows you to upload up a file up to 500 MiB directly to Google Cloud. Note that file size limits will still apply when sending the attachment in a message.'"
+    },
+    {
+      "url": "https://docs.discord.food/topics/cloud-uploads",
+      "date": "2026-10-21",
+      "proved": "'When uploading a clip, an increased default file size limit of 100 MiB applies.'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Reserve an upload slot with `POST /channels/{id}/attachments` and PUT the body straight into Discord's Google Cloud Storage bucket — the reservation path accepts up to 500 MiB per file, independent of the 20 MiB message-time limit. Note the file still hits the per-message limit when you actually send it, so 500 MiB only helps if the channel/boost tier allows it.",
+  "extras": {
+    "unit_note": "free_tier.unit is 'mixed' because the headline is denominated in MiB or KiB, which the schema enum does not carry; the verbatim free_tier.stated keeps the true unit."
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

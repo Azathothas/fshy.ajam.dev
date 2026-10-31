@@ -1,0 +1,117 @@
+{
+  "topic": "compute",
+  "slug": "val-town",
+  "provider": "Val Town",
+  "url": "https://www.val.town/limits",
+  "category": "serverless runtime",
+  "free_tier": {
+    "stated": "A free plan whose crons run every 15 minutes at minimum and whose workers are killed after 10 seconds idle, with a hard 6-hour ceiling on any worker: quoted 'Worker idle timeout | 10 sec' and 'Worker runtime | 6 hrs Absolute ceiling on a single worker's lifetime, regardless of plan'.",
+    "unit": "hours",
+    "metered_on": "wall-clock",
+    "source_url": "https://www.val.town/limits",
+    "read_on": "2026-10-22",
+    "notes": "perpetual"
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://www.val.town/limits",
+    "notes": null
+  },
+  "retention": {
+    "stated": "The 10-second idle timeout ends any process that is not answering requests, so the host is a scheduler and not a machine: what survives is the cron every 15 minutes, not a daemon.",
+    "days": null,
+    "source_url": "https://www.val.town/limits",
+    "notes": null
+  },
+  "egress": {
+    "terms": "not stated",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.val.town/limits"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "inferred from the tooling the provider documents; not probed",
+  "tooling": "not stated",
+  "chaining": "A 15-minute cron with 100,000 runs a day for nothing is the cheapest scheduler in this class, and 'Email yourself' makes it a free alerting path for a box that is expected to die.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "worker idle timeout 10 sec; worker runtime at most 6 hrs on any plan; execution timeout 1 min per run on the Free plan",
+      "source": "https://www.val.town/limits"
+    }
+  ],
+  "limits_note": "Free plan: minimum cron interval 15 min, execution timeout 1 min per run, 1,000 authenticated API requests per minute and 0 private vals; a worker has 4 GiB of memory.",
+  "binding": "retention-clamped",
+  "binding_note": "The 10-second idle timeout ends any process that is not answering requests, so the host is a scheduler and not a machine: what survives is the cron every 15 minutes, not a daemon.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The sign-up page offers GitHub, Google or email and shows no card field.",
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://www.val.town/limits",
+      "date": "2026-10-22",
+      "proved": "'Worker idle timeout | 10 sec How long a worker waits for more requests before shutting down' and 'Worker runtime | 6 hrs Absolute ceiling on a single worker's lifetime, regardless of plan' and 'Worker memory | 4 GiB', quoted"
+    },
+    {
+      "url": "https://www.val.town/limits",
+      "date": "2026-10-22",
+      "proved": "'Minimum cron interval | 15 min' on Free, 'Execution timeout | 1 min' on Free, 'API requests per minute | 1,000' on Free, 'Crons per val | 10', quoted"
+    },
+    {
+      "url": "https://www.val.town/pricing",
+      "date": "2026-10-22",
+      "proved": "the Free column: '$0', '15 min cron intervals', '1 min wall clock time / run', 'Unlimited public vals', '100,000 runs / day', 'Email yourself', quoted"
+    },
+    {
+      "url": "https://www.val.town/auth/signup",
+      "date": "2026-10-31",
+      "proved": "the sign-up page offers email, beside GitHub and Google",
+      "capture": "sha256:5500f1e84e1296210098ae8ad59089cdd6ab74121449b2b2ae379e482842f57f",
+      "quote": "Continue with email"
+    },
+    {
+      "url": "https://www.val.town/limits",
+      "date": "2026-10-31",
+      "proved": "a worker shuts down 10 seconds after its last request",
+      "capture": "sha256:a3c8c1f3ee5a35323ce06b1923b32119b8c0c5c8afe6585d1352043ae369fda2",
+      "quote": "| Worker idle timeout | 10 sec How long a worker waits for more requests before shutting down. |"
+    },
+    {
+      "url": "https://www.val.town/limits",
+      "date": "2026-10-31",
+      "proved": "the minimum cron interval on the Free plan is 15 minutes",
+      "capture": "sha256:a3c8c1f3ee5a35323ce06b1923b32119b8c0c5c8afe6585d1352043ae369fda2",
+      "quote": "| Minimum cron interval Shortest delay between scheduled runs of a single val. | 15 min | 1 min | 1 min |"
+    },
+    {
+      "url": "https://www.val.town/limits",
+      "date": "2026-10-31",
+      "proved": "a worker lives at most 6 hours on any plan",
+      "capture": "sha256:a3c8c1f3ee5a35323ce06b1923b32119b8c0c5c8afe6585d1352043ae369fda2",
+      "quote": "| Worker runtime | 6 hrs Absolute ceiling on a single worker's lifetime, regardless of plan. |"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-31T06:50:59.432Z",
+  "notes": "The home record of this offer is dev-services/val-town; its blob storage is storage/val-town. A worker lives 10 sec past its last request and at most 6 hrs on any plan, so nothing daemon-shaped runs here. The Free plan has 0 private vals.",
+  "extras": {
+    "facets": {
+      "class": "paas-never-sleep",
+      "free_tier_kind": "perpetual",
+      "shape": {
+        "vcpu": null,
+        "ram_gib": 4,
+        "gpu_class": null,
+        "gpu_count": 0
+      }
+    }
+  }
+}

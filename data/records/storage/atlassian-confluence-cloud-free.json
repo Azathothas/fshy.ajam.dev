@@ -1,0 +1,81 @@
+{
+  "topic": "storage",
+  "slug": "atlassian-confluence-cloud-free",
+  "provider": "Atlassian Confluence Cloud Free",
+  "url": "https://www.atlassian.com/software/confluence",
+  "category": "paas",
+  "free_tier": {
+    "stated": "2 GB file storage on the Free plan (10 users, unlimited spaces and pages). Crucially: 'Free, Standard, and Premium plans entitle you to one app instance. You can have as many of these plans as you need. You'll subscribe to each one separately.' Each instance 'will have its own storage'.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://support.atlassian.com/organization-administration/docs/how-many-instances-of-a-product-does-my-organization-need/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: attachment default 100 MB",
+    "bytes": 100000000,
+    "source_url": "https://support.atlassian.com/organization-administration/docs/how-many-instances-of-a-product-does-my-organization-need/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://support.atlassian.com/organization-administration/docs/how-many-instances-of-a-product-does-my-organization-need/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "No egress meter anywhere in Atlassian Cloud pricing. Attachments are served from the site domain, not a billed CDN bucket.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Confluence Cloud REST API v2/v1 (`/wiki/rest/api/content/{id}/child/attachment`), Basic auth with email + API token, or OAuth 2.0. No rclone backend; the API is the client.",
+  "chaining": "2 GB x N free Confluence sites, and N is self-service and explicitly unbounded ('as many of these plans as you need'). Ten free sites = 20 GB; a scripted site-creation loop is the multiplier. Community reports confirm multiple free sites per account are allowed and the one-instance limit is a paid-plan construct.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: attachment default 100 MB",
+      "source": "https://support.atlassian.com/organization-administration/docs/how-many-instances-of-a-product-does-my-organization-need/"
+    }
+  ],
+  "limits_note": "per-object-cap: attachment default 100 MB, admin-configurable upward ('Enter your preferred maximum size (in bytes)'). Quota is per-site, not per-org. request-rate: Atlassian Cloud REST rate limits apply. Retention: Free sites are DEACTIVATED after a period of inactivity (logging in and viewing a page counts as activity) — this is the real hazard, not eviction. Over-quota does not delete data, it restricts editing/creating.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Nothing is deleted at quota — writes are blocked until you upgrade or free space. But a Free site that goes untouched is deactivated, so a storage-only site needs a periodic login to stay alive.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://support.atlassian.com/confluence-cloud/docs/manage-your-storage-usage/",
+      "date": "2026-10-21",
+      "proved": "'Confluence Free- 2 GB / Standard- 250 GB / Premium- Unlimited storage'"
+    },
+    {
+      "url": "https://support.atlassian.com/organization-administration/docs/how-many-instances-of-a-product-does-my-organization-need/",
+      "date": "2026-10-21",
+      "proved": "'You can have as many of these plans as you need'"
+    },
+    {
+      "url": "https://support.atlassian.com/organization-administration/docs/track-storage-and-move-data-across-products/",
+      "date": "2026-10-21",
+      "proved": "'if you have two Confluence instances from two sites, each will have its own storage' + Free-plan inactivity deactivation"
+    },
+    {
+      "url": "https://support.atlassian.com/confluence-cloud/docs/configure-attachment-size/",
+      "date": "2026-10-21",
+      "proved": "'The default is 100 megabytes, expressed as 104857600 bytes', admin-adjustable"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "2 GB file storage on the Free plan (10 users, unlimited spaces and pages). Crucially: 'Free, Standard, and Premium plans entitle you to one app instance. You can have as many of these plans as you need. You'll subscribe to each one separately.' Each instance 'will have its own storage'.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

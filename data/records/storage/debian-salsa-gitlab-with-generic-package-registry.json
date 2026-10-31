@@ -1,0 +1,86 @@
+{
+  "topic": "storage",
+  "slug": "debian-salsa-gitlab-with-generic-package-registry",
+  "provider": "Debian Salsa (salsa.debian.org) - GitLab with Generic package registry",
+  "url": "https://salsa.debian.org",
+  "category": "paas",
+  "free_tier": {
+    "stated": "No published total-storage quota, but a fully published per-object table on the instance-configuration page. Package registry per-file caps: Generic 5 GiB, Conan 3 GiB, Maven 3 GiB, PyPI 3 GiB, Terraform 1 GiB, npm/NuGet 500 MiB, Helm 5 MiB. Core GitLab: max push size '-' (unlimited), max attachment 20 MiB, job artifact 750 MiB, pages 300 MiB, snippet 50 MiB, import remote file 10 GiB, download file 5 GiB.",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://salsa.debian.org/help/instance_configuration",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-file caps: Generic 5 GiB",
+    "bytes": 5368709120,
+    "source_url": "https://salsa.debian.org/help/instance_configuration",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "per-object-cap: 5 GiB per Generic package file; 750 MiB per CI artifact; 300 MiB Pages. retention: indefinite for packages and repos (no pruning policy published on this page)",
+    "source_url": "https://salsa.debian.org/help/instance_configuration",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free. Debian-hosted infrastructure with no billing, no per-GB meter, and package/registry downloads served straight from the instance. No Cloudflare dependency to worry about.",
+    "metered": false
+  },
+  "interface": [
+    "ssh",
+    "git"
+  ],
+  "interface_detail": "git",
+  "tooling": "Full GitLab: `git` over SSH/HTTPS, GitLab Generic Package API (`PUT /projects/:id/packages/generic/:package_name/:version/:file_name`), CI runners, `glab`/`lab` CLIs, `python-gitlab`. Max push size is '-' (unlimited) which is the interesting cell - the per-object cap is on the registry, not on git.",
+  "chaining": "Unlimited projects per account x 5 GiB per Generic-package file x unlimited files per package version x unlimited versions. Plus unlimited-size git pushes as a second surface. The binding limit is account creation, not storage.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "reviewed due to the high volume of spam registrations",
+      "source": "https://salsa.debian.org/help/instance_configuration"
+    },
+    {
+      "kind": "write-gated",
+      "value": "approved",
+      "source": "https://salsa.debian.org/help/instance_configuration"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "per-file caps: Generic 5 GiB",
+      "source": "https://salsa.debian.org/help/instance_configuration"
+    }
+  ],
+  "limits_note": "per-object-cap: 5 GiB per Generic package file; 750 MiB per CI artifact; THE GATE: 'New user registrations are manually reviewed due to the high volume of spam registrations. It may take a few days before a new account is approved.'",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Manual registration review is the whole story - it converts account-farming from an API call into a queue measured in days, which is fatal for the 'unlimited free orgs' pattern that made the Google-Drive-service-account trick work. Once in, the surface is clean and standard GitLab. Public read is fine (project pages and package downloads are anonymous).",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://salsa.debian.org/help/instance_configuration",
+      "date": "2026-10-21",
+      "proved": "'## Size Limits ... Maximum push size | - ... Maximum job artifact size | 750 MiB'; '## Package registry ... Generic | 5 GiB'"
+    },
+    {
+      "url": "https://salsa.debian.org/users/sign_up",
+      "date": "2026-10-21",
+      "proved": "'New user registrations are manually reviewed due to the high volume of spam registrations. It may take a few days before a new account is approved.'"
+    },
+    {
+      "url": "https://salsa.debian.org/help/instance_configuration",
+      "date": "2026-10-21",
+      "proved": "'There are several size limits in place for the package registry.' (table as quoted in quota)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published total-storage quota, but a fully published per-object table on the instance-configuration page. Package registry per-file caps: Generic 5 GiB, Conan 3 GiB, Maven 3 GiB, PyPI 3 GiB, Terraform 1 GiB, npm/NuGet 500 MiB, Helm 5 MiB. Core GitLab: max push size '-' (unlimited), max attachment 20 MiB, job artifact 750 MiB, pages 300 MiB, snippet 50 MiB, import remote file 10 GiB, download file 5 GiB.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

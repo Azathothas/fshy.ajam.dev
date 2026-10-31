@@ -1,0 +1,80 @@
+{
+  "topic": "storage",
+  "slug": "openstreetmap-gps-traces",
+  "provider": "OpenStreetMap GPS traces (openstreetmap.org/traces)",
+  "url": "https://www.openstreetmap.org/trace/create",
+  "category": "crowdsourced geodata",
+  "free_tier": {
+    "stated": "No published per-user quota and no quota endpoint; storage is GPX-only and appended to the OSM rails DB + a trace store. Effectively unlimited in count, tiny per unit.",
+    "unit": "unlimited",
+    "metered_on": "stored-bytes",
+    "source_url": "https://wiki.openstreetmap.org/wiki/Upload",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://wiki.openstreetmap.org/wiki/Upload",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://wiki.openstreetmap.org/wiki/Upload",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "free, no auth for public traces; individual points also exposed via the API 0.6 trace endpoints",
+    "metered": false
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "web form + `POST /api/0.6/gpx/create` (401 Unauthorized without auth — verified)",
+  "tooling": "any GPS app with OSM upload; `gpx_files` API; bulk via the rails API",
+  "chaining": "Not a blob store — .gpx (+ .zip/.tar.gz bundles) only. Useful as an append-only time-series archive, not for arbitrary objects.",
+  "limits": [],
+  "limits_note": "GPX only (zip/tar/tar.gz accepted as a bundle). Visibility model changed in Aug 2026: 'Public' and 'Private' deprecated, leaving 'Identifiable' and 'Trackable'. Trackable = not listed publicly but still retrievable by id.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email — verified the live form: fields are `user[display_name]`, `user[email]`, `user[pass_crypt]`, `user[pass_crypt_confirmation]`. Email confirm, no affiliation, no review.",
+    "country": null
+  },
+  "reliability_note": "A trace is public-by-default unless you pick Trackable, so it is a poor fit for anything non-geographic.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://api.openstreetmap.org/api/0.6/user/gpx_files",
+      "date": "2026-10-21",
+      "proved": "401 'Couldn't authenticate you' (auth endpoint exists, read is gated per-user)"
+    },
+    {
+      "url": "https://www.openstreetmap.org/user/new",
+      "date": "2026-10-21",
+      "proved": "form fields user[display_name], user[email], user[pass_crypt] (email-only signup)"
+    },
+    {
+      "url": "https://wiki.openstreetmap.org/wiki/Visibility_of_GPS_traces",
+      "date": "2026-10-21",
+      "proved": "Aug 2026 deprecation of Public/Private; Identifiable vs Trackable matrix"
+    },
+    {
+      "url": "https://wiki.openstreetmap.org/wiki/Upload",
+      "date": "2026-10-21",
+      "proved": "GPX-only, zip/tar bundles accepted"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published per-user quota and no quota endpoint; storage is GPX-only and appended to the OSM rails DB + a trace store. Effectively unlimited in count, tiny per unit.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "No published per-user quota and no quota endpoint; storage is GPX-only and appended to the OSM rails DB + a trace store. Effectively unlimited in count, tiny per unit.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": null
+}

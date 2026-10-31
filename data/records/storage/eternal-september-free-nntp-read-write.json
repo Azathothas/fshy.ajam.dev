@@ -1,0 +1,103 @@
+{
+  "topic": "storage",
+  "slug": "eternal-september-free-nntp-read-write",
+  "provider": "Eternal September (news.eternal-september.org) — free NNTP read/write",
+  "url": "https://www.eternal-september.org/",
+  "category": "messaging",
+  "free_tier": {
+    "stated": "No byte quota. Free read AND write access to all text newsgroups after online registration. 281 hierarchies, alt.* alone is 8,728 groups, free.* is 1,284. Retention: '3 years for de.*, 160 days for the Big 8, 130 days for alt.*, 90 days for other hierarchies'.",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://www.eternal-september.org/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: 'No articles larger than 1000 KB",
+    "bytes": 1000000,
+    "source_url": "https://www.eternal-september.org/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "Retention: '3 years for de.*, 160 days for the Big 8, 130 days for alt.*, 90 days for other hierarchies'",
+    "days": 160,
+    "source_url": "https://www.eternal-september.org/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free; server has a 1 Gbit connection to several backbones and peers with 40+ sites. Articles are world-readable and propagate to every peer, so egress is effectively subsidised by the whole Usenet mesh.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Standard NNTP (RFC 3977) on port 119/563. Every Usenet client works: tin, slrn, Gnus, Thunderbird, Pan; programmatically via nntplib (Python) or any NNTP library. No bespoke wrapper needed. The docs give exact per-client auth config for ~10 clients.",
+  "chaining": "Per-record unlimited is the theoretical shape: a text article can carry base64, and there are 8,728 alt.* groups x 1,284 free.* groups x unlimited articles each. The multiplier would be 'groups x posts', which is effectively unbounded. BUT the per-record cap (1000 KB) and text-only rule kill it as a bulk store — see limits.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "Retention: '3 years",
+      "source": "https://www.eternal-september.org/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "Retention: 90-160 days",
+      "source": "https://www.eternal-september.org/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: 'No articles larger than 1000 KB",
+      "source": "https://www.eternal-september.org/"
+    }
+  ],
+  "limits_note": "per-object-cap: 'No articles larger than 1000 KB' — hard 1 MB per article, and 'no binaries in text-only groups': binaries are only allowed in alt.binaries.* / de.alt.dateien.*, which this server does NOT carry ('no binaries'). Request-rate: anti-spam gates — no more than 3 distinct From: addresses per 24 h, 5 per 7 days, 8 per 30 days ('Excessive nymshifting'), with cancellation at 12 nyms/60 days. Retention: 90-160 days for most hierarchies, 3 years only for de.*.",
+  "identity_cost": {
+    "kind": "country-phone",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Two technical blockers found by probing: (1) NNTP ports are unreachable from this network — TCP to news.eternal-september.org:563 timed out and:119 also timed out, so the transport may be firewalled depending on where you run; (2) accounts are auto-closed after 18 months of inactivity. Also note the server deliberately does NOT honour Cancels/Supersedes from other servers ('an article stored on our server can neither be deleted by a Cancel nor be overwritten by a Supersedes'), which is a rare retention plus.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://www.eternal-september.org/",
+      "date": "2026-10-21",
+      "proved": "'free read and write access to all text newsgroups'; 'no binaries'; retention '3 years for de.*, 160 days for the Big 8, 130 days for alt.*, 90 days for other hierarchies'"
+    },
+    {
+      "url": "https://www.eternal-september.org/index.php?showpage=terms",
+      "date": "2026-10-21",
+      "proved": "'No articles larger than 1000 KB'; 'no binaries in text-only groups'"
+    },
+    {
+      "url": "https://www.eternal-september.org/index.php?showpage=faq",
+      "date": "2026-10-21",
+      "proved": "nymshifting limits (3/24h, 5/7d, 8/30d); 'Accounts with Eternal-September will be automatically closed after 18 months of inactivity'; Cancels/Supersedes deliberately not honoured"
+    },
+    {
+      "url": "https://www.eternal-september.org/hierarchies.php",
+      "date": "2026-10-21",
+      "proved": "281 hierarchies; alt.* 8,728 groups; free.* 1,284 groups"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: TCP news.eternal-september.org:119 and :563 -> both timeout (blocked from this network)"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No byte quota. Free read AND write access to all text newsgroups after online registration. 281 hierarchies, alt.* alone is 8,728 groups, free.* is 1,284. Retention: '3 years for de.*, 160 days for the Big 8, 130 days for alt.*, 90 days for other hierarchies'.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "retention",
+      "why": "No byte quota. Free read AND write access to all text newsgroups after online registration. 281 hierarchies, alt.* alone is 8,728 groups, free.* is 1,284. Retention: '3 years for de.*, 160 days for the Big 8, 130 days for alt.*, 90 days for other hierarchies'.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

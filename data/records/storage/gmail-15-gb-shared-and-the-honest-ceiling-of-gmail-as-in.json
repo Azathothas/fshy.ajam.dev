@@ -1,0 +1,91 @@
+{
+  "topic": "storage",
+  "slug": "gmail-15-gb-shared-and-the-honest-ceiling-of-gmail-as-in",
+  "provider": "Gmail (free @gmail.com) — 15 GB shared",
+  "url": "https://mail.google.com",
+  "category": "cloud-drive",
+  "free_tier": {
+    "stated": "15 GB per Google Account, shared across Gmail, Drive and Photos: \"Each Google Account includes up to 15 GB of storage, which is shared across Gmail, Google Drive, and Google Photos.\" Attachments: 25 MB send (\"For personal Gmail accounts, the limit is 25 MB\"), 50 MB receive.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://support.google.com/accounts/answer/9312312",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://support.google.com/accounts/answer/9312312",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://support.google.com/accounts/answer/9312312",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free for the account holder — Gmail has no egress meter at all; the constraint is the bandwidth throttle, not a price. That is precisely why the throttle is the finding.",
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "IMAP probe-verified: `imap.gmail.com:993` -> `* OK Gimap ready` / `* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER` (XOAUTH2 required for real use). Gmail API: `messages.insert` = 25 units, 6,000 units/min/user, 80,000,000 units/day/project.",
+  "chaining": "N accounts × 15 GB minus whatever Drive/Photos already took. But the multiplier that matters is not accounts — see limits. This is the classic 'infinite Gmail storage' idea and it does not survive arithmetic.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "0.5 GB/day",
+      "source": "https://support.google.com/accounts/answer/9312312"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "2.5 GB/day",
+      "source": "https://support.google.com/accounts/answer/9312312"
+    }
+  ],
+  "limits_note": "SMTP advertises `250-SIZE 35882577` (34.2 MiB) per message. So per account the real write rate is ~0.5 GB/day and the real read rate is ~2.5 GB/day. Filling 15 GB therefore takes a minimum of ~30 days per account, and serving 500 GB/day of reads requires ~200 accounts running in parallel every day. Gmail is not a fetch tier by two orders of magnitude. To reach 10 TiB of writes you would need 20,480 account-days of upload. Verdict on the idea: 15 GB × unlimited accounts is arithmetically true and operationally false — the daily byte meter, not the quota, is the wall.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Exceeding the bandwidth limit suspends IMAP upload for ~1 hour (up to 24 h); repeated heavy sync is the documented trigger, and the docs explicitly call out 'syncing a Gmail account to a third-party email client' as a cause.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://support.google.com/accounts/answer/9312312",
+      "date": "2026-10-21",
+      "proved": "\"15 GB ... shared across Gmail, Google Drive, and Google Photos\""
+    },
+    {
+      "url": "https://knowledge.workspace.google.com/admin/gmail/gmail-bandwidth-limits",
+      "date": "2026-10-21",
+      "proved": "IMAP download 2,500 MB/day, IMAP upload 500 MB/day, web upload 1,500 MB/day"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: openssl s_client smtp.gmail.com:587 STARTTLS EHLO -> 250-SIZE 35882577"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: imap.gmail.com:993 -> * OK Gimap ready; CAPABILITY incl. QUOTA, X-GM-EXT-1, AUTH=XOAUTH2"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "15 GB per Google Account, shared across Gmail, Drive and Photos: \"Each Google Account includes up to 15 GB of storage, which is shared across Gmail, Google Drive, and Google Photos.\" Attachments: 25 MB send (\"For personal Gmail accounts, the limit is 25 MB\"), 50 MB receive.",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "15 GB per Google Account, shared across Gmail, Drive and Photos: \"Each Google Account includes up to 15 GB of storage, which is shared across Gmail, Google Drive, and Google Photos.\" Attachments: 25 MB send (\"For personal Gmail accounts, the limit is 25 MB\"), 50 MB receive.",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-ip-shaping",
+  "binding_note": null
+}

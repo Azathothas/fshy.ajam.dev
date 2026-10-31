@@ -1,0 +1,112 @@
+{
+  "topic": "inference",
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "not applicable"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "slug": "hack-club-ai",
+  "provider": "Hack Club AI",
+  "url": "https://ai.hackclub.com/proxy/v1",
+  "category": "inference gateway, keyed; model listing is keyless",
+  "free_tier": {
+    "stated": "Every account can spend $3 per day across all endpoints and make 7,500 requests per 30 minutes; no credit card",
+    "unit": "mixed",
+    "metered_on": "request-count",
+    "source_url": "https://docs.ai.hackclub.com/guide/rules.html",
+    "read_on": "2026-10-28",
+    "notes": "the model catalogue is OpenRouter's; GET /proxy/v1/models answers 200 with no key while the chat call answers 401 without one"
+  },
+  "endpoint": "https://ai.hackclub.com/proxy/v1/chat/completions",
+  "tooling": "any OpenAI-compatible client with an sk-hc-v1 key created on the dashboard (up to 50 active keys)",
+  "chaining": "no keyless chain: the chat route needs a key issued to a signed-in Hack Club account",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "7,500 requests per 30 minutes per user, shared across all endpoints; 429 Too Many Requests with a Retry-After header",
+      "source": "https://docs.ai.hackclub.com/guide/rules.html"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "USD 3 per day of spend per account across all endpoints, resets at 00:00 UTC; 402 Payment Required when reached",
+      "source": "https://docs.ai.hackclub.com/guide/rules.html"
+    }
+  ],
+  "binding": "volume-quota",
+  "binding_note": "the USD 3 per day spending cap binds for large models; the 7,500 per 30 minutes request ceiling is far above it",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": "sign in with a Hack Club account, then create an API key; the rules page states the service is for teens 18 and under only, and lists a 403 for an account that needs identity verification",
+    "country": null
+  },
+  "reliability_note": "a keyless chat call answers 401 Authentication required while the keyless listing answers 200, so a listing check alone mistakes it for an open endpoint",
+  "confidence": "documented",
+  "confidence_note": "identity and limits are first-party; the 401 on a keyless chat call is from a third-party prober, and the keyless listing was read by GET. No completion was sent",
+  "probe": {
+    "records": [
+      {
+        "probe_id": "hackclub-proxy-models-get",
+        "method": "GET",
+        "url": "https://ai.hackclub.com/proxy/v1/models",
+        "http": 200,
+        "authorization_sent": false,
+        "probed_at": "2026-10-28T04:43:23.476Z",
+        "chat_completion_tested": false
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "url": "https://docs.ai.hackclub.com/guide/rules.html",
+      "date": "2026-10-28",
+      "capture": "sha256:42f561557e3c18af30ca81342a65091ee6eeb6e9f6da771d9c1deda2c694eaf6",
+      "quote": "1. For teens. This service is for teens 18 and under only. Hack Club is a charity — please do not abuse this service.",
+      "proved": "the service is restricted to a teen audience of Hack Club"
+    },
+    {
+      "url": "https://docs.ai.hackclub.com/guide/rules.html",
+      "date": "2026-10-28",
+      "capture": "sha256:42f561557e3c18af30ca81342a65091ee6eeb6e9f6da771d9c1deda2c694eaf6",
+      "quote": "Every user can make 7,500 requests per 30 minutes, shared across all endpoints.",
+      "proved": "the request ceiling is 7,500 per 30 minutes per user"
+    },
+    {
+      "url": "https://docs.ai.hackclub.com/guide/rules.html",
+      "date": "2026-10-28",
+      "capture": "sha256:42f561557e3c18af30ca81342a65091ee6eeb6e9f6da771d9c1deda2c694eaf6",
+      "quote": "Every account can spend $3 per day across all endpoints. The day resets at 00:00 UTC.",
+      "proved": "the daily spend cap is USD 3"
+    },
+    {
+      "url": "https://ai.hackclub.com/",
+      "date": "2026-10-28",
+      "capture": "sha256:81e952690fb038eafa3390a6926fdee42d22ead065274fc5511ed7d7dc5b8883",
+      "quote": "[Sign in with Hack Club](https://ai.hackclub.com/auth/login) [Read the docs](https://docs.ai.hackclub.com/)",
+      "proved": "access starts with a Hack Club sign-in"
+    },
+    {
+      "url": "https://ai.hackclub.com/",
+      "date": "2026-10-28",
+      "capture": "sha256:81e952690fb038eafa3390a6926fdee42d22ead065274fc5511ed7d7dc5b8883",
+      "quote": "Every model on OpenRouter, plus image generation, embeddings, web search and OCR, behind one OpenAI-compatible API. No credit card.",
+      "proved": "no credit card is needed"
+    },
+    {
+      "url": "https://stillworks.supercapybara.com/free-llm-api-no-key",
+      "date": "2026-10-28",
+      "capture": "sha256:34aa29edf68cc49c49bdcf1119b702b0c338ae9d71d2a58db4b4586122b9a223",
+      "quote": "Listing answers a bare GET with 200 and a full model catalogue; the chat call answers 401 Authentication required.",
+      "proved": "a third-party prober found the listing keyless and the chat call keyed"
+    }
+  ],
+  "verdict": "fails-identity",
+  "verified_at": "2026-10-28T04:36:18.974Z"
+}

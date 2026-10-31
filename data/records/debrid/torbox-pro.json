@@ -1,0 +1,102 @@
+{
+  "topic": "debrid",
+  "slug": "torbox-pro",
+  "provider": "TorBox",
+  "url": "https://torbox.app/pricing",
+  "category": "debrid link generator with torrent and usenet backends",
+  "tier": "pro",
+  "free_tier": {
+    "stated": "No free allowance on this plan; it is the US$10/month top tier. The free plan is a separate record.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://torbox.app/pricing",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "1 TB per download on the pricing page, 500 GiB in the API error table; the smaller figure is kept",
+    "bytes": 536870912000,
+    "source_url": "https://api-docs.torbox.app/",
+    "notes": "The pricing page says '1TB Max Per Download Size'; the API error table says 'Pro Plan Limit: 536870912000 bytes' (500 GiB). Two vendor pages disagree by a factor of two and the record keeps the smaller."
+  },
+  "retention": {
+    "stated": "1 TB permanent storage (AirLock) and 30-day seeding time; after 30 days the torrent stops seeding but stays cached",
+    "days": null,
+    "source_url": "https://torbox.app/pricing",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "'Unlimited Downloads' and 'Unlimited Usenet Downloads + NNTP'. The terms say 'Unlimited' means no fixed ordinary-use limit, not unlimited automation or resale.",
+    "metered": false,
+    "free_allowance": "unlimited downloads, ten concurrent",
+    "price_per_tb": null,
+    "source_url": "https://torbox.app/pricing"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "REST API with a bearer key; 300 requests per minute per token unless an endpoint is listed otherwise.",
+  "endpoint": "https://api.torbox.app/v1/api/",
+  "tooling": "Documented API, Postman collection, third-party media-server integrations; NZB and NNTP credentials are issued through the API.",
+  "chaining": "The only TorBox tier with usenet, so it is the one that competes with Premiumize on a second network: torrents plus NNTP plus 1 TB of stored files for US$10, against Premiumize's point budget at EUR 9.99.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "500 GiB per download per the API table, 1 TB per the pricing page",
+      "source": "https://api-docs.torbox.app/"
+    },
+    {
+      "kind": "pull-count",
+      "value": "ten active downloads or seeds, the maximum offered on any plan",
+      "source": "https://support.torbox.app/en/articles/9836418-account-restrictions"
+    },
+    {
+      "kind": "request-rate",
+      "value": "300 requests per minute per token; 60 per hour for uncached torrent, usenet and web-download creation",
+      "source": "https://api-docs.torbox.app/"
+    }
+  ],
+  "limits_note": "The API returns MONTHLY_LIMIT, COOLDOWN_LIMIT and ACTIVE_LIMIT as distinct errors, so a client can tell a monthly cap from a concurrency wait without parsing prose.",
+  "binding": "per-object-cap",
+  "binding_note": "There is no monthly byte quota to hit, and ten concurrent slots is not a quota in this vocabulary. The single object is what fails: a 1 TiB torrent cannot be added at all if the 500 GiB API figure is the enforced one, which is the smaller of the two published numbers.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "E-mail account plus card or voucher at checkout.",
+    "country": null
+  },
+  "reliability_note": "TorBox has a public status page and a documented history of downtime; the abuse system is dynamic and keyed to a rolling 99th percentile, so a heavy month can be throttled without a published threshold.",
+  "confidence": "documented",
+  "confidence_note": "Price and plan features are from the pricing page; the size figure is the API's, which is lower.",
+  "evidence": [
+    {
+      "url": "https://torbox.app/pricing",
+      "date": "2026-10-23",
+      "proved": "'$10/mo', '10 Concurrent Slots', '1TB Max Per Download Size', '80Gbps Speed', '30 Day Seeding Time', '1TB Permanent Storage', 'Unlimited Usenet Downloads + NNTP'"
+    },
+    {
+      "url": "https://api-docs.torbox.app/",
+      "date": "2026-10-23",
+      "proved": "'Pro Plan Limit: 536870912000 bytes', 300/min general rate limit, 60/hour for usenet and web-download creation, and the MONTHLY_LIMIT / COOLDOWN_LIMIT / ACTIVE_LIMIT error codes"
+    },
+    {
+      "url": "https://support.torbox.app/en/articles/9836418-account-restrictions",
+      "date": "2026-10-23",
+      "proved": "Pro: '1TB per torrent allowance', '10 active torrents', 'Access to Usenet', '30 day seeding time', and that 10 is the hard maximum across all plans"
+    },
+    {
+      "url": "https://torbox.app/policies/terms",
+      "date": "2026-10-23",
+      "proved": "'Unlimited' does not mean unlimited automation, resale or commercial exploitation; fair-use limits and throttling are reserved"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-23T01:57:49.000Z",
+  "price_per_tb_month": "USD 10.00 per 30 days, flat, usenet included",
+  "notes": "The 500 GiB versus 1 TB conflict is the interesting part: the same vendor publishes both, and the API table is the one an automated client will actually hit. Annual plans exist (a November 2025 promotion sold them at 30% off: Essential US$23.10, Standard US$38.50, Pro US$77, implying list prices near US$33 / US$55 / US$110) but the pricing page read shows monthly only.",
+  "extras": {
+    "usenet": "yes, unlimited, with NNTP credentials",
+    "torrent": "yes",
+    "storage_gb": 1000,
+    "annual_plan": "exists; list price not shown, promo implies about USD 110"
+  }
+}

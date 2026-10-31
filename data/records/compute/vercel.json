@@ -1,0 +1,204 @@
+{
+  "topic": "compute",
+  "slug": "vercel",
+  "provider": "Vercel",
+  "url": "https://vercel.com/docs/plans/hobby",
+  "category": "platform host",
+  "free_tier": {
+    "stated": "Hobby at USD 0: 4 CPU-hours of active CPU, 360 GB-hours of provisioned memory, 1 million function invocations, 100 GB of fast data transfer and 1 million CDN requests a month; 100 cron jobs per project, once a day each.",
+    "unit": "mixed",
+    "metered_on": "wall-clock",
+    "source_url": "https://vercel.com/docs/plans/hobby",
+    "read_on": "2026-10-24"
+  },
+  "per_object_cap": {
+    "stated": "functions cap at 2 GB of memory and 300 seconds of duration on Hobby"
+  },
+  "retention": {
+    "stated": "no persistent disk; a function is stateless"
+  },
+  "egress": {
+    "terms": "100 GB of fast data transfer and 10 GB of fast origin transfer a month",
+    "metered": true,
+    "free_allowance": "100 GB",
+    "source_url": "https://vercel.com/docs/plans/hobby"
+  },
+  "interface": [
+    "unknown"
+  ],
+  "interface_detail": "inferred from the tooling the provider documents; not probed",
+  "tooling": "not stated",
+  "chaining": "360 GB-hours at 1 GB of provisioned memory is 360 hours a month, which is a cron worker that never sleeps; the 300 s duration cap forces chunking, so the shape is a queue plus short functions rather than a daemon.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "360 GB-hours of provisioned memory and 4 CPU-hours a month",
+      "source": "https://vercel.com/docs/plans/hobby"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "cron jobs run once a day on Hobby with per-hour precision plus or minus 59 minutes",
+      "source": "https://vercel.com/docs/cron-jobs/usage-and-pricing"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "100 GB of fast data transfer a month",
+      "source": "https://vercel.com/docs/plans/hobby"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "45 minutes of build time per deployment; a build that passes 45 minutes fails",
+      "source": "https://vercel.com/docs/limits"
+    },
+    {
+      "kind": "request-rate",
+      "value": "1 concurrent build on Hobby; further builds run one after another",
+      "source": "https://vercel.com/docs/builds/managing-builds"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "Hobby builds run only on the Basic build machine, 2 vCPUs and 8 GB of memory, and its build minutes are included with no monthly minute count stated",
+      "source": "https://vercel.com/docs/builds/managing-builds"
+    },
+    {
+      "kind": "request-rate",
+      "value": "100 deployments a day and 100 builds an hour on Hobby; at either limit the next one waits until the window has passed",
+      "source": "https://vercel.com/docs/limits"
+    }
+  ],
+  "limits_note": "the 360 GB-hours of provisioned memory runs out before the 4 hours of Active CPU: a function pinned at the Hobby 2 GB maximum consumes 360 GB-hours in 180 hours, and memory is billed for the whole invocation, not only the CPU slice.",
+  "binding": "volume-quota",
+  "binding_note": "360 GB-hours at the 2 GB function ceiling is 180 hours of wall clock, and memory is billed for the whole invocation rather than the CPU slice.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a Vercel account; no card on Hobby",
+    "country": null
+  },
+  "reliability_note": "exceeding a Hobby limit usually means waiting 30 days, not paying an overage; some limits have shorter pause periods",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://vercel.com/docs/pricing",
+      "date": "2026-10-22",
+      "proved": "Hobby included usage: Active CPU 4 hours, Provisioned Memory 360 GB-hrs, Invocations 1 million; Fast Data Transfer first 100 GB; CDN requests 1M/month, quoted"
+    },
+    {
+      "url": "https://vercel.com/docs/functions/limitations",
+      "date": "2026-10-22",
+      "proved": "Hobby maximum memory 2 GB; maximum duration 300 s default and maximum; 1,024 file descriptors shared across concurrent executions; single region iad1 by default, quoted"
+    },
+    {
+      "url": "https://vercel.com/pricing",
+      "date": "2026-10-22",
+      "proved": "Hobby USD 0/mo, 1M CDN requests/month included, 100 GB/month fast data transfer included, quoted"
+    },
+    {
+      "url": "https://vercel.com/docs/plans/hobby",
+      "date": "2026-10-24",
+      "proved": "quoted table: 'Active CPU | 4 CPU-hrs', 'Provisioned Memory | 360 GB-hrs', 'Function Invocations | First 1,000,000', 'Fast Data Transfer | First 100 GB'"
+    },
+    {
+      "url": "https://vercel.com/docs/plans/hobby",
+      "date": "2026-10-24",
+      "proved": "quoted: 'if you exceed your usage limits on the Hobby plan, you will have to wait until 30 days have passed before you can use the feature again'"
+    },
+    {
+      "url": "https://vercel.com/docs/cron-jobs/usage-and-pricing",
+      "date": "2026-10-24",
+      "proved": "quoted: 'Hobby | 100 cron jobs | Once per day | Per-hour (±59 min)'"
+    },
+    {
+      "url": "https://vercel.com/docs/limits",
+      "date": "2026-10-30",
+      "proved": "a build is limited to 45 minutes on every plan, Hobby included",
+      "capture": "sha256:bdab86d67542dcbe7bbda6ec3f482c59ec834894a676f9d3023fa753925ff871",
+      "quote": "If the build time exceeds 45 minutes then the build will fail."
+    },
+    {
+      "url": "https://vercel.com/docs/builds/managing-builds",
+      "date": "2026-10-30",
+      "proved": "Hobby runs 1 build at a time and queues the rest",
+      "capture": "sha256:906b40b8ce1fed97f96d7d787a35c540cb04447000c2372ee863e8f6db8ad62b",
+      "quote": "Hobby: 1 concurrent deployment. Builds beyond this run sequentially."
+    },
+    {
+      "url": "https://vercel.com/docs/builds/managing-builds",
+      "date": "2026-10-30",
+      "proved": "Hobby builds use the Basic machine with 2 vCPUs and 8 GB; the same page says Basic is included with Hobby, and the pricing page lists Basic machines as Included for Hobby with no minute count",
+      "capture": "sha256:906b40b8ce1fed97f96d7d787a35c540cb04447000c2372ee863e8f6db8ad62b",
+      "quote": "Hobby teams always use the Basic build machine. Basic has 2 vCPUs and 8 GB of memory."
+    },
+    {
+      "url": "https://vercel.com/docs/limits",
+      "date": "2026-10-30",
+      "proved": "Hobby is limited to 100 deployments a day; the same page limits Hobby to 100 builds every 3600 seconds",
+      "capture": "sha256:bdab86d67542dcbe7bbda6ec3f482c59ec834894a676f9d3023fa753925ff871",
+      "quote": "You are able to deploy `100` times every `86400` seconds (1 day)."
+    },
+    {
+      "url": "https://vercel.com/pricing",
+      "date": "2026-10-30",
+      "proved": "the pricing page lists Basic build machine minutes as Included on Hobby, with no monthly count",
+      "capture": "sha256:3c8802f87eda6c33dd4b4036ee6e3ea0e147fea3219cb3852c2fa4d201f8ee2b",
+      "quote": "| Basic machines | Included | $0.007 per minute | Custom |"
+    },
+    {
+      "url": "https://web.archive.org/web/20250604022455/https://vercel.com/docs/plans/hobby",
+      "date": "2026-10-30",
+      "proved": "the Wayback capture of 2025-06-04 of the Hobby plan page listed 6,000 build execution minutes for Hobby; the page read on 2026-10-30 lists no build-minute count",
+      "capture": "sha256:c2429abe1aba5c066335698fc4caa2eb54568ec7ee2112cad5f6bfe10179e078",
+      "quote": "| Build execution minutes | 6,000 | 24,000 |"
+    },
+    {
+      "url": "https://vercel.com/docs/plans/hobby",
+      "date": "2026-10-30",
+      "proved": "an exceeded Hobby limit pauses the feature for 30 days rather than billing an overage",
+      "capture": "sha256:215a12e591ee28f0ae0bdf0e2628bd144b83cee3cefe7132c65ec2c3199e5c82",
+      "quote": "In most cases, if you exceed your usage limits on the Hobby plan, you will have to wait until 30 days have passed before you can use the feature again."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-30T12:41:29.105Z",
+  "notes": "The cron row is the part that matters for a 03:00 job: the trigger is free and allowed on Hobby, but its precision is plus or minus 59 minutes, so it cannot be relied on for an exact hour.",
+  "extras": {
+    "facets": {
+      "class": "perpetual-allowance",
+      "free_tier_kind": "monthly-allowance",
+      "shape": {
+        "vcpu": null,
+        "ram_gib": 2,
+        "gpu_class": null,
+        "gpu_count": null
+      }
+    },
+    "shape": {
+      "vcpu": null,
+      "ram_gib": 2,
+      "disk_gib": null,
+      "gpu_class": null,
+      "gpu_count": null
+    },
+    "billing_model": "free",
+    "term": "none",
+    "m10h_usd": 0.0,
+    "m24h_usd": 0.0,
+    "price_arithmetic": "no charge inside the Hobby allowances",
+    "free_tier_kind": "free-allowance",
+    "network_out": {
+      "allow_outbound": true,
+      "allow_inbound_listen": false,
+      "ports": "HTTP only; no listening socket",
+      "static_ip": false,
+      "ipv6": false,
+      "per_session_bytes": null
+    },
+    "session_cap": {
+      "wall_clock_min": 300,
+      "idle_reap_s": null,
+      "restart_required": false,
+      "note": "a function may run 300 s on Hobby; nothing stays resident"
+    }
+  },
+  "tier": "Hobby",
+  "confidence_note": "the Hobby usage table, the cron limits and the 30-day pause rule were all read in Vercel's documentation"
+}

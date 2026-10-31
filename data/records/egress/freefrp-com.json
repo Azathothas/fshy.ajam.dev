@@ -1,0 +1,84 @@
+{
+  "topic": "egress",
+  "slug": "freefrp-com",
+  "provider": "freefrp.com public server",
+  "url": "https://www.freefrp.com/",
+  "category": "udp port forward",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Open protocols: TCP / UDP / HTTP / HTTPS; open ports: 10000 to 60000; auth token: public.freefrp.com. [translated]",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://www.freefrp.com/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://www.freefrp.com/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://www.freefrp.com/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No byte quota is published. The page warns that sustained bandwidth at or above 30 Mbps will get the /24 banned.; ingress: udp",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://www.freefrp.com/"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "Standard frpc against a published server and token.",
+  "tooling": "any frpc",
+  "chaining": "A no-identity UDP entry point that can front a WG listener, at the cost of an address that may move.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "sustained 30 Mbps triggers a /24 ban",
+      "source": "https://www.freefrp.com/"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "none published",
+      "source": "https://www.freefrp.com/"
+    }
+  ],
+  "limits_note": "",
+  "binding": "per-ip-shaping",
+  "binding_note": "No byte cap exists, so the 30 Mbps sustained threshold is the first thing that fails: it is a rate, and 1 TiB/month needs only 3.24 Mbps, so the quota test can pass while a burst still gets the address banned.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account: the page publishes the server address, port, version and a shared auth token.",
+    "country": "None"
+  },
+  "reliability_note": "The operator warns the IP may change at any time and that sustained 30 Mbps gets the whole /24 blocked.",
+  "confidence": "documented",
+  "confidence_note": "The endpoint, port range, protocols and ban threshold are all on the page today.",
+  "evidence": [
+    {
+      "url": "https://www.freefrp.com/",
+      "date": "2026-10-23",
+      "proved": "TCP/UDP/HTTP/HTTPS on ports 10000-60000, shared token, 30 Mbps sustained triggers a ban, IP may change without notice"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "The most permissive free endpoint in the sweep: no account, no quota, UDP in the port range. Unlimited here means the operator publishes no byte cap, not that it promises unmetered capacity. It is a single volunteer server with an explicit no-SLA warning, so the binding is reliability, not volume. The /24 ban means a shared address takes neighbours with it.",
+  "extras": {
+    "wg_path": "inside-udp",
+    "wg_detail": "A raw frps endpoint with a shared token and a 10000-60000 port range; a WG datagram can be proxied on any port in that range, subject to frp's UDP session handling.",
+    "ingress": "udp",
+    "volume_tib_month": null,
+    "volume_stated": "No byte quota is published. The page warns that sustained bandwidth at or above 30 Mbps will get the /24 banned.",
+    "bytes_transit": "yes",
+    "transit_note": "One volunteer server carries the datagrams."
+  }
+}

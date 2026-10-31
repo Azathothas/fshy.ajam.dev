@@ -1,0 +1,103 @@
+{
+  "topic": "compute",
+  "slug": "openrouter",
+  "provider": "OpenRouter",
+  "url": "https://openrouter.ai/docs/api-reference/limits",
+  "category": "inference API",
+  "free_tier": {
+    "stated": "Free-model requests (model ids ending in :free) are capped by a table keyed on credits purchased all time, not on account age: 'Less than 10' credits gives 20 requests a minute and 50 requests a day; 'At least 10' credits gives 20 a minute and 1,000 a day. So the allowance with no credits purchased is 50 requests a day, and the 1,000-a-day ceiling requires purchasing credits; the page grants it starting one credit below the table threshold and prints that figure as an unrendered template placeholder. The page also notes 'Making additional accounts or API keys will not affect your rate limits, as we govern capacity globally'.",
+    "unit": "requests",
+    "metered_on": "wall-clock",
+    "source_url": "https://openrouter.ai/docs/api-reference/limits",
+    "read_on": "2026-10-22",
+    "notes": "recurring-daily-request-allowance"
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://openrouter.ai/docs/api-reference/limits",
+    "notes": null
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://openrouter.ai/docs/api-reference/limits",
+    "notes": null
+  },
+  "egress": {
+    "terms": "not stated",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://openrouter.ai/docs/api-reference/limits"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "inferred from the tooling the provider documents; not probed",
+  "tooling": "not stated",
+  "chaining": "the fallback array is where this silently becomes a paid lane: a pipeline that lists a paid model as fallback bills for every request the free model refuses, which is why the free router (openrouter/free) is the only safe chain.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "50 requests a day binds and it is a request count, not a token count: a 1,000-item job takes 20 days on the no-card lane, and the 20 rpm cap means the day's 50 requests are spent in under three minutes of traffic.",
+      "source": "https://openrouter.ai/docs/api-reference/limits"
+    }
+  ],
+  "limits_note": "50 requests a day binds and it is a request count, not a token count: a 1,000-item job takes 20 days on the no-card lane, and the 20 rpm cap means the day's 50 requests are spent in under three minutes of traffic.",
+  "binding": "request-rate",
+  "binding_note": "50 requests a day binds and it is a request count, not a token count: a 1,000-item job takes 20 days on the no-card lane, and the 20 rpm cap means the day's 50 requests are spent in under three minutes of traffic.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an OpenRouter account; the free usage limits table has a row for fewer than 10 credits purchased at 50 requests a day, so no purchase is needed for that allowance. unverified: the sign-up methods and any card or phone step at account creation",
+    "country": null
+  },
+  "reliability_note": "no reliability event recorded",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://openrouter.ai/docs/api-reference/limits",
+      "date": "2026-10-22",
+      "proved": "free usage limits table: 'Less than 10 | 20 | 50' and 'At least 10 | 20 | 1000' for requests per minute and per day, quoted"
+    },
+    {
+      "url": "https://openrouter.ai/docs/faq",
+      "date": "2026-10-22",
+      "proved": "'If you have purchased at least 10 credits, your free model rate limit will be 1000 requests per day. Otherwise, you will be rate limited to 50 free model API requests per day', quoted"
+    },
+    {
+      "url": "https://openrouter.ai/docs/guides/routing/model-variants/free",
+      "date": "2026-10-22",
+      "proved": "'If you list a :free model in a models fallback array, OpenRouter tries the next model in the array when the free model is rate-limited... a fallback to a paid model incurs charges even though the first model was :free', quoted"
+    },
+    {
+      "url": "https://openrouter.ai/docs/api-reference/limits",
+      "date": "2026-10-28",
+      "proved": "with fewer than 10 credits purchased all time, free model requests are limited to 20 per minute and 50 per day; the next row, at least 10 credits, reads 20 and 1000",
+      "capture": "sha256:ae62b6aff14b2b0586d0e4c0222657e6660c5f0acaf435988f65639628b03ed3",
+      "quote": "| Less than 10 | 20 | 50 |"
+    },
+    {
+      "url": "https://openrouter.ai/docs/faq",
+      "date": "2026-10-28",
+      "proved": "the FAQ states 1000 free-model requests per day from 10 credits purchased and 50 otherwise",
+      "capture": "sha256:0a50cc51d3c7f3120263cab64d196d569ad37c8b5e080661b5c80a6441d24f3e",
+      "quote": "> If you have purchased at least 10 credits, your free model rate limit will be 1000 requests per day."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-28T09:47:56.236Z",
+  "notes": "The 1,000-requests-a-day figure is not the free tier; it is the post-purchase tier. The no-card ceiling is 50 a day, which is 1,500 a month and is a chat allowance. inference/openrouter-free-ids holds the endpoint and the 401 on an unauthenticated call.",
+  "extras": {
+    "facets": {
+      "class": "capacity-shape",
+      "free_tier_kind": "recurring-daily-request-allowance",
+      "shape": {
+        "vcpu": null,
+        "ram_gib": null,
+        "gpu_class": null,
+        "gpu_count": null
+      }
+    }
+  }
+}

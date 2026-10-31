@@ -1,0 +1,79 @@
+{
+  "topic": "storage",
+  "slug": "gitlab-com-git-lfs",
+  "provider": "GitLab.com Git LFS",
+  "url": "https://gitlab.com",
+  "category": "registry",
+  "free_tier": {
+    "stated": "10 GiB free storage PER PROJECT on the Free tier, and that 10 GiB explicitly covers 'the project's repository and Large File Storage (LFS)'. Premium/Ultimate: 500 GiB per project. CONFIRMED: LFS is IN the quota while containers, packages, build artifacts, snippets, uploads and wikis are OUT.",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered — GitLab does not bill or publish any LFS bandwidth quota. The only transfer-side control is a rate limit: 'Git LFS requests are subject to authenticated web request rate limits ... 1000 requests per minute per user. Each Git LFS object uploaded or downloaded generates an HTTP request'.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "git"
+  ],
+  "interface_detail": "git",
+  "tooling": "git-lfs. Also Oras-style raw access is not available; LFS is protocol-only. GitLab REST API v4 for project/namespace management (useful for automating project-per-shard).",
+  "chaining": "10 GiB per PROJECT, and projects are free and unlimited within a namespace — GitLab's own excess-storage example totals 30 GiB across three projects with no namespace-level cap. 50 projects = 500 GiB, 100 = 1 TiB. This is the cleanest 'trivially repeatable' LFS case because each project is an independent 10 GiB bucket behind the same account, unlike GitHub where the 10 GiB is per account.",
+  "limits": [],
+  "limits_note": "At 10 GiB the project goes READ-ONLY: 'you can't push or add large files (LFS) to the project's repository.' Max push request 5 GiB (through Cloudflare) — this applies to git push; LFS object upload is a separate endpoint. Max attachment 100 MiB. Rate limit 1000 LFS req/min/user is the real throughput ceiling (~60k objects/hour, and one object = one request regardless of size).",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Read-only state is reversible only by purchasing storage, so a blown project is stuck. The 1000 req/min limit bites hard on many-small-files datasets during clone, and GitLab's own docs warn multi-file projects 'may encounter an HTTP rate limit error' in CI.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://docs.gitlab.com/user/storage_usage_quotas/",
+      "date": "2026-10-21",
+      "proved": "'Only the project's repository and LFS are included in the storage limit. The container registry, package registry, and build artifacts are not included' + 'Each project in a Free tier namespace on GitLab.com has 10 GiB of free storage'"
+    },
+    {
+      "url": "https://docs.gitlab.com/administration/settings/account_and_limit_settings/",
+      "date": "2026-10-21",
+      "proved": "'It includes repository files and Git LFS objects (even when stored in external object storage), but does not include: Artifacts, Containers, Packages, Snippets, Uploads, Wikis'"
+    },
+    {
+      "url": "https://docs.gitlab.com/rate_limits/git/",
+      "date": "2026-10-21",
+      "proved": "'1000 requests per minute per user' for LFS"
+    },
+    {
+      "url": "https://docs.gitlab.com/user/gitlab_com/",
+      "date": "2026-10-21",
+      "proved": "'Repository size including LFS | 10 GB'; 'Maximum push size | 5 GiB'"
+    },
+    {
+      "url": "https://gitlab.com/gitlab-org/gitlab.git/info/lfs/objects/batch",
+      "date": "2026-10-21",
+      "proved": "probe: POST -> HTTP 200"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "10 GiB free storage PER PROJECT on the Free tier, and that 10 GiB explicitly covers 'the project's repository and Large File Storage (LFS)'. Premium/Ultimate: 500 GiB per project. CONFIRMED: LFS is IN the quota while containers, packages, build artifacts, snippets, uploads and wikis are OUT.",
+  "extras": {},
+  "binding": "none",
+  "binding_note": null
+}

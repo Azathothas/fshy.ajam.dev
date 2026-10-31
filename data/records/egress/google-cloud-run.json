@@ -1,0 +1,100 @@
+{
+  "topic": "egress",
+  "slug": "google-cloud-run",
+  "provider": "Google Cloud Run",
+  "url": "https://cloud.google.com/run/pricing",
+  "category": "paas l4 port",
+  "tier": "free",
+  "free_tier": {
+    "stated": "CPU - First 180,000 vCPU-seconds free per month ... RAM - First 360,000 GiB-seconds free per month ... Requests - 2 million requests free per month.",
+    "unit": "mixed",
+    "metered_on": "request-count",
+    "source_url": "https://cloud.google.com/run/pricing",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://cloud.google.com/run/pricing",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://cloud.google.com/run/pricing",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Outbound internet data transfer is charged at Google Cloud networking rates \"with a free tier of 1GiB free data transfer within North America per month\".; ingress: http-only",
+    "metered": true,
+    "free_allowance": "Outbound internet data transfer is charged at Google Cloud networking rates \"with a free tier of 1GiB free data transfer within North America per month\".",
+    "price_per_tb": null,
+    "source_url": "https://cloud.google.com/run/pricing"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "gcloud CLI, REST API, and console.",
+  "tooling": "gcloud, Dockerfile, or source deploy.",
+  "chaining": "Cloud Run can host an HTTP API; a WireGuard endpoint needs a VM, not a service.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "1 GiB/month free data transfer within North America",
+      "source": "https://cloud.google.com/run/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "2 million requests per month free",
+      "source": "https://cloud.google.com/run/pricing"
+    }
+  ],
+  "limits_note": "",
+  "binding": "volume-quota",
+  "binding_note": "1 GiB/month free transfer is 0.001 TiB; egress past it is billed at Premium tier rates. The transport fails before that.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "A Google Cloud billing account with a payment method; the free tier is a billing discount, not an account without a card.",
+    "country": "None"
+  },
+  "reliability_note": "Request timeout caps a stream; WebSockets must reconnect. Scale to zero adds cold starts.",
+  "confidence": "inferred",
+  "confidence_note": "Cloud Run publishes no page that says \"UDP is not supported\"; the conclusion follows from the container contract requiring an HTTP listener on one port, and from Google's own developer forum answer that it will not work with UDP. A first-party negative statement would raise this to documented.",
+  "evidence": [
+    {
+      "url": "https://cloud.google.com/run/pricing",
+      "date": "2026-10-23",
+      "proved": "Free tier: 180,000 vCPU-s, 360,000 GiB-s, 2M requests; 1 GiB free data transfer within North America"
+    },
+    {
+      "url": "https://docs.cloud.google.com/run/docs/container-contract",
+      "date": "2026-10-23",
+      "proved": "\"The ingress container within an instance must listen for requests on 0.0.0.0 on the port to which requests are sent.\""
+    },
+    {
+      "url": "https://docs.cloud.google.com/run/docs/triggering/websockets",
+      "date": "2026-10-23",
+      "proved": "\"WebSockets streams are HTTP requests\" subject to the request timeout"
+    },
+    {
+      "url": "https://stackoverflow.com/questions/56525366/how-to-deploy-an-udp-server-google-cloud-run",
+      "date": "2026-10-23",
+      "proved": "third party: the container contract requires an HTTP server, so UDP will not work"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "Cloud Run also requires a card, so it fails identity for a no-card client even before the transport does. Included here because it is the most common answer to \"where do I run this\".",
+  "extras": {
+    "wg_path": "none",
+    "wg_detail": "No raw port. \"The ingress container within an instance must listen for requests on 0.0.0.0 on the port to which requests are sent\"; requests are HTTP, and WebSocket streams \"are HTTP requests\".",
+    "ingress": "http-only",
+    "volume_tib_month": 0.000977,
+    "volume_stated": "Outbound internet data transfer is charged at Google Cloud networking rates \"with a free tier of 1GiB free data transfer within North America per month\".",
+    "bytes_transit": "no",
+    "transit_note": "Google's front end terminates HTTP and forwards requests."
+  }
+}

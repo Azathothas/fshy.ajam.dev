@@ -1,0 +1,108 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "xiaomi-cloud",
+  "provider": "小米云服务 / Xiaomi Cloud (Mi Cloud Drive)",
+  "url": "https://i.mi.com/",
+  "category": "phone-vendor cloud, China mainland",
+  "free_tier": {
+    "stated": "5 GB free: the vendor's own manual reads 免费 5G, 黄金 50G, 白金 200G, 钻石 2048G. Membership is CNY 72, 252 and 816 a year, with promos putting 2 TB at CNY 239 to 408",
+    "unit": "GiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://i.mi.com/guide/zh-CN/membership/overview",
+    "read_on": "2026-10-21"
+  },
+  "per_object_cap": {
+    "stated": "Not published; the drive is sync-oriented and does not expose a single-file ceiling",
+    "bytes": null,
+    "source_url": "https://i.mi.com/guide/zh-CN/membership/overview"
+  },
+  "retention": {
+    "stated": "Account ownership is not transferable; the global-region Gallery sync and all memberships were terminated on 2022-10-25 outside the mainland, with stored Gallery data deleted by mid-2023",
+    "days": null,
+    "source_url": "https://i.mi.com/announcement/stop_service"
+  },
+  "egress": {
+    "terms": "No published cap, and the drive is deliberately not share-oriented: the community notes 不能对外分享. Third-party clients download at full speed with concurrency 20",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://i.mi.com/"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "tooling": "a reverse-engineered REST interface at i.mi.com with a Go CLI, wangbjun/go-micloud, doing login, list, upload, download, share and tree at concurrency 5 up and 20 down; an unmerged OpenList driver pull request 1391 implements list, link, put and mkdir but its body says 还没写完",
+  "chaining": "The API is real and a wrapper exists, so it would be the cleanest phone-vendor target. 5 GB free means about 410 accounts per 2 TB and the 2 TB tier is CNY 239 to 408 a year, which is not a stacking play",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "5 GB is the free tier total, which is the cap in practice",
+      "source": "https://i.mi.com/guide/zh-CN/membership/overview"
+    },
+    {
+      "kind": "write-gated",
+      "value": "family sharing is capped at 8 members and shares quota and not data",
+      "source": "https://i.mi.com/guide/zh-CN/membership/overview"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a Xiaomi account. Xiaomi's own FAQ says a non-mainland account 'can only be created through email', which is an open door into the region where the storage product was killed. Only a mainland account still has the 2 TB tier",
+    "country": "86"
+  },
+  "reliability_note": "Global-region Gallery sync and all memberships were terminated outside mainland China in three regional waves by 2023-02-01, with Gallery data deleted by mid-2023. An email signup works and lands in the region where the product no longer exists, which is a worse outcome than a closed gate because it looks open",
+  "confidence": "reported",
+  "evidence": [
+    {
+      "url": "https://i.mi.com/guide/zh-CN/membership/overview",
+      "date": "2026-10-21",
+      "proved": "the tier table 免费 5G, 50G, 200G, 2048G at CNY 72, 252 and 816 a year"
+    },
+    {
+      "url": "https://i.mi.com/announcement/stop_service",
+      "date": "2026-10-21",
+      "proved": "'Syncing of Gallery items to Xiaomi Cloud and Xiaomi Cloud membership services will be terminated' outside the Chinese mainland, and 'These services will not be terminated on the Chinese mainland at this time'"
+    },
+    {
+      "url": "https://www.mi.com/global/support/faq/details/KA-547873/",
+      "date": "2026-10-21",
+      "proved": "'The Xiaomi account outside the Chinese mainland can only be created through email'"
+    },
+    {
+      "url": "https://github.com/wangbjun/go-micloud",
+      "date": "2026-10-21",
+      "proved": "a full CLI, '登录采用模拟小米云服务Web端的登录逻辑', upload concurrency 5 and download 20"
+    },
+    {
+      "url": "https://github.com/OpenListTeam/OpenList/pull/1391",
+      "date": "2026-10-21",
+      "proved": "'Xiaomi Cloud Dirve', list, link, put and mkdir implemented, body says 还没写完"
+    },
+    {
+      "url": "probe:https://i.mi.com/file/full?type=note_",
+      "date": "2026-10-21",
+      "proved": "HTTP 200, 102 bytes, {\"result\":\"error\",\"reason\":\"fileid参数不能为空\",\"code\":10016}, which is a 200 that carries an error"
+    },
+    {
+      "url": "probe:https://i.mi.com/storage/web/v2/storage",
+      "date": "2026-10-21",
+      "proved": "HTTP 404, 211 bytes, a Resin/4.0.61 MicloudWeb HTML error page"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "price_per_tb_month": "2 TB at CNY 408/yr promotional is about USD 2.4/TB/month, and CNY 816/yr list about USD 4.8/TB/month",
+  "binding": "per-object-cap",
+  "binding_note": "The per-file ceiling is unpublished, so the account total is what binds.",
+  "notes": "The most interesting failure in the phone-vendor group because the gate is inverted: email registration works and it is the wrong region.",
+  "extras": {
+    "access_mode": "registration-gated",
+    "region_gate_inverted": true,
+    "terminated_outside_mainland": "2022-10-25 onwards",
+    "aliases": [
+      "小米云服务 / Xiaomi Cloud (Mi Cloud Drive)",
+      "小米云服务 Xiaomi Cloud"
+    ]
+  }
+}

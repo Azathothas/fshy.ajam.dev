@@ -1,0 +1,86 @@
+{
+  "topic": "databases-kv",
+  "slug": "cloudflare-d1",
+  "provider": "Cloudflare D1",
+  "url": "https://developers.cloudflare.com/d1/platform/limits/",
+  "category": "serverless SQLite",
+  "free_tier": {
+    "stated": "10 databases; 500 MB per database; 5 GB per account; 5 million rows read per day; 100,000 rows written per day",
+    "unit": "mixed",
+    "source_url": "https://developers.cloudflare.com/d1/platform/pricing/",
+    "read_on": "2026-10-22",
+    "metered_on": "request-count"
+  },
+  "per_object_cap": {
+    "stated": "2,000,000 bytes per row, BLOB or string; 500 MB per database",
+    "bytes": 2000000,
+    "source_url": "https://developers.cloudflare.com/d1/platform/limits/"
+  },
+  "retention": {
+    "stated": "storage persists; Time Travel point-in-time recovery covers 7 days on Free",
+    "days": null,
+    "source_url": "https://developers.cloudflare.com/d1/platform/limits/",
+    "notes": "the free limits reset daily at 00:00 UTC"
+  },
+  "egress": {
+    "terms": "no egress charge; rows read and rows written are the metered quantities",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://developers.cloudflare.com/d1/platform/pricing/"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "a Worker binding, a REST API and the wrangler CLI",
+  "tooling": "wrangler d1; the Cloudflare API; better-sqlite3 style calls inside a Worker",
+  "chaining": "per-tenant SQLite in a Worker with a free Postgres as the system of record; 500 MB per database and 10 databases is 5 GB of free relational state",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "100,000 rows written per day on Free",
+      "source": "https://developers.cloudflare.com/d1/platform/pricing/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "5 million rows read per day on Free",
+      "source": "https://developers.cloudflare.com/d1/platform/pricing/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "500 MB per database and 5 GB per account; a 2,000,000-byte row ceiling",
+      "source": "https://developers.cloudflare.com/d1/platform/limits/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "50 queries per Worker invocation on Free; a 30-second maximum query duration",
+      "source": "https://developers.cloudflare.com/d1/platform/limits/"
+    }
+  ],
+  "binding": "request-rate",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a Cloudflare account",
+    "country": null
+  },
+  "reliability_note": "at the daily read or write limit the D1 API returns errors; at the storage limit you must delete data before you can insert, alter a table or create an index",
+  "confidence": "documented",
+  "confidence_note": "the limits and pricing pages were read; nothing was provisioned.",
+  "evidence": [
+    {
+      "url": "https://developers.cloudflare.com/d1/platform/limits/",
+      "date": "2026-10-22",
+      "proved": "Free: 10 databases, 500 MB maximum database size, 5 GB per account, Time Travel 7 days, 50 queries per Worker invocation; 2,000,000-byte row maximum; 100,000-byte SQL statement; 30-second query maximum"
+    },
+    {
+      "url": "https://developers.cloudflare.com/d1/platform/pricing/",
+      "date": "2026-10-22",
+      "proved": "Free: 5 million rows read/day, 100,000 rows written/day, 5 GB total storage; 'Free limits reset daily at 00:00 UTC'; at the storage limit you must delete data before inserting"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-22T03:05:00.000Z",
+  "price_per_tb_month": "USD 0.75/GB-month beyond 5 GB on Workers Paid",
+  "notes": "The 100,000 rows written a day is the binding number for any ingest, and it is small: 1.16 rows a second sustained. A full table scan counts every row it scans as a row read, so an unindexed query spends the read budget fast."
+}

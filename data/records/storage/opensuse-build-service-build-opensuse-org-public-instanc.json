@@ -1,0 +1,91 @@
+{
+  "topic": "storage",
+  "slug": "opensuse-build-service-build-opensuse-org-public-instanc",
+  "provider": "openSUSE Build Service (OBS) - build.opensuse.org, public instance",
+  "url": "https://build.opensuse.org",
+  "category": "paas",
+  "free_tier": {
+    "stated": "No published storage quota. The user guide states the instance 'can be used by anybody to freely create binaries for any of the supported distributions' and that 'You can store your sources there, build your packages and got them mirrored around the world.' The only quantitative ceilings found are per-file/per-build, not per-project: build disk constraint is expressed as `Constraint: hardware:disk:size unit=G <N>` and users are seen requesting 110 GB for one build (openSUSE forum, 2026-06-16). Observed real object size in the archive: `openSUSE:Factory/kernel-source/linux-7.2.tar.xz` is 160,068,116 bytes, served publicly.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://openbuildservice.org/help/manuals/obs-user-guide/cha-obs-best-practices-upstream",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: none documented for source blobs - 160 MB",
+    "bytes": 160000000,
+    "source_url": "https://openbuildservice.org/help/manuals/obs-user-guide/cha-obs-best-practices-upstream",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "unpublished home projects are subject to admin cleanup, and binaries are pruned per repository/architecture",
+    "source_url": "https://openbuildservice.org/help/manuals/obs-user-guide/cha-obs-best-practices-upstream",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and mirrored: 'build your packages and got them mirrored around the world' - download.opensuse.org is a public mirror ring. No per-GB accounting, no billing relationship at all for the public instance.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "`osc` (CLI, in every openSUSE repo), OBS REST API (`api.opensuse.org/public/...` for anonymous reads, XML), and plain HTTPS download of published repositories from download.opensuse.org. `osc add $URL` stores a remote-source reference; `osc commit` uploads real blobs.",
+  "chaining": "unlimited home projects (`home:<user>:<sub>`) x unlimited packages per project x unlimited versions; published repos additionally replicate to every download.opensuse.org mirror at no cost. Sources are retained per package revision (the API exposes rev/vrev, e.g. osc 'rev=517 vrev=485'), so a single package with N commits holds N copies of the blob server-side. Multiply by unlimited free openSUSE accounts. This is the packaging-native equivalent of GitHub Releases, with a global mirror CDN attached.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: none documented for source blobs - 160 MB",
+      "source": "https://openbuildservice.org/help/manuals/obs-user-guide/cha-obs-best-practices-upstream"
+    }
+  ],
+  "limits_note": "per-object-cap: none documented for source blobs - 160 MB verified; unpublished home projects are subject to admin cleanup, and binaries are pruned per repository/architecture. IMPORTANT: Range requests are NOT honoured on the source endpoint (a bounded 1 MB range GET returned 200 with the full 160,068,116 bytes), so ranged/parallel fetch must be done against download.opensuse.org (mirror ring), not api.opensuse.org.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "API source endpoint silently ignores Range and streams the whole object - will blow up any client that assumes 206. Home projects are explicitly deprioritised: 'home repos are by default low hanging fruit, other projects take priority'. Recorded here only to note the 160 MB verified object and the no-Range behaviour.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://api.opensuse.org/public/source/openSUSE:Factory/kernel-source",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200 XML listing, entry linux-7.2.tar.xz size=160068116"
+    },
+    {
+      "url": "https://api.opensuse.org/public/source/openSUSE:Factory/kernel-source/linux-7.2.tar.xz",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, content-length 160068116, application/octet-stream (real bytes, anonymous, no auth)"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: ranged GET bytes 0-1048575 on same URL -> 200 with 160068116 bytes (Range ignored)"
+    },
+    {
+      "url": "https://openbuildservice.org/help/manuals/obs-user-guide/cha-obs-best-practices-upstream",
+      "date": "2026-10-21",
+      "proved": "'You can store your sources there, build your packages and got them mirrored around the world.'"
+    },
+    {
+      "url": "https://forums.opensuse.org/t/disk-space-constraint/194432",
+      "date": "2026-10-21",
+      "proved": "2026-06 user sets `Constraint: hardware:disk:size unit=G 110` for a single build"
+    },
+    {
+      "url": "https://en.opensuse.org/openSUSE:Build_Service_Terms_of_Service",
+      "date": "2026-10-21",
+      "proved": "'You may not share API tokens to exceed OBS's rate limitations.'"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "No published storage quota. The user guide states the instance 'can be used by anybody to freely create binaries for any of the supported distributions' and that 'You can store your sources there, build your packages and got them mirrored around the world.' The only quantitative ceilings found are per-file/per-build, not per-project: build disk constraint is expressed as `Constraint: hardware:disk:size unit=G <N>` and users are seen requesting 110 GB for one build (openSUSE forum, 2026-06-16). Observed real object size in the archive: `openSUSE:Factory/kernel-source/linux-7.2.tar.xz` is 160,068,116 bytes, served publicly.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

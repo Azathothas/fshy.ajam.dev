@@ -1,0 +1,69 @@
+{
+  "topic": "storage",
+  "slug": "internet-archive-bittorrents",
+  "provider": "Internet Archive BitTorrents (webseed swarm)",
+  "url": "https://archive.org/details/torrents",
+  "category": "p2p",
+  "free_tier": {
+    "stated": "Free, unlimited distribution; ~1.4 million items already torrented, 'comprising almost a petabyte of public domain materials'. Egress is unbounded because the swarm and webseeds share the load.",
+    "unit": "unlimited",
+    "metered_on": "unstated",
+    "source_url": "https://help.archive.org/help/archive-bittorrents/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://help.archive.org/help/archive-bittorrents/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://help.archive.org/help/archive-bittorrents/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free — 'our Torrents rely heavily on webseeding (download directly from our servers, when no peers have the files you are seeking)'. Peers carry the rest at zero cost to anyone.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Any BitTorrent client with Getright-style webseed support (qBittorrent, Transmission); IA generates the .torrent per item and runs trackers bt1.archive.org; rclone not involved",
+  "chaining": "Combine with #1: upload once via IAS3, then distribute via torrent so a 1TiB/day fetch load is carried by peers + webseed instead of a single HTTP stream. Torrent + webseed is also the only path that can exceed the ~1.7 MB/s per-connection shaping.",
+  "limits": [],
+  "limits_note": "Torrent is generated server-side only (you do not choose the swarm); obsolete torrents break when the item changes (piece-hash mismatch); rTorrent does not support Getright-style webseeding and will not start; bt1 trackers are rate-limited per IP; ._____padding_file must be deselected.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Old torrents for a mutated item loop forever re-downloading mismatched pieces; seeder counts are cached ~5 minutes and include webseeds.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://help.archive.org/help/archive-bittorrents/",
+      "date": "2026-10-21",
+      "proved": "(snapshot 2026-09-13) — 'over 1.4 million Archive Items are available via the BitTorrent protocol, comprising almost a petabyte'"
+    },
+    {
+      "url": "https://help.archive.org/help/archive-bittorrents/",
+      "date": "2026-10-21",
+      "proved": "'Our Torrents rely heavily on webseeding ... rTorrent do not support Getright-style webseeding'"
+    },
+    {
+      "url": "https://help.archive.org/help/archive-bittorrents/",
+      "date": "2026-10-21",
+      "proved": "torrents for changed items 'become obsolete ... files will fail to download completely'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "Free, unlimited distribution; ~1.4 million items already torrented, 'comprising almost a petabyte of public domain materials'. Egress is unbounded because the swarm and webseeds share the load.",
+  "extras": {},
+  "binding": "none",
+  "binding_note": null
+}

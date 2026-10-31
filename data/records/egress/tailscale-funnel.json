@@ -1,0 +1,81 @@
+{
+  "topic": "egress",
+  "slug": "tailscale-funnel",
+  "provider": "Tailscale Funnel",
+  "url": "https://tailscale.com/kb/1223/funnel",
+  "category": "tunnel (hosted, mesh front door)",
+  "free_tier": {
+    "stated": "public HTTPS on a *.ts.net name, available on every plan",
+    "unit": "unlimited",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://tailscale.com/kb/1223/funnel",
+    "read_on": "2026-10-22",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable: a stream",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "notes": "",
+    "source_url": "https://tailscale.com/kb/1223/funnel"
+  },
+  "egress": {
+    "terms": "subject to non-configurable bandwidth limits whose value is not published",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://tailscale.com/kb/1223/funnel"
+  },
+  "interface": [
+    "cli"
+  ],
+  "tooling": "tailscale",
+  "chaining": "gives a tailnet device a public HTTPS name with no domain and no port, which is the cheapest stable-address chain. The unpublished throttle is what stops it being a serving tier.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "non-configurable and unpublished",
+      "source": "https://tailscale.com/kb/1223/funnel"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a Tailscale account",
+    "country": null
+  },
+  "reliability_note": "Funnel is in beta",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://tailscale.com/kb/1223/funnel",
+      "date": "2026-10-22",
+      "proved": "'Traffic sent over a Funnel is subject to non-configurable bandwidth limits', and the port restriction"
+    },
+    {
+      "url": "https://tailscale.com/kb/1223/funnel",
+      "date": "2026-10-23",
+      "proved": "'Funnel can only listen on ports 443, 8443, and 10000'; 'Funnel only works over TLS-encrypted connections'; 'Traffic sent over a Funnel is subject to non-configurable bandwidth limits.'"
+    },
+    {
+      "url": "https://tailscale.com/kb/1242/tailscale-funnel",
+      "date": "2026-10-23",
+      "proved": "'--tcp=<port>' and '--tls-terminated-tcp=<port>' are listed under 'Serve command flags', not funnel flags"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "notes": "Re-read 2026-10-23: Funnel is a TCP proxy with TLS termination ('Tailscale does this using a TCP proxy and Funnel relay servers', 'Funnel only works over TLS-encrypted connections'), so it carries no UDP at all. That is a second, independent reason it cannot serve a WireGuard or game or DNS workload, alongside the unpublished bandwidth limit.",
+  "extras": {
+    "stale_after_days": 180,
+    "bytes_transit": "yes",
+    "transit_note": "Funnel is the product that puts bytes on Tailscale's relays, which is why the throttle returns with it"
+  },
+  "binding": "per-ip-shaping",
+  "binding_note": "a discretionary throttle with no number is worse than a quota: there is no threshold to design against.",
+  "interface_detail": "tailscale funnel; ports 443, 8443 and 10000 only",
+  "limits_note": "counts of things, not rates, so no vocabulary kind names them: ports 443, 8443 and 10000 only"
+}

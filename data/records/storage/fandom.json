@@ -1,0 +1,81 @@
+{
+  "topic": "storage",
+  "slug": "fandom",
+  "provider": "Fandom (wiki farm, MediaWiki)",
+  "url": "https://www.fandom.com",
+  "category": "media",
+  "free_tier": {
+    "stated": "10 MB per file, no file-count cap: 'The maximum size of uploads is 10 MB. The maximum image resolution is 12.5 megapixels.' and 'There is no limit to the number of files you can upload' (with the caveat 'they shouldn't be used just as file stores').",
+    "unit": "MB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://community.fandom.com/wiki/Help:Uploading_files",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "10 MB per file",
+    "bytes": 10000000,
+    "source_url": "https://community.fandom.com/wiki/Help:Uploading_files",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "request-rate: MediaWiki edit-rate limits per IP; anon upload needs a CSRF token (probe returned `badtoken`). Retention: permanent, but Fandom never deletes content even on community request.",
+    "source_url": "https://community.fandom.com/wiki/Help:Uploading_files",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered, Cloudflare-fronted static CDN. But see the read-path trap below.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "MediaWiki Action API per wiki (`action=upload`), Pywikibot/mwclient. No rclone backend.",
+  "chaining": "10 MB x unlimited files x unlimited free wikis (wiki creation is self-service). 10 MB is small enough that this only matters as a shard layer.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "10 MB per file",
+      "source": "https://community.fandom.com/wiki/Help:Uploading_files"
+    }
+  ],
+  "limits_note": "per-object-cap: 10 MB (hard, confirmed live via siteinfo `maxuploadsize` = 10485760). request-rate: MediaWiki edit-rate limits per IP; anon upload needs a CSRF token (probe returned `badtoken`). Retention: permanent, but Fandom never deletes content even on community request.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Two read-path traps in one host. (1) `static.wikia.nocookie.net` returns `403 Cf-Mitigated: challenge` to any non-browser — a hard read gate. (2) When it does serve, it RE-ENCODES: a request for a .png returned `Content-Type: image/webp`, 6,326 bytes, sha1 ada19fa5... — NOT the 9,979-byte original whose sha1 ce3dee8b... matches the API. You must append `&format=original` to get your bytes back. Textbook 'gives you storage but not your bytes'.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://community.fandom.com/wiki/Help:Uploading_files",
+      "date": "2026-10-21",
+      "proved": "'The maximum size of uploads is 10 MB ... There is no limit to the number of files you can upload'"
+    },
+    {
+      "url": "https://minecraft.fandom.com/api.php?action=query&meta=siteinfo&siprop=general&format=json",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, maxuploadsize = 10485760"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET static.wikia.nocookie.net/.../Grass_Block.png/revision/latest (direct and via fetch proxy, browser UA) -> 403 with `Cf-Mitigated: challenge`; via proxy without UA -> 200 but image/webp 6,326 B, sha1 ada19fa5... != API sha1 ce3dee8b..."
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: same URL with `&format=original` -> 200, image/png, 9,979 bytes, sha1 ce3dee8bd03c3a66eedef6e710491cf9f4f11e2b == API sha1. Original IS retrievable, but only on the explicit original path."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "10 MB per file, no file-count cap: 'The maximum size of uploads is 10 MB. The maximum image resolution is 12.5 megapixels.' and 'There is no limit to the number of files you can upload' (with the caveat 'they shouldn't be used just as file stores').",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

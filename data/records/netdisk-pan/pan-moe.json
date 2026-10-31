@@ -1,0 +1,110 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "pan-moe",
+  "provider": "萌盘 PAN.MOE (Moe Drive)",
+  "url": "https://pan.moe/",
+  "category": "community cloud drive on Cloudreve, non-profit",
+  "free_tier": {
+    "stated": "1 TB free for every registrant and described as permanent, 2 to 5 TB for community members by application, and above 5 TB a cold-storage plan. Terms section 3.1 confirms '1TB（或更高）空间'",
+    "unit": "TiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://pan.moe.one/terms/",
+    "read_on": "2026-10-22"
+  },
+  "per_object_cap": {
+    "stated": "Not published",
+    "bytes": null,
+    "source_url": "https://pan.moe.one/terms/",
+    "notes": "per-object cap unknown and not published anywhere in the terms or on the landing page"
+  },
+  "retention": {
+    "stated": "No durability guarantee at all: terms section 2.1 states '不对用户的数据进行任何形式的长期或永久性保证'",
+    "days": null,
+    "source_url": "https://pan.moe.one/terms/"
+  },
+  "egress": {
+    "terms": "No published egress cap for the free tier; bandwidth is policed only by a fair-use clause allowing throttling for '占用过多带宽'. Both domestic and overseas storage nodes are offered with cross-region transfer",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://pan.moe.one/terms/"
+  },
+  "interface": [
+    "webdav"
+  ],
+  "tooling": "a Cloudreve front end with a live WebDAV endpoint at https://pan.moe/dav answering as DAV class 2 with PUT in Allow, plus the standard Nextcloud-family clients. No S3 layer is exposed",
+  "chaining": "Terms section 3.1 explicitly routes anyone needing more than 5 TB to a bespoke cold-storage plan, so it is a 1 TB building block and not a pool. Its value is the WebDAV endpoint, which mounts into TrueNAS Cloud Sync, rclone, Duplicati and restic without a wrapper",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": null,
+      "source": "https://pan.moe.one/terms/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "not published",
+      "source": "https://pan.moe.one/terms/"
+    }
+  ],
+  "identity_cost": {
+    "kind": "email",
+    "detail": "the signup form at pan.moe/signup asks for email, password, a repeat and a human-verification step, with no phone field",
+    "country": null
+  },
+  "reliability_note": "Zero durability commitment in the terms plus an explicit rule against the several-accounts pattern that would make it useful at 20 TB. The domestic storage node carries a compliance clause, so the overseas node is the only one that fits a user",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://pan.moe/",
+      "date": "2026-10-22",
+      "proved": "the served page reads '萌社区网盘（萌盘）是一款面向广大用户的免费云存储服务，注册即享1TB永久免费空间，萌社区成员可享最大5TB容量。支持境内外多节点高速存储、WebDav挂载'"
+    },
+    {
+      "url": "https://pan.moe.one/terms/",
+      "date": "2026-10-21",
+      "proved": "section 3.1 gives 1 TB free, 2 to 5 TB for members and a cold-storage plan above 5 TB; section 2.1 disclaims any permanence guarantee"
+    },
+    {
+      "url": "https://moe.one/thread-924.htm",
+      "date": "2026-10-21",
+      "proved": "the launch announcement on 2025-02-01 offering 免费 1TB / 5TB, WebDAV support, 4,681 views"
+    },
+    {
+      "url": "https://pan.moe/signup",
+      "date": "2026-10-21",
+      "proved": "the form is email, password, repeat and a human-verification step only, with no phone field"
+    },
+    {
+      "url": "probe:https://pan.moe/dav",
+      "date": "2026-10-21",
+      "proved": "OPTIONS returned HTTP 401 with www-authenticate Basic realm=\"cloudreve\" and Allow: OPTIONS, LOCK, PUT, MKCOL, and dav: 1, 2, so WebDAV class 2 with PUT enabled behind Cloudflare"
+    },
+    {
+      "url": "probe:https://pan.moe/dav",
+      "date": "2026-10-21",
+      "proved": "PROPFIND returned 401 with 0 bytes, so the endpoint is auth-gated and not a 200 carrying an error body"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-22T04:06:37.166Z",
+  "binding": "write-gated",
+  "binding_note": "What binds is the terms: section 5.4 forbids the several-accounts pattern that 20 TiB would need, so the 1 TB is a hard 1 TB.",
+  "confidence_note": "The 1 TB offer was re-read live on the landing page; `documented` and not `measured` because the DAV endpoint refused without a credential, which is the expected answer and not a measurement of the read path.",
+  "notes": "The one provider in this topic that names the sharding pattern and rules it out in advance.",
+  "extras": {
+    "access_mode": "registration-gated",
+    "free_tier_exists": true,
+    "webdav_class": 2,
+    "webdav_put_enabled": true,
+    "bans_multi_account_expansion": true,
+    "durability_commitment": "none, disclaimed in terms 2.1",
+    "aliases": [
+      "萌盘 PAN.MOE (Moe Drive)",
+      "pan.moe / 萌盘 (Moe Drive)",
+      "Moe Drive",
+      "萌社区网盘"
+    ],
+    "alias_note": "this record is the single home for both deferred spellings: '萌盘 PAN.MOE (Moe Drive)' and the audit's 'pan.moe / 萌盘 (Moe Drive)'",
+    "launched": "2025-02-01"
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "topic": "inference",
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "not applicable"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "slug": "beavernet",
+  "provider": "BeaverNet",
+  "url": "https://net.beaverai.org/v1",
+  "category": "inference gateway, community GPU pool, anonymous tier",
+  "free_tier": {
+    "stated": "Works without a key, with limits; a free key gives more. 4 models available; the listing carries a per-model allow_anonymous flag",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://net.beaverai.org/",
+    "read_on": "2026-10-28",
+    "notes": "the limits are not stated as numbers on the page; models are served by volunteers sharing their own GPUs"
+  },
+  "endpoint": "https://net.beaverai.org/v1/chat/completions",
+  "tooling": "any OpenAI-compatible client with base URL https://net.beaverai.org/v1",
+  "chaining": "pairs with prototypes that tolerate a changing set of volunteer-served models; the anonymous tier covers only models flagged allow_anonymous",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "unpublished: the page says works without a key, with limits, and gives no number; GET /v1/models returns no rate-limit header",
+      "source": "https://net.beaverai.org/"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "the unpublished anonymous limit is the stated gate, and only some models allow anonymous calls",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "the page says try it without an account, or sign up with just a name; a GET to /v1/usage, /v1/limits and /v1/chat/completions with no Authorization header answered 401 Missing or invalid Authorization header, so the anonymous route may need a header or token that the page does not show",
+    "country": null
+  },
+  "reliability_note": "the model set is small and changes with volunteer availability: the home page counts 4 models available",
+  "confidence": "documented",
+  "confidence_note": "the claim is first-party and the listing was read by GET; the 401 on keyless GETs to the chat and usage routes conflicts with it, and no completion was sent because probe issues GET and HEAD only",
+  "probe": {
+    "records": [
+      {
+        "probe_id": "beavernet-v1-models-get",
+        "method": "GET",
+        "url": "https://net.beaverai.org/v1/models",
+        "http": 200,
+        "authorization_sent": false,
+        "models": {
+          "Quack/koboldcpp/Dumbstral-169B.i1-IQ4_XS": {
+            "allow_anonymous": false
+          },
+          "drummer/google/gemma-4-31b-it": {
+            "allow_anonymous": false
+          },
+          "bgg1996/melirrhoe": {
+            "allow_anonymous": true
+          },
+          "blue/dealignai/DeepSeek-V4.1-Flash-1017-UNCENSORED-FP8": {
+            "allow_anonymous": true
+          }
+        },
+        "probed_at": "2026-10-28T04:49:21.961Z",
+        "chat_completion_tested": false
+      },
+      {
+        "probe_id": "beavernet-chat-get",
+        "method": "GET",
+        "url": "https://net.beaverai.org/v1/chat/completions",
+        "http": 401,
+        "error_message": "Missing or invalid Authorization header",
+        "probed_at": "2026-10-28T04:48:00.137Z"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "url": "https://net.beaverai.org/",
+      "date": "2026-10-28",
+      "capture": "sha256:a9d2ed2ff3c265abfb8c59b35e3f0fea89502c289105c8493aed3db14ec77197",
+      "quote": "Works without a key, with limits. Get a free key for more.",
+      "proved": "the page states the API works without a key, with limits"
+    },
+    {
+      "url": "https://net.beaverai.org/",
+      "date": "2026-10-28",
+      "capture": "sha256:a9d2ed2ff3c265abfb8c59b35e3f0fea89502c289105c8493aed3db14ec77197",
+      "quote": "Try it without an account, or sign up with just a name.",
+      "proved": "an account is optional and a signup needs just a name"
+    },
+    {
+      "url": "https://net.beaverai.org/",
+      "date": "2026-10-28",
+      "capture": "sha256:a9d2ed2ff3c265abfb8c59b35e3f0fea89502c289105c8493aed3db14ec77197",
+      "quote": "Models available",
+      "proved": "the home page lists the count of models available"
+    },
+    {
+      "url": "https://net.beaverai.org/v1/models",
+      "date": "2026-10-28",
+      "capture": "sha256:7a673e698eb68662b0dab4bd4dbf7a5413cc5b2f8d94e1939e13cbe21d05aa71",
+      "quote": "\"id\":\"bgg1996/melirrhoe\"",
+      "proved": "a keyless GET /v1/models answered 200 and listed bgg1996/melirrhoe, whose allow_anonymous flag follows in the body"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-28T04:36:18.974Z",
+  "notes": "whether a keyless POST to /v1/chat/completions answers is unverified"
+}

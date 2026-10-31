@@ -1,0 +1,93 @@
+{
+  "slug": "nzb-life",
+  "provider": "NZB.life",
+  "url": "https://www.nzb.life/",
+  "category": "Usenet indexer (Newznab API, successor to NZB.su)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Not stated on the pages reachable. caps declares <limits max=\"100\" default=\"100\"/> and <registration available=\"yes\" open=\"yes\"/>; /register serves a Create Account form with password rules and no invite field.",
+    "unit": "none",
+    "metered_on": "unstated",
+    "source_url": "https://www.nzb.life/api?t=caps",
+    "read_on": "2026-10-23",
+    "notes": "unit is recorded as none because no allowance is published; A third-party table claims the old NZB.su free tier gave '0 calls' and that VIP was USD 9 for 180 days and USD 15 for 360 days."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: an NZB pointer file",
+    "bytes": null,
+    "source_url": "https://www.nzb.life/api?t=caps",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not published on the pages read; a third-party table claims 'over 2,000 days of binary retention, 50 newsgroups indexed' for the old name.",
+    "days": null,
+    "source_url": "https://nzbhydra.com/indexers/",
+    "notes": "reported"
+  },
+  "egress": {
+    "terms": "No byte metering observed; the API returns pointers.",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.nzb.life/api?t=caps"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "Newznab API at /api (caps title still reads 'NZB.su', so the software was renamed but not the server string), 100 results per request. Registration is a plain form on the site.",
+  "endpoint": "https://www.nzb.life/api?t=caps ; https://www.nzb.life/api?t=search&q=<query>&apikey=<key>",
+  "tooling": "Native Newznab: change the host in an existing NZB.su entry and the key keeps working, per the vendor's own error message. Prowlarr and NZBHydra2 need nothing else.",
+  "chaining": "The live successor under the old NZB.su key, so an existing stack recovers by editing one URL.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "100 results per request maximum",
+      "source": "https://www.nzb.life/api?t=caps"
+    },
+    {
+      "kind": "write-gated",
+      "value": "registration open, but the allowance is only visible after login",
+      "source": "https://www.nzb.life/register"
+    }
+  ],
+  "limits_note": "",
+  "binding": "none",
+  "binding_note": "No counter could be read without an account, so naming one would be a guess. The 100-result cap is real and measured in caps; it is a per-request result ceiling, not a rate.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Open registration: /register serves Create Account with a 10-character password policy and no invite or card field.",
+    "country": null
+  },
+  "reliability_note": "The caps still announces itself as 'NZB.su' with email [address removed], so tools that key on the server title will show the old name and look mis-configured.",
+  "confidence": "documented",
+  "confidence_note": "caps and the registration form were read. The allowance is unstated, which is why the verdict is a caveat.",
+  "evidence": [
+    {
+      "url": "probe:https://www.nzb.life/api?t=caps&x=1",
+      "date": "2026-10-23",
+      "proved": "caps returned 200 and 226,097 bytes: title 'NZB.su', <limits max=\"100\" default=\"100\"/>, <registration available=\"yes\" open=\"yes\"/>"
+    },
+    {
+      "url": "probe:https://www.nzb.life/register",
+      "date": "2026-10-23",
+      "proved": "Create Account form with password rules (10+ characters, one uppercase, one number, one special), no invite field"
+    },
+    {
+      "url": "https://nzbhydra.com/indexers/",
+      "date": "2026-10-23",
+      "proved": "third-party for the old name: 'VIP 180-day USD 9, 360-day USD 15', free tier '0 calls'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "extras": {
+    "price": "USD 15/360 days (reported, under the old name)",
+    "nzb_is_newznab": true,
+    "caps_limits": 100,
+    "registration_open": true,
+    "predecessor": "nzb-su"
+  },
+  "notes": "",
+  "verified_at": "2026-10-23T02:11:54.066Z",
+  "topic": "debrid",
+  "price_per_tb_month": null
+}

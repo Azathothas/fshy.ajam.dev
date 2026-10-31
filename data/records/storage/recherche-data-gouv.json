@@ -1,0 +1,83 @@
+{
+  "topic": "storage",
+  "slug": "recherche-data-gouv",
+  "provider": "Recherche Data Gouv (French national Dataverse)",
+  "url": "https://entrepot.recherche.data.gouv.fr",
+  "category": "academic",
+  "free_tier": {
+    "stated": "50 GB max per file via the deposit interface; institutional datasets carry an agreement limit 'currently 5 TB'; datasets over 50 GB are explicitly supported via DVUploader and the S3 direct-upload API, and TB-range datasets are handled by arrangement",
+    "unit": "TB",
+    "metered_on": "unstated",
+    "source_url": "https://recherche.data.gouv.fr/en/guide/recommendations-on-large-datasets",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "50 GB max per file",
+    "bytes": 50000000000,
+    "source_url": "https://recherche.data.gouv.fr/en/guide/recommendations-on-large-datasets",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://recherche.data.gouv.fr/en/guide/recommendations-on-large-datasets",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered, national infrastructure",
+    "metered": false
+  },
+  "interface": [
+    "s3",
+    "rest"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Dataverse REST + DVUploader + S3 direct upload (one-time upload URLs, multipart, /api/datasets/mpload). Same tooling chain as Harvard, so one client covers both.",
+  "chaining": "The 5 TB figure is per institutional agreement, i.e. per lab rather than per person. That is the shape that matters: one institution's allocation is 5 TB, not 500 GB",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "50 GB max per file",
+      "source": "https://recherche.data.gouv.fr/en/guide/recommendations-on-large-datasets"
+    }
+  ],
+  "limits_note": "Deposit is restricted: 'Only research data produced by research teams with at least one collaborator affiliated to an institution belonging to the French public research community are accepted by right.' The 50 GB single-file cap is a hard interface limit (use DVUploader/S3 above it).",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Instance is healthy and live (Dataverse 6.0 at probe). The eligibility rule is an institutional gate, not a technical one — the API and storage behave normally for anyone who can authenticate.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://recherche.data.gouv.fr/en/guide/recommendations-on-large-datasets",
+      "date": "2026-10-21",
+      "proved": "read live: 'the maximum file size limit is 50 GB ... For institutional datasets, please ensure compliance with the limit set by your agreement (currently 5 TB)' and 'Do not split large files to bypass the 50 GB limit. Instead, use the DVUploader application' (the provider's own rule: a file above 50 GB goes through DVUploader and is not split)"
+    },
+    {
+      "url": "https://recherche.data.gouv.fr/en/faq",
+      "date": "2026-10-21",
+      "proved": "read live: 'Only research data produced by research teams with at least one collaborator affiliated to an institution belonging to the French public research community are accepted by right'"
+    },
+    {
+      "url": "https://entrepot.recherche.data.gouv.fr/api/info/version",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200 {\"status\":\"OK\",\"data\":{\"version\":\"6.0\"}}"
+    }
+  ],
+  "verdict": "fails-identity",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "50 GB max per file via the deposit interface; institutional datasets carry an agreement limit 'currently 5 TB'; datasets over 50 GB are explicitly supported via DVUploader and the S3 direct-upload API, and TB-range datasets are handled by arrangement",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "50 GB max per file via the deposit interface; institutional datasets carry an agreement limit 'currently 5 TB'; datasets over 50 GB are explicitly supported via DVUploader and the S3 direct-upload API, and TB-range datasets are handled by arrangement",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "none",
+  "binding_note": null
+}

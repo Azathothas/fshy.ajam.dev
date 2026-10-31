@@ -1,0 +1,89 @@
+{
+  "topic": "storage",
+  "slug": "zenodo-doi-batching-automatic-datacite-minting",
+  "provider": "Zenodo DOI batching (automatic DataCite minting per record)",
+  "url": "https://developers.zenodo.org/",
+  "category": "academic repository, identifier behaviour",
+  "free_tier": {
+    "stated": "One DOI per record, automatically, free, and unlimited records. DOI count is therefore not a constraint on sharding: a 410-record archive is also 410 citable handles at no extra cost",
+    "unit": "objects",
+    "metered_on": "object-count",
+    "source_url": "https://developers.zenodo.org/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "One DOI per record, and the deposition response carries a reserved DOI already set through prereserve_doi, so a batch job gets a citable handle without a separate call",
+    "bytes": null,
+    "source_url": "https://developers.zenodo.org/"
+  },
+  "retention": {
+    "stated": "DOIs are permanent and cannot be reused or reassigned. Deleting a record within 30 days revokes the DOI, after which it tombstones. A record cannot be un-published to reclaim the identifier",
+    "days": null,
+    "source_url": "https://about.zenodo.org/policies/"
+  },
+  "egress": {
+    "terms": "Not applicable to the identifier itself. Retrieval of the deposited bytes is free and unmetered, and the read path is measured in the sibling record",
+    "metered": false,
+    "source_url": "https://developers.zenodo.org/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "POST /api/deposit/depositions returns a record with a reserved DOI already set, so one call per record yields one identifier",
+  "tooling": "any HTTP client. zenodo_get and zenodo-cli both wrap the same API for the read side; there is no rclone backend",
+  "chaining": "Because every record gets a DOI for free, a 410-record archive is also 410 citable handles with zero extra work. This is the mechanism that makes the unlimited-records story practical rather than merely permitted: there is no per-DOI cost and no approval step, so the archive can be sharded to the record boundary and every shard stays citable",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "100 requests per minute authenticated, 30 per minute on the search API, which sets the batch size per hour rather than any record count cap",
+      "source": "https://help.zenodo.org/docs/deposit/manage-quota/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "a DOI is revoked if the record is deleted inside the 30-day window, and tombstones after that",
+      "source": "https://about.zenodo.org/policies/"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "Nothing limits the number of DOIs. What limits a batch job is the authenticated request rate, so the practical ceiling is records per hour and not records per account",
+  "limits_note": "Content outside the repository's scope is removed and its DOI revoked, which is the only stated ground for losing an identifier after the 30-day window",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an email address, GitHub or ORCID account. No institution is needed to mint a DOI, which is the unusual part",
+    "country": null
+  },
+  "reliability_note": "Batch-creating hundreds of records is API-rate-bound only and not quota-bound, so the operational risk is a batch that half-completes and leaves Pending files rather than one that hits a ceiling",
+  "confidence": "documented",
+  "confidence_note": "What would raise it is a probe that creates a deposition anonymously or with a token and reads the reserved DOI back",
+  "evidence": [
+    {
+      "url": "https://developers.zenodo.org/",
+      "date": "2026-10-21",
+      "proved": "the quickstart creates a deposition, receives a 'doi' and 'prereserve_doi' in the response, uploads through a bucket URL, then POSTs to /publish, and notes the newer file API has 'a limit of 50GB total in the record (and any given file), and up to 100 files in the record'"
+    },
+    {
+      "url": "https://about.zenodo.org/policies/",
+      "date": "2026-10-21",
+      "proved": "'Content not considered to fall under the scope of the repository will be removed and associated DOIs issued by Zenodo revoked', and on withdrawal that the DOI and the URL of the original object are retained"
+    },
+    {
+      "url": "https://help.zenodo.org/docs/deposit/manage-records/",
+      "date": "2026-10-21",
+      "proved": "deletion is owner-initiated within 30 days after publication; outside that window only justified cases are considered"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "price_per_tb_month": null,
+  "notes": "The quota, the API and the 30-day window belong to the parent finding and are not restated as new facts here",
+  "extras": {
+    "parent_finding": "Zenodo's public deposit path at 50 GB per record times unlimited records",
+    "sibling_record": "storage/zenodo-anonymous-download-throughput covers the measured read path",
+    "sub_finding": true,
+    "what_the_parent_record_owns": "the deposit API, the quota arithmetic, the 30-day window and the visibility model",
+    "what_this_record_owns": "that a DOI is minted per record at no cost, which is what allows the archive to be sharded to the record boundary without losing citability",
+    "doi_per_record": true,
+    "record_count_for_20_tib": 410
+  }
+}

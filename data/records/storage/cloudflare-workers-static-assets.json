@@ -1,0 +1,95 @@
+{
+  "topic": "storage",
+  "slug": "cloudflare-workers-static-assets",
+  "provider": "Cloudflare Workers Static Assets",
+  "url": "https://developers.cloudflare.com/workers/static-assets/",
+  "category": "paas",
+  "free_tier": {
+    "stated": "20,000 files per Worker version on Free; 25 MiB per file; 100 Workers per account => ~488 GiB per Worker, ~48.8 TiB per free account. 'There is no additional cost for storing Assets.'",
+    "unit": "objects",
+    "metered_on": "stored-bytes",
+    "source_url": "https://developers.cloudflare.com/workers/platform/limits/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "25 MiB per file",
+    "bytes": 26214400,
+    "source_url": "https://developers.cloudflare.com/workers/platform/limits/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://developers.cloudflare.com/workers/platform/limits/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "'Requests to static assets are free and unlimited' — Workers Static Assets billing doc. Only Worker-script invocations (SSR) count against the 100,000/day free request quota.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "wrangler deploy with an assets binding (wrangler 3.78.10+); Workers REST API; static assets can be deployed with no Worker script logic, so serving is purely static.",
+  "chaining": "100 Workers on the free plan x 100,000 files (paid) or 20,000 files (free) x 25 MiB. Separate bucket from Pages on the same account, so a single free account presents Pages (100x20k) + Workers (100x20k) file slots. Unlimited accounts multiply further.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "25 MiB per file",
+      "source": "https://developers.cloudflare.com/workers/platform/limits/"
+    }
+  ],
+  "limits_note": "20,000 files and 100 Workers on Free; 25 MiB per file; must stay under the Worker request quota only if a script runs (run_worker_first / SSR). Static-only assets do not count against that quota at all.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Free-tier 429s apply to script-invoking routes only; purely static paths keep serving. No eviction window documented for assets — they live as long as the Worker version.",
+  "confidence": "documented",
+  "confidence_note": "The page states the number in the record; the claim is documented, not measured.",
+  "evidence": [
+    {
+      "url": "https://developers.cloudflare.com/workers/platform/limits/",
+      "date": "2026-10-22",
+      "proved": "the CDN cache object cap is 512 MB on Free/Pro/Business. Re-read https://developers.cloudflare.com/workers/platform/limits/: HTTP 200, 27086 bytes, sha256 574d5088a914872b. Quoted: g-cloudflare-support/. Cloudflare does not enforce response body size limits. [CDN cache limits](https://developers.cloudflare.com/cache/concepts/default-cache-behavior/) apply: 512 MB for Free, Pro, and Business plans, and 5 GB for Enterprise. --- ## CPU time CPU time measures how long the CPU spends executing your Worker code. Waiting on network requests (such as `fetch` calls, KV reads, or database queries) does not count toward"
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/static-assets/billing-and-limitations/",
+      "date": "2026-10-21",
+      "proved": "'Requests to static assets are free and unlimited ... There is no additional cost for storing Assets.' (last updated Apr 23, 2026)"
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/platform/limits/",
+      "date": "2026-10-21",
+      "proved": "Static Assets table: 'Files per Worker version: 20,000 (Free) / 100,000 (Paid)', 'Individual file size: 25 MiB', 'Number of Workers: 100 (Free) / 500 (Paid)'"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: Server: cloudflare + x-server: Cloudflare Pages on a live pages.dev asset confirms the same edge pipeline; range requests against pages.dev returned 200 not 206, so resume is not guaranteed on that path"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "20,000 files per Worker version on Free; 25 MiB per file; 100 Workers per account => ~488 GiB per Worker, ~48.8 TiB per free account. 'There is no additional cost for storing Assets.'",
+  "extras": {
+    "verified": [
+      {
+        "url": "https://developers.cloudflare.com/workers/platform/limits/",
+        "date": "2026-10-22",
+        "via": null,
+        "http_status": 200,
+        "bytes": 27086,
+        "sha256": "574d5088a914872b338e03c727adf4ef4ef88a8f2a1bcc41bd3f7b200adfb25e",
+        "pattern_found": true,
+        "what_changed": "no change: the page still states the claim",
+        "capture": "captures\\cloudflare-workers-static-assets-developers-cloudflare-com-workers-platform-limits-.txt"
+      }
+    ]
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

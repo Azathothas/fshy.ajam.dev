@@ -1,0 +1,94 @@
+{
+  "topic": "egress",
+  "slug": "alibaba-cloud-international",
+  "provider": "Alibaba Cloud (ECS and CDT free quota)",
+  "url": "https://www.alibabacloud.com/help/en/cdt/internet-data-transfers/",
+  "category": "origin VM (trial) with a standing egress quota",
+  "tier": "free trial",
+  "free_tier": {
+    "stated": "The first 220 GB per month is free: 20 GB for the Chinese mainland and 200 GB for regions outside. Excess traffic is billed starting from the first tier.",
+    "unit": "GB",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://www.alibabacloud.com/help/en/cdt/internet-data-transfers/",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://www.alibabacloud.com/help/en/cdt/internet-data-transfers/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://www.alibabacloud.com/help/en/cdt/internet-data-transfers/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "The first 220 GB per month is free: 20 GB for the Chinese mainland and 200 GB for regions outside.; ingress: udp",
+    "metered": true,
+    "free_allowance": "The first 220 GB per month is free: 20 GB for the Chinese mainland and 200 GB for regions outside.",
+    "price_per_tb": null,
+    "source_url": "https://www.alibabacloud.com/help/en/cdt/internet-data-transfers/"
+  },
+  "interface": [
+    "ssh"
+  ],
+  "interface_detail": "SSH to the ECS public IP, with a security group rule for any further port",
+  "tooling": "wg-quick, nothing vendor-specific",
+  "chaining": "220 GB a month is; it composes as a small regional relay in front of a bulk origin, not as the origin",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "220 GB a month of outbound internet traffic, account level: 20 GB in the Chinese mainland plus 200 GB outside it",
+      "source": "https://www.alibabacloud.com/help/en/cdt/internet-data-transfers/"
+    },
+    {
+      "kind": "volume-quota",
+      "value": null,
+      "source": "https://www.alibabacloud.com/help/en/cdt/internet-data-transfers/"
+    }
+  ],
+  "limits_note": "",
+  "binding": "volume-quota",
+  "binding_note": "220 GB a month is 7.33 GB a day, 20% of 1 TiB a month, so a run at a 1 TiB/month pace exhausts the quota in about six days and it is the first wall; the 3-month trial expiry sits behind it",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "unverified: the trial page returned a login shell of 195 words and the CDT page does not state the signup instrument",
+    "country": "None"
+  },
+  "reliability_note": "the free quota does not roll over and resets on the 1st; pay-by-bandwidth billing modes cannot draw on it at all",
+  "confidence": "documented",
+  "confidence_note": "the 220 GB sentence and the inbound-is-free sentence are on the CDT help page read; the VM trial terms and the signup instrument are not, so those parts stay unverified",
+  "evidence": [
+    {
+      "url": "https://www.alibabacloud.com/help/en/cdt/internet-data-transfers/",
+      "date": "2026-10-23",
+      "proved": "'Effective 00:00:00 on June 1, 2025 (UTC+8), the free quota for CDT Internet traffic increases from 200 GB/month to 220 GB/month. Of this, 20 GB/month can be used in the Chinese mainland, and 200 GB/month can be used outside the Chinese mainland.'"
+    },
+    {
+      "url": "https://www.alibabacloud.com/help/en/cdt/internet-data-transfers/",
+      "date": "2026-10-23",
+      "proved": "'The 220 GB free quota applies only to outbound traffic (data sent to the Internet). Inbound traffic is never billed and does not consume the free quota.'"
+    },
+    {
+      "url": "https://www.alibabacloud.com/help/en/cdt/internet-data-transfers/",
+      "date": "2026-10-23",
+      "proved": "'The free quota is calculated at the Alibaba Cloud account level ... refreshes at 00:00 on the 1st of each calendar month and does not roll over to the next month.'"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-10-23T00:00:00.000Z",
+  "price_per_tb_month": "USD 90 of trial credit for 3 months; 220 GB a month of egress free on any account",
+  "notes": "Two clocks: the egress quota is standing and account level, while the VM that would spend it is a 3-month trial. The 220 GB quota applies to pay-by-data-transfer BGP (Multi-ISP) traffic only; pay-by-bandwidth instances cannot use it.",
+  "extras": {
+    "wg_path": "native-conf",
+    "wg_detail": "an ECS instance is an ordinary Linux VM with a public IP and a security group that accepts UDP rules, so wg-quick is native; the free trial is the constraint, not the network path",
+    "ingress": "udp",
+    "volume_tib_month": 0.2,
+    "volume_stated": "The first 220 GB per month is free: 20 GB for the Chinese mainland and 200 GB for regions outside.",
+    "bytes_transit": "yes",
+    "transit_note": "bytes leave through the ECS public IP as BGP (Multi-ISP) internet traffic, which is the only class the free quota covers"
+  }
+}

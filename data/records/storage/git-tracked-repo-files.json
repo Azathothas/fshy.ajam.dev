@@ -1,0 +1,83 @@
+{
+  "topic": "storage",
+  "slug": "git-tracked-repo-files",
+  "provider": "Git-tracked repo files (direct, or via git-unlimited-storage wrapper)",
+  "url": "https://github.com",
+  "category": "paas",
+  "free_tier": {
+    "stated": "100 MiB hard per file ('GitHub blocks files larger than 100 MiB'); repository size is soft — \"We recommend repositories remain small, ideally less than 1 GB, and less than 5 GB is strongly recommended\".",
+    "unit": "GB",
+    "metered_on": "unstated",
+    "source_url": "https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per file ('GitHub blocks files larger than 100 MiB",
+    "bytes": 104857600,
+    "source_url": "https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "| Clone cost grows with history — every revision of a file is retained forever, so this is the worst surface for churn",
+    "source_url": "https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Unmetered via raw.githubusercontent.com (probed 200) and codeload.github.com (probed 200 on a 270,150,054-byte tarball). Free, anonymous, CDN-fronted.",
+    "metered": false
+  },
+  "interface": [
+    "s3",
+    "git"
+  ],
+  "interface_detail": "git",
+  "tooling": "git; wrapper bharatcj/git-unlimited-storage (Python + Node, S3-shaped API, jsDelivr serving path, 0 stars but 77 tests passing) and sueszli/github-lfs-bypass (5 stars).",
+  "chaining": "100 MiB per file x unlimited repos. The wrapper's own honest-limits table caps the practical use at 'anything under a few hundred gigabytes' and calls itself the 'Wrong tool' for 'storage heading past a terabyte'.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per file ('GitHub blocks files larger than 100 MiB",
+      "source": "https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github"
+    }
+  ],
+  "limits_note": "100 MiB hard per file, 50 MiB warning, 5 GB strongly recommended per repo, ~80 write req/min and 500/hr per token.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Clone cost grows with history — every revision of a file is retained forever, so this is the worst surface for churn. Repos above ~5 GB may draw a support email asking for remediation.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github",
+      "date": "2026-10-21",
+      "proved": "'GitHub blocks files larger than 100 MiB'; 'less than 5 GB is strongly recommended'"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET raw.githubusercontent.com/torvalds/linux/master/README -> 200, 6034 bytes; GET codeload.github.com/torvalds/linux/tar.gz/refs/heads/master -> 200, 270150054 bytes"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/bharatcj/git-unlimited-storage/main/README.md",
+      "date": "2026-10-21",
+      "proved": "honest limits table: 100 MB single file, 1-5 GB repo"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "100 MiB hard per file ('GitHub blocks files larger than 100 MiB'); repository size is soft — \"We recommend repositories remain small, ideally less than 1 GB, and less than 5 GB is strongly recommended\".",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "100 MiB hard per file ('GitHub blocks files larger than 100 MiB'); repository size is soft — \"We recommend repositories remain small, ideally less than 1 GB, and less than 5 GB is strongly recommended\".",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

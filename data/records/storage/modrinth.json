@@ -1,0 +1,87 @@
+{
+  "topic": "storage",
+  "slug": "modrinth",
+  "provider": "Modrinth",
+  "url": "https://modrinth.com",
+  "category": "registry",
+  "free_tier": {
+    "stated": "500 MiB per version file (hard code-level cap: `read_from_field(field, 500 * (1 << 20), \"Project file exceeds the maximum of 500MiB...\")`). No stated total-account storage quota. Per-user quotas read from `user_limits`: projects = 256, projects_per_day = 10, versions_per_project = 10000, versions_per_day = 150.",
+    "unit": "mixed",
+    "metered_on": "stored-bytes",
+    "source_url": "https://raw.githubusercontent.com/modrinth/code/main/apps/labrinth/src/routes/v3/version_creation.rs",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "source_url": "https://raw.githubusercontent.com/modrinth/code/main/apps/labrinth/src/routes/v3/version_creation.rs",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://raw.githubusercontent.com/modrinth/code/main/apps/labrinth/src/routes/v3/version_creation.rs",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free. All files served from cdn.modrinth.com behind Cloudflare with `Accept-Ranges: bytes`, no auth, no signed URLs, no expiry.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "Documented public REST API v2 (api.modrinth.com/v2/project/{id}/version, POST /version with multipart file upload + PAT auth); labrinth OpenAPI spec published at docs.modrinth.com. No rclone backend, but the API is simple enough for a dozen-line client.",
+  "chaining": "256 projects x 10,000 versions/project x 500 MiB = ~1.22 PiB theoretical per account; practically throttled by versions_per_day=150 -> 150 x 500 MiB = 73 GiB/day/account = ~2.2 TiB/month/account. Unlimited free accounts; each new account resets all four counters. Idle accounts keep all existing files downloadable forever (no TTL on published versions).",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "150 uploads/day",
+      "source": "https://raw.githubusercontent.com/modrinth/code/main/apps/labrinth/src/routes/v3/version_creation.rs"
+    }
+  ],
+  "limits_note": "500 MiB/version-file; 150 version uploads/day; 10,000 versions per project; 256 projects; version_number must be unique per project (1-32 chars); moderation may reject non-mod content; project file type must be in project_file_type allowlist (jar/zip/mrpack etc.), so arbitrary blobs need wrapping.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Moderated registry: junk projects can be removed and files hard-deleted; no rate-limit survival guarantee past 150 uploads/day.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://raw.githubusercontent.com/modrinth/code/main/apps/labrinth/src/routes/v3/version_creation.rs",
+      "date": "2026-10-21",
+      "proved": "'500 * (1 << 20)' hard file cap for project version files"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/modrinth/code/main/apps/labrinth/migrations/20260916120000_version_limits.sql",
+      "date": "2026-10-21",
+      "proved": "projects_per_day 10, versions_per_project 10000, versions_per_day 50 raised to 150 by 20260917120000_raise_versions_per_day_limit.sql"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/modrinth/code/main/apps/labrinth/migrations/20250927120742_user_limits.sql",
+      "date": "2026-10-21",
+      "proved": "default projects 256, organizations 16"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET api.modrinth.com/v2/version/g6ju16VJ -> 200, files[0].url = cdn.modrinth.com/data/AANobbMI/versions/g6ju16VJ/...jar, size 1912496"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET cdn.modrinth.com/...jar with Range: bytes=0-0 -> 206 Partial Content, Content-Range bytes 0-0/1912496, Accept-Ranges: bytes, Server: cloudflare"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "500 MiB per version file (hard code-level cap: `read_from_field(field, 500 * (1 << 20), \"Project file exceeds the maximum of 500MiB...\")`). No stated total-account storage quota. Per-user quotas read from `user_limits`: projects = 256, projects_per_day = 10, versions_per_project = 10000, versions_per_day = 150.",
+  "extras": {
+    "unit_note": "free_tier.unit is 'mixed' because the headline is denominated in MiB or KiB, which the schema enum does not carry; the verbatim free_tier.stated keeps the true unit."
+  },
+  "binding": "request-rate",
+  "binding_note": "calls are bounded rather than bytes, which is fatal to a nightly job on a monthly counter"
+}

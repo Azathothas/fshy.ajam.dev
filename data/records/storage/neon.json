@@ -1,0 +1,84 @@
+{
+  "topic": "storage",
+  "slug": "neon",
+  "provider": "Neon (Object Storage + Postgres)",
+  "url": "https://neon.com",
+  "category": "paas",
+  "free_tier": {
+    "stated": "5 GB object storage per project + 1 GB Postgres per project (20 GB account total); 100 projects on Free",
+    "unit": "objects",
+    "metered_on": "stored-bytes",
+    "source_url": "https://neon.com/docs/introduction/plans",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "object size 5 GiB",
+    "bytes": 5368709120,
+    "source_url": "https://neon.com/docs/introduction/plans",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://neon.com/docs/introduction/plans",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "5 GB/month public network transfer per project, shared across Postgres, object storage and functions; then $0.10/GB on paid only — Free is a hard 5 GB.",
+    "metered": true,
+    "free_allowance": "5 GB per month"
+  },
+  "interface": [
+    "s3-compatible",
+    "cli"
+  ],
+  "interface_detail": "s3",
+  "tooling": "Real S3 API (`forcePathStyle: true`, path-style only), AWS SDK/boto3/aws CLI, `neon buckets` CLI, files-sdk.dev `neon` adapter. Endpoint is per-branch: https://br-<name>.storage.<cell>.<region>.aws.neon.tech",
+  "chaining": "100 projects/org (Free) x 5 GB object storage = 500 GB; x 20 GB Postgres cap = only 20 GB of DB storage, but object storage is NOT under that 20 GB cap — it is per project. Add branches: 10 branches/project, objects branch without copying. Multiple orgs per account are allowed ('one Neon account can belong to multiple orgs on different plans').",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "object size 5 GiB",
+      "source": "https://neon.com/docs/introduction/plans"
+    }
+  ],
+  "limits_note": "Max object size 5 GiB; throttling returns 503 SlowDown under load; path-style only, no virtual-host buckets; ACL/policy must be set via Console/API, not S3 wire. 5 GB egress/project/month is the real wall for serving.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Compute scale-to-zero after 5 min (Free, cannot disable); project data persists. Rate limiting is documented and retryable.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://neon.com/docs/introduction/plans",
+      "date": "2026-10-21",
+      "proved": "'Storage 1 GB/project, 20 GB account total | Object Storage 5 GB per project included | Public network transfer (egress) 5 GB per project included | Projects 100'"
+    },
+    {
+      "url": "https://neon.com/docs/storage/overview",
+      "date": "2026-10-21",
+      "proved": "'Free plan object storage 5 GB per project'"
+    },
+    {
+      "url": "https://neon.com/docs/storage/s3-compatibility",
+      "date": "2026-10-21",
+      "proved": "'compatible with the AWS SDK..., forcePathStyle: true, path-style addressing only'"
+    }
+  ],
+  "verdict": "fails-quota",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "5 GB object storage per project + 1 GB Postgres per project (20 GB account total); 100 projects on Free",
+  "extras": {
+    "dead_end": {
+      "failure_class": "quota",
+      "why": "5 GB object storage per project + 1 GB Postgres per project (20 GB account total); 100 projects on Free",
+      "retry_when": null,
+      "first_recorded": "2026-10-21"
+    }
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

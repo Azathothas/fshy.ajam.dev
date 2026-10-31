@@ -1,0 +1,139 @@
+{
+  "topic": "databases-kv",
+  "slug": "neon",
+  "provider": "Neon (Lakebase Postgres)",
+  "url": "https://neon.com/pricing",
+  "category": "serverless Postgres with scale-to-zero",
+  "free_tier": {
+    "stated": "100 projects; 100 CU-hours per project; 1 GB Postgres storage per project and 20 GB per account; 10 branches per project; 5 GB public network transfer per project per month; 5 GB object storage",
+    "unit": "mixed",
+    "source_url": "https://neon.com/pricing",
+    "read_on": "2026-10-22",
+    "metered_on": "wall-clock",
+    "notes": "Free autoscales to 2 CU (8 GB RAM); scale-to-zero after 5 min is always on and cannot be disabled"
+  },
+  "per_object_cap": {
+    "stated": "1 GB of Postgres storage per project; exceeding it blocks writes rather than billing",
+    "bytes": null,
+    "source_url": "https://neon.com/pricing",
+    "notes": "999 GiB is the branch logical size limit on the claimed project, not the free allowance"
+  },
+  "retention": {
+    "stated": "no deletion on free. Exceeding CU-hours or the 5 GB transfer suspends compute until the next billing period; exceeding storage blocks writes. 'None of these limits delete your data'",
+    "days": null,
+    "source_url": "https://neon.com/pricing",
+    "notes": "an unclaimed Claimable Neon project expires in 72 hours instead"
+  },
+  "egress": {
+    "terms": "5 GB public network transfer per project per month included; exceeding it suspends compute until the next billing period",
+    "metered": true,
+    "free_allowance": "5 GB per project per month",
+    "price_per_tb": "USD 0.10/GB on Launch and Scale after 500 GB",
+    "source_url": "https://neon.com/docs/introduction/network-transfer"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "Postgres wire protocol over TLS on a -pooler or direct host; a Management API and the Neon CLI; a Data API for HTTP queries",
+  "tooling": "any Postgres client (psql, psycopg, pg8000, Prisma, Drizzle); rclone does not apply",
+  "chaining": "a free Postgres behind a free Worker or a tunnel gives a public endpoint with no card",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "100 CU-hours per project per month; a 0.25 CU minimum means about 400 wall-clock hours of a minimum-size database, and autoscaling to 2 CU quarters that",
+      "source": "https://neon.com/pricing"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "compute suspends after 5 minutes idle on Free and the setting cannot be disabled",
+      "source": "https://neon.com/docs/introduction/scale-to-zero"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "1 GB storage per project, 20 GB per account; writes are blocked at the cap",
+      "source": "https://neon.com/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "5 GB public network transfer per project per month; exceeding it suspends compute",
+      "source": "https://neon.com/docs/introduction/network-transfer"
+    }
+  ],
+  "limits_note": "connection pooling accepts up to 10,000 client connections in transaction mode; max_connections was 450 on the observed compute and is capped at 4,000 above 9 CU",
+  "binding": "request-rate",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "email signup for a normal account; the Claimable path provisions a project with no signup, no card and no email, and the project expires in 72 hours unless claimed",
+    "country": null
+  },
+  "reliability_note": "the unclaimed path is a 72-hour demo: 100 MB storage, 1 GB transfer, then the project expires; commit latency on a cold anonymous project measured 1,750 ms",
+  "confidence": "measured",
+  "confidence_note": "the 100 MB cap was reached and its SQLSTATE recorded. The free-plan figures are a first-party page.",
+  "evidence": [
+    {
+      "url": "probe:https://claimable.neon.tech/v1/agent/identity",
+      "date": "2026-10-22",
+      "proved": "POST with type anonymous returned 201 in 4.5 s, provisioning project lucky-queen-53359445 in aws-us-east-2 with expires_at 2026-10-25T02:41:43Z; 1480 bytes; no signup, no card, no email"
+    },
+    {
+      "url": "probe:https://claimable.neon.tech/v1/oauth2/token",
+      "date": "2026-10-22",
+      "proved": "grant_type urn:ietf:params:oauth:grant-type:jwt-bearer with the identity assertion returned 200 and a 3600-second bearer token; the token-exchange grant type is rejected with a 400"
+    },
+    {
+      "url": "probe:https://claimable.neon.tech/v1/projects/lucky-queen-53359445/connection_uri",
+      "date": "2026-10-22",
+      "proved": "200 with a working postgresql:// URI only when database_name and role_name are supplied; without them the proxy returns 502 with an upstream decode error"
+    },
+    {
+      "url": "probe:postgresql://ep-old-hall-b4ghd096-pooler.c-6.us-east-2.aws.neon.tech/neondb",
+      "date": "2026-10-22",
+      "proved": "PostgreSQL 17.11 connected in 2619 ms over TLS; create table, insert and select returned a test string; max_connections 450; idle_in_transaction_session_timeout 5min; vector 0.8.0, postgis 3.5.7, timescaledb 2.17.1 and pg_trgm available"
+    },
+    {
+      "url": "probe:neon.max_cluster_size",
+      "date": "2026-10-22",
+      "proved": "SHOW returns 100MB; filling with 500 kB rows failed at SQLSTATE 53100 with 'could not extend file because project size limit (100 MB) has been exceeded', hint naming neon.max_cluster_size and pagestore_smgr.c:throttle_or_fail_extension, after 70 rows and 78 MB of reported database size"
+    },
+    {
+      "url": "probe:neon commit latency",
+      "date": "2026-10-22",
+      "proved": "ten single-row autocommit inserts averaged 1,750.6 ms each on a cold anonymous project; 35 MB of bulk insert took 21.8 s, or 1.61 MB/s"
+    },
+    {
+      "url": "https://neon.com/pricing",
+      "date": "2026-10-22",
+      "proved": "100 projects, 100 CU-hours/project, 1 GB/project and 20 GB/account storage, 5 GB egress/project, scale-to-zero after 5 min on Free, and the sentence that none of the limits delete data"
+    },
+    {
+      "url": "https://neon.com/docs/introduction/network-transfer",
+      "date": "2026-10-22",
+      "proved": "5 GB per project per month included on Free; exceeding it suspends compute until the next billing cycle"
+    },
+    {
+      "url": "https://neon.com/docs/connect/connection-pooling",
+      "date": "2026-10-22",
+      "proved": "PgBouncer transaction mode accepts up to 10,000 client connections, pools sized at 0.9 x max_connections"
+    },
+    {
+      "url": "https://neon.com/docs/reference/claimable-neon",
+      "date": "2026-10-22",
+      "proved": "unclaimed projects expire in 72 hours and are capped at 100 MB storage and 1 GB transfer; claim codes expire in 15 minutes"
+    },
+    {
+      "url": "probe:create extension vector on the claimable project",
+      "date": "2026-10-22",
+      "proved": "CREATE EXTENSION vector succeeded in 1.1 s and pg_extension reported version 0.8.0; a vector(3) column, an insert of two rows and an ORDER BY e <-> '[1,2,3]' KNN query returned distances 0.0 and 5.196 in order; run after dropping the fill, bulk and lat tables from the cap probe, at which point the database was 7440 kB"
+    },
+    {
+      "url": "https://neon.com/docs/connect/connection-pooling",
+      "date": "2026-10-22",
+      "proved": "PgBouncer transaction mode accepts up to 10,000 client connections; pool size defaults to 90% of max_connections"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T03:05:00.000Z",
+  "price_per_tb_month": null,
+  "notes": "Storage is generous and compute is not. 100 projects x 1 GB is 100 GB nominal, but each project also gets 100 CU-hours, so the shape is 100 small workloads and not one 100 GB database. The free tier does not delete data; it suspends compute or blocks writes. The measured 100 MB cap belongs to the anonymous Claimable path, not the free plan, and conflating them is the easy error. The vector extension was installed and queried, not merely listed as available, so `pgvector on a free Postgres` is a working chain and not an inference."
+}

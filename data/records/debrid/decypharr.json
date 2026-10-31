@@ -1,0 +1,79 @@
+{
+  "topic": "debrid",
+  "slug": "decypharr",
+  "provider": "Decypharr",
+  "url": "https://github.com/sirrobot01/decypharr",
+  "category": "client: qBittorrent/SABnzbd-compatible debrid gateway",
+  "tier": "free",
+  "free_tier": {
+    "stated": "MIT-licensed and self-hosted, no account of its own; the README calls it 'a Media Gateway for Debrid services and Usenet written in Go' that 'provides a unified interface for Sonarr, Radarr, and other *Arr applications'.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://github.com/sirrobot01/decypharr",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable to the gateway; the provider's cap applies.",
+    "bytes": null,
+    "source_url": "https://github.com/sirrobot01/decypharr",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: it proxies the provider's library rather than storing it.",
+    "days": null,
+    "source_url": "https://github.com/sirrobot01/decypharr",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No meter of its own; egress is the provider's.",
+    "metered": false,
+    "free_allowance": "none of its own",
+    "price_per_tb": null,
+    "source_url": "https://github.com/sirrobot01/decypharr"
+  },
+  "interface": [
+    "rest",
+    "nfs",
+    "smb"
+  ],
+  "interface_detail": "'Mock Qbittorent and Sabnzbd API that supports the Arrs (Sonarr, Radarr, Lidarr etc)', plus 'Read-only NFSv4 and SMB servers for the same libraries, including custom virtual folders'. Runs on port 8282 in the documented compose file.",
+  "endpoint": "http://localhost:8282/",
+  "tooling": "Docker image cy01/blackhole:latest (documented) or a Go binary; integrates with Sonarr, Radarr, Lidarr and anything else that speaks the qBittorrent or SABnzbd API.",
+  "chaining": "This is what makes an *arr stack work without a disk: Sonarr asks Decypharr for a 'torrent', Decypharr adds the magnet to the provider, and the file is served from the provider's library over NFS or SMB.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "none of its own; it inherits whichever provider's limit, which ranges from 100/min on a free Deepbrid key to an unpublished one on Premiumize",
+      "source": "https://github.com/sirrobot01/decypharr"
+    }
+  ],
+  "limits_note": "Broadest provider list of any client read here: Real-Debrid, TorBox, Debrid-Link, AllDebrid, Premiumize. It supports no provider whose API is undocumented (LinkSnappy, Mega-Debrid).",
+  "binding": "none",
+  "binding_note": "A pure client: the provider's per-object cap or add floor fails first at 1 TiB/month.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account; it takes the provider's key in config.json.",
+    "country": "None"
+  },
+  "reliability_note": "A mock API is a compatibility promise with two moving targets (the *arr client and the provider); a provider field rename surfaces as a failed grab, not as an error in Decypharr.",
+  "confidence": "documented",
+  "confidence_note": "README read. Not deployed here, so the NFS/SMB and mock-API behaviour is untested.",
+  "evidence": [
+    {
+      "url": "https://github.com/sirrobot01/decypharr",
+      "date": "2026-10-23",
+      "proved": "'Mock Qbittorent and Sabnzbd API that supports the Arrs', read-only NFSv4 and SMB servers, direct usenet streaming over NNTP, and the five supported providers (Real Debrid, Torbox, Debrid Link, All Debrid, Premiumize)"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-23T01:51:00.000Z",
+  "price_per_tb_month": "USD 0 for the gateway",
+  "notes": "The *arr answer observed here: every integration read is a qBittorrent-shaped shim (this, rdt-client) or a Torznab indexer (Debrid Media Manager), and no *arr application was found with a debrid client of its own. This is the most capable shim read here.",
+  "extras": {
+    "arr_integration": "qBittorrent API for grabs, SABnzbd API for usenet grabs",
+    "providers": "real-debrid, torbox, debrid-link, alldebrid, premiumize",
+    "missing_providers": "linksnappy (undocumented API), mega-debrid (password-only auth and premium-only)"
+  },
+  "self_hosted": true
+}

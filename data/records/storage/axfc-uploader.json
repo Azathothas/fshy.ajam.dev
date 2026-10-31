@@ -1,0 +1,100 @@
+{
+  "topic": "storage",
+  "slug": "axfc-uploader",
+  "provider": "Axfc Uploader (あぷろだ / axfc.net)",
+  "url": "https://www.axfc.net",
+  "category": "anonymous-dump",
+  "free_tier": {
+    "stated": "No account, no total quota — per-object only. '1ファイル最大128 GiB。複数ファイルも順番にアップロードできます' (max 128 GiB per file, multiple files uploaded in sequence). Upload form constant `data-max=\"137438953472\"` = 128 GiB, confirming the number in the markup.",
+    "unit": "GiB",
+    "metered_on": "unstated",
+    "source_url": "https://www.axfc.net/upload",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "128 GiB per file",
+    "bytes": 137438953472,
+    "source_url": "https://www.axfc.net/upload",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "per-object-cap 128 GiB. Retention is client-chosen (published-until field showed 'No limit' on a live file) and additionally bounded by a download-count cap the uploader may set",
+    "source_url": "https://www.axfc.net/upload",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "No egress meter or paid bandwidth product; the whole service is stated free ('本サービスは、別途明示する場合を除き無料です').",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rclone"
+  ],
+  "interface_detail": "rest",
+  "tooling": "No public API and no rclone backend — form-POST only, behind a Laravel CSRF token (`_token`) plus a session cookie, with `delpass` (delete key, >=8 chars) and optional `expiry_datetime`/`maxcount`. The legacy numbered URLs (`/u/4144979`) still resolve; new uploads get random `/u/f_<22-char>` URLs.",
+  "chaining": "Account-less: unlimited objects per IP x 128 GiB each, with 'No limit' available as the expiry. Chain is a re-upload loop only if you set an expiry; with expiry unset the object has no scheduled deletion.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "128 GiB per file",
+      "source": "https://www.axfc.net/upload"
+    }
+  ],
+  "limits_note": "per-object-cap 128 GiB. Retention is client-chosen (published-until field showed 'No limit' on a live file) and additionally bounded by a download-count cap the uploader may set.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "This is the legendary Japanese uploader and it is emphatically alive: the public file list was showing uploads from minutes earlier on the day of this run. But it has already had at least one near-death outage that lost voicebanks (UTAU Wiki recorded the site going dark and coming back with a broken certificate), and its own terms say no-expiry is 'not a promise of permanent storage'. Treat it as a live service with a history of vanishing.",
+  "confidence": "documented",
+  "confidence_note": "The page states the number in the record; the claim is documented, not measured.",
+  "evidence": [
+    {
+      "url": "https://www.axfc.net/",
+      "date": "2026-10-22",
+      "proved": "128 GiB per file, no registration. Re-read https://www.axfc.net/: HTTP 200, 1911 bytes, sha256 313b5538c03c1b34. Quoted: 登録不要。小さな資料から大きなファイルまで。リンクひとつで、いつものように。 [ファイルを共有する ↗](https://www.axfc.net/upload)[ファイルを探す →](https://www.axfc.net/files) ✓ 会員登録なし✓ リンクで限定共有 ファイルをドラッグ＆ドロップまたはファイルを選ぶ1ファイル最大128 GiB。複数ファイルも順番にアップロードできます。 広告 ## 最近の公開ファイル [一覧を見る →](https://www.axfc.net/files) アップロードした人が公開一覧への掲載を選んだファイルです。 [ZIPMedaBotsMugen.zipe17.7 MBOct 21, 2026, 23:07 UTC ↗](https://www.axfc.net/u/f_WH2-GZn7xyM_yFqIUbsiAw) ZIP261021-6.zip261021-6237.1 M"
+    },
+    {
+      "url": "https://www.axfc.net/upload",
+      "date": "2026-10-21",
+      "proved": "'1ファイル最大128 GiB', form constant data-max=\"137438953472\""
+    },
+    {
+      "url": "https://www.axfc.net/u/4144979",
+      "date": "2026-10-21",
+      "proved": "live share page reads 'Available until: No limit'; 'Published Oct 21, 2026'"
+    },
+    {
+      "url": "https://www.axfc.net/files",
+      "date": "2026-10-21",
+      "proved": "public listing shows uploads timestamped the same day (Oct 21 2026, 14:55 UTC), so the service is actively receiving files"
+    },
+    {
+      "url": null,
+      "date": "2026-10-21",
+      "proved": "probe: GET /download?tg=4144979 -> HTTP 405, Allow: POST; POST with a valid _token -> 302 back to /u/4144979 (needs a JS-driven second step)"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-22T00:00:00.000Z",
+  "notes": "No account, no total quota — per-object only. '1ファイル最大128 GiB。複数ファイルも順番にアップロードできます' (max 128 GiB per file, multiple files uploaded in sequence). Upload form constant `data-max=\"137438953472\"` = 128 GiB, confirming the number in the markup.",
+  "extras": {
+    "verified": [
+      {
+        "url": "https://www.axfc.net/",
+        "date": "2026-10-22",
+        "via": null,
+        "http_status": 200,
+        "bytes": 1911,
+        "sha256": "313b5538c03c1b34fec046f4e8f898aaa7ff9f108bf963a2210a1895a939e415",
+        "pattern_found": true,
+        "what_changed": "no change: the page still states the claim",
+        "capture": "captures\\axfc-www-axfc-net-.txt"
+      }
+    ]
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

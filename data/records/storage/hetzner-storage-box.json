@@ -1,0 +1,106 @@
+{
+  "topic": "storage",
+  "slug": "hetzner-storage-box",
+  "provider": "Hetzner Storage Box (BX11/BX21/BX31/BX41)",
+  "url": "https://www.hetzner.com/storage/storage-box/",
+  "category": "storage VPS / managed file storage (not object storage)",
+  "free_tier": {
+    "stated": "1 TB (BX11) / 5 TB (BX21) / 10 TB (BX31) / 20 TB (BX41); no per-file cap published, 100 sub-accounts, 10 snapshots",
+    "unit": "TB",
+    "metered_on": "unstated",
+    "source_url": "https://www.hetzner.com/storage/storage-box/",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "no per-file cap published, 100 sub-accounts, 10 snapshots 10 concurrent connections (hard, prod",
+    "source_url": "https://www.hetzner.com/storage/storage-box/",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "not stated",
+    "source_url": "https://www.hetzner.com/storage/storage-box/",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Verbatim, plan table: \"Traffic | - Unlimited\". Unlimited outbound, no cap tier, no overage SKU exists for this product.",
+    "metered": true
+  },
+  "interface": [
+    "s3-compatible",
+    "webdav",
+    "sftp",
+    "ftps",
+    "ftp",
+    "scp",
+    "rsync",
+    "smb",
+    "ssh",
+    "rclone"
+  ],
+  "interface_detail": "SFTP, FTP/FTPS, SCP, rsync-over-SSH, WebDAV, Samba/CIFS, HTTPS; BorgBackup and Restic native",
+  "tooling": "rclone (explicitly listed), restic, borg, rsync; no S3 API",
+  "chaining": "Mounts directly to AList/OpenList via WebDAV or SFTP, or to a Hetzner Cloud VM which then fronts S3/HTTP behind Cloudflare — the forum-documented pattern for turning unmetered Storage Box traffic into a served HTTP origin.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "10 concurrent connections",
+      "source": "https://www.hetzner.com/storage/storage-box/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "30 Mbit/s",
+      "source": "https://www.hetzner.com/storage/storage-box/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "no per-file cap published, 100 sub-accounts, 10 snapshots 10 concurrent connections (hard, prod",
+      "source": "https://www.hetzner.com/storage/storage-box/"
+    }
+  ],
+  "limits_note": "10 concurrent connections (hard, product page); 10 snapshots; RAID on one host and explicitly 'data is not mirrored onto other servers' — single-site durability, not object-store 11-nines.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "card",
+    "country": null
+  },
+  "reliability_note": "LowEndTalk regularly reports throughput is node-dependent (sub-30 Mbit/s on bad nodes) and that Hetzner's automatic usage-anomaly detection has disconnected boxes triggered by third-party traffic; 10-connection cap is the real binding constraint for parallel ranged GETs.",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://www.hetzner.com/storage/storage-box/",
+      "date": "2026-10-21",
+      "proved": "(firecrawl) — BX11 EUR 3.20/mo 1 TB, BX21 EUR 10.90/mo 5 TB, BX31 EUR 20.80/mo 10 TB, BX41 EUR 40.60/mo 20 TB, excl. VAT; plan table row 'Traffic | - Unlimited'"
+    },
+    {
+      "url": "https://www.hetzner.com/storage/storage-box/",
+      "date": "2026-10-21",
+      "proved": "RAID 'can withstand several drive failures... data is not mirrored onto other servers'"
+    },
+    {
+      "url": "https://www.hetzner.com/storage/storage-box/bx11/",
+      "date": "2026-10-21",
+      "proved": "10 concurrent connections, payment: bank transfer/credit card/PayPal/SEPA, no minimum contract term, immediate cancellation"
+    },
+    {
+      "url": "https://lowendtalk.com/discussion/190385/looking-for-40tb-storage",
+      "date": "2026-10-21",
+      "proved": "two 20 TB boxes = EUR 96.62 incl. VAT = EUR 2.42/TB corroborating the 20 TB tier"
+    },
+    {
+      "url": "https://lowendtalk.com/discussion/169107/why-bandwidth-is-so-cheap-at-hetzner",
+      "date": "2026-10-21",
+      "proved": "Hetzner unlimited-traffic policy text; the EUR 1.21/TB charge applies only to the 10G-uplink addon, not to Storage Box"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "price_per_tb_month": "$2.28/TB at 20 TB (EUR 40.60 = $45.61); $2.45/TB at 5 TB (EUR 10.90 = $12.24); $3.59/TB at 1 TB (EUR 3.20 = $3.59). Cheapest genuine unlimited-egress storage found.",
+  "notes": "1 TB (BX11) / 5 TB (BX21) / 10 TB (BX31) / 20 TB (BX41); no per-file cap published, 100 sub-accounts, 10 snapshots",
+  "extras": {
+    "price_verbatim": "$2.28/TB at 20 TB (EUR 40.60 = $45.61); $2.45/TB at 5 TB (EUR 10.90 = $12.24); $3.59/TB at 1 TB (EUR 3.20 = $3.59). Cheapest genuine unlimited-egress storage found."
+  },
+  "binding": "per-object-cap",
+  "binding_note": null
+}

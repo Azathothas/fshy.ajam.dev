@@ -1,0 +1,114 @@
+{
+  "slug": "spotnzb-com",
+  "provider": "SpotNZB.com (public Spotweb)",
+  "url": "https://spotnzb.com/",
+  "category": "Public Spotweb instance exposing a Newznab API",
+  "tier": "anonymous",
+  "free_tier": {
+    "stated": "No account and no key. /api?t=caps returned 2,128 bytes with <limits max=\"500\" default=\"50\"/> and <registration available=\"no\" open=\"no\"/>; /api?t=search&q=linux returned 41,244 bytes with 50 items; /api?t=g&id=... returned a 7,346-byte NZB.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://spotnzb.com/api?t=caps",
+    "read_on": "2026-10-23",
+    "notes": ""
+  },
+  "per_object_cap": {
+    "stated": "not applicable per object; at most 500 results per request per caps",
+    "bytes": null,
+    "source_url": "https://spotnzb.com/api?t=caps",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not published. Spotnet-derived catalogue; depth follows the Spotnet post history.",
+    "days": null,
+    "source_url": "https://spotnzb.com/api?t=caps",
+    "notes": "unverified"
+  },
+  "egress": {
+    "terms": "No metering and no account.",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://spotnzb.com/api?t=caps"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "Newznab-shaped API at /api, caps type Spotweb version 0.1, with search, tv-search and get. No apikey was required.",
+  "endpoint": "https://spotnzb.com/api?t=search&q=<query> ; https://spotnzb.com/api?t=g&id=<message-id>",
+  "tooling": "Works as a generic Newznab indexer in Prowlarr and NZBHydra2, and therefore in Sonarr, Radarr and Lidarr, with no wrapper and no key. Same Spotweb surface as nzbserver.com.",
+  "chaining": "A second hostname for the same anonymous Spotnet index; useful as failover for nzbserver.com, not as extra coverage.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "none observed: 3 requests in one session, all 200",
+      "source": "probe:https://spotnzb.com/api?t=search&q=linux"
+    },
+    {
+      "kind": "request-rate",
+      "value": "500 results per request maximum per caps",
+      "source": "https://spotnzb.com/api?t=caps"
+    }
+  ],
+  "limits_note": "The 500/50 clamp was measured on the twin instance nzbserver.com, where limit=501 returns the 50-result default; the same code is running here (identical caps shape).",
+  "binding": "none",
+  "binding_note": "No counter to hit; the same result-clamp caveat as nzbserver.com.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "Nothing: registration is declared unavailable and no key was needed for caps, search or get.",
+    "country": null
+  },
+  "reliability_note": "Volunteer-run Spotweb instance with a stock placeholder email in caps; the NZB it served was byte-identical to nzbserver.com's, so the two go down together only if the shared backend does.",
+  "confidence": "measured",
+  "confidence_note": "caps, search and download measured. The clamp detail is carried from the twin instance and is labelled as such rather than claimed as measured here.",
+  "evidence": [
+    {
+      "url": "probe:https://spotnzb.com/api?t=caps&x=1",
+      "date": "2026-10-23",
+      "proved": "caps returned 200 and 2,128 bytes: type Spotweb, limits max 500 default 50, registration unavailable"
+    },
+    {
+      "url": "probe:https://spotnzb.com/api?t=search&q=linux&x=1",
+      "date": "2026-10-23",
+      "proved": "anonymous Newznab search returned 200 and 41,244 bytes with 50 items (sha256 3ca43b75...)"
+    },
+    {
+      "url": "probe:https://spotnzb.com/api?t=g&id=19XKJ8pokN4BLjUagNmQp@spot.net&x=1",
+      "date": "2026-10-23",
+      "proved": "anonymous NZB download returned 200, 7,346 bytes, 10 files, sha256 ac230711... identical to nzbserver.com's"
+    }
+  ],
+  "verdict": "qualifies",
+  "extras": {
+    "price": "USD 0",
+    "measurements": [
+      {
+        "url": "https://spotnzb.com/api?t=caps&x=1",
+        "status": 200,
+        "bytes": 2128,
+        "sha256": "1ccee9cf5780092eee656be49d656aa5a0ed1c383ef8f0c8a9a492d2b6879751",
+        "note": ""
+      },
+      {
+        "url": "https://spotnzb.com/api?t=search&q=linux&x=1",
+        "status": 200,
+        "bytes": 41244,
+        "sha256": "3ca43b75ce2773b715f082d11ca0049493ea211f3c6fd024d13aebef14dfa7d9",
+        "note": ""
+      },
+      {
+        "url": "https://spotnzb.com/api?t=g&id=19XKJ8pokN4BLjUagNmQp@spot.net&x=1",
+        "status": 200,
+        "bytes": 7346,
+        "sha256": "ac230711afeb760dee32b4ef20a83f42c339d7bfaa8a2bdafa46b482f3e0c6bc",
+        "note": ""
+      }
+    ],
+    "nzb_is_newznab": true,
+    "same_backend_as": "nzbserver-com"
+  },
+  "notes": "Listed in a community index of Usenet indexers as 'No accounts, Free'. Its caps is a stock Spotweb default, so it is a second front end rather than a separately curated index.",
+  "verified_at": "2026-10-23T02:11:54.066Z",
+  "topic": "debrid",
+  "price_per_tb_month": null
+}

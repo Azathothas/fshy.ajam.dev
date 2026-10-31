@@ -1,0 +1,91 @@
+{
+  "topic": "debrid",
+  "slug": "telegram-bot-api-local-server",
+  "provider": "Telegram Bot API server (self-hosted, --local mode)",
+  "url": "https://github.com/tdlib/telegram-bot-api",
+  "category": "bot API gateway (software, self-hosted)",
+  "tier": "self-hosted",
+  "free_tier": {
+    "stated": "No fee to Telegram. The cost is a host: the server must run somewhere with outbound internet. 'The only mandatory options are --api-id and --api-hash.'",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://github.com/tdlib/telegram-bot-api",
+    "read_on": "2026-10-23",
+    "notes": "the account's own 2 GB free / 4 GB Premium per-file ceiling still applies to a user session; this record is about the bot gateway"
+  },
+  "per_object_cap": {
+    "stated": "In local mode the server 'Upload[s] files up to 2000 MB' and 'Download[s] files without a size limit.'",
+    "bytes": null,
+    "source_url": "https://github.com/tdlib/telegram-bot-api",
+    "notes": "'2000 MB' is the vendor's own wording; no byte-exact boundary is published"
+  },
+  "retention": {
+    "stated": "Not applicable: a gateway. Bytes live in the chat they were sent to, not on the server.",
+    "days": null,
+    "source_url": "https://github.com/tdlib/telegram-bot-api"
+  },
+  "egress": {
+    "terms": "No separate charge from Telegram. The host's outbound bandwidth is the part that is metered, by whoever runs the host.",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://github.com/tdlib/telegram-bot-api"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "HTTP JSON API. 'By default the Telegram Bot API server is launched on the port 8081, which can be changed using the option --http-port.' The server 'accepts only HTTP requests, so a TLS termination proxy needs to be used to handle remote HTTPS requests.'",
+  "endpoint": "http://127.0.0.1:8081 (default --http-port)",
+  "tooling": "Docker image or CMake build of tdlib/telegram-bot-api; any Bot API client library can be pointed at it. The state-of-the-art in-the-wild user is the Torrs bot, which runs the server to lift its own 50 MB ceiling.",
+  "chaining": "Raises a bot from 50 MB per upload and 20 MB per download to 2000 MB and unlimited, so a 2 GB file in a channel becomes retrievable by a script; needs a VM plus a TLS proxy, which a free compute tier supplies.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "2000 MB per upload in --local mode (50 MB on api.telegram.org)",
+      "source": "https://github.com/tdlib/telegram-bot-api"
+    },
+    {
+      "kind": "write-gated",
+      "value": "requires api_id and api_hash from my.telegram.org",
+      "source": "https://github.com/tdlib/telegram-bot-api"
+    }
+  ],
+  "limits_note": "Download has no size limit in local mode; upload does. The asymmetry is the reason a mirror bot can pull a 2 GB file but still split anything above 2 GB.",
+  "binding": "per-object-cap",
+  "binding_note": "At 1 TiB/month this still fails first: no object above 2000 MB can be sent, so the month is 512+ objects at best. Flood control is nowhere near binding (see telegram-uploadbot).",
+  "identity_cost": {
+    "kind": "any-phone",
+    "detail": "my.telegram.org issues api_id/api_hash to a Telegram account, and a Telegram account is registered to a phone number. No card and no email are required for the app registration.",
+    "country": null
+  },
+  "reliability_note": "One server per bot at a time: moving a bot requires logOut from api.telegram.org first, or updates are silently lost ('If the bot is logged in on more than one server simultaneously, there is no guarantee that it will receive all updates.').",
+  "confidence": "documented",
+  "confidence_note": "The limit sentences are on the project README and the Bot API page, both read. A measured rung needs a 2 GB upload through a running instance; that was not done.",
+  "evidence": [
+    {
+      "url": "https://github.com/tdlib/telegram-bot-api",
+      "date": "2026-10-23",
+      "proved": "'To enable Bot API features not available at https://api.telegram.org, specify the option --local. In the local mode the Bot API server allows to: Download files without a size limit. Upload files up to 2000 MB.' and the mandatory --api-id/--api-hash sentence"
+    },
+    {
+      "url": "https://github.com/tdlib/telegram-bot-api",
+      "date": "2026-10-23",
+      "proved": "'If the bot is logged in on more than one server simultaneously, there is no guarantee that it will receive all updates.'"
+    },
+    {
+      "url": "https://core.telegram.org/bots/api",
+      "date": "2026-10-23",
+      "proved": "'If you switch to a local Bot API server, your bot will be able to: Download files without a size limit. Upload files up to 2000 MB.' plus 'The majority of bots will be OK with the default configuration, running on our servers.'"
+    },
+    {
+      "url": "https://core.telegram.org/api/limits",
+      "date": "2026-10-23",
+      "proved": "'Page not found' on 2026-10-23, and the Wayback capture 20250718224518 of the same URL is the same 'Page not found' - there is no limits page to cite, so flood numbers come from bots/faq and api/errors"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "price_per_tb_month": null,
+  "notes": "Abandon this if Telegram ships the local-mode upload cap below 2 GB, or if the 2000 MB figure disappears from the README without a replacement. This is software a user must run, not a hosted service; it is recorded because it is the only documented way to make a bot a 2 GB path, and because hosted leech bots visibly depend on it.",
+  "verified_at": "2026-10-23T01:52:23.000Z",
+  "self_hosted": true
+}

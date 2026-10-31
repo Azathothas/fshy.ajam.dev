@@ -1,0 +1,76 @@
+{
+  "topic": "debrid",
+  "slug": "soax",
+  "provider": "SOAX",
+  "url": "https://soax.com/pricing",
+  "category": "residential egress: rotating residential, metered per GB and tiered by country",
+  "tier": "Residential, monthly plan",
+  "free_tier": {
+    "stated": "The price table carries a 'Free' column beside the paid tiers, priced at the Tier-1 rate of $5.00/GB; the volume behind that column was not read.",
+    "unit": "GB",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://soax.com/pricing",
+    "read_on": "2026-10-23",
+    "notes": "A 'Free' column in a rate table is not established as an allowance; it may be a trial."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: a byte stream, not an object",
+    "bytes": null,
+    "source_url": "https://soax.com/pricing",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: a live endpoint, not stored bytes",
+    "days": null,
+    "source_url": "https://soax.com/pricing",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "Metered per GB and priced by the country the exit is in: Tier 1 (which includes Germany and the United States) runs $5.00/GB on the free column down to 'from $0.85/GB' on a $3,000/month plan; Tier 3 (the Philippines is the worked example) runs $2.00/GB down to 'from $0.35/GB'.",
+    "metered": true,
+    "free_allowance": "not established",
+    "price_per_tb": "USD 0.85/GB at Tier 1 on the $3,000 plan and USD 0.35/GB at Tier 3, i.e. USD 870 and USD 358 per TiB",
+    "source_url": "https://soax.com/pricing"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "HTTP(S) and SOCKS5 rotating endpoints with country, region and ASN targeting.",
+  "endpoint": "https://dashboard.soax.com/",
+  "tooling": "any HTTP/SOCKS5 client",
+  "chaining": "The only vendor read whose price depends on which country the exit must be in, which matters because the debrid service's account country and the target hoster's region can differ: a German exit is Tier 1 at $0.85-5.00/GB and a Philippine exit is Tier 3 at $0.35-2.00/GB.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "GB allowance set by the monthly plan; the rate falls from $5.00 to $0.85/GB at Tier 1 as the plan grows from free to $3,000/month",
+      "source": "https://soax.com/pricing"
+    }
+  ],
+  "limits_note": "The country tier is the hidden variable: the same byte costs 5.9 times more through a German exit than through a Philippine one.",
+  "binding": "volume-quota",
+  "binding_note": "Even the cheapest Tier-3 rate is USD 358 a TiB, which is 90 times a USD 4 subscription; the meter, not the class, is what fails.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "Self-service subscription; the payment methods were not read on the page opened.",
+    "country": null
+  },
+  "reliability_note": "Country tiering means the exit's country, not just its class, is priced; a debrid account whose login country differs from its exit country is also the pattern that trips new-location checks.",
+  "confidence": "documented",
+  "confidence_note": "The tier table is on the vendor page read. The 'Free' column's volume is unread, so it is recorded as a rate with no allowance rather than as a free tier.",
+  "evidence": [
+    {
+      "url": "https://soax.com/pricing",
+      "date": "2026-10-23",
+      "proved": "the tier matrix: 'Tier 1 | $5.00/GB | $3.00/GB | $2.20/GB | $1.50/GB | from $0.85/GB', 'Tier 3 | $2.00/GB | $1.20/GB | $0.90/GB | $0.60/GB | from $0.35/GB', and 'Germany and the United States are both in tier 1'"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-23T02:21:34.000Z",
+  "price_per_tb_month": "USD 358-870 per TiB at the top tier (1,024 GB), USD 922-2,253 per TiB on the $500/month plan",
+  "notes": "The lowest per-GB number found anywhere in the metered market (Tier 3, $0.35/GB) still costs USD 358 per TiB, which is the number that ends the argument that metered residential egress can carry a debrid workload.",
+  "extras": {
+    "tier_1": "Germany, United States and others; $5.00/GB (free column) to $0.85/GB ($3,000 plan)",
+    "tier_3": "Philippines as the worked example; $2.00/GB to $0.35/GB",
+    "plan_ladder": "Free / $200 / $500 / $1,500 / $3,000 per month"
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "topic": "storage",
+  "slug": "itch-io",
+  "provider": "itch.io (butler / Wharf)",
+  "url": "https://itch.io/docs/butler/pushing.html",
+  "category": "paas",
+  "free_tier": {
+    "stated": "30 GB uncompressed per build ('the itch.io backend will reject builds with a total uncompressed size that exceeds 30GB'). No documented total-account storage cap; project pages have a soft limit of 20, raisable on request. Free to host, unlimited downloads.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://itch.io/docs/butler/pushing.html",
+    "read_on": "2026-10-21",
+    "notes": null
+  },
+  "per_object_cap": {
+    "stated": "per-object-cap: 30 GB",
+    "bytes": 30000000000,
+    "source_url": "https://itch.io/docs/butler/pushing.html",
+    "notes": "not stated"
+  },
+  "retention": {
+    "stated": "per-object-cap: 30 GB uncompressed per build/channel; per-object-cap on HTML5 embeds: 500 MB total extracted and 200 MB per single extracted file; web uploader caps at 2 GB (500 MB default) but butler has no such limit; request-rate not a practical constraint. Retention: builds persist until deleted; no TTL.",
+    "source_url": "https://itch.io/docs/butler/pushing.html",
+    "notes": "not stated"
+  },
+  "egress": {
+    "terms": "Free and unmetered — 'There is no limit to downloads' (itch.io support reply). Files served from itch.zone CDN.",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "rsync",
+    "cli"
+  ],
+  "interface_detail": "rest",
+  "tooling": "`butler` CLI (butler push / butler download / butler status) plus the Wharf HTTP API — GET https://api.itch.io/wharf/latest?target=user/game&channel_name=X returns the build manifest. butler does rsync-style block diffing so re-pushes are cheap.",
+  "chaining": "30 GB per build x unlimited channels per project (channel name is arbitrary: windows, osx, bonus, dlc-1, shard-01...) x up to 20+ projects per free account. 1 project x 20 channels = 600 GB on one free account. Each build is independently addressable and downloadable.",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "per-object-cap: 30 GB",
+      "source": "https://itch.io/docs/butler/pushing.html"
+    }
+  ],
+  "limits_note": "per-object-cap: 30 GB uncompressed per build/channel; per-object-cap on HTML5 embeds: 500 MB total extracted and 200 MB per single extracted file; web uploader caps at 2 GB (500 MB default) but butler has no such limit; request-rate not a practical constraint. Retention: builds persist until deleted; no TTL.",
+  "identity_cost": {
+    "kind": "institution",
+    "detail": null,
+    "country": null
+  },
+  "reliability_note": "Pushing the same directory twice is a no-op, so versions accumulate as distinct builds rather than overwriting; butler auth uses an API key, and a project can be taken down by moderation (technical effect: URL 404s, data gone).",
+  "confidence": "reported",
+  "confidence_note": null,
+  "evidence": [
+    {
+      "url": "https://itch.io/docs/butler/pushing.html",
+      "date": "2026-10-21",
+      "proved": "'Limits: currently, the itch.io backend will reject builds with a total uncompressed size that exceeds 30GB.'"
+    },
+    {
+      "url": "https://itch.io/t/46291/uploading-large-games-faq",
+      "date": "2026-10-21",
+      "proved": "'butler is a more advanced uploader and has no such technical limits'; web uploader 2 GB ceiling"
+    },
+    {
+      "url": "https://itch.io/t/6077449/more-project-space",
+      "date": "2026-10-21",
+      "proved": "'There is no limit to downloads'; butler raises per-project limit to 2 GB instantly, further on request"
+    },
+    {
+      "url": "https://api.itch.io/wharf/latest?target=test/test&channel_name=windows",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200 {\"errors\":[\"invalid game\"]} — endpoint is live and validating, i.e. the manifest read path is public"
+    },
+    {
+      "url": "https://img.itch.zone/aW1nLzE2ODI3NDY4LnBuZw==/original/ljN55Y.png",
+      "date": "2026-10-21",
+      "proved": "probe: GET -> 200, 39871 bytes, image/png — itch.zone CDN serves originals anonymously, no referer chain"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-21T00:00:00.000Z",
+  "notes": "30 GB uncompressed per build ('the itch.io backend will reject builds with a total uncompressed size that exceeds 30GB'). No documented total-account storage cap; project pages have a soft limit of 20, raisable on request. Free to host, unlimited downloads.",
+  "extras": {},
+  "binding": "per-object-cap",
+  "binding_note": null
+}

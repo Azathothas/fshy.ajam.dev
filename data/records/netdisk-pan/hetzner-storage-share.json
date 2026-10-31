@@ -1,0 +1,104 @@
+{
+  "topic": "netdisk-pan",
+  "slug": "hetzner-storage-share",
+  "provider": "Hetzner Storage Share (managed Nextcloud)",
+  "url": "https://www.hetzner.com/storage/storage-share/",
+  "category": "managed Nextcloud, paid only",
+  "free_tier": {
+    "stated": "No free tier, no trial, and no hourly cap. The smallest plan NX11 is 1 TB at EUR 4.29/month excluding VAT, billed by the hour to a monthly maximum",
+    "unit": "TiB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://www.hetzner.com/storage/storage-share/",
+    "read_on": "2026-10-22",
+    "notes": "Hetzner writes the sizes as TB. The figure is quoted as stated and not converted"
+  },
+  "per_object_cap": {
+    "stated": "Not published as a per-file cap. The limit that is published is the instance quota, and the FAQ states that an administrator's 'unlimited' per-user quota is bounded by the instance total",
+    "bytes": null,
+    "source_url": "https://www.hetzner.com/storage/storage-share/"
+  },
+  "retention": {
+    "stated": "Until deleted. No minimum contract period and no cancellation period, and the vendor states that a plan change causes no data loss. Backups of the database and the storage backend run several times a day, to a host the instance is not running on, restorable from konsoleH",
+    "days": null,
+    "source_url": "https://www.hetzner.com/storage/storage-share/"
+  },
+  "egress": {
+    "terms": "Unlimited internal and external traffic, stated as a product feature rather than implied: 'Storage Shares have unlimited internal and external traffic'",
+    "metered": false,
+    "free_allowance": "unlimited",
+    "price_per_tb": null,
+    "source_url": "https://www.hetzner.com/storage/storage-share/"
+  },
+  "interface": [
+    "webdav",
+    "rest",
+    "rclone"
+  ],
+  "tooling": "rclone webdav backend, the Nextcloud desktop and mobile clients, davfs2, curl -u, and the Nextcloud OCC command line through the managed instance",
+  "chaining": "WebDAV is the whole point: OpenList mounts it as a first-class remote, and a Cloudflare cache in front turns it into a serving origin. One 10 TB instance can also be sharded internally into per-user quotas with separate credentials, which is the only way in this survey to divide one paid unit rather than make more accounts",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "not published; the JVM-free Nextcloud upload chunking limits a single object in practice and the smaller partners cap at 10 GB per file",
+      "source": "https://www.hetzner.com/storage/storage-share/"
+    }
+  ],
+  "identity_cost": {
+    "kind": "card",
+    "detail": "a Hetzner account with a payment method; the order form is at konsoleH. No identity document and no phone verification was seen on the order path. A new account goes through Hetzner's own risk review, which is not the same gate as a card check",
+    "country": null
+  },
+  "reliability_note": "Falkenstein, Germany. RAID backend with checksummed integrity checking, several backups a day to a different host, restore from konsoleH. Managed Nextcloud inherits Nextcloud's sync semantics, which is worse for millions of small objects than a raw storage box",
+  "confidence": "documented",
+  "evidence": [
+    {
+      "url": "https://www.hetzner.com/storage/storage-share/",
+      "date": "2026-10-22",
+      "proved": "the pricing block reads 'NX11 max/mo. EUR 4.29 per month, excl. VAT ... Storage 1 TB ... 3 Users ... unlimited Simultaneous Connections 50', 'NX21 EUR 14.19 ... Storage 5 TB ... 7 Users ... 100', 'NX31 EUR 27.39 ... Storage 10 TB ... 10 Users ... 200'; all three FSN1"
+    },
+    {
+      "url": "https://www.hetzner.com/storage/storage-share/",
+      "date": "2026-10-22",
+      "proved": "'Storage Shares have unlimited internal and external traffic' in the Features block, and 'WebDAV lets you automate your access to it'"
+    },
+    {
+      "url": "https://www.hetzner.com/storage/storage-share/",
+      "date": "2026-10-22",
+      "proved": "FAQ: 'this \"unlimited\" space will actually be limited by the overall storage quota size of the Storage Share instance that you (the admin) have bought', and a backup 'is always made to another host machine on which the instance is not running'"
+    },
+    {
+      "url": "https://www.hetzner.com/storage/storage-share/",
+      "date": "2026-10-22",
+      "proved": "'No minimum contract period. No cancellation period.' and 'upgrade or downgrade your Storage Share ... without worrying about data loss'"
+    },
+    {
+      "url": "https://www.hetzner.com/storage/storage-share/",
+      "date": "2026-10-21",
+      "proved": "1 TB EUR 4.29, 5 TB EUR 14.19, 10 TB EUR 27.39 per month excluding VAT, and the same three tiers"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-22T04:06:37.166Z",
+  "price_per_tb_month": "EUR 4.29/TB/month on NX11, falling to EUR 2.74/TB/month on NX31 at 10 TB, excluding VAT, read 2026-10-22",
+  "binding": "per-object-cap",
+  "binding_note": "The instance total is bought and the traffic is unlimited, so what decides the object size is the per-file ceiling nobody publishes. A single 300 GiB file is.",
+  "confidence_note": "Every number is from the vendor's own pricing block, read. It is `documented` and not `measured` because no instance was ordered and no WebDAV endpoint was exercised: the order path needs a card.",
+  "notes": "The cheapest verified managed Nextcloud per terabyte in this survey is not this one, and the reason is the tier shape: EUR 2.74/TB/month at 10 TB against Serverdiscounter's EUR 2.40/TB including VAT at 25 TB. What Hetzner sells instead is the shortest contract and the most boring operations record. The user count is per instance and additional users are not a listed add-on, so a sharded plan must live inside that number.",
+  "extras": {
+    "access_mode": "paid",
+    "free_tier_exists": false,
+    "region": "FSN1, Falkenstein, Germany",
+    "tier_prices_eur_month_ex_vat": {
+      "NX11_1TB": 4.29,
+      "NX21_5TB": 14.19,
+      "NX31_10TB": 27.39
+    },
+    "users_per_instance": {
+      "NX11": 3,
+      "NX21": 7,
+      "NX31": 10
+    },
+    "webdav": "enabled on every tier; the vendor FAQ documents subdomains and CNAME for a custom domain",
+    "vat_position": "prices are stated excluding VAT, so a private buyer in the EU pays the local rate on top"
+  }
+}
