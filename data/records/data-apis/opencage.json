@@ -1,0 +1,244 @@
+{
+  "topic": "data-apis",
+  "slug": "opencage",
+  "provider": "OpenCage",
+  "url": "https://opencagedata.com/pricing",
+  "category": "geocoding API",
+  "tier": "free trial (no end date; inactive accounts deleted after three months)",
+  "free_tier": {
+    "stated": "2,500 geocoding requests a day (forward or reverse, one location per request), a hard limit that resets at 24:00 UTC, at 1 request per second; spreadsheet uploads up to 100 rows; one API key; no credit card",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://opencagedata.com/api",
+    "read_on": "2026-10-30",
+    "notes": "every request counts, including bad requests and requests with no result. The cheapest paid steps are a one-time plan of 10,000 requests for EUR 20, usable for up to a year, and the X-Small subscription of 10,000 requests a day at 15 requests a second for EUR 45 a month. Geosearch (autosuggest) has no free amount."
+  },
+  "per_object_cap": {
+    "stated": "one location per API request: the API takes no batch; a spreadsheet upload on the free trial is limited to 100 rows, each row counted as one request",
+    "bytes": null,
+    "source_url": "https://opencagedata.com/api"
+  },
+  "retention": {
+    "stated": "uploaded spreadsheets are deleted after 3 days for free trial users",
+    "days": null,
+    "source_url": "https://opencagedata.com/api",
+    "notes": "no separate temporary and permanent pricing"
+  },
+  "egress": {
+    "terms": "not applicable: a query API metered in requests, not bytes",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://opencagedata.com/pricing"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "HTTPS GET to api.opencagedata.com/geocode/v1/json (also xml and geojson) with the key in the key parameter; a request without a key answers HTTP 401 missing API key, and the documented test key answers HTTP 200",
+  "endpoint": "https://api.opencagedata.com/geocode/v1/json",
+  "tooling": "any HTTP client; vendor tutorials for Node.js, PHP, Python and Ruby include parallel request scripts, and a command line tool geocodes CSV files",
+  "chaining": "2,500 storable geocodes a day with no card, so a slow job of about 2,500 addresses a day can build a permanent table; a one-off batch beyond that is the EUR 20 one-time plan of 10,000 requests, or the Geoapify free plan (data-apis/geoapify) at 3,000 a day with a batch endpoint. Bulk path: no bulk path; one location per request and no data download",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "2,500 requests a day on the free trial, a hard limit reset at 24:00 UTC; past it the API answers HTTP 402 quota exceeded",
+      "source": "https://opencagedata.com/api"
+    },
+    {
+      "kind": "request-rate",
+      "value": "1 request per second on the free trial; faster answers HTTP 429",
+      "source": "https://opencagedata.com/api"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "one location per request; spreadsheet uploads up to 100 rows on the free trial",
+      "source": "https://opencagedata.com/api"
+    }
+  ],
+  "binding": "volume-quota",
+  "binding_note": "1 request a second allows far more than 2,500 requests in a day, so the daily hard limit is met first",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "the signup form asks for a name, a company or organization name, an email and a password, behind hCaptcha, or a Google or GitHub sign-up; no credit card for the free trial; the general terms set a minimum age of 18",
+    "country": null
+  },
+  "reliability_note": "past the daily hard limit the API answers HTTP 402, and a free trial key that keeps requesting past it is disabled with HTTP 403; free trial accounts are deleted after three months of inactivity, and accounts detected as several free trials of one user are fed randomly wrong results",
+  "confidence": "documented",
+  "confidence_note": "the pricing page (in its markdown form), the API reference, the FAQ, the signup form and the terms were quoted on 2026-10-30 and 2026-10-31; a keyless request answered HTTP 401 and the published test key answered HTTP 200 with zero results. No account was opened, so the 2,500 a day was not exercised; a keyed run to the 402 would move it to measured.",
+  "evidence": [
+    {
+      "url": "https://opencagedata.com/api",
+      "date": "2026-10-30",
+      "proved": "the free trial is capped at 2,500 requests a day",
+      "capture": "sha256:62260c3f7104e114af4baf65053e315f1537220ca278d735525d3e11fc92efe8",
+      "quote": "Free trial accounts have a hard limit of 2,500 requests per day for testing purposes."
+    },
+    {
+      "url": "https://opencagedata.com/api",
+      "date": "2026-10-30",
+      "proved": "the daily count resets at 24:00 UTC",
+      "capture": "sha256:62260c3f7104e114af4baf65053e315f1537220ca278d735525d3e11fc92efe8",
+      "quote": "Daily counts reset at 24:00 UTC."
+    },
+    {
+      "url": "https://opencagedata.com/api",
+      "date": "2026-10-30",
+      "proved": "the free trial rate is 1 request per second",
+      "capture": "sha256:62260c3f7104e114af4baf65053e315f1537220ca278d735525d3e11fc92efe8",
+      "quote": "Free trial accounts are limited to one request per second."
+    },
+    {
+      "url": "https://opencagedata.com/api",
+      "date": "2026-10-30",
+      "proved": "past the hard limit the API answers HTTP 402",
+      "capture": "sha256:62260c3f7104e114af4baf65053e315f1537220ca278d735525d3e11fc92efe8",
+      "quote": "If you send a request after you have reached your hard limit you will receive a `402 - quota exceeded` response"
+    },
+    {
+      "url": "https://opencagedata.com/api",
+      "date": "2026-10-30",
+      "proved": "a free trial that keeps requesting past the limit is disabled with HTTP 403",
+      "capture": "sha256:62260c3f7104e114af4baf65053e315f1537220ca278d735525d3e11fc92efe8",
+      "quote": "Free trial accounts that continually request beyond the hard limit (if you ignore the `402` response) will eventually be blocked and see a `403 - disabled` response."
+    },
+    {
+      "url": "https://opencagedata.com/api",
+      "date": "2026-10-30",
+      "proved": null,
+      "capture": "sha256:62260c3f7104e114af4baf65053e315f1537220ca278d735525d3e11fc92efe8",
+      "quote": "This applies whether you are on our free-trial, or you have become a paying customer, and even after you stop being a customer."
+    },
+    {
+      "url": "https://opencagedata.com/api",
+      "date": "2026-10-30",
+      "proved": "there is no separate temporary and permanent pricing",
+      "capture": "sha256:62260c3f7104e114af4baf65053e315f1537220ca278d735525d3e11fc92efe8",
+      "quote": "All data returns by the API can be stored permanently."
+    },
+    {
+      "url": "https://opencagedata.com/api",
+      "date": "2026-10-30",
+      "proved": "the API takes one location per request; only a spreadsheet upload is geocoded in bulk",
+      "capture": "sha256:62260c3f7104e114af4baf65053e315f1537220ca278d735525d3e11fc92efe8",
+      "quote": "We allow manual uploading of a spreadsheet which we geocode row by row, but the API itself does not allow multiple locations per request."
+    },
+    {
+      "url": "https://opencagedata.com/api",
+      "date": "2026-10-30",
+      "proved": "free trial spreadsheet uploads are limited to 100 rows",
+      "capture": "sha256:62260c3f7104e114af4baf65053e315f1537220ca278d735525d3e11fc92efe8",
+      "quote": "Free trial users are limited to spreadsheets with 100 rows."
+    },
+    {
+      "url": "https://opencagedata.com/api",
+      "date": "2026-10-30",
+      "proved": "inactive free trial accounts are deleted after three months",
+      "capture": "sha256:62260c3f7104e114af4baf65053e315f1537220ca278d735525d3e11fc92efe8",
+      "quote": "Free trial accounts are deleted after three months of inactivity, after which we have no record of the account."
+    },
+    {
+      "url": "https://opencagedata.com/pricing.md",
+      "date": "2026-10-31",
+      "proved": "the free trial row: 2,500 requests a day at 1 request a second, no price",
+      "capture": "sha256:3d30775ff3547df6441bebfde14db359a3ce18759f04f2427fb83b05d0a877f7",
+      "quote": "| Free trial | 2,500 | 1 | — | — |"
+    },
+    {
+      "url": "https://opencagedata.com/pricing.md",
+      "date": "2026-10-31",
+      "proved": "the free trial needs no credit card",
+      "capture": "sha256:3d30775ff3547df6441bebfde14db359a3ce18759f04f2427fb83b05d0a877f7",
+      "quote": "- no credit card required"
+    },
+    {
+      "url": "https://opencagedata.com/pricing.md",
+      "date": "2026-10-31",
+      "proved": "the cheapest subscription is X-Small: 10,000 requests a day at 15 a second for EUR 45 a month",
+      "capture": "sha256:3d30775ff3547df6441bebfde14db359a3ce18759f04f2427fb83b05d0a877f7",
+      "quote": "| X-Small | 10,000 | 15 | €45 | €450 |"
+    },
+    {
+      "url": "https://opencagedata.com/pricing.md",
+      "date": "2026-10-31",
+      "proved": "the smallest one-time plan is 10,000 requests for EUR 20",
+      "capture": "sha256:3d30775ff3547df6441bebfde14db359a3ce18759f04f2427fb83b05d0a877f7",
+      "quote": "| Small | 10,000 | 15 | €20 |"
+    },
+    {
+      "url": "https://opencagedata.com/pricing",
+      "date": "2026-10-30",
+      "proved": "a one-time plan's requests can be used for up to a year",
+      "capture": "sha256:f92ede0223d1c4cdfb5d86d9f1cbfb0848ae47bacb383533b9c20a89871a9eb6",
+      "quote": "You can then use those requests as and when you like for up to a year."
+    },
+    {
+      "url": "https://opencagedata.com/pricing",
+      "date": "2026-10-30",
+      "proved": null,
+      "capture": "sha256:f92ede0223d1c4cdfb5d86d9f1cbfb0848ae47bacb383533b9c20a89871a9eb6",
+      "quote": "Even if you are no longer a customer."
+    },
+    {
+      "url": "https://opencagedata.com/pricing",
+      "date": "2026-10-30",
+      "proved": "every request counts, including bad requests and empty results",
+      "capture": "sha256:f92ede0223d1c4cdfb5d86d9f1cbfb0848ae47bacb383533b9c20a89871a9eb6",
+      "quote": "Yes, every request counts as it generates work for us."
+    },
+    {
+      "url": "https://opencagedata.com/users/sign_up",
+      "date": "2026-10-30",
+      "proved": "the signup form asks for a company or organization name besides name, email and password",
+      "capture": "sha256:a0b6843bb1f7498efabb6a1f3b033fe87551d84de164c57c3c9e70c07dc34f5c",
+      "quote": "Company or organization name \\*"
+    },
+    {
+      "url": "https://opencagedata.com/users/sign_up",
+      "date": "2026-10-30",
+      "proved": "account creation is behind hCaptcha",
+      "capture": "sha256:a0b6843bb1f7498efabb6a1f3b033fe87551d84de164c57c3c9e70c07dc34f5c",
+      "quote": "Account creation is protected by hCaptcha"
+    },
+    {
+      "url": "https://opencagedata.com/users/sign_up",
+      "date": "2026-10-30",
+      "proved": "sign-up through GitHub is offered",
+      "capture": "sha256:a0b6843bb1f7498efabb6a1f3b033fe87551d84de164c57c3c9e70c07dc34f5c",
+      "quote": "Sign up with GitHub"
+    },
+    {
+      "url": "https://opencagedata.com/terms",
+      "date": "2026-10-30",
+      "proved": "the minimum age is 18",
+      "capture": "sha256:bb3cf970c857579d60068d11ec7ab0a1f7022b01c88ad1dae88b653977cafc61",
+      "quote": "You must be over 18 years of age to use OpenCage services."
+    },
+    {
+      "url": "https://opencagedata.com/faq",
+      "date": "2026-10-30",
+      "proved": "several free trial accounts of one user are fed randomly wrong results",
+      "capture": "sha256:adabfd980dc7ac1931056a2fd22d5a33768421029a265d01d09bbfb220b21b8d",
+      "quote": "But assuming you have no moral qualms about abusing our generous service, be warned that when we see you doing this we will start feeding you back randomly wrong results."
+    },
+    {
+      "url": "probe:https://api.opencagedata.com/geocode/v1/json?q=Zurich#body",
+      "date": "2026-10-30",
+      "proved": "the geocode endpoint answers and refuses a request with no key",
+      "capture": "sha256:4d8e9e89d65414c0aa823c6ddeea5a2a5fb9a440316fb243bd1038f0baffe0df",
+      "quote": "\"message\":\"missing API key\""
+    },
+    {
+      "url": "probe:https://api.opencagedata.com/geocode/v1/json?q=NOWHERE-INTERESTING#body",
+      "date": "2026-10-31",
+      "proved": "the documented test key gets HTTP 200 and an empty result set from the live endpoint",
+      "capture": "sha256:cfee6e3b6475e0d7b664cd49339037de78f5bcf531c04d20bb59e38a928010e2",
+      "quote": "\"status\":{\"code\":200,\"message\":\"OK\"}"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-31T00:48:53.808Z",
+  "notes": "Bulk path: no bulk path; one location per request, spreadsheet uploads of 100 rows on the free trial, and no data download. The vendor labels the free amount a trial for testing; it has no end date.",
+  "extras": {
+    "bulk_path": "no bulk path"
+  }
+}

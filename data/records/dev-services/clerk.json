@@ -1,0 +1,326 @@
+{
+  "topic": "dev-services",
+  "slug": "clerk",
+  "provider": "Clerk",
+  "tier": "Hobby",
+  "url": "https://clerk.com/pricing",
+  "category": "hosted user authentication and user management (sign-up, sign-in, sessions, organizations)",
+  "free_tier": {
+    "stated": "Hobby: free with no credit card; 50,000 monthly retained users per app, unlimited applications, up to 3 dashboard seats",
+    "unit": "users",
+    "metered_on": "identity-count",
+    "source_url": "https://clerk.com/pricing",
+    "read_on": "2026-10-30",
+    "notes": "A user counts as retained only after signing in again more than 24 hours after sign-up. Above 50,000 retained users on Hobby a one-month grace period applies before an upgrade is needed. Hobby also includes 1,000 API key creations and 100,000 verifications, 2,500 M2M token creations and 100,000 verifications a month, 100 monthly retained organizations per app with up to 20 members each, and 10,000 protection checks a month. SMS codes and multi-factor authentication are not on Hobby. A development instance is capped at 100 users and delivers at most 20 SMS messages and 100 emails a month."
+  },
+  "per_object_cap": {
+    "stated": "unverified: no size limit for user metadata is stated on the pages read",
+    "bytes": null
+  },
+  "retention": {
+    "stated": "Application Logs are kept 1 day on Hobby (7 days on Pro, 30 days on Business)",
+    "days": 1,
+    "source_url": "https://clerk.com/pricing",
+    "notes": "No retention period for user records is stated on the pages read."
+  },
+  "egress": {
+    "terms": "not applicable: an authentication API; no traffic allowance or egress term is published",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://clerk.com/pricing"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "Frontend API for sign-in and sign-up from the browser, rate limited per IP address; Backend API for administrative tasks, called with a secret key at https://api.clerk.com/v1 (a GET /v1/users without a key answered 401); webhooks for data sync.",
+  "endpoint": "https://api.clerk.com/v1",
+  "tooling": "Clerk SDKs and prebuilt sign-in components, the clerk CLI (npx clerk@latest), or any HTTP client against the Backend API with a secret key.",
+  "chaining": "Login and user store for a web app on free hosting; leaving the 100-user development instance needs a domain with DNS records, which pairs with a cheap or free name from domains-dns.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "50,000 monthly retained users per app",
+      "source": "https://clerk.com/pricing"
+    },
+    {
+      "kind": "write-gated",
+      "value": "a production instance needs a domain the user owns and DNS records on it; a development instance is capped at 100 users",
+      "source": "https://clerk.com/docs/guides/development/deployment/production.md"
+    },
+    {
+      "kind": "request-rate",
+      "value": "Backend API: 100 requests per 10 seconds on a development instance, 1000 requests per 10 seconds on a production instance",
+      "source": "https://clerk.com/docs/guides/how-clerk-works/system-limits"
+    },
+    {
+      "kind": "request-rate",
+      "value": "Frontend API sign-up creation: 5 requests per 10 seconds, limited per IP address",
+      "source": "https://clerk.com/docs/guides/how-clerk-works/system-limits"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "development instance: 20 SMS messages and 100 emails per calendar month",
+      "source": "https://clerk.com/docs/guides/development/testing/test-emails-and-phones.md"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "Application Logs kept 1 day",
+      "source": "https://clerk.com/pricing"
+    }
+  ],
+  "limits_note": "Dashboard seats are capped at 3 on Hobby; the vocabulary has no kind for a seat count.",
+  "binding": "write-gated",
+  "binding_note": "Without a domain the app stays on a development instance, capped at 100 users and 100 emails a month; with a domain, the 50,000 retained users per app is the ceiling.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The sign-up form asks for an email address and a password, or a GitHub or Google sign-in, and states no credit card is required. A production instance also needs a domain with DNS records.",
+    "country": null
+  },
+  "reliability_note": "A rate-limited request answers 429 with a Retry-After header; Hobby email support covers billing, registration and abuse queries only.",
+  "confidence": "documented",
+  "confidence_note": "Every limit is quoted from first-party pricing, docs and sign-up pages; the Backend API host was probed and answered 401 without a key. A sign-in and a Backend API call on a Hobby instance would move it to measured.",
+  "evidence": [
+    {
+      "url": "https://clerk.com/pricing",
+      "date": "2026-10-30",
+      "proved": "the Hobby plan is free and needs no credit card",
+      "capture": "sha256:f2a5711e85eb3133fd7620c6cbbde6da8fcca4a496a70a6d6aa501c02d8c1014",
+      "quote": "## Hobby — Free (No credit card required)"
+    },
+    {
+      "url": "https://clerk.com/pricing",
+      "date": "2026-10-30",
+      "proved": "Hobby is free and Pro is USD 25 a month",
+      "capture": "sha256:f2a5711e85eb3133fd7620c6cbbde6da8fcca4a496a70a6d6aa501c02d8c1014",
+      "quote": "| Price (monthly) | Free | $25/mo | $300/mo | Custom |"
+    },
+    {
+      "url": "https://clerk.com/pricing",
+      "date": "2026-10-30",
+      "proved": "Pro is USD 20 a month billed annually",
+      "capture": "sha256:f2a5711e85eb3133fd7620c6cbbde6da8fcca4a496a70a6d6aa501c02d8c1014",
+      "quote": "| Price (annual) | Free | $20/mo | $250/mo | Custom (annual only) |"
+    },
+    {
+      "url": "https://clerk.com/pricing",
+      "date": "2026-10-30",
+      "proved": "Hobby is limited to 50,000 monthly retained users per app",
+      "capture": "sha256:f2a5711e85eb3133fd7620c6cbbde6da8fcca4a496a70a6d6aa501c02d8c1014",
+      "quote": "- 50,000 MRU limit per app"
+    },
+    {
+      "url": "https://clerk.com/pricing",
+      "date": "2026-10-30",
+      "proved": "Hobby has up to 3 dashboard seats",
+      "capture": "sha256:f2a5711e85eb3133fd7620c6cbbde6da8fcca4a496a70a6d6aa501c02d8c1014",
+      "quote": "- Up to 3 dashboard seats"
+    },
+    {
+      "url": "https://clerk.com/pricing",
+      "date": "2026-10-30",
+      "proved": "Hobby allows unlimited applications",
+      "capture": "sha256:f2a5711e85eb3133fd7620c6cbbde6da8fcca4a496a70a6d6aa501c02d8c1014",
+      "quote": "- Unlimited applications"
+    },
+    {
+      "url": "https://clerk.com/pricing",
+      "date": "2026-10-30",
+      "proved": "a user counts only after signing in again after the first 24 hours",
+      "capture": "sha256:f2a5711e85eb3133fd7620c6cbbde6da8fcca4a496a70a6d6aa501c02d8c1014",
+      "quote": "- First Day Free: Users are not counted as active unless they sign in again after their first 24 hours, so a user who signs up and never returns is never billed."
+    },
+    {
+      "url": "https://clerk.com/pricing",
+      "date": "2026-10-30",
+      "proved": "exceeding 50,000 retained users on Hobby gives a one-month grace period",
+      "capture": "sha256:f2a5711e85eb3133fd7620c6cbbde6da8fcca4a496a70a6d6aa501c02d8c1014",
+      "quote": "- Grace period: If you exceed 50,000 monthly retained users on Hobby, or 100 monthly retained organizations without the B2B Authentication add-on, you get a one-month grace period to upgrade so your application keeps running."
+    },
+    {
+      "url": "https://clerk.com/pricing",
+      "date": "2026-10-30",
+      "proved": "Hobby keeps Application Logs 1 day",
+      "capture": "sha256:f2a5711e85eb3133fd7620c6cbbde6da8fcca4a496a70a6d6aa501c02d8c1014",
+      "quote": "- Application Logs (1 day retention)"
+    },
+    {
+      "url": "https://clerk.com/pricing",
+      "date": "2026-10-30",
+      "proved": "Application Logs are kept 1, 7 and 30 days on Hobby, Pro and Business",
+      "capture": "sha256:f2a5711e85eb3133fd7620c6cbbde6da8fcca4a496a70a6d6aa501c02d8c1014",
+      "quote": "| 1 day retention | 7 day retention | 30 day retention |"
+    },
+    {
+      "url": "https://clerk.com/pricing",
+      "date": "2026-10-30",
+      "proved": "Hobby includes 1,000 API key creations, 2,500 M2M token creations and 100,000 verifications of each a month",
+      "capture": "sha256:f2a5711e85eb3133fd7620c6cbbde6da8fcca4a496a70a6d6aa501c02d8c1014",
+      "quote": "- Machine Authentication (API Keys & M2M Tokens limit per month; API Keys: 1,000 creations & 100,000 verifications per month; M2M Tokens: 2,500 creations & 100,000 verifications per month)"
+    },
+    {
+      "url": "https://clerk.com/pricing",
+      "date": "2026-10-30",
+      "proved": "SMS codes are not available on Hobby",
+      "capture": "sha256:f2a5711e85eb3133fd7620c6cbbde6da8fcca4a496a70a6d6aa501c02d8c1014",
+      "quote": "| SMS codes. Authenticate with a code sent directly to the user's phone via SMS. US and Canada, $0.01 per SMS. International: market rate | No | Per SMS fees apply | Per SMS fees apply |"
+    },
+    {
+      "url": "https://clerk.com/pricing",
+      "date": "2026-10-30",
+      "proved": "multi-factor authentication is not available on Hobby",
+      "capture": "sha256:f2a5711e85eb3133fd7620c6cbbde6da8fcca4a496a70a6d6aa501c02d8c1014",
+      "quote": "| Multifactor authentication (MFA). Allow users to enable multifactor authentication with authenticator applications, SMS codes, and backup codes. | No | Yes | Yes |"
+    },
+    {
+      "url": "https://clerk.com/pricing",
+      "date": "2026-10-30",
+      "proved": "100 monthly retained organizations per app are included",
+      "capture": "sha256:f2a5711e85eb3133fd7620c6cbbde6da8fcca4a496a70a6d6aa501c02d8c1014",
+      "quote": "- 100 MRO included per app"
+    },
+    {
+      "url": "https://clerk.com/pricing",
+      "date": "2026-10-30",
+      "proved": "an organization has up to 20 members without the add-on",
+      "capture": "sha256:f2a5711e85eb3133fd7620c6cbbde6da8fcca4a496a70a6d6aa501c02d8c1014",
+      "quote": "- Up to 20 members per Organization"
+    },
+    {
+      "url": "https://clerk.com/pricing",
+      "date": "2026-10-30",
+      "proved": "10,000 protection checks a month are free",
+      "capture": "sha256:f2a5711e85eb3133fd7620c6cbbde6da8fcca4a496a70a6d6aa501c02d8c1014",
+      "quote": "Usage: 10,000 protection checks free per month, then $0.002 per protection check up to 1,000,000. Basic and advanced protections use protection checks. Brute force prevention doesn't count toward them."
+    },
+    {
+      "url": "https://clerk.com/pricing",
+      "date": "2026-10-30",
+      "proved": "Hobby email support covers billing, registration and abuse queries only",
+      "capture": "sha256:f2a5711e85eb3133fd7620c6cbbde6da8fcca4a496a70a6d6aa501c02d8c1014",
+      "quote": "| Email support. 24/7 access to our expert support staff. | Included (Billing, registration, and abuse queries only) | Yes | Priority Email, Support included |"
+    },
+    {
+      "url": "https://clerk.com/pricing",
+      "date": "2026-10-30",
+      "proved": "Pro charges USD 0.02 a month per retained user above 50,000",
+      "capture": "sha256:f2a5711e85eb3133fd7620c6cbbde6da8fcca4a496a70a6d6aa501c02d8c1014",
+      "quote": "- 50,000 MRU included per app (Additional $0.02/mo each; volume discounts available)"
+    },
+    {
+      "url": "https://clerk.com/docs/guides/how-clerk-works/system-limits",
+      "date": "2026-10-30",
+      "proved": "a development instance takes 100 Backend API requests per 10 seconds",
+      "capture": "sha256:904a833d32102156dab1a03c7fad08341336eba8bf34e1b8f5defcb3bf14132b",
+      "quote": "| Development instances |      | 100 requests per 10 seconds  |"
+    },
+    {
+      "url": "https://clerk.com/docs/guides/how-clerk-works/system-limits",
+      "date": "2026-10-30",
+      "proved": "a production instance takes 1000 Backend API requests per 10 seconds",
+      "capture": "sha256:904a833d32102156dab1a03c7fad08341336eba8bf34e1b8f5defcb3bf14132b",
+      "quote": "| Production instances  |      | 1000 requests per 10 seconds |"
+    },
+    {
+      "url": "https://clerk.com/docs/guides/how-clerk-works/system-limits",
+      "date": "2026-10-30",
+      "proved": "Frontend API limits apply per IP address",
+      "capture": "sha256:904a833d32102156dab1a03c7fad08341336eba8bf34e1b8f5defcb3bf14132b",
+      "quote": "Frontend API requests are rate-limited per user and identified by their IP address."
+    },
+    {
+      "url": "https://clerk.com/docs/guides/how-clerk-works/system-limits",
+      "date": "2026-10-30",
+      "proved": "sign-up creation is limited to 5 requests per 10 seconds",
+      "capture": "sha256:904a833d32102156dab1a03c7fad08341336eba8bf34e1b8f5defcb3bf14132b",
+      "quote": "/v1/sign\\_ups 5 requests per 10 seconds"
+    },
+    {
+      "url": "https://clerk.com/docs/guides/how-clerk-works/system-limits",
+      "date": "2026-10-30",
+      "proved": "a rate-limited request carries Retry-After",
+      "capture": "sha256:904a833d32102156dab1a03c7fad08341336eba8bf34e1b8f5defcb3bf14132b",
+      "quote": "Requests that have been rate limited will receive the `Retry-After` response header, which contains the number of seconds after which the block expires."
+    },
+    {
+      "url": "https://dashboard.clerk.com/sign-up",
+      "date": "2026-10-30",
+      "proved": "the sign-up asks for GitHub, Google or an email address and a password, with no credit card",
+      "capture": "sha256:0b27886fc029704582e1a6a1158ed6f7575bcd5eab2c9d32433ec5eb368e8f89",
+      "quote": "# Create your account\n\nNo credit card required.\n\nGitHubGoogle\n\nor\n\nEmail address\n\nPassword"
+    },
+    {
+      "url": "https://clerk.com/docs/guides/development/managing-environments.md",
+      "date": "2026-10-31",
+      "proved": "a development instance is capped at 100 users",
+      "capture": "sha256:2e0bec94f27e94db19c18234de3562ff546dad3b6967a6f9ef70a98386a354ae",
+      "quote": "- Development instances are capped at 100 users, and user data can not be transferred between instances."
+    },
+    {
+      "url": "https://clerk.com/docs/guides/development/managing-environments.md",
+      "date": "2026-10-31",
+      "proved": "the development instance's session handling is not meant for production",
+      "capture": "sha256:2e0bec94f27e94db19c18234de3562ff546dad3b6967a6f9ef70a98386a354ae",
+      "quote": "While this enables smooth local development workflows, it is not secure enough for production use."
+    },
+    {
+      "url": "https://clerk.com/docs/guides/development/managing-environments.md",
+      "date": "2026-10-31",
+      "proved": "the development instance carries the session token in the querystring",
+      "capture": "sha256:2e0bec94f27e94db19c18234de3562ff546dad3b6967a6f9ef70a98386a354ae",
+      "quote": "Including a sensitive value like the client token in a querystring is not a strong security practice"
+    },
+    {
+      "url": "https://clerk.com/docs/guides/development/deployment/production.md",
+      "date": "2026-10-31",
+      "proved": "a production deployment needs a domain the user owns",
+      "capture": "sha256:ebdf2e7c5ff8d0d1b26537b031b27c3afd9b668e043fd51b78c48e11b7b5bab2",
+      "quote": "1. You will need to have a domain you own."
+    },
+    {
+      "url": "https://clerk.com/docs/guides/development/deployment/production.md",
+      "date": "2026-10-31",
+      "proved": "a production deployment needs DNS records on that domain",
+      "capture": "sha256:ebdf2e7c5ff8d0d1b26537b031b27c3afd9b668e043fd51b78c48e11b7b5bab2",
+      "quote": "2. You will need to be able to add DNS records on your domain."
+    },
+    {
+      "url": "https://clerk.com/docs/guides/development/testing/test-emails-and-phones.md",
+      "date": "2026-10-31",
+      "proved": "a development instance delivers at most 20 SMS and 100 emails a month",
+      "capture": "sha256:138118eede9a5e929fb3e6881a246eee29f0e5041120dc798fbb7ea1b0e4eed8",
+      "quote": "If Clerk is used to deliver SMS messages and/or emails for your development instance, a maximum of 20 SMS messages and 100 emails can be delivered per calendar month."
+    },
+    {
+      "url": "https://clerk.com/docs/guides/development/managing-environments.md",
+      "date": "2026-10-31",
+      "proved": "a clerk CLI creates applications from the terminal",
+      "capture": "sha256:2e0bec94f27e94db19c18234de3562ff546dad3b6967a6f9ef70a98386a354ae",
+      "quote": "run `npx -y clerk@latest apps create \"My App Staging\"`"
+    },
+    {
+      "url": "https://clerk.com/docs/guides/how-clerk-works/overview.md",
+      "date": "2026-10-31",
+      "proved": "administrative tasks go through a separate Backend API",
+      "capture": "sha256:f698021c22e41b08b693e254e598c16e7855e3152e14e4085762a745767fc1dc",
+      "quote": "These operations are handled by a separate API known as the backend API (BAPI)."
+    },
+    {
+      "url": "https://clerk.com/docs/guides/how-clerk-works/overview.md",
+      "date": "2026-10-31",
+      "proved": "the Backend API is called with a secret key",
+      "capture": "sha256:f698021c22e41b08b693e254e598c16e7855e3152e14e4085762a745767fc1dc",
+      "quote": "To maintain security, these administrative tasks should only be executed on the server side using a secret key inaccessible to your users or the browser."
+    },
+    {
+      "url": "probe:https://api.clerk.com/v1/users",
+      "date": "2026-10-31",
+      "proved": "api.clerk.com/v1/users answers 401 without a key",
+      "capture": "sha256:028e621a0c9e176aa5b46896a70c20defc2c91c696a9e1e22fa59abe5bd0af58",
+      "quote": "\"status\": 401"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-31T06:23:28.112Z",
+  "notes": "A development instance passes its session token in the querystring, which Clerk states is not secure enough for production use. Pro is USD 25 a month (USD 20 billed annually) and charges USD 0.02 a month per retained user above 50,000 per app."
+}

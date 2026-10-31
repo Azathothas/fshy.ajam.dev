@@ -31,16 +31,16 @@
     "unit": "requests",
     "metered_on": "request-count",
     "source_url": "https://openrouter.ai/docs/api-reference/limits",
-    "read_on": "2026-10-22",
+    "read_on": "2026-10-30",
     "notes": "GET /api/v1/key reports the daily counter as free_model_daily_requests with a limit field; the per-minute limit is not reported there. The higher daily ceiling is granted starting one credit below the table's threshold of 10 credits; the page prints that figure as an unrendered template placeholder"
   },
   "endpoint": "https://openrouter.ai/api/v1/chat/completions",
   "identity_cost": {
     "kind": "email",
-    "detail": "an account and an API key. An unauthenticated call is refused with 'No cookie auth credentials found'. Free-model requests are available below 10 credits purchased at 50 requests per day. unverified: the account sign-in methods and any card or phone step are not stated on the docs pages",
+    "detail": "an account and an API key. The sign-up form asks for an email address and a password, with first and last name optional; an unauthenticated API call is refused with 'No cookie auth credentials found'. The lower free-model tier needs no credit purchase. unverified: any phone or card step after the form, which is behind a sign-up",
     "country": null
   },
-  "reliability_note": "no reliability event; the endpoint was never reached with a key",
+  "reliability_note": "no reliability event recorded; an unauthenticated GET /api/v1/key answered HTTP 401 with 'No cookie auth credentials found', so the API answers and gates on a key; enforcement of the free-model caps is not measured",
   "confidence": "documented",
   "confidence_note": "the gating rule, the per-minute and per-day caps and the response fields are quoted from the vendor page; enforcement of the caps is not measured, and a key would move this to measured in one call",
   "evidence": [
@@ -116,10 +116,109 @@
       "proved": "the free-model limits apply to ids ending in :free",
       "capture": "sha256:ae62b6aff14b2b0586d0e4c0222657e6660c5f0acaf435988f65639628b03ed3",
       "quote": "If you're using a free model variant (with an ID ending in `:free`), the following limits apply:"
+    },
+    {
+      "url": "https://openrouter.ai/docs/api-reference/limits",
+      "date": "2026-10-30",
+      "proved": "the free usage limits table still gives 20 requests per minute and 50 per day below 10 credits purchased, and 20 per minute and 1000 per day from 10 credits",
+      "capture": "sha256:ae62b6aff14b2b0586d0e4c0222657e6660c5f0acaf435988f65639628b03ed3",
+      "quote": "| Less than 10 | 20 | 50 | | At least 10 | 20 | 1000 |"
+    },
+    {
+      "url": "https://openrouter.ai/docs/api-reference/limits",
+      "date": "2026-10-30",
+      "proved": "the table's columns are all-time credits purchased, requests per minute and requests per day",
+      "capture": "sha256:ae62b6aff14b2b0586d0e4c0222657e6660c5f0acaf435988f65639628b03ed3",
+      "quote": "| Credits purchased (all time) | Requests per minute | Requests per day |"
+    },
+    {
+      "url": "https://openrouter.ai/docs/api-reference/limits",
+      "date": "2026-10-30",
+      "proved": "the free-model caps apply to model ids ending in :free",
+      "capture": "sha256:ae62b6aff14b2b0586d0e4c0222657e6660c5f0acaf435988f65639628b03ed3",
+      "quote": "If you're using a free model variant (with an ID ending in `:free`), the following limits apply:"
+    },
+    {
+      "url": "https://openrouter.ai/docs/faq",
+      "date": "2026-10-30",
+      "proved": "an account with no credits purchased gets 50 free-model requests a day, so the lower tier needs no purchase; 10 credits raise it to 1000",
+      "capture": "sha256:c371f9c1c645f0907af3e5716fb37b5a76ebeb06100fdfd42680e85e684290f3",
+      "quote": "If you have purchased at least 10 credits, your free model rate limit will be 1000 requests per day. Otherwise, you will be rate limited to 50 free model API requests per day."
+    },
+    {
+      "url": "https://openrouter.ai/docs/faq",
+      "date": "2026-10-30",
+      "proved": "the 50 a day is a total across free models, and 10 credits purchased raise it to 1000 a day",
+      "capture": "sha256:c371f9c1c645f0907af3e5716fb37b5a76ebeb06100fdfd42680e85e684290f3",
+      "quote": "These models have low rate limits (50 requests per day total) and are usually not suitable for production use. If you have purchased at least 10 credits, the free models will be limited to 1000 requests per day."
+    },
+    {
+      "url": "https://openrouter.ai/docs/api-reference/limits",
+      "date": "2026-10-30",
+      "proved": "the free-model daily counter runs over the UTC day",
+      "capture": "sha256:ae62b6aff14b2b0586d0e4c0222657e6660c5f0acaf435988f65639628b03ed3",
+      "quote": "Free-model requests recorded so far in the current UTC day"
+    },
+    {
+      "url": "https://openrouter.ai/docs/api-reference/limits",
+      "date": "2026-10-30",
+      "proved": "extra accounts or API keys do not change the rate limits",
+      "capture": "sha256:ae62b6aff14b2b0586d0e4c0222657e6660c5f0acaf435988f65639628b03ed3",
+      "quote": "Making additional accounts or API keys will not affect your rate limits, as we govern capacity globally."
+    },
+    {
+      "url": "https://openrouter.ai/docs/api-reference/limits",
+      "date": "2026-10-30",
+      "proved": "GET /api/v1/key reports the free-model daily counter and ceiling as free_model_daily_requests",
+      "capture": "sha256:ae62b6aff14b2b0586d0e4c0222657e6660c5f0acaf435988f65639628b03ed3",
+      "quote": "The `free_model_daily_requests` field in the `GET /api/v1/key` response above reports the daily counter and ceiling that gate your free-model requests when these limits apply to your account."
+    },
+    {
+      "url": "https://openrouter.ai/docs/api-reference/limits",
+      "date": "2026-10-30",
+      "proved": "the per-minute cap is not reported by the key endpoint, and the daily tier is selected by all-time credits purchased",
+      "capture": "sha256:ae62b6aff14b2b0586d0e4c0222657e6660c5f0acaf435988f65639628b03ed3",
+      "quote": "The per-minute limit is not reported there. The `limit` tier is selected by all-time credits purchased, independently of `is_free_tier`."
+    },
+    {
+      "url": "https://openrouter.ai/docs/api-reference/limits",
+      "date": "2026-10-30",
+      "proved": "the higher daily ceiling starts one credit below the table's threshold, and the page prints that figure as an unrendered template placeholder",
+      "capture": "sha256:ae62b6aff14b2b0586d0e4c0222657e6660c5f0acaf435988f65639628b03ed3",
+      "quote": "To absorb rounding and top-up fees, the higher daily ceiling is granted starting one credit below the table's threshold (currently {FREE_MODEL_CREDITS_THRESHOLD - 1} credits)"
+    },
+    {
+      "url": "https://openrouter.ai/sign-up",
+      "date": "2026-10-30",
+      "proved": "the sign-up form asks for an email address and a password, with first and last name marked optional",
+      "capture": "sha256:76618d177e8e07e99ce88bd6e910213e33183f31238f8f9775079c9ae7258615",
+      "quote": "Email address"
+    },
+    {
+      "url": "https://openrouter.ai/sign-up",
+      "date": "2026-10-30",
+      "proved": "the first name field of the sign-up form is optional",
+      "capture": "sha256:76618d177e8e07e99ce88bd6e910213e33183f31238f8f9775079c9ae7258615",
+      "quote": "First nameOptional"
+    },
+    {
+      "url": "probe:https://openrouter.ai/api/v1/key",
+      "date": "2026-10-30",
+      "proved": "GET /api/v1/key without a key answered HTTP 401 'No cookie auth credentials found', so the API is up and requires a key",
+      "capture": "sha256:36c1407c049a212826f183eabdf3eae02172f79f80806f9afed93f5eeb68c49c",
+      "quote": "\"message\":\"No cookie auth credentials found\",\"code\":401"
+    },
+    {
+      "url": "https://openrouter.ai/docs/api-reference/limits",
+      "date": "2026-10-30",
+      "proved": "10 credits purchased raise the free-variant daily limit, and the paid variant of a model has no platform-level request cap",
+      "capture": "sha256:ae62b6aff14b2b0586d0e4c0222657e6660c5f0acaf435988f65639628b03ed3",
+      "quote": "On free variants**, purchase at least 10 credits to raise your daily limit, or switch to the paid variant of the model, which has no platform-level request cap."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-28T05:28:29.443Z",
-  "notes": null,
-  "binding": "request-rate"
+  "verified_at": "2026-10-31T00:12:42.989Z",
+  "notes": "The free-model caps are stated for model ids ending in :free, and the paid variant of a model has no platform-level request cap. The 50 requests a day below 10 credits purchased is a total across all free models, not a per-model figure.",
+  "binding": "request-rate",
+  "binding_note": "the :free allowance is stated only as requests per minute and requests per day, with the daily tier selected by all-time credits purchased"
 }

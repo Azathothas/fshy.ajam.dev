@@ -1,0 +1,194 @@
+{
+  "topic": "data-apis",
+  "slug": "gdelt",
+  "provider": "GDELT Project",
+  "url": "https://www.gdeltproject.org/data.html",
+  "category": "news event dataset and search API",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Every dataset free for unlimited and unrestricted use, with no fee and no key: Event, Mentions and GKG CSV files every 15 minutes, the DOC 2.0 search API over a rolling 3 months, and the same tables in Google BigQuery.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://www.gdeltproject.org/about.html",
+    "read_on": "2026-10-30",
+    "notes": "The DOC 2.0 API asks for at most one request every 5 seconds and answered HTTP 429 to every call made on 2026-10-30; its 429 body points high-traffic users to the web ngrams dataset."
+  },
+  "per_object_cap": {
+    "stated": "DOC 2.0 API: 75 results a request by default, 250 at most; the bulk files are zips of one 15-minute slice each",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": "the DOC 2.0 API searches a rolling window of the last 3 months; the GDELT 2.0 files start on February 19, 2015",
+    "days": null,
+    "notes": "",
+    "source_url": "https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/"
+  },
+  "egress": {
+    "terms": "no fee and no key on data.gdeltproject.org; a 15-minute export zip downloaded with no account",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.gdeltproject.org/about.html"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "plain HTTPS downloads from data.gdeltproject.org, indexed by lastupdate.txt and masterfilelist.txt; the DOC 2.0 API as GET with JSON, CSV or HTML output; the tables also sit in public Google BigQuery datasets",
+  "endpoint": "https://data.gdeltproject.org/gdeltv2/lastupdate.txt",
+  "tooling": "any HTTP client for the files and the API; a BigQuery client for the public tables",
+  "chaining": "The bulk path: poll lastupdate.txt every 15 minutes and fetch the listed zips, checking each against the size the listing gives; the DOC 2.0 API serves only ad hoc searches.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "DOC 2.0 API: one request every 5 seconds; every call made on 2026-10-30 answered HTTP 429",
+      "source": "probe:https://api.gdeltproject.org/api/v2/doc/doc"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "DOC 2.0 API: 250 results a request at most, 75 by default",
+      "source": "https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "The DOC 2.0 API throttle is the only limit met; the bulk files carry no stated limit, so a reader that polls the files meets none.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account and no key: the bulk files and the DOC 2.0 API take plain GET requests, and a 15-minute export zip downloaded with no credentials. The identity cost of the BigQuery route is unverified.",
+    "country": null
+  },
+  "reliability_note": "The DOC 2.0 API answered HTTP 429 to every call on 2026-10-30, from a residential ISP address and from a cloud fetch egress, with calls minutes apart; the bulk files answered 200.",
+  "confidence": "measured",
+  "confidence_note": "A 15-minute export zip listed in lastupdate.txt downloaded with no account, 106145 bytes, the size the listing gives; the DOC 2.0 API was probed and answered 429 each time. The DOC 2.0 API ceiling stays unmeasured until a call answers 200.",
+  "evidence": [
+    {
+      "url": "https://www.gdeltproject.org/about.html",
+      "date": "2026-10-30",
+      "proved": null,
+      "capture": "sha256:707cf9cc747d4c8dc4b690ae151e4b50a1ca7d97cf81b1e5afe8cb4ca4e9e7bf",
+      "quote": "all datasets released by the GDELT Project are available for unlimited and unrestricted use for any academic, commercial, or governmental use of any kind without fee."
+    },
+    {
+      "url": "https://www.gdeltproject.org/about.html",
+      "date": "2026-10-30",
+      "proved": null,
+      "capture": "sha256:707cf9cc747d4c8dc4b690ae151e4b50a1ca7d97cf81b1e5afe8cb4ca4e9e7bf",
+      "quote": null
+    },
+    {
+      "url": "https://www.gdeltproject.org/about.html",
+      "date": "2026-10-30",
+      "proved": null,
+      "capture": "sha256:707cf9cc747d4c8dc4b690ae151e4b50a1ca7d97cf81b1e5afe8cb4ca4e9e7bf",
+      "quote": null
+    },
+    {
+      "url": "https://www.gdeltproject.org/data.html",
+      "date": "2026-10-30",
+      "proved": "the whole database is free and open",
+      "capture": "sha256:7df09965f022d3352d3e904f5e8cd1e76ea3ac5629344894d82168d9371334f7",
+      "quote": "The entire GDELT database is 100% free and open"
+    },
+    {
+      "url": "https://www.gdeltproject.org/data.html",
+      "date": "2026-10-30",
+      "proved": "the full event and graph datasets download as CSV, over 2.5TB for a single year",
+      "capture": "sha256:7df09965f022d3352d3e904f5e8cd1e76ea3ac5629344894d82168d9371334f7",
+      "quote": "Advanced users and those with unique use cases can download the entire underlying event and graph datasets in CSV format - over 2.5TB for last year alone."
+    },
+    {
+      "url": "https://www.gdeltproject.org/data.html",
+      "date": "2026-10-30",
+      "proved": "the BigQuery tables update every 15 minutes",
+      "capture": "sha256:7df09965f022d3352d3e904f5e8cd1e76ea3ac5629344894d82168d9371334f7",
+      "quote": "with live datasets updated every 15 minutes"
+    },
+    {
+      "url": "https://blog.gdeltproject.org/gdelt-2-0-our-global-world-in-realtime/",
+      "date": "2026-10-30",
+      "proved": "lastupdate.txt lists the newest 15-minute files",
+      "capture": "sha256:96d60172360c5e3015d9f3334b62fa1a39e3fd163174d02b20d8e94579c3a1ef",
+      "quote": "[Last 15 Minutes CSV Data File List – English](https://data.gdeltproject.org/gdeltv2/lastupdate.txt). *(Updated every 15 minutes).*"
+    },
+    {
+      "url": "https://blog.gdeltproject.org/gdelt-2-0-our-global-world-in-realtime/",
+      "date": "2026-10-30",
+      "proved": "masterfilelist.txt lists every GDELT 2.0 file",
+      "capture": "sha256:96d60172360c5e3015d9f3334b62fa1a39e3fd163174d02b20d8e94579c3a1ef",
+      "quote": "[Master CSV Data File List – English](https://data.gdeltproject.org/gdeltv2/masterfilelist.txt). *(Updated every 15 minutes).*"
+    },
+    {
+      "url": "https://blog.gdeltproject.org/gdelt-2-0-our-global-world-in-realtime/",
+      "date": "2026-10-30",
+      "proved": "the GDELT 2.0 files start on February 19, 2015",
+      "capture": "sha256:96d60172360c5e3015d9f3334b62fa1a39e3fd163174d02b20d8e94579c3a1ef",
+      "quote": "At present the GDELT 2.0 data streams only stretch back to late morning February 19, 2015"
+    },
+    {
+      "url": "https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/",
+      "date": "2026-10-30",
+      "proved": "the DOC 2.0 API searches the last 3 months",
+      "capture": "sha256:13363eeeccd896636364c5aeba26162fcdfe259315e9488fabf0c16cb04e0cb2",
+      "quote": "the API now searches a rolling window of the last 3 months of coverage"
+    },
+    {
+      "url": "https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/",
+      "date": "2026-10-30",
+      "proved": "the DOC 2.0 API returns 75 results by default and 250 at most",
+      "capture": "sha256:13363eeeccd896636364c5aeba26162fcdfe259315e9488fabf0c16cb04e0cb2",
+      "quote": "the API only returns up 75 results by default, but this can be increased up to 250 results if desired by using this URL parameter."
+    },
+    {
+      "url": "probe:https://data.gdeltproject.org/gdeltv2/lastupdate.txt",
+      "date": "2026-10-30",
+      "proved": "lastupdate.txt, read with no account, lists the newest export zip at 106145 bytes",
+      "capture": "sha256:a4e5523c6e3d1a44d56d9ca8b36e7cca1773d251e437330c9ae4ef8b2ff5d65e",
+      "quote": "106145 de4864ccd1be9a110ce5651f5939cf9d http://data.gdeltproject.org/gdeltv2/20261030130000.export.CSV.zip"
+    },
+    {
+      "url": "probe:https://data.gdeltproject.org/gdeltv2/lastupdate.txt#record",
+      "date": "2026-10-30",
+      "proved": "lastupdate.txt answers 200 with no account",
+      "capture": "sha256:a98fc1004bb5299064e8895a2d8d5ce99f07b85efc0b1e53b8d707026e2c3569",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:https://data.gdeltproject.org/gdeltv2/20261030130000.export.CSV.zip",
+      "date": "2026-10-30",
+      "proved": "the listed export zip downloaded with no account at the 106145 bytes the listing gives",
+      "capture": "sha256:41b3ebb65bad1ff5f3a89bd1e6e23651f9dbc258aa0488849345fd77ecb3f832",
+      "quote": "\"bytes\": 106145"
+    },
+    {
+      "url": "probe:https://api.gdeltproject.org/api/v2/doc/doc",
+      "date": "2026-10-30",
+      "proved": "the DOC 2.0 API asks for at most one request every 5 seconds",
+      "capture": "sha256:44c03f8dd984184218c90dc7e64aed9e6e2d8b17426feb5aa7933b3c44df64c6",
+      "quote": "Please limit requests to one every 5 seconds"
+    },
+    {
+      "url": "probe:https://api.gdeltproject.org/api/v2/doc/doc#first",
+      "date": "2026-10-30",
+      "proved": "the first DOC 2.0 API call from a residential ISP address answered 429",
+      "capture": "sha256:dd5420ec2e78724ef328c22e52287f3ec692669ee947b6246b2a2be62ddc55b8",
+      "quote": "\"status\": 429"
+    },
+    {
+      "url": "probe:https://api.gdeltproject.org/api/v2/doc/doc#later",
+      "date": "2026-10-30",
+      "proved": "a DOC 2.0 API call minutes later answered 429 again",
+      "capture": "sha256:f0c35bd208cbf6e5bdd10d84daf9a9d3083fb866a21ba1a22b79b990af81361f",
+      "quote": "\"status\": 429"
+    },
+    {
+      "url": "https://api.gdeltproject.org/api/v2/doc/doc?query=weather&mode=artlist&maxrecords=3&timespan=1d&format=json",
+      "date": "2026-10-30",
+      "proved": "the DOC 2.0 API answered 429 to a cloud fetch egress as well",
+      "capture": "sha256:06e659071390a914f4649753d68de8cae3ad837d32b88dc4958e05db56913f13",
+      "quote": "HTTP/1.1 429 Too Many Requests"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-30T12:52:13.090Z",
+  "notes": "Bulk path: data.gdeltproject.org/gdeltv2/masterfilelist.txt lists every 15-minute file since February 19, 2015, and lastupdate.txt the newest; the same tables sit in Google BigQuery."
+}

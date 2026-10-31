@@ -1,0 +1,200 @@
+{
+  "topic": "storage",
+  "slug": "backblaze-b2",
+  "provider": "Backblaze B2",
+  "url": "https://www.backblaze.com/cloud-storage/pricing",
+  "category": "S3-compatible object storage",
+  "tier": "pay-as-you-go",
+  "free_tier": {
+    "stated": "First 10GB storage is always free; storage above it is billed per byte-hour at USD 6.95/TB/30-days",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
+    "source_url": "https://www.backblaze.com/cloud-storage/pricing",
+    "read_on": "2026-10-30",
+    "notes": "Class A, B and C API calls are free on pay-as-you-go; Class D calls are free up to 2,500 a day. The API pricing page still prints USD 0.005/GB/month for storage after the first 10 GB, while the pricing page and its billing FAQ print USD 6.95/TB/30-days."
+  },
+  "per_object_cap": {
+    "stated": "Large files can range in size from 5 MB to 10 TB; a file sent in one request is limited to 5 GB",
+    "bytes": null,
+    "source_url": "https://www.backblaze.com/docs/cloud-storage-large-files",
+    "notes": "10 TB is the cap for a large (multipart) file, assembled from parts of 5 MB to 5 GB; the page does not say whether TB is decimal or binary, so bytes is left null."
+  },
+  "retention": {
+    "stated": "No minimum storage duration fees; the pages read state no expiry for stored files",
+    "days": null,
+    "source_url": "https://www.backblaze.com/cloud-storage/pricing",
+    "notes": "the pricing page lists 'No minimum file size or storage duration fees'; lifecycle rules are set per bucket by the account holder."
+  },
+  "egress": {
+    "terms": "Free up to 3x the average monthly stored bytes (byte-hours over the billing cycle), then USD 0.01/GB; unlimited and free to partner CDNs and compute services (Fastly, Cloudflare, bunny.net, CacheFly, CoreWeave, Equinix Metal, Vultr, phoenixNAP)",
+    "metered": true,
+    "free_allowance": "3x the average monthly stored bytes; unmetered to the named partner CDNs and compute services",
+    "price_per_tb": "USD 0.01 per GB beyond the 3x allowance",
+    "source_url": "https://www.backblaze.com/cloud-storage/pricing"
+  },
+  "interface": [
+    "s3-compatible",
+    "rest"
+  ],
+  "interface_detail": "S3-Compatible API (the S3 syntax, with limited ACL and tagging support) and the B2 Native API (b2_* calls)",
+  "tooling": "AWS CLI, AWS SDKs, AWS Tools for PowerShell and s3cmd against the S3-Compatible API; any S3 client, rclone's s3 backend among them; the B2 Native API for b2_* calls",
+  "chaining": "An S3 origin behind Cloudflare, Fastly or bunny.net: egress to those partner CDNs is free and outside the 3x allowance, so a CDN-fronted public bucket serves reads without the USD 0.01/GB overage.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "10 GB of storage free; every byte above it is billed at USD 6.95/TB/30-days",
+      "source": "https://www.backblaze.com/cloud-storage/pricing"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "egress free up to 3x the average monthly stored bytes; beyond it USD 0.01/GB, except to partner CDNs and compute services",
+      "source": "https://www.backblaze.com/cloud-storage/pricing"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "10 TB per large file (parts of 5 MB to 5 GB); 5 GB per single-request file",
+      "source": "https://www.backblaze.com/docs/cloud-storage-large-files"
+    },
+    {
+      "kind": "request-rate",
+      "value": "Class D transactions: the first 2,500 calls a day free, then USD 0.004 per 10,000 calls; Class A, B and C calls free",
+      "source": "https://www.backblaze.com/cloud-storage/pricing"
+    }
+  ],
+  "limits_note": "No minimum file size and no minimum storage duration fees. A public bucket needs a verified email address and a payment history on file, or a small card payment credited to the account balance.",
+  "binding": "volume-quota",
+  "binding_note": "the 10 GB of free storage is the first ceiling; on the paid tier the next one is the 3x-of-stored egress allowance, which partner-CDN egress does not count against",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Account creation asks for an email address verified by a link, a password and a data region, and the sign-up page states 'No credit card required.' A public bucket needs a payment history or a small card payment. A help-centre article says enabling B2 on an existing Computer Backup account prompts for a phone number verified by SMS; the account-creation guide names no phone step.",
+    "country": null
+  },
+  "reliability_note": "no throttle, suspension or data-loss event is stated on the pages read; usage above 10 GB of storage or above the 3x egress allowance is billed automatically",
+  "confidence": "documented",
+  "confidence_note": "every value is quoted from a first-party Backblaze page read on 2026-10-30; no request was made against the service, so the read path is unprobed. A probe of a public object would raise it to measured.",
+  "evidence": [
+    {
+      "url": "https://www.backblaze.com/cloud-storage/pricing",
+      "date": "2026-10-30",
+      "proved": "storage is billed per byte-hour at USD 6.95/TB/30-days",
+      "capture": "sha256:5f5de1f293b9dca52a415d8c22b4ac5ce5c4e74c3da17667fe0d2dacfad1ba8c",
+      "quote": "Service is billed monthly, based on the amount of data stored per byte-hour over the last month at a rate of $6.95/TB/30-days."
+    },
+    {
+      "url": "https://www.backblaze.com/cloud-storage/pricing",
+      "date": "2026-10-30",
+      "proved": "the first 10 GB of storage is free with no time limit",
+      "capture": "sha256:5f5de1f293b9dca52a415d8c22b4ac5ce5c4e74c3da17667fe0d2dacfad1ba8c",
+      "quote": "First 10GB storage is always free."
+    },
+    {
+      "url": "https://www.backblaze.com/cloud-storage/pricing",
+      "date": "2026-10-30",
+      "proved": "egress is free up to 3x the average monthly stored bytes",
+      "capture": "sha256:5f5de1f293b9dca52a415d8c22b4ac5ce5c4e74c3da17667fe0d2dacfad1ba8c",
+      "quote": "All B2 Cloud Storage users get free egress up to 3x their average monthly storage."
+    },
+    {
+      "url": "https://www.backblaze.com/cloud-storage/pricing",
+      "date": "2026-10-30",
+      "proved": "egress beyond the 3x allowance costs USD 0.01/GB",
+      "capture": "sha256:5f5de1f293b9dca52a415d8c22b4ac5ce5c4e74c3da17667fe0d2dacfad1ba8c",
+      "quote": "Egress beyond 3x is just $0.01/GB—no surprise fees, no penalties."
+    },
+    {
+      "url": "https://www.backblaze.com/cloud-storage/pricing",
+      "date": "2026-10-30",
+      "proved": "egress to the named partner CDNs and compute services is unlimited and free",
+      "capture": "sha256:5f5de1f293b9dca52a415d8c22b4ac5ce5c4e74c3da17667fe0d2dacfad1ba8c",
+      "quote": "Backblaze B2 offers unlimited free egress when downloading to or through partner content delivery networks (CDNs) and compute services, including Fastly, Cloudflare, bunny.net, CacheFly, CoreWeave, Equinix Metal, Vultr, and phoenixNAP."
+    },
+    {
+      "url": "https://www.backblaze.com/cloud-storage/pricing",
+      "date": "2026-10-30",
+      "proved": "there is no minimum object size charge and no minimum storage duration charge",
+      "capture": "sha256:5f5de1f293b9dca52a415d8c22b4ac5ce5c4e74c3da17667fe0d2dacfad1ba8c",
+      "quote": "No minimum file size or storage duration fees"
+    },
+    {
+      "url": "https://www.backblaze.com/cloud-storage/pricing",
+      "date": "2026-10-30",
+      "proved": "Class A, B and C calls are free; Class D calls cost USD 0.004 per 10,000 after 2,500 free a day",
+      "capture": "sha256:5f5de1f293b9dca52a415d8c22b4ac5ce5c4e74c3da17667fe0d2dacfad1ba8c",
+      "quote": "Class A, B, and C API calls are free for pay-as-you-go customers. Class D transactions cost $0.004 per 10,000 calls plus the first 2,500 calls per day are free."
+    },
+    {
+      "url": "https://www.backblaze.com/cloud-storage/pricing",
+      "date": "2026-10-30",
+      "proved": "B2 is S3-compatible object storage",
+      "capture": "sha256:5f5de1f293b9dca52a415d8c22b4ac5ce5c4e74c3da17667fe0d2dacfad1ba8c",
+      "quote": "Enterprise-grade, security & compliance-ready, S3 compatible object storage—at a fraction of the cost."
+    },
+    {
+      "url": "https://www.backblaze.com/cloud-storage/pricing",
+      "date": "2026-10-30",
+      "proved": "B2 Overdrive needs a multi-petabyte commitment",
+      "capture": "sha256:5f5de1f293b9dca52a415d8c22b4ac5ce5c4e74c3da17667fe0d2dacfad1ba8c",
+      "quote": "Multi-petabyte commitment required"
+    },
+    {
+      "url": "https://www.backblaze.com/cloud-storage/pricing",
+      "date": "2026-10-30",
+      "proved": "pay-as-you-go is paid by credit card or invoice",
+      "capture": "sha256:5f5de1f293b9dca52a415d8c22b4ac5ce5c4e74c3da17667fe0d2dacfad1ba8c",
+      "quote": "Credit card or invoice"
+    },
+    {
+      "url": "https://www.backblaze.com/docs/cloud-storage-s3-compatible-api",
+      "date": "2026-10-30",
+      "proved": "the S3-Compatible API accepts applications written to the S3 API",
+      "capture": "sha256:fcf4b8277e9a6066bc6b8633ce6eff75167f17d61c6114d20affe485a8e25aec",
+      "quote": "Backblaze B2 will just work, with minimal code changes on your end."
+    },
+    {
+      "url": "https://www.backblaze.com/docs/cloud-storage-large-files",
+      "date": "2026-10-30",
+      "proved": "the largest object is a 10 TB large file; a normal (single-request) file is limited to 5 GB",
+      "capture": "sha256:47a5776dfc63edf0c960545d252fda69c0fd2b72e0a8951c5575f34b28454ae0",
+      "quote": "Large files can range from 5 MB to 10 TB which is well beyond the 5 GB limit on normal files."
+    },
+    {
+      "url": "https://www.backblaze.com/sign-up/cloud-storage",
+      "date": "2026-10-30",
+      "proved": "the B2 sign-up asks for no credit card",
+      "capture": "sha256:5a216594a28f7cd3d932dc05e800a857fe20bc742c25040e3ab02dc5e84d54f3",
+      "quote": "No credit card required."
+    },
+    {
+      "url": "https://www.backblaze.com/docs/en/cloud-storage-enable-backblaze-b2",
+      "date": "2026-10-30",
+      "proved": "account creation verifies the email address by a link, then asks for a password and a data region",
+      "capture": "sha256:e98064685c3f178ec75959e3888cd913974407d8c8dbcfdfad06f54beef03132",
+      "quote": "Check your email, and click the link to verify your email address."
+    },
+    {
+      "url": "https://www.backblaze.com/docs/cloud-storage-create-and-manage-buckets",
+      "date": "2026-10-30",
+      "proved": "a first public bucket needs a payment history or a small card payment",
+      "capture": "sha256:5090042d4be16c75851b8a0461dbd0021ffc6b9bf668e6013f20b44daa79f779",
+      "quote": "Have a payment history on file, or use the credit card form to pay a small fee that is credited to your account balance."
+    },
+    {
+      "url": "https://help.backblaze.com/hc/en-us/articles/360035350993-B2-Quick-Start-Guide",
+      "date": "2026-10-30",
+      "proved": "enabling B2 on an existing Computer Backup account prompts for an SMS-verified phone number",
+      "capture": "sha256:81a857f43c6d2861e8b56ab81e0fc7a10e316d9d8a2d41bb3715380dd654527b",
+      "quote": "When activating B2 on your account in this way, you will be prompted to enter a phone number that must be verified via SMS."
+    },
+    {
+      "url": "https://www.backblaze.com/cloud-storage/transaction-pricing",
+      "date": "2026-10-30",
+      "proved": "the API pricing page prints USD 0.005/GB/month for storage after the first 10 GB, a figure the pricing page no longer uses",
+      "capture": "sha256:260665afdd6bc8921f3abbe1fb232959ddd491c52454a5d4ed34df55e7ebe6af",
+      "quote": "Once uploaded, storage charges apply to all data after the first 10GB in your account at the rate of $0.005/GB/month."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-30T17:46:58.950Z",
+  "price_per_tb_month": "USD 6.95 per TB per 30 days, pay-as-you-go, after the first 10 GB",
+  "notes": "S3-compatible object storage: confirmed. B2 Overdrive, the higher-throughput tier, starts at USD 15 per TB a month with unlimited free egress and needs a multi-petabyte commitment, so it is not a separate entry point. Payment is by credit card or invoice."
+}

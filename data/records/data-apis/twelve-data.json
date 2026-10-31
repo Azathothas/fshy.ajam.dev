@@ -1,0 +1,224 @@
+{
+  "topic": "data-apis",
+  "slug": "twelve-data",
+  "provider": "Twelve Data",
+  "url": "https://twelvedata.com/pricing",
+  "category": "market data API (stocks, forex, crypto, ETFs, technical indicators)",
+  "tier": "Basic",
+  "free_tier": {
+    "stated": "Basic plan USD 0/month: 8 API credits per minute with an 800 per day cap, 8 trial WebSocket credits; real-time US equities, forex and crypto",
+    "unit": "credits",
+    "metered_on": "request-count",
+    "source_url": "https://twelvedata.com/pricing",
+    "read_on": "2026-10-30",
+    "notes": "A standard request costs 1 credit per symbol; heavier endpoints weigh more (income_statement is 100 credits per symbol). The daily quota resets to 800 at midnight UTC. Batch requests, technical indicators and a global trial symbol set are on Basic. time_series returns at most 5000 rows per call, and daily intervals hold the complete history since the first trading date for most symbols. The cheapest paid individual plan is Grow at USD 29/month with 55 credits per minute and no daily cap."
+  },
+  "per_object_cap": {
+    "stated": "5000 rows per time_series call (the outputsize maximum)",
+    "bytes": null,
+    "source_url": "https://support.twelvedata.com/en/articles/5656039-how-to-get-historical-prices",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: a query API with no stored objects",
+    "days": null,
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not metered in bytes; the 800 credits a day bound what a free key can pull",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://twelvedata.com/pricing"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "GET https://api.twelvedata.com/time_series with symbol, interval and apikey; a WebSocket on trial credits on Basic. Each response carries api-credits-used and api-credits-left headers, and apikey=demo answers for trial symbols.",
+  "endpoint": "https://api.twelvedata.com",
+  "tooling": "curl or any HTTP client; official SDKs and spreadsheet integration are on every plan",
+  "chaining": "Full daily history in 5000-row pages at 800 credits a day; it pairs with a real-time feed such as the Finnhub free quotes, or with Massive flat files on its paid tiers for a wide universe.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "8 API credits per minute",
+      "source": "https://twelvedata.com/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "800 API credits per day, reset at midnight UTC",
+      "source": "https://support.twelvedata.com/en/articles/5615854-credits"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "5000 rows per time_series call",
+      "source": "https://support.twelvedata.com/en/articles/5656039-how-to-get-historical-prices"
+    }
+  ],
+  "limits_note": "Bulk path: no bulk path; batch requests and outputsize=5000 are the widest pulls a free key has.",
+  "binding": "request-rate",
+  "binding_note": "Over a full day the 800 per day cap binds before the 8 per minute rate does.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The signup form asks for a full name, an email and a password of at least 8 characters, or a Google or Apple sign-in; it has no card field. Card and PayPal payment are named for the paid plans. apikey=demo answered a daily time_series call for AAPL with no signup.",
+    "country": null
+  },
+  "reliability_note": "A call past the minute's credits answers HTTP 429; Basic covers US markets, with other markets only through trial symbols.",
+  "confidence": "documented",
+  "confidence_note": "The plan, the credit weights and the daily reset are documented on the pricing page and the support articles. A demo-key probe returned a daily series; the 800-per-day cut-off needs a free key to measure.",
+  "evidence": [
+    {
+      "url": "https://twelvedata.com/pricing",
+      "date": "2026-10-30",
+      "proved": "the Basic plan allows 8 API credits per minute and 800 a day",
+      "capture": "sha256:205d3546d38f2d0c72baa01d7e2f5aa13be32d08433968ac117c5d48a5e24dd4",
+      "quote": "API requests: 8 (800 a day)"
+    },
+    {
+      "url": "https://twelvedata.com/pricing.md",
+      "date": "2026-10-30",
+      "proved": "Basic is USD 0 with 8 credits per minute, an 800 per day cap, 8 trial WebSocket credits and US markets",
+      "capture": "sha256:7bb05e09eb5575f76cf5ed4a81a5a32780614c00d0fcd6ba53a39612ca8eca6f",
+      "quote": "| Basic | $0/mo     | 8 (800/day cap)   | 8 (trial)   | US      | Real-time US equities, forex, crypto                  |"
+    },
+    {
+      "url": "https://twelvedata.com/pricing.md",
+      "date": "2026-10-30",
+      "proved": null,
+      "capture": "sha256:7bb05e09eb5575f76cf5ed4a81a5a32780614c00d0fcd6ba53a39612ca8eca6f",
+      "quote": "- Basic (Free): 800 API requests/day, 8 trial WS credits, real-time US equities/forex/crypto, technical indicators, spreadsheets, batch requests, global trial symbols."
+    },
+    {
+      "url": "https://twelvedata.com/pricing.md",
+      "date": "2026-10-30",
+      "proved": "the cheapest paid individual plan is USD 29 a month with 55 credits per minute and no daily cap",
+      "capture": "sha256:7bb05e09eb5575f76cf5ed4a81a5a32780614c00d0fcd6ba53a39612ca8eca6f",
+      "quote": "| Grow  | $29/mo    | 55                | 8 (trial)   | 20+     | Real-time US stocks, fundamentals, no daily cap       |"
+    },
+    {
+      "url": "https://twelvedata.com/pricing.md",
+      "date": "2026-10-30",
+      "proved": null,
+      "capture": "sha256:7bb05e09eb5575f76cf5ed4a81a5a32780614c00d0fcd6ba53a39612ca8eca6f",
+      "quote": "For individuals only — personal, internal,."
+    },
+    {
+      "url": "https://twelvedata.com/pricing.md",
+      "date": "2026-10-30",
+      "proved": "every plan includes REST, WebSocket, SDKs and spreadsheet integration",
+      "capture": "sha256:7bb05e09eb5575f76cf5ed4a81a5a32780614c00d0fcd6ba53a39612ca8eca6f",
+      "quote": "All plans include: REST and WebSocket APIs, official SDKs, technical indicators, batch requests, spreadsheets integration, reference data, and access to a global trial symbol set."
+    },
+    {
+      "url": "https://twelvedata.com/pricing",
+      "date": "2026-10-30",
+      "proved": "income_statement weighs 100 credits per symbol",
+      "capture": "sha256:205d3546d38f2d0c72baa01d7e2f5aa13be32d08433968ac117c5d48a5e24dd4",
+      "quote": "2. `/income_statement` for the same three symbols: 100 credits × 3 symbols = 300 credits."
+    },
+    {
+      "url": "https://twelvedata.com/pricing",
+      "date": "2026-10-30",
+      "proved": "card and PayPal are the payment methods for paid plans",
+      "capture": "sha256:205d3546d38f2d0c72baa01d7e2f5aa13be32d08433968ac117c5d48a5e24dd4",
+      "quote": "We accept PayPal and all major credit cards (including Visa, Mastercard, Discover, American Express and UnionPay.)"
+    },
+    {
+      "url": "https://support.twelvedata.com/en/articles/5615854-credits",
+      "date": "2026-10-30",
+      "proved": "the Basic daily quota resets to 800 at midnight UTC",
+      "capture": "sha256:82bf4dbb5db5d1f8e76d33848304a2c146a7681f898540c6b87764c7f7540c20",
+      "quote": "The same principle applies to daily limits on the Basic plan, where the quota resets to 800 at midnight UTC (00:00:00)."
+    },
+    {
+      "url": "https://support.twelvedata.com/en/articles/5615854-credits",
+      "date": "2026-10-30",
+      "proved": "a call past the credit limit answers HTTP 429",
+      "capture": "sha256:82bf4dbb5db5d1f8e76d33848304a2c146a7681f898540c6b87764c7f7540c20",
+      "quote": "If you run out of API credits, a 429 error code will notify you that the API credits limit has been reached."
+    },
+    {
+      "url": "https://support.twelvedata.com/en/articles/5615854-credits",
+      "date": "2026-10-30",
+      "proved": "each response carries the credits used and left",
+      "capture": "sha256:82bf4dbb5db5d1f8e76d33848304a2c146a7681f898540c6b87764c7f7540c20",
+      "quote": "Each API request returns `api-credits-used` and `api-credits-left` in response headers."
+    },
+    {
+      "url": "https://support.twelvedata.com/en/articles/5656039-how-to-get-historical-prices",
+      "date": "2026-10-30",
+      "proved": "a time_series call returns at most 5000 rows",
+      "capture": "sha256:4855d8a0670fcaabd16e8142563338338124bf48023c3a3c6f0042fe2d4755d1",
+      "quote": "Specify the number of records to be returned with the `outputsize` parameter. This is the simplest and the most efficient approach; however, the maximum value to be set is 5000."
+    },
+    {
+      "url": "https://support.twelvedata.com/en/articles/5656039-how-to-get-historical-prices",
+      "date": "2026-10-30",
+      "proved": "daily intervals hold the complete history since the first trading date for most symbols",
+      "capture": "sha256:4855d8a0670fcaabd16e8142563338338124bf48023c3a3c6f0042fe2d4755d1",
+      "quote": "Daily intervals include `1day`, `1week`, and `1month` and contain data for the complete history since the first trading date for most symbols."
+    },
+    {
+      "url": "https://support.twelvedata.com/en/articles/5335783-trial",
+      "date": "2026-10-30",
+      "proved": "the demo key answers for trial symbols",
+      "capture": "sha256:186d1bb8ad4aef8d424d9f258999dc4792f5f6e3274e55a0e0dcd5bf68750404",
+      "quote": "In most cases `apikey=demo` parameter will be sufficient for trial symbols."
+    },
+    {
+      "url": "https://twelvedata.com/register",
+      "date": "2026-10-30",
+      "proved": "the signup form asks for a full name; the same form asks for an email and a password and has no card field",
+      "capture": "sha256:54ec0f70e37f5fbd4cfc7cc4c38147964f0f684ac69031cacf4bb0f7bf79644c",
+      "quote": "Full name<sup>\\*</sup>"
+    },
+    {
+      "url": "https://twelvedata.com/register",
+      "date": "2026-10-30",
+      "proved": "the signup password has at least 8 characters",
+      "capture": "sha256:54ec0f70e37f5fbd4cfc7cc4c38147964f0f684ac69031cacf4bb0f7bf79644c",
+      "quote": "Password<sup>\\*</sup> Mimimum 8 characters"
+    },
+    {
+      "url": "https://twelvedata.com/register",
+      "date": "2026-10-30",
+      "proved": "Google sign-in is offered at signup; the same page offers Apple sign-in",
+      "capture": "sha256:54ec0f70e37f5fbd4cfc7cc4c38147964f0f684ac69031cacf4bb0f7bf79644c",
+      "quote": "[Sign up with Google](https://twelvedata.com/auth/google?action=register)"
+    },
+    {
+      "url": "https://twelvedata.com/terms",
+      "date": "2026-10-30",
+      "proved": null,
+      "capture": "sha256:f5657237950473f8af5327943ab39c4fbda2266eb894f7b3af5931133876cefb",
+      "quote": null
+    },
+    {
+      "url": "https://twelvedata.com/terms",
+      "date": "2026-10-30",
+      "proved": "stored data is deleted within 30 days of termination",
+      "capture": "sha256:f5657237950473f8af5327943ab39c4fbda2266eb894f7b3af5931133876cefb",
+      "quote": "- (a) All Data must be deleted within 30 days"
+    },
+    {
+      "url": "probe:https://api.twelvedata.com/time_series?symbol=AAPL&interval=1day&outputsize=5&apikey=demo",
+      "date": "2026-10-30",
+      "proved": "the time_series endpoint answered HTTP 200 to the demo key",
+      "capture": "sha256:bd463b24163ed9440fdaf72364dfa612d7e1667f7598ea4fb6fd8f6ccafe6fc2",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:https://api.twelvedata.com/time_series?symbol=AAPL&interval=1day&outputsize=5&apikey=demo",
+      "date": "2026-10-30",
+      "proved": "the demo key returned a daily series for AAPL",
+      "capture": "sha256:cfec03ded427f6e8dfda6a2501da2496985fcfdbd0eae77a47396cbb9d091386",
+      "quote": "\"symbol\":\"AAPL\",\"interval\":\"1day\""
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-30T12:52:12.830Z",
+  "notes": "Credits are a weight, not a request count: a 1-credit time_series call per symbol is the cheap path, and fundamentals at 100 credits per symbol exhaust a day's 800 in 8 symbols.",
+  "extras": {
+    "bulk_path": "no bulk path"
+  }
+}

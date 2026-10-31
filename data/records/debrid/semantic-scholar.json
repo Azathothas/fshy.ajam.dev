@@ -14,7 +14,7 @@
     "notes": "1,000 requests/second is a pool shared by every anonymous caller in the world, not a per-client allowance."
   },
   "per_object_cap": {
-    "stated": "not applicable: JSON responses, paged with limit/offset or the batch endpoints",
+    "stated": "batch lookup: 500 paper ids and up to 10 MB a call; relevance search: up to 1,000 results and 10 MB a call; bulk search: up to 1,000 papers a call with a continuation token and up to 10,000,000 papers in all",
     "bytes": null,
     "source_url": "https://api.semanticscholar.org/api-docs",
     "notes": ""
@@ -26,7 +26,7 @@
     "notes": ""
   },
   "egress": {
-    "terms": "Free. No card, no institution. The key is a higher-limit credential, not a payment.",
+    "terms": "Not metered by volume; no byte allowance is published. The key is a higher-limit credential, not a payment.",
     "metered": false,
     "free_allowance": "1,000 requests/second shared across all anonymous users",
     "price_per_tb": null,
@@ -45,14 +45,19 @@
       "kind": "request-rate",
       "value": "1,000 requests/second shared among all unauthenticated users, further throttled under load; 1 RPS with an API key",
       "source": "https://www.semanticscholar.org/product/api"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "batch: 500 paper ids and 10 MB a call; relevance search: 1,000 results; bulk search: 1,000 papers a call and 10,000,000 in all, beyond which the Datasets API applies",
+      "source": "https://api.semanticscholar.org/api-docs/"
     }
   ],
   "limits_note": "",
   "binding": "request-rate",
-  "binding_note": "The pool is shared with every anonymous caller, so a user's own rate is irrelevant: the first anonymous request was already refused with 429.",
+  "binding_note": "The pool is shared with every keyless caller, so a caller's own rate does not decide access: a keyless search on 2026-10-31 answered 429 on the first call; a key gives a dedicated 1 request a second.",
   "identity_cost": {
     "kind": "email",
-    "detail": "Anonymous use is allowed but throttled; the key that raises the ceiling is issued by email request. No card and no institution.",
+    "detail": "Keyless calls are allowed but share one pool. The key comes from a request form that asks for first and last name, an email (academic or corporate requested), an affiliation and its website URL, country, a description of 50 words or more and the requests per day expected; the key is sent by email. No card. Whether every request is granted is unverified: behind a sign-up.",
     "country": null
   },
   "reliability_note": "The anonymous pool is exhausted often enough that a single first request returned 429 with a 174-byte JSON error; a harvester must treat 429 as the normal case rather than an exception.",
@@ -68,10 +73,66 @@
       "url": "probe:https://api.semanticscholar.org/graph/v1/paper/search?query=cancer&limit=1&fields=title",
       "date": "2026-10-23",
       "proved": "429 with 174 bytes of JSON on the first anonymous request - the shared pool was already exhausted"
+    },
+    {
+      "url": "probe:https://forms.hsforms.com/embed/v3/form/5910970/105f3885-cfd8-4b57-a570-6174c5c1650a/json",
+      "date": "2026-10-31",
+      "proved": "the key form asks for an academic or corporate email",
+      "capture": "sha256:f445ae99914f61e8274af3a101b16494d8d5ebbdf653f43bb9ceb4e4a2ea2f36",
+      "quote": "Please use an academic or corporate email."
+    },
+    {
+      "url": "probe:https://forms.hsforms.com/embed/v3/form/5910970/105f3885-cfd8-4b57-a570-6174c5c1650a/json",
+      "date": "2026-10-31",
+      "proved": "the key form asks for the affiliation's website URL",
+      "capture": "sha256:f445ae99914f61e8274af3a101b16494d8d5ebbdf653f43bb9ceb4e4a2ea2f36",
+      "quote": "\"label\":\"Affiliation website URL\""
+    },
+    {
+      "url": "https://www.semanticscholar.org/product/api",
+      "date": "2026-10-31",
+      "proved": "the key raises the rate limit; the page meters requests, not bytes",
+      "capture": "sha256:db019c44effbdb66090ddc999c9979e09856d90ec788d55c316f9ca2079d7ad9",
+      "quote": "Certain endpoints require authentication via an API key, and authenticated users have access to higher rate limits."
+    },
+    {
+      "url": "probe:https://api.semanticscholar.org/graph/v1/paper/search?query=graph+neural+network&limit=1&fields=title",
+      "date": "2026-10-31",
+      "proved": "a keyless paper search on 2026-10-31 answered 429 on the first call",
+      "capture": "sha256:9142ddd70850b76cf49246b076d4d165ea58caf401c303bf793bd7feea60a079",
+      "quote": "\"status\": 429"
+    },
+    {
+      "url": "probe:https://api.semanticscholar.org/graph/v1/paper/search?query=graph+neural+network&limit=1&fields=title",
+      "date": "2026-10-31",
+      "proved": "the keyless 429 answer is a 174-byte JSON message that points to the key form",
+      "capture": "sha256:65ab993d12c5c2cc9b68e6da2bb79b326930283e520363ffcdc145f88cd5a148",
+      "quote": "Too Many Requests. Please wait and try again or apply for a key for higher rate limits."
+    },
+    {
+      "url": "https://api.semanticscholar.org/api-docs/",
+      "date": "2026-10-31",
+      "proved": "the batch endpoint takes at most 500 paper ids a call",
+      "capture": "sha256:d272683d710333a66c20873bfe9b28e2035eaa5e23cc834538bd9df14ca7d385",
+      "quote": "Can only process 500 paper ids at a time."
+    },
+    {
+      "url": "https://api.semanticscholar.org/api-docs/",
+      "date": "2026-10-31",
+      "proved": "bulk search stops at 10,000,000 papers; larger needs go to the Datasets API",
+      "capture": "sha256:d272683d710333a66c20873bfe9b28e2035eaa5e23cc834538bd9df14ca7d385",
+      "quote": "Up to 10,000,000 papers can be fetched via this method."
+    },
+    {
+      "url": "https://www.semanticscholar.org/product/api",
+      "date": "2026-10-31",
+      "proved": "a key gets 1 request a second on all endpoints",
+      "capture": "sha256:db019c44effbdb66090ddc999c9979e09856d90ec788d55c316f9ca2079d7ad9",
+      "quote": "The introductory rate limit for an API key is 1 RPS on all endpoints."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-23T03:24:34.450Z",
+  "verified_at": "2026-10-31T10:03:28.422Z",
   "price_per_tb_month": "USD 0",
   "notes": "The caveat is availability, not price: a 1,000 rps global pool sounds large and behaves like a queue. A key trades the pool for a predictable 1 rps.",
   "extras": {

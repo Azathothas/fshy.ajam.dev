@@ -6,12 +6,12 @@
   "category": "open-access aggregator (metadata plus full-text links)",
   "tier": "free",
   "free_tier": {
-    "stated": "The vendor advertises 'Free real-time machine access to the world's largest collection of open access papers' with 'Unlimited access' and 'Direct machine access to full texts of research papers'. The v3 API reference authenticates with 'Authorization: Bearer {apikey}'.",
-    "unit": "unlimited",
-    "metered_on": "none",
+    "stated": "100 tokens per day, maximum 10 per minute, with no registration and no full text; 1,000 tokens per day, maximum 25 per minute, for a registered personal user; 5,000 tokens per day, maximum 10 per minute, for a registered academic user; a simple query costs 1 token, complex ones 3 to 5",
+    "unit": "credits",
+    "metered_on": "request-count",
     "source_url": "https://core.ac.uk/services/api",
-    "read_on": "2026-10-23",
-    "notes": "'Unlimited access' is the vendor's phrase and is not a measured rate."
+    "read_on": "2026-10-31",
+    "notes": "The unit is CORE's API token, a per-call credit, not a model token. The service page heading 'Unlimited access' introduces harmonised access across CORE's providers and is not a rate; the same page states one batch request or five single requests per 10 seconds."
   },
   "per_object_cap": {
     "stated": "not applicable: JSON per query, with download endpoints that return the stored PDF. A one-record search response measured 2,091 bytes.",
@@ -43,21 +43,21 @@
   "limits": [
     {
       "kind": "request-rate",
-      "value": "no numeric limit is published on the service page or in the API reference; the reference documents 429 as the throttling response",
+      "value": "unauthenticated: 100 tokens per day, maximum 10 per minute, no full text; registered personal user: 1,000 tokens per day, maximum 25 per minute; registered academic user: 5,000 tokens per day, maximum 10 per minute",
       "source": "https://api.core.ac.uk/docs/v3"
     }
   ],
-  "limits_note": "The key requirement is documented ('Bearer {apikey}') but the gate is soft today: an anonymous /v3/search/works call returned 200 with 2,091 bytes of real JSON on 2026-10-23. Treat the key as required by contract and not by enforcement until it is re-tested.",
+  "limits_note": "The API reference states that access needs no authentication and that full text is not available to unauthenticated users; a key from the registration form, sent as 'Authorization: Bearer {apikey}', raises the allowance. A simple query costs 1 token and a complex one 3 to 5.",
   "binding": "request-rate",
-  "binding_note": "The documented unlimited access is an unmeasured claim; with no published rate, the only known ceiling is the 429 the reference documents, which cannot be located without a sustained run.",
+  "binding_note": "At 1 token for a simple query the unauthenticated allowance is 100 queries a day at most 10 a minute, and a registered personal key 1,000 a day at most 25 a minute; complex queries cost 3 to 5 tokens and lower both.",
   "identity_cost": {
     "kind": "email",
-    "detail": "A free API key from CORE registration, sent as a Bearer token. Anonymous calls answered 200 in this test, so the gate is not enforced on search today.",
+    "detail": "The API answers with no registration, without full text. A free API key, sent as a Bearer token, comes from a form that asks for an email address (an institutional one when registering in an institutional capacity), and the key is sent to that address.",
     "country": null
   },
   "reliability_note": "A full-text link can rot on the provider side even while the CORE record survives; the aggregator's copy is a pointer, not a mirror.",
   "confidence": "documented",
-  "confidence_note": "The service page and the API reference were read, and one anonymous call was made. The rate ceiling and the enforcement of the key are both unverified.",
+  "confidence_note": "The API reference and the service page were read on 2026-10-31, and an anonymous search answered 200 with an x-ratelimit-limit header of 10 the same day. No key was requested, so the registered allowances are documented, not measured.",
   "evidence": [
     {
       "url": "https://core.ac.uk/services/api",
@@ -73,12 +73,96 @@
       "url": "probe:https://api.core.ac.uk/v3/search/works?q=cancer&limit=1",
       "date": "2026-10-23",
       "proved": "200 with 2,091 bytes of JSON to an anonymous client - the key is documented but not enforced on this endpoint today"
+    },
+    {
+      "url": "https://api.core.ac.uk/docs/v3",
+      "date": "2026-10-31",
+      "proved": "unauthenticated users get 100 tokens a day, at most 10 a minute",
+      "capture": "sha256:ede8dec9cf3c22a422ae83988eb67ff1dcb34a3d4a37c8cf7abfbcbebb2c7aed",
+      "quote": "100 tokens per day, maximum 10 per minute."
+    },
+    {
+      "url": "https://api.core.ac.uk/docs/v3",
+      "date": "2026-10-31",
+      "proved": "the API answers without authentication",
+      "capture": "sha256:ede8dec9cf3c22a422ae83988eb67ff1dcb34a3d4a37c8cf7abfbcbebb2c7aed",
+      "quote": "Access to the CORE API is free and requires no authentication."
+    },
+    {
+      "url": "https://api.core.ac.uk/docs/v3",
+      "date": "2026-10-31",
+      "proved": "a simple query costs 1 token, complex ones 3 to 5",
+      "capture": "sha256:ede8dec9cf3c22a422ae83988eb67ff1dcb34a3d4a37c8cf7abfbcbebb2c7aed",
+      "quote": "As a rule of thumb, a simple query will cost you 1 token while more complex queries will cost you between 3 to 5 tokens."
+    },
+    {
+      "url": "https://api.core.ac.uk/docs/v3",
+      "date": "2026-10-31",
+      "proved": "registered personal users get 1,000 tokens a day, at most 25 a minute",
+      "capture": "sha256:ede8dec9cf3c22a422ae83988eb67ff1dcb34a3d4a37c8cf7abfbcbebb2c7aed",
+      "quote": "1,000 tokens per day, maximum 25 per minute."
+    },
+    {
+      "url": "https://api.core.ac.uk/docs/v3",
+      "date": "2026-10-31",
+      "proved": "the allowance is counted in tokens",
+      "capture": "sha256:ede8dec9cf3c22a422ae83988eb67ff1dcb34a3d4a37c8cf7abfbcbebb2c7aed",
+      "quote": "To control the load on our systems we use a rate-limiting technology based on tokens."
+    },
+    {
+      "url": "https://core.ac.uk/services/api",
+      "date": "2026-10-31",
+      "proved": "the service page states one batch or five single requests per 10 seconds",
+      "capture": "sha256:80686ee4d28aeda3ec9a16b0fe60ce8383b1fcb88a35ffbea57cad95a2f94df9",
+      "quote": "One batch request or five single requests per 10 seconds."
+    },
+    {
+      "url": "https://core.ac.uk/services/api",
+      "date": "2026-10-31",
+      "proved": "the key registration form starts from an email address",
+      "capture": "sha256:80686ee4d28aeda3ec9a16b0fe60ce8383b1fcb88a35ffbea57cad95a2f94df9",
+      "quote": "Enter your email address to register for a new API key, or restore a previous API key."
+    },
+    {
+      "url": "https://api.core.ac.uk/docs/v3",
+      "date": "2026-10-31",
+      "proved": "unauthenticated calls get no full text",
+      "capture": "sha256:ede8dec9cf3c22a422ae83988eb67ff1dcb34a3d4a37c8cf7abfbcbebb2c7aed",
+      "quote": "Full-text is not available for unauthenticated API users."
+    },
+    {
+      "url": "probe:https://api.core.ac.uk/v3/search/works/?q=open+access&limit=1",
+      "date": "2026-10-31",
+      "proved": "an anonymous search on 2026-10-31 answered 200 with an x-ratelimit-limit header of 10, the documented unauthenticated maximum per minute",
+      "capture": "sha256:5ddcb2c153cf0cb8efdd97b133cd5bf1e1cc88528fee537ba175ce5a85a58c20",
+      "quote": "\"x-ratelimit-limit\": \"10\""
+    },
+    {
+      "url": "probe:https://api.core.ac.uk/v3/search/works/?q=open+access&limit=1",
+      "date": "2026-10-31",
+      "proved": "an anonymous search on 2026-10-31 answered 200 with no key",
+      "capture": "sha256:5ddcb2c153cf0cb8efdd97b133cd5bf1e1cc88528fee537ba175ce5a85a58c20",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:https://api.core.ac.uk/v3/search/works/?q=open+access&limit=1",
+      "date": "2026-10-31",
+      "proved": "an anonymous search returns no full text",
+      "capture": "sha256:1679269b251809801c70b4fe7f1a79900ea5670b28de5c07be1920b5fef8119a",
+      "quote": "\"fullText\":\"Not available for public API users.\""
+    },
+    {
+      "url": "https://api.core.ac.uk/docs/v3",
+      "date": "2026-10-31",
+      "proved": "a registered key is sent as a Bearer token",
+      "capture": "sha256:ede8dec9cf3c22a422ae83988eb67ff1dcb34a3d4a37c8cf7abfbcbebb2c7aed",
+      "quote": "headers = {\"Authorization\": f\"Bearer {apikey}\"}"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-23T03:24:34.450Z",
+  "verified_at": "2026-10-31T10:03:34.102Z",
   "price_per_tb_month": "USD 0",
-  "notes": "Caveat is the unmeasured rate: the marketing says unlimited and the reference says 429. Neither is a number, so the record cannot promise a day's bytes.",
+  "notes": "The caveat is the anonymous ceiling and the gated full text: 100 tokens a day and no full text without registration, 1,000 tokens a day with a personal key.",
   "extras": {
     "auth_header": "Authorization: Bearer <apikey>",
     "anonymous_search_status": 200

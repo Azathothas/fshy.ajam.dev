@@ -1,0 +1,103 @@
+{
+  "topic": "data-apis",
+  "slug": "ip99",
+  "provider": "IP99",
+  "url": "https://ip99.com/api",
+  "category": "IP geolocation and risk API",
+  "tier": "Anonymous",
+  "free_tier": {
+    "stated": "basic endpoint GET /v1/ip/{ip} free with no key: 60 requests a minute and 500 a day per caller IP, every field in one call",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://ip99.com/api",
+    "read_on": "2026-10-30",
+    "notes": "the daily quota resets at 00:00 Beijing time; a key raises the per-minute rate to 300 by default"
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "bytes": null
+  },
+  "retention": {
+    "stated": "not stated",
+    "days": null
+  },
+  "egress": {
+    "terms": "not applicable",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://ip99.com/api"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "GET https://ip99.com/v1/ip/{ip} with no key; a key goes in X-API-Key or Authorization: Bearer, never the query string; X-Daily-Limit and X-RateLimit-Limit headers report the quota",
+  "endpoint": "https://ip99.com/v1/ip/",
+  "tooling": "any HTTP client",
+  "chaining": "500 keyless lookups a day with geolocation, network usage type and a risk score in one call. Bulk path: none stated",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "500 requests a day per caller IP without a key",
+      "source": "https://ip99.com/api"
+    },
+    {
+      "kind": "request-rate",
+      "value": "60 requests a minute per caller IP without a key",
+      "source": "https://ip99.com/api"
+    }
+  ],
+  "binding": "volume-quota",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no key for the basic endpoint; keyed tiers need an account",
+    "country": null
+  },
+  "reliability_note": "the daily quota resets at 00:00 Beijing time, not UTC",
+  "confidence": "documented",
+  "confidence_note": "the API documentation was quoted on 2026-10-30 and a keyless lookup answered HTTP 200 with city data on 2026-10-31.",
+  "evidence": [
+    {
+      "url": "https://ip99.com/api",
+      "date": "2026-10-30",
+      "proved": "anonymous callers get 60 a minute and 500 a day",
+      "capture": "sha256:62d7ff03b95d6d0d9b422d9cc8ffa840dd78960ecab03d1a7f531f272e78bd92",
+      "quote": "| Anonymous | Caller IP (`X-Quota-Scope: ip`) | `60` per minute (1 QPS) | `500` per day |"
+    },
+    {
+      "url": "https://ip99.com/api",
+      "date": "2026-10-30",
+      "proved": "the quota resets at 00:00 Beijing time",
+      "capture": "sha256:62d7ff03b95d6d0d9b422d9cc8ffa840dd78960ecab03d1a7f531f272e78bd92",
+      "quote": "Per calendar day, resetting at 00:00 Beijing time."
+    },
+    {
+      "url": "https://ip99.com/api",
+      "date": "2026-10-30",
+      "proved": "the basic endpoint is free with no key",
+      "capture": "sha256:62d7ff03b95d6d0d9b422d9cc8ffa840dd78960ecab03d1a7f531f272e78bd92",
+      "quote": "Basic `GET /v1/ip/{ip}` — free, no key, every field in one call"
+    },
+    {
+      "url": "https://ip99.com/api",
+      "date": "2026-10-30",
+      "proved": "keys go in a header",
+      "capture": "sha256:62d7ff03b95d6d0d9b422d9cc8ffa840dd78960ecab03d1a7f531f272e78bd92",
+      "quote": "Send a key as `X-API-Key: <key>` or `Authorization: Bearer <key>`."
+    },
+    {
+      "url": "probe:https://ip99.com/v1/ip/8.8.8.8",
+      "date": "2026-10-31",
+      "proved": "a keyless lookup answered with city data",
+      "capture": "sha256:27dbd2d9882978ef7a97440ecd90219c68f511a13b12ee10728605970a5239ab",
+      "quote": "\"city\":\"Mountain View\""
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-31T06:24:05.368Z",
+  "notes": "Free requests: 500 a day per caller IP, no key. Rate limit: 60 a minute. Bulk path: none stated.",
+  "extras": {
+    "bulk_path": "none stated",
+    "free_requests": "500 a day per IP"
+  }
+}

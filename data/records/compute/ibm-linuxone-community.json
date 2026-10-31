@@ -9,7 +9,7 @@
     "unit": "hours",
     "metered_on": "wall-clock",
     "source_url": "https://linuxone.cloud.marist.edu/SSPregister.html",
-    "read_on": "2026-10-24",
+    "read_on": "2026-10-30",
     "notes": "the unit is a whole machine for a fixed term, not an allowance in hours; IBM publishes no shape, no egress term and no hourly figure"
   },
   "per_object_cap": {
@@ -19,7 +19,7 @@
     "notes": "the ceiling that matters is the machine shape, which IBM does not publish; third-party reports put it at 2 vCPU, 4 GB and 40-50 GB of disk"
   },
   "retention": {
-    "stated": "The server is granted for up to 120 days and every resource is returned to the pool at expiry, so the recurring cost is a fresh registration rather than a renewal click; the vendor states the period may change.",
+    "stated": "The server is granted for up to 120 days in two steps, 60 days and then a further 60 days, and the user must extend it at the 60-day mark after a reminder email.",
     "days": 120,
     "source_url": "https://community.ibm.com/HigherLogic/System/DownloadDocumentFile.ashx?DocumentFileKey=28d23dd2-35ba-858c-ff8d-5dc4f8b3a02b",
     "notes": "a machine record: what is lost is the running process and the disk, not a stored object; the account page carries an 'Expiration Date' field, and there is a service/extend endpoint behind an emailed token"
@@ -32,10 +32,10 @@
     "source_url": "https://community.ibm.com/HigherLogic/System/DownloadDocumentFile.ashx?DocumentFileKey=28d23dd2-35ba-858c-ff8d-5dc4f8b3a02b"
   },
   "interface": [
-    "s3-compatible"
+    "ssh"
   ],
-  "interface_detail": "inferred from the tooling the provider documents; not probed",
-  "tooling": "not stated",
+  "interface_detail": "SSH with a key pair only: the terms state 'Only SSH keys are allowed.', and the deployment guide states that an SSH public key is required to deploy an instance and that sudo gives root authority",
+  "tooling": "any SSH client with a key pair; ports other than SSH are opened with iptables on the instance",
   "chaining": "The only free compute on this list with a non-x86 architecture, so it is the cheap way to build and test s390x artifacts without QEMU emulation, and it pairs with an x86 free tier that does the packaging.",
   "limits": [
     {
@@ -204,10 +204,157 @@
       "url": "https://linuxone.cloud.marist.edu/usermanager/cloud/admin/api/discovery/server/services?isAllowed=true",
       "date": "2026-10-24",
       "proved": "measured: HTTP 200 with the body {\"data\":[{\"serviceName\":\"VM\",\"serviceId\":\"VM\"},{\"serviceName\":\"OCP\",\"serviceId\":\"OCP\"},{\"serviceName\":\"OSS\",\"serviceId\":\"OSS\"}],\"message\":\"Success\",\"status\":200} - the VM service is enabled on 2026-10-24, and the OSS entry the form checks against is present"
+    },
+    {
+      "url": "https://linuxone.cloud.marist.edu/scripts/app.js",
+      "date": "2026-10-30",
+      "proved": "the registration form's heading offers a 120-day complimentary trial",
+      "capture": "sha256:a8c31399963745d0158d63cbdfe6730ed422d0a958304fc93eced1701eeb254c",
+      "quote": "'SSPRegisterTrans':'Sign up to get a 120-day complimentary trial'"
+    },
+    {
+      "url": "https://community.ibm.com/HigherLogic/System/DownloadDocumentFile.ashx?DocumentFileKey=28d23dd2-35ba-858c-ff8d-5dc4f8b3a02b",
+      "date": "2026-10-30",
+      "proved": "the virtual server is reached over SSH with a key only",
+      "capture": "sha256:84df696aa50872f4662bc051c920921eb9d548dd157cac25172b4e7ef681e6e8",
+      "quote": "Only SSH keys are allowed."
+    },
+    {
+      "url": "https://github.com/linuxone-community-cloud/technical-resources/blob/master/faststart/deploy-virtual-server.md",
+      "date": "2026-10-30",
+      "proved": "an SSH public key is required to deploy the instance",
+      "capture": "sha256:a5a18db6a2651cf164febed2ee2b737ca6d7a1311b8c1c2af92496fee087108e",
+      "quote": "An SSH public key is required to deploy Linux instance."
+    },
+    {
+      "url": "https://github.com/linuxone-community-cloud/technical-resources/blob/master/faststart/deploy-virtual-server.md",
+      "date": "2026-10-30",
+      "proved": "the guide opens further ports with an iptables rule on the instance",
+      "capture": "sha256:a5a18db6a2651cf164febed2ee2b737ca6d7a1311b8c1c2af92496fee087108e",
+      "quote": "sudo iptables -I INPUT -p tcp --dport <port#> -j ACCEPT"
+    },
+    {
+      "url": "https://community.ibm.com/zsystems/l1cc/",
+      "date": "2026-10-30",
+      "proved": "IBM's front door still offers a no-charge virtual server on LinuxONE",
+      "capture": "sha256:c163016b4a343360c2480aad3a0f42ce6515dd8de750cc28ac735c6aefa6becc",
+      "quote": "Get a no charge, self-provisioned Red Hat, SUSE, or Ubuntu virtual server on LinuxONE."
+    },
+    {
+      "url": "https://community.ibm.com/HigherLogic/System/DownloadDocumentFile.ashx?DocumentFileKey=28d23dd2-35ba-858c-ff8d-5dc4f8b3a02b",
+      "date": "2026-10-30",
+      "proved": "the term is up to 120 days",
+      "capture": "sha256:84df696aa50872f4662bc051c920921eb9d548dd157cac25172b4e7ef681e6e8",
+      "quote": "Access to the LinuxONE Community Cloud is for up to 120 days, as further determined by the use and subject to change as agreed by IBM and you."
+    },
+    {
+      "url": "https://linuxone.cloud.marist.edu/SSPregister.html",
+      "date": "2026-10-30",
+      "proved": "registration is reviewed and may take up to one business day",
+      "capture": "sha256:2f082427bd56a87b6d86bca0c941520660506ab69d89801f2a5bb8ac412a886b",
+      "quote": "Your registration is under review.Your request may take up to one (1) business day to process."
+    },
+    {
+      "url": "https://linuxone.cloud.marist.edu/SSPregister.html",
+      "date": "2026-10-30",
+      "proved": "the phone and SMS block of the form is still commented out, so no phone is asked for",
+      "capture": "sha256:2f082427bd56a87b6d86bca0c941520660506ab69d89801f2a5bb8ac412a886b",
+      "quote": "<form name=\"phoneForm\" id=\"phoneForm\" novalidate> -->"
+    },
+    {
+      "url": "https://community.ibm.com/zsystems/l1cc/",
+      "date": "2026-10-30",
+      "proved": "outlook.com and hotmail.com addresses are still refused at registration",
+      "capture": "sha256:c163016b4a343360c2480aad3a0f42ce6515dd8de750cc28ac735c6aefa6becc",
+      "quote": "Alert! At this time The LinuxONE Community Cloud registration system is experiencing an issue with all email addresses coming from outlook.com and hotmail.com."
+    },
+    {
+      "url": "https://community.ibm.com/HigherLogic/System/DownloadDocumentFile.ashx?DocumentFileKey=28d23dd2-35ba-858c-ff8d-5dc4f8b3a02b",
+      "date": "2026-10-30",
+      "proved": "one account per email address",
+      "capture": "sha256:84df696aa50872f4662bc051c920921eb9d548dd157cac25172b4e7ef681e6e8",
+      "quote": "You may only create one account per email address."
+    },
+    {
+      "url": "https://linuxone.cloud.marist.edu/createinstance.html",
+      "date": "2026-10-30",
+      "proved": "the console allows one instance per account",
+      "capture": "sha256:88309c0d2d693c6328bebebbda8fa563da7f74b696175d75b471be853f858466",
+      "quote": "There is an instance existing, delete the old one and then deploy this new one."
+    },
+    {
+      "url": "https://community.ibm.com/HigherLogic/System/DownloadDocumentFile.ashx?DocumentFileKey=28d23dd2-35ba-858c-ff8d-5dc4f8b3a02b",
+      "date": "2026-10-30",
+      "proved": "the terms state a discretionary throttle and no egress allowance or figure",
+      "capture": "sha256:84df696aa50872f4662bc051c920921eb9d548dd157cac25172b4e7ef681e6e8",
+      "quote": "Marist University or IBM may throttle, gate or otherwise limit usage including termination if, in its sole determination, (a) excessive network, computing or other resources are being used"
+    },
+    {
+      "url": "probe:https://linuxone.cloud.marist.edu/usermanager/cloud/admin/api/discovery/server/services?isAllowed=true",
+      "date": "2026-10-30",
+      "proved": "the portal's service list answered HTTP 200 with the VM service enabled on 2026-10-30, so new virtual-server registrations are open",
+      "capture": "sha256:bf26e9a546ef7dfbfdb1764f46abf49e18593d305327c3dc057cf2dddad45ec9",
+      "quote": "{\"serviceName\":\"VM\",\"serviceId\":\"VM\"}"
+    },
+    {
+      "url": "https://community.ibm.com/HigherLogic/System/DownloadDocumentFile.ashx?DocumentFileKey=1d1f6f68-b569-10f5-8675-a2c2a29608e2&forceDialog=0",
+      "date": "2026-10-30",
+      "proved": "IBM's overview deck for the self-service virtual server states the trial is 60 + 60 days, up to 120, extended by the user at the 60-day mark after a reminder email",
+      "capture": "sha256:ccbcb44fd8960210b9f444dfa02bbc80b23310c0080a8678f9648865583830d2",
+      "quote": "Students are responsible for extending to 120 days at the 60 day mark. They will get an email reminding them."
+    },
+    {
+      "url": "https://community.ibm.com/HigherLogic/System/DownloadDocumentFile.ashx?DocumentFileKey=28d23dd2-35ba-858c-ff8d-5dc4f8b3a02b",
+      "date": "2026-10-30",
+      "proved": "the terms still state a term of up to 120 days, after which all resources are cleared of data and returned to the pool",
+      "capture": "sha256:84df696aa50872f4662bc051c920921eb9d548dd157cac25172b4e7ef681e6e8",
+      "quote": "Access to the LinuxONE Community Cloud is for up to 120 days, as further determined by the use and subject to change as agreed by IBM and you."
+    },
+    {
+      "url": "https://community.ibm.com/HigherLogic/System/DownloadDocumentFile.ashx?DocumentFileKey=1d1f6f68-b569-10f5-8675-a2c2a29608e2&forceDialog=0",
+      "date": "2026-10-30",
+      "proved": "IBM's overview deck lists the public virtual-server trial as 60 days plus 60 days, up to 120 days",
+      "capture": "sha256:ccbcb44fd8960210b9f444dfa02bbc80b23310c0080a8678f9648865583830d2",
+      "quote": "60 + 60 Day = up to 120 day trial"
+    },
+    {
+      "url": "https://community.ibm.com/HigherLogic/System/DownloadDocumentFile.ashx?DocumentFileKey=28d23dd2-35ba-858c-ff8d-5dc4f8b3a02b",
+      "date": "2026-10-30",
+      "proved": "at the end of the term the server's resources are cleared of data and returned to the pool",
+      "capture": "sha256:84df696aa50872f4662bc051c920921eb9d548dd157cac25172b4e7ef681e6e8",
+      "quote": "Once such period has expired, all resources will be cleared of your data (if applicable) and returned to the pool at Marist University’s discretion."
+    },
+    {
+      "url": "https://linuxone.cloud.marist.edu/scripts/ExtendAccountController.js",
+      "date": "2026-10-30",
+      "proved": "the portal's extension controller posts a token from the link to /cloud/user/api/service/extend and reports a successful entitlement extension",
+      "capture": "sha256:90b73caf96226c0cb29bb1a4140b54ebdd1a990e3f7fce5acc557d1bdc6b1f51",
+      "quote": "Thank you!  Your entitlement on the LinuxONE Community Cloud has been extended successfully."
+    },
+    {
+      "url": "https://linuxone.cloud.marist.edu/scripts/app.js",
+      "date": "2026-10-30",
+      "proved": "the live portal app routes /extendaccount to the extension page extendAccount.html",
+      "capture": "sha256:249d8147c294584c4781aeea919e48a06b565c7b7a6a1c348f2522fc3d50a42f",
+      "quote": "url\t: \"/extendaccount\","
+    },
+    {
+      "url": "https://community.ibm.com/zsystems/datathon/",
+      "date": "2026-10-30",
+      "proved": "for the event-code servers of the 2026 Datathon, the extension is made by clicking an emailed link before expiry (30 days plus an optional 30), and administrators cannot extend a server by hand",
+      "capture": "sha256:ec2608b63191421e845e4805d237ca944aee9e3e62dbdc5ecbf8e0482b1cba94",
+      "quote": "You will receive an email a few days before expiration, inviting you to extend your registration by clicking a link if you require access to this server for an additional 30 day beyond the initial period."
+    },
+    {
+      "url": "https://community.ibm.com/community/user/discussion/trial-expired",
+      "date": "2026-10-30",
+      "proved": "reported in an IBM community answer: servers are deleted automatically at expiry and cannot be restored",
+      "capture": "sha256:63c82fdc8fd4052bf5fab1f53ec61ca64720593d1290698816a3a68f25c2ef73",
+      "quote": "I don't think there's a mechanism to restore servers (they are automatically deleted upon expiration)"
     }
   ],
   "verdict": "trial-only",
-  "verified_at": "2026-10-24T04:11:20.000Z",
+  "verified_at": "2026-10-31T00:12:44.369Z",
   "notes": "SIGNUP PATH, read. The account is created at https://linuxone.cloud.marist.edu/#/register?flag=VM, reached from IBM's front door at community.ibm.com/zsystems/l1cc/ by the 'Try Virtual Machines' link. The form is an Angular template, and its source lists: email, password and confirmation, first name, last name, organization, country (a 242-option list defaulting to United States, with Viet Nam present), a project description of 75 to 500 characters, an optional event code, a Terms checkbox and reCAPTCHA v3. THE PHONE STEP IS GONE. The form in circulation, including IBM's own archived deployment guide, says 'Provide a mobile phone number that is capable of receiving SMS messages', and the live page still carries that block in its source - but it is inside HTML comments, the controller's submit payload has no phone field, and the SMS-code function is commented out. So the phone claim is superseded, and the row is email-only, which is why identity_cost.kind is 'email' rather than 'any-phone'. NO CARD, NO ADDRESS. address1 through zip are posted as empty strings by the controller. Organization is on the form but has no required attribute. WHAT STOPS A SIGNUP: manual review, not a gate. The form's own success message says the request 'may take up to one (1) business day to process' and that credentials arrive by email once approved, and it also has a refusal path, 'We need additional information to proceed with your registration.' IBM's front door additionally states that outlook.com and hotmail.com addresses are currently refused by the registration system, which is a documented, first-party, signup-level failure and the cheapest one to avoid. WHAT IT GRANTS: one virtual server, s390x, full sudo, a public IP, SSH-key-only access, 120 days. THE SHAPE IS STILL UNPUBLISHED. IBM names the flavors LinuxONE-Small and LinuxONE-Medium and never states their vCPU, memory or disk; the 2 vCPU / 4 GB / 40 GB figure is third-party and is marked as such. The console fetches flavor values at runtime, so they are not readable without an account. NETWORK: the instance gets a public IP and a firewall that opens only SSH, so inbound listening works but every port has to be opened with iptables first; that is documented in IBM's deployment guide. EGRESS IS UNPUBLISHED; the vendor can instead throttle or terminate for 'excessive network, computing or other resources'. VERDICT CHANGED to trial-only from qualifies-with-caveat. The grant is a fixed 120-day term after which 'all resources will be cleared of your data', which is a trial with a hard stop and not a renewable free tier; the earlier verdict was written when the 120-day term was read as a re-registration cycle, and no page says a re-registration succeeds. An extension mechanism exists in the portal (a service/extend endpoint behind an emailed token) but nothing states that a virtual-server entitlement is eligible for it.",
   "extras": {
     "facets": {

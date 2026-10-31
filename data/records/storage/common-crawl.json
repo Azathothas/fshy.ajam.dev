@@ -5,45 +5,57 @@
   "url": "https://commoncrawl.org/get-started",
   "category": "academic",
   "free_tier": {
-    "stated": "Not a hosting service: ~300 billion web pages across ~100+ monthly crawls, multi-petabyte, free to READ and free to re-host yourself. There is NO path to host your own data with Common Crawl — confirmed, it publishes its own crawls only.",
+    "stated": "Read-only corpus, free to download over HTTPS with no account; the October 2026 crawl alone is 2.16 billion pages, 109.20 TiB compressed. It holds Common Crawl's own crawls and takes no user data.",
     "unit": "mixed",
     "metered_on": "unstated",
-    "source_url": "https://commoncrawl.org/get-started",
-    "read_on": "2026-10-21",
-    "notes": null
+    "source_url": "https://data.commoncrawl.org/crawl-data/index.html",
+    "read_on": "2026-10-30",
+    "notes": ""
   },
   "per_object_cap": {
-    "stated": "not stated",
-    "source_url": "https://commoncrawl.org/get-started",
-    "notes": "not stated"
+    "stated": "not applicable: the bucket stores no user objects; a read is a whole Common Crawl WARC file (958726164 bytes for one October 2026 file) or a byte range of one",
+    "source_url": "https://data.commoncrawl.org/crawl-data/CC-MAIN-2026-43/segments/1791170053823.21/warc/CC-MAIN-20261005105623-20261005135623-00993.warc.gz",
+    "notes": ""
   },
   "retention": {
-    "stated": "not stated",
-    "source_url": "https://commoncrawl.org/get-started",
-    "notes": "not stated"
+    "stated": "one index per crawl, all still listed: collinfo.json names 129 crawl indexes, from CC-MAIN-2008-2009 to CC-MAIN-2026-43",
+    "source_url": "https://index.commoncrawl.org/collinfo.json",
+    "notes": ""
   },
   "egress": {
     "terms": "Free and anonymous over HTTPS: 'The data is accessible via the https://data.commoncrawl.org/[...] URL scheme. There is no need to create an AWS account in order to access the data using this method.' S3 access (s3://commoncrawl) requires an authenticated AWS account. New: selected crawls are mirrored into a Hugging Face Storage Bucket with CDN pre-warming.",
     "metered": false,
-    "source_url": "https://data.commoncrawl.org/["
+    "source_url": "https://commoncrawl.org/get-started"
   },
   "interface": [
+    "rest",
     "s3",
     "cli"
   ],
-  "interface_detail": "s3",
-  "tooling": "wget/curl against data.commoncrawl.org, aws-cli against s3://commoncrawl (auth), the pycrawl / cc-index-table Athena tooling, and now `hf buckets cp hf://buckets/commoncrawl/commoncrawl/...`.",
-  "chaining": "Read-side: any amount of free inbound bandwidth for corpus you would otherwise have to build. The useful pattern for a user is the reverse of storage — Common Crawl is the SOURCE that makes a 200 GB Kaggle/generic pipeline interesting without owning a petabyte.",
-  "limits": [],
-  "limits_note": "WARC files are ~1 GB each, ~300k of them; us-east-1 locality strongly recommended ('It's mandatory to access the data from the region where it is located'); the public S3 listing at commoncrawl.s3.amazonaws.com returns 403 to unauthenticated callers (probed) — use HTTPS or HF instead.",
+  "interface_detail": "HTTPS GET with byte ranges on data.commoncrawl.org, no account; s3://commoncrawl through the S3 API; a Hugging Face Storage Bucket mirror of selected crawls with the same directory layout",
+  "tooling": "cURL or wget against https://data.commoncrawl.org/, the AWS CLI against s3://commoncrawl/, the hf CLI against the Hugging Face Storage Bucket mirror, and Common Crawl's official downloader client cc-downloader",
+  "chaining": "A read source, not a store: the crawl data is downloaded over HTTPS from data.commoncrawl.org, through the S3 API or from the Hugging Face Storage Bucket mirror into storage or compute held elsewhere, and its CDXJ index names the byte range of a single capture",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "the CDXJ API on index.commoncrawl.org is heavily rate limited; an IP address that sends too many requests may be blocked, and a blocked IP address should wait 24 hours",
+      "source": "https://commoncrawl.org/faq"
+    },
+    {
+      "kind": "request-rate",
+      "value": "under load the bucket answers 503 Slow Down to every caller; whole-file downloads recover when retried no more than once per second, index lookups and byte-range reads of single captures do not",
+      "source": "https://status.commoncrawl.org/"
+    }
+  ],
+  "limits_note": "An unsigned GET to the S3 endpoint commoncrawl.s3.amazonaws.com answered 403 on 2026-10-30, while HTTPS on data.commoncrawl.org and the Hugging Face bucket mirror served the same WARC file list with no account.",
   "identity_cost": {
-    "kind": "institution",
-    "detail": "inferred from the category 'academic'; the source record states no identity cost, so this is a class assumption, not evidence",
+    "kind": "anonymous",
+    "detail": "no account for HTTPS downloads from data.commoncrawl.org",
     "country": null
   },
-  "reliability_note": "Extremely stable (running since 2008, sponsored by AWS), immutable crawl archives, no access throttling observed on the HTTPS path.",
-  "confidence": "reported",
-  "confidence_note": null,
+  "reliability_note": "Under load the bucket answers 503 Slow Down to every caller, even one sending a single request; whole-file downloads recover with retries no more than once per second, index lookups and byte-range reads of single captures do not.",
+  "confidence": "measured",
+  "confidence_note": "read path probed: a CDXJ lookup, WARC byte-range reads on data.commoncrawl.org, an unsigned S3 GET and the Hugging Face mirror; the size of one WARC file measured by a range read; the FAQ and get-started bodies read by probe for the verdict, tooling and chaining",
   "evidence": [
     {
       "url": "https://commoncrawl.org/get-started",
@@ -59,11 +71,193 @@
       "url": "https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2026-17/warc.paths.gz",
       "date": "2026-10-21",
       "proved": "probe: GET -> 403 (S3 path is auth-only)"
+    },
+    {
+      "url": "probe:https://data.commoncrawl.org/crawl-data/CC-MAIN-2026-43/segments/1791170053823.21/warc/CC-MAIN-20261005105623-20261005135623-00993.warc.gz",
+      "date": "2026-10-30",
+      "proved": "an anonymous byte-range GET on data.commoncrawl.org returned the one WARC record the index named (206)",
+      "capture": "sha256:72f6da208a9a3a417c5c03d2933225a8bb0fcc05ca90649838c39eb3e9520b1f",
+      "quote": "\"content_range\": \"bytes 937296400-937320567/958726164\""
+    },
+    {
+      "url": "https://commoncrawl.org/get-started",
+      "date": "2026-10-30",
+      "proved": "HTTPS downloads from data.commoncrawl.org need no account",
+      "capture": "sha256:f035bf60f3892932f25c16f775fb450fc05385e94f3405fd0ba1b9e5f7714d37",
+      "quote": "There is no need to create an AWS account in order to access the data using this method."
+    },
+    {
+      "url": "probe:https://data.commoncrawl.org/crawl-data/CC-MAIN-2026-43/warc.paths.gz",
+      "date": "2026-10-30",
+      "proved": "the October 2026 WARC file list downloads anonymously over HTTPS",
+      "capture": "sha256:c52a5232ad8b38a72e9ff5f9229acc4c4fb6a6c2880d9fe5925388be3191c6b5",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "https://data.commoncrawl.org/crawl-data/index.html",
+      "date": "2026-10-30",
+      "proved": "the October 2026 crawl is 2.16 billion pages and 109.20 TiB compressed",
+      "capture": "sha256:ba5edfd1cbe0dddf181010bed1c6bb91e5b956a79ebb7e8b33a265f278cb5942",
+      "quote": "CC-MAIN-2026-43 | October 2026 | 2.16 | 109.20"
+    },
+    {
+      "url": "https://commoncrawl.org/blog/october-2026-crawl-archive-now-available",
+      "date": "2026-10-30",
+      "proved": "the October 2026 crawl holds 2.16 billion pages, 371.19 TiB uncompressed",
+      "capture": "sha256:01b285b5aac86192645576ca8705c06bb1b46c0b6e937135ee1b711cfb0d021f",
+      "quote": "The data was crawled between October 5th and October 18th, and contains 2.16 billion web pages (or 371.19 TiB of uncompressed content)."
+    },
+    {
+      "url": "https://commoncrawl.org/faq",
+      "date": "2026-10-30",
+      "proved": "a blocked IP address should wait 24 hours",
+      "capture": "sha256:eb8cba4c974736f6f2bb2d8eedacf491f2fb960db386bb581669780186d3a1b5",
+      "quote": "If your IP is temporarily blocked, please wait 24 hours before trying again."
+    },
+    {
+      "url": "https://status.commoncrawl.org/",
+      "date": "2026-10-30",
+      "proved": "whole-file downloads recover from 503 by retrying no more than once per second",
+      "capture": "sha256:2e34822f6633068569cc7442aa799d06a03d06dc821806bd623b32a9c0dcddea",
+      "quote": "For bulk downloads, such as whole files, it’s possible to work around these 503s by politely retrying many times. Retrying no more than once per second is polite enough."
+    },
+    {
+      "url": "https://status.commoncrawl.org/",
+      "date": "2026-10-30",
+      "proved": "index lookups and byte-range reads of single captures do not recover by retrying",
+      "capture": "sha256:2e34822f6633068569cc7442aa799d06a03d06dc821806bd623b32a9c0dcddea",
+      "quote": "This retry technique does not work well enough for partial file downloads, such as index lookups and downloading individual webpage captures from within a WARC file."
+    },
+    {
+      "url": "https://commoncrawl.org/faq",
+      "date": "2026-10-30",
+      "proved": "the CDXJ index is heavily rate limited and blocks an IP address that sends too many requests",
+      "capture": "sha256:eb8cba4c974736f6f2bb2d8eedacf491f2fb960db386bb581669780186d3a1b5",
+      "quote": "Our CDX API endpoint is frequently abused and therefore heavily rate limited. If your client sends too many requests in a short period of time, your IP address may be temporarily blocked."
+    },
+    {
+      "url": "https://status.commoncrawl.org/",
+      "date": "2026-10-30",
+      "proved": "a whole-file download that gets through runs without further rate checks",
+      "capture": "sha256:2e34822f6633068569cc7442aa799d06a03d06dc821806bd623b32a9c0dcddea",
+      "quote": "And once you are lucky and get a request through, you’ll get the entire file without any further rate limit checks."
+    },
+    {
+      "url": "probe:https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2026-43/warc.paths.gz",
+      "date": "2026-10-30",
+      "proved": "an unsigned GET on the S3 endpoint of the commoncrawl bucket is refused",
+      "capture": "sha256:bd6aaef88197dbdc681ebc2997ee56b85147f25b105580a5180c8edcc0d25982",
+      "quote": "\"status\": 403"
+    },
+    {
+      "url": "probe:https://huggingface.co/buckets/commoncrawl/commoncrawl/resolve/crawl-data/CC-MAIN-2026-43/warc.paths.gz",
+      "date": "2026-10-30",
+      "proved": "the Hugging Face bucket mirror serves the same 201296-byte WARC file list with no token",
+      "capture": "sha256:29abf7676f9ac94af387ba136ebbe196f160e8a355ed5cd992e0d0bf8bfaf30b",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "https://commoncrawl.org/get-started",
+      "date": "2026-10-30",
+      "proved": "the S3 API path is stated as for authenticated users (the same page also documents --no-sign-request)",
+      "capture": "sha256:f035bf60f3892932f25c16f775fb450fc05385e94f3405fd0ba1b9e5f7714d37",
+      "quote": "Please note, access to data from the Amazon cloud using the S3 API is only allowed for authenticated users."
+    },
+    {
+      "url": "https://status.commoncrawl.org/",
+      "date": "2026-10-30",
+      "proved": "under load the bucket answers 503 to every caller",
+      "capture": "sha256:2e34822f6633068569cc7442aa799d06a03d06dc821806bd623b32a9c0dcddea",
+      "quote": "Once the bucket is temporarily overwhelmed, it sends these 503 errors to everyone, including users sending even a single request."
+    },
+    {
+      "url": "https://commoncrawl.org/blog/april-2026-crawl-archive-now-available-in-a-hugging-face-storage-bucket",
+      "date": "2026-10-30",
+      "proved": "the bucket is Common Crawl's own distribution of its corpus, hosted under the AWS Open Data Sponsorship Program",
+      "capture": "sha256:6e6e564218575ec7e202c55511eb0a2cd9c3774f8438475cd931531293e08f8b",
+      "quote": "AWS S3 remains the canonical distribution point for the Common Crawl corpus, generously hosted through Amazon Web Services' Open Data Sponsorship Program"
+    },
+    {
+      "url": "https://commoncrawl.org/get-started",
+      "date": "2026-10-30",
+      "proved": "a Hugging Face Storage Bucket mirrors selected crawls with the S3 layout",
+      "capture": "sha256:f035bf60f3892932f25c16f775fb450fc05385e94f3405fd0ba1b9e5f7714d37",
+      "quote": "Selected crawl archives are mirrored in a Hugging Face Storage Bucket, using the same directory layout as S3"
+    },
+    {
+      "url": "probe:https://index.commoncrawl.org/collinfo.json",
+      "date": "2026-10-30",
+      "proved": "collinfo.json lists one index per crawl, back to the 2008-2009 ARC crawl; the body has 129 entries",
+      "capture": "sha256:a683312f4448cdda63b38f40c7289853fa82eb1e7e3cd5a3674e46142b01891a",
+      "quote": "\"id\": \"CC-MAIN-2008-2009\""
+    },
+    {
+      "url": "probe:https://commoncrawl.org/get-started",
+      "date": "2026-10-31",
+      "proved": "the crawl data is processed in the AWS cloud or downloaded over HTTPS at no charge",
+      "capture": "sha256:25e9bc50af15ca0235cbc0fad6a7fe9463e3bcf37b9233e78236f9ca6578ba7a",
+      "quote": "You may process the data in the AWS cloud or download it for free over HTTP(S) with a good Internet connection."
+    },
+    {
+      "url": "probe:https://index.commoncrawl.org/collinfo.json",
+      "date": "2026-10-31",
+      "proved": "collinfo.json lists one CDXJ index per crawl, back to CC-MAIN-2008-2009; the body has 129 entries, the newest CC-MAIN-2026-43",
+      "capture": "sha256:a683312f4448cdda63b38f40c7289853fa82eb1e7e3cd5a3674e46142b01891a",
+      "quote": "\"id\": \"CC-MAIN-2008-2009\""
+    },
+    {
+      "url": "probe:https://data.commoncrawl.org/crawl-data/CC-MAIN-2026-43/segments/1791170053823.21/warc/CC-MAIN-20261005105623-20261005135623-00993.warc.gz",
+      "date": "2026-10-31",
+      "proved": "an anonymous byte-range GET on data.commoncrawl.org answered 206; the October 2026 WARC file is 958726164 bytes",
+      "capture": "sha256:0daf334f2fba907a2ee686736b3c76857b68fd5fa6af726c41999143076744d4",
+      "quote": "\"content_range\": \"bytes 0-1023/958726164\""
+    },
+    {
+      "url": "probe:https://commoncrawl.org/faq",
+      "date": "2026-10-31",
+      "proved": "cc-downloader is Common Crawl's official downloader client",
+      "capture": "sha256:b8d8611668566f66cbf218403910994c71382a9af8d8278648ed11349dd6ffd1",
+      "quote": "We also provide an official downloader client cc-downloader which is robust and polite."
+    },
+    {
+      "url": "probe:https://commoncrawl.org/get-started",
+      "date": "2026-10-31",
+      "proved": "any HTTP download agent (the page names cURL and wget) reads the data from outside AWS",
+      "capture": "sha256:25e9bc50af15ca0235cbc0fad6a7fe9463e3bcf37b9233e78236f9ca6578ba7a",
+      "quote": "you can use any HTTP download agent, such as"
+    },
+    {
+      "url": "probe:https://commoncrawl.org/get-started",
+      "date": "2026-10-31",
+      "proved": "the hf CLI copies files from the Hugging Face Storage Bucket mirror",
+      "capture": "sha256:25e9bc50af15ca0235cbc0fad6a7fe9463e3bcf37b9233e78236f9ca6578ba7a",
+      "quote": "hf buckets cp hf://buckets/commoncrawl/commoncrawl/crawl-data/CC-MAIN-2026-17/segments/.../warc/CC-MAIN-....warc.gz ./local-path/"
+    },
+    {
+      "url": "probe:https://commoncrawl.org/faq",
+      "date": "2026-10-31",
+      "proved": "the dataset is Common Crawl's own crawl sample of the web; the FAQ's answer to adding a website is the crawler, not an upload",
+      "capture": "sha256:b8d8611668566f66cbf218403910994c71382a9af8d8278648ed11349dd6ffd1",
+      "quote": "Common Crawl's dataset is a sample of the web, and we do not generally archive any entire website but a randomly selected subset of it."
+    },
+    {
+      "url": "probe:https://commoncrawl.org/faq",
+      "date": "2026-10-31",
+      "proved": "Common Crawl distributes its own copy of the web to readers; it is not a store for their data",
+      "capture": "sha256:b8d8611668566f66cbf218403910994c71382a9af8d8278648ed11349dd6ffd1",
+      "quote": "Common Crawl is a 501(c)(3) non-profit organization dedicated to providing a copy of the Internet to Internet researchers, companies and individuals at no cost for the purpose of research and analysis."
+    },
+    {
+      "url": "probe:https://commoncrawl.org/get-started",
+      "date": "2026-10-31",
+      "proved": "HTTPS downloads from data.commoncrawl.org need no account",
+      "capture": "sha256:25e9bc50af15ca0235cbc0fad6a7fe9463e3bcf37b9233e78236f9ca6578ba7a",
+      "quote": "There is no need to create an AWS account in order to access the data using this method."
     }
   ],
   "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
-  "notes": "Not a hosting service: ~300 billion web pages across ~100+ monthly crawls, multi-petabyte, free to READ and free to re-host yourself. There is NO path to host your own data with Common Crawl — confirmed, it publishes its own crawls only.",
+  "verified_at": "2026-10-31T06:44:32.046Z",
+  "notes": "Fails the storage quota filter: the bucket holds only Common Crawl's own crawls of the web and takes no user data, so it offers no allowance a user can write to. One offer with crawler-scraper/commoncrawl, the same corpus judged as a crawl archive, which keeps qualifies-with-caveat as a read source.",
   "extras": {
     "dead_end": {
       "failure_class": "quota",
@@ -72,6 +266,6 @@
       "first_recorded": "2026-10-21"
     }
   },
-  "binding": "none",
-  "binding_note": null
+  "binding": "request-rate",
+  "binding_note": "the CDXJ index on index.commoncrawl.org is heavily rate limited and can block a caller's IP address, which bounds lookups of single captures; a whole-file download, once it starts, runs without further rate checks"
 }

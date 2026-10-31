@@ -1,22 +1,22 @@
 {
   "topic": "storage",
   "slug": "systemfreaks-s3-compatible-object-storage-250-gb-free-du",
-  "provider": "Systemfreaks — S3-compatible object storage, 250 GB free during beta (coupon STRBETA)",
-  "url": "https://manager.systemfreaks.com/order/config/index/S3-Compatible-Object-storage/?group_id=33&pricing_id=3598&coupon=STRBETA",
+  "provider": "SystemFreaks S3-Compatible Object Storage",
+  "url": "https://systemfreaks.com/object-storage",
   "category": "iaas",
   "free_tier": {
-    "stated": "250 GB free during beta, 'and bandwidth is free'. Post-beta: $0.0050/GB storage ($5/TB/mo) with 1 TB bandwidth included then $1.00/TB.",
-    "unit": "GB",
-    "metered_on": "stored-bytes",
-    "source_url": "https://lowendtalk.com/discussion/201922/systemfreaks-com-early-access-to-our-object-storage",
-    "read_on": "2026-10-21",
-    "notes": null
+    "stated": "No free allowance is offered. Standard USD 6.00/TB/month with free egress up to 3x storage, then USD 1.00 per TB; Unmetered USD 8.00/TB/month with no egress fees.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://systemfreaks.com/object-storage",
+    "read_on": "2026-10-30",
+    "notes": "the beta that carried the free allowance ended in January 2025; no free plan is listed now"
   },
   "per_object_cap": {
-    "stated": "250 GB cap",
-    "bytes": 250000000000,
-    "source_url": "https://lowendtalk.com/discussion/201922/systemfreaks-com-early-access-to-our-object-storage",
-    "notes": "not stated"
+    "stated": "unverified: the vendor page states no per-object cap",
+    "bytes": null,
+    "source_url": "https://systemfreaks.com/object-storage",
+    "notes": "the earlier value was the beta's free storage allowance, not a per-object cap"
   },
   "retention": {
     "stated": "not stated",
@@ -24,9 +24,9 @@
     "notes": "not stated"
   },
   "egress": {
-    "terms": "Free during beta; after beta 1 TB included then $1/TB — which is the cheapest published egress in the slot but still metered, so it fails a user's 'free or CF-covered' rule once beta ends.",
+    "terms": "Standard: egress free up to 3x the storage quota, then USD 1.00 per TB. Unmetered: no egress fees. Ingress is free on both plans.",
     "metered": false,
-    "price_per_tb": "$1/TB"
+    "price_per_tb": "USD 1.00/TB above 3x storage on Standard; none on Unmetered"
   },
   "interface": [
     "s3-compatible",
@@ -34,24 +34,18 @@
     "cli"
   ],
   "interface_detail": "s3",
-  "tooling": "Real S3-compatible endpoint — rclone s3, s3cmd, aws-cli, any S3 SDK. Provider also ships an S3 backup plugin and an offload plugin for WordPress.",
-  "chaining": "No stated per-account cap on beta accounts beyond the 250 GB; the coupon code is public in the LET thread. Beta gating means the allowance is per account and the open question is how many accounts beta admits, not a durable design.",
-  "limits": [
-    {
-      "kind": "per-object-cap",
-      "value": "250 GB cap",
-      "source": "https://lowendtalk.com/discussion/201922/systemfreaks-com-early-access-to-our-object-storage"
-    }
-  ],
-  "limits_note": "250 GB cap. Beta status: signup queues you ('after registration you will receive an email once the service launches'). Post-beta pricing is metered egress.",
+  "tooling": "S3-compatible API with an access key per app, created and rotated in the web console; rclone, backup tools and any AWS SDK; a browser file manager with expiring share links. A custom-domain endpoint is listed as coming soon.",
+  "chaining": "No free allowance exists to multiply across accounts; every TB is billed. Objects are served through pre-signed URLs, public links or static website hosting, and the vendor page names CDN delivery.",
+  "limits": [],
+  "limits_note": "Capacity is bought per TB and is individually expandable; no API request fees; Standard bills egress above 3x storage at USD 1.00 per TB. The vendor page publishes no per-object, request-rate or bucket cap.",
   "identity_cost": {
     "kind": "email",
-    "detail": "email",
+    "detail": "the order signup form has fields for name, postal address, country, phone, email and a password; which fields are required, and the payment methods for the paid plans, are unverified: behind a sign-up",
     "country": null
   },
-  "reliability_note": "Small provider mixing colo and rented dedicated servers; explicitly admits rented capacity in lower-demand regions. Beta; the 250 GB grant's survival is the risk.",
-  "confidence": "reported",
-  "confidence_note": null,
+  "reliability_note": "The beta that carried the free allowance ended in January 2025; beta buckets were invoiced for disk usage from their next renewal date. The provider runs colocated hardware and rented dedicated servers.",
+  "confidence": "documented",
+  "confidence_note": "the vendor page, its order cart and the signup form were read on 2026-10-30: two plans priced per TB and no free plan",
   "evidence": [
     {
       "url": "https://lowendtalk.com/discussion/201922/systemfreaks-com-early-access-to-our-object-storage",
@@ -62,11 +56,109 @@
       "url": "https://manager.systemfreaks.com/",
       "date": "2026-10-21",
       "proved": "probe: GET -> HTTP 302 (redirect to login; site alive, beta status unverified)"
+    },
+    {
+      "url": "https://systemfreaks.com/object-storage",
+      "date": "2026-10-30",
+      "proved": "the vendor page lists two paid plans, Standard at USD 6.00/TB/month and Unmetered at USD 8.00/TB/month, and no free plan",
+      "capture": "sha256:c6106c55b9efb168e7cf88128cc2b581b2919e02cf84dc6c1c51739c5dbe847c",
+      "quote": "Store backups, media and app files from $6.00 per TB per month, with free egress up to 3× your storage. Choose Unmetered at $8.00 per TB and pay no egress fees."
+    },
+    {
+      "url": "https://systemfreaks.com/object-storage",
+      "date": "2026-10-30",
+      "proved": "the offer is two paid plans priced per TB, with no free plan",
+      "capture": "sha256:c6106c55b9efb168e7cf88128cc2b581b2919e02cf84dc6c1c51739c5dbe847c",
+      "quote": "Two plans, priced per TB"
+    },
+    {
+      "url": "https://lowendtalk.com/discussion/201922/systemfreaks-com-early-access-to-our-object-storage/p3",
+      "date": "2026-10-30",
+      "proved": "the provider's own account announced in January 2025 that the beta, which carried the free allowance, had ended",
+      "capture": "sha256:ac8d43648220bb2a6668d0d2a96cb66cbcfc8d943e8f0ea133cd46a96f75691d",
+      "quote": "The beta phase of our S3-compatible object storage has officially concluded."
+    },
+    {
+      "url": "probe:https://manager.systemfreaks.com/order/config/index/S3-Compatible-Object-storage/?group_id=33&pricing_id=3598&coupon=STRBETA",
+      "date": "2026-10-30",
+      "proved": "the beta order link with coupon STRBETA no longer opens the beta package; it lands on the current paid package list",
+      "capture": "sha256:651c0d4c2374a29724dc6b82fce68c318b1dcbc080c48128f417360e8dfb4fb4",
+      "quote": "\"final_url\": \"https://manager.systemfreaks.com/order/main/packages/S3-Compatible-Object-storage/?group_id=38\""
+    },
+    {
+      "url": "https://systemfreaks.com/object-storage",
+      "date": "2026-10-30",
+      "proved": "the product name the vendor page uses",
+      "capture": "sha256:c6106c55b9efb168e7cf88128cc2b581b2919e02cf84dc6c1c51739c5dbe847c",
+      "quote": "S3-Compatible Object Storage"
+    },
+    {
+      "url": "https://systemfreaks.com/object-storage",
+      "date": "2026-10-30",
+      "proved": "Standard egress is free up to 3x the storage quota, then USD 1.00/TB; Unmetered has no egress fees; ingress is free",
+      "capture": "sha256:c6106c55b9efb168e7cf88128cc2b581b2919e02cf84dc6c1c51739c5dbe847c",
+      "quote": "Standard includes free egress up to 3× your storage quota. Above that, egress costs $1.00 per TB. Unmetered has no egress fees, and ingress is always free."
+    },
+    {
+      "url": "https://systemfreaks.com/object-storage",
+      "date": "2026-10-30",
+      "proved": "capacity is bought per TB and is expandable; the page names no per-object, request or bucket cap",
+      "capture": "sha256:c6106c55b9efb168e7cf88128cc2b581b2919e02cf84dc6c1c51739c5dbe847c",
+      "quote": "Scalable, individually expandable storage capacity"
+    },
+    {
+      "url": "https://systemfreaks.com/object-storage",
+      "date": "2026-10-30",
+      "proved": "both plans include static website hosting",
+      "capture": "sha256:c6106c55b9efb168e7cf88128cc2b581b2919e02cf84dc6c1c51739c5dbe847c",
+      "quote": "Static website hosting"
+    },
+    {
+      "url": "https://systemfreaks.com/object-storage",
+      "date": "2026-10-30",
+      "proved": "rclone, backup tools and AWS SDKs work with per-app access keys",
+      "capture": "sha256:c6106c55b9efb168e7cf88128cc2b581b2919e02cf84dc6c1c51739c5dbe847c",
+      "quote": "Use rclone, your backup software or any AWS SDK with your access keys."
+    },
+    {
+      "url": "https://lowendtalk.com/discussion/201922/systemfreaks-com-early-access-to-our-object-storage/p3",
+      "date": "2026-10-30",
+      "proved": "after the beta ended, beta buckets were invoiced for disk usage from their next renewal date",
+      "capture": "sha256:ac8d43648220bb2a6668d0d2a96cb66cbcfc8d943e8f0ea133cd46a96f75691d",
+      "quote": "You can continue using your buckets; however, starting on your next renewal date, an invoice reflecting your disk usage will be issued."
+    },
+    {
+      "url": "https://lowendtalk.com/discussion/201922/systemfreaks-com-early-access-to-our-object-storage",
+      "date": "2026-10-30",
+      "proved": "the provider's own account states it runs colocated hardware and rented dedicated servers",
+      "capture": "sha256:3da83533a66141fe778442d623ee0cfae39a6759059cca06ef39684b0441b985",
+      "quote": "Our infrastructure combines colocated hardware and rented dedicated servers to ensure reliable service."
+    },
+    {
+      "url": "probe:https://manager.systemfreaks.com/order/config/index/S3-Compatible-Object-storage/?group_id=38&pricing_id=3741",
+      "date": "2026-10-30",
+      "proved": "the Unmetered order configurator renders a price (USD 8.00), so new customers can order",
+      "capture": "sha256:aaddff33d019d6bcbf034447f59b0d89bb2de90e761b026c94830000a289b71e",
+      "quote": "\"verdict\": \"priced\""
+    },
+    {
+      "url": "https://manager.systemfreaks.com/order/signup/index/S3-Compatible-Object-storage/",
+      "date": "2026-10-30",
+      "proved": "the order signup form has fields for a postal address, phone and email",
+      "capture": "sha256:c4d13e7ee57faa2402439333770677877bdf7ea9eb4c419160a1b8d34c55f3e6",
+      "quote": "Zip/Postal Code Phone Fax Email"
+    },
+    {
+      "url": "https://systemfreaks.com/object-storage",
+      "date": "2026-10-30",
+      "proved": "the two plans and their egress terms, restated at the foot of the vendor page",
+      "capture": "sha256:c6106c55b9efb168e7cf88128cc2b581b2919e02cf84dc6c1c51739c5dbe847c",
+      "quote": "Choose Standard from $6.00 per TB with free egress up to 3× storage, or Unmetered at $8.00 per TB with no egress fees."
     }
   ],
-  "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
-  "notes": "250 GB free during beta, 'and bandwidth is free'. Post-beta: $0.0050/GB storage ($5/TB/mo) with 1 TB bandwidth included then $1.00/TB.",
+  "verdict": "paid-only",
+  "verified_at": "2026-10-30T12:21:42.672Z",
+  "notes": "Two paid plans, no free allowance: Standard USD 6.00/TB/month with egress free up to 3x storage, then USD 1.00 per TB; Unmetered USD 8.00/TB/month with no egress fees. No API request fees; locations in Canada, the USA and France.",
   "extras": {
     "dead_end": {
       "failure_class": "egress",
@@ -75,6 +167,7 @@
       "first_recorded": "2026-10-21"
     }
   },
-  "binding": "per-object-cap",
-  "binding_note": null
+  "binding": "none",
+  "binding_note": "no limit of a vocabulary kind is published: capacity is bought per TB and is expandable, and the only other meter is Standard's egress above 3x storage",
+  "price_per_tb_month": "USD 6.00/TB/month on Standard (egress free up to 3x storage, then USD 1.00 per TB); USD 8.00/TB/month on Unmetered (no egress fees)"
 }

@@ -1,0 +1,327 @@
+{
+  "topic": "data-apis",
+  "slug": "openalex",
+  "provider": "OpenAlex",
+  "url": "https://help.openalex.org/access/example-costs/",
+  "category": "scholarly metadata API (works, authors, sources, institutions) and bulk snapshot",
+  "tier": "free",
+  "free_tier": {
+    "stated": "USD 1 of API usage a day with a free key: 10,000 list-and-filter calls, 1,000 searches or 100 content downloads, single-entity lookups unlimited; USD 0.10 a day with no key; the budget resets every midnight UTC",
+    "unit": "credits",
+    "metered_on": "request-count",
+    "source_url": "https://help.openalex.org/access/example-costs/",
+    "read_on": "2026-10-30",
+    "notes": "The budget is priced per call: a list or filter call costs USD 0.10 per 1,000, a search USD 1 per 1,000, a content download USD 10 per 1,000. A keyless list call on 2026-10-30 answered X-RateLimit-Limit 1000, X-RateLimit-Limit-USD 0.1 and X-RateLimit-Credits-Used 1, so the keyless day is 1,000 list calls."
+  },
+  "per_object_cap": {
+    "stated": "per_page maximum 100 results; basic paging stops at 10,000 results, and cursor paging past the first page needs a free key; snapshot part files hold up to 400,000 records each",
+    "bytes": null,
+    "source_url": "https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "the API is a live index; the free public snapshot is a quarterly release on the second Wednesday of January, April, July and October (latest 2026-10-14); a daily snapshot is a Member+ plan benefit",
+    "days": null,
+    "source_url": "https://docs.openalex.org/download-all-data/openalex-snapshot",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "The API is metered in credits per day, not in bytes. The public snapshot bucket s3://openalex is free to download with no AWS account; the AWS Open Data program covers the transfer, about USD 70 per full download.",
+    "metered": false,
+    "free_allowance": "no byte cap published on the snapshot bucket",
+    "price_per_tb": null,
+    "source_url": "https://docs.openalex.org/download-all-data/openalex-snapshot"
+  },
+  "interface": [
+    "rest",
+    "s3"
+  ],
+  "interface_detail": "REST at https://api.openalex.org (GET, JSON; a key as the api_key query parameter or an Authorization: Bearer header); the snapshot in the public S3 bucket s3://openalex under data/jsonl/ (gzip JSON Lines) and data/parquet/, read anonymously with --no-sign-request or over HTTPS, each format with a manifest.json",
+  "endpoint": "https://api.openalex.org/works",
+  "tooling": "curl or any HTTP client for the API; aws s3 sync with --no-sign-request (parallel and resumable) for the snapshot; DuckDB reads the gzip JSONL or Parquet part files directly",
+  "chaining": "The S3 snapshot is the bulk path: about 626 million records, about 745 GB compressed as JSON Lines (works alone about 615 GB) or about 770 GB as Parquet, refreshed quarterly; the API at USD 1 a day with a free key covers lookups and the drift between releases, while the daily snapshot and changed-since-any-date filters are Member+ (USD 10,000 a year) benefits.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "no key: 10 requests a second; free key or prepaid usage: 30; annual plan: 50",
+      "source": "https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication"
+    },
+    {
+      "kind": "request-rate",
+      "value": "daily budget: USD 0.10 with no key, USD 1 with a free key (10,000 list-and-filter calls or 1,000 searches or 100 content downloads); single-entity lookups free; resets every midnight UTC",
+      "source": "https://help.openalex.org/access/example-costs/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "per_page maximum 100; basic paging limit 10,000 results; cursor paging past the first page needs a free key",
+      "source": "https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "The daily credit budget runs out first: a free key buys 10,000 list calls of up to 100 results, about 1,000,000 records a day, so a full copy comes from the snapshot, not the API.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The API answers with no key at USD 0.10 a day, and the snapshot bucket needs no account. The free key comes from a sign-up form that asks for a name and an email address behind a CAPTCHA, or from a POST to https://api.openalex.org/api-keys with an email address; the key works only once its email address is verified. No payment method required.",
+    "country": null
+  },
+  "reliability_note": "Exceeding the daily budget or the per-second limit answers 429; a per-second 429 costs nothing and clears on retry.",
+  "confidence": "documented",
+  "confidence_note": "The budget, rates, paging limits and snapshot sizes are vendor pages read on 2026-10-30; a keyless list call and a HEAD of the snapshot manifest were probed the same day and answered 200 with the keyless budget in the headers. No key was requested, so the keyed rate is documented only.",
+  "evidence": [
+    {
+      "url": "https://help.openalex.org/access/example-costs/",
+      "date": "2026-10-30",
+      "proved": "the keyless budget is USD 0.10 a day",
+      "capture": "sha256:4dde64f6a026bf01b07b0bf97a98ee91c7c1525eb8e0ae58c401f1a886e93e4f",
+      "quote": "Without a key you get $0.10/day"
+    },
+    {
+      "url": "https://help.openalex.org/access/example-costs/",
+      "date": "2026-10-30",
+      "proved": "USD 1 a day buys 10,000 list-and-filter calls returning 1,000,000 results",
+      "capture": "sha256:4dde64f6a026bf01b07b0bf97a98ee91c7c1525eb8e0ae58c401f1a886e93e4f",
+      "quote": "| List + filter | 10,000 | 1,000,000 | All works from MIT in 2024 |"
+    },
+    {
+      "url": "https://help.openalex.org/access/example-costs/",
+      "date": "2026-10-30",
+      "proved": "USD 1 a day buys 1,000 searches",
+      "capture": "sha256:4dde64f6a026bf01b07b0bf97a98ee91c7c1525eb8e0ae58c401f1a886e93e4f",
+      "quote": "| Search | 1,000 | 100,000 |"
+    },
+    {
+      "url": "https://help.openalex.org/access/example-costs/",
+      "date": "2026-10-30",
+      "proved": "single-entity lookups are unlimited",
+      "capture": "sha256:4dde64f6a026bf01b07b0bf97a98ee91c7c1525eb8e0ae58c401f1a886e93e4f",
+      "quote": "| Get a single entity | Unlimited | Unlimited | Look up a work by DOI |"
+    },
+    {
+      "url": "https://help.openalex.org/access/example-costs/",
+      "date": "2026-10-30",
+      "proved": "USD 1 a day buys 100 content downloads",
+      "capture": "sha256:4dde64f6a026bf01b07b0bf97a98ee91c7c1525eb8e0ae58c401f1a886e93e4f",
+      "quote": "| Content download | 100 | 100 PDFs |"
+    },
+    {
+      "url": "https://help.openalex.org/access/example-costs/",
+      "date": "2026-10-30",
+      "proved": "a list or filter call costs USD 0.10 per 1,000",
+      "capture": "sha256:4dde64f6a026bf01b07b0bf97a98ee91c7c1525eb8e0ae58c401f1a886e93e4f",
+      "quote": "| [List + filter](https://help.openalex.org/api/filtering/) | Query and filter entities | $0.10 |"
+    },
+    {
+      "url": "https://help.openalex.org/access/pricing/",
+      "date": "2026-10-30",
+      "proved": "the daily budget resets at midnight UTC",
+      "capture": "sha256:cb417b31318ad09da10b92d8db4fd7c090c822a2762b603f2aa144c6c203c11b",
+      "quote": "The budget resets every midnight UTC"
+    },
+    {
+      "url": "https://help.openalex.org/access/pricing/",
+      "date": "2026-10-30",
+      "proved": "the free key needs no payment method",
+      "capture": "sha256:cb417b31318ad09da10b92d8db4fd7c090c822a2762b603f2aa144c6c203c11b",
+      "quote": "no payment method required"
+    },
+    {
+      "url": "https://help.openalex.org/access/pricing/",
+      "date": "2026-10-30",
+      "proved": "the Member+ plan costs USD 10,000 a year",
+      "capture": "sha256:cb417b31318ad09da10b92d8db4fd7c090c822a2762b603f2aa144c6c203c11b",
+      "quote": "Member+ — $10,000/year"
+    },
+    {
+      "url": "https://help.openalex.org/access/pricing/",
+      "date": "2026-10-30",
+      "proved": "the daily snapshot and changed-since filters are Member+ benefits",
+      "capture": "sha256:cb417b31318ad09da10b92d8db4fd7c090c822a2762b603f2aa144c6c203c11b",
+      "quote": "a complete daily snapshot of the database plus API filters that return everything new or changed since any date"
+    },
+    {
+      "url": "https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication",
+      "date": "2026-10-30",
+      "proved": "keyless callers get 10 requests a second",
+      "capture": "sha256:264605d06eac1553d48284579c4f66ad65c6f900dac548f06917ccf66513eeb5",
+      "quote": "| No API key | 10 |"
+    },
+    {
+      "url": "https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication",
+      "date": "2026-10-30",
+      "proved": "a free key gets 30 requests a second",
+      "capture": "sha256:264605d06eac1553d48284579c4f66ad65c6f900dac548f06917ccf66513eeb5",
+      "quote": "| Free API key, or prepaid usage | 30 |"
+    },
+    {
+      "url": "https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication",
+      "date": "2026-10-30",
+      "proved": "an annual plan gets 50 requests a second",
+      "capture": "sha256:264605d06eac1553d48284579c4f66ad65c6f900dac548f06917ccf66513eeb5",
+      "quote": "| [Annual plan](https://help.openalex.org/access/pricing/) | 50 |"
+    },
+    {
+      "url": "https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication",
+      "date": "2026-10-30",
+      "proved": "a call returns at most 100 results",
+      "capture": "sha256:264605d06eac1553d48284579c4f66ad65c6f900dac548f06917ccf66513eeb5",
+      "quote": "| `per_page` maximum | 100 |"
+    },
+    {
+      "url": "https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication",
+      "date": "2026-10-30",
+      "proved": "basic paging stops at 10,000 results",
+      "capture": "sha256:264605d06eac1553d48284579c4f66ad65c6f900dac548f06917ccf66513eeb5",
+      "quote": "| Basic paging limit | 10,000 results |"
+    },
+    {
+      "url": "https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication",
+      "date": "2026-10-30",
+      "proved": "cursor paging needs a free key",
+      "capture": "sha256:264605d06eac1553d48284579c4f66ad65c6f900dac548f06917ccf66513eeb5",
+      "quote": "with a free key: without one, only the first page works"
+    },
+    {
+      "url": "https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication",
+      "date": "2026-10-30",
+      "proved": "a key works only after its email address is verified",
+      "capture": "sha256:264605d06eac1553d48284579c4f66ad65c6f900dac548f06917ccf66513eeb5",
+      "quote": "Either way, a key works only once its email address is verified."
+    },
+    {
+      "url": "https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication",
+      "date": "2026-10-30",
+      "proved": "a key can be requested with a POST to /api-keys",
+      "capture": "sha256:264605d06eac1553d48284579c4f66ad65c6f900dac548f06917ccf66513eeb5",
+      "quote": "curl -X POST https://api.openalex.org/api-keys"
+    },
+    {
+      "url": "https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication",
+      "date": "2026-10-30",
+      "proved": "a per-second 429 costs nothing",
+      "capture": "sha256:264605d06eac1553d48284579c4f66ad65c6f900dac548f06917ccf66513eeb5",
+      "quote": "A per-second 429 costs nothing; wait a moment and retry."
+    },
+    {
+      "url": "https://openalex.org/signup",
+      "date": "2026-10-30",
+      "proved": "the sign-up form asks for a name",
+      "capture": "sha256:1f21f174983fa26f452f12307d02fbe6e682098f418d1191d6a2480c79ceb2de",
+      "quote": "Your name"
+    },
+    {
+      "url": "https://openalex.org/signup",
+      "date": "2026-10-30",
+      "proved": "the sign-up form asks for an email address",
+      "capture": "sha256:1f21f174983fa26f452f12307d02fbe6e682098f418d1191d6a2480c79ceb2de",
+      "quote": "Email address"
+    },
+    {
+      "url": "https://openalex.org/signup",
+      "date": "2026-10-30",
+      "proved": "the sign-up form sits behind a CAPTCHA",
+      "capture": "sha256:1f21f174983fa26f452f12307d02fbe6e682098f418d1191d6a2480c79ceb2de",
+      "quote": "CAPTCHA failed to load."
+    },
+    {
+      "url": "https://docs.openalex.org/download-all-data/openalex-snapshot",
+      "date": "2026-10-30",
+      "proved": "the public snapshot bucket needs no authentication",
+      "capture": "sha256:9fb07ebedcdcaea4ccbc54f3d9f07deae5b28207539e9a8d3e4eeaf670715aee",
+      "quote": "| Public snapshot (this page) | `s3://openalex` (S3, `data/` prefix) | None — free, anonymous |"
+    },
+    {
+      "url": "https://docs.openalex.org/download-all-data/openalex-snapshot",
+      "date": "2026-10-30",
+      "proved": "each snapshot format holds about 626 million records",
+      "capture": "sha256:9fb07ebedcdcaea4ccbc54f3d9f07deae5b28207539e9a8d3e4eeaf670715aee",
+      "quote": "As of the September 2026 release, each format holds about 626 million records:"
+    },
+    {
+      "url": "https://docs.openalex.org/download-all-data/openalex-snapshot",
+      "date": "2026-10-30",
+      "proved": "the JSON Lines snapshot is about 745 GB compressed, works about 615 GB",
+      "capture": "sha256:9fb07ebedcdcaea4ccbc54f3d9f07deae5b28207539e9a8d3e4eeaf670715aee",
+      "quote": "| JSON Lines (`/data/jsonl/`) | \\~745 GB (works alone: \\~615 GB) |"
+    },
+    {
+      "url": "https://docs.openalex.org/download-all-data/openalex-snapshot",
+      "date": "2026-10-30",
+      "proved": "the Parquet snapshot is about 770 GB compressed",
+      "capture": "sha256:9fb07ebedcdcaea4ccbc54f3d9f07deae5b28207539e9a8d3e4eeaf670715aee",
+      "quote": "| Parquet (`/data/parquet/`) | \\~770 GB |"
+    },
+    {
+      "url": "https://docs.openalex.org/download-all-data/openalex-snapshot",
+      "date": "2026-10-30",
+      "proved": "the AWS Open Data program pays about USD 70 of transfer per download",
+      "capture": "sha256:9fb07ebedcdcaea4ccbc54f3d9f07deae5b28207539e9a8d3e4eeaf670715aee",
+      "quote": "which covers the data-transfer fees (about $70 per download)"
+    },
+    {
+      "url": "https://docs.openalex.org/download-all-data/openalex-snapshot",
+      "date": "2026-10-30",
+      "proved": "snapshot part files hold up to 400,000 records",
+      "capture": "sha256:9fb07ebedcdcaea4ccbc54f3d9f07deae5b28207539e9a8d3e4eeaf670715aee",
+      "quote": "of up to 400,000 records each"
+    },
+    {
+      "url": "https://docs.openalex.org/download-all-data/openalex-snapshot",
+      "date": "2026-10-30",
+      "proved": "the public snapshot is released quarterly",
+      "capture": "sha256:9fb07ebedcdcaea4ccbc54f3d9f07deae5b28207539e9a8d3e4eeaf670715aee",
+      "quote": "quarterly for the free public snapshot, on the second Wednesday of January, April, July and October"
+    },
+    {
+      "url": "probe:https://openalex.s3.amazonaws.com/RELEASE_NOTES.txt",
+      "date": "2026-10-30",
+      "proved": "the latest public release is 2026-10-14",
+      "capture": "sha256:a6e5083e10f0992f357ae5eeff338c423dfaed106c024160fe9f6db8df247b93",
+      "quote": "RELEASE 2026-10-14"
+    },
+    {
+      "url": "probe:https://api.openalex.org/works?filter=publication_year:2024&per_page=1&select=id,doi",
+      "date": "2026-10-30",
+      "proved": "a keyless list call answered 200",
+      "capture": "sha256:ea55650fb0ca8149bded38d9e094f246c8b6021d2b593592177bc4f14b4a8c73",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:https://api.openalex.org/works?filter=publication_year:2024&per_page=1&select=id,doi",
+      "date": "2026-10-30",
+      "proved": "the keyless daily budget header was USD 0.1",
+      "capture": "sha256:ea55650fb0ca8149bded38d9e094f246c8b6021d2b593592177bc4f14b4a8c73",
+      "quote": "\"x-ratelimit-limit-usd\": \"0.1\""
+    },
+    {
+      "url": "probe:https://api.openalex.org/works?filter=publication_year:2024&per_page=1&select=id,doi",
+      "date": "2026-10-30",
+      "proved": "the keyless daily budget was 1,000 credits",
+      "capture": "sha256:ea55650fb0ca8149bded38d9e094f246c8b6021d2b593592177bc4f14b4a8c73",
+      "quote": "\"x-ratelimit-limit\": \"1000\""
+    },
+    {
+      "url": "probe:https://api.openalex.org/works?filter=publication_year:2024&per_page=1&select=id,doi",
+      "date": "2026-10-30",
+      "proved": "a list call cost 1 credit",
+      "capture": "sha256:ea55650fb0ca8149bded38d9e094f246c8b6021d2b593592177bc4f14b4a8c73",
+      "quote": "\"x-ratelimit-credits-used\": \"1\""
+    },
+    {
+      "url": "probe:https://openalex.s3.amazonaws.com/data/jsonl/manifest.json",
+      "date": "2026-10-30",
+      "proved": "the public snapshot manifest answered 200 to an anonymous request",
+      "capture": "sha256:82e8e86cd5016bde6e8e526ea1945a361668e1c943408dfd6004830fc81201b2",
+      "quote": "\"status\": 200"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-10-31T00:48:58.884Z",
+  "price_per_tb_month": null,
+  "notes": "The API record crawler-scraper/openalex describes the same service; this record adds the snapshot bulk path.",
+  "extras": {
+    "keyless_usd_per_day": 0.1,
+    "free_key_usd_per_day": 1,
+    "latest_public_snapshot": "2026-10-14",
+    "snapshot_jsonl_compressed_gb": 745
+  }
+}

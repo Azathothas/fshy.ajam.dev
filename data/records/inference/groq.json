@@ -47,7 +47,7 @@
   "endpoint": "https://api.groq.com/openai/v1/chat/completions",
   "identity_cost": {
     "kind": "email",
-    "detail": "an account and an API key; a payment method (credit card, US bank account or SEPA debit account) is required to upgrade from the Free tier to the Developer tier. unverified: the sign-in methods and any phone requirement are not stated on the docs pages",
+    "detail": "one form, Create Account or Login, serves both sign-up and login with Google, GitHub, SSO and email; the served auth config lists only OAuth (Google, GitHub), SSO and email magic links, so the email route is a magic link and there is no password and no SMS method. The sign-up request carries only the session token and an optional referral code, with a Stytch device telemetry ID header: no phone number and no card. A payment method (credit card, US bank account or SEPA debit account) is required only to upgrade from the Free tier to the Developer tier. Creating an API key requires a Cloudflare Turnstile token.",
     "country": null
   },
   "reliability_note": "no reliability event recorded; no key was available",
@@ -100,10 +100,87 @@
       "proved": "a payment method is asked for only at the upgrade from the Free tier, so the Free tier itself needs none",
       "capture": "sha256:5a86f7cdf25eebd2b90d0dd4b7c2f280e287afbca704314de363888f7d62d109",
       "quote": "To upgrade from the Free tier to the Developer tier, you'll need to provide a valid payment method (credit card, US bank account, or SEPA debit account)."
+    },
+    {
+      "url": "https://console.groq.com/login",
+      "date": "2026-10-30",
+      "proved": "one form serves both sign-up and login and offers Google, GitHub, SSO and email; it shows no phone field and no card field",
+      "capture": "sha256:7b3621cd00d27f9c4912a14a1a6f21e910dcea80c952e9d97bd00c95757af8a1",
+      "quote": "Create Account or Login Continue with Google Continue with GitHub Continue with SSO or Continue with email"
+    },
+    {
+      "url": "https://console.groq.com/login",
+      "date": "2026-10-30",
+      "proved": "the served login page loads the script chunk that holds its auth config and its sign-up request",
+      "capture": "sha256:d8ac4038467fa4dc242a70ae2c3b582aa50be9617ac375614c68987f28c00c40",
+      "quote": "<script src=\"/_next/static/chunks/3747-f8960cfaa0d0067b.js\" async=\"\"></script>"
+    },
+    {
+      "url": "https://console.groq.com/_next/static/chunks/3747-f8960cfaa0d0067b.js",
+      "date": "2026-10-30",
+      "proved": "the login widget's products are OAuth with Google and GitHub, SSO and email magic links; no password product and no SMS product is configured",
+      "capture": "sha256:44e436cce3539271eb204e6ee4207b1d3d4f9ca70bd517b21c334c9251c00b4d",
+      "quote": "products:[o.Ll.oauth,o.Ll.sso,o.Ll.emailMagicLinks],oauthOptions:{providers:[{type:\"google\"},{type:\"github\"}]"
+    },
+    {
+      "url": "https://console.groq.com/_next/static/chunks/3747-f8960cfaa0d0067b.js",
+      "date": "2026-10-30",
+      "proved": "the sign-up request body holds only the intermediate session token and an optional referral code, so sign-up sends no phone number and no card",
+      "capture": "sha256:44e436cce3539271eb204e6ee4207b1d3d4f9ca70bd517b21c334c9251c00b4d",
+      "quote": "let l={};t&&(l.intermediate_session_token=t);... d&&d.createdAt>g&&(l.referral_code=d.source);let f={method:\"POST\",... body:JSON.stringify(l)},m=await fetch(\"\".concat(s.Ko,\"/user/profile/signupb2b\"),f)"
+    },
+    {
+      "url": "https://console.groq.com/_next/static/chunks/3747-f8960cfaa0d0067b.js",
+      "date": "2026-10-30",
+      "proved": "the sign-up request carries a Stytch device telemetry ID header",
+      "capture": "sha256:44e436cce3539271eb204e6ee4207b1d3d4f9ca70bd517b21c334c9251c00b4d",
+      "quote": "headers:{\"content-type\":\"application/json\",\"x-stytch-telemetry-id\":p}"
+    },
+    {
+      "url": "https://console.groq.com/_next/static/chunks/app/(console)/keys/page-c4f59a80093392e3.js",
+      "date": "2026-10-30",
+      "proved": "the API key form refuses to submit without a Cloudflare Turnstile token (cfToken)",
+      "capture": "sha256:589b494a980ef5a38301f5453513f690320d47b75e7723b75011bfd35fdce5e1",
+      "quote": "J=async e=>{try{if(!i)throw Error(\"No cfToken\")"
+    },
+    {
+      "url": "https://console.groq.com/_next/static/chunks/app/(console)/keys/page-c4f59a80093392e3.js",
+      "date": "2026-10-30",
+      "proved": "the key-creation request sends a name, the Turnstile token, a verification token and an expiry; no phone number and no card",
+      "capture": "sha256:589b494a980ef5a38301f5453513f690320d47b75e7723b75011bfd35fdce5e1",
+      "quote": "h=await fetch(p,{method:\"POST\",body:JSON.stringify({name:r,cf_token:l,vb_token:d,expires_at:null==n?void 0:n.toISOString()}),headers:i})"
+    },
+    {
+      "url": "https://console.groq.com/docs/billing-faqs",
+      "date": "2026-10-30",
+      "proved": "a payment method is asked for only at the upgrade from the Free tier to the Developer tier",
+      "capture": "sha256:d31a821ba5edb28d3d2ecc19b38401c5eba23a86fe0821b589985af4fdffbbce",
+      "quote": "To upgrade from the Free tier to the Developer tier, you'll need to provide a valid payment method (credit card, US bank account, or SEPA debit account)."
+    },
+    {
+      "url": "https://groq.com/privacy-policy",
+      "date": "2026-10-30",
+      "proved": "a third-party photo-ID or selfie check is named, with no trigger stated",
+      "capture": "sha256:b44bc38ee18be9e933405aaa44e755e3dcaaf375b1775f67230ea95ee3844ea4",
+      "quote": "We may use third-party identity verification services to verify your identity, secure our Services, and protect against fraud or abuse. When you engage in this process, you provide information, such as a photo ID or selfie, directly to that service."
+    },
+    {
+      "url": "https://sfailabs.com/guides/how-to-get-groq-api-key",
+      "date": "2026-10-30",
+      "proved": "a third-party guide reports that sign-up asks for no payment information",
+      "capture": "sha256:d02def7bb3bc99adeceb39e72661fc724dab888b53fc2a4a05816784f7a3dde7",
+      "quote": "No payment information is required. The free tier is immediately active."
+    },
+    {
+      "url": "https://www.getmaxim.ai/guides/api-keys/how-to-get-a-groq-api-key",
+      "date": "2026-10-30",
+      "proved": "a third-party guide reports the same email, Google, GitHub and SSO sign-up methods",
+      "capture": "sha256:e1b66c91a55e981fe0d9c9a9a4c7cb200df4ecc252c094211cdcda592e7f2b9e",
+      "quote": "Go to console.groq.com and sign up with your email address, Google, GitHub, or SSO."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-28T05:28:29.160Z",
+  "verified_at": "2026-10-31T00:12:52.378Z",
   "notes": "A pipeline sized on RPM alone meets TPD first: 200,000 tokens a day is 6.0M a month against a 52.5M-token target.",
   "binding": "request-rate",
   "binding_note": "The 30 rpm and 8,000 tpm figures are both workable for an interactive session"

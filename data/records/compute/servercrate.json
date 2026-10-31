@@ -5,24 +5,24 @@
   "url": "https://servercrate.net/",
   "category": "cloud VM",
   "free_tier": {
-    "stated": "10 GB of encrypted backup storage free, with no credit card and no expiry: 2 devices and 7 days of snapshot history, over a private Restic REST endpoint on a per-customer ZFS dataset. The paid ladder runs 250 GB with 10 devices and 30-day history, then 1 TB with 25 devices and 60-day history, then 2 TB with 50 devices and 90-day history, then 5 TB with 100 devices and 180-day history, the last still on a waitlist; the product card prices backup vaults at 'Free, then $2/mo' and the individual tier price lines did not survive extraction. The same host sells KVM cloud servers on NVMe, Proxmox Backup Server datastores, hosted Borg repositories and website hosting, and states no egress fees on restore. Annual billing is ten months for twelve.",
-    "unit": "GiB",
-    "metered_on": "wall-clock",
+    "stated": "10 GB of encrypted backup storage free, with no credit card and no expiry: 2 devices and 7 days of snapshot history, over a private Restic REST endpoint on a per-customer ZFS dataset. Paid vaults: Starter USD 3 a month for 250 GB, 10 devices and 30-day history; Standard USD 9 a month for 1 TB, 25 devices and 60-day history; Pro USD 17 a month for 2 TB, 50 devices and 90-day history; Business USD 45 a month for 5 TB, 100 devices and 180-day history; a Lite vault of 100 GB at USD 2 a month; vaults from 6 TB at USD 8 per TB a month. The Business tier is a dated observation: the page read on 2026-10-22 marked it 'Opening soon, join the waitlist', and the page read on 2026-10-30 marks it 'Available on request: contact us'. The same host sells KVM cloud servers on NVMe from USD 3 a month, Proxmox Backup Server datastores, hosted Borg repositories and website hosting, and states no egress fees on restore. Annual billing is ten months for twelve.",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
     "source_url": "https://servercrate.net/",
-    "read_on": "2026-10-22",
+    "read_on": "2026-10-30",
     "notes": "perpetual"
   },
   "per_object_cap": {
     "stated": "not applicable",
     "bytes": null,
     "source_url": "https://servercrate.net/",
-    "notes": null
+    "notes": "no per-object cap is published; the plan caps the vault's total stored bytes"
   },
   "retention": {
-    "stated": "not applicable",
+    "stated": "The free tier has no expiry ('10 GB free tier never expires'). Snapshot history is kept 7 days on Free, 30 on Starter, 60 on Standard, 90 on Pro and 180 on Business; on cancellation the page states 'Cancel anytime, snapshots stay.'",
     "days": null,
     "source_url": "https://servercrate.net/",
-    "notes": null
+    "notes": "snapshot history is a per-plan window; the account itself has no stated expiry"
   },
   "egress": {
     "terms": "no egress fees on restore, and no restore penalties or per-API-call charges stated; the vendor also states no egress fees on the cloud server line",
@@ -35,8 +35,8 @@
     "rest"
   ],
   "interface_detail": "inferred from the tooling the provider documents; not probed",
-  "tooling": "the strongest tooling story: plain Restic over HTTP against a private REST endpoint, a one-line install script, a free desktop app for Mac and Windows, and a public restore-verification monitor at status.servercrate.net. It is an append-capable backup target and not a filesystem, so it cannot be mounted like a bucket",
-  "chaining": null,
+  "tooling": "plain Restic over HTTPS against a private REST endpoint. On Linux one command copied from the portal installs Restic, creates the encryption key, runs the first backup and schedules the next; on macOS and Windows standard restic is pointed at the vault URL and token. status.servercrate.net publishes a restore-verification check. It is a backup target and not a filesystem, so it is not mounted like a bucket",
+  "chaining": "10 GB free with client-side encryption, no egress fee and no expiry is an offsite copy for small state: configuration, keys and indexes. It does not hold bulk data: past 10 GB the paid vaults run to 5 TB at USD 45 a month, and USD 8 per TB a month from 6 TB.",
   "limits": [
     {
       "kind": "volume-quota",
@@ -49,10 +49,10 @@
   "binding_note": "the binding count is stored bytes rather than transferred bytes: 10 GB on the free tier against a stated 'no backup or bandwidth caps' and 'No egress fees on restore'. The seven vocabulary kinds have no separate name for a storage-size cap, so this is filed as volume-quota and the distinction is stated here rather than left to the kind. Nothing binds on transfer.",
   "identity_cost": {
     "kind": "email",
-    "detail": "not read: the signup page was not fetched; the vendor page states the free plan 'activates instantly' with 'No credit card required'",
+    "detail": "The free signup form asks for an email address and a password of at least 12 characters, with full name optional, behind a Cloudflare Turnstile check and a proof-of-work field; its subtitle reads 'Free encrypted vault - no credit card needed'. No card, phone or ID field is on the form. Paid plans are paid by card through Stripe, PayPal or on-chain Bitcoin.",
     "country": null
   },
-  "reliability_note": "no reliability event recorded",
+  "reliability_note": "The status page read on 2026-10-30 shows every monitored component operational and no active incident. The incidents page read on 2026-10-30 lists 2 incidents in 2026, each resolved the same day with no stored data lost: on 2026-09-27 vault creation failed for some new signups; on 2026-08-09 a rate limit shared by every vault returned temporary HTTP 503 responses to backup requests under load, seen only on the vendor's internal test vaults with no customer backup failed, and the limits are now per vault at 16 connections and 60 requests per second.",
   "confidence": "documented",
   "evidence": [
     {
@@ -64,11 +64,102 @@
       "url": "https://lowendbox.com/blog/lets-try-servercrate-restic-based-backups-you-can-start-using-for-free/",
       "date": "2026-10-22",
       "proved": "third-party offer post, published 2026-09-27: 'You can get started for FREE with a 10GB vault. I think that is really cool, because it is enough to actually give it a try and use it productively. It is not time-limited'; the walkthrough shows a working 'restic init' against 'rest:https://vaultuser:...@<vaultid>.vault.servercrate.net/' and a first snapshot of 709 files"
+    },
+    {
+      "url": "https://servercrate.net/",
+      "date": "2026-10-30",
+      "proved": "on 2026-10-30 the origin page (Last-Modified Fri, 30 Oct 2026 04:02:37 GMT) shows the Business tier, USD 45 a month for 5 TB, 100 devices and 180-day history, as 'Available on request: contact us'; the waitlist wording is gone",
+      "capture": "sha256:f16f57703ef1a6454c8b732ac215911c5472f2beb1123d0f177e2e43dca261b1",
+      "quote": "Available on request: contact us"
+    },
+    {
+      "url": "https://servercrate.net/",
+      "date": "2026-10-30",
+      "proved": "the free tier and its no-expiry and no-egress-fee terms, read 2026-10-30",
+      "capture": "sha256:f16f57703ef1a6454c8b732ac215911c5472f2beb1123d0f177e2e43dca261b1",
+      "quote": "10 GB free tier never expires. No egress fees on restore."
+    },
+    {
+      "url": "https://portal.servercrate.net/register?plan=free",
+      "date": "2026-10-30",
+      "proved": "the free signup form read on 2026-10-30: optional full name, required email and password (minimum 12 characters), a Cloudflare Turnstile widget and a proof-of-work field; no card, phone or ID field",
+      "capture": "sha256:51ca4f39388c557658ace0414ea30caf2f24c752dfa7104802d69d2bc360102c",
+      "quote": "Free encrypted vault - no credit card needed"
+    },
+    {
+      "url": "https://status.servercrate.net/",
+      "date": "2026-10-30",
+      "proved": "the status page read on 2026-10-30 shows 7/7 components online and no active incident",
+      "capture": "sha256:36781a6a3defc3b7c4cb519e85aa65c7c7cd1bb4dea2790d8e61b45acaf66e48",
+      "quote": "No active incidents reported"
+    },
+    {
+      "url": "https://servercrate.net/pricing/",
+      "date": "2026-10-30",
+      "proved": "the pricing page read on 2026-10-30 lists the SC-0 cloud server at USD 3 a month with 1 vCPU, 512 MB RAM and 10 GB NVMe, and the Business vault as 'Available on request: contact us'",
+      "capture": "sha256:d1a3e49f96b68b88039e3dfb41c20d7119463de252c6a014b3d3034fe0648460",
+      "quote": "SC-0 shares an IPv4 with SSH and 20 forwarded ports."
+    },
+    {
+      "url": "https://servercrate.net/",
+      "date": "2026-10-30",
+      "proved": "the install path read on 2026-10-30 from the origin page; it no longer names a desktop app",
+      "capture": "sha256:f16f57703ef1a6454c8b732ac215911c5472f2beb1123d0f177e2e43dca261b1",
+      "quote": "One command on Linux, standard Restic on macOS and Windows."
+    },
+    {
+      "url": "https://servercrate.net/",
+      "date": "2026-10-30",
+      "proved": "the only cap stated is the plan's storage, read 2026-10-30",
+      "capture": "sha256:f16f57703ef1a6454c8b732ac215911c5472f2beb1123d0f177e2e43dca261b1",
+      "quote": "Run Restic as often as you like, at full speed, up to the storage your plan includes"
+    },
+    {
+      "url": "https://servercrate.net/incidents/",
+      "date": "2026-10-30",
+      "proved": "the incidents page read on 2026-10-30 lists an incident dated 2026-09-27, resolved the same day, with no data lost",
+      "capture": "sha256:e70f6a44b1aab449eee766db546974051eddb73843a190828309ee96268c3bb6",
+      "quote": "Vault creation failed for some new signups"
+    },
+    {
+      "url": "https://servercrate.net/incidents/",
+      "date": "2026-10-30",
+      "proved": "the incidents page read on 2026-10-30 counts two 2026 incidents: 2026-09-27 vault creation and 2026-08-09 shared vault-edge rate limit (HTTP 503, now 16 connections and 60 requests per second per vault)",
+      "capture": "sha256:46bd74a907d7de4ba63037a64218b7a54b0ba80fa7b4cb944750b899bbf26bcd",
+      "quote": "2 incidents written up in 2026"
+    },
+    {
+      "url": "https://servercrate.net/incidents/",
+      "date": "2026-10-30",
+      "proved": "the 2026-08-09 incident: temporary HTTP 503 responses under load from a rate limit shared by every vault",
+      "capture": "sha256:46bd74a907d7de4ba63037a64218b7a54b0ba80fa7b4cb944750b899bbf26bcd",
+      "quote": "While one large backup was running, other backup requests could get a temporary HTTP 503 response."
+    },
+    {
+      "url": "https://servercrate.net/incidents/",
+      "date": "2026-10-30",
+      "proved": "the 2026-08-09 errors were seen only on the vendor's internal test vaults and no customer backup failed",
+      "capture": "sha256:46bd74a907d7de4ba63037a64218b7a54b0ba80fa7b4cb944750b899bbf26bcd",
+      "quote": "Our log review found the errors only on our own internal test vaults; no customer backup failed."
+    },
+    {
+      "url": "https://servercrate.net/incidents/",
+      "date": "2026-10-30",
+      "proved": "after the 2026-08-09 incident the vault edge limits are 16 connections and 60 requests per second per vault",
+      "capture": "sha256:46bd74a907d7de4ba63037a64218b7a54b0ba80fa7b4cb944750b899bbf26bcd",
+      "quote": "Limits are now per vault (16 connections and 60 requests per second each)."
+    },
+    {
+      "url": "https://status.servercrate.net/",
+      "date": "2026-10-30",
+      "proved": "the status page read on 2026-10-30 shows all monitored components operational and no active incident or maintenance notice",
+      "capture": "sha256:36781a6a3defc3b7c4cb519e85aa65c7c7cd1bb4dea2790d8e61b45acaf66e48",
+      "quote": "No active incidents reported"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-22T00:00:00.000Z",
-  "notes": "The .net URL from the offer post answered 200.",
+  "verified_at": "2026-10-31T00:12:47.555Z",
+  "notes": "The vendor's domain is servercrate.net. The free tier is backup storage; the compute line of the same vendor is paid, from the SC-0 cloud server at USD 3 a month (1 vCPU, 512 MB RAM, 10 GB NVMe, a shared IPv4 with SSH and 20 forwarded ports). The 5 TB Business vault read 'Opening soon, join the waitlist' on 2026-10-22 and 'Available on request: contact us' on 2026-10-30, so on that date it is ordered through a contact request rather than the self-service portal.",
   "extras": {
     "facets": {
       "class": null,

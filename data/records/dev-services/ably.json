@@ -1,0 +1,286 @@
+{
+  "topic": "dev-services",
+  "slug": "ably",
+  "provider": "Ably",
+  "tier": "Free",
+  "url": "https://ably.com/docs/platform/pricing/free",
+  "category": "realtime pub/sub messaging over WebSocket and REST",
+  "free_tier": {
+    "stated": "Free package: 6,000,000 messages a month, 500 messages a second, 200 concurrent connections and 200 concurrent channels, no credit card and no time limit",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://ably.com/docs/platform/pricing/free",
+    "read_on": "2026-10-30",
+    "notes": "A message counts on publish and on each delivery: a publish received by 10 subscribers counts as 11, and history reads and integrations count too. The account is also held to 250,000 messages an hour, 50 messages a second per channel and 25,000 HTTP API requests an hour at 50 a second. Count-based limits (connections, channels) refuse new resources until existing ones close; a publish above a rate limit is rejected with an error code. Email notifications go out near and past a limit."
+  },
+  "per_object_cap": {
+    "stated": "64 KiB per published message on the Free package",
+    "bytes": 65536,
+    "source_url": "https://ably.com/docs/platform/pricing/limits"
+  },
+  "retention": {
+    "stated": "Message and presence history retrievable for 24 hours by default and 1 day at most on Free; messages in an Ably queue are kept 24 hours",
+    "days": 1,
+    "source_url": "https://ably.com/docs/platform/pricing/limits",
+    "notes": "Paid packages raise the history ceiling to 30 or 365 days."
+  },
+  "egress": {
+    "terms": "Message bandwidth on Free is capped at 28.6 GiB a month and 1.2 GiB an hour; paid packages charge USD 0.25 per GiB above an allowance of 5 KiB times the messages consumed",
+    "metered": true,
+    "free_allowance": "28.6 GiB of message bandwidth a month, 1.2 GiB an hour",
+    "price_per_tb": null,
+    "source_url": "https://ably.com/docs/platform/pricing/limits"
+  },
+  "interface": [
+    "rest",
+    "unknown"
+  ],
+  "interface_detail": "REST API at https://main.realtime.ably.net for publish, history, presence, tokens and stats, in JSON or MessagePack; long-lived realtime connections through the Ably SDKs, which the interface vocabulary has no WebSocket term for. The /time endpoint answered 200 without a key.",
+  "endpoint": "https://main.realtime.ably.net",
+  "tooling": "Ably SDKs for JavaScript, Python, Go, Java, Ruby, .NET, iOS and Android, or any HTTP client against the REST API with an API key or token.",
+  "chaining": "A fan-out layer that pushes job status from free compute workers to browsers or other workers, with one day of history for a consumer that reconnects.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "6,000,000 messages per month",
+      "source": "https://ably.com/docs/platform/pricing/free"
+    },
+    {
+      "kind": "request-rate",
+      "value": "250,000 messages per hour and 500 messages per second across the account",
+      "source": "https://ably.com/docs/platform/pricing/limits"
+    },
+    {
+      "kind": "request-rate",
+      "value": "25,000 HTTP API requests per hour, 50 per second",
+      "source": "https://ably.com/docs/platform/pricing/limits"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "64 KiB per published message",
+      "source": "https://ably.com/docs/platform/pricing/limits"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "28.6 GiB of message bandwidth per month, 1.2 GiB per hour",
+      "source": "https://ably.com/docs/platform/pricing/limits"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "history kept 1 day at most",
+      "source": "https://ably.com/docs/platform/pricing/limits"
+    }
+  ],
+  "limits_note": "200 concurrent connections, 200 concurrent channels and 50 messages a second per channel. The vocabulary has no kind for a concurrency cap.",
+  "binding": "request-rate",
+  "binding_note": "6,000,000 a month is 200,000 a day (6,000,000 / 30) and every delivery counts, so a fan-out meets the monthly count first; messages that average above 5 KiB meet the 28.6 GiB monthly bandwidth before it (6,000,000 x 5 KiB = 28.6 GiB).",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The signup form asks for a full name, an optional company name, an email and a password, or a GitHub or Google sign-in; the Free package needs no credit card.",
+    "country": null
+  },
+  "reliability_note": "Rate-limit excess is rejected with an error and count limits refuse new connections or channels; Free support is a best-effort service level objective.",
+  "confidence": "documented",
+  "confidence_note": "Every limit is quoted from the first-party limits and pricing pages; the REST host was probed and its /time endpoint answered 200 without a key. No message was published, because publishing needs an account key. A publish and history read with a Free key would move it to measured.",
+  "evidence": [
+    {
+      "url": "https://ably.com/docs/platform/pricing/free",
+      "date": "2026-10-30",
+      "proved": "the Free package needs no credit card and has no time limit",
+      "capture": "sha256:a90e5c08b1314172ddbf70bc3ec82be97d8aa141dccd59ad7a55b4fa279c0a34",
+      "quote": "No credit card is required to sign up and there's no time limit on how long you can try it for."
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing/free",
+      "date": "2026-10-30",
+      "proved": "the Free package includes 6,000,000 messages a month",
+      "capture": "sha256:a90e5c08b1314172ddbf70bc3ec82be97d8aa141dccd59ad7a55b4fa279c0a34",
+      "quote": "| Messages (per month) | 6,000,000 |"
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing/free",
+      "date": "2026-10-30",
+      "proved": "Free support is best effort",
+      "capture": "sha256:a90e5c08b1314172ddbf70bc3ec82be97d8aa141dccd59ad7a55b4fa279c0a34",
+      "quote": "Free package support includes Ably's best effort Service Level Objective (SLO)"
+    },
+    {
+      "url": "https://ably.com/pricing",
+      "date": "2026-10-30",
+      "proved": "Free is 200 concurrent connections, 500 messages a second and 6M messages a month",
+      "capture": "sha256:fd6419d940694ee6eb59be3ac63c21cae102eaee8e3bd1bf82bb42ca0ac07811",
+      "quote": "200 concurrent connections\n\n500 messages / second\n\n6M messages / month"
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing/limits",
+      "date": "2026-10-30",
+      "proved": "Free allows 500 messages a second across the account",
+      "capture": "sha256:4d802669870eb4ace7c282dc2ca954e43df46569583fbb23ecc832d9e54c9603",
+      "quote": "| Message rate (per second)<p>*the maximum rate at which messages can be published and received across your account each second*</p> | 500 | 2,500 | 10,000 | Unlimited |"
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing/limits",
+      "date": "2026-10-30",
+      "proved": "Free allows 250,000 messages an hour",
+      "capture": "sha256:4d802669870eb4ace7c282dc2ca954e43df46569583fbb23ecc832d9e54c9603",
+      "quote": "| Message count (per hour)<p>*the total number of messages that can be sent across an account per hour*</p> | 250,000 | 5,208,000 | 20,833,000 | Unlimited |"
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing/limits",
+      "date": "2026-10-30",
+      "proved": "Free message bandwidth is 28.6 GiB a month",
+      "capture": "sha256:4d802669870eb4ace7c282dc2ca954e43df46569583fbb23ecc832d9e54c9603",
+      "quote": "| Message bandwidth (monthly, GiB)<p>*the maximum amount of data that can be transferred through messages each month, in GiB*</p> | 28.6 | 1,192 | 4,768 | Unlimited |"
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing/limits",
+      "date": "2026-10-30",
+      "proved": "Free message bandwidth is 1.2 GiB an hour",
+      "capture": "sha256:4d802669870eb4ace7c282dc2ca954e43df46569583fbb23ecc832d9e54c9603",
+      "quote": "| Message bandwidth (hourly, GiB)<p>*the maximum amount of data that can be transferred through messages each hour, in GiB*</p> | 1.2 | 24.8 | 99.3 | Unlimited |"
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing/limits",
+      "date": "2026-10-30",
+      "proved": "a published message is at most 64 KiB on Free",
+      "capture": "sha256:4d802669870eb4ace7c282dc2ca954e43df46569583fbb23ecc832d9e54c9603",
+      "quote": "| Max message size (KiB)<p>the maximum size of a single published message</p> | 64 | 64 | 256 | 256 |"
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing/limits",
+      "date": "2026-10-30",
+      "proved": "history is kept at most 1 day on Free",
+      "capture": "sha256:4d802669870eb4ace7c282dc2ca954e43df46569583fbb23ecc832d9e54c9603",
+      "quote": "| Max history / storage TTL (days)<p>*the maximum time that a message or presence message can be retrieved from history*</p> | 1 | 30 | 365 | 365 |"
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing/limits",
+      "date": "2026-10-30",
+      "proved": "Free allows 200 concurrent connections",
+      "capture": "sha256:4d802669870eb4ace7c282dc2ca954e43df46569583fbb23ecc832d9e54c9603",
+      "quote": "| Concurrent connections<p>*the maximum number of realtime clients connected to Ably simultaneously at any point*</p> | 200 | 10,000 | 50,000 | Unlimited |"
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing/limits",
+      "date": "2026-10-30",
+      "proved": "Free allows 200 concurrent channels",
+      "capture": "sha256:4d802669870eb4ace7c282dc2ca954e43df46569583fbb23ecc832d9e54c9603",
+      "quote": "| Concurrent channels<p>*the maximum number of channels that are active simultaneously at any point*</p> | 200 | 10,000 | 50,000 | Unlimited |"
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing/limits",
+      "date": "2026-10-30",
+      "proved": "each channel takes at most 50 published messages a second",
+      "capture": "sha256:4d802669870eb4ace7c282dc2ca954e43df46569583fbb23ecc832d9e54c9603",
+      "quote": "| Message publish rate per channel (per second)<p>*the maximum rate at which messages can be published for each channel*</p> | 50 | 50 | 50 | 50 |"
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing/limits",
+      "date": "2026-10-30",
+      "proved": "Free allows 25,000 HTTP API requests an hour",
+      "capture": "sha256:4d802669870eb4ace7c282dc2ca954e43df46569583fbb23ecc832d9e54c9603",
+      "quote": "| HTTP API requests (per hour)<p>*the maximum number of HTTP API requests that can be made to Ably per hour, excluding token requests*</p> | 25,000 | 521,000 | 2,083,300 | Custom |"
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing/limits",
+      "date": "2026-10-30",
+      "proved": "Free allows 50 HTTP API requests a second",
+      "capture": "sha256:4d802669870eb4ace7c282dc2ca954e43df46569583fbb23ecc832d9e54c9603",
+      "quote": "| HTTP API request rate (per second)<p>*the maximum rate at which HTTP API requests can be made to Ably*</p> | 50 | 362 | 1,447 | Custom |"
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing/limits",
+      "date": "2026-10-30",
+      "proved": "a message waits in an Ably queue for 24 hours at most",
+      "capture": "sha256:4d802669870eb4ace7c282dc2ca954e43df46569583fbb23ecc832d9e54c9603",
+      "quote": "| Queue TTL (hours)<p>*the maximum time that a message is stored in a queue for, before being transferred to the dead letter queue*</p> | 24 | 24 | 24 | 24 |"
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing/limits",
+      "date": "2026-10-30",
+      "proved": "a publish above a rate limit is rejected",
+      "capture": "sha256:4d802669870eb4ace7c282dc2ca954e43df46569583fbb23ecc832d9e54c9603",
+      "quote": "Usage in excess of a rate limit can be rejected locally, such as a publisher trying to publish at a rate in excess of the publish rate per channel."
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing/limits",
+      "date": "2026-10-30",
+      "proved": "email notifications go out near and past a limit",
+      "capture": "sha256:4d802669870eb4ace7c282dc2ca954e43df46569583fbb23ecc832d9e54c9603",
+      "quote": "Email notifications are sent out when you are nearing a limit, as well as when you have exceeded it."
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing",
+      "date": "2026-10-30",
+      "proved": "a publish received by 10 subscribers counts as 11 messages",
+      "capture": "sha256:9a35b4222d28d0f5348a123178d4c9fa98971f139adeb56ebb71f9ea574054aa",
+      "quote": "For example, if a user sends (publishes) a message and 10 users receive it (subscribed) that counts as 11 messages."
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing",
+      "date": "2026-10-30",
+      "proved": "paid bandwidth allowance is 5 KiB times the messages consumed",
+      "capture": "sha256:9a35b4222d28d0f5348a123178d4c9fa98971f139adeb56ebb71f9ea574054aa",
+      "quote": "This is worked out based on the average message size of 5KiB multiplied by the number of messages consumed in the month."
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing",
+      "date": "2026-10-30",
+      "proved": "paid bandwidth above the allowance is USD 0.25 per GiB",
+      "capture": "sha256:9a35b4222d28d0f5348a123178d4c9fa98971f139adeb56ebb71f9ea574054aa",
+      "quote": "Anything over this value is charged at $0.25 per GiB."
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing",
+      "date": "2026-10-30",
+      "proved": "the Standard package base price is USD 29 a month",
+      "capture": "sha256:9a35b4222d28d0f5348a123178d4c9fa98971f139adeb56ebb71f9ea574054aa",
+      "quote": "| N/A | $29 | $399 | Custom |"
+    },
+    {
+      "url": "https://ably.com/sign-up",
+      "date": "2026-10-30",
+      "proved": "the signup asks for a full name, an optional company, an email and a password",
+      "capture": "sha256:dc7c36e59687fdf2f012ec30dac9d4b28ad4014a8537534adc3e62bd8171e35a",
+      "quote": "Full name * Company name(Optional) Email * Create password *"
+    },
+    {
+      "url": "https://ably.com/sign-up",
+      "date": "2026-10-30",
+      "proved": "the signup also accepts a GitHub or Google sign-in",
+      "capture": "sha256:dc7c36e59687fdf2f012ec30dac9d4b28ad4014a8537534adc3e62bd8171e35a",
+      "quote": "Continue with GitHub Continue with Google"
+    },
+    {
+      "url": "https://ably.com/docs/api/rest-api",
+      "date": "2026-10-30",
+      "proved": "the REST API is a subset of the realtime API without a long-lived connection",
+      "capture": "sha256:74e3fe9165f876feffac54d4ce5f8f028a5a7f2db1f6abe09b6a8c851aabf2de",
+      "quote": "The REST API does not provide a realtime long-lived connection to Ably, but in all other respects is a simple subset of the full realtime messaging API"
+    },
+    {
+      "url": "https://ably.com/docs/api/rest-api",
+      "date": "2026-10-30",
+      "proved": "the REST API is served at main.realtime.ably.net",
+      "capture": "sha256:74e3fe9165f876feffac54d4ce5f8f028a5a7f2db1f6abe09b6a8c851aabf2de",
+      "quote": "curl https://main.realtime.ably.net/channels/rest-example/messages"
+    },
+    {
+      "url": "https://ably.com/docs/api/rest-api",
+      "date": "2026-10-30",
+      "proved": "the REST API accepts MessagePack as well as JSON",
+      "capture": "sha256:74e3fe9165f876feffac54d4ce5f8f028a5a7f2db1f6abe09b6a8c851aabf2de",
+      "quote": "* `application/x-msgpack`: for [MessagePack](https://msgpack.org/), the efficient binary serialization format that is similar to JSON, but faster and smaller;"
+    },
+    {
+      "url": "probe:https://main.realtime.ably.net/time",
+      "date": "2026-10-30",
+      "proved": "the REST host answers its time endpoint without a key",
+      "capture": "sha256:41fa823c30c8a92a55964218ea5cb11f0f07ab0a53fdb523531211891f4d0416",
+      "quote": "\"status\": 200"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-31T00:43:05.347Z",
+  "notes": "The Standard package is USD 29 a month plus usage, with 2,500 messages a second, 10,000 connections and 30 days of history."
+}

@@ -6,11 +6,11 @@
   "category": "NAT VPS",
   "tier": "i5 3470 Free Tier",
   "free_tier": {
-    "stated": "Quoted from the plan card: 'Free', 'renew every 30 days', '1 vCPU', '512MB RAM', '16GB SSD Storage', 'Console Access', 'Public IPv6 Alberta Address', 'Onoway, AB', and 'No formal uptime agreement.' The section header reads 'i5 3470 Free Tier OUT OF STOCK' with the notice 'Currently out of stock until Thursday, October 29.'",
+    "stated": "Quoted from the plan card: 'Free', 'renew every 30 days', '1 vCPU', '512MB RAM', '16GB SSD Storage', 'Console Access', 'Public IPv6 Alberta Address', 'Onoway, AB', and 'No formal uptime agreement.' The served markup still reads 'i5 3470 Free Tier OUT OF STOCK' and 'Currently out of stock until Thursday, October 29.', and the page's own script re-enables the order button as 'Claim Free Server' and hides that notice once the clock passes 1793270400000 ms (2026-10-29).",
     "unit": "none",
     "metered_on": "wall-clock",
     "source_url": "https://cloud.ascsonoway.com/vps-micro/",
-    "read_on": "2026-10-24",
+    "read_on": "2026-10-30",
     "notes": "the free plan is a container, not a KVM VM; the vendor calls it 'Container-based isolation'"
   },
   "per_object_cap": {
@@ -48,20 +48,20 @@
     },
     {
       "kind": "write-gated",
-      "value": "the free plan is out of stock and the button is disabled until a restock date of 2026-10-29",
+      "value": "a stock window the vendor sets: the served markup marks the free plan out of stock until 2026-10-29 with the order button disabled, and the page's script re-enables the button after that time; the matching server-side setting (FREE_MICRO_OUT_OF_STOCK_UNTIL) is not published",
       "source": "https://cloud.ascsonoway.com/vps-micro/"
     }
   ],
   "binding": "write-gated",
-  "binding_note": "the free plan cannot be ordered at all on the day read: the card reads OUT OF STOCK and the order button is disabled in the markup",
+  "binding_note": "the free plan is gated by a stock window the vendor sets and has moved (a markup comment reads 2026-10-21, the notice and the script read 2026-10-29); after 2026-10-29 the page's script offers 'Claim Free Server', and whether the server accepts a free order is behind a sign-in",
   "identity_cost": {
     "kind": "email",
-    "detail": "No card is named anywhere on the free plan card and the vendor advertises 'Free instant activation' on the paid VPS page; the order flow itself was not entered, so whether a card is asked for at checkout could not be read. No phone and no document appears on any page read.",
+    "detail": "The register form asks for a full name, an email, a password and a Terms checkbox, with Google and Discord sign-in offered as alternatives; an order placed while signed out is sent to that sign-in page. The page's checkout script handles a free order with no payment step ('The free instance is never charged.') and sends it to card payment only when the +$4/mo Shared IPv4 (NAT) add-on is chosen. No phone and no document appears on any page read.",
     "country": null
   },
-  "reliability_note": "no reliability event observed; the vendor publishes a 99.8%+ uptime figure on the home page and states 'No formal uptime agreement' for the free tier",
+  "reliability_note": "the vendor's home page states '99.8%+' uptime for its services, and the free plan card states 'No formal uptime agreement.'; the free plan has been out of stock for stretches the vendor…",
   "confidence": "documented",
-  "confidence_note": "the shape, the price of zero and the out-of-stock state are quoted from the vendor's own plan card read; the traffic allowance and the checkout's identity gate were not read, and the free plan was not orderable, so nothing was measured",
+  "confidence_note": "the shape, the price of zero and the stock window are quoted from the vendor's plan page and its inline script read on 2026-10-30; the traffic allowance is not published, and whether the server accepts a free order is behind a sign-in, so nothing was measured",
   "evidence": [
     {
       "url": "https://cloud.ascsonoway.com/vps-micro/",
@@ -92,12 +92,89 @@
       "url": "https://cloud.ascsonoway.com/blog/learn-ipv6-networking-on-real-hardware-for-free-ascs-cloud-free-tier/",
       "date": "2026-10-24",
       "proved": "quoted: '2 vCPUs (Intel Xeon L5630 allocation)', '2GB DDR3 RAM', '16GB SSD Storage', 'Dedicated Public IPv6 Alberta Address', 'Web-Based Console Access + Direct SSH', 'Pricing: $0 Free Tier (30-day active-use renewal)' — note this announcement states a larger shape than the live plan card"
+    },
+    {
+      "url": "https://cloud.ascsonoway.com/vps-micro/",
+      "date": "2026-10-30",
+      "proved": "the page's script carries a restock time of 1793270400000 ms (2026-10-29) for the free plan",
+      "capture": "sha256:7139d4d91c44a780deacb5812c4e97794e077b21c2d8541b47fc337ff154a2ca",
+      "quote": "var restock = 1793270400000; // 2026-10-29; keep in sync with FREE_MICRO_OUT_OF_STOCK_UNTIL in server.js"
+    },
+    {
+      "url": "https://cloud.ascsonoway.com/vps-micro/",
+      "date": "2026-10-30",
+      "proved": "after the restock time the page's script enables the free plan's button as 'Claim Free Server'",
+      "capture": "sha256:7139d4d91c44a780deacb5812c4e97794e077b21c2d8541b47fc337ff154a2ca",
+      "quote": "if (b) { b.disabled = false; b.textContent = 'Claim Free Server';"
+    },
+    {
+      "url": "https://cloud.ascsonoway.com/vps-micro/",
+      "date": "2026-10-30",
+      "proved": "an earlier stock window ended 2026-10-21 and was replaced by the 2026-10-29 one",
+      "capture": "sha256:7139d4d91c44a780deacb5812c4e97794e077b21c2d8541b47fc337ff154a2ca",
+      "quote": "<!-- i5 3470 Free Tier (TEMPORARILY OUT OF STOCK until Wed 2026-10-21, America/Edmonton) -->"
+    },
+    {
+      "url": "https://cloud.ascsonoway.com/vps-micro/",
+      "date": "2026-10-30",
+      "proved": "a card is asked for only when the paid shared IPv4 add-on is chosen with the free plan",
+      "capture": "sha256:7139d4d91c44a780deacb5812c4e97794e077b21c2d8541b47fc337ff154a2ca",
+      "quote": "on the +$4/mo Shared IPv4 (NAT) add-on, which needs a genuine card"
+    },
+    {
+      "url": "https://cloud.ascsonoway.com/vps-micro/",
+      "date": "2026-10-30",
+      "proved": "the checkout script's free-order branch states the free instance is never charged",
+      "capture": "sha256:7139d4d91c44a780deacb5812c4e97794e077b21c2d8541b47fc337ff154a2ca",
+      "quote": "The free instance is never charged."
+    },
+    {
+      "url": "https://cloud.ascsonoway.com/login/",
+      "date": "2026-10-30",
+      "proved": "registration takes a name, an email and a password, and no phone field",
+      "capture": "sha256:63407320186d6cc5e21cf09c955a5731f8f00ee0072c1374e6b28a5f9965ef91",
+      "quote": "if (!name || !email || !password) { alert('Please fill in all fields.'); return; }"
+    },
+    {
+      "url": "https://cloud.ascsonoway.com/login/",
+      "date": "2026-10-30",
+      "proved": "Google and Discord sign-in are offered on the same page",
+      "capture": "sha256:22b16522641953a451c46d80c29398e3d3ec34e44137115e3e390c34de7b59c8",
+      "quote": "Continue with Google"
+    },
+    {
+      "url": "https://cloud.ascsonoway.com/",
+      "date": "2026-10-30",
+      "proved": "the vendor publishes a 99.8%+ uptime figure",
+      "capture": "sha256:479ef0378e2c9442e103ce0a728fffcd3c1494270ae5a4329d9500eff2829ff5",
+      "quote": "Full symmetrical 1Gbps fibre connection with 99.8%+ uptime."
+    },
+    {
+      "url": "https://cloud.ascsonoway.com/vps-micro/",
+      "date": "2026-10-30",
+      "proved": "the free plan renews every 30 days to confirm active use",
+      "capture": "sha256:1b78cf4ee90f4c1c1403de1148324cfc20fc112b6cf2c432fa79bcb1cf83bccc",
+      "quote": "Free tier — renew every 30 days to confirm active use."
+    },
+    {
+      "url": "https://cloud.ascsonoway.com/vps-micro/",
+      "date": "2026-10-30",
+      "proved": "the free card lists 1 vCPU, 512MB RAM and 16GB SSD and no traffic figure",
+      "capture": "sha256:1b78cf4ee90f4c1c1403de1148324cfc20fc112b6cf2c432fa79bcb1cf83bccc",
+      "quote": "- ✓ 512MB RAM"
+    },
+    {
+      "url": "https://cloud.ascsonoway.com/login/",
+      "date": "2026-10-30",
+      "proved": "an account needs a name, an email and a password; no phone or card field",
+      "capture": "sha256:63407320186d6cc5e21cf09c955a5731f8f00ee0072c1374e6b28a5f9965ef91",
+      "quote": "if (!name || !email || !password) { alert('Please fill in all fields.'); return; }"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-24T06:05:00.000Z",
+  "verified_at": "2026-10-30T17:54:18.844Z",
   "price_per_tb_month": null,
-  "notes": "The vendor's own blog announcement and its live plan card disagree on the free shape: the blog says 2 vCPU and 2 GB, the card says 1 vCPU and 512 MB. The card is the page that is served at the point of sale, so the record uses the card and the disagreement is written down rather than resolved. Out of stock on the day read, with a restock date of 2026-10-29; that is a timing gate, not a trap. What could not be established: the traffic allowance, and whether checkout asks for a card.",
+  "notes": "The vendor's blog announcement and its live plan card disagree on the free shape: the blog says 2 vCPU and 2 GB, the card says 1 vCPU and 512 MB. The card is the page served at the point of sale, so the record uses the card and the disagreement is written down rather than resolved. The free plan is gated by a stock window the vendor sets and has moved (a markup comment reads 2026-10-21, the notice and script read 2026-10-29); the page's script re-opens the order button after 2026-10-29. The checkout script handles a free order with no payment step unless the paid shared IPv4 add-on is chosen. Not established: the traffic allowance, and whether the server accepts a free order after the stock window.",
   "extras": {
     "shape": {
       "vcpu": 1,
@@ -127,9 +204,11 @@
       "note": "30-day free period, renewed by hand to confirm active use"
     },
     "stock_state": {
-      "as_read": "2026-10-24",
-      "state": "out of stock",
-      "restock_stated": "2026-10-29"
+      "as_read": "2026-10-30",
+      "state": "served markup out of stock; the page's script re-opens the order button after the restock time",
+      "restock_stated": "2026-10-29",
+      "restock_epoch_ms": 1793270400000,
+      "earlier_window_end": "2026-10-21"
     },
     "shape_conflict": "the blog announcement of 2026-08-18 states 2 vCPU and 2 GB; the live plan card states 1 vCPU and 512 MB"
   }

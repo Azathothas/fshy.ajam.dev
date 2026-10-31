@@ -40,16 +40,16 @@
   "limits": [
     {
       "kind": "retention-clamped",
-      "value": "The 10-second idle timeout ends any process that is not answering requests, so the host is a scheduler and not a machine: what survives is the cron every 15 minutes, not a daemon.",
+      "value": "worker idle timeout 10 sec; worker runtime at most 6 hrs on any plan; execution timeout 1 min per run on the Free plan",
       "source": "https://www.val.town/limits"
     }
   ],
-  "limits_note": "The 10-second idle timeout ends any process that is not answering requests, so the host is a scheduler and not a machine: what survives is the cron every 15 minutes, not a daemon.",
+  "limits_note": "Free plan: minimum cron interval 15 min, execution timeout 1 min per run, 1,000 authenticated API requests per minute and 0 private vals; a worker has 4 GiB of memory.",
   "binding": "retention-clamped",
   "binding_note": "The 10-second idle timeout ends any process that is not answering requests, so the host is a scheduler and not a machine: what survives is the cron every 15 minutes, not a daemon.",
   "identity_cost": {
     "kind": "email",
-    "detail": null,
+    "detail": "The sign-up page offers GitHub, Google or email and shows no card field.",
     "country": null
   },
   "reliability_note": "no reliability event recorded",
@@ -69,11 +69,39 @@
       "url": "https://www.val.town/pricing",
       "date": "2026-10-22",
       "proved": "the Free column: '$0', '15 min cron intervals', '1 min wall clock time / run', 'Unlimited public vals', '100,000 runs / day', 'Email yourself', quoted"
+    },
+    {
+      "url": "https://www.val.town/auth/signup",
+      "date": "2026-10-31",
+      "proved": "the sign-up page offers email, beside GitHub and Google",
+      "capture": "sha256:5500f1e84e1296210098ae8ad59089cdd6ab74121449b2b2ae379e482842f57f",
+      "quote": "Continue with email"
+    },
+    {
+      "url": "https://www.val.town/limits",
+      "date": "2026-10-31",
+      "proved": "a worker shuts down 10 seconds after its last request",
+      "capture": "sha256:a3c8c1f3ee5a35323ce06b1923b32119b8c0c5c8afe6585d1352043ae369fda2",
+      "quote": "| Worker idle timeout | 10 sec How long a worker waits for more requests before shutting down. |"
+    },
+    {
+      "url": "https://www.val.town/limits",
+      "date": "2026-10-31",
+      "proved": "the minimum cron interval on the Free plan is 15 minutes",
+      "capture": "sha256:a3c8c1f3ee5a35323ce06b1923b32119b8c0c5c8afe6585d1352043ae369fda2",
+      "quote": "| Minimum cron interval Shortest delay between scheduled runs of a single val. | 15 min | 1 min | 1 min |"
+    },
+    {
+      "url": "https://www.val.town/limits",
+      "date": "2026-10-31",
+      "proved": "a worker lives at most 6 hours on any plan",
+      "capture": "sha256:a3c8c1f3ee5a35323ce06b1923b32119b8c0c5c8afe6585d1352043ae369fda2",
+      "quote": "| Worker runtime | 6 hrs Absolute ceiling on a single worker's lifetime, regardless of plan. |"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-22T00:00:00.000Z",
-  "notes": "The reaper is unusual and worth stating plainly: a worker is not a process, it lives 10 seconds past its last request and cannot exceed 6 hours even on a paid plan, so nothing daemon-shaped runs here. The interesting number is 100,000 runs a day at a 15-minute floor, which is a ceiling on scheduled work rather than on capacity. The free plan is now public-vals-only for new vals, per the operator's 2026-05-26 changelog, which matters for anything holding a secret.",
+  "verified_at": "2026-10-31T06:50:59.432Z",
+  "notes": "The home record of this offer is dev-services/val-town; its blob storage is storage/val-town. A worker lives 10 sec past its last request and at most 6 hrs on any plan, so nothing daemon-shaped runs here. The Free plan has 0 private vals.",
   "extras": {
     "facets": {
       "class": "paas-never-sleep",

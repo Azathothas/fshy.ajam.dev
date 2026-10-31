@@ -5,17 +5,17 @@
   "url": "https://www.tigrisdata.com/pricing/",
   "category": "S3-compatible object storage, globally distributed",
   "free_tier": {
-    "stated": "Per-GB-month, 5 GB free (Standard); tiers Standard / Infrequent Access / Archive Instant Retrieval / Archive",
+    "stated": "5 GB of Standard-tier storage, 10,000 Class A requests (PUT, COPY, POST, LIST) and 100,000 Class B requests (GET, SELECT and all other) a month on every account; the allowance resets monthly, covers the Standard tier only and applies before anything is metered",
     "unit": "GB",
-    "metered_on": "unstated",
+    "metered_on": "stored-bytes",
     "source_url": "https://www.tigrisdata.com/pricing/",
-    "read_on": "2026-10-21",
-    "notes": null
+    "read_on": "2026-10-30",
+    "notes": "storage is billed in binary GB (2^30 bytes) as the average of the daily peak over the month; DELETE and CANCEL requests are free"
   },
   "per_object_cap": {
-    "stated": "not stated",
-    "source_url": "https://www.tigrisdata.com/pricing/",
-    "notes": "not stated"
+    "stated": "large objects up to 5 TB, under standard S3 multipart semantics",
+    "source_url": "https://www.tigrisdata.com/docs/objects/multipart-uploads/",
+    "notes": "the page does not say whether 5 TB is decimal or binary"
   },
   "retention": {
     "stated": "not stated",
@@ -23,7 +23,7 @@
     "notes": "not stated"
   },
   "egress": {
-    "terms": "Free on every tier, verbatim: \"Egress | Free\" across all four tiers, and \"Data Transfer (Egress) is always free\" / \"no charge for Data Transfer (Egress)\". No ratio, no fair-use clause in the pricing text.",
+    "terms": "Free on every tier and location type: no charge for regional, region-to-region or internet egress, and no ratio or monthly cap is published; the pricing page asks for contact when bandwidth requirements are extraordinary. Reading Infrequent Access and Archive Instant Retrieval objects carries a retrieval fee, separate from egress.",
     "metered": false
   },
   "interface": [
@@ -32,23 +32,28 @@
   ],
   "interface_detail": "S3 API",
   "tooling": "All S3 SDKs, rclone, bucket forking, lifecycle rules, soft deletes",
-  "chaining": "S3 origin with genuinely zero egress cost — the cleanest pairing with a Cloudflare front end because there is no allowance to police.",
+  "chaining": "S3-compatible origin with no egress charge, usable behind a CDN or proxy front end; anonymous reads from a public bucket need payment-method verification on organisations created after 18 May 2026, so an account with no card keeps its buckets private.",
   "limits": [
     {
-      "kind": "retention-clamped",
-      "value": "delete or transition earlier and the full 30 days",
+      "kind": "volume-quota",
+      "value": "5 GB of Standard storage, 10,000 Class A and 100,000 Class B requests a month free; above it Standard storage is USD 0.02 per GB-month",
       "source": "https://www.tigrisdata.com/pricing/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "5 TB per object",
+      "source": "https://www.tigrisdata.com/docs/objects/multipart-uploads/"
     }
   ],
-  "limits_note": "`retention-clamped` on the cheap tiers: Infrequent Access and Archive tiers carry a minimum storage duration (30 days for IA) — delete or transition earlier and the full 30 days is still billed. Data retrieval is charged on IA ($0.01/GB) and Archive Instant Retrieval ($0.03/GB); Archive tier has no retrieval charge. Storage measured in binary GB (2^30).",
+  "limits_note": "Minimum storage duration: none on Standard, 30 days on Infrequent Access, 90 days on Archive and Archive Instant Retrieval; an object deleted, updated or transitioned earlier is billed for the full minimum, and one kept longer is billed for the days stored. Retrieval fee: USD 0.01 per GB on Infrequent Access, USD 0.03 per GB on Archive Instant Retrieval, free on Standard and Archive. An Archive object is restored before it is read: it moves to the Standard tier for a chosen duration and is billed at the Standard rate meanwhile. Storage is measured in binary GB (2^30 bytes).",
   "identity_cost": {
-    "kind": "card",
-    "detail": "card",
+    "kind": "email",
+    "detail": "the console sign-in asks an email address and a password, or a Google or GitHub account; no card to start on the free allowance; a public bucket needs payment-method verification on organisations created after 18 May 2026; whether sign-up asks a phone number is unverified, as the sign-up link rendered the sign-in screen",
     "country": null
   },
-  "reliability_note": "Newer vendor; free tier is only 5 GB so there is no meaningful free path, and the archive tier still bills a full 30-day minimum per object.",
-  "confidence": "reported",
-  "confidence_note": null,
+  "reliability_note": "Public-bucket access is gated by payment-method verification on organisations created after 18 May 2026, stated as an abuse control; no throttle is published, and extraordinary bandwidth leads to a contact request.",
+  "confidence": "documented",
+  "confidence_note": "free allowance, sign-up identity, egress, retrieval fees, minimum storage durations and the object cap quoted from the vendor pricing page, its Markdown version and the public-bucket and multipart documentation on 2026-10-30",
   "evidence": [
     {
       "url": "https://www.tigrisdata.com/pricing/",
@@ -64,15 +69,169 @@
       "url": "https://c17.io/compare/object-storage",
       "date": "2026-10-21",
       "proved": "Tigris included in normalized comparison, checked 17 Oct 2026"
+    },
+    {
+      "url": "https://www.tigrisdata.com/pricing/",
+      "date": "2026-10-30",
+      "proved": "the free allowance is 5 GB of Standard storage, 10,000 Class A and 100,000 Class B requests",
+      "capture": "sha256:f94a4de1d37844fd69eaf5656fea679db456d2c4a89d168575b5e6160b090dc0",
+      "quote": "First 5 GB of Standard storage free. First 10,000 Class A and 100,000 Class B requests free."
+    },
+    {
+      "url": "https://www.tigrisdata.com/pricing/",
+      "date": "2026-10-30",
+      "proved": "no card is asked to start; the allowance resets monthly and applies before metering",
+      "capture": "sha256:f94a4de1d37844fd69eaf5656fea679db456d2c4a89d168575b5e6160b090dc0",
+      "quote": "No card to start. The allowance below resets monthly and applies before anything is metered."
+    },
+    {
+      "url": "https://www.tigrisdata.com/pricing.md",
+      "date": "2026-10-30",
+      "proved": "storage is metered on stored bytes, as the average of daily peaks over the month",
+      "capture": "sha256:e5f984823b107f31e9a0e521d896a0b88340756b1b8e637f2a18cbc9c43d7436",
+      "quote": "A GB/month is determined by averaging the daily peak storage over a billing period (1 month)."
+    },
+    {
+      "url": "https://www.tigrisdata.com/pricing.md",
+      "date": "2026-10-30",
+      "proved": "the free allowance was read on 2026-10-30",
+      "capture": "sha256:e5f984823b107f31e9a0e521d896a0b88340756b1b8e637f2a18cbc9c43d7436",
+      "quote": "5 GB of standard data storage per month"
+    },
+    {
+      "url": "https://www.tigrisdata.com/pricing.md",
+      "date": "2026-10-30",
+      "proved": "a billed GB is 2^30 bytes",
+      "capture": "sha256:e5f984823b107f31e9a0e521d896a0b88340756b1b8e637f2a18cbc9c43d7436",
+      "quote": "Tigris measures storage in binary gigabytes (GB), where 1 GB equals 2^30 bytes."
+    },
+    {
+      "url": "https://www.tigrisdata.com/pricing.md",
+      "date": "2026-10-30",
+      "proved": "no egress charge of any kind",
+      "capture": "sha256:e5f984823b107f31e9a0e521d896a0b88340756b1b8e637f2a18cbc9c43d7436",
+      "quote": "Tigris does not charge for regional data transfer, region-to-region data transfer, or data transfer out to the internet (egress)."
+    },
+    {
+      "url": "https://www.tigrisdata.com/pricing.md",
+      "date": "2026-10-30",
+      "proved": "extraordinary bandwidth leads to a contact request; no figure is published",
+      "capture": "sha256:e5f984823b107f31e9a0e521d896a0b88340756b1b8e637f2a18cbc9c43d7436",
+      "quote": "If your bandwidth requirements are extraordinary, contact help@tigrisdata.com."
+    },
+    {
+      "url": "https://www.tigrisdata.com/pricing.md",
+      "date": "2026-10-30",
+      "proved": "egress is free on all four tiers",
+      "capture": "sha256:e5f984823b107f31e9a0e521d896a0b88340756b1b8e637f2a18cbc9c43d7436",
+      "quote": "| Egress | Free | Free | Free | Free |"
+    },
+    {
+      "url": "https://www.tigrisdata.com/pricing.md",
+      "date": "2026-10-30",
+      "proved": "sign-up asks no credit card",
+      "capture": "sha256:e5f984823b107f31e9a0e521d896a0b88340756b1b8e637f2a18cbc9c43d7436",
+      "quote": "No credit card required to get started"
+    },
+    {
+      "url": "https://www.tigrisdata.com/docs/buckets/public-bucket.md",
+      "date": "2026-10-30",
+      "proved": "a public bucket needs payment-method verification",
+      "capture": "sha256:729f30c6bb99ca9d33aa7f03aae12e8feb5fe54b5875df9a31c4cc621f1edc50",
+      "quote": "However, to prevent abuse, payment method verification is required to use public bucket functionality."
+    },
+    {
+      "url": "https://www.tigrisdata.com/docs/buckets/public-bucket.md",
+      "date": "2026-10-30",
+      "proved": "the public-bucket payment-method gate applies to organisations created after 18 May 2026",
+      "capture": "sha256:729f30c6bb99ca9d33aa7f03aae12e8feb5fe54b5875df9a31c4cc621f1edc50",
+      "quote": "This requirement applies to all organizations created after May 18, 2026."
+    },
+    {
+      "url": "https://console.storage.dev",
+      "date": "2026-10-30",
+      "proved": "the console sign-in asks an email address and a password, with Google and GitHub as alternatives",
+      "capture": "sha256:262308829ee7e77fb409f1c93ab1621affe0ec6e1e97e68790d7d50830a3df56",
+      "quote": "Please enter an email address"
+    },
+    {
+      "url": "https://www.tigrisdata.com/pricing.md",
+      "date": "2026-10-30",
+      "proved": "storage costs USD 0.02, 0.01, 0.004 and 0.004 per GB-month on Standard, Infrequent Access, Archive and Archive Instant Retrieval",
+      "capture": "sha256:e5f984823b107f31e9a0e521d896a0b88340756b1b8e637f2a18cbc9c43d7436",
+      "quote": "| Data Storage | $0.02/GB/month | $0.01/GB/month | $0.004/GB/month | $0.004/GB/month |"
+    },
+    {
+      "url": "https://www.tigrisdata.com/docs/objects/multipart-uploads.md",
+      "date": "2026-10-30",
+      "proved": "the largest object is 5 TB",
+      "capture": "sha256:770f1696311e5ff5d4968c76b223278fc13dac51a68875325b8396aa8aeb9da5",
+      "quote": "Standard S3 multipart semantics apply (e.g., large objects up to 5 TB)."
+    },
+    {
+      "url": "https://www.tigrisdata.com/pricing/",
+      "date": "2026-10-30",
+      "proved": "the free path ends at 5 GB of Standard storage",
+      "capture": "sha256:f94a4de1d37844fd69eaf5656fea679db456d2c4a89d168575b5e6160b090dc0",
+      "quote": "First 5 GB of Standard storage free. First 10,000 Class A and 100,000 Class B requests free."
+    },
+    {
+      "url": "https://www.tigrisdata.com/pricing.md",
+      "date": "2026-10-30",
+      "proved": "minimum storage duration is none on Standard, 30 days on Infrequent Access, 90 days on Archive and Archive Instant Retrieval",
+      "capture": "sha256:e5f984823b107f31e9a0e521d896a0b88340756b1b8e637f2a18cbc9c43d7436",
+      "quote": "| Min. Storage Retention | N/A | 30 days | 90 days | 90 days |"
+    },
+    {
+      "url": "https://www.tigrisdata.com/pricing.md",
+      "date": "2026-10-30",
+      "proved": "retrieval is free on Standard and Archive, USD 0.01 per GB on Infrequent Access and USD 0.03 per GB on Archive Instant Retrieval",
+      "capture": "sha256:e5f984823b107f31e9a0e521d896a0b88340756b1b8e637f2a18cbc9c43d7436",
+      "quote": "| Data Retrieval | Free | $0.01/GB | Free | $0.03/GB |"
+    },
+    {
+      "url": "https://www.tigrisdata.com/pricing.md",
+      "date": "2026-10-30",
+      "proved": "an early delete, update or transition is billed for the full minimum",
+      "capture": "sha256:e5f984823b107f31e9a0e521d896a0b88340756b1b8e637f2a18cbc9c43d7436",
+      "quote": "If objects are deleted, updated, or transitioned to another storage tier before 30 days, a 30-day storage charge will still apply."
+    },
+    {
+      "url": "https://www.tigrisdata.com/pricing.md",
+      "date": "2026-10-30",
+      "proved": "an Archive object is restored into Standard for a chosen duration before it is read",
+      "capture": "sha256:e5f984823b107f31e9a0e521d896a0b88340756b1b8e637f2a18cbc9c43d7436",
+      "quote": "When you restore data from the Archive tier, the data is moved to the Standard tier for the duration you specify."
+    },
+    {
+      "url": "https://www.tigrisdata.com/pricing.md",
+      "date": "2026-10-30",
+      "proved": "the vendor pricing page was read and quoted",
+      "capture": "sha256:e5f984823b107f31e9a0e521d896a0b88340756b1b8e637f2a18cbc9c43d7436",
+      "quote": "| Min. Storage Retention | N/A | 30 days | 90 days | 90 days |"
+    },
+    {
+      "url": "https://www.tigrisdata.com/pricing.md",
+      "date": "2026-10-30",
+      "proved": "the vendor pricing page was read and quoted",
+      "capture": "sha256:e5f984823b107f31e9a0e521d896a0b88340756b1b8e637f2a18cbc9c43d7436",
+      "quote": "5 GB of standard data storage per month"
+    },
+    {
+      "url": "https://www.tigrisdata.com/pricing.md",
+      "date": "2026-10-30",
+      "proved": "the pricing page states the free allowance, tier prices, retrieval fees, minimum durations and free egress",
+      "capture": "sha256:e5f984823b107f31e9a0e521d896a0b88340756b1b8e637f2a18cbc9c43d7436",
+      "quote": "5 GB of standard data storage per month"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-21T00:00:00.000Z",
-  "price_per_tb_month": "Standard $20.00/TB at 5 TB and 20 TB. Archive $4.00/TB at 20 TB ($80/mo) with free egress and free retrieval — the best cold tier after OVH Cold Archive.",
+  "verified_at": "2026-10-30T17:52:30.795Z",
+  "price_per_tb_month": "USD 20.48 per TiB-month Standard, USD 10.24 Infrequent Access, USD 4.10 Archive or Archive Instant Retrieval (USD 0.02, 0.01 and 0.004 per GB-month of 2^30 bytes, global or single-region); multi-region USD 0.025, 0.015 and 0.006 per GB-month",
   "notes": "Per-GB-month, 5 GB free (Standard); tiers Standard / Infrequent Access / Archive Instant Retrieval / Archive",
   "extras": {
     "price_verbatim": "Standard $20.00/TB at 5 TB and 20 TB. Archive $4.00/TB at 20 TB ($80/mo) with free egress and free retrieval — the best cold tier after OVH Cold Archive."
   },
-  "binding": "retention-clamped",
-  "binding_note": null
+  "binding": "volume-quota",
+  "binding_note": "the free allowance is 5 GB of Standard storage a month; every GB-month above it is billed, so the quota ends the free path before any other limit"
 }

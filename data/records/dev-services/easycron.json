@@ -1,0 +1,288 @@
+{
+  "topic": "dev-services",
+  "slug": "easycron",
+  "provider": "EasyCron",
+  "url": "https://www.easycron.com/user/register",
+  "category": "hosted HTTP cron scheduler",
+  "tier": "free",
+  "free_tier": {
+    "stated": "Free plan, expires monthly: 200 EPDs (executions per day), 20-minute minimum interval, 5-second timeout, 10 logs & predictions",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://www.easycron.com/user/register",
+    "read_on": "2026-10-30",
+    "notes": "An EPD counts a job's executions on its busiest day (a job every 10 minutes occupies 144), so the free plan holds 2 jobs every 20 minutes, 8 hourly jobs or 200 daily jobs. The free plan's expiry is 1 month after the last renewal, and renewing takes a login to the plan page. Email notification, failure-log retention, custom HTTP and webhook notification are not on the free plan. A new account starts on a 7-day Individual Trial."
+  },
+  "per_object_cap": {
+    "stated": "the free plan card lists Receive 100 MB and Save 10 KB head & tail",
+    "bytes": null,
+    "source_url": "https://www.easycron.com/user/register",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "10 logs & predictions on the free plan; execution logs kept 6 months at most",
+    "days": null,
+    "source_url": "https://www.easycron.com/faq/how-long-will-my-cron-job-execution-logs-be-kept",
+    "notes": "Logs beyond the plan's allowed number are removed."
+  },
+  "egress": {
+    "terms": "not applicable: an outbound HTTP caller; the free plan card lists Receive 100 MB",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.easycron.com/user/register"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "EasyCron API v1 at api.easycron.com, with the API key in an X-API-Key header; it creates, reads, updates and deletes cron jobs and groups and returns execution logs. An older token-in-query API at www.easycron.com/rest also answers.",
+  "endpoint": "https://api.easycron.com/v1/cron-jobs",
+  "tooling": "any HTTP client against API v1; a PHP API kit for the older API",
+  "chaining": "Calls a free HTTP endpoint at most every 20 minutes on the free plan with a 5-second timeout, so it suits short trigger calls into a serverless function, not long-running jobs.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "200 executions per day (EPDs) on the free plan",
+      "source": "https://www.easycron.com/user/register"
+    },
+    {
+      "kind": "request-rate",
+      "value": "20-minute minimum interval on the free plan",
+      "source": "https://www.easycron.com/user/register"
+    },
+    {
+      "kind": "request-rate",
+      "value": "API: 100 requests per day on the free plan",
+      "source": "https://developer.easycron.com/docs/api/v1/fundamentals/quota"
+    },
+    {
+      "kind": "request-rate",
+      "value": "API: 10 requests per second with 20 burst per load balancer, 2 load balancers",
+      "source": "https://developer.easycron.com/docs/api/v1/fundamentals/rate-limit"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "10 logs & predictions; logs kept 6 months at most",
+      "source": "https://www.easycron.com/user/register"
+    }
+  ],
+  "limits_note": "Each execution times out after 5 seconds on the free plan. The free plan expires 1 month after the last renewal and its cron jobs are disabled on expiry; renewal is a login to the plan page.",
+  "binding": "request-rate",
+  "binding_note": "The 200-executions-a-day budget at a 20-minute minimum interval binds before the API quota.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The Create Account for Free button posts only a session id and a timezone to /user/tryit and opens the account with no form; logging in again takes an email address and a password, which the account adds later, and keeping the free plan takes a login every month. The free plan needs no payment to register.",
+    "country": null
+  },
+  "reliability_note": "Free accounts can be stopped by the vendor at any time; an unrenewed free plan disables its jobs after a month.",
+  "confidence": "documented",
+  "confidence_note": "Plan limits, API quota, renewal rule and the account-creation call are read on first-party pages and the site's own JavaScript. API v1 answered HTTP 400 'missing key in request header' to a request without a key. Whether a keyless trial account stays on the Free plan after the trial is unverified (behind a sign-up).",
+  "evidence": [
+    {
+      "url": "https://www.easycron.com/user/register",
+      "date": "2026-10-30",
+      "proved": "the free plan expires monthly",
+      "capture": "sha256:b0921e2cc22582781ab5929f32b6fbb5d9902c91d5ae0b5c2885acd56e5555f2",
+      "quote": "Expires Monthly"
+    },
+    {
+      "url": "https://www.easycron.com/user/register",
+      "date": "2026-10-30",
+      "proved": "the free plan has 200 EPDs",
+      "capture": "sha256:b0921e2cc22582781ab5929f32b6fbb5d9902c91d5ae0b5c2885acd56e5555f2",
+      "quote": "200 EPDs"
+    },
+    {
+      "url": "https://www.easycron.com/user/register",
+      "date": "2026-10-30",
+      "proved": "the free plan times out after 5 seconds",
+      "capture": "sha256:b0921e2cc22582781ab5929f32b6fbb5d9902c91d5ae0b5c2885acd56e5555f2",
+      "quote": "5 sec(s) timeout"
+    },
+    {
+      "url": "https://www.easycron.com/user/register",
+      "date": "2026-10-30",
+      "proved": "the free plan's minimum interval is 20 minutes",
+      "capture": "sha256:b0921e2cc22582781ab5929f32b6fbb5d9902c91d5ae0b5c2885acd56e5555f2",
+      "quote": "20 min(s) interval"
+    },
+    {
+      "url": "https://www.easycron.com/user/register",
+      "date": "2026-10-30",
+      "proved": "the free plan keeps 10 logs and predictions",
+      "capture": "sha256:b0921e2cc22582781ab5929f32b6fbb5d9902c91d5ae0b5c2885acd56e5555f2",
+      "quote": "10 logs & predictions"
+    },
+    {
+      "url": "https://www.easycron.com/user/register",
+      "date": "2026-10-30",
+      "proved": "the free plan card lists Receive 100 MB",
+      "capture": "sha256:b0921e2cc22582781ab5929f32b6fbb5d9902c91d5ae0b5c2885acd56e5555f2",
+      "quote": "Receive 100 MB"
+    },
+    {
+      "url": "https://www.easycron.com/user/register",
+      "date": "2026-10-30",
+      "proved": "the free plan card lists Save 10 KB head and tail",
+      "capture": "sha256:b0921e2cc22582781ab5929f32b6fbb5d9902c91d5ae0b5c2885acd56e5555f2",
+      "quote": "Save 10 KB head & tail"
+    },
+    {
+      "url": "https://www.easycron.com/user/register",
+      "date": "2026-10-30",
+      "proved": "a new account starts with a 7-day Individual Trial",
+      "capture": "sha256:b0921e2cc22582781ab5929f32b6fbb5d9902c91d5ae0b5c2885acd56e5555f2",
+      "quote": "with 7 days free Individual Trial plan"
+    },
+    {
+      "url": "https://www.easycron.com/faq/what-is-epd",
+      "date": "2026-10-30",
+      "proved": "an EPD counts executions on a job's busiest day",
+      "capture": "sha256:b76b65b7913a2745183c49d7e700de3aaf1026c89e3a28a74756197ef35bf2e0",
+      "quote": "E.g. cron job that runs every 10 minutes occupies 144 EPDs, runs every minute occupies 1440 EPDs, etc.."
+    },
+    {
+      "url": "https://www.easycron.com/faq/The-number-of-cron-jobs-you-can-set-up-under-different-plans",
+      "date": "2026-10-30",
+      "proved": "the free plan holds 2 jobs at a 20-minute interval",
+      "capture": "sha256:945055f217bee3dc0d556323b381bc57729c9c1ed67602fd33ce39e21929d8b9",
+      "quote": "| run every 20 minutes | 2 cron jobs | 111 cron jobs | 333 cron jobs | 833 cron jobs | 1,666 cron jobs |"
+    },
+    {
+      "url": "https://www.easycron.com/faq/The-number-of-cron-jobs-you-can-set-up-under-different-plans",
+      "date": "2026-10-30",
+      "proved": "the free plan holds 200 daily jobs",
+      "capture": "sha256:945055f217bee3dc0d556323b381bc57729c9c1ed67602fd33ce39e21929d8b9",
+      "quote": "| run every day | 200 cron jobs | 8,000 cron jobs | 24,000 cron jobs | 60,000 cron jobs | 120,000 cron jobs |"
+    },
+    {
+      "url": "https://www.easycron.com/faq/The-number-of-cron-jobs-you-can-set-up-under-different-plans",
+      "date": "2026-10-30",
+      "proved": "the free plan holds 8 hourly jobs",
+      "capture": "sha256:945055f217bee3dc0d556323b381bc57729c9c1ed67602fd33ce39e21929d8b9",
+      "quote": "| run every hour | 8 cron jobs | 333 cron jobs | 1,000 cron jobs | 2,500 cron jobs | 5,000 cron jobs |"
+    },
+    {
+      "url": "https://www.easycron.com/faq/What-is-renewal-cycle",
+      "date": "2026-10-30",
+      "proved": "the free plan expires 1 month after the last renewal",
+      "capture": "sha256:e0d3983edb75b606a7c4264cd8ea1711306761ae52ad3834ea9f6510b2cddd54",
+      "quote": "Free plan's expiry time is 1 month after the last renew, and paid plans' expiry time is 1 year after the last payment."
+    },
+    {
+      "url": "https://www.easycron.com/faq/What-will-happen-to-my-account-if-my-plan-expires",
+      "date": "2026-10-30",
+      "proved": "jobs are disabled when the plan expires",
+      "capture": "sha256:23814f55cf31c9cf3ab4cac301fdb0992f3db5204a7929dd348d924701ce772a",
+      "quote": "After your plan expires, your cron jobs will be disabled."
+    },
+    {
+      "url": "https://www.easycron.com/terms",
+      "date": "2026-10-31",
+      "proved": "the free plan needs no payment to register",
+      "capture": "sha256:e36d124e8b8fb5dac4253b981aa54ee50cf1b5513b8cc85cd7d523575f5da2dd",
+      "quote": "Free plan don't need any payment to register."
+    },
+    {
+      "url": "https://www.easycron.com/terms",
+      "date": "2026-10-31",
+      "proved": "renewing the free plan takes a login to the plan page",
+      "capture": "sha256:e36d124e8b8fb5dac4253b981aa54ee50cf1b5513b8cc85cd7d523575f5da2dd",
+      "quote": "If you’re a free plan user, you only need to login to your account to renew your plan for free at https://www.easycron.com/user/plan."
+    },
+    {
+      "url": "https://www.easycron.com/terms",
+      "date": "2026-10-31",
+      "proved": "free accounts can be stopped at any time",
+      "capture": "sha256:e36d124e8b8fb5dac4253b981aa54ee50cf1b5513b8cc85cd7d523575f5da2dd",
+      "quote": "EasyCron can stop providing service to Free accounts at any time and for any reason."
+    },
+    {
+      "url": "https://www.easycron.com/faq/how-long-will-my-cron-job-execution-logs-be-kept",
+      "date": "2026-10-30",
+      "proved": "execution logs are kept 6 months at most",
+      "capture": "sha256:d66aeb26b0f7c0c47585a5a9a29c32c3d8eec8eb02e56886c4abcdeb6ce534c3",
+      "quote": "Your cron job execution logs will be kept 6 months at most."
+    },
+    {
+      "url": "https://www.easycron.com/assets/js/app104.js",
+      "date": "2026-10-30",
+      "proved": "the Create Account button posts to /user/tryit",
+      "capture": "sha256:7abed51a985623f38eab02dac7f3dcedcd3ef22b742052d3ec02ef01e6575d83",
+      "quote": "var url = '/user/tryit';"
+    },
+    {
+      "url": "https://www.easycron.com/assets/js/app104.js",
+      "date": "2026-10-30",
+      "proved": "the account-creation call sends only a session id and a timezone",
+      "capture": "sha256:7abed51a985623f38eab02dac7f3dcedcd3ef22b742052d3ec02ef01e6575d83",
+      "quote": "{sessId: $(this).attr('data-sessId'), timezone: $(this).attr('data-timezone')},"
+    },
+    {
+      "url": "https://www.easycron.com/assets/js/app104.js",
+      "date": "2026-10-30",
+      "proved": "an email address and a password are added to an account after it is created",
+      "capture": "sha256:7abed51a985623f38eab02dac7f3dcedcd3ef22b742052d3ec02ef01e6575d83",
+      "quote": "Add email address and password"
+    },
+    {
+      "url": "https://www.easycron.com/assets/js/app104.js",
+      "date": "2026-10-30",
+      "proved": "the login form requires an email address",
+      "capture": "sha256:7abed51a985623f38eab02dac7f3dcedcd3ef22b742052d3ec02ef01e6575d83",
+      "quote": "alert('Please enter your email address.');"
+    },
+    {
+      "url": "https://developer.easycron.com/docs/api/v1/fundamentals/quota",
+      "date": "2026-10-31",
+      "proved": "the free plan has 100 API requests per day",
+      "capture": "sha256:49fc4ecbd0a3918ee0e4e635474aafe81b741478d1c38a52fa3a210b826174fe",
+      "quote": "| Free | 100 requests/day |"
+    },
+    {
+      "url": "https://developer.easycron.com/docs/api/v1/fundamentals/rate-limit",
+      "date": "2026-10-31",
+      "proved": "API speed limit of 10 requests per second with 20 burst per load balancer",
+      "capture": "sha256:59163c9b47c33775896b33ba56d2b31a6ccebd00b1f6427bf0312ba9ca6c7112",
+      "quote": "EasyCron API uses 2 Load Balancers, each has speed limit of 10 requests/second, with 20 burst."
+    },
+    {
+      "url": "https://developer.easycron.com/docs/api/v1/fundamentals/authentication",
+      "date": "2026-10-31",
+      "proved": "API v1 authenticates with an X-API-Key header",
+      "capture": "sha256:838a61aad7d3d4cd277bc55b09c209fe07dbb080e64095231f230165a2525986",
+      "quote": "To authenticate, include the API key in the `X-API-Key` header of your HTTP requests:"
+    },
+    {
+      "url": "https://developer.easycron.com/docs/api/v1/introduction",
+      "date": "2026-10-31",
+      "proved": "API v1 manages jobs and groups and returns execution logs",
+      "capture": "sha256:db81353573c36478956adea08145426f93c66cd0ed4c0b4fee372744ef8d5d24",
+      "quote": "With the EasyCron REST API, you can create, get, update and delete your scheduled cron jobs, cron job groups, as well as retrieve detailed cron job execution logs and user information."
+    },
+    {
+      "url": "https://www.easycron.com/document",
+      "date": "2026-10-30",
+      "proved": "every registered user can use the API",
+      "capture": "sha256:cf93758c2a1e1673fdcd34556ecc7d9b09382a9073ade5dbf64c891d895d9602",
+      "quote": "All registered users of EasyCron can utilize our API to manage their cron jobs without logging in easycron.com."
+    },
+    {
+      "url": "probe:https://api.easycron.com/v1/cron-jobs",
+      "date": "2026-10-31",
+      "proved": "API v1 at api.easycron.com answered a request without a key with a JSON error asking for the key header",
+      "capture": "sha256:0a6803b9107566d8ad7c961c3de86112576ceb96c2af33c1b4aca57c5618b3fd",
+      "quote": "{\"message\":\"missing key in request header\"}"
+    },
+    {
+      "url": "probe:https://www.easycron.com/rest/list",
+      "date": "2026-10-31",
+      "proved": "the older API at www.easycron.com/rest answered a request without a token with a JSON error",
+      "capture": "sha256:1c300a3029db9dcb1dbac8e1b77955f1b577cff7e37040fccaf17f3004f2f090",
+      "quote": "Wrong API token."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-31T00:43:02.028Z",
+  "extras": {}
+}

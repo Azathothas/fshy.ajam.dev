@@ -1,20 +1,20 @@
 {
   "topic": "coding-subs",
   "per_object_cap": {
-    "stated": "not applicable: a subscription meters usage, not objects"
+    "stated": "not applicable"
   },
   "retention": {
     "stated": "not applicable"
   },
   "egress": {
-    "terms": "not applicable: the vendor serves the inference",
+    "terms": "not applicable",
     "metered": false
   },
   "interface": [
     "cli"
   ],
-  "tooling": "Antigravity desktop and CLI",
-  "chaining": "for a user it is the free surface of a Google AI plan, not a separate product",
+  "tooling": "Antigravity App, IDE extensions and the agy CLI. `agy -p PROMPT` (aliases `--print`, `--prompt`) is a headless mode intended for direct scripting and CI: it sends one prompt, writes the response to stdout and exits; `--output-format` selects text, one JSON object or NDJSON events, `--json-schema` constrains the answer, and `--input-format stream-json` keeps one process for many turns fed on stdin",
+  "chaining": "the free surface of a Google AI plan, not a separate product. With `modelProvider: gemini` and `GEMINI_API_KEY` the CLI sends model requests directly to the Gemini API and holds no account session, so a key of inference/google-gemini-api drives the same headless mode, metered by the Gemini API for that key rather than by the account's plan",
   "limits": [
     {
       "kind": "request-rate",
@@ -22,38 +22,213 @@
       "source": "https://antigravity.google/docs/plans"
     }
   ],
-  "reliability_note": "no reliability event recorded",
+  "reliability_note": "the allowance moves with capacity: baseline rate limits are 'primarily determined by available capacity', and usage limits are 'subject to modification'; reaching the service through third-party software can end in suspension or termination of the account",
   "slug": "antigravity",
   "provider": "Google Antigravity",
   "url": "https://antigravity.google/docs/plans",
   "category": "coding subscription",
   "free_tier": {
-    "stated": "all plans receive a baseline quota; users not on Google AI Pro or Ultra receive 'a meaningful quota, refreshed weekly' with a weekly rate limit",
-    "unit": "unlimited",
+    "stated": "users not on Google AI Pro or Ultra receive 'a meaningful quota, refreshed weekly' and 'a weekly rate limit'; the pricing page lists the plan without a subscription with 'Basic weekly rate limits'. No number is published, and the unit is a weekly share of agent work: the rate limits correlate with 'the amount of work done by the agent'",
+    "unit": "mixed",
     "metered_on": "unstated",
     "source_url": "https://antigravity.google/docs/plans",
-    "read_on": "2026-10-22",
-    "notes": "the page states no number at all. 'Meaningful' is a discretionary allowance, which is harder to design against than a published quota."
+    "read_on": "2026-10-30",
+    "notes": "the plans and pricing pages state no number. 'Meaningful' is a discretionary allowance, which is harder to design against than a published quota. The free plan's reasoning models are Gemini 3.8 Flash, plus Claude Sonnet 4.6, Claude Opus 4.6 and GPT-OSS-120b, which the models page marks 'Will be removed on November 2, 2026'; Gemini 4 Argon and the Claude 5.5 models are not on the free plan"
   },
-  "interface_detail": "the Antigravity product and its CLI; model access follows the Google AI plan",
-  "limits_note": "no numeric quota is published. The page states that rate limits 'correlate with the amount of work done by the agent' and are 'subject to modification'.",
+  "interface_detail": "the agy CLI, the Antigravity App and IDE extensions; model access follows the Google AI plan. Headless runs use credentials cached by one interactive agy sign-in; in a non-interactive environment with no terminal, a run that is not signed in exits with an 'authentication required' error instead of hanging",
+  "limits_note": "no numeric quota is published. The page states that rate limits 'correlate with the amount of work done by the agent' and are 'subject to modification'. The CLI's /usage panel (alias /quota) shows 'remaining requests/tokens for each supported model', and a standalone `agy -p /usage` run returns it as a text report",
   "identity_cost": {
     "kind": "email",
-    "detail": "a Google account",
+    "detail": "a personal Google account on any plan, the free one included; a Google Workspace account signs in only after its administrator provisions Antigravity. Second gates: the account holder must be 18 or older, and the account must be associated with a country or territory where Antigravity is available. An account whose age Google holds unverified is verified with a government ID or a credit card authorization (not a charge), with other options in some regions",
     "country": null
   },
   "confidence": "documented",
-  "confidence_note": "the quota structure is documented; no number is. Nothing here can be measured without an account, so the rung cannot move without one.",
+  "confidence_note": "the quota structure and the headless mode are documented on first-party pages; no quota number is. A number needs a signed-in account reading /usage before and after a fixed workload, so the rung cannot rise without one",
   "evidence": [
     {
       "url": "https://antigravity.google/docs/plans",
       "date": "2026-10-22",
       "proved": "Pro and Ultra quotas refresh every five hours until a weekly limit; every other plan gets a weekly-refreshed baseline quota; overage draws on purchased AI credits and is controlled by an AI Credit Overages setting"
+    },
+    {
+      "url": "https://antigravity.google/docs/cli/headless/",
+      "date": "2026-10-30",
+      "proved": "agy has a documented non-interactive print mode that runs one prompt, returns the response and exits",
+      "capture": "sha256:03b9d3ba0e8c4f60a6ed26f2aa7f63c8a1b55680f1ab0f29a7a4ac17a21bb9b1",
+      "quote": "Headless mode (also called print mode) sends a single prompt to the agent, streams or returns the response, and exits."
+    },
+    {
+      "url": "https://antigravity.google/docs/faq/",
+      "date": "2026-10-30",
+      "proved": "the vendor states that agy -p is meant to be called from scripts and CI",
+      "capture": "sha256:bfd47ff9da6a4de477122c1ef20094b541d7f4c674aa631ad459607e8aa30e2c",
+      "quote": "Antigravity CLI headless mode (`agy -p`) is intended for direct scripting and CI workflows."
+    },
+    {
+      "url": "https://antigravity.google/docs/cli/headless/",
+      "date": "2026-10-30",
+      "proved": "headless runs need cached credentials from an earlier interactive sign-in and fail fast without them",
+      "capture": "sha256:03b9d3ba0e8c4f60a6ed26f2aa7f63c8a1b55680f1ab0f29a7a4ac17a21bb9b1",
+      "quote": "In a non-interactive environment with no terminal (for example, CI), a run that isn’t already authenticated exits with an `authentication required` error instead of hanging."
+    },
+    {
+      "url": "https://antigravity.google/docs/install",
+      "date": "2026-10-30",
+      "proved": null,
+      "capture": "sha256:436aae3a9260dade624707bf5abb7e76d96d8462fed1cdf6831923bb2ec54fcf",
+      "quote": "Model requests go directly to the Gemini API, and the CLI never establishes an account session."
+    },
+    {
+      "url": "https://antigravity.google/docs/plans",
+      "date": "2026-10-30",
+      "proved": "the plan without Pro or Ultra has a weekly-refreshed quota with no number stated",
+      "capture": "sha256:c739c7e471b63845ba4efbeb66a22f3f40f7d1476b9611358f511fe06f6f7980",
+      "quote": "A meaningful quota, refreshed weekly"
+    },
+    {
+      "url": "https://antigravity.google/docs/plans",
+      "date": "2026-10-30",
+      "proved": "the free allowance is a weekly-refreshed quota, not an unlimited one; the page states no unit",
+      "capture": "sha256:c739c7e471b63845ba4efbeb66a22f3f40f7d1476b9611358f511fe06f6f7980",
+      "quote": "A meaningful quota, refreshed weekly"
+    },
+    {
+      "url": "https://antigravity.google/docs/plans",
+      "date": "2026-10-30",
+      "proved": "the plans page was re-read and still states the weekly quota",
+      "capture": "sha256:c739c7e471b63845ba4efbeb66a22f3f40f7d1476b9611358f511fe06f6f7980",
+      "quote": "A meaningful quota, refreshed weekly"
+    },
+    {
+      "url": "https://antigravity.google/docs/cli/commands/usage",
+      "date": "2026-10-30",
+      "proved": "the CLI exposes the remaining quota per model through /usage",
+      "capture": "sha256:ea9d0fd03f907d4b4579aa330009f2d85bb52d1cdab6de9cb6d4bd274958cd33",
+      "quote": "A breakdown of your usage limits and remaining requests/tokens for each supported model (such as Gemini 3.5 Flash and Gemini 3.1 Pro)."
+    },
+    {
+      "url": "https://antigravity.google/docs/cli/headless/",
+      "date": "2026-10-30",
+      "proved": "/usage is answered by the CLI itself and returns a text report when run as its own print-mode invocation",
+      "capture": "sha256:03b9d3ba0e8c4f60a6ed26f2aa7f63c8a1b55680f1ab0f29a7a4ac17a21bb9b1",
+      "quote": "Slash commands that the CLI can respond to directly (such as `/model` and `/usage`) produce a text report rather than a standard event stream."
+    },
+    {
+      "url": "https://antigravity.google/docs/plans",
+      "date": "2026-10-30",
+      "proved": "the baseline limits are set by capacity and can change",
+      "capture": "sha256:c739c7e471b63845ba4efbeb66a22f3f40f7d1476b9611358f511fe06f6f7980",
+      "quote": "The baseline rate limits are primarily determined by available capacity and exist to prevent abuse."
+    },
+    {
+      "url": "https://antigravity.google/docs/faq/",
+      "date": "2026-10-30",
+      "proved": "access to Antigravity through third-party software can end in account suspension or termination",
+      "capture": "sha256:bfd47ff9da6a4de477122c1ef20094b541d7f4c674aa631ad459607e8aa30e2c",
+      "quote": "Such actions can result in suspension or termination of your account."
+    },
+    {
+      "url": "https://antigravity.google/docs/plans",
+      "date": "2026-10-30",
+      "proved": "the usage limits can be changed by the vendor",
+      "capture": "sha256:c739c7e471b63845ba4efbeb66a22f3f40f7d1476b9611358f511fe06f6f7980",
+      "quote": "Usage limits for this service are subject to modification."
+    },
+    {
+      "url": "https://antigravity.google/pricing/",
+      "date": "2026-10-30",
+      "proved": "the plan without a subscription is listed with basic weekly rate limits and no number",
+      "capture": "sha256:a160921a64e7caa5bc41670cbb271f6a94da997075893ecedbdf70ce024c5a4e",
+      "quote": "Basic weekly rate limits"
+    },
+    {
+      "url": "https://antigravity.google/docs/install",
+      "date": "2026-10-30",
+      "proved": "sign-in is a personal Google account on any plan, the free one included",
+      "capture": "sha256:436aae3a9260dade624707bf5abb7e76d96d8462fed1cdf6831923bb2ec54fcf",
+      "quote": "Complete the browser-based OAuth flow using your personal Google Account (Free, Pro, or Ultra plan)."
+    },
+    {
+      "url": "https://antigravity.google/docs/plans",
+      "date": "2026-10-30",
+      "proved": "the plans page states the shape of the free quota and no number",
+      "capture": "sha256:c739c7e471b63845ba4efbeb66a22f3f40f7d1476b9611358f511fe06f6f7980",
+      "quote": "A meaningful quota, refreshed weekly"
+    },
+    {
+      "url": "https://antigravity.google/docs/faq/",
+      "date": "2026-10-30",
+      "proved": "Antigravity requires an account holder aged 18 or older",
+      "capture": "sha256:bfd47ff9da6a4de477122c1ef20094b541d7f4c674aa631ad459607e8aa30e2c",
+      "quote": "Currently, Antigravity is unavailable to users under 18."
+    },
+    {
+      "url": "https://antigravity.google/docs/faq/",
+      "date": "2026-10-30",
+      "proved": "a personal Google account reaches the free tier",
+      "capture": "sha256:bfd47ff9da6a4de477122c1ef20094b541d7f4c674aa631ad459607e8aa30e2c",
+      "quote": "Personal Google Accounts (such as `@gmail.com` addresses) can use Google Antigravity on any plan, including the free tier."
+    },
+    {
+      "url": "https://antigravity.google/docs/faq/",
+      "date": "2026-10-30",
+      "proved": "use is limited to the listed countries and territories",
+      "capture": "sha256:bfd47ff9da6a4de477122c1ef20094b541d7f4c674aa631ad459607e8aa30e2c",
+      "quote": "If you’re not in one of these countries or territories, you can’t use Google Antigravity at this time:"
+    },
+    {
+      "url": "https://support.google.com/accounts/answer/1333913?hl=en",
+      "date": "2026-10-30",
+      "proved": "Google age verification takes a government ID or a credit card",
+      "capture": "sha256:5e30ddb9b4efb7a27a970fc3846a8f7e3bf5f2ecd7b411f0c6571b9b2ad20ae7",
+      "quote": "If you meet the minimum age requirements, you can use a government ID or credit card to verify your age."
+    },
+    {
+      "url": "https://support.google.com/accounts/answer/1333913?hl=en",
+      "date": "2026-10-30",
+      "proved": "card age verification is an authorization, not a charge",
+      "capture": "sha256:5e30ddb9b4efb7a27a970fc3846a8f7e3bf5f2ecd7b411f0c6571b9b2ad20ae7",
+      "quote": "If you use a credit card, Google sends an authorization request to make sure the card is valid. This is not a charge."
+    },
+    {
+      "url": "https://antigravity.google/blog/changes-to-antigravity-plans",
+      "date": "2026-10-30",
+      "proved": "Gemini models draw on one shared limit counted at API token prices",
+      "capture": "sha256:1c5d8b22a135c1a75eb82ab6ebcc60f822ac5f84c339672fba810a4e230ae713",
+      "quote": "Now, we are combining these into a single rate limit, drawn down according to API pricing, allowing you to get more of whichever model you prefer."
+    },
+    {
+      "url": "https://antigravity.google/blog/changes-to-antigravity-plans",
+      "date": "2026-10-30",
+      "proved": "non-Gemini models have their own fixed limit",
+      "capture": "sha256:1c5d8b22a135c1a75eb82ab6ebcc60f822ac5f84c339672fba810a4e230ae713",
+      "quote": "Because of capacity limitations for non-Gemini models, they remain on a separate fixed rate limit."
+    },
+    {
+      "url": "https://antigravity.google/docs/models",
+      "date": "2026-10-30",
+      "proved": "Claude Sonnet 4.6, Claude Opus 4.6 and GPT-OSS-120b leave every plan that lists them on 2026-11-02",
+      "capture": "sha256:6dcf947178d2ff1a684ba239470f1e23eac96063d19773efa43a97460778640b",
+      "quote": "Will be removed on November 2, 2026."
+    },
+    {
+      "url": "https://antigravity.google/docs/models",
+      "date": "2026-10-30",
+      "proved": "Gemini 3.8 Flash is available on the free plan and every other plan",
+      "capture": "sha256:6dcf947178d2ff1a684ba239470f1e23eac96063d19773efa43a97460778640b",
+      "quote": "| Gemini 3.8 Flash | ✅ | ✅ | ✅ | ✅ |"
+    },
+    {
+      "url": "https://antigravity.google/docs/plans",
+      "date": "2026-10-30",
+      "proved": "every plan, the free one included, has the CLI; the plans page still publishes no quota number",
+      "capture": "sha256:c739c7e471b63845ba4efbeb66a22f3f40f7d1476b9611358f511fe06f6f7980",
+      "quote": "Access to all product features, such as scheduled tasks and the CLI"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-22T04:31:15.000Z",
-  "notes": "The page is first-party for the shape and silent on the size. A row in a comparison table that prints a number for this provider is quoting an aggregator.",
+  "verified_at": "2026-10-30T12:36:24.423Z",
+  "notes": "The plans page is first-party for the shape of the quota and silent on its size; a comparison table that prints a number for this provider is quoting an aggregator. Gemini models share one limit 'drawn down according to API pricing', and non-Gemini models stay on a separate fixed limit",
   "binding": "request-rate",
   "binding_note": "the unpublished weekly agent quota binds; there is no number to design against, which is why the row is a caveat rather than a recommendation"
 }

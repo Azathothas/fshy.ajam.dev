@@ -1,0 +1,298 @@
+{
+  "topic": "dev-services",
+  "slug": "workos",
+  "provider": "WorkOS",
+  "tier": "AuthKit free allowance",
+  "url": "https://workos.com/pricing",
+  "category": "hosted authentication and user management (AuthKit), enterprise SSO and directory sync",
+  "free_tier": {
+    "stated": "AuthKit user management free for the first 1 million monthly active users; staging environments are free; the production environment needs a payment method on file",
+    "unit": "users",
+    "metered_on": "identity-count",
+    "source_url": "https://workos.com/pricing",
+    "read_on": "2026-10-30",
+    "notes": "An MAU is a user who signs up, signs in or updates a profile in a calendar month. AuthKit covers email and password, social login, passkeys, MFA, magic auth and enterprise SSO. SSO and Directory Sync connections cost USD 125 each for the first 15, a custom domain USD 99 a month; Radar includes 1,000 checks. A production environment activates only after a payment method is added, even when usage stays inside the free allowance."
+  },
+  "per_object_cap": {
+    "stated": "unverified: no size limit for user metadata is stated on the pages read",
+    "bytes": null
+  },
+  "retention": {
+    "stated": "Audit Log events are kept 30 days by default and then deleted; longer retention is priced per 1M events",
+    "days": 30,
+    "source_url": "https://workos.com/docs/audit-logs"
+  },
+  "egress": {
+    "terms": "not applicable: an authentication API; no traffic allowance or egress term is published",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://workos.com/pricing"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "REST API at https://api.workos.com with a Bearer API key (a GET /events without a key answered 401); hosted AuthKit sign-in pages; an events API.",
+  "endpoint": "https://api.workos.com",
+  "tooling": "WorkOS SDKs for Node, Ruby, Python and other languages, the WorkOS CLI (npx workos@latest), or any HTTP client with a Bearer key.",
+  "chaining": "A staging environment for building and testing sign-in at no cost; production sign-in for real users needs a card on file.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "1,000,000 monthly active users",
+      "source": "https://workos.com/pricing"
+    },
+    {
+      "kind": "write-gated",
+      "value": "a payment method is required to activate the production environment; staging environments are free",
+      "source": "https://workos.com/docs/dashboard/billing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "6,000 requests per 60 seconds per API key",
+      "source": "https://workos.com/docs/reference/rate-limits"
+    },
+    {
+      "kind": "request-rate",
+      "value": "AuthKit: 1,000 reads and 500 writes per 10 seconds per environment",
+      "source": "https://workos.com/docs/reference/rate-limits"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "Audit Log events kept 30 days by default",
+      "source": "https://workos.com/docs/audit-logs"
+    }
+  ],
+  "binding": "write-gated",
+  "binding_note": "The 1 million MAU allowance applies in a production environment, which activates only after a payment method is added; without one the account has staging only.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "The sign-up page asks for an email address or a Google sign-in and states no credit card is required, and staging needs none; the production environment activates only after a payment method (card details and cardholder name, billing address) is added.",
+    "country": null
+  },
+  "reliability_note": "Email sent through the shared WorkOS provider (Magic Auth, verification, password reset) can be temporarily limited for unusual volume or spam patterns; a 429 may carry Retry-After.",
+  "confidence": "documented",
+  "confidence_note": "Every value is quoted from first-party pricing, docs, billing and sign-up pages; the API host was probed and answered 401 without a key. An authenticated call in a staging environment would move it to measured.",
+  "evidence": [
+    {
+      "url": "https://workos.com/pricing",
+      "date": "2026-10-30",
+      "proved": "the first 1 million MAUs are free",
+      "capture": "sha256:f9cff0ec9cddb7e4d5a39529f1e1000beb8268e6a483f88b38c548e08d3c28c3",
+      "quote": "Enterprise-ready authentication and identity for every app. First 1 million monthly active users free."
+    },
+    {
+      "url": "https://workos.com/pricing",
+      "date": "2026-10-30",
+      "proved": "AuthKit is free for the first 1M MAUs",
+      "capture": "sha256:f9cff0ec9cddb7e4d5a39529f1e1000beb8268e6a483f88b38c548e08d3c28c3",
+      "quote": "| First 1M MAUs           | Free      |"
+    },
+    {
+      "url": "https://workos.com/pricing",
+      "date": "2026-10-30",
+      "proved": "AuthKit covers password, social, passkeys, MFA, magic auth and SSO",
+      "capture": "sha256:f9cff0ec9cddb7e4d5a39529f1e1000beb8268e6a483f88b38c548e08d3c28c3",
+      "quote": "AuthKit includes email + password, social login, passkeys, MFA, magic auth, and enterprise SSO — all from one integration."
+    },
+    {
+      "url": "https://workos.com/pricing",
+      "date": "2026-10-30",
+      "proved": "an MAU is a user who signs up, signs in or updates a profile in a month",
+      "capture": "sha256:f9cff0ec9cddb7e4d5a39529f1e1000beb8268e6a483f88b38c548e08d3c28c3",
+      "quote": "- Monthly Active User (MAU): A user who performs any action (sign up, sign in, or profile update) within a calendar month."
+    },
+    {
+      "url": "https://workos.com/pricing",
+      "date": "2026-10-30",
+      "proved": "staging environments are free; only production is billed",
+      "capture": "sha256:f9cff0ec9cddb7e4d5a39529f1e1000beb8268e6a483f88b38c548e08d3c28c3",
+      "quote": "- Staging environments: Free for testing. Only production environments are billed."
+    },
+    {
+      "url": "https://workos.com/pricing",
+      "date": "2026-10-30",
+      "proved": "SSO and Directory Sync connections cost USD 125 each for the first 15",
+      "capture": "sha256:f9cff0ec9cddb7e4d5a39529f1e1000beb8268e6a483f88b38c548e08d3c28c3",
+      "quote": "| 1–15        | $125/ea              | —                                                 |"
+    },
+    {
+      "url": "https://workos.com/pricing",
+      "date": "2026-10-30",
+      "proved": "a custom domain costs USD 99 a month",
+      "capture": "sha256:f9cff0ec9cddb7e4d5a39529f1e1000beb8268e6a483f88b38c548e08d3c28c3",
+      "quote": "| Custom domain | $99/mo |"
+    },
+    {
+      "url": "https://workos.com/pricing",
+      "date": "2026-10-30",
+      "proved": "Radar includes 1,000 checks",
+      "capture": "sha256:f9cff0ec9cddb7e4d5a39529f1e1000beb8268e6a483f88b38c548e08d3c28c3",
+      "quote": "| First 1,000 checks        | Free    |"
+    },
+    {
+      "url": "https://workos.com/pricing",
+      "date": "2026-10-30",
+      "proved": "longer audit log retention is priced per 1M events",
+      "capture": "sha256:f9cff0ec9cddb7e4d5a39529f1e1000beb8268e6a483f88b38c548e08d3c28c3",
+      "quote": "| Event retention (per 1M events)     | $99/mo  |"
+    },
+    {
+      "url": "https://workos.com/docs/authkit/environments",
+      "date": "2026-10-30",
+      "proved": "staging is free",
+      "capture": "sha256:b029105d01d84f66aa76b3cdf9f596dc9950b798bf303d47138eaf6e3701fbe4",
+      "quote": "Staging is free. No connections in staging incur charges, regardless of type."
+    },
+    {
+      "url": "https://workos.com/docs/authkit/environments",
+      "date": "2026-10-30",
+      "proved": "production needs billing information even inside the free allowance",
+      "capture": "sha256:b029105d01d84f66aa76b3cdf9f596dc9950b798bf303d47138eaf6e3701fbe4",
+      "quote": "you still need to [add billing information](https://workos.com/docs/dashboard/billing#payment-method) to unlock the production environment"
+    },
+    {
+      "url": "https://workos.com/docs/dashboard/billing",
+      "date": "2026-10-31",
+      "proved": "a payment method is required for production",
+      "capture": "sha256:1e36d98b9b42d4aecefb4e15727546eff4546c94075c830a1cf13440b0e67822",
+      "quote": "A payment method is required to activate your production environment. Staging environments are free and don't require one."
+    },
+    {
+      "url": "https://workos.com/docs/dashboard/billing",
+      "date": "2026-10-31",
+      "proved": "the payment method is a card",
+      "capture": "sha256:1e36d98b9b42d4aecefb4e15727546eff4546c94075c830a1cf13440b0e67822",
+      "quote": "- Card details and cardholder name: processed by Stripe; WorkOS doesn't store your card number."
+    },
+    {
+      "url": "https://workos.com/docs/dashboard/billing",
+      "date": "2026-10-31",
+      "proved": "the payment form asks for a billing address",
+      "capture": "sha256:1e36d98b9b42d4aecefb4e15727546eff4546c94075c830a1cf13440b0e67822",
+      "quote": "- Billing address and tax information: shown on invoices."
+    },
+    {
+      "url": "https://workos.com/docs/authkit/platforms",
+      "date": "2026-10-30",
+      "proved": "production needs a payment method; without one only sandbox environments exist",
+      "capture": "sha256:0696de50cae1b291a6aca4f5483aff31c98b0cb4144768fa13ce0487b7d733c6",
+      "quote": "- Production environments require active billing on the team. Until a team admin adds a payment method in the WorkOS Dashboard, your platform can only create sandbox environments."
+    },
+    {
+      "url": "https://workos.com/blog/workos-joins-stripe-projects",
+      "date": "2026-10-30",
+      "proved": "the Stripe Projects route asks no account form or card",
+      "capture": "sha256:d0f29cab13cd0b64642115e50f187a6f9da01af68d6709e570ae4135f7a847c5",
+      "quote": "One command. No account creation form, no credit card prompt, no email verification loop."
+    },
+    {
+      "url": "https://workos.com/blog/workos-joins-stripe-projects",
+      "date": "2026-10-30",
+      "proved": "the Stripe Projects route provisions a sandbox environment",
+      "capture": "sha256:d0f29cab13cd0b64642115e50f187a6f9da01af68d6709e570ae4135f7a847c5",
+      "quote": "By default, this provisions a sandbox environment."
+    },
+    {
+      "url": "https://workos.com/blog/workos-joins-stripe-projects",
+      "date": "2026-10-30",
+      "proved": "a WorkOS CLI exists",
+      "capture": "sha256:d0f29cab13cd0b64642115e50f187a6f9da01af68d6709e570ae4135f7a847c5",
+      "quote": "npx workos@latest"
+    },
+    {
+      "url": "https://workos.com/docs/reference/rate-limits",
+      "date": "2026-10-30",
+      "proved": "all requests are limited to 6,000 per 60 seconds per API key",
+      "capture": "sha256:899ce3e0049496f57eab5aed1daa2786185d3b33ff768b630f57e50497b4a8fe",
+      "quote": "| All requests | \\*   | 6,000 requests per 60 seconds per API key |"
+    },
+    {
+      "url": "https://workos.com/docs/reference/rate-limits",
+      "date": "2026-10-30",
+      "proved": "AuthKit limits apply per environment",
+      "capture": "sha256:899ce3e0049496f57eab5aed1daa2786185d3b33ff768b630f57e50497b4a8fe",
+      "quote": "Rate limiting for AuthKit APIs are enforced on a per environment basis."
+    },
+    {
+      "url": "https://workos.com/docs/reference/rate-limits",
+      "date": "2026-10-30",
+      "proved": "AuthKit reads are limited to 1,000 per 10 seconds",
+      "capture": "sha256:899ce3e0049496f57eab5aed1daa2786185d3b33ff768b630f57e50497b4a8fe",
+      "quote": "| Reads                                                       | /user\\_management/\\*                          | 1,000 requests per 10 seconds                        |"
+    },
+    {
+      "url": "https://workos.com/docs/reference/rate-limits",
+      "date": "2026-10-30",
+      "proved": "AuthKit writes are limited to 500 per 10 seconds",
+      "capture": "sha256:899ce3e0049496f57eab5aed1daa2786185d3b33ff768b630f57e50497b4a8fe",
+      "quote": "| Writes                                                      | /user\\_management/\\*                          | 500 requests per 10 seconds                          |"
+    },
+    {
+      "url": "https://workos.com/docs/reference/rate-limits",
+      "date": "2026-10-30",
+      "proved": "shared-provider email can be temporarily limited",
+      "capture": "sha256:899ce3e0049496f57eab5aed1daa2786185d3b33ff768b630f57e50497b4a8fe",
+      "quote": "may have some or all of its outbound email temporarily limited"
+    },
+    {
+      "url": "https://workos.com/docs/reference/rate-limits",
+      "date": "2026-10-30",
+      "proved": "a 429 may carry Retry-After",
+      "capture": "sha256:899ce3e0049496f57eab5aed1daa2786185d3b33ff768b630f57e50497b4a8fe",
+      "quote": "When a `429 Too Many Requests` response includes a `Retry-After` header, wait for the indicated delay before retrying."
+    },
+    {
+      "url": "https://workos.com/docs/audit-logs",
+      "date": "2026-10-31",
+      "proved": "audit log events are kept 30 days by default",
+      "capture": "sha256:9ed0e7e71a57d0e86135615cd1e533d03e3d746b5680349ca520fd65cf213fa8",
+      "quote": "Audit Log Events are retained for 30 days by default and permanently deleted when the retention period ends."
+    },
+    {
+      "url": "https://workos.com/docs/reference/events",
+      "date": "2026-10-31",
+      "proved": "the API is served at api.workos.com",
+      "capture": "sha256:1627a16f8f910b079be38ffec2b58cca75fe2dc748329a3efbd0ff273f739246",
+      "quote": "curl \"https://api.workos.com/events\""
+    },
+    {
+      "url": "https://workos.com/docs/reference/events",
+      "date": "2026-10-31",
+      "proved": "the API takes a Bearer key",
+      "capture": "sha256:1627a16f8f910b079be38ffec2b58cca75fe2dc748329a3efbd0ff273f739246",
+      "quote": "--header \"Authorization: Bearer sk_example_123456789\""
+    },
+    {
+      "url": "https://workos.com/docs/reference/events",
+      "date": "2026-10-31",
+      "proved": "a Node SDK exists",
+      "capture": "sha256:1627a16f8f910b079be38ffec2b58cca75fe2dc748329a3efbd0ff273f739246",
+      "quote": "import { WorkOS } from '@workos-inc/node';"
+    },
+    {
+      "url": "https://workos.com/signup",
+      "date": "2026-10-31",
+      "proved": "the sign-up asks for an email address or a Google sign-in",
+      "capture": "sha256:99fff0475fc69164d1ee03f57cb55ee359b4e8de3c5766202acb537ec038c3d1",
+      "quote": "# Create your WorkOS account\n\nEmail\n\nContinue\n\nOR\n\n[Continue with Google]"
+    },
+    {
+      "url": "https://workos.com/signup",
+      "date": "2026-10-31",
+      "proved": "the sign-up page states no credit card is required",
+      "capture": "sha256:99fff0475fc69164d1ee03f57cb55ee359b4e8de3c5766202acb537ec038c3d1",
+      "quote": "- No credit card required."
+    },
+    {
+      "url": "probe:https://api.workos.com/events",
+      "date": "2026-10-31",
+      "proved": "api.workos.com/events answers 401 without a key",
+      "capture": "sha256:d4e7fb7feae092099a721c755f6ad01478eedfbeb497641ce38a818b981460b0",
+      "quote": "\"status\": 401"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-10-31T06:23:28.112Z",
+  "notes": "Provisioning through Stripe Projects (stripe projects add workos/auth) creates a sandbox environment with no account form or credit card prompt; production is a second configuration of the same command."
+}

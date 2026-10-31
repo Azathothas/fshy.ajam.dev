@@ -53,9 +53,9 @@
     "detail": "Presumed, not observed: the indexed copy describes an account-based .exe, and the site never loaded, so the signup fields are unread.",
     "country": "None"
   },
-  "reliability_note": "Unreachable: HTTP 530 from the edge on both attempts.",
+  "reliability_note": "pcdeploy.net does not resolve: DNS-over-HTTPS answered NXDOMAIN (Status 3) for its A record on 2026-10-30, with the .net zone SOA as the authority, so the .net zone holds no delegation for the name.",
   "confidence": "unverified",
-  "confidence_note": "Two reads on 2026-10-23 returned HTTP 530 from the edge and the Wayback Machine holds no 2026 capture; a single successful read would move this to documented or refute the death.",
+  "confidence_note": "The death is measured: on 2026-10-30 DNS-over-HTTPS queries for the A record of pcdeploy.net answered NXDOMAIN at two public resolvers (Cloudflare and Google), with the .net zone SOA as the authority, and the .net registry's RDAP service answered HTTP 404 for the domain. The rung stays unverified because the offer text (free use, UDP and TCP forwarding, one server at a time) comes from a search-index copy of the vendor page, and the page itself cannot be read while the domain is unregistered.",
   "evidence": [
     {
       "url": "https://pcdeploy.net/",
@@ -71,10 +71,31 @@
       "url": "https://pcdeploy.net/",
       "date": "2026-10-23",
       "proved": "The Wayback Machine returned no capture at 2026-06 and Cloudflare URL Scanner held no scan in its last 30 days"
+    },
+    {
+      "url": "probe:https://8.8.8.8/resolve?name=pcdeploy.net&type=A",
+      "date": "2026-10-30",
+      "proved": "a DNS-over-HTTPS query to 8.8.8.8 for the A record of pcdeploy.net answered Status 3 (NXDOMAIN) on 2026-10-30, with the .net zone SOA as the authority",
+      "capture": "sha256:b38f1c565eafee25652ea392b64a22119df0d1aaa853db12e63a6f719f2c49ec",
+      "quote": "\"Status\":3"
+    },
+    {
+      "url": "probe:https://1.1.1.1/dns-query?name=pcdeploy.net&type=A",
+      "date": "2026-10-30",
+      "proved": "a DNS-over-HTTPS query to 1.1.1.1 for the A record of pcdeploy.net answered Status 3 (NXDOMAIN) on 2026-10-30, with the .net zone SOA as the authority",
+      "capture": "sha256:7d4e072889aa4d63efd22f2e31974b5c9f1c7dc6b4d3aaf62f72c8646ecce7b2",
+      "quote": "\"Status\":3"
+    },
+    {
+      "url": "probe:https://rdap.verisign.com/net/v1/domain/pcdeploy.net",
+      "date": "2026-10-30",
+      "proved": "the .net registry's RDAP service answered HTTP 404 with a 0-byte body for the domain pcdeploy.net on 2026-10-30: the registry holds no registration for the name",
+      "capture": "sha256:9fc056fd23f7c438e880a7d19cd21601c5ecbf4861c5199df1c43f6e1104bfae",
+      "quote": "\"status\": 404"
     }
   ],
   "verdict": "dead",
-  "verified_at": "2026-10-23T00:00:00.000Z",
+  "verified_at": "2026-10-30T17:51:45.684Z",
   "price_per_tb_month": "USD 0 (claimed)",
   "notes": "The index snippet is third-hand: the page that carried it is the vendor's own, but the text was read from a search result, not from the site.",
   "extras": {
@@ -84,6 +105,10 @@
     "volume_tib_month": null,
     "volume_stated": "No byte allowance appears in the copy preserved in the search index; the page itself could not be read.",
     "bytes_transit": "yes",
-    "transit_note": "The vendor's servers were to sit between the home network and the players."
+    "transit_note": "The vendor's servers were to sit between the home network and the players.",
+    "death": {
+      "on": "2026-10-30",
+      "cause": "dead-service"
+    }
   }
 }

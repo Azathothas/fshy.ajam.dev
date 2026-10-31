@@ -5,11 +5,11 @@
   "url": "https://www.boxybsd.com/",
   "category": "cloud VM",
   "free_tier": {
-    "stated": "Quoted from the Personal plan card: 'Personal — For learning BSD — €0/mo — 1 vCPU — 1 GB RAM — 10 GB SSD — IPv6'. The site states 'No surprises and completely free with IPv6!' and 'IPv6 by default, with an additional /64 subnet.' A second plan, 'Project — For open-source projects — €0/mo — 4 vCPU — 16 GB RAM — 100 GB SSD — IPv6', is marked 'Out of stock'.",
+    "stated": "Personal plan: EUR 0 a month for 1 vCPU, 1 GB RAM, 10 GB SSD and IPv6, 'IPv6 by default, with an additional /64 subnet.' A second plan, Project, is EUR 0 a month for 4 vCPU, 16 GB RAM, 100 GB SSD and IPv6. Stock is a dated observation of the plan cards, not a property of either plan: the Project card button read 'Out of stock' on 2026-10-22, 2026-10-24 and 2026-10-30, and the Personal card button read 'Request' on 2026-10-30.",
     "unit": "GB",
     "metered_on": "stored-bytes",
     "source_url": "https://www.boxybsd.com/",
-    "read_on": "2026-10-24",
+    "read_on": "2026-10-30",
     "notes": "the vendor writes GB and does not say whether decimal or binary; kept as stated"
   },
   "per_object_cap": {
@@ -32,7 +32,7 @@
     "cli"
   ],
   "interface_detail": "inferred from the tooling the provider documents; not probed",
-  "tooling": "Root SSH, a web console, VNC, ISOs for self-install, an API with Terraform examples, PTR records, DN42 peering. Nothing about the interface blocks a user.",
+  "tooling": "Root SSH, a web console, VNC, ISOs for self-install, an API with Terraform examples, PTR records, DN42 peering.",
   "chaining": "A persistent daemon host - cron, an indexer, a poller, a mail server with a static PTR - which a free serverless tier cannot be, and the free shared load balancer puts an IPv4 front end on 80/443 in front of it, so the IPv6-only default does not stop it serving. The break: the load balancer terminates TLS, so certificates live on shared infrastructure.",
   "limits": [
     {
@@ -52,19 +52,19 @@
     },
     {
       "kind": "write-gated",
-      "value": "the registration form marks the Invitation code field as required, while the FAQ describes invitation mode as conditional ('we might apply the invitation mode')",
+      "value": "an invitation code: the registration form served on 2026-10-22, 2026-10-24 and 2026-10-30 marks the invitation input required, while the FAQ describes invitation mode as conditional ('we might apply the invitation mode')",
       "source": "https://www.boxybsd.com/register"
     }
   ],
   "limits_note": "The box is provisioned for 90 days and is deleted when that lifetime expires unless the extend button is pressed in the control panel, so an unattended box dies at day 90, and the provider publishes an explicit 'can be destroyed at any time for no reason' clause beside it.",
   "binding": "write-gated",
-  "binding_note": "two gates stack: a public GitHub or Codeberg account with a verification repository, and an invitation code that the form requires but the FAQ describes as conditional",
+  "binding_note": "two gates stack: a public GitHub or Codeberg account with a verification repository, and an invitation code that the registration form required when read on 2026-10-30 but the FAQ describes as conditional",
   "identity_cost": {
     "kind": "email",
-    "detail": "No card, no hold, no phone, no ID. Verification is quoted as 'We only ask for a username and an email address (used for notifications)' and 'No additional personal data is required. No phone verification or ID upload.' The GitHub or Codeberg account is proven by publishing a file, not by OAuth. The invitation code is a second gate the form requires.",
+    "detail": "No card, no hold, no phone, no ID. Verification is quoted as 'We only ask for a username and an email address (used for notifications)' and 'No additional personal data is required. No phone verification or ID upload.' The GitHub or Codeberg account is proven by publishing a file, not by OAuth. The invitation code is a second gate that the form required on that date.",
     "country": null
   },
-  "reliability_note": "no reliability event observed; the operator states 'While BoxyBSD strives to provide uninterrupted service, we make no guarantee regarding the availability or continuity of our services'",
+  "reliability_note": "The status page updated 2026-10-30 reads Locations Green, Website Green, Portal Green and Services Yellow, with PoP utilisation at 100% for Toronto, Roubaix, Milan, Tokyo and Kyiv. The project account announced on 2026-03-23 that 'All boxes will be terminated by the 1st of May 2026'; that notice did not hold: the operator posted on 2026-05-04 that BoxyBSD 'remains up', and on 2026-10-30 the site serves the plan cards and the register form. The terms state 'we make no guarantee regarding the availability or continuity of our services'.",
   "confidence": "documented",
   "evidence": [
     {
@@ -226,11 +226,95 @@
       "url": "https://www.boxybsd.com/tos",
       "date": "2026-10-24",
       "proved": "quoted: 'BoxyBSD reserves the right to terminate its services at any time, without prior notice.'"
+    },
+    {
+      "url": "https://www.boxybsd.com/",
+      "date": "2026-10-30",
+      "proved": "on 2026-10-30 the Project plan card (EUR 0/mo, 4 vCPU, 16 GB RAM, 100 GB SSD) carries the button label 'Out of stock', while the Personal card carries 'Request'",
+      "capture": "sha256:74b67f596b47e66bed6cb90b3b248bd48348fbe124c444c19f95a2201b104796",
+      "quote": "<a class=\"btn primary cta\" href=\"/register\">Out of stock</a>"
+    },
+    {
+      "url": "https://www.boxybsd.com/",
+      "date": "2026-10-30",
+      "proved": "on 2026-10-30 the Personal plan card (EUR 0/mo, 1 vCPU, 1 GB RAM, 10 GB SSD) carries the button label 'Request', not a stock notice",
+      "capture": "sha256:74b67f596b47e66bed6cb90b3b248bd48348fbe124c444c19f95a2201b104796",
+      "quote": "<a class=\"btn primary cta\" href=\"/register\">Request</a>"
+    },
+    {
+      "url": "https://www.boxybsd.com/register",
+      "date": "2026-10-30",
+      "proved": "the register form served on 2026-10-30 carries an invitation input with the required attribute, beside required username, github_username and email inputs",
+      "capture": "sha256:4ce3bf16ca77ab7efecf3f93d3931d65c07eeb1459e99a2848a6988a56a4e52f",
+      "quote": "name=\"invitation\" placeholder=\"boxybsd-82195431245\" pattern=\"^[a-zA-Z0-9._-]+$\" required"
+    },
+    {
+      "url": "https://www.boxybsd.com/status",
+      "date": "2026-10-30",
+      "proved": "the status page, 'Updated Oct 30, 2026, 1:31 PM', shows Locations, Website and Portal Green, Services Yellow, and PoP utilisation of 100% at Toronto, Roubaix, Milan, Tokyo and Kyiv",
+      "capture": "sha256:ef02fe38ef14104cc4a1ed18803f1f203388be03ec12b4ffe253814040a1803b",
+      "quote": "Canada, Toronto100%"
+    },
+    {
+      "url": "https://www.boxybsd.com/user-verification",
+      "date": "2026-10-30",
+      "proved": "the verification page read on 2026-10-30: a public boxybsd_verification repository on GitHub or Codeberg, no phone and no ID",
+      "capture": "sha256:4157c1758099c7c252328054540ba00b6d0273057d39612ebc21af426e51baf3",
+      "quote": "No additional personal data is required. No phone verification or ID upload."
+    },
+    {
+      "url": "https://www.boxybsd.com/",
+      "date": "2026-10-30",
+      "proved": "the API with Terraform examples is stated on 2026-10-30",
+      "capture": "sha256:854a8bb9a997b702aed6720d8429f76475caecd6858a44ed6bfb061403c4d370",
+      "quote": "Automation-friendly API and Terraform examples out of the box."
+    },
+    {
+      "url": "https://www.boxybsd.com/",
+      "date": "2026-10-30",
+      "proved": "the FAQ read on 2026-10-30 still describes invitation mode as conditional",
+      "capture": "sha256:854a8bb9a997b702aed6720d8429f76475caecd6858a44ed6bfb061403c4d370",
+      "quote": "Also we don't have unlimited ressources and therefore, we might apply the invitation mode."
+    },
+    {
+      "url": "https://mastodon.bsd.cafe/@BoxyBSD.rss",
+      "date": "2026-10-30",
+      "proved": "the project account's newest post, dated Wed, 14 Oct 2026 03:25:28 +0000 in the feed read 2026-10-30, says the registration 'was open', in the past tense; no later post announces an opening",
+      "capture": "sha256:0ad434a91dd1bf891b6458967f75a2a029db81dfb27e4c54e84114b8ff53dee0",
+      "quote": "The registration at"
+    },
+    {
+      "url": "https://primal.net/e/nevent1qqsxyehlhhl578rl2texrjgpvn0r6jll49xnnfg5ws0t6h3zpdphltcpz4mhxue69uhhyetvv9ujuerfw36x7tnsw43qygqw7smq9r6jntxnh6t90jkgydy6l75lvzq484xm6p8jv0rtmdfcaqvv2v7m",
+      "date": "2026-10-30",
+      "proved": "the project account announced the shutdown in a note dated Monday, March 23, 2026, with all boxes to be terminated by 2026-05-01; re-read 2026-10-30",
+      "capture": "sha256:58391dd797c745c4ecb74130ad680f2484cc3cc26d95f02a631ddf61e8ee5376",
+      "quote": "All boxes will be terminated by the 1st of May 2026."
+    },
+    {
+      "url": "https://nostr.at/nevent1qqsy0rhaeqmysfgm9u6qmlwse36p40pd74cqjfxp53j900x40nhghsgzyr0stxvm4ksd6w83r5u8pw49x4v274luzwdznlwwgetn5rt5z5pz62zns5q",
+      "date": "2026-10-30",
+      "proved": "the operator posted on 2026-05-04 08:21:26 CEST that BoxyBSD remains available, reversing the 2026-03-23 shutdown notice; re-read 2026-10-30",
+      "capture": "sha256:4804c676b4e21e5312e1d2cc7ba82dac256c457b372b9c1448cfca9d40d6f507",
+      "quote": "Happy to share that #BoxyBSD remains up!"
+    },
+    {
+      "url": "https://www.boxybsd.com/tos",
+      "date": "2026-10-30",
+      "proved": "the terms read on 2026-10-30 still disclaim any availability or continuity guarantee",
+      "capture": "sha256:7f168460677576c132ef978953c7b88b5bf368a0be01e9d7d0cc960b43d37848",
+      "quote": "While BoxyBSD strives to provide uninterrupted service, we make no guarantee regarding the availability or continuity of our services."
+    },
+    {
+      "url": "https://www.boxybsd.com/",
+      "date": "2026-10-30",
+      "proved": "the 90-day lifetime with an extend button is still stated on 2026-10-30",
+      "capture": "sha256:854a8bb9a997b702aed6720d8429f76475caecd6858a44ed6bfb061403c4d370",
+      "quote": "Once a new Box is provisioned, it runs for 90 days."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-24T06:27:00.000Z",
-  "notes": "The vendor's own material is internally ambiguous about whether an invitation is currently needed: the FAQ says invitation mode is something they 'might apply', while the register form served today marks the invitation input required. Both are quoted and neither is treated as the answer. What could not be established: whether an account can be created without a code today, and whether any box is actually in stock at the Personal tier (only the Project tier is labelled out of stock). IPv4 is a paid add-on: 'IPv4 addresses incur additional costs that we need to cover.'",
+  "verified_at": "2026-10-30T17:54:22.586Z",
+  "notes": "The vendor's own material is internally ambiguous about whether an invitation is needed: the FAQ says invitation mode is something they 'might apply', while the register form served on 2026-10-22, 2026-10-24 and 2026-10-30 marks the invitation input required, and the project account's newest post, dated 2026-10-14, says the registration 'was open', in the past tense. Both are quoted and neither is treated as the answer. Stock as read on 2026-10-30: the Personal card button reads 'Request' and the Project card button reads 'Out of stock'. Not established: whether an account can be created without a code on a given day, and whether a Personal box is provisioned at a location whose utilisation reads full; both are visible only through a submitted registration. IPv4 is a paid add-on: 'IPv4 addresses incur additional costs that we need to cover.'",
   "extras": {
     "facets": {
       "class": "perpetual-vps",
@@ -273,11 +357,11 @@
     "second_plan": {
       "name": "Project",
       "spec": "4 vCPU, 16 GB RAM, 100 GB SSD, IPv6",
-      "state_as_read": "Out of stock"
+      "state_as_read": "'Out of stock' on the plan card button when read on 2026-10-30; the same label was read on 2026-10-22 and 2026-10-24"
     },
     "images": "FreeBSD, OpenBSD, NetBSD and other BSD or Solaris systems; custom ISO installation over VNC is offered",
     "ipv4_cost": "IPv4 addresses incur additional costs that we need to cover"
   },
   "tier": "Personal",
-  "confidence_note": "the plan, the verification procedure, the required form fields and the traffic term are all quoted from first-party pages read"
+  "confidence_note": "the plan, the verification procedure, the required form fields and the traffic term are quoted from first-party pages read on 2026-10-30; whether a registration completes without an invitation code is not established"
 }

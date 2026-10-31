@@ -1,0 +1,231 @@
+{
+  "topic": "ci-cd-runners",
+  "slug": "actuated",
+  "provider": "Actuated",
+  "url": "https://actuated.com/pricing",
+  "category": "CI runner control plane",
+  "tier": "Self-Service",
+  "verdict": "paid-only",
+  "confidence": "documented",
+  "confidence_note": "the price, the plan terms and the registration requirements are quoted from the vendor's pricing page and documentation; no account was opened",
+  "verified_at": "2026-10-30T10:47:32.542Z",
+  "free_tier": {
+    "stated": "none: Self-Service is a flat USD 150 a month for the first server and USD 125 for each additional, with unlimited build minutes and unlimited concurrency; the servers are rented separately. A sponsored programme with the CNCF and Ampere covers some open-source projects",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://actuated.com/pricing",
+    "read_on": "2026-10-30",
+    "notes": "there is no list price per minute: the pricing table shows USD 0.005 per minute for every runner size against USD 0.008 for GitHub's 2-core hosted runner, which is the flat USD 150 spread over the workload the page's calculator assumes"
+  },
+  "per_object_cap": {
+    "stated": "not stated as a number: a job is bounded by one server's vCPU and RAM, chosen per job with a runs-on label such as actuated-2cpu-8gb",
+    "bytes": null,
+    "source_url": "https://docs.actuated.com/provision-server/"
+  },
+  "retention": {
+    "stated": "each job runs in a microVM created for it and removed immediately after; server metrics are kept 14 days",
+    "days": null,
+    "source_url": "https://docs.actuated.com/"
+  },
+  "egress": {
+    "terms": "not stated by Actuated: jobs run on the rented server, so traffic leaves under that server provider's terms",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://docs.actuated.com/faq/"
+  },
+  "interface": [
+    "git"
+  ],
+  "interface_detail": "a GitHub Actions workflow targets the fleet with runs-on: actuated or a sized label such as actuated-2cpu-8gb; GitLab CI is also supported. The control plane schedules each job into a Firecracker microVM on a Linux server, x86_64 or 64-bit Arm, that runs the Actuated agent",
+  "endpoint": "https://github.com/apps/self-actuated",
+  "tooling": "the user rents a Linux server with KVM, bare metal or a cloud VM with nested virtualisation, and runs the Actuated agent on it; Actuated runs the control plane, the GitHub App and the managed VM images, and issues the Account API Token the agent installer needs",
+  "chaining": "the monthly floor is the USD 150 plan plus a rented server, which the vendor prices at 40-50 EUR a month at the low end of bare metal; GitHub Actions on a public repository stays free and comes first",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "a job is bounded by one server's vCPU and RAM; the plan sets how many servers may run",
+      "source": "https://docs.actuated.com/faq/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "an autoenrolled agent offline for 15 minutes is removed automatically; jobs queue until a server is ready",
+      "source": "https://docs.actuated.com/install-agent/"
+    }
+  ],
+  "limits_note": "no minute cap: unlimited build minutes, RAM, CPUs and concurrency at a flat rate per server; plans are paid monthly with no minimum commitment; Linux only, AMD64 or 64-bit Arm; a GitHub organisation, not a personal account, and an organisation admin to install the GitHub App",
+  "binding": "per-object-cap",
+  "binding_note": "no free allowance, so the card and the plan price fail first; inside a plan the minutes are unlimited and the size of one rented server bounds every job",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "a GitHub organisation with admin access to install the actuated GitHub App, and a company credit card for the monthly subscription; the agent's Account API Token is issued on request",
+    "country": null
+  },
+  "reliability_note": "the control plane holds jobs in a queue while no enrolled server is online, and drops an autoenrolled agent that has been offline for 15 minutes",
+  "price_per_tb_month": null,
+  "self_hosted": false,
+  "evidence": [
+    {
+      "url": "https://actuated.com/pricing",
+      "date": "2026-10-30",
+      "proved": "the plan is a flat USD 150 a month for the first server and USD 125 for each additional",
+      "capture": "sha256:66ba555698a7f1cfe52172f606a9edf8156aac30e93dbd6b29ac29a24b5b0cce",
+      "quote": "Flat rate per server: $150 for the first, $125 for each additional."
+    },
+    {
+      "url": "https://actuated.com/pricing",
+      "date": "2026-10-30",
+      "proved": "build minutes are not capped",
+      "capture": "sha256:66ba555698a7f1cfe52172f606a9edf8156aac30e93dbd6b29ac29a24b5b0cce",
+      "quote": "Unlimited build minutes"
+    },
+    {
+      "url": "https://actuated.com/pricing",
+      "date": "2026-10-30",
+      "proved": "concurrency is not capped by the plan",
+      "capture": "sha256:66ba555698a7f1cfe52172f606a9edf8156aac30e93dbd6b29ac29a24b5b0cce",
+      "quote": "Unlimited concurrency"
+    },
+    {
+      "url": "https://actuated.com/pricing",
+      "date": "2026-10-30",
+      "proved": "the comparison table shows USD 0.005 per minute at USD 150 a month for a 2-core runner",
+      "capture": "sha256:66ba555698a7f1cfe52172f606a9edf8156aac30e93dbd6b29ac29a24b5b0cce",
+      "quote": "| 2-core | $0.005 | $150 |"
+    },
+    {
+      "url": "https://actuated.com/pricing",
+      "date": "2026-10-30",
+      "proved": "the same table prices GitHub's 2-core hosted runner at USD 0.008 per minute, USD 240 a month",
+      "capture": "sha256:66ba555698a7f1cfe52172f606a9edf8156aac30e93dbd6b29ac29a24b5b0cce",
+      "quote": "| 2-core | $0.008 | $240 |"
+    },
+    {
+      "url": "https://docs.actuated.com/register/",
+      "date": "2026-10-30",
+      "proved": "Actuated is a managed control plane for runners on servers the customer supplies",
+      "capture": "sha256:48efbb7bd3eede03937897959fca38bcbd27e3694a57676502f931ef4774faf5",
+      "quote": "Actuated is a managed service, where you plug in your own servers, and we do everything else needed to create and manage self-hosted runners for your GitHub Actions."
+    },
+    {
+      "url": "https://docs.actuated.com/register/",
+      "date": "2026-10-30",
+      "proved": "registration needs a company credit card",
+      "capture": "sha256:48efbb7bd3eede03937897959fca38bcbd27e3694a57676502f931ef4774faf5",
+      "quote": "A company credit-card to pay for your subscription"
+    },
+    {
+      "url": "https://docs.actuated.com/register/",
+      "date": "2026-10-30",
+      "proved": "registration needs admin access to install the GitHub App",
+      "capture": "sha256:48efbb7bd3eede03937897959fca38bcbd27e3694a57676502f931ef4774faf5",
+      "quote": "Administrative access to install the actuated GitHub App"
+    },
+    {
+      "url": "https://docs.actuated.com/register/",
+      "date": "2026-10-30",
+      "proved": "plans are monthly with no minimum commitment",
+      "capture": "sha256:48efbb7bd3eede03937897959fca38bcbd27e3694a57676502f931ef4774faf5",
+      "quote": "Plans are paid monthly, without any minimum commitment."
+    },
+    {
+      "url": "https://docs.actuated.com/faq/",
+      "date": "2026-10-30",
+      "proved": "a GitHub organisation is required, not a personal account",
+      "capture": "sha256:e516f03472fda37e0119dd11da1d067822fc124bc7b6def9771e0bbae435c3df",
+      "quote": "For GitHub users, a GitHub organisation is required for installation, and runners are attached to individual repositories as required to execute builds."
+    },
+    {
+      "url": "https://docs.actuated.com/faq/",
+      "date": "2026-10-30",
+      "proved": "GitHub Actions and GitLab CI are both supported",
+      "capture": "sha256:e516f03472fda37e0119dd11da1d067822fc124bc7b6def9771e0bbae435c3df",
+      "quote": "Support for GitHub Actions and GitLab CI is available."
+    },
+    {
+      "url": "https://docs.actuated.com/faq/",
+      "date": "2026-10-30",
+      "proved": "only Linux on AMD64 or 64-bit Arm is supported",
+      "capture": "sha256:e516f03472fda37e0119dd11da1d067822fc124bc7b6def9771e0bbae435c3df",
+      "quote": "Linux is the only supported platform for actuated at this time on a AMD64 or 64-bit Arm architecture."
+    },
+    {
+      "url": "https://docs.actuated.com/faq/",
+      "date": "2026-10-30",
+      "proved": "a sponsored programme with the CNCF and Ampere covers some open-source projects",
+      "capture": "sha256:e516f03472fda37e0119dd11da1d067822fc124bc7b6def9771e0bbae435c3df",
+      "quote": "We have a sponsored program with the CNCF and Ampere for various Open Source projects"
+    },
+    {
+      "url": "https://docs.actuated.com/faq/",
+      "date": "2026-10-30",
+      "proved": "the plan sets how many servers may run",
+      "capture": "sha256:e516f03472fda37e0119dd11da1d067822fc124bc7b6def9771e0bbae435c3df",
+      "quote": "The plan you select will determine how many Actuated Servers you can run"
+    },
+    {
+      "url": "https://docs.actuated.com/faq/",
+      "date": "2026-10-30",
+      "proved": "jobs queue while no server is ready",
+      "capture": "sha256:e516f03472fda37e0119dd11da1d067822fc124bc7b6def9771e0bbae435c3df",
+      "quote": "Actuated will hold jobs in a queue until a server is ready to take them again."
+    },
+    {
+      "url": "https://docs.actuated.com/faq/",
+      "date": "2026-10-30",
+      "proved": "server metrics are kept 14 days",
+      "capture": "sha256:e516f03472fda37e0119dd11da1d067822fc124bc7b6def9771e0bbae435c3df",
+      "quote": "which has a 14 day retention policy"
+    },
+    {
+      "url": "https://docs.actuated.com/faq/",
+      "date": "2026-10-30",
+      "proved": "a cloud VM with nested virtualisation can serve as the server",
+      "capture": "sha256:e516f03472fda37e0119dd11da1d067822fc124bc7b6def9771e0bbae435c3df",
+      "quote": "If `/dev/kvm` is available within the VM, or the VM can be configured so that nested virtualisation is available, then you can use a VM as an actuated server."
+    },
+    {
+      "url": "https://docs.actuated.com/",
+      "date": "2026-10-30",
+      "proved": "each job environment is created for one build and removed after it",
+      "capture": "sha256:fd0e734b1ac636069bf9158db94ec1eda0261ef9c0b0f561f6ede93540ec1864",
+      "quote": "Each environment is created just in time to take a build, and is removed immediately after."
+    },
+    {
+      "url": "https://docs.actuated.com/install-agent/",
+      "date": "2026-10-30",
+      "proved": "an autoenrolled agent offline for 15 minutes is removed",
+      "capture": "sha256:ba8dfb74c061a001ea7113efa7a40b48e76a97f545f682aca69ee9252ee67fc3",
+      "quote": "Any Autoenrolled agent that has been offline for 15 minutes will be removed automatically."
+    },
+    {
+      "url": "https://docs.actuated.com/install-agent/",
+      "date": "2026-10-30",
+      "proved": "the agent installer needs an Account API Token that the vendor issues",
+      "capture": "sha256:ba8dfb74c061a001ea7113efa7a40b48e76a97f545f682aca69ee9252ee67fc3",
+      "quote": "`TOKEN` - your Account API Token - reach out to us and we'll generate one for you"
+    },
+    {
+      "url": "https://docs.actuated.com/provision-server/",
+      "date": "2026-10-30",
+      "proved": "the server must support Linux KVM",
+      "capture": "sha256:177497bd7195dfab630a5df724a6b171c02c898dbe87979a5f923cb65d3d489e",
+      "quote": "You'll need to provision a Server which is capable of virtualisation with Linux KVM."
+    },
+    {
+      "url": "https://docs.actuated.com/provision-server/",
+      "date": "2026-10-30",
+      "proved": "rented bare metal costs 40-50 EUR a month per host at the low end",
+      "capture": "sha256:177497bd7195dfab630a5df724a6b171c02c898dbe87979a5f923cb65d3d489e",
+      "quote": "At the lower end of bare-metal providers, you'll pay 40-50 EUR / mo per host, moving up to 80-150 EUR / mo for NVMe and AMD processors"
+    },
+    {
+      "url": "https://docs.actuated.com/provision-server/",
+      "date": "2026-10-30",
+      "proved": "job size is chosen per job with a runs-on label",
+      "capture": "sha256:177497bd7195dfab630a5df724a6b171c02c898dbe87979a5f923cb65d3d489e",
+      "quote": "by changing the `runs-on: actuated` label to: `runs-on: actuated-2cpu-8gb`"
+    }
+  ],
+  "notes": "Confirmed as a CI runner service, paid only. The vendor charges per server, not per minute: the pricing table's USD 0.005 per minute is the USD 150 flat rate spread over the calculator's workload, and the true monthly cost is the plan plus a rented server. Registration needs a GitHub organisation and a company credit card, so the offer is out of reach without both. Hosted runners with a free allowance in this topic come first."
+}

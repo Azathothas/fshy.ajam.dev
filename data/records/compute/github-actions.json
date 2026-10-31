@@ -51,7 +51,7 @@
   "limits_note": "The shape, the unlimited term, the 6-hour job cap, the 35-day workflow cap, the 5-minute cron floor, the 60-day schedule disablement and the 20-job concurrency are each quoted from a GitHub page read on 2026-10-24. The 6-hour cap is the one that binds: 6 hours x 20 concurrent jobs = 120 job-hours of wall clock, or 480 vCPU-hours, in any rolling window.",
   "reliability_note": "no reliability event recorded",
   "confidence": "documented",
-  "verified_at": "2026-10-24T04:00:19.000Z",
+  "verified_at": "2026-10-30T12:41:26.146Z",
   "price_per_tb_month": null,
   "notes": "The shape is confirmed exactly as the operator's answer states it: 4 vCPU, 16 GB RAM, 14 GB SSD, workflow label ubuntu-latest, on a public repository, on an email alone. Two things the phrase 'free and unlimited' hides, and both were read on a page. First, the sentence is a vendor claim on a documentation page. The meter is unlimited, but use that the vendor judges disproportionate to the benefit to the project's users, such as a content delivery network or a serverless application, can be restricted, and no threshold is published at which it is safe: a worse ceiling than a number. Second, a figure of '14 GiB SSD' understates the vendor: GitHub writes 14 GB, decimal, which is about 13.0 GiB. The record keeps the vendor's number and unit. Not established: the egress term, which no page publishes; and whether enforcement of that restriction looks like a job cancellation, a repository disablement or an account suspension in practice. That would need a probe that has not been run.",
   "slug": "github-actions",
@@ -204,6 +204,34 @@
       "url": "https://docs.github.com/en/site-policy/acceptable-use-policies/github-acceptable-use-policies",
       "date": "2026-10-24",
       "proved": "quoted: 'If we determine your bandwidth usage to be significantly excessive in relation to other users of similar features, we reserve the right to suspend your Account, throttle your file hosting, or otherwise limit your activity' — a discretionary clause, not a published number."
+    },
+    {
+      "url": "https://docs.github.com/en/actions/reference/limits",
+      "date": "2026-10-30",
+      "proved": "a job on a GitHub-hosted runner is capped at 6 hours",
+      "capture": "sha256:80578bff32c062c9bd42f73df05a742f812ac2687ca700ddcda521568513230b",
+      "quote": "Each job in a workflow can run for up to 6 hours of execution time. If a job reaches this limit, the job is terminated and fails."
+    },
+    {
+      "url": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners",
+      "date": "2026-10-30",
+      "proved": "standard GitHub-hosted runners have no minute cap and no charge on a public repository",
+      "capture": "sha256:a52a8d6be5da2b9b0bb0c3018849715008e3234850d5d6f254a34cdb1abe6b60",
+      "quote": "Use of the standard GitHub-hosted runners is free and unlimited on public repositories."
+    },
+    {
+      "url": "https://docs.github.com/en/actions/reference/limits",
+      "date": "2026-10-30",
+      "proved": "GitHub Free allows 20 concurrent jobs on standard GitHub-hosted runners, 5 of them macOS",
+      "capture": "sha256:80578bff32c062c9bd42f73df05a742f812ac2687ca700ddcda521568513230b",
+      "quote": "| Standard GitHub-hosted runner | Free        | 20                    | 5                             | Not applicable              |"
+    },
+    {
+      "url": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners",
+      "date": "2026-10-30",
+      "proved": "on a public repository ubuntu-latest is 4 vCPU, 16 GB RAM and 14 GB SSD",
+      "capture": "sha256:a52a8d6be5da2b9b0bb0c3018849715008e3234850d5d6f254a34cdb1abe6b60",
+      "quote": "| Linux | 4 | 16 GB | 14 GB | x64 | `ubuntu-latest`, `ubuntu-24.04`, `ubuntu-22.04`, `ubuntu-26.04` |"
     }
   ],
   "verdict": "qualifies-with-caveat",
@@ -286,7 +314,7 @@
     }
   },
   "binding": "retention-clamped",
-  "binding_note": "the 6-hour job cap, not money and not concurrency: the minutes are free and unlimited on a public repository, so what fails is continuity. A workload that must survive more than six hours needs its state outside the runner, and the terms scope the machine to work on the repository it belongs to.",
+  "binding_note": "the 6-hour job cap, not money and not concurrency: the minutes are free and unlimited on a public repository, so what fails is continuity, and a workload that must survive more than six hours needs its state outside the runner.",
   "confidence_note": "every field the verdict rests on is quoted from a first-party GitHub page read on 2026-10-24: shape, the unlimited term, the 6-hour job cap, the concurrency table, the cron floor, the 60-day disablement and the terms scoping. The egress term is not published and is recorded as absent, not as unlimited.",
   "tier": "GitHub Free, public repository, standard GitHub-hosted runner"
 }
