@@ -156,8 +156,8 @@ topics that the run touched with the render of main, pushes, runs the light chec
 commit and on the pull request's text, the baseline rows), waits for the run of `f-research-ci` on that head (it
 starts one when there is none) and merges the head that run checked (`gh pr merge --match-head-commit`). The gate
 comparison, the render check, the selftests and the parity check run in that workflow and nowhere else, so a red,
-cancelled or missing run stops the merge, and so does one that does not finish within 40 minutes.
-`scripts/rq merge RUN --no-ci` merges without CI, and only on purpose.
+cancelled or missing run stops the merge, and so does one that skips a required job or does not finish within 60
+minutes. `scripts/rq merge RUN --no-ci` skips the remote run (the light checks still run), and only on purpose.
 
 `merge` then files the follow-up issue for open items, judges the claimed issue, deletes the branch, releases the
 leases of the run, and comments `rq merged:` on the pull request. If it stops after the merge, run it again: it
