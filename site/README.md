@@ -121,6 +121,13 @@ that no file gets one header from two rules and that every `.md` and `.txt` file
 checks the headers that workerd sends. A topic with no record yet has no page, no Markdown file and no line in
 `llms.txt` or the sitemap. The API still accepts it as a topic, with an empty list.
 
+**Ranges.** The assets serve the `.txt` files without the Worker, and they ignore a `Range` header: the answer is 200
+with the whole file. So `static/_headers` sends `Accept-Ranges: none` on `/llms.txt`, `/llms-full.txt` and
+`/t/*.txt`. To read less, read one part of a split topic. The Worker serves the `.md` files, and a `.md` file
+answers one range (`bytes=a-b`, `a-` or `-n`) with 206 and `Content-Range`, and keeps its ETag and its
+`Cache-Control`. `If-Range` must name that ETag. A list of ranges, another unit and an invalid range get the whole
+file, and a range past the end gets 416.
+
 ## Fork
 
 A fork that serves the site on its own domain changes these settings, and nothing else:
@@ -179,7 +186,8 @@ lists them, and `smoke.mjs` checks the exceptions. So `/api/v1/` lists the route
 assets answer it with the HTML 404 page, because the Worker does not see it. The Worker also serves the Markdown
 alternates (`/index.md`, `/t/*.md`, `/p/*.md`, `/need/*.md`) from the assets with the headers of `static/_headers`, so
 that a missing one is a short Markdown 404 and not the HTML not-found page under a Markdown type, and `/404` and
-`/404.html`, so that the not-found page answers 404 at its own URL too. A need that asks for no card or no phone ends
+`/404.html`, so that the not-found page answers 404 at its own URL too. A Markdown alternate answers one byte range
+(section "Ranges" above). A need that asks for no card or no phone ends
 with a section "Card or phone requirement not stated": the rows of its SQL without the conditions on the card, the
 phone and a stated identity, minus the confirmed rows and the rows that need a card or a phone (`llms.need_unstated`,
 and the same rule in `api.need`, with `unstated_rows` in the JSON). The self-hosted rows of that section are the last
