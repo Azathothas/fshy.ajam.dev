@@ -200,6 +200,20 @@ for (const [path, type] of [['/llms.txt', 'text/plain; charset=utf-8'], ['/t/sto
   await r.arrayBuffer();
   check('GET ' + path + ' is served as ' + type, (r.headers.get('content-type') || '').toLowerCase() === type, r.headers.get('content-type'));
 }
+// a Markdown page, which the Worker serves, answers one range with 206; a file for agents of the assets answers a range
+// with the whole file, and _headers says so with Accept-Ranges: none (F-21)
+const mdWhole = Buffer.from(await (await fetch(ORIGIN + '/t/storage.md')).arrayBuffer());
+const mdPart = await fetch(ORIGIN + '/t/storage.md', { headers: { range: 'bytes=0-99' } });
+const mdBytes = Buffer.from(await mdPart.arrayBuffer());
+check('GET /t/storage.md with Range bytes=0-99 is 206 and the first 100 bytes', mdPart.status === 206 &&
+  mdPart.headers.get('content-range') === `bytes 0-99/${mdWhole.length}` && mdBytes.equals(mdWhole.subarray(0, 100)) &&
+  mdPart.headers.get('cache-control') === 'public, max-age=300', `${mdPart.status} ${mdPart.headers.get('content-range')}`);
+for (const p of ['/llms.txt', '/llms-full.txt']) {
+  const r = await fetch(ORIGIN + p, { headers: { range: 'bytes=0-99' } });
+  const n = (await r.arrayBuffer()).byteLength;
+  check('GET ' + p + ' with a Range is the whole file, with Accept-Ranges: none', r.status === 200 && n > 100 &&
+    r.headers.get('accept-ranges') === 'none', `${r.status} ${n} ${r.headers.get('accept-ranges')}`);
+}
 // live walk 2: a missing Markdown page is a Markdown 404 (W2-14), the not-found page says 404 at its own URL (W-28), and
 // the security contact of RFC 9116 is served as text (W2-16)
 const mdMiss = await fetch(ORIGIN + '/p/nope-nope.md');
