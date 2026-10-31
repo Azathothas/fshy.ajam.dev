@@ -23,7 +23,8 @@ PURPOSE = {
     "leaf": "the leaves of the record JSON; a record is lid BETWEEN lid_min AND lid_max",
     "edge": "kind: duplicate_of, variant_of, successor_of, same_offer_as, same-product, mentions",
     "drift": "records of one product that disagree",
-    "ledger": "one row per amendment of a record value: when, which record and field, the rung and the source",
+    "ledger": "one row per change of a record: when, which record, op (what the row did; NULL when the data does not "
+              "name it), the field, the rung and the source",
 }
 ORDER = ["record", "entity", "alias", "evidence", "limit_row", "claim", "unknown", "leaf", "edge", "drift",
          "history", "history_link", "ledger"]

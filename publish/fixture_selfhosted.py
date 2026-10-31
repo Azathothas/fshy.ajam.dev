@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""fixture_selfhosted.py: a copy of data/ at schema_version 2 in which some records are self-hosted, for the tests.
+"""fixture_selfhosted.py: a copy of data/ at the schema_version of build.py in which some records are self-hosted, for
+the tests.
 
 usage:
   python publish/fixture_selfhosted.py --data data --out DIR
@@ -12,7 +13,8 @@ The copy marks every record of FORCE_SELF, no record of KEEP_HOSTED, and each ot
 falls in one seventh of the range. So the copy has vendors whose every record is self-hosted, vendors with hosted and
 self-hosted records, and vendors whose self-hosted record has a better verdict than their hosted ones. It sets
 record.self_hosted (and self_hosted in the record JSON), recomputes entity.best_vorder by the rule of rank.js
-bestVorder, and writes schema_version 2 and files_sha256, so build.py reads the copy as an export.
+bestVorder, gives each other column that an older version of data/ lacks its default from schema.sql (ledger.op is
+NULL), and writes build.SCHEMA_VERSION and files_sha256, so build.py reads the copy as an export.
 
 When data/ has a self-hosted record already, the copy is not needed: the tool writes nothing, says so, and exits 0. It
 never writes data/. Exit codes: 0 written or not needed, 2 usage. Standard library only.
@@ -74,6 +76,22 @@ def make(data, out):
     if os.path.exists(out):
         os.rmdir(out)
     shutil.copytree(data, out)
+    with open(os.path.join(data, "meta.json"), encoding="utf-8") as f:
+        meta = json.load(f)
+    # the columns that the version of data/ lacks get their defaults, so the copy is data of build.SCHEMA_VERSION
+    lacks = build.older_defaults(meta.get("schema_version"))
+    for r in recs:
+        for c, v in lacks.get("record", {}).items():
+            r.setdefault(c, v)
+    for t, cols in lacks.items():
+        if t == "record":
+            continue
+        rows = read_jsonl(os.path.join(tables, t + ".jsonl"))
+        for r in rows:
+            for c, v in cols.items():
+                r.setdefault(c, v)
+        rows.sort(key=lambda x: json.dumps(x, ensure_ascii=False, sort_keys=True))
+        dump_jsonl(os.path.join(out, "tables", t + ".jsonl"), rows)
     marked = set()
     for r in recs:
         sh = r["eid"] in FORCE_SELF or (r["eid"] not in KEEP_HOSTED and sampled(r["rid"]))
@@ -95,8 +113,6 @@ def make(data, out):
         e["best_vorder"] = best_vorder(members.get(e["eid"], []))
     ents.sort(key=lambda x: json.dumps(x, ensure_ascii=False, sort_keys=True))
     dump_jsonl(os.path.join(out, "tables", "entity.jsonl"), ents)
-    with open(os.path.join(data, "meta.json"), encoding="utf-8") as f:
-        meta = json.load(f)
     meta["schema_version"] = build.SCHEMA_VERSION
     meta["files_sha256"] = build.files_digest(out)
     with open(os.path.join(out, "meta.json"), "w", encoding="utf-8", newline="\n") as f:
