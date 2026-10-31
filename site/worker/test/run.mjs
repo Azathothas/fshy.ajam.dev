@@ -1528,6 +1528,59 @@ test('records and the MCP tool filter take free=1: only the records with a free 
   assert.ok(tl.json.result.tools.find((x) => x.name === 'filter').inputSchema.properties.free);
   assert.match((await call('/api/v1/')).body, /anonymous, free, iface/);
 });
+
+test('a Markdown page answers one byte range with 206 and keeps its cache headers (F-21)', async (t) => {
+  const file = join(DIST, 't', 'storage.md');
+  if (!existsSync(file)) { t.skip('no ' + file); return; }
+  const bytes = readFileSync(file);
+  const ETAG = '"md-etag-1"';
+  const tagged = { ...env, ASSETS: { async fetch(req) {
+    const res = await ASSETS.fetch(req);
+    const h = new Headers(res.headers);
+    if (res.status === 200) h.set('etag', ETAG);
+    return new Response(res.body, { status: res.status, headers: h });
+  } } };
+  const get = async (headers, method = 'GET') => {
+    const res = await worker.fetch(new Request(ORIGIN + '/t/storage.md', { method, headers }), tagged);
+    return { res, body: Buffer.from(await res.arrayBuffer()) };
+  };
+  const whole = await get({});
+  assert.equal(whole.res.status, 200);
+  assert.ok(whole.body.equals(bytes));
+  assert.equal(whole.res.headers.get('accept-ranges'), 'bytes');
+  for (const [range, a, b] of [['bytes=0-99', 0, 99], ['bytes=100-', 100, bytes.length - 1], ['bytes=-20', bytes.length - 20, bytes.length - 1],
+    [`bytes=5-${bytes.length + 50}`, 5, bytes.length - 1]]) {
+    const r = await get({ range });
+    assert.equal(r.res.status, 206, range);
+    assert.equal(r.res.headers.get('content-range'), `bytes ${a}-${b}/${bytes.length}`, range);
+    assert.equal(r.res.headers.get('content-length'), String(b - a + 1), range);
+    assert.ok(r.body.equals(bytes.subarray(a, b + 1)), range);
+    assert.equal(r.res.headers.get('content-type'), 'text/markdown; charset=utf-8');
+    assert.equal(r.res.headers.get('cache-control'), 'public, max-age=300');
+    assert.equal(r.res.headers.get('etag'), ETAG);
+  }
+  const past = await get({ range: `bytes=${bytes.length}-` });
+  assert.equal(past.res.status, 416);
+  assert.equal(past.res.headers.get('content-range'), `bytes */${bytes.length}`);
+  assert.equal(past.body.length, 0);
+  // If-Range with the ETag sends the range; with another ETag the whole page; a list of ranges and another unit are ignored
+  assert.equal((await get({ range: 'bytes=0-9', 'if-range': ETAG })).res.status, 206);
+  for (const headers of [{ range: 'bytes=0-9', 'if-range': '"old"' }, { range: 'bytes=0-9,20-29' }, { range: 'lines=0-9' }]) {
+    const r = await get(headers);
+    assert.equal(r.res.status, 200, JSON.stringify(headers));
+    assert.ok(r.body.equals(bytes), JSON.stringify(headers));
+  }
+  const head = await get({ range: 'bytes=0-9' }, 'HEAD');
+  assert.equal(head.res.status, 200);
+  assert.equal(head.body.length, 0);
+  // the files for agents that the assets serve take no range: _headers says so with Accept-Ranges: none
+  const headers = readFileSync(join(SITE, 'static', '_headers'), 'utf8');
+  for (const rule of ['/llms.txt', '/llms-full.txt', '/t/*.txt']) {
+    const block = headers.split(/\n(?=\S)/).find((b) => b.split('\n')[0] === rule);
+    assert.match(block || '', /\n {2}Accept-Ranges: none(\n|$)/, rule);
+  }
+});
+
 test('report', () => {
   for (const [k, v] of Object.entries(timings)) console.log('# ' + k + ': ' + (typeof v === 'number' ? v.toFixed(1) : JSON.stringify(v)));
 });

@@ -313,11 +313,37 @@ function isWorkerRoute(path) {
 
 // the Markdown alternates and the not-found page, which wrangler.jsonc run_worker_first sends here. A Markdown file is
 // served with the headers that static/_headers gives it; a missing one is a short Markdown 404, not the HTML not-found
-// page under a Markdown type. /404 and /404.html are the not-found page with the status 404, not 200.
+// page under a Markdown type. A Markdown page answers one byte range with 206 (markdownRange). /404 and /404.html are the
+// not-found page with the status 404, not 200.
 const MARKDOWN = { 'content-type': 'text/markdown; charset=utf-8', 'cache-control': 'public, max-age=300', 'access-control-allow-origin': '*' };
 
 function isPagePath(path) {
   return path.endsWith('.md') || path === '/404' || path === '/404.html';
+}
+
+/**
+ * One byte range of a Markdown page, for a GET with one Range (bytes=a-b, a- or -n): 206 with Content-Range, or 416
+ * past the end. If-Range must name the ETag of the page, else the whole page is sent. A list of ranges, another unit
+ * and an invalid range are ignored, as on the download of the store. null: no range applies, so the page streams whole.
+ * A page is at most a few hundred kilobytes, so the range is cut from the bytes in memory.
+ */
+async function markdownRange(request, res, h) {
+  const asked = request.headers.get('range');
+  if (!asked) return null;
+  const etag = h.get('etag');
+  const ifRange = request.headers.get('if-range');
+  if (ifRange && (!etag || /^W\//.test(etag) || ifRange.trim() !== etag)) return null;
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  const range = parseRange(asked, bytes.length);
+  if (range === 'unsatisfiable') {
+    h.set('content-range', 'bytes */' + bytes.length);
+    h.delete('content-length');
+    return new Response(null, { status: 416, headers: h });
+  }
+  if (!range) return new Response(bytes, { status: 200, headers: h });
+  h.set('content-range', `bytes ${range.start}-${range.end}/${bytes.length}`);
+  h.set('content-length', String(range.end - range.start + 1));
+  return new Response(bytes.subarray(range.start, range.end + 1), { status: 206, headers: h });
 }
 
 async function pageAsset(request, env, url) {
@@ -328,6 +354,13 @@ async function pageAsset(request, env, url) {
     if (res.status === 200) {
       const h = new Headers(res.headers);
       for (const [k, v] of Object.entries({ ...MARKDOWN, 'x-content-type-options': 'nosniff', 'referrer-policy': 'no-referrer' })) h.set(k, v);
+      h.set('accept-ranges', 'bytes');
+      if (!head) {
+        const part = await markdownRange(request, res, h);
+        if (part) return part;
+      } else if (res.body) {
+        await res.body.cancel();
+      }
       return new Response(head ? null : res.body, { status: 200, headers: h });
     }
     if (res.body) await res.body.cancel();
