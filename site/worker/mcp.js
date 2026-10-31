@@ -59,6 +59,7 @@ export const TOOLS = [
       no_card: b('a card is stated as not required'),
       no_phone: b('a phone is stated as not required'),
       anonymous: b('no account at all'),
+      free: b('a free allowance is stated (the claim has-free-tier), as the need lists read it'),
       iface: s('interface substring: s3, webdav, sftp, api ...'),
       binding: s('binding constraint, comma list'),
       crypto: b('a crypto payment rail is named'),

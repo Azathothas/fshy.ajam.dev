@@ -1493,6 +1493,41 @@ test('TSV keeps the significant digits of a small number, and never prints 0 for
     assert.ok(Number(cell[1]) !== 0 && Math.abs(Number(cell[1]) - rate) / rate < 1e-3, `${ccy}: TSV ${cell[1]}, JSON ${rate}`);
   }
 });
+
+test('records and the MCP tool filter take free=1: only the records with a free allowance (F-15)', async () => {
+  const base = '/api/v1/records?topic=storage&iface=s3&no_card=1&grp=usable&limit=200';
+  const all = await call(base);
+  const free = await call(base + '&free=1');
+  assert.equal(free.res.status, 200, free.body);
+  const q = await call('/api/v1/sql?limit=200&q=' + encodeURIComponent("SELECT rid FROM claim WHERE kind = 'has-free-tier' AND num = 1"));
+  const sqlFree = await call('/api/v1/sql?limit=200&q=' + encodeURIComponent(
+    "SELECT r.rid FROM record r JOIN claim c ON c.rid = r.rid AND c.kind = 'has-free-tier' AND c.num = 1 WHERE r.topic = 'storage' " +
+    "AND instr(lower(coalesce(r.interfaces, '')), 's3') > 0 AND r.needs_card = 0 AND r.identity_basis = 'stated' AND r.grp = 'usable' " +
+    'AND r.duplicate_of IS NULL ORDER BY r.rid'));
+  const got = free.json.rows.map((r) => r[0]);
+  assert.deepEqual([...got].sort(), sqlFree.json.rows.map((r) => r[0]), 'the join of the need lists');
+  assert.equal(free.json.total, got.length);
+  assert.ok(got.length > 0 && got.length < all.json.total, `${got.length} of ${all.json.total}`);
+  // the claim of every row: without free=1 the list opens with records whose free allowance is not stated
+  const claims = await call('/api/v1/sql?limit=200&q=' + encodeURIComponent(
+    "SELECT r.rid, c.num FROM record r LEFT JOIN claim c ON c.rid = r.rid AND c.kind = 'has-free-tier' WHERE r.topic = 'storage' " +
+    "AND instr(lower(coalesce(r.interfaces, '')), 's3') > 0 AND r.grp = 'usable'"));
+  const num = new Map(claims.json.rows.map(([rid, v]) => [rid, v]));
+  assert.ok(!claims.json.truncated);
+  assert.ok(all.json.rows.some((r) => num.get(r[0]) !== 1), 'without free=1, a record with no stated free allowance is listed');
+  assert.ok(got.every((rid) => num.get(rid) === 1), 'with free=1, every record states a free allowance');
+  assert.ok(q.json.rows.length > 0);
+  // 0 sets no condition, as no_card does; another value is a 400
+  assert.equal((await call(base + '&free=0')).json.total, all.json.total);
+  assert.equal((await call(base + '&free=maybe')).res.status, 400);
+  assert.ok(!(await call(base + '&free=1')).json.notes.some((n) => /ignored parameter/.test(n)));
+  // the MCP tool filter, the route list and the help
+  const m = await rpc('tools/call', { name: 'filter', arguments: { topic: 'storage', iface: 's3', no_card: true, grp: 'usable', free: true, limit: 200, format: 'json' } });
+  assert.deepEqual(JSON.parse(m.json.result.content[0].text).rows.map((r) => r[0]), got);
+  const tl = await rpc('tools/list');
+  assert.ok(tl.json.result.tools.find((x) => x.name === 'filter').inputSchema.properties.free);
+  assert.match((await call('/api/v1/')).body, /anonymous, free, iface/);
+});
 test('report', () => {
   for (const [k, v] of Object.entries(timings)) console.log('# ' + k + ': ' + (typeof v === 'number' ? v.toFixed(1) : JSON.stringify(v)));
 });

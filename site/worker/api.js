@@ -382,8 +382,12 @@ export function entitySearch(store, p) {
 
 // ------------------------------------------------------------------ filter
 
-const FILTER_KEYS = new Set(['topic', 'verdict', 'grp', 'confidence', 'no_card', 'no_phone', 'anonymous', 'iface',
+const FILTER_KEYS = new Set(['topic', 'verdict', 'grp', 'confidence', 'no_card', 'no_phone', 'anonymous', 'free', 'iface',
   'binding', 'crypto', 'max_usd_month', 'max_usd_tb', 'include_duplicates', 'sort', 'order', 'limit', 'offset']);
+// free=1: the records with a free allowance, the claim has-free-tier with num 1. The need lists, the free tier chip of
+// the wiki (publish/llms.py attach_free_claims) and worked query 8 of help.txt use the same claim. 0 or absent sets no
+// condition, as no_card does: a record with no such claim is unknown, never no.
+const HAS_FREE_TIER = "rid IN (SELECT rid FROM claim WHERE kind = 'has-free-tier' AND num = 1)";
 
 export function filter(store, p) {
   const db = store.db;
@@ -397,6 +401,7 @@ export function filter(store, p) {
   if (bool(p.no_card, 'no_card')) where.push("needs_card = 0 AND identity_basis = 'stated'");
   if (bool(p.no_phone, 'no_phone')) where.push("needs_phone = 0 AND identity_basis = 'stated'");
   if (bool(p.anonymous, 'anonymous')) where.push("identity_kind = 'anonymous' AND identity_basis = 'stated'");
+  if (bool(p.free, 'free')) where.push(HAS_FREE_TIER);
   const iface = str(p.iface, 'iface');
   if (iface) { where.push('instr(lower(coalesce(interfaces, \'\')), lower(?)) > 0'); args.push(iface); }
   if (p.crypto != null && p.crypto !== '') where.push(bool(p.crypto, 'crypto') ? 'crypto = 1' : 'crypto IS NOT 1');
@@ -806,8 +811,9 @@ export async function help(store, env) {
     ``,
     `Operations (HTTP /api/v1/... and MCP tools take the same names):`,
     `  search q [topic grp limit]          names first (exact, prefix, substring, fuzzy), then BM25 full text`,
-    `  filter topic verdict grp confidence no_card no_phone anonymous iface binding crypto`,
+    `  filter topic verdict grp confidence no_card no_phone anonymous free iface binding crypto`,
     `         max_usd_month max_usd_tb include_duplicates sort order limit offset`,
+    `         free=1: a free allowance is stated (the claim has-free-tier with num 1)`,
     `  get ids [detail=card|full fields]   full = the record JSON with claims, unknown, history, drift`,
     `  entity id|name [include_duplicates] a vendor and its records; a duplicate is left out unless asked`,
     `  need [id]                           curated best-per-need lists`,
