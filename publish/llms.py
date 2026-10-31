@@ -255,6 +255,15 @@ def money(v, suffix):
     return "USD %s%s" % (t, suffix)
 
 
+def fresh_word(c, as_of):
+    """The freshness item of an index line: 'stale on D' with the stale date D, or 'stale since D' when D is on or
+    before the date of the data. A dead record and a record with no stale date get none. The HTML row says the same
+    (pages.py Site.fresh), and its script compares D with today."""
+    if c["grp"] == "dead" or not c["stale_on"]:
+        return ""
+    return ("stale since %s" if str(c["stale_on"]) <= str(as_of) else "stale on %s") % c["stale_on"]
+
+
 def size(n):
     return "%s KB, about %sK tokens" % (num(max(1, round(n / 1000))), num(max(1, round(n / BYTES_PER_TOKEN / 1000))))
 
@@ -573,7 +582,7 @@ def verdict_of(c):
 
 def entry_md(st, rid, bullet="- ", cap=None):
     """One line of an index, with the badges the HTML lists show: verdict, free tier, identity, card, phone, evidence,
-    price, then the summary, cut at a space to `cap` characters when a cap is given."""
+    stale date, price, then the summary, cut at a space to `cap` characters when a cap is given."""
     c = st.cards[rid]
     ft = st.docs[rid].get("free_tier")
     s = clip_words(headline(c["summary"], ft.get("stated") if isinstance(ft, dict) else None), cap)
@@ -594,6 +603,8 @@ def entry_md(st, rid, bullet="- ", cap=None):
     else:
         b.append("phone?")
     b.append(str(c["confidence"]))
+    if fresh_word(c, st.as_of):
+        b.append(fresh_word(c, st.as_of))
     price = money(c["usd_per_tb_month"], "/TB-month") or money(c["usd_month"], "/month")
     if price:
         b.append(price)
@@ -709,7 +720,8 @@ def reading_rules(st):
         "Neither word: the record does not say.",
         "- verified: when the record was last verified, with `checked` after it when the check date of the staleness "
         "policy differs; then the basis:"] + terms("verified_basis") + [
-        "- stale on: the date that the evidence window of the check ends. Compare it with today.",
+        "- stale on: the date that the evidence window of the check ends. Compare it with today. An index line says "
+        "`stale since` in place of `stale on` when that date is on or before the date of the data.",
         "- price: the price as written, then `parsed` USD figures where a number parsed. No parsed figure means none "
         "parsed, not free.",
         "- `[n]`: a numbered source; the sources list of the record gives each URL once. An evidence line reads: source, "
@@ -831,7 +843,7 @@ def generate(pub_db, dist):
                 full = "In full: %s/t/%s/llms-full.txt." % (BASE, t)
                 lines = ["# " + title, "", "> " + (desc or name), "",
                          "%s records: %s. This page lists %s. Each line: provider (its page in Markdown), record id (its JSON is %s/api/v1/record/<id>), "
-                         "verdict, free tier, identity, card, phone, evidence, parsed price, summary. %s"
+                         "verdict, free tier, identity, card, phone, evidence, stale date, parsed price, summary. %s"
                          % (num(len(rids)), counts(cnt), other, BASE, full), ""] + cut_note(cap)
                 if needs and groups == MAIN_GROUPS:
                     lines += ["Best per need: " + ", ".join("[%s](%s/need/%s.md)" % (x["title"], BASE, x["id"]) for x in needs), ""]
@@ -952,7 +964,7 @@ def generate(pub_db, dist):
     lines = ["# fshy", "", summary_line(st), "",
              "Every file here is generated from the published records and nothing else. " + stamp(st, version), "",
              "Start with a topic's index: one line per record with its verdict, free tier, identity, card, phone, "
-             "evidence, parsed price and summary. Each line links the provider's page in Markdown, `%s/p/<id>.md`, which holds every "
+             "evidence, stale date, parsed price and summary. Each line links the provider's page in Markdown, `%s/p/<id>.md`, which holds every "
              "record of that provider in full. Every wiki page that has a Markdown version names it in "
              "`<link rel=\"alternate\" type=\"text/markdown\">`. Before quoting a value, read how to read a record "
              "in %s/llms-full.txt." % (BASE, BASE), "",
