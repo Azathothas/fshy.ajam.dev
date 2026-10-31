@@ -223,10 +223,7 @@ def source_text(url):
     return e(url)
 
 
-def money(v, suffix):
-    if v is None:
-        return ""
-    return "USD %s%s" % (("%.2f" % v).rstrip("0").rstrip(".") if v < 1000 else "%.0f" % v, suffix)
+money = llms.money  # one rule for a price on every page and in every file
 
 
 def price_of(c):
