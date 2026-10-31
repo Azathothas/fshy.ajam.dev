@@ -78,8 +78,9 @@ Read all of it. Then check these, in this order:
 
 1. **The gate and CI.** `scripts/rq ci RUN` must be green: the run of the workflow `f-research-ci` of this
    repository on the run's head. `f-research` runs no Actions of its own; that run's log prints only check names and
-   PASS or FAIL, beside what the checkout prints: the fetched branch names, and the tested commit's hash and subject
-   line. A red check is a stop. Read its detail in your own clone with `scripts/rq gatecmp --base origin/main`.
+   PASS or FAIL: its fetch of `f-research` is quiet, so the log shows no branch name, tag or commit subject of it, and
+   `scripts/rq merge` merges only when the jobs `gate`, `harness-windows` and `parity` all succeeded. A red check is a
+   stop. Read its detail in your own clone with `scripts/rq gatecmp --base origin/main`.
 2. **The audit.** Every work unit of the run has an audit line. A unit marked `reverted` is already undone.
    A run with no audit line for a unit is a stop.
 3. **Drafts merged into existing records.** For each line under "drafts merged into existing records", open
@@ -196,7 +197,9 @@ names, and confirm CI is green. In `f-research` that is `scripts/rq ci --pr NUMB
 `main`, then `gh pr merge NUMBER --merge --match-head-commit SHA`; here it is `gh pr checks NUMBER`, then
 `gh pr merge <number> --merge`. ⛔ Do not merge your own.
 ⚠ A pull request runs the workflow, the hook and the leak rules of its own head. Read a change of `.github/`,
-`.githooks/` or `publish/rules/leak.json` as a change of the checks that judge it.
+`.githooks/` or `publish/rules/leak.json` as a change of the checks that judge it. In `f-research` the same holds
+for `scripts/research/ci-checks.sh`, `scripts/research/ci.py` and the `ci_` keys of `scripts/research/settings.json`:
+the workflow `f-research-ci` runs the check script of the tested head, and its output reaches the public log.
 In `f-research`, also do step 7 of section 3, the baseline.
 
 A research agent does not write a tool. It comments the specification on its issue, and the operator starts a

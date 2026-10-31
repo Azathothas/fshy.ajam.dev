@@ -1,22 +1,27 @@
 name: f-research-ci
 
 # The heavy checks of the private repository Azathothas/f-research, which runs no Actions of its own. Its harness
-# (scripts/research/ci.py) starts a run with the inputs sha and base, and the run is named "f-research <sha>";
-# scripts/rq merge waits for that run and merges only a green head. Each job checks out f-research at sha with the
-# read-only deploy key F_RESEARCH_DEPLOY_KEY, a secret of the environment f-research-ci that only main can use, and
-# runs scripts/research/ci-checks.sh from that checkout. This log is public. The script writes each check's output
-# to a file on the runner and prints only PASS, FAIL or SKIP and the check's name; no step here prints, uploads or
-# caches a file of f-research. The checkout prints the fetched branch names and the tested commit's hash and subject
-# line, and nothing else of f-research. The script runs from the tested commit, so a change of it is read in review
-# before it runs here; each run of it points the step summary and the step's output, environment and path files at
-# /dev/null, so a check cannot write to the public page of the run. Every day the job lock-fresh checks f-research's pin of the Worker rules, and every
-# Monday the job backup writes a git bundle of f-research to the private R2 bucket (docs/backup.md); its environment
-# backup holds the R2 settings and a second copy of the deploy key.
-# Actions are pinned by commit; the comment names the tag.
+# starts a run with the inputs sha and base; the run is named "f-research <sha> <base>", and the harness merges a head
+# only when the jobs gate, harness-windows and parity of that run all succeeded. A dispatch on another branch fails.
+#
+# Each job fetches f-research with .github/f-research-fetch.sh of this repository: a quiet fetch with the read-only
+# deploy key F_RESEARCH_DEPLOY_KEY (a secret of the environment f-research-ci, or of backup, each of which only main
+# can use), which deletes the key before any code of f-research runs. Then it runs that repository's check script
+# from the tested commit. This log is public. The script writes each check's output to a file on the runner and
+# prints only PASS, FAIL or SKIP and the check's name; no step prints, uploads or caches a file of f-research.
+#
+# The script comes from the tested commit, so a change of it reaches this log when its branch is pushed, before any
+# review: a merge session reads a change of that script as a change of the checks. Each run of it points the step
+# summary and the step's output, environment and path files at /dev/null, which stops an accidental write to the
+# public page of the run; it is not a sandbox.
+#
+# Every day the job lock-fresh checks f-research's pin of the Worker rules, and every Monday the job backup writes a
+# git bundle of f-research to the private R2 bucket (docs/backup.md). Actions are pinned by commit; the comment names
+# the tag.
 
 run-name: >-
   f-research ${{ github.event_name == 'schedule' && (github.event.schedule == '40 6 * * *' && 'lock' || 'backup')
-  || (inputs.mode == 'pr' && inputs.sha || inputs.mode) }}
+  || (inputs.mode == 'pr' && format('{0} {1}', inputs.sha, inputs.base) || inputs.mode) }}
 
 on:
   workflow_dispatch:
@@ -31,7 +36,7 @@ on:
         type: string
         default: ""
       base:
-        description: "mode pr: the f-research commit it is compared with, usually main (40 hex)"
+        description: "mode pr: the f-research commit it is compared with, the main it holds (40 hex)"
         type: string
         default: ""
   schedule:
@@ -42,32 +47,39 @@ permissions:
   contents: read
 
 concurrency:
-  group: f-research-ci-${{ inputs.sha || github.event.schedule || inputs.mode }}
+  group: f-research-ci-${{ inputs.sha || github.event.schedule || inputs.mode }}-${{ inputs.base }}
   cancel-in-progress: false
 
 jobs:
+  refuse:
+    # a run on another branch has no key and checks nothing; it fails, so it is never read as green
+    if: github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 2
+    steps:
+      - run: |
+          echo "FAIL f-research-ci runs only on main"
+          exit 1
+
   gate:
     if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.mode == 'pr'
     runs-on: ubuntu-26.04
     timeout-minutes: 40
     environment: f-research-ci
     steps:
-      - name: the inputs are two commits
-        env:
-          SHA: ${{ inputs.sha }}
-          BASE: ${{ inputs.base }}
-        run: |
-          printf '%s\n' "$SHA" | grep -qxE '[0-9a-f]{40}' && printf '%s\n' "$BASE" | grep -qxE '[0-9a-f]{40}' ||
-            { echo "sha and base must each be a commit of 40 hex digits"; exit 1; }
-
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: Azathothas/f-research
-          ref: ${{ inputs.sha }}
-          ssh-key: ${{ secrets.F_RESEARCH_DEPLOY_KEY }}
-          fetch-depth: 0
+          sparse-checkout: .github/f-research-fetch.sh
+          sparse-checkout-cone-mode: false
           persist-credentials: false
-          path: f-research
+          path: fshy
+
+      - name: fetch f-research at sha, quietly
+        env:
+          KEY: ${{ secrets.F_RESEARCH_DEPLOY_KEY }}
+          SHA: ${{ inputs.sha }}
+          BASE: ${{ inputs.base }}
+        run: sh fshy/.github/f-research-fetch.sh head
 
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
@@ -77,6 +89,8 @@ jobs:
         working-directory: f-research
         env:
           BASE: ${{ inputs.base }}
+          # the pin check, when the head moves the pin, asks the public API; the token only raises its rate limit
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           sudo apt-get install -y -q strace > /dev/null 2>&1 || true
           git config --global user.email "gate@localhost"
@@ -92,23 +106,20 @@ jobs:
     timeout-minutes: 40
     environment: f-research-ci
     steps:
-      - name: the inputs are two commits
-        shell: bash
-        env:
-          SHA: ${{ inputs.sha }}
-          BASE: ${{ inputs.base }}
-        run: |
-          printf '%s\n' "$SHA" | grep -qxE '[0-9a-f]{40}' && printf '%s\n' "$BASE" | grep -qxE '[0-9a-f]{40}' ||
-            { echo "sha and base must each be a commit of 40 hex digits"; exit 1; }
-
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: Azathothas/f-research
-          ref: ${{ inputs.sha }}
-          ssh-key: ${{ secrets.F_RESEARCH_DEPLOY_KEY }}
-          fetch-depth: 0
+          sparse-checkout: .github/f-research-fetch.sh
+          sparse-checkout-cone-mode: false
           persist-credentials: false
-          path: f-research
+          path: fshy
+
+      - name: fetch f-research at sha, quietly
+        shell: bash
+        env:
+          KEY: ${{ secrets.F_RESEARCH_DEPLOY_KEY }}
+          SHA: ${{ inputs.sha }}
+          BASE: ${{ inputs.base }}
+        run: sh fshy/.github/f-research-fetch.sh head
 
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
@@ -133,19 +144,19 @@ jobs:
     timeout-minutes: 20
     environment: f-research-ci
     steps:
-      - name: the input is a commit
-        env:
-          SHA: ${{ inputs.sha }}
-        run: |
-          printf '%s\n' "$SHA" | grep -qxE '[0-9a-f]{40}' || { echo "sha must be a commit of 40 hex digits"; exit 1; }
-
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: Azathothas/f-research
-          ref: ${{ inputs.sha }}
-          ssh-key: ${{ secrets.F_RESEARCH_DEPLOY_KEY }}
+          sparse-checkout: .github/f-research-fetch.sh
+          sparse-checkout-cone-mode: false
           persist-credentials: false
-          path: f-research
+          path: fshy
+
+      - name: fetch f-research at sha, quietly
+        env:
+          KEY: ${{ secrets.F_RESEARCH_DEPLOY_KEY }}
+          SHA: ${{ inputs.sha }}
+          BASE: ${{ inputs.base }}
+        run: sh fshy/.github/f-research-fetch.sh head
 
       - name: the pinned public commit
         id: pin
@@ -186,10 +197,15 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: Azathothas/f-research
-          ssh-key: ${{ secrets.F_RESEARCH_DEPLOY_KEY }}
+          sparse-checkout: .github/f-research-fetch.sh
+          sparse-checkout-cone-mode: false
           persist-credentials: false
-          path: f-research
+          path: fshy
+
+      - name: fetch f-research main, quietly
+        env:
+          KEY: ${{ secrets.F_RESEARCH_DEPLOY_KEY }}
+        run: sh fshy/.github/f-research-fetch.sh main
 
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
@@ -214,18 +230,17 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          sparse-checkout: .github/r2-backup.sh
+          sparse-checkout: |
+            .github/f-research-fetch.sh
+            .github/r2-backup.sh
           sparse-checkout-cone-mode: false
           persist-credentials: false
           path: fshy
 
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: Azathothas/f-research
-          ssh-key: ${{ secrets.F_RESEARCH_DEPLOY_KEY }}
-          fetch-depth: 0
-          persist-credentials: false
-          path: f-research
+      - name: fetch every branch and tag of f-research, quietly
+        env:
+          KEY: ${{ secrets.F_RESEARCH_DEPLOY_KEY }}
+        run: sh fshy/.github/f-research-fetch.sh all
 
       - name: bundle every branch and tag of f-research
         working-directory: f-research
