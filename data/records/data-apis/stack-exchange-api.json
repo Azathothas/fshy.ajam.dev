@@ -35,7 +35,7 @@
   "interface": [
     "rest"
   ],
-  "interface_detail": "JSON over HTTPS GET at https://api.stackexchange.com/2.3/, every response compressed; OAuth 2.0 for user-scoped calls and writes; quarterly XML dumps as one 7z archive per site, downloaded from the profile settings (per site, or the whole network since October 2026); the Stack Exchange Data Explorer runs SQL over a copy refreshed every Sunday.",
+  "interface_detail": "JSON over HTTPS GET at https://api.stackexchange.com/2.3/, every response compressed; the authentication documentation says an application key or access token goes in an Authorization header as a Bearer value; OAuth 2.0 for user-scoped calls and writes; quarterly XML dumps as one 7z archive per site, downloaded from the Data dump access page in that site's profile settings (one site for each download; a meta site is a separate download from its own profile), or for the whole network from the data dumps page of user preferences on Meta Stack Exchange; the community copies of the whole-network dump are also distributed as BitTorrent torrents (the interface vocabulary has no BitTorrent term, so the record lists rest); the Stack Exchange Data Explorer runs SQL over a copy refreshed every Sunday.",
   "endpoint": "https://api.stackexchange.com/2.3/",
   "tooling": "Any HTTP client that decompresses gzip; 7-Zip or p7zip for the dump archives; a BitTorrent client for the Internet Archive and Academic Torrents copies of the network dump.",
   "chaining": "The quarterly XML dump is the bulk path for a whole-site or whole-network read (official download from a logged-in profile, or the anonymous community copy on the Internet Archive and Academic Torrents); the API at 300 requests a day keyless, or 10,000 with a free key, serves fresh lookups; the Data Explorer answers SQL over the weekly copy.",
@@ -71,12 +71,12 @@
   "binding_note": "An IP gets 300 requests a day with no key and 10,000 with a free key, so a whole-site read goes to the quarterly dump, which has no request count.",
   "identity_cost": {
     "kind": "email",
-    "detail": "Keyless reads need nothing: a call with no key answered 200 at 300 requests a day. The 10,000-a-day key needs an application registered on Stack Apps, whose registration page sends a visitor to the login page; the network signup takes an email and a password, or a Google or GitHub sign-in. The official dumps need a logged-in profile on the site; the community copy on the Internet Archive needs no account.",
+    "detail": "Keyless reads need nothing: a call with no key answered 200 at 300 requests a day. The 10,000-a-day key needs an application registered on Stack Apps, whose registration page sends a visitor with no session to the login page, and then an API key generated on the application's dashboard, because a new application has no key until one is generated. The Stack Apps signup takes an email and a password, or a Google sign-in; the network signup takes an email and a password, or a Google or GitHub sign-in. The official dump of one site needs a logged-in profile on that site; the official whole-network dump is downloaded from the data dumps page of user preferences on Meta Stack Exchange, which sends a visitor with no session to the Meta Stack Exchange login page; the community copy on the Internet Archive needs no account.",
     "country": null
   },
   "reliability_note": "The network-wide dump came back in October 2026 after a removal of about two years, and downloads of the full archive are reported to fail around 19.5 GB; the Internet Archive copy is a community upload, not an official release.",
   "confidence": "documented",
-  "confidence_note": "The quotas and throttles are documented, not exhausted. A keyless call answered 200 with quota_max 300, page 26 with no key answered access_denied, and a HEAD on one site archive of the Internet Archive copy answered 200 with its size. The 10,000-a-day key quota sits behind a sign-up.",
+  "confidence_note": "The quotas and throttles are documented, not exhausted. A keyless call answered 200 with quota_max 300, page 26 with no key answered access_denied, and a HEAD on one site archive of the Internet Archive copy answered 200 with its size. The 10,000-a-day key quota sits behind a sign-up. quota_max of a call made with a new key: unverified: behind a sign-up. The fields of the Stack Apps registration form after its June 2025 redesign: unverified: behind a sign-up; a 2021 Stack Apps post lists four required fields, Application Name, Description, OAuth domain and Application Website. Whether the whole-network dump page opens for an account with no profile on Meta Stack Exchange: unverified: behind a sign-up.",
   "evidence": [
     {
       "url": "https://stackapps.com/questions/2",
@@ -357,9 +357,128 @@
       "proved": "the Data Explorer runs queries for anonymous users",
       "capture": "sha256:143c29f697e47de6aa97e4ca34948346cc33e432993baa5e8a57141ef8e6e608",
       "quote": "While anonymous users can run queries without any imposed restrictions, there are a few perks to registering:"
+    },
+    {
+      "url": "https://meta.stackexchange.com/questions/419975/the-return-of-the-network-data-dump",
+      "date": "2026-11-02",
+      "proved": "the whole-network dump is downloaded from the data dumps page of user preferences on Meta Stack Exchange, beside the per-site dump",
+      "capture": "sha256:894552ea34d88a54a742a3ee7128f12f3048cde6946731726b837b4c21a2ad6d",
+      "quote": "The tool to download these dumps can be found on the data dumps page in [user preferences](https://meta.stackexchange.com/users/data-dump-access/current), along with the per-site data dump."
+    },
+    {
+      "url": "https://meta.stackexchange.com/questions/401324/announcing-a-change-to-the-data-dump-process",
+      "date": "2026-11-02",
+      "proved": "a site and its meta site are separate downloads, each requested from its own site",
+      "capture": "sha256:9924206ec492e87311c7f616df7266381f97309f18b8e493cbae15ee1aab7ea1",
+      "quote": "So if you want to get the download for a site and its meta, you will need to do the request on both sites."
+    },
+    {
+      "url": "https://meta.stackexchange.com/questions/401324/announcing-a-change-to-the-data-dump-process",
+      "date": "2026-11-02",
+      "proved": "each further site's dump needs the same download from that site",
+      "capture": "sha256:9924206ec492e87311c7f616df7266381f97309f18b8e493cbae15ee1aab7ea1",
+      "quote": "If you wish to access the data for additional Stack Exchange sites, you will need to go through the same process for each"
+    },
+    {
+      "url": "https://api.stackexchange.com/docs/authentication",
+      "date": "2026-11-02",
+      "proved": "the authentication documentation says an application key or access token goes in an Authorization header as a Bearer value",
+      "capture": "sha256:1eb8d65dbad9edbe2ce1730bbbc406d4e9856e9c185307998e4568eaa06532b1",
+      "quote": "must be provided using the authorization header `Authorization: Bearer {API key or access token}`."
+    },
+    {
+      "url": "https://academictorrents.com/collection/stack-exchange-data-dumps.csv",
+      "date": "2026-11-02",
+      "proved": "Academic Torrents lists the 2026-09-30 network dump with a BitTorrent infohash and a mirror count",
+      "capture": "sha256:218378d76c0da4865714f1cc06159c89b79d1222cefada647d7ac00af3c9bcad",
+      "quote": "| Dataset | Stack Exchange Data Dump (2026-09-30)                  | c32cdd0306ee7717cd63f98f8df6486af55f79c8 | 99497279488  | 9       | 1           | 29             | 1791749451 | 1791749451   |"
+    },
+    {
+      "url": "https://meta.stackexchange.com/questions/224873/all-stack-exchange-data-dump-releases",
+      "date": "2026-11-02",
+      "proved": "a Meta Stack Exchange wiki lists the network dump releases with links to download them over BitTorrent or from the Internet Archive",
+      "capture": "sha256:612bd950dbaa93030357333c64803c964f5930077958737188d27e12419f32a1",
+      "quote": "with links to download using BitTorrent or from the Internet Archive."
+    },
+    {
+      "url": "https://stackoverflow.com/help/data-dumps",
+      "date": "2026-11-02",
+      "proved": "a per-site dump is downloaded from the Data dump access page in the profile settings of that site",
+      "capture": "sha256:66188c6853d8963f0472798032fed98e80ef908b4eb01f5a79c15caedc37c6c0",
+      "quote": "choose the “Settings” tab at the top of your profile page, then choose “Data dump access” under the “Access” heading on the left."
+    },
+    {
+      "url": "https://stackapps.com/help/api-authentication",
+      "date": "2026-11-02",
+      "proved": "an API key is generated on the application's page in Stack Apps after the application is registered",
+      "capture": "sha256:846247521ad99eaaac9416b350c8d48321566655f2c05d039452edda9e21591d",
+      "quote": "To generate an API key, click Generate API Key on your application in Stack Apps."
+    },
+    {
+      "url": "https://stackapps.com/help/api-authentication",
+      "date": "2026-11-02",
+      "proved": "a registered application gets an increased throttle quota",
+      "capture": "sha256:846247521ad99eaaac9416b350c8d48321566655f2c05d039452edda9e21591d",
+      "quote": "Registered applications will also be granted an [increased throttle quota](https://api.stackexchange.com/docs/throttle)."
+    },
+    {
+      "url": "https://meta.stackexchange.com/questions/410541",
+      "date": "2026-11-02",
+      "proved": "a newly created application has no key until one is generated on its dashboard",
+      "capture": "sha256:0687b4ef9bb278ec6793fe8415ec1c52789662f30248dbca6c36f5f3e3e7f1f5",
+      "quote": "For newly created apps, keys and client secrets are not issued by default and can be generated and rotated here"
+    },
+    {
+      "url": "https://stackapps.com/apps/oauth/register",
+      "date": "2026-11-02",
+      "proved": "the Stack Apps signup page, shown to a visitor sent from the registration page, offers Google sign-in beside the email and password fields",
+      "capture": "sha256:b4c23d2989c050b0ba68c7d7c34909c133eda3755e82ee2f31f54c94829a64a4",
+      "quote": "Sign up with Google # OR Email Password Sign up"
+    },
+    {
+      "url": "https://meta.stackexchange.com/users/data-dump-access/current",
+      "date": "2026-11-02",
+      "proved": "the whole-network dump page sends a visitor with no session to the Meta Stack Exchange login page",
+      "capture": "sha256:dfabd9cd2273fb02be59d1de4929c89f4221af79f232fe5dd867cb7a2f0b8640",
+      "quote": "x-web-final-url: https://meta.stackexchange.com/users/login?returnurl=https%3a%2f%2fmeta.stackexchange.com%2fusers%2fdata-dump-access%2fcurrent"
+    },
+    {
+      "url": "https://stackoverflow.com/help/creating-accounts",
+      "date": "2026-11-02",
+      "proved": "a Stack Exchange account is created with an email address and a password, or through Google or Facebook sign-in",
+      "capture": "sha256:efe73f84ea80f54082ac6b18d95e2968bb1aa7bd812fd6b0cb5a62052508231a",
+      "quote": "To create an account on Stack Overflow, please [sign up through Google, Facebook, or create a new Stack Exchange account](https://stackoverflow.com/users/login) using an email address and password."
+    },
+    {
+      "url": "https://stackapps.com/questions/8975/the-fieldnames-in-the-error-message-do-not-match-the-names-used-on-the-form",
+      "date": "2026-11-02",
+      "proved": "a Stack Apps post of 2021 lists the four required fields of the registration form: Application Name, Description, OAuth domain and Application Website",
+      "capture": "sha256:908fabc5ad824c36997d7007dfc0b2f6a2e59abcbe6672f3ee780e26b7f5af6a",
+      "quote": "there are 4 fields that are required: - Application Name - Description - OAuth domain - Application Website"
+    },
+    {
+      "url": "https://stackapps.com/questions/8107/can-i-make-a-private-application",
+      "date": "2026-11-02",
+      "proved": "a Stack Apps answer says a key registered with placeholder values in the required fields still gives the 10K quota",
+      "capture": "sha256:c6033c542868d28933360017c74e89858c8795dbbcdcf01bb8c70cde138fa94f",
+      "quote": "This still allows you to use the `key` to get 10K quota."
+    },
+    {
+      "url": "https://stackapps.com/questions/8107/can-i-make-a-private-application",
+      "date": "2026-11-02",
+      "proved": "a Stack Apps answer says an application registered for a key is visible only to its owner and Stack Exchange staff",
+      "capture": "sha256:c6033c542868d28933360017c74e89858c8795dbbcdcf01bb8c70cde138fa94f",
+      "quote": "No one can see the apps you register at [stackapps.com/apps/oauth/register](https://stackapps.com/apps/oauth/register) except you (and the SE devs)."
+    },
+    {
+      "url": "https://stackapps.com/questions/8971",
+      "date": "2026-11-02",
+      "proved": "a Stack Apps FAQ answer, edited June 2025, says the key is generated in the API Keys section of the application's dashboard",
+      "capture": "sha256:2ad2d0ab6d6153b62de1f1c863315f4bc86ccc8f6e2c048d144e2524bccaf85d",
+      "quote": "Once you have registered an app, you will need to generate a key. You can do this in the API Keys section on your app's dashboard page."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T05:06:55.547Z",
+  "verified_at": "2026-11-03T00:28:12.185Z",
   "notes": "Caveat: the keyless quota is 300 requests a day, and the 10,000-a-day quota needs an account and a registered app. Bulk path: the quarterly XML dump, per site or for the whole network, from a logged-in profile; the 2026-09-30 network dump is also on the Internet Archive (91.9G) and Academic Torrents (99,497,279,488 bytes) as community uploads."
 }

@@ -1,0 +1,132 @@
+{
+  "topic": "data-apis",
+  "slug": "met-norway-frost",
+  "provider": "MET Norway Frost API",
+  "url": "https://frost.met.no/",
+  "category": "weather observation archive API",
+  "tier": "free (client ID)",
+  "free_tier": {
+    "stated": "Free access to MET Norway's archive of historical weather and climate observations (quality controlled daily, monthly and yearly measurements of temperature, precipitation and wind, and station metadata) with a client ID issued for an email address; no numeric request quota is published.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://frost.met.no/termsofuse2.html",
+    "read_on": "2026-11-02",
+    "notes": "Heavy traffic is defined as more than 1 request a second on average, which should be cached locally; users with high load or bad traffic patterns can be blocked. Large requests time out and are split by station or by time range. Bulk path: none beyond split requests; gridded model data are on THREDDS (see data-apis/met-norway)."
+  },
+  "per_object_cap": {
+    "stated": "requests that are too large time out; the vendor advises splitting, for example 1000 stations into 10 requests of 100",
+    "bytes": null,
+    "notes": "",
+    "source_url": "https://frost.met.no/termsofuse2.html"
+  },
+  "retention": {
+    "stated": "not applicable: the unit is a request",
+    "days": null,
+    "notes": "",
+    "source_url": "https://frost.met.no/termsofuse2.html"
+  },
+  "egress": {
+    "terms": "not applicable",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://frost.met.no/termsofuse2.html"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "REST over HTTPS at frost.met.no with Basic authentication (client ID as user name, empty password) or OAuth2; JSON-LD answers",
+  "endpoint": "https://frost.met.no/observations/v0.jsonld",
+  "tooling": "any HTTP client; examples for curl, Python and Java are published",
+  "chaining": "The historical-observation companion to the keyless api.met.no forecasts: station data by source, reference time and element.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "more than 1 request a second on average is heavy traffic that should be cached; no hard number is published",
+      "source": "https://frost.met.no/termsofuse2.html"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "requests that are too large answer a timeout and must be split",
+      "source": "https://frost.met.no/termsofuse2.html"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "Only the 1 request a second guideline is stated, so the sustained rate binds first.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "A client ID and secret are issued after registering with an email address; each client ID must be tied to a valid email address. The form's other fields were not readable.",
+    "country": null
+  },
+  "reliability_note": "No delivery guarantee; clients with high load or bad traffic patterns can be blocked.",
+  "confidence": "documented",
+  "confidence_note": "Identity and traffic rules are read from first-party pages; a call with no client ID answered HTTP 401, so a keyed call was not exercised.",
+  "evidence": [
+    {
+      "url": "https://frost.met.no/",
+      "date": "2026-11-02",
+      "proved": "Frost serves MET Norway's historical observation archive",
+      "capture": "sha256:025df8ae4df15bc54fde881bc110704c3cb82913125f39da9d282a26ac2ea38a",
+      "quote": "This data includes quality controlled daily, monthly, and yearly measurements of temperature, precipitation, and wind data."
+    },
+    {
+      "url": "https://frost.met.no/auth/requestCredentials.html",
+      "date": "2026-11-02",
+      "proved": "an email address gives a client ID",
+      "capture": "sha256:9c44059398a208785e84e3710a980838bcfef5d83dd6b75e249ac850a365d6e9",
+      "quote": "To gain access to the Frost API services, register with your email address to generate a new client ID and client secret."
+    },
+    {
+      "url": "https://frost.met.no/authentication.html",
+      "date": "2026-11-02",
+      "proved": "every data request needs a client ID",
+      "capture": "sha256:e1042982e053b697f782683052ea084e758281acd9b32f23736c6e667ddbefa2",
+      "quote": "Requests for data (typically everything else than static HTML-pages) must be authenticated with a client ID"
+    },
+    {
+      "url": "https://frost.met.no/termsofuse2.html",
+      "date": "2026-11-02",
+      "proved": "more than 1 request a second on average counts as heavy traffic, to be cached locally",
+      "capture": "sha256:88f40f7f309f82b41ba5f248333ec8c10701593ff56f9d8005d02e1130fe2186",
+      "quote": "Heavy traffic means on average more than 1 requests to the API per second."
+    },
+    {
+      "url": "https://frost.met.no/termsofuse2.html",
+      "date": "2026-11-02",
+      "proved": "a client ID needs a valid email address; several IDs per address are allowed",
+      "capture": "sha256:88f40f7f309f82b41ba5f248333ec8c10701593ff56f9d8005d02e1130fe2186",
+      "quote": "Each client ID must be associated with a valid email address. It is possible to register multiple client IDs for each email address."
+    },
+    {
+      "url": "https://frost.met.no/termsofuse2.html",
+      "date": "2026-11-02",
+      "proved": "large requests time out and must be split",
+      "capture": "sha256:88f40f7f309f82b41ba5f248333ec8c10701593ff56f9d8005d02e1130fe2186",
+      "quote": "If your request is too large, you will get a timeout error."
+    },
+    {
+      "url": "https://frost.met.no/termsofuse2.html",
+      "date": "2026-11-02",
+      "proved": "no delivery guarantee",
+      "capture": "sha256:88f40f7f309f82b41ba5f248333ec8c10701593ff56f9d8005d02e1130fe2186",
+      "quote": "There are no guarantees of delivery regarding this service."
+    },
+    {
+      "url": "probe:https://frost.met.no/sources/v0.jsonld",
+      "date": "2026-11-02",
+      "proved": "a call with no client ID answered 401",
+      "capture": "sha256:95440acbcf9f3685835289bf8fc1021d3ccd309de60bffb316460ba7e1399a9e",
+      "quote": "\"reason\" : \"Missing authentication token\""
+    },
+    {
+      "url": "probe:https://frost.met.no/sources/v0.jsonld",
+      "date": "2026-11-02",
+      "proved": "the call answered HTTP 401",
+      "capture": "sha256:bb7565dc81e61ed82bd7ac76d8ae3fd76b717c894130c52bb734f686bfb0ff95",
+      "quote": "\"status\": 401"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-11-02T00:23:48.564Z",
+  "notes": "Observations only; forecasts are on api.met.no."
+}

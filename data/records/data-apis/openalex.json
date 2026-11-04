@@ -11,19 +11,19 @@
     "metered_on": "request-count",
     "source_url": "https://help.openalex.org/access/example-costs/",
     "read_on": "2026-10-30",
-    "notes": "The budget is priced per call: a list or filter call costs USD 0.10 per 1,000, a search USD 1 per 1,000, a content download USD 10 per 1,000. A keyless list call on 2026-10-30 answered X-RateLimit-Limit 1000, X-RateLimit-Limit-USD 0.1 and X-RateLimit-Credits-Used 1, so the keyless day is 1,000 list calls."
+    "notes": "The budget is priced per call: a list or filter call costs USD 0.10 per 1,000, a search USD 1 per 1,000, a content download USD 10 per 1,000. A keyless list call on 2026-10-30 answered X-RateLimit-Limit 1000, X-RateLimit-Limit-USD 0.1 and X-RateLimit-Credits-Used 1, so the keyless day is 1,000 list calls. A keyless list call at per_page=100 on 2026-11-02 also answered X-RateLimit-Credits-Used 1, so one call costs one credit at a page size of 100. The API notice says the keyless budget is shared with everyone on the network IP address. The X-RateLimit-Limit value with a free key is unverified: behind a sign-up. The vendor error page prints X-RateLimit-Limit: 10000 in an example."
   },
   "per_object_cap": {
     "stated": "per_page maximum 100 results; basic paging stops at 10,000 results, and cursor paging past the first page needs a free key; snapshot part files hold up to 400,000 records each",
     "bytes": null,
     "source_url": "https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication",
-    "notes": ""
+    "notes": "Without a key, a call with cursor=* answers with a next_cursor, and the next call that follows it answers 401 with the message 'API key required for cursor paging'. Cursor paging past the first page with a free key is unverified: behind a sign-up."
   },
   "retention": {
     "stated": "the API is a live index; the free public snapshot is a quarterly release on the second Wednesday of January, April, July and October (latest 2026-10-14); a daily snapshot is a Member+ plan benefit",
     "days": null,
     "source_url": "https://docs.openalex.org/download-all-data/openalex-snapshot",
-    "notes": ""
+    "notes": "RELEASE_NOTES.txt lists entries 19 to 64 days apart from 2024-01-24 to 2026-06-25. It lists entries dated 2026-09-23 and 2026-10-14, each labelled a quarterly snapshot. The next public release is dated 2027-01-13. A release that fails its checks is retried and can land up to a week late."
   },
   "egress": {
     "terms": "The API is metered in credits per day, not in bytes. The public snapshot bucket s3://openalex is free to download with no AWS account; the AWS Open Data program covers the transfer, about USD 70 per full download.",
@@ -312,10 +312,185 @@
       "proved": "the public snapshot manifest answered 200 to an anonymous request",
       "capture": "sha256:82e8e86cd5016bde6e8e526ea1945a361668e1c943408dfd6004830fc81201b2",
       "quote": "\"status\": 200"
+    },
+    {
+      "url": "https://openalex.s3.amazonaws.com/RELEASE_NOTES.txt",
+      "date": "2026-11-02",
+      "proved": "the release notes label the entry dated 2026-09-23 a quarterly snapshot",
+      "capture": "sha256:a6e5083e10f0992f357ae5eeff338c423dfaed106c024160fe9f6db8df247b93",
+      "quote": "RELEASE 2026-09-23\n- quarterly snapshot with bug fixes and improvements"
+    },
+    {
+      "url": "https://openalex.s3.amazonaws.com/RELEASE_NOTES.txt",
+      "date": "2026-11-02",
+      "proved": "the release notes label the entry dated 2026-10-14 a quarterly snapshot",
+      "capture": "sha256:a6e5083e10f0992f357ae5eeff338c423dfaed106c024160fe9f6db8df247b93",
+      "quote": "RELEASE 2026-10-14\n- quarterly snapshot with bug fixes and improvements"
+    },
+    {
+      "url": "https://openalex.s3.amazonaws.com/RELEASE_NOTES.txt",
+      "date": "2026-11-02",
+      "proved": "the release notes carry an entry dated 2024-01-24, the first of the entries that run to 2026-06-25",
+      "capture": "sha256:a6e5083e10f0992f357ae5eeff338c423dfaed106c024160fe9f6db8df247b93",
+      "quote": "RELEASE 2024-01-24"
+    },
+    {
+      "url": "https://openalex.s3.amazonaws.com/RELEASE_NOTES.txt",
+      "date": "2026-11-02",
+      "proved": "the release notes carry an entry dated 2026-06-25, the last before the entries labelled quarterly",
+      "capture": "sha256:a6e5083e10f0992f357ae5eeff338c423dfaed106c024160fe9f6db8df247b93",
+      "quote": "RELEASE 2026-06-25"
+    },
+    {
+      "url": "https://help.openalex.org/access/sync/",
+      "date": "2026-11-02",
+      "proved": "the next public release is dated 2027-01-13",
+      "capture": "sha256:c8c29a641fff03bc13c78e92c4f712a9a77a3e83037420d2b097614375bc0bc0",
+      "quote": "| 2027 Q1 | Wednesday 2027-01-13 |"
+    },
+    {
+      "url": "https://help.openalex.org/access/sync/",
+      "date": "2026-11-02",
+      "proved": "a public release can land up to a week late",
+      "capture": "sha256:c8c29a641fff03bc13c78e92c4f712a9a77a3e83037420d2b097614375bc0bc0",
+      "quote": "If a release build fails its validation checks, it is retried on the following days until it passes, so a release can occasionally land up to a week late."
+    },
+    {
+      "url": "probe:https://openalex.s3.amazonaws.com/data/jsonl/manifest.json",
+      "date": "2026-11-02",
+      "proved": "the combined JSON Lines manifest of the public bucket is dated 2026-10-14, the date of the latest release entry",
+      "capture": "sha256:2b3d611b3ec93912b7b655ee139310936048a689c0f3508052a73af03a6c453f",
+      "quote": "\"date\": \"2026-10-14\""
+    },
+    {
+      "url": "probe:https://api.openalex.org/works?filter=publication_year:2024&per_page=2&select=id&cursor=IlsxMDAuMCwgMjM4NzYsICdodHRwczovL29wZW5hbGV4Lm9yZy9XNDM5MjE0NTg3MyddIg%3D%3D",
+      "date": "2026-11-02",
+      "proved": "a keyless call that follows a next_cursor answered 401",
+      "capture": "sha256:46e425132bd9914211292ee52c33ef67245f90737252cb585b64edf612d0ad3e",
+      "quote": "\"status\": 401"
+    },
+    {
+      "url": "probe:https://api.openalex.org/works?filter=publication_year:2024&per_page=2&select=id&cursor=IlsxMDAuMCwgMjM4NzYsICdodHRwczovL29wZW5hbGV4Lm9yZy9XNDM5MjE0NTg3MyddIg%3D%3D",
+      "date": "2026-11-02",
+      "proved": "the 401 answer to the second cursor call names the missing API key",
+      "capture": "sha256:6657336d7055d70c8262369739e0dffa349947cc54ac79ccc740820da9fdc98f",
+      "quote": "\"error\":\"API key required for cursor paging\""
+    },
+    {
+      "url": "probe:https://api.openalex.org/works?filter=publication_year:2024&per_page=2&select=id&cursor=*",
+      "date": "2026-11-02",
+      "proved": "a keyless call with cursor=* on the first page answered 200",
+      "capture": "sha256:43d15ebf81e0a0c39e18f52a798c41b72db21d1459d6592bf35954da05e9783e",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:https://api.openalex.org/works?filter=publication_year:2024&per_page=2&select=id&cursor=*",
+      "date": "2026-11-02",
+      "proved": "the first keyless cursor page returns a next_cursor",
+      "capture": "sha256:f2b929e757f494a5fd2a9f9e1589fcd8049c1e07d7c6f10e6de2ff5825acf40b",
+      "quote": "\"next_cursor\": \"IlsxMDAuMCwgMjM4NzYsICdodHRwczovL29wZW5hbGV4Lm9yZy9XNDM5MjE0NTg3MyddIg==\""
+    },
+    {
+      "url": "https://help.openalex.org/api/paging/",
+      "date": "2026-11-02",
+      "proved": "the paging page states that following next_cursor without a key returns 401",
+      "capture": "sha256:61ee15007bf38887fb95e6e6b5c937fe3fb12bba7a9844f611392735a1c74bc7",
+      "quote": "without a key, `cursor=*` works, but following `next_cursor` returns a 401."
+    },
+    {
+      "url": "https://help.openalex.org/access/example-costs/",
+      "date": "2026-11-02",
+      "proved": "the price page tells callers to use per_page=100 to load many results per query",
+      "capture": "sha256:4dde64f6a026bf01b07b0bf97a98ee91c7c1525eb8e0ae58c401f1a886e93e4f",
+      "quote": "> Tip: Use `per_page=100` to load many results per query — it makes your budget go much further."
+    },
+    {
+      "url": "probe:https://api.openalex.org/works?filter=publication_year:2024&per_page=100&select=id,doi",
+      "date": "2026-11-02",
+      "proved": "a keyless list call at per_page=100 cost 1 credit",
+      "capture": "sha256:a28d850894d9e78f98a987d5b70d3893a412331ecd49f75eaae93c313f65c60b",
+      "quote": "\"x-ratelimit-credits-used\": \"1\""
+    },
+    {
+      "url": "probe:https://api.openalex.org/works?filter=publication_year:2024&per_page=100&select=id,doi",
+      "date": "2026-11-02",
+      "proved": "the keyless call that cost 1 credit asked for 100 results",
+      "capture": "sha256:4f1ba789c26fba8751f339e587c66a16da1cc9c49c3cf5ee07fff0285084caa2",
+      "quote": "\"per_page\": 100"
+    },
+    {
+      "url": "probe:https://api.openalex.org/works?filter=publication_year:2024&per_page=100&select=id,doi",
+      "date": "2026-11-02",
+      "proved": "the API notice says the keyless budget is shared with everyone on the network IP address",
+      "capture": "sha256:4f1ba789c26fba8751f339e587c66a16da1cc9c49c3cf5ee07fff0285084caa2",
+      "quote": "No API key, so this request shares one free daily budget ($0.10) with everyone on your network's IP address."
+    },
+    {
+      "url": "https://help.openalex.org/api/errors/",
+      "date": "2026-11-02",
+      "proved": "the error page prints X-RateLimit-Limit: 10000 in its example header block",
+      "capture": "sha256:a07821605d75fd1f532efb144bfb4a2cd1ca0728e7fc9b2e9668e13a03ac063d",
+      "quote": "X-RateLimit-Limit: 10000"
+    },
+    {
+      "url": "https://help.openalex.org/api/authentication/",
+      "date": "2026-11-02",
+      "proved": "a free key gives 10 times the keyless budget",
+      "capture": "sha256:264605d06eac1553d48284579c4f66ad65c6f900dac548f06917ccf66513eeb5",
+      "quote": "a free key gives you 10× the keyless budget"
+    },
+    {
+      "url": "https://help.openalex.org/access/example-costs/",
+      "date": "2026-11-02",
+      "proved": "USD 1 a day buys 10,000 list-and-filter calls returning 1,000,000 results",
+      "capture": "sha256:4dde64f6a026bf01b07b0bf97a98ee91c7c1525eb8e0ae58c401f1a886e93e4f",
+      "quote": "| List + filter | 10,000 | 1,000,000 | All works from MIT in 2024 |"
+    },
+    {
+      "url": "https://help.openalex.org/access/example-costs/",
+      "date": "2026-11-02",
+      "proved": "the keyless daily budget is USD 0.10",
+      "capture": "sha256:4dde64f6a026bf01b07b0bf97a98ee91c7c1525eb8e0ae58c401f1a886e93e4f",
+      "quote": "Without a key you get $0.10/day"
+    },
+    {
+      "url": "https://help.openalex.org/access/pricing/",
+      "date": "2026-11-02",
+      "proved": "the daily budget resets at midnight UTC",
+      "capture": "sha256:cb417b31318ad09da10b92d8db4fd7c090c822a2762b603f2aa144c6c203c11b",
+      "quote": "The budget resets every midnight UTC"
+    },
+    {
+      "url": "https://docs.openalex.org/download-all-data/openalex-snapshot",
+      "date": "2026-11-02",
+      "proved": "snapshot part files hold up to 400,000 records",
+      "capture": "sha256:3264b9e80de3653cfd60e64dfc560845c278115a9e477556c20edac1728b1cf9",
+      "quote": "of up to 400,000 records each"
+    },
+    {
+      "url": "https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication",
+      "date": "2026-11-02",
+      "proved": "a call returns at most 100 results",
+      "capture": "sha256:264605d06eac1553d48284579c4f66ad65c6f900dac548f06917ccf66513eeb5",
+      "quote": "| `per_page` maximum | 100 |"
+    },
+    {
+      "url": "https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication",
+      "date": "2026-11-02",
+      "proved": "basic paging stops at 10,000 results",
+      "capture": "sha256:264605d06eac1553d48284579c4f66ad65c6f900dac548f06917ccf66513eeb5",
+      "quote": "| Basic paging limit | 10,000 results |"
+    },
+    {
+      "url": "https://help.openalex.org/access/sync/",
+      "date": "2026-11-02",
+      "proved": "the free public snapshot is released quarterly on the second Wednesday of January, April, July and October",
+      "capture": "sha256:c8c29a641fff03bc13c78e92c4f712a9a77a3e83037420d2b097614375bc0bc0",
+      "quote": "| Free (everyone) | New full releases of the public snapshot (`s3://openalex/data/`), released quarterly on the second Wednesday of January, April, July and October (UTC). Each release replaces the bucket contents in place. |"
     }
   ],
   "verdict": "qualifies",
-  "verified_at": "2026-10-31T00:48:58.884Z",
+  "verified_at": "2026-11-03T00:28:18.836Z",
   "price_per_tb_month": null,
   "notes": "The API record crawler-scraper/openalex describes the same service; this record adds the snapshot bulk path.",
   "extras": {

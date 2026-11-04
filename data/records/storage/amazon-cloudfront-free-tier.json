@@ -35,32 +35,81 @@
   ],
   "interface_detail": "rest",
   "tooling": "CloudFront distributions in front of any HTTP origin (S3, an OCI VM, a block-volume nginx); terraform/CLI; signed URLs and signed cookies for access control.",
-  "chaining": "1 TB/month free egress per AWS account. It stacks with Oracle's own 10 TB/month.",
+  "chaining": "CloudFront can use any publicly accessible URL as its origin, so it can front a non-AWS origin, such as another provider's free tier, and serve cacheable responses from edge locations.",
   "limits": [
     {
-      "kind": "per-ip-shaping",
-      "value": "500 GB/day",
-      "source": "https://aws.amazon.com/blogs/aws/aws-free-tier-data-transfer-expansion-100-gb-from-regions-and-1-tb-from-amazon-cloudfront-per-month/"
+      "kind": "volume-quota",
+      "value": "1 TB data transfer out and 10 Million HTTP or HTTPS requests per month, always free; usage beyond it is billed",
+      "source": "https://aws.amazon.com/free/networking/"
     }
   ],
-  "limits_note": "Beyond that it is metered at standard CloudFront rates. Origin fetch traffic still hits the origin's own egress meter (so pairing it with Oracle means Oracle's 10 TB absorbs the cache misses).",
+  "limits_note": "Separately from the always-free allowance, CloudFront flat-rate plans carry a monthly data transfer allowance of 100GB (Free), 50TB (Pro), 50TB (Business) and 50TB (Premium, configurable up to 600TB for a new flat-rate price). Beyond the always-free allowance, pay-as-you-go usage is billed.",
   "identity_cost": {
     "kind": "email",
     "detail": null,
     "country": null
   },
   "reliability_note": "Mature CDN, no ban risk; the only issue is that 1 TB/month is a ceiling, not a service level.",
-  "confidence": "reported",
-  "confidence_note": null,
+  "confidence": "documented",
+  "confidence_note": "The 2026-11-03 evidence rows read https://aws.amazon.com/free/networking/ (1 TB data transfer out and 10 million requests per month, always free) and https://aws.amazon.com/cloudfront/pricing/ (flat-rate plans and allowances, any public origin). The fields that decide the verdict cite those captures; the identity requirement and the CloudFront Function allowance were not read.",
   "evidence": [
     {
       "url": "https://aws.amazon.com/blogs/aws/aws-free-tier-data-transfer-expansion-100-gb-from-regions-and-1-tb-from-amazon-cloudfront-per-month/",
       "date": "2026-10-21",
       "proved": "'Data Transfer from Amazon CloudFront is now free for up to 1 TB of data per month ... and is no longer limited to the first 12 months after signup'"
+    },
+    {
+      "url": "https://aws.amazon.com/free/networking/",
+      "date": "2026-11-03",
+      "proved": "the always-free allowance is 1 TB data transfer out and 10 million HTTP or HTTPS requests per month",
+      "capture": "sha256:bb97d62bbb7597a516b4d9f0492c3c80e60390a405c4eb25028be570079a0d3a",
+      "quote": "This always free service is on the Free and paid plan. Use your credits to evaluate beyond these monthly limits: 1 TB of Data Transfer Out 10 Million HTTP or HTTPS Requests"
+    },
+    {
+      "url": "https://aws.amazon.com/cloudfront/pricing/",
+      "date": "2026-11-03",
+      "proved": "flat-rate monthly prices per distribution: $0, $15, $200 and $1,000, no overage charges",
+      "capture": "sha256:64009ed903a2a809ac6a9037e21f271ef16da5785030bd0e58cbbfc0806173c3",
+      "quote": "| Monthly price per distribution | $0/month  No overage charges | $15/month  No overage charges | $200/month  No overage charges | $1,000/month  No overage charges | Custom |"
+    },
+    {
+      "url": "https://aws.amazon.com/free/networking/",
+      "date": "2026-11-03",
+      "proved": "the always-free allowance is 1 TB data transfer out and 10 million requests per month",
+      "capture": "sha256:bb97d62bbb7597a516b4d9f0492c3c80e60390a405c4eb25028be570079a0d3a",
+      "quote": "This always free service is on the Free and paid plan. Use your credits to evaluate beyond these monthly limits: 1 TB of Data Transfer Out 10 Million HTTP or HTTPS Requests"
+    },
+    {
+      "url": "https://aws.amazon.com/cloudfront/pricing/",
+      "date": "2026-11-03",
+      "proved": "flat-rate plans carry a monthly data transfer allowance of 100GB, 50TB, 50TB and 50TB",
+      "capture": "sha256:64009ed903a2a809ac6a9037e21f271ef16da5785030bd0e58cbbfc0806173c3",
+      "quote": "| Data Transfer | 100GB | 50TB | 50TB | 50TB  (configurable up to 600TB for a new flat-rate price) | No Limit |"
+    },
+    {
+      "url": "https://aws.amazon.com/cloudfront/pricing/",
+      "date": "2026-11-03",
+      "proved": "the application behind CloudFront may be on any publicly accessible URL, not only on AWS",
+      "capture": "sha256:64009ed903a2a809ac6a9037e21f271ef16da5785030bd0e58cbbfc0806173c3",
+      "quote": "Your web application can be hosted on AWS—like S3, AWS Application Load Balancer (ALB), or Amazon API Gateway, or on any publicly accessible URL."
+    },
+    {
+      "url": "https://aws.amazon.com/cloudfront/pricing/",
+      "date": "2026-11-03",
+      "proved": "any publicly accessible URL can be the origin",
+      "capture": "sha256:64009ed903a2a809ac6a9037e21f271ef16da5785030bd0e58cbbfc0806173c3",
+      "quote": "Your web application can be hosted on AWS—like S3, AWS Application Load Balancer (ALB), or Amazon API Gateway, or on any publicly accessible URL."
+    },
+    {
+      "url": "https://aws.amazon.com/free/networking/",
+      "date": "2026-11-04",
+      "proved": "the always-free allowance is 1 TB data transfer out and 10 million HTTP or HTTPS requests per month",
+      "capture": "sha256:bb97d62bbb7597a516b4d9f0492c3c80e60390a405c4eb25028be570079a0d3a",
+      "quote": "This always free service is on the Free and paid plan. Use your credits to evaluate beyond these monthly limits: 1 TB of Data Transfer Out 10 Million HTTP or HTTPS Requests"
     }
   ],
   "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
+  "verified_at": "2026-11-04T00:31:28.057Z",
   "notes": "1 TB/month data transfer out + 10,000,000 HTTP/HTTPS requests + 2,000,000 CloudFront Function invocations, free every month, explicitly 'no longer limited to the first 12 months after signup'.",
   "extras": {
     "dead_end": {
@@ -70,6 +119,6 @@
       "first_recorded": "2026-10-21"
     }
   },
-  "binding": "per-ip-shaping",
-  "binding_note": null
+  "binding": "volume-quota",
+  "binding_note": "data transfer out is free only up to 1 TB per month; the allowance is a monthly volume, not a daily one"
 }

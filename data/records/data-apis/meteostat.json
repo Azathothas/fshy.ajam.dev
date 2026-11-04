@@ -6,7 +6,7 @@
   "category": "weather data dumps",
   "tier": "free",
   "free_tier": {
-    "stated": "Bulk Parquet files across all weather stations (hourly, daily, monthly, one file per year) and full per-station CSV time series, with no key and no sign-up; no quota is published.",
+    "stated": "Bulk Parquet files across all weather stations (hourly and daily as one file per year, monthly as a single file) and full per-station CSV time series, with no key and no sign-up; no quota is published.",
     "unit": "mixed",
     "metered_on": "unstated",
     "source_url": "https://dev.meteostat.net/data/bulk",
@@ -35,10 +35,10 @@
   "interface": [
     "rest"
   ],
-  "interface_detail": "plain HTTPS downloads from data.meteostat.net: <granularity>/<year>.parquet for all stations and <granularity>/<year>/<station>.csv.gz per station; station metadata in JSON and SQL",
+  "interface_detail": "plain HTTPS downloads from data.meteostat.net: hourly/{year}.parquet and daily/{year}.parquet (one file per year) and monthly.parquet (one file) for all stations; hourly/{year}/{station}.csv.gz and daily/{year}/{station}.csv.gz and monthly/{station}.csv.gz per station; station metadata in JSON and SQL",
   "endpoint": "https://data.meteostat.net/hourly/2024.parquet",
   "tooling": "any HTTP client; the Meteostat Python library wraps the files",
-  "chaining": "A keyless bulk source of station history: one Parquet file per year and granularity covers every station, so a full year of hourly observations is one download.",
+  "chaining": "A keyless bulk source of station history: one Parquet file per year for hourly and daily, and one Parquet file for monthly, covers every station, so a full year of hourly observations is one download.",
   "limits": [],
   "binding": "none",
   "binding_note": "No quota is published for the files and no key is asked; the size of one year of hourly data (992,333,139 bytes) is the practical unit of a pull.",
@@ -197,9 +197,44 @@
       "proved": "the 2024 hourly all-station Parquet file answered HTTP 200 declaring 992,333,139 bytes",
       "capture": "sha256:48ef49c1edd2bb90271f4cb1d67f336d09646123f37ccfafe94bb93dc0ff5e38",
       "quote": "\"declared_bytes\": 992333139"
+    },
+    {
+      "url": "probe:https://data.meteostat.net/monthly.parquet",
+      "date": "2026-11-03",
+      "proved": "monthly.parquet, a single file for all stations, answered HTTP 200 with 152,559,044 bytes and no credentials",
+      "capture": "sha256:6170581ba4cb5ca9170dfac1db41c15cf9a57e5fb2949538ea32a8ed31046bc7",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "https://dev.meteostat.net/data/bulk/monthly",
+      "date": "2026-11-03",
+      "proved": "monthly bulk data for all stations is a single Parquet file, not one per year",
+      "capture": "sha256:6d4047959b8f6821a8bd976b842c8e66aa62a4229c49d28bfa6fd8c7a54d4a68",
+      "quote": "This endpoint provides a single Parquet file containing historical monthly data for all weather stations."
+    },
+    {
+      "url": "https://dev.meteostat.net/data/bulk/monthly",
+      "date": "2026-11-03",
+      "proved": "the monthly bulk file is monthly.parquet",
+      "capture": "sha256:6d4047959b8f6821a8bd976b842c8e66aa62a4229c49d28bfa6fd8c7a54d4a68",
+      "quote": "https://data.meteostat.net/monthly.parquet"
+    },
+    {
+      "url": "https://dev.meteostat.net/data/timeseries/monthly",
+      "date": "2026-11-03",
+      "proved": "per-station monthly CSV has no year in its path",
+      "capture": "sha256:e120d4e8a1f984661ec72d1a4b92d0cf6c9a9a0ad8b11f6383033bc0e80ecd71",
+      "quote": "https://data.meteostat.net/monthly/{station}.csv.gz"
+    },
+    {
+      "url": "https://dev.meteostat.net/data/bulk/daily",
+      "date": "2026-11-03",
+      "proved": "daily bulk data is one Parquet file per year",
+      "capture": "sha256:9c6c4df9dd6117d066e8b996889425dcd3c8d1ce445a95fc6ff7df61b6236064",
+      "quote": "This endpoint provides one Parquet file per year."
     }
   ],
   "verdict": "qualifies",
-  "verified_at": "2026-10-31T10:04:05.824Z",
+  "verified_at": "2026-11-03T00:38:41.081Z",
   "notes": "Bulk path: data.meteostat.net Parquet and CSV files with no key. The JSON API is a separate keyed offer (data-apis/meteostat-json-api)."
 }

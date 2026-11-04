@@ -1,0 +1,187 @@
+{
+  "topic": "data-apis",
+  "slug": "met-norway",
+  "provider": "MET Norway Weather API",
+  "url": "https://docs.api.met.no/doc/TermsOfService",
+  "category": "weather forecast API",
+  "tier": "free",
+  "free_tier": {
+    "stated": "No fee, no key and no registration: Locationforecast and the other products of api.met.no answer any coordinate at up to 20 requests a second per application (total, not per client); the caller sets a User-Agent that names the application and gives a contact.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://docs.api.met.no/doc/TermsOfService",
+    "read_on": "2026-11-02",
+    "notes": "Over 20 requests a second needs a special agreement; throttled clients get HTTP 429, a missing or generic User-Agent gets HTTP 403, and coordinates are cut to 4 decimals. Locationforecast is refreshed every hour inside the Nordic area and every 6 hours elsewhere. Bulk path: the THREDDS server serves model files (NetCDF over OPeNDAP) for the Nordic and Arctic regions only, with no global files; historical observations come from the separate Frost API (see data-apis/met-norway-frost)."
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: the API serves current forecasts only; model archives are on THREDDS",
+    "days": null,
+    "notes": "",
+    "source_url": "https://docs.api.met.no/doc/TermsOfService"
+  },
+  "egress": {
+    "terms": "not applicable: JSON answers; gzip compression is supported",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://docs.api.met.no/doc/TermsOfService"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "REST over HTTPS GET at api.met.no/weatherapi (GeoJSON forecasts; also radar, nowcast, ocean, sunrise and others); gridded model files over OPeNDAP and NetCDF from thredds.met.no (an interface term for OPeNDAP is missing)",
+  "endpoint": "https://api.met.no/weatherapi/locationforecast/2.0/compact",
+  "tooling": "any HTTP client that sets a User-Agent; third-party client libraries are listed in the docs; THREDDS files are read with OPeNDAP clients, FIMEX or ncdump",
+  "chaining": "A keyless global point-forecast source for 9 days ahead with a high per-application ceiling; history comes from THREDDS archives and the Frost API, not from this endpoint.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "20 requests a second per application, total and not per client; over it requests are throttled with HTTP 429",
+      "source": "https://docs.api.met.no/doc/TermsOfService"
+    },
+    {
+      "kind": "request-rate",
+      "value": "coordinates to at most 4 decimals; 5 or more answer HTTP 403 on new products",
+      "source": "https://docs.api.met.no/doc/TermsOfService"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "The 20 requests a second ceiling is shared by all users of one application; the User-Agent requirement is met by one header.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No sign-up and no key: the institute's capacity-building page says the service is open to anyone with no registration; only a User-Agent with an application name and a contact address, website or repository link is required. A call with no key answered HTTP 200.",
+    "country": null
+  },
+  "reliability_note": "No SLA; a missing or generic User-Agent answers HTTP 403 and traffic over the limit is throttled with HTTP 429 or blocked.",
+  "confidence": "documented",
+  "confidence_note": "Limits and identification rules are read from first-party pages; a keyless forecast call and an anonymous OPeNDAP call answered HTTP 200; the 20-requests-a-second ceiling was not driven. The docs link to thredds.met.no/thredds/metno.html, which answered HTTP 404.",
+  "evidence": [
+    {
+      "url": "https://docs.api.met.no/doc/TermsOfService",
+      "date": "2026-11-02",
+      "proved": "the limit is 20 requests a second per application, counted over all clients",
+      "capture": "sha256:79f52778e38b4f53c4c56bedf17aa53d63cbad93604f562a62a381a085866a42",
+      "quote": "Anything over 20 requests/second per application (total, not per client) requires special agreement."
+    },
+    {
+      "url": "https://docs.api.met.no/doc/TermsOfService",
+      "date": "2026-11-02",
+      "proved": "a client that breaks the terms is throttled with HTTP 429",
+      "capture": "sha256:79f52778e38b4f53c4c56bedf17aa53d63cbad93604f562a62a381a085866a42",
+      "quote": "This means requests will start getting a 429 HTTP status code instead of any content."
+    },
+    {
+      "url": "https://docs.api.met.no/doc/TermsOfService",
+      "date": "2026-11-02",
+      "proved": "no delivery guarantee and no SLA",
+      "capture": "sha256:79f52778e38b4f53c4c56bedf17aa53d63cbad93604f562a62a381a085866a42",
+      "quote": "There are no guarantees of delivery regarding this service, or possibilities to obtain an SLA."
+    },
+    {
+      "url": "https://docs.api.met.no/doc/TermsOfService",
+      "date": "2026-11-02",
+      "proved": "every request carries an identifying User-Agent",
+      "capture": "sha256:79f52778e38b4f53c4c56bedf17aa53d63cbad93604f562a62a381a085866a42",
+      "quote": "All requests must (if possible) include an identifying User Agent-string (UA) in the request with the application/domain name, optionally version number."
+    },
+    {
+      "url": "https://docs.api.met.no/doc/TermsOfService",
+      "date": "2026-11-02",
+      "proved": "coordinates are cut to 4 decimals; 5 or more answer 403 on new products",
+      "capture": "sha256:79f52778e38b4f53c4c56bedf17aa53d63cbad93604f562a62a381a085866a42",
+      "quote": null
+    },
+    {
+      "url": "https://docs.api.met.no/doc/TermsOfService",
+      "date": "2026-11-02",
+      "proved": null,
+      "capture": "sha256:79f52778e38b4f53c4c56bedf17aa53d63cbad93604f562a62a381a085866a42",
+      "quote": null
+    },
+    {
+      "url": "https://api.met.no/weatherapi/locationforecast/2.0/documentation",
+      "date": "2026-11-02",
+      "proved": null,
+      "capture": "sha256:060d1c353c7e6172912db81c48147c232420f03b2d5b64ddbb4421d0418b3562",
+      "quote": null
+    },
+    {
+      "url": "https://api.met.no/weatherapi/locationforecast/2.0/documentation",
+      "date": "2026-11-02",
+      "proved": "Locationforecast gives 9 days ahead for any coordinate",
+      "capture": "sha256:060d1c353c7e6172912db81c48147c232420f03b2d5b64ddbb4421d0418b3562",
+      "quote": "This service delivers weather forecasts for any given coordinate for the next nine days, in JSON and (deprecated) XML formats."
+    },
+    {
+      "url": "https://api.met.no/weatherapi/locationforecast/2.0/documentation",
+      "date": "2026-11-02",
+      "proved": "bulk model files cover the Nordic and Arctic regions only",
+      "capture": "sha256:060d1c353c7e6172912db81c48147c232420f03b2d5b64ddbb4421d0418b3562",
+      "quote": "Due to licensing issues we can only distribute model data for the Nordic and Arctic regions."
+    },
+    {
+      "url": "https://docs.api.met.no/doc/locationforecast/FAQ.html",
+      "date": "2026-11-02",
+      "proved": "forecast update cadence",
+      "capture": "sha256:d4e9a23fb61d7591ab2e68a4e3adade520541cdbd76ade59b90913768a696702",
+      "quote": "Inside the Nordic area the forecast is updated every hour; for the rest of the world, every 6 hours."
+    },
+    {
+      "url": "https://docs.api.met.no/doc/thredds",
+      "date": "2026-11-02",
+      "proved": "THREDDS serves gridded data over OPeNDAP",
+      "capture": "sha256:ca083219fb7b14e88232c688d314c39377b403cc1a1bd7b6c2cfdde48c0d3205",
+      "quote": "This document is a brief introduction in how to extract and visualize data from THREDDS using the OPeNDAP protocol."
+    },
+    {
+      "url": "https://bistand.met.no/en/weather-api",
+      "date": "2026-11-02",
+      "proved": "no registration is needed",
+      "capture": "sha256:da2497b4625833b2a2dc53ec4825d2f4191ba2b509536a4ee3b6bfefa23aa682",
+      "quote": "The service is open and available for anyone with no registration."
+    },
+    {
+      "url": "https://docs.api.met.no/doc/FAQ.html",
+      "date": "2026-11-02",
+      "proved": "there is no pricing model for high-volume sites",
+      "capture": "sha256:232d50b802cb50f4d88fcf94e7afb988cd005e37579af164846e44890967a676",
+      "quote": "No. This is a public service funded by Norwegian taxpayers, primarily to assist in our mission to protect life and property in Norway, but also globally."
+    },
+    {
+      "url": "probe:https://api.met.no/weatherapi/locationforecast/2.0/compact",
+      "date": "2026-11-02",
+      "proved": "a Locationforecast call with no key and no sign-up answered a GeoJSON forecast",
+      "capture": "sha256:0c8c18fe4fd844d9567f0cd6dbfdd6abcfbb9e5d5719373840a8676a6e0cfd92",
+      "quote": "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[10.75,59.91,3]}"
+    },
+    {
+      "url": "probe:https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=59.91&lon=10.75",
+      "date": "2026-11-02",
+      "proved": "the same call answered HTTP 200",
+      "capture": "sha256:a8c84ac6c238fa927d281383eaaafc8647498ea570b649a23098fd7e1d52dc8a",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:https://thredds.met.no/thredds/dodsC/metpplatest/met_forecast_1_0km_nordic_latest.nc.dds",
+      "date": "2026-11-02",
+      "proved": "the THREDDS OPeNDAP dataset descriptor of the Nordic forecast answered with no credentials",
+      "capture": "sha256:bf0d62a1c3f7929c9c436e7afb702528a11ee38ccc910c1fc65fc94903c32e48",
+      "quote": "Float32 air_temperature_2m[time = 59][y = 2321][x = 1796];"
+    },
+    {
+      "url": "probe:https://thredds.met.no/thredds/dodsC/metpplatest/met_forecast_1_0km_nordic_latest.nc.dds",
+      "date": "2026-11-02",
+      "proved": "the THREDDS call answered HTTP 200",
+      "capture": "sha256:84e3a0213acc63c2618d391895266f3286dc16924a4d727e6c99b50656e62b7e",
+      "quote": "\"status\": 200"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-11-02T00:23:48.564Z",
+  "notes": "Bulk path: THREDDS model files for the Nordic and Arctic regions; no global dump. The Frost API holds the historical observations."
+}

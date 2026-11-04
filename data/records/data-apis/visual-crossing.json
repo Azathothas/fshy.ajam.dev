@@ -11,7 +11,7 @@
     "metered_on": "object-count",
     "source_url": "https://www.visualcrossing.com/weather-data-editions/",
     "read_on": "2026-10-31",
-    "notes": "The true unit is a weather record, which the unit vocabulary lacks: one row of daily, hourly or sub-hourly history for one location, while a full 15-day forecast for one location counts as one record. Bulk path: Query Builder datasets of up to 1,000 records and 5 locations each on Free, with no dataset scheduling."
+    "notes": "The allowance is counted in weather records: each history record returned counts as one record and a single 15-day forecast query counts as one. Bulk path: Query Builder datasets of up to 1,000 records and 5 locations each on Free, with no dataset scheduling."
   },
   "per_object_cap": {
     "stated": "1,000 records and 5 locations per API query; 1,000 records and 5 locations per Query Builder dataset",
@@ -35,9 +35,9 @@
   "interface": [
     "rest"
   ],
-  "interface_detail": "Timeline Weather API over HTTPS GET or POST with the key in the key query parameter; JSON, flat JSON or CSV answers; Query Builder dataset downloads in the browser",
+  "interface_detail": "Timeline Weather API over HTTP: parameters go in the query string or in a POST query; a registered account's key goes in the key parameter and supported free requests need no key; contentType selects json, flatjson or csv answers",
   "endpoint": "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/",
-  "tooling": "any HTTP client; the key goes in the key query parameter",
+  "tooling": "A keyless request must send Accept-Encoding: gzip; without it the API refuses the request with the text \"Bad API Request:Anonymous requests require gzip response support. Send Accept-Encoding: gzip.\"",
   "chaining": "A history-heavy source: one call returns daily or hourly history, current conditions and a 15-day forecast for a location, so 1,000 locations of forecasts or 1,000 rows of history fit in a day.",
   "limits": [
     {
@@ -64,18 +64,28 @@
       "kind": "per-object-cap",
       "value": "Query Builder datasets: 1,000 records and 5 locations each, no scheduling",
       "source": "https://www.visualcrossing.com/weather-data-editions/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "Keyless Timeline calls need no API key or account registration; usage is managed per client IP address under fair-use controls and no fixed request allowance is published",
+      "source": "https://www.visualcrossing.com/resources/documentation/weather-api/free-weather-api-no-key/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "Keyless queries: a maximum query cost of 48 records; a query that would cost 49 is refused with HTTP 401 and the message to split it into smaller queries",
+      "source": "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/London,UK/2025-01-01/2025-02-18?unitGroup=metric&include=days&elements=datetime,temp"
     }
   ],
   "binding": "volume-quota",
-  "binding_note": "1,000 records a day binds first for history, where every daily or hourly row is a record; a 15-day forecast is one record per location, so forecast polling meets the 1-concurrent-request limit sooner.",
+  "binding_note": "1,000 records a day binds: each daily or hourly history row is one record (24 records for a day of hourly data at one location) and a full 15-day forecast for one location is one record, so 1,000 forecast calls a day for one location fit the same allowance.",
   "identity_cost": {
     "kind": "email",
-    "detail": "The sign-up form shows a Website field and an Account Email field with no card field; the API key is then on the account page.",
+    "detail": "An account is opened with an email address as the username, a validation code emailed to that address, a password and a checked box accepting the terms; the API key is shown when the account is created and stays on the account page.",
     "country": null
   },
   "reliability_note": "Fair use: an account past the day's fair usage answers HTTP 429 and is held to one concurrent request for the rest of the day; extreme cases are suspended until support restores the account.",
   "confidence": "documented",
-  "confidence_note": "The plan table was read from the raw pricing HTML and the free-plan, record and fair-use pages; the keyed free plan was not exercised. The same endpoint answered HTTP 200 to a call with no key (see data-apis/visual-crossing-no-key).",
+  "confidence_note": "The plan table was read from the raw pricing HTML and the free-plan, record and fair-use pages; the keyed free plan was not exercised. A burst of 90 parallel keyless Timeline calls from one address answered HTTP 200 for every call; the request count or window at which a keyless address is refused is unverified.",
   "evidence": [
     {
       "url": "https://www.visualcrossing.com/weather-data-editions/",
@@ -176,13 +186,6 @@
       "quote": "Account Email"
     },
     {
-      "url": "https://www.visualcrossing.com/sign-up/",
-      "date": "2026-10-31",
-      "proved": "the sign-up form has a Website field",
-      "capture": "sha256:55520962329ec1aaeb97b0bf582bf58b58f6224c6519318d916bfbf9b7fa87d2",
-      "quote": "Website"
-    },
-    {
       "url": "https://www.visualcrossing.com/resources/documentation/weather-api/how-do-i-get-started-with-the-weather-api",
       "date": "2026-10-31",
       "proved": "the key is issued on the account page",
@@ -251,9 +254,142 @@
       "proved": "listed under Weather in the public-apis list with an apiKey",
       "capture": "sha256:7c0d65a75227ba9bd3f8576a39262f7af32373d3eca4190cd91e66329ca1d059",
       "quote": "| [Visual Crossing](https://www.visualcrossing.com/weather-api) | Global historical and weather forecast data | `apiKey` | Yes | Yes |"
+    },
+    {
+      "url": "https://www.visualcrossing.com/resources/documentation/weather-data/how-to-sign-up-for-a-weather-data-weather-api-account/",
+      "date": "2026-11-02",
+      "proved": "a registered account is opened with an email address as the username",
+      "capture": "sha256:d1df8d8bfb7236b316d5748508032b72777c30374590ddd8bbc8bf68d9c4629a",
+      "quote": "Enter a valid email as your username and hit continue."
+    },
+    {
+      "url": "https://www.visualcrossing.com/weather-data-editions/",
+      "date": "2026-11-02",
+      "proved": "the Free column allows 30,000 records a month at 1,000 records a day",
+      "capture": "sha256:73f23f83c9e7827be76352ffa121866c1290813eae749911b0bd261e7ff30332",
+      "quote": "<div class=\"vc-limit-main\">30,000</div> <div class=\"vc-limit-sub\">1,000 records/day</div>"
+    },
+    {
+      "url": "https://www.visualcrossing.com/resources/documentation/weather-api/understanding-the-fair-use-system-in-visual-crossing-weather/",
+      "date": "2026-11-02",
+      "proved": "past the day's fair usage an account is held to one concurrent request",
+      "capture": "sha256:e459e5bcfd942001ffc038abaecce912294b83eeb4b695a57afb335a8c776360",
+      "quote": "Your usage has exceeded the fair usage for the current day. You can continue to execute queries however you cannot execute more than one concurrent request."
+    },
+    {
+      "url": "https://www.visualcrossing.com/resources/documentation/weather-api/timeline-weather-api/",
+      "date": "2026-11-02",
+      "proved": "the Timeline Weather API is a REST endpoint",
+      "capture": "sha256:b27e6998a90016bf6bc706ce56e4a1b2682497380ca8c149a03f159c4d5c784c",
+      "quote": "The Visual Crossing Timeline Weather API is the primary REST endpoint for retrieving historical weather, current conditions, and forecast data through a single consistent API."
+    },
+    {
+      "url": "https://www.visualcrossing.com/llms.txt",
+      "date": "2026-11-02",
+      "proved": "the registered free tier carries up to 1,000 records a day and needs no credit card at signup; the same page lists the keyless lane with no fixed allowance",
+      "capture": "sha256:739c95d94490c0362960698e4869826e553a14a8c18e27cd7af54c8062596ef7",
+      "quote": "Registered free tier: up to 1,000 records per day with an API key and no credit card required for signup."
+    },
+    {
+      "url": "https://www.visualcrossing.com/resources/documentation/weather-data/how-to-sign-up-for-a-weather-data-weather-api-account/",
+      "date": "2026-11-02",
+      "proved": "the account email receives a validation code during sign-up",
+      "capture": "sha256:d1df8d8bfb7236b316d5748508032b72777c30374590ddd8bbc8bf68d9c4629a",
+      "quote": "A validation email code will be sent to the email address that you provide."
+    },
+    {
+      "url": "https://www.visualcrossing.com/weather-data-editions/",
+      "date": "2026-11-02",
+      "proved": "a single 15-day forecast query counts as one record and each history record returned counts as one",
+      "capture": "sha256:73f23f83c9e7827be76352ffa121866c1290813eae749911b0bd261e7ff30332",
+      "quote": "Note that A single 15-day forecast query counts as a single Query Result while each history record returned counts as a Query Result."
+    },
+    {
+      "url": "https://www.visualcrossing.com/resources/documentation/weather-data/what-exactly-is-a-weather-record/",
+      "date": "2026-11-02",
+      "proved": "a forecast for the same location can be requested 1000 times a day on the Free plan, one record each",
+      "capture": "sha256:5caa1f6f8de87bd217cc7222e7ca807d56513a49f46720fe24f3d798e9041bd7",
+      "quote": "This means that you can get a forecast for 1000 different locations or for the same location 1000 times per day every day without any cost ever on our Free plan."
+    },
+    {
+      "url": "https://www.visualcrossing.com/resources/documentation/weather-api/timeline-weather-api/",
+      "date": "2026-11-02",
+      "proved": "the Timeline parameters are HTTP query parameters that may also be passed in a POST query",
+      "capture": "sha256:b27e6998a90016bf6bc706ce56e4a1b2682497380ca8c149a03f159c4d5c784c",
+      "quote": "The following are specified as HTTP query parameters (they may also be passed in a POST query)."
+    },
+    {
+      "url": "probe:https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/London,UK?unitGroup=metric",
+      "date": "2026-11-02",
+      "proved": "an anonymous request without Accept-Encoding: gzip is refused with a message to send it",
+      "capture": "sha256:1b0bd3b73033a6038603cdec0109cfdc7340ee4531c7a0fc6417a880ca825f03",
+      "quote": "Bad API Request:Anonymous requests require gzip response support. Send Accept-Encoding: gzip."
+    },
+    {
+      "url": "probe:https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/London,UK?unitGroup=metric&include=current",
+      "date": "2026-11-02",
+      "proved": "a burst of 90 parallel keyless Timeline calls ran with no error in any call; the record lists a status of 200 for each",
+      "capture": "sha256:4c2b2f4c72af5929d606dc64e022b18bfabf4fae685b21362a27f4c44e920d9d",
+      "quote": "\"error\": null, \"probed_at\": \"2026-11-02T10:30:57.234Z\", \"probe_version\": \"1.0.0\", \"mode\": \"concurrency\", \"concurrency\": 90,"
+    },
+    {
+      "url": "https://www.visualcrossing.com/resources/documentation/weather-api/free-weather-api-no-key/",
+      "date": "2026-11-02",
+      "proved": "no fixed request allowance is published for the keyless lane, whose usage is managed per client IP address",
+      "capture": "sha256:e5336750428f2a539da14499520d21ec6606ff6398c937cd334d72b5a02887ec",
+      "quote": "We do not currently publish a fixed request allowance, and the available limits may change."
+    },
+    {
+      "url": "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/London,UK/2025-01-01/2025-02-18?unitGroup=metric&include=days&elements=datetime,temp",
+      "date": "2026-11-02",
+      "proved": "a keyless query costing 49 records is refused: the maximum query cost for the account is 48",
+      "capture": "sha256:506c343b702cee7c9078ba1379dfea8877a4749751d8ffc6c174d02ac5abcc86",
+      "quote": "This query size (49) exceeds the maximum query cost for your account (48). Please split your query into smaller queries."
+    },
+    {
+      "url": "https://www.visualcrossing.com/llms.txt",
+      "date": "2026-11-02",
+      "proved": "keyless Timeline calls need no signup or account registration",
+      "capture": "sha256:739c95d94490c0362960698e4869826e553a14a8c18e27cd7af54c8062596ef7",
+      "quote": "No signup or account registration required."
+    },
+    {
+      "url": "https://www.visualcrossing.com/weather-api/",
+      "date": "2026-11-02",
+      "proved": "keyless use needs no API key, signup or credit card",
+      "capture": "sha256:d76909361e413ce91971f3319031008156b9f645313402322be94d0d21b342f1",
+      "quote": "Start using the API immediately — no API key, signup, or credit card required."
+    },
+    {
+      "url": "probe:https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/London,UK?unitGroup=metric",
+      "date": "2026-11-02",
+      "proved": "a keyless Timeline request sent without Accept-Encoding: gzip answered HTTP 400",
+      "capture": "sha256:ba66ab4754cb5a1ced0d2051a027c0f27bcec0abfa65f4809305fe7421535f96",
+      "quote": "\"status\": 400"
+    },
+    {
+      "url": "probe:https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/London,UK?unitGroup=metric",
+      "date": "2026-11-02",
+      "proved": "a keyless Timeline call that sent Accept-Encoding: gzip answered HTTP 200",
+      "capture": "sha256:182427ac7d25b4e3b7acc41865cf7d63fb5b7ad66c0934e4b21fa645d0a5f38e",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/London,UK/2025-03-02/2025-03-03?unitGroup=metric&include=hours&elements=datetime,temp",
+      "date": "2026-11-02",
+      "proved": "a burst of 90 parallel keyless calls, each for two days of hourly data, ran with no error in any call",
+      "capture": "sha256:6a0042373a386ad47d3a58f1bc754c8650b1e024f8519e7448e7c180b6cf04d5",
+      "quote": "\"error\": null, \"probed_at\": \"2026-11-02T10:51:04.861Z\", \"probe_version\": \"1.0.0\", \"mode\": \"concurrency\", \"concurrency\": 90,"
+    },
+    {
+      "url": "https://www.visualcrossing.com/wp-content/plugins/visualcrossing-dashboards/dist/UnitGroupDropdown-BeZkmj5h.js",
+      "date": "2026-11-02",
+      "proved": "the sign-up form's Website input is bound to a variable named honeypot",
+      "capture": "sha256:c946cd045ab466390c0be717801cde9becc6715dec0e8f1eb0c8cbd6beade955",
+      "quote": "\"onUpdate:modelValue\": t[5] || (t[5] = (l) => n.honeypot = l),"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T10:04:05.824Z",
+  "verified_at": "2026-11-03T00:27:15.391Z",
   "notes": "Bulk path: Query Builder datasets, 1,000 records and 5 locations each on Free. Past the free records, the Metered plan bills USD 0.0001 a record."
 }

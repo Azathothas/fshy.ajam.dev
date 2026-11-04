@@ -5,7 +5,7 @@
   "url": "https://www.twilio.com/docs/messaging/api/media-resource",
   "category": "messaging",
   "free_tier": {
-    "stated": "No quota — media is retained indefinitely. The docs say Twilio 'retains the stored media until you delete the related Media subresource instance', i.e. retention is customer-controlled and unbounded in time.",
+    "stated": "No storage quota is stated on the Media subresource page: Twilio retains stored media until the Media subresource instance is deleted. Media arrives through billed messages: MMS outbound $0.022 and inbound $0.0165 per message on a long code.",
     "unit": "unlimited",
     "metered_on": "stored-bytes",
     "source_url": "https://www.twilio.com/docs/messaging/api/media-resource",
@@ -13,7 +13,7 @@
     "notes": null
   },
   "per_object_cap": {
-    "stated": "not stated",
+    "stated": "5 MB total across up to 10 media files per message; Twilio rejects messages with over 5MB of media",
     "source_url": "https://www.twilio.com/docs/messaging/api/media-resource",
     "notes": "not stated"
   },
@@ -32,16 +32,22 @@
   "interface_detail": "rest",
   "tooling": "twilio-python / twilio-node; .media.list() and .media(sid).fetch(). Clean API, but nothing removes the auth requirement.",
   "chaining": "5 MB per message is the wall. To reach 1 TB you need ~200,000 MMS, each billed per message — this is the opposite of a free tier. Retention is excellent and completely unusable at this scale.",
-  "limits": [],
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "5 MB total media per message, up to 10 media files",
+      "source": "https://www.twilio.com/docs/messaging/api/media-resource"
+    }
+  ],
   "limits_note": "5 MB TOTAL across up to 10 files per message; 'Twilio rejects messages with over 5MB of media'. Paid per message ($ per MMS segment), not a free tier. Carrier-grade resizing mangles images.",
   "identity_cost": {
-    "kind": "email",
-    "detail": null,
+    "kind": "any-phone",
+    "detail": "trial sign-up verifies an email address and a personal phone number and needs no credit card; the identity needed for a paid account that sends MMS is unverified",
     "country": null
   },
   "reliability_note": "The best retention semantics in the slot (never expires unless you delete) ruined by a 5 MB message cap and per-message billing. Interesting only as proof that indefinite retention is commercially possible.",
-  "confidence": "reported",
-  "confidence_note": null,
+  "confidence": "documented",
+  "confidence_note": "read 2026-11-03: https://www.twilio.com/docs/messaging/api/media-resource (5MB and 10 files per message; retention until deletion), https://www.twilio.com/en-us/sms/pricing/us (long-code MMS prices) and https://www.twilio.com/docs/usage/tutorials/how-to-use-your-free-trial-account (trial phone verification, no card), all vendor pages; paid-account identity not read.",
   "evidence": [
     {
       "url": "https://www.twilio.com/docs/messaging/api/media-resource",
@@ -52,10 +58,59 @@
       "url": "https://www.twilio.com/docs/messaging/api/media-resource",
       "date": "2026-10-21",
       "proved": "read live: 'up to 10 media files that have a total size of up to 5MB ... Twilio rejects messages with over 5MB of media'"
+    },
+    {
+      "url": "https://www.twilio.com/en-us/sms/pricing/us",
+      "date": "2026-11-03",
+      "proved": "MMS outbound costs $0.022 and inbound $0.0165 on long codes",
+      "capture": "sha256:ac913cc8e6ac602ce19559dcca0e4ef125adeef5f490c7e35d9c06d10b13794e",
+      "quote": "| **Long codes ** A 10-digit number for SMS and voice calls with localized identity. | $0.0083 | $0.0083 | $0.022 | $0.0165 |"
+    },
+    {
+      "url": "https://www.twilio.com/docs/messaging/api/media-resource",
+      "date": "2026-11-03",
+      "proved": "a message carries up to 10 media files totalling up to 5MB",
+      "capture": "sha256:d3206a671e967c452641522a1e88c7ee368570d2c7a829b3308a6e92b189d52c",
+      "quote": "You can send messages using Twilio with up to 10 media files that have a total size of up to 5MB."
+    },
+    {
+      "url": "https://www.twilio.com/en-us/sms/pricing/us",
+      "date": "2026-11-03",
+      "proved": "media is stored through per-message billed MMS",
+      "capture": "sha256:ac913cc8e6ac602ce19559dcca0e4ef125adeef5f490c7e35d9c06d10b13794e",
+      "quote": "| **Long codes ** A 10-digit number for SMS and voice calls with localized identity. | $0.0083 | $0.0083 | $0.022 | $0.0165 |"
+    },
+    {
+      "url": "https://www.twilio.com/docs/usage/tutorials/how-to-use-your-free-trial-account",
+      "date": "2026-11-03",
+      "proved": "trial sign-up verifies a personal phone number",
+      "capture": "sha256:16fa9f01d2429f84bf31c6b1d9daaf30188bf49e2a7b5f8bcd1b27bf48c13745",
+      "quote": "* Verify your personal phone number."
+    },
+    {
+      "url": "https://www.twilio.com/docs/usage/tutorials/how-to-use-your-free-trial-account",
+      "date": "2026-11-03",
+      "proved": "the trial needs no credit card",
+      "capture": "sha256:16fa9f01d2429f84bf31c6b1d9daaf30188bf49e2a7b5f8bcd1b27bf48c13745",
+      "quote": "You can sign up for a Twilio free trial account without a credit card."
+    },
+    {
+      "url": "https://www.twilio.com/docs/messaging/api/media-resource",
+      "date": "2026-11-03",
+      "proved": "media is retained until the Media subresource instance is deleted",
+      "capture": "sha256:d3206a671e967c452641522a1e88c7ee368570d2c7a829b3308a6e92b189d52c",
+      "quote": "Twilio retains the stored media until you [delete the related Media subresource instance.](#delete-media)"
+    },
+    {
+      "url": "https://www.twilio.com/docs/messaging/api/media-resource",
+      "date": "2026-11-04",
+      "proved": "a message carries up to 10 media files totalling up to 5MB",
+      "capture": "sha256:d3206a671e967c452641522a1e88c7ee368570d2c7a829b3308a6e92b189d52c",
+      "quote": "You can send messages using Twilio with up to 10 media files that have a total size of up to 5MB."
     }
   ],
-  "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
+  "verdict": "paid-only",
+  "verified_at": "2026-11-04T01:24:45.963Z",
   "notes": "No quota — media is retained indefinitely. The docs say Twilio 'retains the stored media until you delete the related Media subresource instance', i.e. retention is customer-controlled and unbounded in time.",
   "extras": {
     "dead_end": {
@@ -65,6 +120,6 @@
       "first_recorded": "2026-10-21"
     }
   },
-  "binding": "none",
-  "binding_note": null
+  "binding": "per-object-cap",
+  "binding_note": "5 MB of media per message, and every message is billed, so capacity is paid for per message"
 }

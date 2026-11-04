@@ -1,0 +1,110 @@
+{
+  "topic": "egress",
+  "slug": "tunelo-net",
+  "provider": "tunelo.net",
+  "url": "https://tunelo.net/",
+  "category": "http tunnel",
+  "tier": "public relay",
+  "free_tier": {
+    "stated": "Free and open source; the tunelo binary defaults to the public relay at tunelo.net:4433 with no account and no signup. No byte cap, rate or paid tier is published.",
+    "unit": "none",
+    "metered_on": "unstated",
+    "source_url": "https://tunelo.net/",
+    "read_on": "2026-11-03",
+    "notes": "The site is one page; /pricing, /terms, /docs and /faq return the same page, and it states no byte cap or tolerance."
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "source_url": "https://tunelo.net/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://tunelo.net/",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "No byte allowance, rate or paid tier is published for the public relay; it is described as free and open source.; ingress: http-only",
+    "metered": false,
+    "free_allowance": "none published",
+    "price_per_tb": null,
+    "source_url": "https://tunelo.net/"
+  },
+  "interface": [
+    "cli"
+  ],
+  "interface_detail": "One binary: tunelo port PORT opens an HTTPS subdomain of tunelo.net; the binary speaks QUIC to the relay on UDP port 4433.",
+  "tooling": "Install script for Linux, macOS and Windows; a single Rust binary that holds the tunnel command, a file server and the relay.",
+  "chaining": "Routes by the Host header, so only HTTP and HTTPS traffic reaches the local service; a raw TCP or UDP port has no path.",
+  "limits": [],
+  "limits_note": "No byte cap, concurrency cap or rate limit is stated on the site.",
+  "binding": "none",
+  "binding_note": "No limit is published; the transport is HTTP routed by Host header, so a raw TCP or UDP forward has no path.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account, no signup: the client connects to the relay and is assigned a random subdomain.",
+    "country": "None"
+  },
+  "reliability_note": "No paid tier exists to buy more.",
+  "confidence": "documented",
+  "confidence_note": "A measured transfer through the public relay would show its real byte and rate tolerance; the site publishes none.",
+  "evidence": [
+    {
+      "url": "https://tunelo.net/",
+      "date": "2026-11-03",
+      "capture": "sha256:0c13e0aaadcbd81abf444b4bbd32fcc5b73e42c19ccf32cac4067fa038be252f",
+      "quote": "The client and relay are fully decoupled. The client defaults to the public relay at `tunelo.net:4433` — or use `--relay` to point at your own. No account, no signup.",
+      "proved": "the public relay at tunelo.net:4433 is the default, with no account and no signup"
+    },
+    {
+      "url": "https://tunelo.net/",
+      "date": "2026-11-03",
+      "capture": "sha256:0c13e0aaadcbd81abf444b4bbd32fcc5b73e42c19ccf32cac4067fa038be252f",
+      "quote": "UDP port 4433 open for QUIC tunnel connections",
+      "proved": "the tunnel connection uses UDP port 4433 (QUIC)"
+    },
+    {
+      "url": "https://tunelo.net/",
+      "date": "2026-11-03",
+      "capture": "sha256:0c13e0aaadcbd81abf444b4bbd32fcc5b73e42c19ccf32cac4067fa038be252f",
+      "quote": "When a browser hits that URL, the relay peeks at the Host header, finds the matching tunnel, opens a QUIC stream, and does `copy_bidirectional` between the TCP socket and the QUIC stream.",
+      "proved": "the relay routes by Host header, an HTTP tunnel"
+    },
+    {
+      "url": "https://tunelo.net/",
+      "date": "2026-11-03",
+      "capture": "sha256:0c13e0aaadcbd81abf444b4bbd32fcc5b73e42c19ccf32cac4067fa038be252f",
+      "quote": "| Price | Free tier limited | Free & open source |",
+      "proved": "the site states the price as free and open source; it names no paid tier"
+    },
+    {
+      "url": "https://tunelo.net/",
+      "date": "2026-11-03",
+      "capture": "sha256:0c13e0aaadcbd81abf444b4bbd32fcc5b73e42c19ccf32cac4067fa038be252f",
+      "quote": "The tunnel is outbound-only — the client connects to the relay, not the other way around.",
+      "proved": "the client connects outbound to the relay"
+    },
+    {
+      "url": "https://github.com/jiweiyuan/tunelo/releases",
+      "date": "2026-11-03",
+      "capture": "sha256:bea07059316340c69c782cb95a0d39a08d2daf9f91b4c9a7de2f5b3a5ac7b6a8",
+      "quote": "Stable self-owned subdomains via Ed25519 identity",
+      "proved": "latest release v0.3.0 adds stable subdomains tied to an Ed25519 identity"
+    }
+  ],
+  "verdict": "fails-egress",
+  "verified_at": "2026-11-03T07:36:40.988Z",
+  "price_per_tb_month": "USD 0",
+  "notes": "A hosted QUIC relay run by the maintainer of the open-source tunelo repository. HTTP tunnels only; the page publishes no byte cap, no tolerance and no paid tier.",
+  "extras": {
+    "wg_path": "none",
+    "wg_detail": "",
+    "ingress": "http-only",
+    "volume_tib_month": null,
+    "volume_stated": "No byte allowance is published for the public relay.",
+    "bytes_transit": "yes",
+    "transit_note": "the public relay copies bytes between the visitor's TCP connection and a QUIC stream"
+  }
+}

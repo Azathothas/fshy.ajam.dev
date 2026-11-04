@@ -41,7 +41,7 @@
   "limits": [
     {
       "kind": "request-rate",
-      "value": "250 requests a day on the Free plan, reset at 00:00 UTC",
+      "value": "250 requests a day per API key on the Free plan, reset at 00:00 UTC",
       "source": "https://currentsapi.services/en/product/price"
     },
     {
@@ -51,15 +51,15 @@
     },
     {
       "kind": "request-rate",
-      "value": "unverified: a burst limit also answers 429; its window is not published",
+      "value": "unverified: behind a sign-up; no page states the burst window or its request count, and a burst 429 carries Retry-After as the seconds until the window clears",
       "source": "https://currentsapi.services/json/swagger.json"
     }
   ],
   "binding": "request-rate",
-  "binding_note": "250 requests a day is met first; a burst limit of unpublished size also answers 429.",
+  "binding_note": "250 requests a day per key is the published hard cap; a burst limit of unpublished window and request count also answers 429.",
   "identity_cost": {
     "kind": "email",
-    "detail": "The sign-up takes a username, an email and a password, or Microsoft, Google or GitHub sign-in; no card. Temporary or disposable email domains are refused where a permanent address is asked for.",
+    "detail": "The sign-up takes a username, an email and a password, or Microsoft, Google or GitHub sign-in; no card. Temporary or disposable email domains are refused where a permanent address is asked for. One account and one API key are held at a time per user, plus-addressed aliases included.",
     "country": null
   },
   "reliability_note": "At the daily cap or the burst limit the API answers HTTP 429 with Retry-After; a keyless call answered HTTP 401 Authentication required.",
@@ -163,9 +163,93 @@
       "proved": "a keyless call answers HTTP 401 Authentication required",
       "capture": "sha256:70c6bf2ee963e73c450e93baf5ff238cec3c32faa8b0e984fe17feaa5f3648ce",
       "quote": "{\"status\":\"401\",\"msg\":\"Authentication required\"}"
+    },
+    {
+      "url": "https://currentsapi.services/en/docs/ratelimit",
+      "date": "2026-11-02",
+      "proved": "the daily quota is a hard cap, and it is the key that exhausts its daily allowance",
+      "capture": "sha256:dc3cb3ddd769a9b23530bb693941abe3ec071b59d42b0614fc062421d29b8eae",
+      "quote": "Quota is enforced as a hard daily cap: when your key exhausts its daily allowance"
+    },
+    {
+      "url": "https://currentsapi.services/json/swagger.json",
+      "date": "2026-11-02",
+      "proved": "a burst limit answers 429 and Retry-After then holds the seconds until the burst window clears; no window length or request count is given",
+      "capture": "sha256:bed213d2e0d489df4e03886abf99b13a1deb2d3ae2b2c1a20a1d5848221160ab",
+      "quote": "Seconds until the quota resets (UTC midnight) or the burst window clears."
+    },
+    {
+      "url": "https://currentsapi.services/terms",
+      "date": "2026-11-02",
+      "proved": "an account and an API key are held one at a time per user, plus-addressed aliases and bulk sign-ups included",
+      "capture": "sha256:388bb3c6ba1c94f3fe1899f1f5b2a3ea97323593b9a199666a83b18e2356556b",
+      "quote": "4. register or maintain more than one account or API key at any one time, whether directly, through aliases (including plus-addressing), or through automated or bulk account creation;"
+    },
+    {
+      "url": "https://currentsapi.services/en/product/price",
+      "date": "2026-11-02",
+      "proved": "Free: 250 requests a day, daily cap only, 20 results a request, 30 days of history, 7 days per search",
+      "capture": "sha256:218008be611e14e10233e6f45397e661c127c2e160e8ee68eac208ab1a55fb02",
+      "quote": "| Free | $0 | 250 | daily cap only | 20 | 30 days | 7 days |"
+    },
+    {
+      "url": "https://currentsapi.services/en/docs/ratelimit",
+      "date": "2026-11-02",
+      "proved": "the X-RateLimit-Limit header reports the daily limit of the key",
+      "capture": "sha256:dc3cb3ddd769a9b23530bb693941abe3ec071b59d42b0614fc062421d29b8eae",
+      "quote": "X-RateLimit-Limit: Displays the total daily limit of API calls for your key."
+    },
+    {
+      "url": "https://currentsapi.services/json/swagger.json",
+      "date": "2026-11-02",
+      "proved": "X-RateLimit-Limit on a 429 is the daily request limit for the key",
+      "capture": "sha256:bed213d2e0d489df4e03886abf99b13a1deb2d3ae2b2c1a20a1d5848221160ab",
+      "quote": "Daily request limit for the key."
+    },
+    {
+      "url": "https://currentsapi.services/en/docs/errors",
+      "date": "2026-11-02",
+      "proved": "HTTP 429 answers both the daily limit and a burst limit",
+      "capture": "sha256:dfb28e09fda741f82cc993b64d6fc33fe45a4c58942a988481a99db4703e9ffc",
+      "quote": "429 Too Many Requests: Daily or burst limits exceeded."
+    },
+    {
+      "url": "https://currentsapi.services/en/news-api-key",
+      "date": "2026-11-02",
+      "proved": "a free account starts with 250 requests a day",
+      "capture": "sha256:12a7157fd34ff1fd3b538f8e7fc8b80b5ef080fd2f972341e42b0abbe2d9326d",
+      "quote": "A free account starts with 250 requests per day."
+    },
+    {
+      "url": "https://currentsapi.services/en/register",
+      "date": "2026-11-02",
+      "proved": "the free tier needs no card",
+      "capture": "sha256:8e8a93ee7491d64cde6dce796d76b87934a005d5d4fcae73a89d0bf69806dd87",
+      "quote": "Start with our generous free tier. No credit card required."
+    },
+    {
+      "url": "https://currentsapi.services/en/register",
+      "date": "2026-11-02",
+      "proved": "sign-up is open with an email and a password, besides the single sign-on options",
+      "capture": "sha256:8e8a93ee7491d64cde6dce796d76b87934a005d5d4fcae73a89d0bf69806dd87",
+      "quote": "or create account with email/password"
+    },
+    {
+      "url": "probe:https://api.currentsapi.services/v1/latest-news",
+      "date": "2026-11-02",
+      "proved": "a keyless call answers HTTP 401 Authentication required",
+      "capture": "sha256:70c6bf2ee963e73c450e93baf5ff238cec3c32faa8b0e984fe17feaa5f3648ce",
+      "quote": "{\"status\":\"401\",\"msg\":\"Authentication required\"}"
+    },
+    {
+      "url": "https://currentsapi.services/en/product/price",
+      "date": "2026-11-02",
+      "proved": "the Free plan returns a 300-character text preview",
+      "capture": "sha256:218008be611e14e10233e6f45397e661c127c2e160e8ee68eac208ab1a55fb02",
+      "quote": "Article text: Free returns a 300-character text preview."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T06:24:18.866Z",
+  "verified_at": "2026-11-03T00:28:46.350Z",
   "notes": "Bulk path: none; the search pages to an offset of 5000 rows."
 }

@@ -1,0 +1,143 @@
+{
+  "topic": "data-apis",
+  "slug": "airtel-ip",
+  "provider": "Airtel IP",
+  "url": "https://sys.airtel.lv/ip2country/1.1.1.1/?full=true",
+  "category": "IP geolocation API",
+  "tier": "Free keyless",
+  "free_tier": {
+    "stated": "keyless GET /ip2country/{IP} returns a country code as plain text and, with ?full=true, a JSON object with country, city, coordinates, ASN and per-field reliability scores; the listed host sys.airtel.lv now answers an error that names https://aether.epias.ltd/ip2country/{IP}, where 8.8.8.8 answered HTTP 200 with no key",
+    "unit": "requests",
+    "metered_on": "unstated",
+    "source_url": "https://sys.airtel.lv/ip2country/1.1.1.1/?full=true",
+    "read_on": "2026-11-02",
+    "notes": "unverified: no quota, rate limit or documentation page is published; no rate-limit header was returned."
+  },
+  "per_object_cap": {
+    "stated": "one IP address per request, in the URL path",
+    "bytes": null,
+    "source_url": "https://sys.airtel.lv/ip2country/1.1.1.1/?full=true"
+  },
+  "retention": {
+    "stated": "not stated",
+    "days": null,
+    "source_url": "https://sys.airtel.lv/ip2country/1.1.1.1/?full=true"
+  },
+  "egress": {
+    "terms": "not applicable: plain text and JSON answers, not metered in bytes",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://sys.airtel.lv/ip2country/1.1.1.1/?full=true"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "GET https://aether.epias.ltd/ip2country/{IP} answers the country code as plain text and ?full=true answers JSON; the former host sys.airtel.lv answers a Cloudflare managed challenge (HTTP 403) to a plain HTTP client",
+  "endpoint": "https://aether.epias.ltd/ip2country/{IP}",
+  "tooling": "curl or any HTTP client against the aether.epias.ltd host",
+  "chaining": "Keyless country, city, coordinates and ASN with a reliability score for each field; one IP per call. Bulk path: none.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "unverified: no rate limit or quota is published",
+      "source": "https://sys.airtel.lv/ip2country/1.1.1.1/?full=true"
+    }
+  ],
+  "binding": "none",
+  "binding_note": "no limit is published, so none could be named.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "no key or header: a plain GET of the new host answered HTTP 200",
+    "country": null
+  },
+  "reliability_note": "sys.airtel.lv answers HTTP 403 (a Cloudflare managed challenge) to a plain HTTP client, and a client that passes the challenge receives an error JSON that names the new host; every other path of aether.epias.ltd answered HTTP 500 and no documentation exists",
+  "confidence": "measured",
+  "confidence_note": "Two lookups at the new host were probed on 2026-11-02, a fetch from a second network returned the same JSON, and the old host was read with a client that passes the challenge; no first-party documentation exists, so quota, rate and terms are unverified.",
+  "evidence": [
+    {
+      "url": "https://sys.airtel.lv/ip2country/1.1.1.1/?full=true",
+      "date": "2026-11-02",
+      "proved": "the listed host answers an error that names the new host",
+      "capture": "sha256:3ca12f358b098508f6bc726fd58a2d52e1b1e2d0415c79b13943291cf827bb36",
+      "quote": "{\"error\":\"use https:\\/\\/aether.epias.ltd\\/ip2country\\/{IP}\"}"
+    },
+    {
+      "url": "probe:https://sys.airtel.lv/ip2country/1.1.1.1/?full=true",
+      "date": "2026-11-02",
+      "proved": "a plain GET of the listed host answered HTTP 403",
+      "capture": "sha256:719992c83dab4672646203d6953a0dd44dc64966b7e494ce58d0563fe221b459",
+      "quote": "\"status\": 403"
+    },
+    {
+      "url": "probe:https://sys.airtel.lv/ip2country/1.1.1.1/?full=true",
+      "date": "2026-11-02",
+      "proved": "the 403 is a Cloudflare managed challenge",
+      "capture": "sha256:719992c83dab4672646203d6953a0dd44dc64966b7e494ce58d0563fe221b459",
+      "quote": "\"signature\": \"cloudflare-challenge:title:just a moment...\""
+    },
+    {
+      "url": "probe:https://aether.epias.ltd/ip2country/8.8.8.8?full=true",
+      "date": "2026-11-02",
+      "proved": "a keyless GET of the new host with full=true answered HTTP 200",
+      "capture": "sha256:7550b2626adec9a31374d05c780bd03ae2e9a052e666001ccf89c2216cda3bb4",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:https://aether.epias.ltd/ip2country/8.8.8.8?full=true",
+      "date": "2026-11-02",
+      "proved": "the full answer carries a country code",
+      "capture": "sha256:0575165f88dbbbf8a82036691919d5136bf1bafd82e23ded9d71948a611bc34e",
+      "quote": "\"country\": \"US\","
+    },
+    {
+      "url": "probe:https://aether.epias.ltd/ip2country/8.8.8.8?full=true",
+      "date": "2026-11-02",
+      "proved": "the full answer carries an ASN",
+      "capture": "sha256:0575165f88dbbbf8a82036691919d5136bf1bafd82e23ded9d71948a611bc34e",
+      "quote": "\"asn\": \"AS15169\","
+    },
+    {
+      "url": "probe:https://aether.epias.ltd/ip2country/8.8.8.8?full=true",
+      "date": "2026-11-02",
+      "proved": "the full answer carries per-field reliability scores",
+      "capture": "sha256:0575165f88dbbbf8a82036691919d5136bf1bafd82e23ded9d71948a611bc34e",
+      "quote": "\"reliability\": {"
+    },
+    {
+      "url": "probe:https://aether.epias.ltd/ip2country/8.8.8.8",
+      "date": "2026-11-02",
+      "proved": "the plain lookup answers a two-byte country code",
+      "capture": "sha256:2f6b18142b5f548bc22fd6a1aaba506f8d4df2e1e6de121cc08bf4afcf08474b",
+      "quote": "\"bytes\": 2,"
+    },
+    {
+      "url": "https://aether.epias.ltd/ip2country/8.8.8.8?full=true",
+      "date": "2026-11-02",
+      "proved": "a fetch of the new host from a second network answered HTTP 200",
+      "capture": "sha256:0f60d199a9667887aac109306a943775b0475f80b22455f6051aad44152eecef",
+      "quote": "HTTP/1.1 200 OK"
+    },
+    {
+      "url": "https://aether.epias.ltd/ip2country/8.8.8.8?full=true",
+      "date": "2026-11-02",
+      "proved": "the second route reads the same full JSON answer",
+      "capture": "sha256:0f60d199a9667887aac109306a943775b0475f80b22455f6051aad44152eecef",
+      "quote": "\"asn\": \"AS15169\","
+    },
+    {
+      "url": "probe:https://aether.epias.ltd/docs",
+      "date": "2026-11-02",
+      "proved": "a path other than /ip2country/{IP} answers HTTP 500",
+      "capture": "sha256:69dda2ed93d0647937272e0dc5e7595557646d45923221be23ac3b9fc046576b",
+      "quote": "\"status\": 500"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-11-02T00:23:42.887Z",
+  "notes": "Free requests: no quota stated. Rate limit: not stated. Bulk path: none. The listed host moved to aether.epias.ltd.",
+  "extras": {
+    "bulk_path": "none",
+    "free_requests": "no quota stated"
+  }
+}

@@ -20,7 +20,7 @@
     "notes": ""
   },
   "retention": {
-    "stated": "not applicable: a query API with no stored objects",
+    "stated": "not applicable",
     "days": null,
     "notes": ""
   },
@@ -55,7 +55,7 @@
   "binding_note": "60 calls a minute is the ceiling a free key meets; the 30-per-second limit binds only bursts.",
   "identity_cost": {
     "kind": "email",
-    "detail": "The signup form asks for a name, an email and a password, behind a reCAPTCHA; it has no card field. Signing up confirms non-professional status, and the terms use the name and email to file a non-professional subscriber form. A third-party integration guide reports an email verification link before the key is shown. A call without a key answers HTTP 401 with 'Please use an API key.'",
+    "detail": "The signup form asks for a name, an email and a password, behind a reCAPTCHA; it has no card field. Signing up confirms non-professional status, and the terms use the name and email to file a non-professional subscriber form. When the register call returns a JSON body with status 200 the signup page opens /dashboard, where the docs say the API key is found, and its script holds no email-verification step; a third-party integration guide reports an email verification link before the key is shown, and whether the dashboard withholds the key until that link is followed is unverified: behind a sign-up. A call without a key answers HTTP 401 with 'Please use an API key.'",
     "country": null
   },
   "reliability_note": "Inactive users are deleted from time to time; a deleted account needs a new signup.",
@@ -243,12 +243,101 @@
       "proved": "the keyless call is refused with a request for an API key",
       "capture": "sha256:f2906267f693bd6aaa3cbe886b1530adff776082a85e4b7a6b69db55900a7174",
       "quote": "{\"error\":\"Please use an API key.\"}"
+    },
+    {
+      "url": "https://finnhub.io/docs/api/rate-limit",
+      "date": "2026-11-02",
+      "proved": "a call over a plan's limit answers HTTP 429",
+      "capture": "sha256:2d0e382bf1643996bd5ee74d3e0d7372ed5af1b9864f812e7950ef5fdd7dc6ea",
+      "quote": "If your limit is exceeded, you will receive a response with status code `429`."
+    },
+    {
+      "url": "https://github.com/finnhubio/Finnhub-API/issues/233",
+      "date": "2026-11-02",
+      "proved": "a free-plan user's call over the limit got HTTP 429 with the text API limit reached. Please try again later.",
+      "capture": "sha256:98350404a9bb59dddb5f99b8e9a94482e63e3e35407a6fb1d7efbc850f1e24e9",
+      "quote": "returned code 429. Truncated server response: API limit reached. Please try again later."
+    },
+    {
+      "url": "https://github.com/Finnhub-Stock-API/finnhub-python/issues/24",
+      "date": "2026-11-02",
+      "proved": "the official Python client reports the 429 body as a JSON error message with this text (a premium-plan key)",
+      "capture": "sha256:f7ddd20aa01335f7c32247c3df93e3dd94a3cfc480b784381c4bf150a29f8ae1",
+      "quote": "JSON error message from Finnhub: API limit reached. Please try again later."
+    },
+    {
+      "url": "https://finnhub.io/pricing",
+      "date": "2026-11-02",
+      "proved": "the plan table gives 60 API calls a minute and names no reset instant",
+      "capture": "sha256:71839fe4ba69e46ec240d97f09e1ba3bf45d8c43d61cc49a36138edd5bf59c22",
+      "quote": "| Limit | 60 API calls/minute | Market data: 900 API calls/minute Fundamental: 300 API calls/minute |"
+    },
+    {
+      "url": "https://finnhub.io/static/js/webpack/dist/main.bundle.4de77626bde75a453a2c.js",
+      "date": "2026-11-02",
+      "proved": "after the register call returns a JSON body with status 200 the signup script shows Successful and sends the browser to /dashboard",
+      "capture": "sha256:d657a010ad8af17a6a7d8eb7b8d2bf0b5765bb5cea45dec633055f2c026221ac",
+      "quote": "t.ok?(t.json().then(function(e){console.log(e),200!==e.status?window.pushNoti(e.msg,3e3,\"error\"):(window.pushNoti(\"Successful\",2e3),window.location=\"/dashboard\")})"
+    },
+    {
+      "url": "https://finnhub.io/docs/api/rate-limit",
+      "date": "2026-11-02",
+      "proved": "the docs say the API key is found on the dashboard",
+      "capture": "sha256:2d0e382bf1643996bd5ee74d3e0d7372ed5af1b9864f812e7950ef5fdd7dc6ea",
+      "quote": "You can find your API Key under [Dashboard](https://finnhub.io/dashboard)."
+    },
+    {
+      "url": "probe:https://www.kaggle.com/api/v1/datasets/download/finnhub/sec-filings",
+      "date": "2026-11-02",
+      "proved": "a request with no credentials to the Kaggle API download URL was redirected to the archive zip, and a ranged read of its first 1024 bytes answered 206 with a total of 499804103 bytes",
+      "capture": "sha256:5aabf152b6a5c69b908df827f658705826ad2598b03b394a3406108ac824e5b5",
+      "quote": "\"content_range\": \"bytes 0-1023/499804103\""
+    },
+    {
+      "url": "probe:https://www.kaggle.com/api/v1/datasets/download/finnhub/sec-filings",
+      "date": "2026-11-02",
+      "proved": "the ranged read of the archive behind the keyless download link answered HTTP 206",
+      "capture": "sha256:5aabf152b6a5c69b908df827f658705826ad2598b03b394a3406108ac824e5b5",
+      "quote": "\"status\": 206"
+    },
+    {
+      "url": "https://github.com/Kaggle/kagglehub/blob/main/README.md",
+      "date": "2026-11-02",
+      "proved": "Kaggle's own client documentation says authentication is needed only for public resources that require consent, and for private ones",
+      "capture": "sha256:1a5fce92f06f73a4245934aa6e4fff307fdd9fd16a002be548b23d603dfabd1a",
+      "quote": "Authenticating is only needed to access public resources requiring user consent or private resources."
+    },
+    {
+      "url": "https://finnhub.io/docs/api/rate-limit",
+      "date": "2026-11-02",
+      "proved": "every plan is also held to 30 API calls per second",
+      "capture": "sha256:2d0e382bf1643996bd5ee74d3e0d7372ed5af1b9864f812e7950ef5fdd7dc6ea",
+      "quote": "On top of all plan's limit, there is a 30 API calls/ second limit."
+    },
+    {
+      "url": "https://finnhub.io/register",
+      "date": "2026-11-02",
+      "proved": "signing up confirms non-professional status",
+      "capture": "sha256:6a7098fde2828d42c75618da92ee087b2d4b412abcea6cf45eb032934de772a4",
+      "quote": null
+    },
+    {
+      "url": "https://finnhub.io/pricing",
+      "date": "2026-11-02",
+      "proved": "the free plan still allows 60 API calls a minute",
+      "capture": "sha256:71839fe4ba69e46ec240d97f09e1ba3bf45d8c43d61cc49a36138edd5bf59c22",
+      "quote": "| Limit | 60 API calls/minute | Market data: 900 API calls/minute Fundamental: 300 API calls/minute |"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-30T12:52:12.830Z",
+  "verified_at": "2026-11-03T00:27:51.443Z",
   "notes": "The most generous call rate of the four market data records, but the free plan is a live-data plan: quotes, news, calendars and a 50-symbol stream, with candles and tick history behind Premium.",
   "extras": {
-    "bulk_path": "Kaggle dataset SEC Filings 1994-2020 (filings metadata only); no bulk path for prices"
+    "bulk_path": "Kaggle dataset SEC Filings 1994-2020 (filings metadata only), a zip of 499804103 bytes that the Kaggle API download link serves with no Kaggle account or credentials; no bulk path for…",
+    "cutoff": {
+      "http_status": "429",
+      "body": "a JSON error message that starts: API limit reached. Please try again later. (reported by users of the free and premium plans)",
+      "reset": "unverified: behind a sign-up: no Finnhub page says whether the 60-per-minute window is fixed or sliding, or when a blocked key may call again"
+    }
   }
 }

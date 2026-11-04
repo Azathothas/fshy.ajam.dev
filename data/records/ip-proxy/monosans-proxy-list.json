@@ -2,27 +2,27 @@
   "topic": "ip-proxy",
   "slug": "monosans-proxy-list",
   "provider": "monosans/proxy-list",
-  "url": "https://api.github.com/repos/monosans/proxy-list",
+  "url": "https://github.com/monosans/proxy-list",
   "category": "public proxy list",
   "tier": "free",
   "free_tier": {
     "stated": "Free, no key: an unauthenticated GET returned 1,751 proxies in one JSON document, 1,178 SOCKS5, 434 HTTP and 139 SOCKS4, each row carrying its response time, exit IP, ASN number and organisation, and a geolocation block, and the list is regenerated hourly with a full-fetch verification.",
     "unit": "objects",
     "metered_on": "none",
-    "source_url": "https://api.github.com/repos/monosans/proxy-list",
+    "source_url": "https://github.com/monosans/proxy-list",
     "read_on": "2026-10-24",
     "notes": "The unit is addresses: the 1,751 is the whole published list, counted row by row from the response read on 2026-10-24, not an allowance. Nothing is charged and nothing is counted against a user. The schema's unit enum has no token for an address, so the nearest one is used and the count is stated here in full."
   },
   "per_object_cap": {
     "stated": "not applicable",
     "bytes": null,
-    "source_url": "https://api.github.com/repos/monosans/proxy-list",
+    "source_url": "https://github.com/monosans/proxy-list",
     "notes": "The nearest thing to an object cap is the size of one response: the entire list arrives as a single JSON document of 1,751 rows, so the document and the pool are the same thing."
   },
   "retention": {
     "stated": "not applicable: a live proxy address, not stored bytes",
     "days": null,
-    "source_url": "https://api.github.com/repos/monosans/proxy-list",
+    "source_url": "https://github.com/monosans/proxy-list",
     "notes": "An entry is not durable. The list is regenerated hourly, and measured survival is shorter than that: of the 35 addresses that carried a payload at the first check, 10 carried one 22 minutes later."
   },
   "egress": {
@@ -30,20 +30,20 @@
     "metered": false,
     "free_allowance": "none published",
     "price_per_tb": null,
-    "source_url": "https://api.github.com/repos/monosans/proxy-list"
+    "source_url": "https://github.com/monosans/proxy-list"
   },
   "interface": [
     "rest"
   ],
-  "interface_detail": "The addresses it returns speak socks5, http and socks4 (1,178, 434 and 139 of the 1,751 rows). The schema's interface enum has no token for a proxy protocol, so the three protocols are named here rather than in the array.",
-  "endpoint": null,
+  "interface_detail": "One unauthenticated HTTPS GET on raw.githubusercontent.com/monosans/proxy-list/main/proxies.json returns the list as JSON. The addresses it returns speak socks5, http and socks4. The schema's interface enum has no token for a proxy protocol, so the three protocols are named here rather than in the array.",
+  "endpoint": "https://raw.githubusercontent.com/monosans/proxy-list/main/proxies.json",
   "tooling": "A single curl, or any HTTP client, pulls the JSON; no account, key, SDK or wrapper is involved. Filtering by registration class is a few lines against the asn.autonomous_system_number field, which is the point of this list: the choice can be made before a request is spent. Using an address afterwards needs a client that speaks its protocol, which curl -x and rclone --http-proxy both do for http and socks5, and which curl -x socks4 does for the SOCKS4 rows.",
   "chaining": "A supply of egress addresses for the Workers AI gateway that can be filtered before use: the row's ASN lets the measured exits be split into consumer ISP and mobile networks against hosting, which is the split no other free list in this topic publishes, so the gateway can aim at a registration class instead of taking whatever the list returns.",
   "limits": [
     {
       "kind": "retention-clamped",
       "value": "regenerated hourly with a full-fetch verification, so a row is at most one hour old and each regeneration replaces the set rather than appending to it",
-      "source": "https://api.github.com/repos/monosans/proxy-list"
+      "source": "https://github.com/monosans/proxy-list"
     },
     {
       "kind": "retention-clamped",
@@ -64,11 +64,6 @@
   "confidence_note": "Every field the verdict rests on was measured on 2026-10-24: the anonymous unauthenticated fetch, the 1,751 rows and their protocol split, the per-row ASN and geolocation fields, and the two payload rates over the identical 100 endpoints. The hourly regeneration is documented from the publisher's own schedule and was not observed; the verdict does not turn on it, because the 22-minute decay already bounds the usable window. Moving up would need a larger sample and runs spread across a day, so that a diurnal effect can be told apart from a list that is simply thin.",
   "evidence": [
     {
-      "url": "https://api.github.com/repos/monosans/proxy-list",
-      "date": "2026-10-24",
-      "proved": "An unauthenticated GET returned the whole list as JSON: 1,751 rows, 1,178 socks5, 434 http, 139 socks4, each row carrying host, port, response time in a timeout field, exit_ip, an asn object with number and organisation, and a geolocation block. The response headers were HTTP 200, Content-Type text/plain, Cache-Control max-age=300, with no key or account involved."
-    },
-    {
       "url": "probe:kept-privately",
       "date": "2026-10-24",
       "proved": "First run over 100 stratified random lines (40 http, 40 socks5, 20 socks4): 38 completed a handshake and 35 carried a payload, 35%, from 28 distinct exits."
@@ -82,10 +77,52 @@
       "url": "probe:kept-privately",
       "date": "2026-10-24",
       "proved": "59 measured exit addresses resolved to a prefix, an ASN and an organisation: 45 distinct ASNs and 58 distinct prefixes, with Cox AS22773 appearing 5 times, Viettel AS7552 4 times, China Mobile AS9808 and Biznet AS17451 twice each, and TATTELECOM AS28840 and Superonline AS34984 once each."
+    },
+    {
+      "url": "probe:https://github.com/monosans/proxy-list",
+      "date": "2026-11-02",
+      "proved": "the public repository page of monosans/proxy-list answers an unauthenticated GET with HTTP 200 at this URL, which is also the final URL",
+      "capture": "sha256:b4c74a6bc550225544704242809103e9e1921407bb54869d42137ecf6fbc0f9e",
+      "quote": "\"final_url\": \"https://github.com/monosans/proxy-list\", \"method\": \"GET\", \"status\": 200"
+    },
+    {
+      "url": "probe:https://raw.githubusercontent.com/monosans/proxy-list/main/proxies.json",
+      "date": "2026-11-02",
+      "proved": "an HTTPS GET of proxies.json with no account, key or token answered HTTP 200 at this URL with no redirect and served the file as text/plain with cache-control max-age=300",
+      "capture": "sha256:6a13c48fdc0f5239388da89e0137ec57e66aac585e8e211e0b563d7ecb960499",
+      "quote": "\"final_url\": \"https://raw.githubusercontent.com/monosans/proxy-list/main/proxies.json\" ... \"status\": 200 ... \"redirects\": [] ... \"content_type\": \"text/plain\" ... \"cache-control\": \"max-age=300\""
+    },
+    {
+      "url": "probe:https://raw.githubusercontent.com/monosans/proxy-list/main/proxies.json",
+      "date": "2026-11-02",
+      "proved": "an unauthenticated HTTPS GET of proxies.json returns a JSON array of objects that carry protocol (socks5, http and socks4 among them), host, port, timeout, exit_ip, an asn object with autonomous_system_number and autonomous_system_organization, and a geolocation object",
+      "capture": "sha256:af1b0ce5bafdc3750be70f985f2aee92c1d8595d9a2bc193457dcaedd316fcf7",
+      "quote": "[{\"protocol\":\"socks5\",\"username\":null,\"password\":null,\"host\": ... \"timeout\": ... \"exit_ip\": ... \"asn\":{\"autonomous_system_number\": ... \"autonomous_system_organization\": ... \"geolocation\":{ ... \"protocol\":\"http\" ... \"protocol\":\"socks4\""
+    },
+    {
+      "url": "probe:https://api.github.com/repos/monosans/proxy-list",
+      "date": "2026-11-02",
+      "proved": "the GitHub API resource repos/monosans/proxy-list names https://github.com/monosans/proxy-list as its repository page",
+      "capture": "sha256:607bf1baafc8c492c044d36695b90e3bd4e9f0e1987f994bbee650ddecbad60e",
+      "quote": "\"html_url\":\"https://github.com/monosans/proxy-list\""
+    },
+    {
+      "url": "https://github.com/monosans/proxy-list",
+      "date": "2026-11-02",
+      "proved": "the repository at this URL publishes the free HTTP, SOCKS4 and SOCKS5 proxy lists that the record describes, re-checked every hour, as plain files served by GitHub with no signup, no API key and no rate limit",
+      "capture": "sha256:6b61666651e816740f7f4de988246df7f9c4aab5f78d0750c0c04da65f49458a",
+      "quote": "Free HTTP, SOCKS4 and SOCKS5 proxies, re-checked every hour. ... No signup, no API key, no rate limit: these are plain files served by GitHub."
+    },
+    {
+      "url": "https://github.com/monosans/proxy-list",
+      "date": "2026-11-02",
+      "proved": "the repository lists proxies.json, at https://raw.githubusercontent.com/monosans/proxy-list/main/proxies.json, as its file of every proxy with metadata",
+      "capture": "sha256:6b61666651e816740f7f4de988246df7f9c4aab5f78d0750c0c04da65f49458a",
+      "quote": "| [`proxies.json`](https://raw.githubusercontent.com/monosans/proxy-list/main/proxies.json) | every proxy, with metadata |"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-24T10:07:11.000Z",
+  "verified_at": "2026-11-02T10:34:16.141Z",
   "price_per_tb_month": null,
   "notes": "The verdict rests on (2) with (3) open. Intersected on host and port, 10 of the 35 addresses that worked at the first check worked at the second, which is 29%, and 11 of the 21 working at the second check had failed at the first. Both results files carry host and port, so the intersection is reproducible in one pass, and the difference matters because a reader planning a pull schedule acts on the survival number and not on the yield ratio. The 59 exit addresses are not the mono sample alone: the mono runs produced 39 distinct exits between them and 29 of those appear in this set, so the file aggregates measured exits from the whole lane and the composition figures describe that population. Why this list is qualifies-with-caveat while ip-proxy/proxyscrape-free-list is dead at a comparable yield, 32% against 35%: the ASN field. Proxyscrape publishes no ASN, so its addresses are indistinguishable until one is spent; here the registration class is on the row, which is rung 5 reachable before the first request, and that is the whole difference between a blind pool and a pool that can be aimed. Weight: each rate is one pair of runs over 100 of 1,751 lines, so the churn is a point estimate with no interval, though 25 addresses stopping against 11 starting is a net fall the sample is large enough to show. None exists outside .tmp, so this record corrects nothing outside itself.",
   "extras": {

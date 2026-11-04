@@ -1,0 +1,302 @@
+{
+  "topic": "storage",
+  "slug": "aws-s3-glacier-deep-archive",
+  "provider": "Amazon S3 Glacier Deep Archive",
+  "url": "https://aws.amazon.com/s3/storage-classes/glacier/",
+  "category": "object-storage archive class (S3 storage class DEEP_ARCHIVE, tape-equivalent cold tier)",
+  "tier": "S3 Glacier Deep Archive",
+  "free_tier": {
+    "stated": "No free allowance at this tier: storage is billed from the first byte at USD 0.00099 per GB-month (USD 1 per TB-month) in US East (N. Virginia), US East (Ohio), US West (Oregon), EU (Ireland) and EU (Stockholm)",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://aws.amazon.com/s3/storage-classes/glacier/",
+    "read_on": "2026-11-01",
+    "notes": "AWS sells no free storage in this class; the only allowance that reaches it is the credits-based free plan for a new account, which is a six-month trial and its own record"
+  },
+  "per_object_cap": {
+    "stated": "48.8 TiB per object through multipart upload (10,000 parts of 5 MiB to 5 GiB); 5 GiB through a single PUT",
+    "bytes": null,
+    "source_url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/qfacts.html",
+    "notes": "the 48.8 TiB is 10,000 parts x 5 GiB; each archived object also carries 40 KB of billed metadata, 8 KB at the S3 Standard rate and 32 KB at the Deep Archive rate"
+  },
+  "retention": {
+    "stated": "no expiry: objects stay until deleted; a minimum storage duration of 180 days is billed per object, and an object deleted, overwritten or moved to another class earlier is charged the pro-rated storage fee for the remaining days",
+    "days": null,
+    "source_url": "https://aws.amazon.com/s3/pricing/",
+    "notes": "the 180 days is a billing minimum, not a deletion clock; a restored copy expires after the number of days named in the restore request"
+  },
+  "egress": {
+    "terms": "Reading an archived object costs twice: a retrieval fee (USD 0.02 per GB Standard, USD 0.0025 per GB Bulk in US East (N. Virginia)) and a temporary copy billed at the S3 Standard rate for the days the restore is kept. Data transfer out to the internet is metered separately: the first 100 GB per month is free across all AWS services, then USD 0.09 per GB for the first 10 TB per month, USD 0.085 per GB for the next 40 TB, USD 0.07 per GB to 150 TB.",
+    "metered": true,
+    "free_allowance": "100 GB per month of data transfer out to the internet, aggregated across all AWS Services and Regions except China and GovCloud",
+    "price_per_tb": "USD 90 per TB (USD 0.09 per GB) for the first 10 TB per month beyond the free 100 GB; USD 20 per TB retrieved at the Standard retrieval tier and USD 2.50 per TB at Bulk in US East (N. Virginia)",
+    "source_url": "https://aws.amazon.com/s3/pricing/"
+  },
+  "interface": [
+    "s3",
+    "rclone",
+    "cli"
+  ],
+  "interface_detail": "S3 API storage class DEEP_ARCHIVE (x-amz-storage-class: DEEP_ARCHIVE); an archived object answers a GET only after a RestoreObject call and the wait for the temporary copy it creates",
+  "endpoint": "s3.<region>.amazonaws.com",
+  "tooling": "AWS CLI (`aws s3 cp --storage-class DEEP_ARCHIVE`, `aws s3api restore-object --restore-request Days=N,GlacierJobParameters={Tier=Bulk}`), boto3 and any AWS SDK, s3cmd, and rclone's S3 backend, whose storage-class option 7 is Glacier Deep Archive and whose restore step is documented; lifecycle rules and S3 Batch Operations drive the transitions and the bulk restores.",
+  "chaining": "Cold tier behind a hot S3 bucket: a lifecycle rule transitions objects into DEEP_ARCHIVE and a RestoreObject call brings a temporary copy back at the S3 Standard rate, and the transition is one-way, so leaving the class means restore, then copy.",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "180-day minimum storage duration billed per object; an object deleted or overwritten inside it is charged for the remaining days at USD 0.00099 per GB-month",
+      "source": "https://aws.amazon.com/s3/pricing/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "48.8 TiB per object by multipart upload (10,000 parts x 5 GiB); 5 GiB by a single PUT",
+      "source": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/qfacts.html"
+    },
+    {
+      "kind": "request-rate",
+      "value": "1,000 object restore requests per second per account per AWS Region",
+      "source": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/archival-storage.html"
+    }
+  ],
+  "limits_note": "Restore latency is the working limit: a Standard restore typically finishes within 12 hours and a Bulk restore within 48 hours, and an object larger than 5 TB restores at up to 300 megabytes per second. Every archived object is billed 40 KB of metadata (8 KB at the S3 Standard rate, 32 KB at the Deep Archive rate), which is 3.9 percent of the stored volume at a 1 MB object and 0.0038 percent at a 1 GB object. A restored copy is billed at the S3 Standard rate while it lives. Archived objects cannot be read in real time, and the class cannot be left without a restore followed by a copy.",
+  "binding": "none",
+  "binding_note": "no limit row fails before the restore step: the 180-day minimum is a cost floor on churn, the per-object cap of 48.8 TiB is far above a single dataset, and 1,000 restore requests per second covers a 20 TB corpus of 1 GB objects in 20 seconds; what a reader meets first is the 12- to 48-hour restore wait and the USD 2.50 to USD 20 per TB retrieval fee",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "an AWS account is the unit of access: the root user email address is verified with a code sent to it, a phone number able to receive calls and SMS is confirmed with a code, and the sign-up form cannot be completed without a valid payment method; whether the card is charged at sign-up for the credits-based free plan is unverified",
+    "country": null
+  },
+  "reliability_note": "Archived objects are not readable in real time: a restore takes up to 12 hours at Standard and up to 48 hours at Bulk, the restored copy lasts only the number of days requested in the restore call, and a transition into DEEP_ARCHIVE cannot be reversed except by restoring and copying the object.",
+  "confidence": "documented",
+  "confidence_note": "the storage, retrieval, request and early-delete prices come from the AWS price list API for the US East (N. Virginia) and EU (Frankfurt) regions and from the retail pricing page; the 180-day minimum, the 40 KB per-object metadata overhead, the restore times, the 1,000 requests per second and the sign-up gates are quoted from first-party pages read on 2026-11-01; timing a restore from a bucket on an account would make it measured",
+  "evidence": [
+    {
+      "url": "https://aws.amazon.com/s3/storage-classes/glacier/",
+      "date": "2026-11-01",
+      "proved": "S3 Glacier Deep Archive is priced at USD 0.00099 per GB-month, or USD 1 per TB-month",
+      "capture": "sha256:87af83bf8599bdb659a47838826c276ae0da3fe68fcd029b6608d7dd77280851",
+      "quote": "At just $0.00099 per GB-month (or $1 per TB-month), S3 Glacier Deep Archive offers the lowest cost storage in the cloud"
+    },
+    {
+      "url": "https://aws.amazon.com/s3/storage-classes/glacier/",
+      "date": "2026-11-01",
+      "proved": "the tier is aimed at data read less than once a year and served within twelve hours",
+      "capture": "sha256:87af83bf8599bdb659a47838826c276ae0da3fe68fcd029b6608d7dd77280851",
+      "quote": "the lowest cost storage in the cloud with data retrieval within twelve hours"
+    },
+    {
+      "url": "https://aws.amazon.com/s3/storage-classes/glacier/",
+      "date": "2026-11-01",
+      "proved": "no minimum commitment or upfront fee is charged for the class",
+      "capture": "sha256:87af83bf8599bdb659a47838826c276ae0da3fe68fcd029b6608d7dd77280851",
+      "quote": "You pay only for what you need, with no minimum commitments or upfront fees."
+    },
+    {
+      "url": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonS3GlacierDeepArchive/current/us-east-1/index.json",
+      "date": "2026-11-01",
+      "proved": "the price list charges USD 0.00099 per GB-month for storage in Glacier Deep Archive in US East (N. Virginia)",
+      "capture": "sha256:33729eb763fe6c5c1d4695a53fc552fc7dfa361a1b4abd13c7c56e92859508b7",
+      "quote": "$0.00099 per GB-Month for storage used in Glacier Deep Archive in US East (N. Virginia)"
+    },
+    {
+      "url": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonS3GlacierDeepArchive/current/us-east-1/index.json",
+      "date": "2026-11-01",
+      "proved": "a Standard restore is billed USD 0.02 per GB in US East (N. Virginia)",
+      "capture": "sha256:33729eb763fe6c5c1d4695a53fc552fc7dfa361a1b4abd13c7c56e92859508b7",
+      "quote": "$0.02 per GB Standard retrieval fee from Glacier Deep Archive in US East (N. Virginia)"
+    },
+    {
+      "url": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonS3GlacierDeepArchive/current/us-east-1/index.json",
+      "date": "2026-11-01",
+      "proved": "a Bulk restore is billed USD 0.0025 per GB in US East (N. Virginia)",
+      "capture": "sha256:33729eb763fe6c5c1d4695a53fc552fc7dfa361a1b4abd13c7c56e92859508b7",
+      "quote": "$0.0025 per GB Bulk retrieval fee from Glacier Deep Archive in US East (N. Virginia)"
+    },
+    {
+      "url": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonS3GlacierDeepArchive/current/us-east-1/index.json",
+      "date": "2026-11-01",
+      "proved": "an object deleted before 180 days is billed at the storage rate for the days it did not stay",
+      "capture": "sha256:33729eb763fe6c5c1d4695a53fc552fc7dfa361a1b4abd13c7c56e92859508b7",
+      "quote": "$0.00099 per GB-Month prorated for objects deleted before 180 days in Glacier Deep Archive in US East (N. Virginia)"
+    },
+    {
+      "url": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonS3GlacierDeepArchive/current/us-east-1/index.json",
+      "date": "2026-11-01",
+      "proved": "writing an object into the class costs USD 0.05 per 1,000 PUT requests in US East (N. Virginia)",
+      "capture": "sha256:33729eb763fe6c5c1d4695a53fc552fc7dfa361a1b4abd13c7c56e92859508b7",
+      "quote": "$0.05 per 1,000 PutObject requests to Glacier Deep Archive in US East (N. Virginia)"
+    },
+    {
+      "url": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonS3GlacierDeepArchive/current/eu-central-1/index.json",
+      "date": "2026-11-01",
+      "proved": "EU (Frankfurt) charges USD 0.0018 per GB-month, 1.82 times the US East price",
+      "capture": "sha256:053a779a21245d2426257767f84224c4579d85fe6e983a424e3326ac237f889d",
+      "quote": "$0.0018 per GB-Month for storage used in Glacier Deep Archive in EU (Frankfurt)"
+    },
+    {
+      "url": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonS3GlacierDeepArchive/current/eu-central-1/index.json",
+      "date": "2026-11-01",
+      "proved": "EU (Frankfurt) charges USD 0.024 per GB for a Standard restore and USD 0.005 per GB for a Bulk restore",
+      "capture": "sha256:053a779a21245d2426257767f84224c4579d85fe6e983a424e3326ac237f889d",
+      "quote": "$0.024 per GB Standard retrieval fee from Glacier Deep Archive in EU (Frankfurt)"
+    },
+    {
+      "url": "https://aws.amazon.com/s3/pricing/",
+      "date": "2026-11-01",
+      "proved": "S3 Glacier Deep Archive carries a minimum storage duration of 180 days, charged pro rata on early deletion",
+      "capture": "sha256:bdd18a33a29c461741739e0fdbbdabcd8711415bd3759865c81830d1a731a55d",
+      "quote": "and S3 Glacier Deep Archive has a minimum storage duration of 180 days"
+    },
+    {
+      "url": "https://aws.amazon.com/s3/pricing/",
+      "date": "2026-11-01",
+      "proved": "each archived object is billed 40 KB of metadata, 8 KB at the S3 Standard rate and 32 KB at the archive rate",
+      "capture": "sha256:bdd18a33a29c461741739e0fdbbdabcd8711415bd3759865c81830d1a731a55d",
+      "quote": "AWS charges for 40 KB of additional metadata for each archived object, with 8 KB charged at S3 Standard rates and 32 KB charged at S3 Glacier Flexible Retrieval or S3 Deep Archive rates."
+    },
+    {
+      "url": "https://aws.amazon.com/s3/pricing/",
+      "date": "2026-11-01",
+      "proved": "the first 100 GB per month of data transfer out is free across all AWS services",
+      "capture": "sha256:bdd18a33a29c461741739e0fdbbdabcd8711415bd3759865c81830d1a731a55d",
+      "quote": "Data transferred out to the internet for the first 100GB per month, aggregated across all AWS Services and Regions (except China and GovCloud)"
+    },
+    {
+      "url": "https://aws.amazon.com/s3/pricing/",
+      "date": "2026-11-01",
+      "proved": "a restore is billed as a retrieval on the restore request itself",
+      "capture": "sha256:bdd18a33a29c461741739e0fdbbdabcd8711415bd3759865c81830d1a731a55d",
+      "quote": "When you restore an archive from the S3 Glacier Flexible Retrieval or S3 Glacier Deep Archive storage classes, you pay for retrievals as a part of the restore request"
+    },
+    {
+      "url": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AWSDataTransfer/current/us-east-1/index.json",
+      "date": "2026-11-01",
+      "proved": "data transfer out from US East (N. Virginia) to the internet costs USD 0.09 per GB for the first 10 TB per month",
+      "capture": "sha256:00f81657d01946d02c905e32ca87cc6c23720b5de079b90fef5775243abcee80",
+      "quote": "$0.090 per GB - first 10 TB / month data transfer out beyond the global free tier"
+    },
+    {
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/restoring-objects-retrieval-options.html",
+      "date": "2026-11-01",
+      "proved": "a Standard restore of a Deep Archive object typically finishes within 12 hours",
+      "capture": "sha256:423f9381a0529e45a45f602b6940e24790d731d5ae600f1b8b8d9446072dede0",
+      "quote": "Standard retrievals typically finish within 12 hours for the S3 Glacier Deep Archive storage class"
+    },
+    {
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/restoring-objects-retrieval-options.html",
+      "date": "2026-11-01",
+      "proved": "a Bulk restore of a Deep Archive object typically finishes within 48 hours",
+      "capture": "sha256:423f9381a0529e45a45f602b6940e24790d731d5ae600f1b8b8d9446072dede0",
+      "quote": "For objects stored in the S3 Glacier Deep Archive storage class or the S3 Intelligent-Tiering Deep Archive Access tier, these retrievals typically finish within 48 hours."
+    },
+    {
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/archival-storage.html",
+      "date": "2026-11-01",
+      "proved": "a restored copy is billed at the S3 Standard rate while it stays restored",
+      "capture": "sha256:12cd66e753aabb1cff92d87fee78ee0c707b7b44298aef262c11217b9258e511",
+      "quote": "When you restore an archive, you are paying for both the archive (S3 Glacier Flexible Retrieval or S3 Glacier Deep Archive rate) and a copy that you restored temporarily (S3 Standard storage rate)."
+    },
+    {
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/archival-storage.html",
+      "date": "2026-11-01",
+      "proved": "restore requests are capped at 1,000 transactions per second per account per Region",
+      "capture": "sha256:12cd66e753aabb1cff92d87fee78ee0c707b7b44298aef262c11217b9258e511",
+      "quote": "You can restore archived objects in these storage classes with up to 1,000 transactions per second (TPS) of object restore requests per account per AWS Region."
+    },
+    {
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/archival-storage.html",
+      "date": "2026-11-01",
+      "proved": "the transition into Deep Archive is one-way and leaving it needs a restore then a copy",
+      "capture": "sha256:12cd66e753aabb1cff92d87fee78ee0c707b7b44298aef262c11217b9258e511",
+      "quote": "The transition of objects to the S3 Glacier Deep Archive storage class can go only one way."
+    },
+    {
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/archival-storage.html",
+      "date": "2026-11-01",
+      "proved": "an archived object is reached only through a restore request and the wait for the copy",
+      "capture": "sha256:12cd66e753aabb1cff92d87fee78ee0c707b7b44298aef262c11217b9258e511",
+      "quote": "To access an archived object, you submit a restore request for it, and then wait for the service to restore the object."
+    },
+    {
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/qfacts.html",
+      "date": "2026-11-01",
+      "proved": "the largest object a multipart upload can produce is 48.8 TiB, from 10,000 parts of up to 5 GiB",
+      "capture": "sha256:6cfaa8688b57361d96a4934280fb5e9191cc4bdf0db9a675c54b05b18198424d",
+      "quote": "| Maximum object size | 48.8 TiB  |"
+    },
+    {
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-class-intro.html",
+      "date": "2026-11-01",
+      "proved": "the archive classes carry minimum storage durations and retrieval fees by design",
+      "capture": "sha256:5fc16b418f784b04f68a3c0208cec9b190e1cd8b6893d5d24d0ffa5c61085982",
+      "quote": "These storage classes require minimum storage durations and retrieval fees making them most effective for rarely accessed data"
+    },
+    {
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-class-intro.html",
+      "date": "2026-11-01",
+      "proved": "objects in Deep Archive are archived and not available for real-time access",
+      "capture": "sha256:5fc16b418f784b04f68a3c0208cec9b190e1cd8b6893d5d24d0ffa5c61085982",
+      "quote": "Data in this storage class is archived, and not available for real-time access."
+    },
+    {
+      "url": "https://docs.aws.amazon.com/accounts/latest/reference/getting-started.html",
+      "date": "2026-11-01",
+      "proved": "sign-up cannot be completed without a valid payment method",
+      "capture": "sha256:6e3fc6e6e496ad99a2da43d858e1e9ef19d7e743fab661d1b7768ba63e6441ef",
+      "quote": "You can't proceed with the sign-up process until you add a valid payment method."
+    },
+    {
+      "url": "https://docs.aws.amazon.com/accounts/latest/reference/getting-started.html",
+      "date": "2026-11-01",
+      "proved": "identity confirmation asks for a phone number able to receive a call and an SMS code",
+      "capture": "sha256:6e3fc6e6e496ad99a2da43d858e1e9ef19d7e743fab661d1b7768ba63e6441ef",
+      "quote": "enter a phone number that can be reached in the next few minutes"
+    },
+    {
+      "url": "https://docs.aws.amazon.com/accounts/latest/reference/getting-started.html",
+      "date": "2026-11-01",
+      "proved": "the root user email address is the sign-in name and is verified by a code sent to it",
+      "capture": "sha256:6e3fc6e6e496ad99a2da43d858e1e9ef19d7e743fab661d1b7768ba63e6441ef",
+      "quote": "The email address is used as the sign-in name for the root user and is required for account recovery."
+    },
+    {
+      "url": "https://rclone.org/s3/",
+      "date": "2026-11-01",
+      "proved": "rclone's S3 backend takes Glacier Deep Archive as storage class 7",
+      "capture": "sha256:93e25c46d993e075e4383fdb7f664d95ca64a05774a57d62d0414f74c12a5722",
+      "quote": "7 / Glacier Deep Archive storage class"
+    },
+    {
+      "url": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonS3/current/us-east-1/index.json",
+      "date": "2026-11-01",
+      "proved": "the S3 Standard class it replaces costs USD 0.023 per GB-month in US East (N. Virginia)",
+      "capture": "sha256:a298361f29bd9bc926d810d1eb093720827275689c1e2db5a7af90890b1dc67c",
+      "quote": "$0.023 per GB - first 50 TB / month of storage used"
+    },
+    {
+      "url": "https://www.blomp.com/cloud-storage",
+      "date": "2026-11-01",
+      "proved": "a hosted object store sells hot storage at USD 0.000999 per GB-month, the same order as this cold tier and without a restore step",
+      "capture": "sha256:be00b94e2d6244a6e123cdfe470c5aa3f67844a4533e6bde9d70aa6824e5bf36",
+      "quote": "| 100,000 GB | $99.99 / Month | $0.000999 / GB per month | Nu-uh! |"
+    },
+    {
+      "url": "https://docs.nebulablock.com/products/object-storage.md",
+      "date": "2026-11-01",
+      "proved": "one hosted object tier prices stored data at zero and meters only outgoing traffic",
+      "capture": "sha256:df5196d79673bd2c6a41db15bea91b81b6748415008280795d392c1cc16d6e51",
+      "quote": "| Standard | Free | Durable, high-capacity storage. The default |"
+    },
+    {
+      "url": "https://docs.nebulablock.com/products/object-storage.md",
+      "date": "2026-11-01",
+      "proved": "that tier bills egress at USD 0.01 per GB on all tiers while incoming traffic is included",
+      "capture": "sha256:df5196d79673bd2c6a41db15bea91b81b6748415008280795d392c1cc16d6e51",
+      "quote": "Outgoing traffic is billed at $0.01/GB on all tiers; incoming traffic is included."
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-11-01T22:27:25.580Z",
+  "price_per_tb_month": "USD 1.00 per TB-month (USD 0.00099 per GB-month) in US East (N. Virginia), US East (Ohio), US West (Oregon), EU (Ireland) and EU (Stockholm); USD 1.80 per TB-month (USD 0.0018 per GB-month) in EU (Frankfurt); storage only, before retrieval",
+  "notes": "The cheapest of the eight S3 storage classes and the cheapest archive class AWS sells, at USD 0.00099 per GB-month against USD 0.023 per GB-month for S3 Standard, but it is not the cheapest at-rest object tier: a Standard tier at another vendor prices stored data at USD 0 per GB-month and meters egress at USD 0.01 per GB, with no 180-day floor and no restore step, and a hot object store sells USD 0.000999 per GB-month, which is the same price per stored byte without the wait. Reading the data back is where the tier stops being cheap: USD 2.50 per TB at Bulk after up to 48 hours and USD 20 per TB at Standard after up to 12 hours in US East (N. Virginia), plus the S3 Standard rate for as long as the temporary copy is kept. It pays only for a corpus written once and read less than once a year, at a per-TB rest price that any GB-denominated offer of USD 0.001 or less matches."
+}

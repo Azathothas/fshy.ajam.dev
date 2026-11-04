@@ -28,13 +28,13 @@
     "free_allowance": "250 TB per month"
   },
   "interface": [
-    "s3",
-    "webdav",
-    "sftp",
+    "ftp",
     "ftps",
+    "sftp",
     "scp",
     "rsync",
     "smb",
+    "webdav",
     "ssh",
     "rclone"
   ],
@@ -46,14 +46,9 @@
       "kind": "per-ip-shaping",
       "value": "10 concurrent connections",
       "source": "https://www.hetzner.com/storage/storage-box/"
-    },
-    {
-      "kind": "per-ip-shaping",
-      "value": "32 parallel streams",
-      "source": "https://www.hetzner.com/storage/storage-box/"
     }
   ],
-  "limits_note": "10 concurrent connections per box is the binding constraint for parallel ranged GET benchmarks. No object API, so no presigned URLs; every read goes through your WebDAV/SFTP proxy layer.",
+  "limits_note": "10 concurrent connections is the ceiling on parallel reads; there is no S3 object API, so no presigned URLs, and every read runs through WebDAV, SFTP or rsync",
   "identity_cost": {
     "kind": "card",
     "detail": "card",
@@ -102,11 +97,39 @@
       "url": "https://fsn1-speed.hetzner.com/10GB.bin",
       "date": "2026-10-21",
       "proved": "Single-stream ranged GET of 200 MB from a residential line measured 1.05 MB/s (47 MB in 45 s) — i.e. a user's own uplink was the limiter, not Hetzner; do not read this as a Hetzner throughput figure."
+    },
+    {
+      "url": "https://www.hetzner.com/storage/storage-box/bx41/",
+      "date": "2026-11-01",
+      "proved": "the tier's protocol list names no S3 API, so the interface list must not carry s3",
+      "capture": "sha256:77b1fac98b66adc2d731e1689dc763b8a26fbdb3ee777fdc59e0ca982460c8ae",
+      "quote": "FTP ... FTPS ... SFTP ... SCP ... Samba/CIFS ... HTTPS ... WebDAV ... Rclone"
+    },
+    {
+      "url": "https://www.hetzner.com/storage/storage-box/",
+      "date": "2026-11-01",
+      "proved": "the plan matrix caps concurrent connections at 10 on every tier and lists 10/20/30/40 snapshots",
+      "capture": "sha256:01d2947913be5814b5e76db99e8b3caff57aa13fb9fa8fe8b22ac57b92b7794d",
+      "quote": "Concurrent connections ... Snapshots"
+    },
+    {
+      "url": "https://www.hetzner.com/storage/storage-box/",
+      "date": "2026-11-01",
+      "proved": "the 20 TB tier is EUR 40.60 a month, excluding VAT",
+      "capture": "sha256:01d2947913be5814b5e76db99e8b3caff57aa13fb9fa8fe8b22ac57b92b7794d",
+      "quote": "40.60 per month, excl. VAT"
+    },
+    {
+      "url": "https://www.hetzner.com/storage/storage-box/bx41/",
+      "date": "2026-11-01",
+      "proved": "the 20 TB tier includes 40 snapshots",
+      "capture": "sha256:77b1fac98b66adc2d731e1689dc763b8a26fbdb3ee777fdc59e0ca982460c8ae",
+      "quote": "40 snapshots"
     }
   ],
   "verdict": "qualifies",
-  "verified_at": "2026-10-22T00:00:00.000Z",
-  "price_per_tb_month": "€2.03/TB/mo at the 20 TB tier (€40.60/20). at 5 TB: BX21 = €2.18/TB/mo. at 20 TB: BX41 = €2.03/TB/mo. ~$2.19 and ~$2.19 at 1.08 USD/EUR. Non-EU buyers pay excl. VAT (the €3.81/€12.97/€24.75/€48.31 figures circulating online are VAT-inclusive German prices — do not use them).",
+  "verified_at": "2026-11-01T18:05:06.746Z",
+  "price_per_tb_month": "EUR 2.03 per TB per month at 20 TB (EUR 40.60 a month), EUR 2.18 at 5 TB (EUR 10.90 a month), EUR 2.08 at 10 TB and EUR 3.20 at 1 TB, all excluding VAT, with no setup fee",
   "notes": "BX11 1 TB · BX21 5 TB · BX31 10 TB · BX41 20 TB. Prices excl. VAT: €3.20 / €10.90 / €20.80 / €40.60 per month.",
   "extras": {
     "price_verbatim": "€2.03/TB/mo at the 20 TB tier (€40.60/20). at 5 TB: BX21 = €2.18/TB/mo. at 20 TB: BX41 = €2.03/TB/mo. ~$2.19 and ~$2.19 at 1.08 USD/EUR. Non-EU buyers pay excl. VAT (the €3.81/€12.97/€24.75/€48.31 figures circulating online are VAT-inclusive German prices — do not use them).",

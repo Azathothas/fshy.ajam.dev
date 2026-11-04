@@ -5,7 +5,7 @@
   "url": "https://desec.io/",
   "category": "managed authoritative DNS with a full REST API",
   "free_tier": {
-    "stated": "free managed DNS with anycast, a full REST API, DNSSEC and no published query cap; the number of domains an account may hold is not published and is capped by a support-visible counter",
+    "stated": "free managed DNS with anycast, a full REST API, DNSSEC and no published query cap; the number of domains an account may hold is a per-account limit_domains value that deSEC does not publish as a fixed number: unless set explicitly it grows with the domains delegated to deSEC with DNSSEC enabled",
     "unit": "objects",
     "source_url": "https://desec.io/",
     "read_on": "2026-10-22",
@@ -51,8 +51,8 @@
     },
     {
       "kind": "write-gated",
-      "value": "the number of domains an account may hold is not published; a new account is reported to start at one and the message in the panel asks the user to contact support for a higher limit. A deSEC staff reply gives the current formula as max(1, s + round(sqrt(s))) for s DNSSEC-delegated domains",
-      "source": "https://talk.desec.io/t/feedback-about-recent-limit-changes/1834"
+      "value": "no fixed number is published: the per-account maximum is the read-only limit_domains field of the account object (the API reference example shows 15) and, unless deSEC has set a limit for the account explicitly, it grows with the domains delegated to deSEC with DNSSEC enabled; Names under dedyn.io are limited to 1 per account. A new account is reported to start at one, and a deSEC staff reply gives the formula max(1, s + round(sqrt(s))) for s DNSSEC-delegated domains",
+      "source": "https://desec.readthedocs.io/en/latest/auth/account.html"
     }
   ],
   "limits_note": "DNS reads are 10/s and 50/min; domain creation and deletion are 10/s, 300/min and 1,000/h; account actions with external effects are 3/min; a 429 carries Retry-After and the windows slide",
@@ -64,7 +64,7 @@
   },
   "reliability_note": "no reliability event recorded",
   "confidence": "reported",
-  "confidence_note": "the API and the rate table are first-party and were read: the API answered 401 with a Token challenge and the rate table is a documentation page. The domain-count limit is not published anywhere first-party, so it is recorded at the reported rung from deSEC's own forum and two independent write-ups.",
+  "confidence_note": "the API, the rate table and the account reference are first-party. The account reference documents the per-account domain limit (limit_domains) and how it grows with DNSSEC-delegated domains, and the domains reference documents the 403 on reaching it, but neither states a fixed number; the initial value of one and the staff formula come from deSEC's forum and an independent write-up, at the reported rung. free_tier.unit is objects, not unlimited, because the domain count is capped.",
   "evidence": [
     {
       "url": "probe:https://desec.io/api/v1/domains/",
@@ -105,10 +105,38 @@
       "url": "https://desec.io/signup",
       "date": "2026-10-22",
       "proved": "the signup form says only 'Your first domain (you can add more later)', which is the closest thing to a published statement and gives no number"
+    },
+    {
+      "url": "https://desec.readthedocs.io/en/latest/auth/account.html",
+      "date": "2026-11-03",
+      "proved": "the per-account domain limit (limit_domains) is not a fixed published number: it grows with the DNSSEC-delegated domains unless deSEC sets it explicitly",
+      "capture": "sha256:ff57a1a792e0a7cf6ae782ca2b96401625088d13e90ab1bcf30b76f28827f425",
+      "quote": "Unless we have set a limit for your account explicitly, this number grows with the domains you have delegated to us securely (with DNSSEC enabled)."
+    },
+    {
+      "url": "https://desec.readthedocs.io/en/latest/auth/account.html",
+      "date": "2026-11-03",
+      "proved": "limit_domains is a read-only per-account field in the account object, the maximum number of domains the user can create",
+      "capture": "sha256:ff57a1a792e0a7cf6ae782ca2b96401625088d13e90ab1bcf30b76f28827f425",
+      "quote": "Maximum number of domains the user can create."
+    },
+    {
+      "url": "https://desec.readthedocs.io/en/latest/dns/domains.html",
+      "date": "2026-11-03",
+      "proved": "the API enforces a per-account maximum and answers 403 when it is reached",
+      "capture": "sha256:6506f0790ed2b9a146b4c09ccaf796724a72402c43e0cc9b9b6887cf22612257",
+      "quote": "If you have reached the maximum number of domains for your account, the API responds with `403 Forbidden`."
+    },
+    {
+      "url": "https://desec.readthedocs.io/en/latest/dns/domains.html",
+      "date": "2026-11-03",
+      "proved": "names under dedyn.io are limited to 1 per account",
+      "capture": "sha256:6506f0790ed2b9a146b4c09ccaf796724a72402c43e0cc9b9b6887cf22612257",
+      "quote": "Domains that we offer for registration ourselves, such as those directly under `dedyn.io`, are limited to one per account."
     }
   ],
   "verdict": "qualifies",
-  "verified_at": "2026-10-22T03:05:00.000Z",
+  "verified_at": "2026-11-04T00:20:29.067Z",
   "price_per_tb_month": null,
   "notes": "The 300 changes a day per domain is generous for steady state and painful for provisioning: a 500-record import takes two days. Bulk endpoints exist and the docs recommend them, which is the alternative route. The domain counter is the constraint that was recorded as 'no published cap', which is a different claim: deSEC publishes no number, and its own forum gives one.",
   "binding_note": "the change rate is generous for steady state. The domain counter is what stops a multi-zone scheme: it is not published, a new account is reported to begin at one domain, and raising it is a support request with a person in the queue."

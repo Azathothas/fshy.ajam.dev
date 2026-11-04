@@ -14,8 +14,10 @@
     "notes": "An MAU is a non-internal user that authenticated during a month for a given tenant. The Free plan is the same for B2C and B2B. It includes 1 custom domain, which needs credit card verification, and 5 Actions + Forms. Pro MFA factors and role management are not available on Free. Each account holds one free tenant at a time."
   },
   "per_object_cap": {
-    "stated": "unverified: no size limit for user metadata is stated on the pages read",
-    "bytes": null
+    "stated": "Auth0 states a user profile size limit of 10 KB, and writes over it succeed for now but may start to fail; user_metadata set through the Authentication API Signup endpoint takes at most 10 string fields of at most 500 characters each",
+    "bytes": null,
+    "source_url": "https://auth0.com/docs/manage-users/user-accounts/metadata/metadata-fields-data",
+    "notes": "The Management API List and Search Users endpoints index, query and return at most 1 MB of data per user."
   },
   "retention": {
     "stated": "Tenant logs are kept 1 day on Free; a Free tenant with no admin login, user login or API call for 150 days is deleted with all its data and cannot be recovered",
@@ -67,13 +69,18 @@
       "kind": "write-gated",
       "value": "the custom domain needs credit card verification",
       "source": "https://auth0.com/pricing"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "user profile 10 KB (a soft limit: writes over it succeed for now but may start to fail)",
+      "source": "https://auth0.com/docs/manage-users/user-accounts/metadata/metadata-fields-data"
     }
   ],
   "binding": "request-rate",
   "binding_note": "The Management API takes 2 requests a second on Free, so any bulk user administration is slow; sign-ins share the Authentication API's 300 requests a minute.",
   "identity_cost": {
     "kind": "email",
-    "detail": "The sign-up page asks for an email address, or a GitHub, Google or Microsoft sign-in, and states no credit card is required. A custom domain needs credit card verification.",
+    "detail": "The sign-up page asks for an email address, or a GitHub, Google or Microsoft sign-in, and states no credit card is required. After registration a profile page asks for an Account Type when the email domain is not a corporate one or for a Role when it is, and the user is asked to create a tenant, which takes a tenant name and a region. A custom domain needs credit card verification. Whether a later step asks for a phone number is unverified: behind a sign-up.",
     "country": null
   },
   "reliability_note": "A Free tenant inactive for 150 days is deleted and cannot be recovered; Free support is community only.",
@@ -296,9 +303,72 @@
       "proved": "the Management API is served at /api/v2 on the tenant domain with a Bearer token",
       "capture": "sha256:dc58bdbd35bd35214ec3ace5109f0b6e2986fda59d000b657089656839b1b9f1",
       "quote": "> curl -H \"Authorization: Bearer eyJhb...\" https://@@TENANT@@/api/v2/users"
+    },
+    {
+      "url": "https://auth0.com/docs/manage-users/user-accounts/metadata/metadata-fields-data",
+      "date": "2026-11-01",
+      "proved": "Auth0 states a 10 KB user profile size limit, and writes over it succeed for now but may start to fail",
+      "capture": "sha256:3ee98c7c967ff7c0bb4d9d456afd5d782db2bd2a44cca0ae9398ed11a35be8ee",
+      "quote": "Auth0 user profiles have a size limit of 10 KB. Writes that cause profiles to exceed this size limit succeed for now, but may start to fail."
+    },
+    {
+      "url": "https://auth0.com/docs/manage-users/user-accounts/metadata/metadata-fields-data",
+      "date": "2026-11-01",
+      "proved": "the Management API List and Search Users endpoints index, query and return at most 1 MB of data per user",
+      "capture": "sha256:3ee98c7c967ff7c0bb4d9d456afd5d782db2bd2a44cca0ae9398ed11a35be8ee",
+      "quote": "there is a 1 MB per-user limit on user data that can be indexed, queried, and returned when using the Management API's List or Search Users endpoint."
+    },
+    {
+      "url": "https://support.auth0.com/center/s/article/auth0-prompts-for-account-type-or-role-upon-first-login",
+      "date": "2026-11-01",
+      "proved": "after registration the profile page prompts for an Account Type when the email domain is not corporate",
+      "capture": "sha256:0bdab712e6aef0abe5f531e45e880d5ccf3b44377a0c37d50205cbc48907fccd",
+      "quote": "Non-corporate users: If Auth0 does not recognize the email domain as a corporate domain (for example, free email providers like Gmail), the page prompts for the Account Type."
+    },
+    {
+      "url": "https://support.auth0.com/center/s/article/auth0-prompts-for-account-type-or-role-upon-first-login",
+      "date": "2026-11-01",
+      "proved": "after registration the profile page prompts for a Role when the email domain is corporate",
+      "capture": "sha256:0bdab712e6aef0abe5f531e45e880d5ccf3b44377a0c37d50205cbc48907fccd",
+      "quote": "Corporate users: If Auth0 recognizes the email domain as corporate, the page prompts for the Role."
+    },
+    {
+      "url": "https://auth0.com/docs/get-started/auth0-overview/create-tenants",
+      "date": "2026-11-01",
+      "proved": "after the account is created the user is asked to create a tenant",
+      "capture": "sha256:c84d2f4570d3e6f1d42c96ca5f10bc8584692a5d50d6ee8d6f0f7bc0c178dfc4",
+      "quote": "Once you create your account you will be asked to create a tenant."
+    },
+    {
+      "url": "https://auth0.com/docs/get-started/auth0-overview/create-tenants",
+      "date": "2026-11-01",
+      "proved": "a tenant takes a name and a region",
+      "capture": "sha256:c84d2f4570d3e6f1d42c96ca5f10bc8584692a5d50d6ee8d6f0f7bc0c178dfc4",
+      "quote": "In our example, Example-Co chose the name `example-co` and AU as their region."
+    },
+    {
+      "url": "https://auth0.com/docs/manage-users/user-accounts/metadata/metadata-fields-data",
+      "date": "2026-11-01",
+      "proved": "user_metadata set through the Authentication API Signup endpoint takes at most 10 string fields of at most 500 characters each",
+      "capture": "sha256:3ee98c7c967ff7c0bb4d9d456afd5d782db2bd2a44cca0ae9398ed11a35be8ee",
+      "quote": "you can include a maximum of 10 string fields whose values do not exceed 500 characters each"
+    },
+    {
+      "url": "https://auth0.com/docs/api/authentication",
+      "date": "2026-11-01",
+      "proved": "the Authentication API supports the OpenID Connect and OAuth 2.0 identity protocols",
+      "capture": "sha256:d62e87b0126d391dee960c684d402fd839320cf930738b1bb3ad1a5ebd3692cb",
+      "quote": "The API supports various identity protocols, like [OpenID Connect](https://auth0.com/docs/authenticate/protocols/openid-connect-protocol.md), [OAuth 2.0](https://auth0.com/docs/authenticate/protocols/oauth.md)"
+    },
+    {
+      "url": "https://auth0.com/signup",
+      "date": "2026-11-01",
+      "proved": "the sign-up page asks for an email address first, with GitHub, Google and Microsoft sign-in as alternatives",
+      "capture": "sha256:4580dfcb2f24f6297ee71c163c137cbc7aa35d801cb1e46184f4a83ce4213aba",
+      "quote": "## Sign up\n\nEmail"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T06:23:28.112Z",
+  "verified_at": "2026-11-02T00:37:55.407Z",
   "notes": "Essentials starts at USD 35 a month for 500 MAUs (B2C); paid plans add role management, MFA factors and longer log retention."
 }

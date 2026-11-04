@@ -1,0 +1,110 @@
+{
+  "topic": "data-apis",
+  "slug": "frankfurter",
+  "provider": "Frankfurter",
+  "url": "https://frankfurter.dev/",
+  "category": "exchange rate API (central bank reference rates, daily, history to 1948)",
+  "tier": "Public API",
+  "free_tier": {
+    "stated": "Free public API at api.frankfurter.dev: no key, no quotas, no monthly or daily caps; requests are rate-limited only to prevent abuse; 228 currencies from 106 central banks and official sources, history back to 1948",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://frankfurter.dev/",
+    "read_on": "2026-11-02",
+    "notes": "v2 is current and v1 is deprecated but stays available. Rates update once a day. Output is JSON, CSV or NDJSON. Keyless v1 and v2 rate calls answered HTTP 200; one earlier call answered a transient 522."
+  },
+  "per_object_cap": {
+    "stated": "not stated; narrow quotes and use NDJSON for large date ranges",
+    "bytes": null,
+    "source_url": "https://frankfurter.dev/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "notes": "History goes back to 1948."
+  },
+  "egress": {
+    "terms": "not metered; no quota is stated",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://frankfurter.dev/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "GET https://api.frankfurter.dev/v2/rates, /v2/rate/BASE/QUOTE and /v2/providers/ecb/rates; .csv suffix or Accept: application/x-ndjson for CSV and NDJSON; an MCP server at mcp.frankfurter.dev",
+  "endpoint": "https://api.frankfurter.dev/v2",
+  "tooling": "curl or any HTTP client; the open-source project can also be installed and run by the user with Docker, which is the last resort after the hosted public API.",
+  "chaining": "Keyless daily reference rates to convert prices from the crypto and finance records; cache the daily rows locally.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "rate-limited to prevent abuse, size not published; no monthly or daily caps",
+      "source": "https://frankfurter.dev/"
+    }
+  ],
+  "limits_note": "Bulk path: request a date range with from and to as NDJSON or CSV to stream the whole series. Storage terms: storing daily observations locally for caching or analytics is encouraged by the vendor.",
+  "binding": "request-rate",
+  "binding_note": "Only an unpublished abuse limit exists; there is no quota.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No key and no account: the vendor says no API key is needed and keyless calls answered HTTP 200.",
+    "country": null
+  },
+  "reliability_note": "One call answered a transient HTTP 522 from the edge; later calls answered 200.",
+  "confidence": "documented",
+  "confidence_note": "Terms are read from the vendor page; keyless v1 and v2 calls answered 200; the abuse limit was not measured.",
+  "evidence": [
+    {
+      "url": "https://frankfurter.dev/",
+      "date": "2026-11-02",
+      "proved": "228 currencies from 106 sources, daily, back to 1948",
+      "capture": "sha256:47f1f9327205dbbaf60b5393475c5bbcbb5efee37da64d546eb9c23aed6c3a51",
+      "quote": "Frankfurter is a free exchange rates API for 228 currencies from 106 central banks and official sources. Rates update daily and go back to 1948."
+    },
+    {
+      "url": "https://frankfurter.dev/",
+      "date": "2026-11-02",
+      "proved": "no API key is needed",
+      "capture": "sha256:47f1f9327205dbbaf60b5393475c5bbcbb5efee37da64d546eb9c23aed6c3a51",
+      "quote": "You don't need an API key."
+    },
+    {
+      "url": "https://frankfurter.dev/",
+      "date": "2026-11-02",
+      "proved": "no quotas or monthly or daily caps",
+      "capture": "sha256:47f1f9327205dbbaf60b5393475c5bbcbb5efee37da64d546eb9c23aed6c3a51",
+      "quote": "There are no quotas. Requests are rate-limited to prevent abuse, but there are no monthly or daily caps."
+    },
+    {
+      "url": "https://frankfurter.dev/",
+      "date": "2026-11-02",
+      "proved": "storing daily observations locally is encouraged",
+      "capture": "sha256:47f1f9327205dbbaf60b5393475c5bbcbb5efee37da64d546eb9c23aed6c3a51",
+      "quote": "Storing daily observations locally for caching or historical analytics is encouraged to keep API traffic light."
+    },
+    {
+      "url": "https://frankfurter.dev/",
+      "date": "2026-11-02",
+      "proved": "NDJSON streams large time series",
+      "capture": "sha256:47f1f9327205dbbaf60b5393475c5bbcbb5efee37da64d546eb9c23aed6c3a51",
+      "quote": "Each line is one independent JSON object, useful for streaming large time series without buffering the entire response."
+    },
+    {
+      "url": "probe:https://api.frankfurter.dev/v2/rates",
+      "date": "2026-11-02",
+      "proved": "a keyless v2 rates call answered HTTP 200",
+      "capture": "sha256:63734813e4fd2be5551734cb15a9dc1c507f44494d48e54e48af0a9dc20743f7",
+      "quote": "\"status\": 200"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-11-03T00:30:00.000Z",
+  "notes": "Keyless, no quotas. Bulk path: date ranges as NDJSON or CSV. Storage: local caching is encouraged.",
+  "extras": {
+    "bulk_path": "from/to date ranges streamed as NDJSON or CSV",
+    "history_depth": "back to 1948"
+  }
+}

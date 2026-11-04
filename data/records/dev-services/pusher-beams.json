@@ -1,0 +1,465 @@
+{
+  "topic": "dev-services",
+  "slug": "pusher-beams",
+  "provider": "Pusher Beams",
+  "url": "https://pusher.com/beams/pricing/",
+  "category": "push notification API for iOS, Android and web browsers (hosted)",
+  "tier": "Beams Sandbox",
+  "free_tier": {
+    "stated": "Beams Sandbox plan, priced Free: 1,000 subscribers (registered devices) and Standard support",
+    "unit": "mixed",
+    "metered_on": "object-count",
+    "source_url": "https://pusher.com/beams/pricing/",
+    "read_on": "2026-11-01",
+    "notes": "A subscriber is a device registered to receive notifications. The count is the sum of concurrent subscribers across all Beams instances for a given day. A device counts from the SDK start call until the stop call, or until the platform gateway invalidates its token. Reinstalling an app on a device adds a new subscriber until the cleanup removes the old one. The pricing page names no notification count, and an older tutorial says a free plan can send unlimited push notifications to up to 1000 devices. The next plan is Startup at USD 29 a month for 10,000 subscribers."
+  },
+  "per_object_cap": {
+    "stated": "10 KiB request body on a publish to interests; 200 KiB request body on a publish to users",
+    "bytes": null,
+    "source_url": "https://pusher.com/docs/beams/reference/publish-api/",
+    "notes": "The two publish endpoints have different caps, so no single byte count is recorded. The body carries the target list and the payload for each platform."
+  },
+  "retention": {
+    "stated": "An undelivered notification expires at the platform gateway after its time-to-live: at most 4 weeks on web push and FCM, and the payload expiration timestamp on APNs. A device registration stays until the SDK stop call or until the gateway invalidates the token",
+    "days": 28,
+    "source_url": "https://pusher.com/docs/beams/reference/publish-payloads/",
+    "notes": "Web push accepts a time-to-live of at most 2419200 seconds and defaults to 4 weeks. FCM takes at most 4 weeks, which is also its default. APNs takes an expiration timestamp in the payload. 4 weeks is 28 days (4 x 7)."
+  },
+  "egress": {
+    "terms": "not stated: the pricing page lists subscribers and a support level and names no notification count, byte allowance or price per notification",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://pusher.com/beams/pricing/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "Publish API: HTTPS POST to INSTANCE_ID.pushnotifications.pusher.com under /publish_api/v1/instances/INSTANCE_ID/publishes/interests or /publishes/users, with a JSON body and the instance secret key as a Bearer token. Devices register through the Android, iOS and Web SDKs, which call the Device API on the same host.",
+  "endpoint": "https://INSTANCE_ID.pushnotifications.pusher.com",
+  "tooling": "Official client SDKs for Android, iOS, Web (JavaScript) and Flutter; official server SDKs for Go, PHP, Node.js, Python, Java and Kotlin, Ruby and Swift; or any HTTP client that posts JSON with the instance secret key. A web page needs a service worker file, served over HTTPS, that imports the hosted Beams worker script.",
+  "chaining": "A worker on any free compute service posts one HTTPS request to the Publish API to reach up to 1,000 registered browsers and phones, and Pusher Channels covers live updates to open pages.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "1,000 subscribers (registered devices, counted as concurrent subscribers across all Beams instances for a given day)",
+      "source": "https://pusher.com/beams/pricing/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "100 requests per second to the Publish API; a request above the rate answers 429",
+      "source": "https://pusher.com/docs/beams/reference/publish-api/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "10 KiB request body on a publish to interests; 200 KiB on a publish to users",
+      "source": "https://pusher.com/docs/beams/reference/publish-api/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "notification time-to-live of at most 2419200 seconds (4 weeks) on web push and at most 4 weeks on FCM",
+      "source": "https://pusher.com/docs/beams/reference/publish-payloads/"
+    }
+  ],
+  "limits_note": "A publish to interests names 1 to 100 interests and a publish to users names 1 to 1000 user IDs. A device holds at most 5000 interests and a user holds at most 100 devices per platform. The vocabulary has no kind for a count cap, so the subscriber cap is filed as volume-quota.",
+  "binding": "volume-quota",
+  "binding_note": "The 1,000-subscriber cap is the only plan threshold on the pricing page, and it counts registered devices, not bytes, so a growing app meets it before the Publish API rate of 100 requests a second.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The Pusher sign-up form asks for an email address and a password, or a GitHub or Google sign-in, behind an invisible reCAPTCHA, and has no phone or card field; a Beams instance is then created in the dashboard. Android delivery needs an FCM service account file from a Firebase project, iOS delivery needs an APNs key from an Apple Developer account, and Safari delivery needs a paid Apple Developer Program membership. The web SDK guide for Chrome, Firefox, Edge and Opera uses only the instance ID and secret key from the dashboard.",
+    "country": null
+  },
+  "reliability_note": "Over the subscriber cap a publish answers 402 after a 7-day notice period and no notification is delivered, while device registration still succeeds; Standard support has best-effort response times, and the status page lists Beams and the Beams dashboard as Operational on 2026-11-01.",
+  "confidence": "documented",
+  "confidence_note": "Every limit is quoted from first-party pricing, documentation and support pages. The Publish API host answered 405 to a GET on its POST-only route, and the hosted web service worker script answered 200. No notification was published, because publishing needs an instance ID and secret key, which only an account holds; a publish with a Sandbox key would move this record to measured. unverified: whether the first Beams instance asks for a card, how many instances a Sandbox account may hold and whether an idle Sandbox instance expires, because the Beams dashboard is behind a sign-up.",
+  "evidence": [
+    {
+      "url": "https://pusher.com/beams/pricing/",
+      "date": "2026-11-01",
+      "proved": "the Sandbox plan is Free with 1,000 subscribers, and Startup is USD 29 a month for 10,000 subscribers",
+      "capture": "sha256:631f40b509a52db1c90276fad21b5b21931bb41c2c79fdc4473e46d13675fd1b",
+      "quote": "Sandbox\n\nStartup\n\nPro\n\nBusiness\n\nPremium\n\nPrice\n\nFree\n\n$29/month\n\n$99/month\n\n$199/month\n\n$399/month\n\nSubscriberstooltip\n\n1,000\n\n10,000\n\n50,000\n\n115,000\n\n250,000"
+    },
+    {
+      "url": "https://pusher.com/beams/pricing/",
+      "date": "2026-11-01",
+      "proved": "the pricing page names the Sandbox plan as the free plan",
+      "capture": "sha256:631f40b509a52db1c90276fad21b5b21931bb41c2c79fdc4473e46d13675fd1b",
+      "quote": "Put it to the test for free with our Sandbox plan"
+    },
+    {
+      "url": "https://pusher.com/beams/pricing/",
+      "date": "2026-11-01",
+      "proved": "Sandbox, Startup and Pro carry Standard support, and Business and Premium carry Premium support",
+      "capture": "sha256:631f40b509a52db1c90276fad21b5b21931bb41c2c79fdc4473e46d13675fd1b",
+      "quote": "Level of support\n\nStandard\n\nStandard\n\nStandard\n\nPremium\n\nPremium"
+    },
+    {
+      "url": "https://pusher.com/beams/pricing/",
+      "date": "2026-11-01",
+      "proved": "Standard support has best-effort response times and Premium support targets 24 hours",
+      "capture": "sha256:631f40b509a52db1c90276fad21b5b21931bb41c2c79fdc4473e46d13675fd1b",
+      "quote": "Response Times\n\nBest Effort\n\nTarget 24 Hours"
+    },
+    {
+      "url": "https://pusher.com/beams/pricing/",
+      "date": "2026-11-01",
+      "proved": "the pricing page counts subscribers as the sum of concurrent subscribers across all Beams instances",
+      "capture": "sha256:07c9e4441600311dbbce22de53682227be54e557f9dd5d1b0455aac353947750",
+      "quote": "Sum of concurrent Subscribers across all Beams instances."
+    },
+    {
+      "url": "https://pusher.com/beams/pricing/",
+      "date": "2026-11-01",
+      "proved": "the Sandbox plan call to action links to the Pusher account sign-up page",
+      "capture": "sha256:07c9e4441600311dbbce22de53682227be54e557f9dd5d1b0455aac353947750",
+      "quote": "Put it to the test for free with our Sandbox plan</h4><a href=\"https://dashboard.pusher.com/accounts/sign_up\">"
+    },
+    {
+      "url": "https://pusher.com/beams/",
+      "date": "2026-11-01",
+      "proved": "the Beams page offers a free sandbox plan that includes 1,000 subscribers",
+      "capture": "sha256:557fb996140d2682a91f00f5e96abd155ec7390c953c2c2aa0413fc71c5cc2ce",
+      "quote": "Get started for free with our sandbox plan\n\nIncluding 1,000 subscribers, Alternatively take a look at our simple self-serve packages, or speak to the team about a tailored solution to your enterprise requirements."
+    },
+    {
+      "url": "https://pusher.com/beams/",
+      "date": "2026-11-01",
+      "proved": "Beams reaches iOS, Android and web devices",
+      "capture": "sha256:557fb996140d2682a91f00f5e96abd155ec7390c953c2c2aa0413fc71c5cc2ce",
+      "quote": "Beams offers native notification support for iOS, Android and web, so you can reach your users wherever they are"
+    },
+    {
+      "url": "https://docs.bird.com/pusher/beams/beams/limits/what-are-beams-subscribers-and-how-are-they-counted",
+      "date": "2026-11-01",
+      "proved": "a subscriber is a device registered to receive Beams notifications",
+      "capture": "sha256:d9e14f0ec056e851f14093ddca65a0bdc67604e7d65e520ad0ce024078d1ead5",
+      "quote": "In short, a Beams Subscriber is a device registered to receive Beams notifications from your instance(s)."
+    },
+    {
+      "url": "https://docs.bird.com/pusher/beams/beams/limits/what-are-beams-subscribers-and-how-are-they-counted",
+      "date": "2026-11-01",
+      "proved": "subscribers are summed as concurrent subscribers across all instances for a given day",
+      "capture": "sha256:d9e14f0ec056e851f14093ddca65a0bdc67604e7d65e520ad0ce024078d1ead5",
+      "quote": "We calculate the number of subscribers by taking the sum of concurrent Subscribers across all your Beams instances (for a given day)."
+    },
+    {
+      "url": "https://pusher.com/docs/beams/concepts/subscribers/",
+      "date": "2026-11-01",
+      "proved": "a device is a subscriber from the SDK start call until the stop call",
+      "capture": "sha256:2b2e41d9f5c5b593bab7a45fa3fbcb62b2c32c34da29ef282d6ed214ea2d6336",
+      "quote": "Devices are only subscribed to Pusher Beams after you call the `.start` method in the SDK and will be removed once you call `.stop`."
+    },
+    {
+      "url": "https://pusher.com/docs/beams/concepts/subscribers/",
+      "date": "2026-11-01",
+      "proved": "a reinstalled app receives a new gateway token and counts as a new subscriber until the cleanup removes the old one",
+      "capture": "sha256:2b2e41d9f5c5b593bab7a45fa3fbcb62b2c32c34da29ef282d6ed214ea2d6336",
+      "quote": "Whenever you uninstall/reinstall your application on a device (which is common during development) it will receive a new push gateway token. Beams will therefore count it as a new Subscriber."
+    },
+    {
+      "url": "https://pusher.com/docs/beams/concepts/subscribers/",
+      "date": "2026-11-01",
+      "proved": "an uninstalled iOS app can stay in the subscriber count for up to a week",
+      "capture": "sha256:2b2e41d9f5c5b593bab7a45fa3fbcb62b2c32c34da29ef282d6ed214ea2d6336",
+      "quote": "it can sometimes take up to a week to remove iOS Subscribers from Beams after they uninstall the application."
+    },
+    {
+      "url": "https://pusher.com/blog/new-usage-metrics-and-more-self-serve-tiers-for-easy-push-notification-scaling-with-beams/",
+      "date": "2026-11-01",
+      "proved": "the usage metric changed from Monthly Active Devices to the sum of concurrent subscribers across all instances",
+      "capture": "sha256:5a7ce0b6809c2595e09d0d55bcd00b17fe5672ba9b900bf61a018ff59270e033",
+      "quote": "Beams usage was previously based on the number of Monthly Active Devices. As of today, we calculate Beams usage by taking the sum of concurrent Subscribers across all of a ... Beams instances."
+    },
+    {
+      "url": "https://docs.bird.com/pusher/beams/beams/limits/what-happens-when-i-hit-my-beams-plan-limits",
+      "date": "2026-11-01",
+      "proved": "weekly usage notices start at 95% of the plan",
+      "capture": "sha256:edcdb7a29dcd1835e4db949e1804cd5ca38a3df91512f940a6eac9996782d4de",
+      "quote": "When you reach 95% of your current Beams plan you will begin to receive weekly notices advising you of your usage"
+    },
+    {
+      "url": "https://docs.bird.com/pusher/beams/beams/limits/what-happens-when-i-hit-my-beams-plan-limits",
+      "date": "2026-11-01",
+      "proved": "past the plan, daily email alerts start and the account has 7 days to upgrade",
+      "capture": "sha256:edcdb7a29dcd1835e4db949e1804cd5ca38a3df91512f940a6eac9996782d4de",
+      "quote": "When you exceed the number of subscribers in your current plan we will trigger daily email alerts ... 7 days from when you first exceed your plan to upgrade and avoid any problems with sending Beams notifications."
+    },
+    {
+      "url": "https://docs.bird.com/pusher/beams/beams/limits/what-happens-when-i-hit-my-beams-plan-limits",
+      "date": "2026-11-01",
+      "proved": "after the notice period a publish answers 402 and no notification is delivered",
+      "capture": "sha256:edcdb7a29dcd1835e4db949e1804cd5ca38a3df91512f940a6eac9996782d4de",
+      "quote": "If you fail to upgrade before you reach your plan limits you will receive a '402 (payment required)' response code returned for any attempted publishes and notifications will not be delivered to your devices."
+    },
+    {
+      "url": "https://docs.bird.com/pusher/beams/beams/limits/what-happens-when-i-hit-my-beams-plan-limits",
+      "date": "2026-11-01",
+      "proved": "device registrations and subscriptions still succeed over the plan limit",
+      "capture": "sha256:edcdb7a29dcd1835e4db949e1804cd5ca38a3df91512f940a6eac9996782d4de",
+      "quote": "Your device registrations and subscriptions will not be prevented, which means there should be no errors presented to your client applications."
+    },
+    {
+      "url": "https://pusher.com/docs/beams/reference/publish-api/",
+      "date": "2026-11-01",
+      "proved": "the publish endpoint is per instance on pushnotifications.pusher.com",
+      "capture": "sha256:f9ce9b710e2d38d113d08373f5ba920fb9718c8e93c233205ac0143bb9ce2801",
+      "quote": "POST https://<YOUR_INSTANCE_ID>.pushnotifications.pusher.com/publish_api/v1/instances/<YOUR_INSTANCE_ID>/publishes/interests"
+    },
+    {
+      "url": "https://pusher.com/docs/beams/reference/publish-api/",
+      "date": "2026-11-01",
+      "proved": "the Publish API authenticates with the instance secret key as a Bearer token",
+      "capture": "sha256:f9ce9b710e2d38d113d08373f5ba920fb9718c8e93c233205ac0143bb9ce2801",
+      "quote": "with the value in the following format: `Bearer <YOUR_SECRET_KEY>`."
+    },
+    {
+      "url": "https://pusher.com/docs/beams/reference/publish-api/",
+      "date": "2026-11-01",
+      "proved": "a publish to interests names 1 to 100 interests",
+      "capture": "sha256:f9ce9b710e2d38d113d08373f5ba920fb9718c8e93c233205ac0143bb9ce2801",
+      "quote": "Array of interests to send the push notification to, ranging from 1 to 100 per publish request."
+    },
+    {
+      "url": "https://pusher.com/docs/beams/reference/publish-api/",
+      "date": "2026-11-01",
+      "proved": "a publish to users names 1 to 1000 user IDs",
+      "capture": "sha256:f9ce9b710e2d38d113d08373f5ba920fb9718c8e93c233205ac0143bb9ce2801",
+      "quote": "Array of user IDs to send the push notification to, ranging from 1 to 1000 per publish request."
+    },
+    {
+      "url": "https://pusher.com/docs/beams/reference/publish-api/",
+      "date": "2026-11-01",
+      "proved": "the Publish API allows 100 requests per second and answers 429 above that rate",
+      "capture": "sha256:f9ce9b710e2d38d113d08373f5ba920fb9718c8e93c233205ac0143bb9ce2801",
+      "quote": "| Rate Limited | 429 | Too many requests being made in quick succession (max 100 RPS). |"
+    },
+    {
+      "url": "https://pusher.com/docs/beams/reference/publish-api/",
+      "date": "2026-11-01",
+      "proved": "a publish to interests takes a request body of at most 10 KiB",
+      "capture": "sha256:f9ce9b710e2d38d113d08373f5ba920fb9718c8e93c233205ac0143bb9ce2801",
+      "quote": "| Bad request | 400 | Request body size is too large (max 10KiB). |"
+    },
+    {
+      "url": "https://pusher.com/docs/beams/reference/publish-api/",
+      "date": "2026-11-01",
+      "proved": "a publish to users takes a request body of at most 200 KiB",
+      "capture": "sha256:f9ce9b710e2d38d113d08373f5ba920fb9718c8e93c233205ac0143bb9ce2801",
+      "quote": "| Bad request | 400 | Request body size is too large (max 200KiB). |"
+    },
+    {
+      "url": "https://pusher.com/docs/beams/reference/publish-api/",
+      "date": "2026-11-01",
+      "proved": "the Publish API answers 402 when an instance is over its plan limits",
+      "capture": "sha256:f9ce9b710e2d38d113d08373f5ba920fb9718c8e93c233205ac0143bb9ce2801",
+      "quote": "| Payment Required | 402 | Publishing has been blocked due to being over plan limits."
+    },
+    {
+      "url": "https://pusher.com/docs/beams/concepts/device-interests/",
+      "date": "2026-11-01",
+      "proved": "a device holds at most 5000 device interests",
+      "capture": "sha256:b1cf3ff5d3499bf45db5083c3d0b24219adbf0619ccc8c0bcc51304caa414e60",
+      "quote": "A device can be subscribed to a maximum of 5000 Device Interests."
+    },
+    {
+      "url": "https://pusher.com/docs/beams/concepts/authenticated-users/",
+      "date": "2026-11-01",
+      "proved": "a user holds at most 100 devices per platform",
+      "capture": "sha256:9fa410daf4e2d70420504d7cb7ee63c18d48ae44cbc8e47dc5c8bae02e42d5e3",
+      "quote": "A user can be associated with a maximum of 100 devices per platform at any given time."
+    },
+    {
+      "url": "https://pusher.com/docs/beams/reference/publish-payloads/",
+      "date": "2026-11-01",
+      "proved": "web push time-to-live is at most 2419200 seconds and defaults to 4 weeks",
+      "capture": "sha256:a631aa0ca9fdaf62202014198baf2f489ccc932f1343a85d0229b4cd5afe8c84",
+      "quote": "The number of seconds the web push gateway should store the notification for whilst the user is offline. **Max: 2419200; Default: 4 weeks.**"
+    },
+    {
+      "url": "https://docs.bird.com/pusher/beams/beams/publishing/how-can-i-set-the-time-to-live-ttl-for-a-push-notification",
+      "date": "2026-11-01",
+      "proved": "FCM holds an unreachable device's notification for at most 4 weeks, which is also the default",
+      "capture": "sha256:d27de6ea483218adaf368f9701fb5d5b79eeabe5318211e57cd7c2ff2df9c61c",
+      "quote": "number of seconds FCM should hold the notification if the device is unreachable. The maximum and default value is 4 weeks."
+    },
+    {
+      "url": "https://docs.bird.com/pusher/beams/beams/publishing/how-can-i-set-the-time-to-live-ttl-for-a-push-notification",
+      "date": "2026-11-01",
+      "proved": "APNs takes an expiration timestamp in the payload",
+      "capture": "sha256:d27de6ea483218adaf368f9701fb5d5b79eeabe5318211e57cd7c2ff2df9c61c",
+      "quote": "The value should be an EPOCH timestamp in the future."
+    },
+    {
+      "url": "https://pusher.com/docs/beams/reference/all-libraries/",
+      "date": "2026-11-01",
+      "proved": "official client SDKs exist for Android, iOS, Web (JavaScript) and Flutter",
+      "capture": "sha256:36f0d948abf2703522baa6ab1ab66bee62d9e09cab644cb9021a2720a814f848",
+      "quote": "Android | Pusher ... iOS | Pusher ... Web (JavaScript) | Pusher ... Flutter | Pusher"
+    },
+    {
+      "url": "https://pusher.com/docs/beams/reference/all-libraries/",
+      "date": "2026-11-01",
+      "proved": "official server SDKs exist for Go, PHP, Node JS, Python, Java/Kotlin, Ruby and Swift",
+      "capture": "sha256:36f0d948abf2703522baa6ab1ab66bee62d9e09cab644cb9021a2720a814f848",
+      "quote": "Go | Pusher ... PHP | Pusher ... Node JS | Pusher ... Python | Pusher ... Java/Kotlin | Pusher ... Ruby | Pusher ... Swift | Pusher"
+    },
+    {
+      "url": "https://pusher.com/docs/beams/reference/device-api/",
+      "date": "2026-11-01",
+      "proved": "the Android, iOS and Web SDKs register devices through a Device API on the instance host",
+      "capture": "sha256:40576a0b93fba6fd9f11184507f91346ead1eea5fdcdbaef20ba1a6d2234f1d9",
+      "quote": "This is the API used by our Android, iOS and Web SDKs. ... POST https://<YOUR_INSTANCE_ID>.pushnotifications.pusher.com/device_api/v1/instances/<YOUR_INSTANCE_ID>/devices/apns"
+    },
+    {
+      "url": "https://pusher.com/docs/beams/getting-started/web/sdk-integration/",
+      "date": "2026-11-01",
+      "proved": "the web SDK supports Chrome, Firefox, Edge and Opera",
+      "capture": "sha256:76982c1db5cedc423610d4a6ace445075b82a8aa5f72a0836d8bacc93c90528a",
+      "quote": "The SDK currently supports Chrome, Firefox, Edge and Opera."
+    },
+    {
+      "url": "https://pusher.com/docs/beams/getting-started/web/sdk-integration/",
+      "date": "2026-11-01",
+      "proved": "web push needs an HTTPS site, with localhost as the only exception",
+      "capture": "sha256:76982c1db5cedc423610d4a6ace445075b82a8aa5f72a0836d8bacc93c90528a",
+      "quote": "Web push notifications only work for full HTTPS websites. The only exception is localhost to ease development."
+    },
+    {
+      "url": "https://pusher.com/docs/beams/getting-started/web/sdk-integration/",
+      "date": "2026-11-01",
+      "proved": "the web SDK needs a service worker file that imports the hosted Beams worker script",
+      "capture": "sha256:76982c1db5cedc423610d4a6ace445075b82a8aa5f72a0836d8bacc93c90528a",
+      "quote": "importScripts(\"https://js.pusher.com/beams/service-worker.js\");"
+    },
+    {
+      "url": "https://pusher.com/docs/beams/getting-started/web/sdk-integration/",
+      "date": "2026-11-01",
+      "proved": "the web SDK is configured with the instance ID from the dashboard Keys tab and no gateway credential",
+      "capture": "sha256:76982c1db5cedc423610d4a6ace445075b82a8aa5f72a0836d8bacc93c90528a",
+      "quote": "Get your Beams instance ID from the Keys tab on [the dashboard](https://dashboard.pusher.com/beams) and use the following snippet to initialize the SDK:"
+    },
+    {
+      "url": "https://pusher.com/docs/beams/getting-started/android/configure-fcm/",
+      "date": "2026-11-01",
+      "proved": "Android delivery uses the account's own FCM credentials, a service account file",
+      "capture": "sha256:e929a99db5d4ae5bbe01c6df095cc4eab0feb869c86a29d0b218411ed7c27af3",
+      "quote": "When we deliver push notifications, we use your FCM credentials. This page guides you through the process of getting a FCM service account file and how to provide it to Pusher."
+    },
+    {
+      "url": "https://pusher.com/docs/beams/getting-started/android/configure-fcm/",
+      "date": "2026-11-01",
+      "proved": "the FCM setup starts in the Firebase console",
+      "capture": "sha256:e929a99db5d4ae5bbe01c6df095cc4eab0feb869c86a29d0b218411ed7c27af3",
+      "quote": "The first step is to go your Firebase console."
+    },
+    {
+      "url": "https://pusher.com/docs/beams/getting-started/ios/configure-apns/",
+      "date": "2026-11-01",
+      "proved": "iOS delivery uses an APNs key that the account creates in an Apple Developer account",
+      "capture": "sha256:1713734ad0a4594fc3d2f55f94ceee03256ed08432fc6c43a167540596bb9a26",
+      "quote": "When we deliver push notifications, we use your APNs Key. ... Login into your Apple Developer Account."
+    },
+    {
+      "url": "https://pusher.com/docs/beams/getting-started/web/configure-safari/",
+      "date": "2026-11-01",
+      "proved": "Safari push needs a paid Apple Developer Program membership",
+      "capture": "sha256:7bebee0147dfd22b82dbc4a75c1a4a78b6cb6b888ea9bae757aeb1e5074deedb",
+      "quote": "An [Apple Developer](https://developer.apple.com/) account with access to a paid [Apple Developer Program](https://developer.apple.com/programs/) membership. You must have the ability to create an identifier"
+    },
+    {
+      "url": "https://pusher.com/tutorials/getting-started-pusher-beams/",
+      "date": "2026-11-01",
+      "proved": "a Beams instance starts from a free sandbox Pusher account",
+      "capture": "sha256:86d10b9b5961392384e2eb1cb05c5ceb076c51d8cc8efe777c4a45ee8debc44c",
+      "quote": "To set up a Pusher Beams instance and get started, create a free sandbox [Pusher account](https://dashboard.pusher.com/accounts/sign_up) or [sign in](https://dashboard.pusher.com/accounts/sign_in)."
+    },
+    {
+      "url": "https://pusher.com/docs/beams/",
+      "date": "2026-11-01",
+      "proved": "a Beams instance is created in the Pusher dashboard",
+      "capture": "sha256:3b5d2414e47ae822e16ab350bb9b8a7dd92df91823013ad92c937265df25a7e0",
+      "quote": "Head over to the [Pusher dashboard](https://dashboard.pusher.com/beams) and create a new instance of Pusher Beams."
+    },
+    {
+      "url": "https://dashboard.pusher.com/accounts/sign_up",
+      "date": "2026-11-01",
+      "proved": "the sign-up form asks for an email address",
+      "capture": "sha256:4e5e4a9f2df89e305a15f312ddee5ed44f2f9f175e03a369a43fccd71ea9e3c7",
+      "quote": "<input name=\"account[email]\" id=\"signup-email\" type=\"email\""
+    },
+    {
+      "url": "https://dashboard.pusher.com/accounts/sign_up",
+      "date": "2026-11-01",
+      "proved": "the sign-up form asks for a password",
+      "capture": "sha256:4e5e4a9f2df89e305a15f312ddee5ed44f2f9f175e03a369a43fccd71ea9e3c7",
+      "quote": "<input name=\"account[password]\" id=\"signup-password\" type=\"password\""
+    },
+    {
+      "url": "https://dashboard.pusher.com/accounts/sign_up",
+      "date": "2026-11-01",
+      "proved": "the sign-up form is submitted through an invisible reCAPTCHA",
+      "capture": "sha256:4e5e4a9f2df89e305a15f312ddee5ed44f2f9f175e03a369a43fccd71ea9e3c7",
+      "quote": "onsubmit=\"grecaptcha.execute(); return false;\""
+    },
+    {
+      "url": "https://dashboard.pusher.com/accounts/sign_up",
+      "date": "2026-11-01",
+      "proved": "the sign-up also accepts a GitHub sign-in",
+      "capture": "sha256:4e5e4a9f2df89e305a15f312ddee5ed44f2f9f175e03a369a43fccd71ea9e3c7",
+      "quote": "Sign up with GitHub"
+    },
+    {
+      "url": "https://dashboard.pusher.com/accounts/sign_up",
+      "date": "2026-11-01",
+      "proved": "the sign-up also accepts a Google sign-in",
+      "capture": "sha256:4e5e4a9f2df89e305a15f312ddee5ed44f2f9f175e03a369a43fccd71ea9e3c7",
+      "quote": "Sign up with Google"
+    },
+    {
+      "url": "https://pusher.com/tutorials/push-notifications-android/",
+      "date": "2026-11-01",
+      "proved": "an older tutorial says a free plan can send unlimited push notifications to up to 1000 devices",
+      "capture": "sha256:82abf7b146a9cdabd92b931c57409ad6b54232ce35fd01bfe0b610297236e67b",
+      "quote": "With a free plan, you can send unlimited push notifications to up to 1000 devices during a billing month."
+    },
+    {
+      "url": "https://pusher.com/docs/beams/concepts/active-devices/",
+      "date": "2026-11-01",
+      "proved": "an older docs page still bills a Free plan on Monthly Active Devices over the most recent 30 days",
+      "capture": "sha256:76a7cc5d0a842434b2ac03c6045649367ceec09323662532e80376242cb09309",
+      "quote": "Beams billing is based on Monthly Active Devices. For accounts on a Free plan, the most recent 30 days of unique Active Devices will be considered."
+    },
+    {
+      "url": "https://status.pusher.com/",
+      "date": "2026-11-01",
+      "proved": "the status page lists Beams and the Beams dashboard as Operational",
+      "capture": "sha256:f26b2cadecf845fead170e3f993470ab2d489e639513052d2696a6922eaebce6",
+      "quote": "Beams Operational Beams dashboard Operational"
+    },
+    {
+      "url": "https://github.com/pusher/push-notifications-web/tags",
+      "date": "2026-11-01",
+      "proved": "the newest tag of the web SDK repository is 2.1.0, dated 2025-01-17",
+      "capture": "sha256:fb1c36c6607571e6204d61b754b635bbbde8d3f85391fe745605485d9309f647",
+      "quote": "Merge pull request #155 from pusher/prepare-2.1.0\n\nPrepare for 2.1.0 release\n```\n\n- Jan 17, 2025"
+    },
+    {
+      "url": "probe:https://js.pusher.com/beams/service-worker.js",
+      "date": "2026-11-01",
+      "proved": "the hosted web SDK service worker script answers 200 at js.pusher.com",
+      "capture": "sha256:42f2b456848ff1ff82477323a4ebe2778fc747d8ea16502dc5da34b3d9ec7415",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:https://00000000-0000-0000-0000-000000000000.pushnotifications.pusher.com/publish_api/v1/instances/00000000-0000-0000-0000-000000000000/publishes/interests",
+      "date": "2026-11-01",
+      "proved": "the Publish API route exists and answers a GET with 405, so it takes POST only",
+      "capture": "sha256:565189870aae32dc2af3f9758dc64156a89392ef9b1c056a78206bac0dfc609c",
+      "quote": "\"status\": 405"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-11-01T18:13:28.771Z",
+  "notes": "Pusher Channels, the realtime messaging product of the same vendor, has its own record and its own Sandbox limits. The Beams pricing page labels this plan Sandbox; the tier names the product to tell it apart from the Channels Sandbox plan. The Beams docs also carry an Active Devices page that bills a Free plan on Monthly Active Devices over the last 30 days; a vendor post replaced that metric with concurrent subscribers, which the pricing page, the subscriber docs and the plan-limit article use. The newest tag of the web SDK repository is 2.1.0, dated 2025-01-17. Revisit when the pricing page changes the Sandbox subscriber count or drops the plan."
+}

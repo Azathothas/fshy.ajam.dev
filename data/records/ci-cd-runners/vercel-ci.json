@@ -1,0 +1,250 @@
+{
+  "topic": "ci-cd-runners",
+  "slug": "vercel-ci",
+  "provider": "Vercel CI",
+  "url": "https://vercel.com/docs/ci",
+  "category": "CI runner",
+  "tier": "Hobby",
+  "verdict": "qualifies-with-caveat",
+  "confidence": "documented",
+  "confidence_note": "every number is quoted from Vercel's pricing page and Vercel CI documentation; no run was made, so the job time limit, the largest task size on Hobby and the behaviour once the 200 CPU minutes are spent are unverified",
+  "verified_at": "2026-11-04T06:00:42.536Z",
+  "free_tier": {
+    "stated": "Hobby: 200 CPU minutes a month included; a CPU minute is one CPU running for one minute. Pro: USD 0.0035 per CPU minute. Beta on all plans",
+    "unit": "minutes",
+    "metered_on": "wall-clock",
+    "source_url": "https://vercel.com/pricing",
+    "read_on": "2026-11-02",
+    "notes": "the true unit is CPU minutes (CPUs multiplied by task run time, rounded up to the second, 1 second minimum); the vocabulary has no core-minutes term, so unit is minutes. Each run spends 4 CPUs on bootstrapping and 2 CPUs by default on each task that runs; cached and skipped tasks cost nothing"
+  },
+  "per_object_cap": {
+    "stated": "2 CPUs and 4 GB of memory per task by default, up to 32 CPUs and 64 GB of memory with a ci:cpus tag; bootstrapping install step 4 CPUs and 8 GB by default. Job time limit: unverified: no Vercel CI page states a task or run time limit",
+    "bytes": null,
+    "source_url": "https://vercel.com/docs/ci/configuration"
+  },
+  "retention": {
+    "stated": "unverified: no Vercel CI page states how long runs and task logs are kept",
+    "days": null,
+    "source_url": "https://vercel.com/docs/ci"
+  },
+  "egress": {
+    "terms": "unverified: no Vercel CI page states a network egress policy for tasks; the network traffic of tasks passes through a Vercel CI certificate authority",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://vercel.com/docs/ci/image"
+  },
+  "interface": [
+    "git",
+    "cli",
+    "rest"
+  ],
+  "interface_detail": "a git push to a GitHub repository connected to a Vercel project runs every task tagged ci in turbo.json; a repository is enabled with the vercel ci enable command, runs and task logs are read in the dashboard CI tab, with the vercel ci CLI, the Vercel MCP and the REST API, and the status of the tasks is posted to the pull request as a check",
+  "tooling": "Turborepo 2.11.7 or later and Vercel CLI 64.3.1 or later; tasks run in Linux containers on x86_64, Amazon Linux 2023 by default or Ubuntu 24.04 with a ci:os:ubuntu tag, with Node.js 24, git, Docker and common build tools preinstalled; extra tools are installed during bootstrapping with an install command in vercel.json",
+  "chaining": "a hosted runner for tagged Turborepo tasks (lint, type check, tests, builds) triggered only by a git push to a private GitHub repository; it has no schedule, manual or pull-request trigger and no public-repository support, so GitHub Actions on a public repository and the other hosted runners of this topic come first for general jobs",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "200 CPU minutes a month on Hobby; Pro USD 0.0035 per CPU minute",
+      "source": "https://vercel.com/pricing"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "2 CPUs and 4 GB of memory per task by default, up to 32 CPUs and 64 GB; install step 4 CPUs and 8 GB",
+      "source": "https://vercel.com/docs/ci/configuration"
+    },
+    {
+      "kind": "write-gated",
+      "value": "GitHub repositories only, private repositories only, a git push as the only trigger, Linux only, Turborepo required",
+      "source": "https://vercel.com/docs/ci"
+    }
+  ],
+  "limits_note": "the job time limit and the largest task size available on Hobby are not stated on any page read; the 45-minute build limit of the Vercel limits page applies to deployment builds, not to Vercel CI tasks",
+  "binding": "volume-quota",
+  "binding_note": "200 CPU minutes a month are spent faster than wall-clock minutes because bootstrapping bills 4 CPUs by default and every task that runs bills 2 CPUs by default, so the monthly quota runs out before any size limit",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a Vercel account opened with an email address (six-digit one-time password) or a Git provider; a GitHub repository connected to a Vercel project. No card is asked on Hobby; Pro adds USD 20 a month",
+    "country": null
+  },
+  "reliability_note": "Beta: features and configuration may change; behaviour once the 200 Hobby CPU minutes are spent is unverified",
+  "price_per_tb_month": null,
+  "evidence": [
+    {
+      "url": "https://vercel.com/pricing",
+      "date": "2026-11-02",
+      "capture": "sha256:3c8802f87eda6c33dd4b4036ee6e3ea0e147fea3219cb3852c2fa4d201f8ee2b",
+      "quote": "| 200 CPU minutes / month included | $0.0035 per CPU minute | Custom |",
+      "proved": "Hobby includes 200 CPU minutes a month; Pro pays USD 0.0035 per CPU minute"
+    },
+    {
+      "url": "https://vercel.com/pricing",
+      "date": "2026-11-02",
+      "capture": "sha256:3c8802f87eda6c33dd4b4036ee6e3ea0e147fea3219cb3852c2fa4d201f8ee2b",
+      "quote": "Run tests, linting, and type checks on Vercel with native Turborepo support. A CPU minute is one CPU running for one minute.",
+      "proved": "Vercel CI runs tests, linting and type checks; a CPU minute is one CPU for one minute"
+    },
+    {
+      "url": "https://vercel.com/docs/ci",
+      "date": "2026-11-02",
+      "capture": "sha256:2027418a2b53f8f57894283e1fc273994e675d25ae64325297acc386aa349655",
+      "quote": "Vercel CI is in Beta. Features and configuration may change.",
+      "proved": "the service is in Beta"
+    },
+    {
+      "url": "https://vercel.com/blog/introducing-vercel-ci",
+      "date": "2026-11-02",
+      "capture": "sha256:639a6bb61fe40adf8325c74ae58f350444c10dc19270f574ac030fca465930fe",
+      "quote": "[Vercel CI is available in Beta today](https://vercel.com/changelog/vercel-ci-is-now-in-beta) on all plans.",
+      "proved": "the Beta is open to every plan, Hobby included"
+    },
+    {
+      "url": "https://vercel.com/docs/ci/configuration",
+      "date": "2026-11-02",
+      "capture": "sha256:1519f9e7c52682aa0d33cd87622bfeaa822b378c08bf75f19463d5b4443ca90a",
+      "quote": "Vercel CI assigns 2 CPUs and 4 GB of memory to each task by default.",
+      "proved": "default task size is 2 CPUs and 4 GB"
+    },
+    {
+      "url": "https://vercel.com/docs/ci/configuration",
+      "date": "2026-11-02",
+      "capture": "sha256:1519f9e7c52682aa0d33cd87622bfeaa822b378c08bf75f19463d5b4443ca90a",
+      "quote": "Add a `ci:cpus:<count>` tag to assign up to 32 CPUs to a task:",
+      "proved": "a task can be given up to 32 CPUs"
+    },
+    {
+      "url": "https://vercel.com/docs/ci/configuration",
+      "date": "2026-11-02",
+      "capture": "sha256:1519f9e7c52682aa0d33cd87622bfeaa822b378c08bf75f19463d5b4443ca90a",
+      "quote": "| 32 | 64 GB |",
+      "proved": "32 CPUs carry 64 GB of memory"
+    },
+    {
+      "url": "https://vercel.com/docs/ci/configuration",
+      "date": "2026-11-02",
+      "capture": "sha256:1519f9e7c52682aa0d33cd87622bfeaa822b378c08bf75f19463d5b4443ca90a",
+      "quote": "The install step uses 4 CPUs and 8 GB of memory by default.",
+      "proved": "the bootstrapping install step defaults to 4 CPUs and 8 GB"
+    },
+    {
+      "url": "https://vercel.com/docs/ci/pricing",
+      "date": "2026-11-02",
+      "capture": "sha256:c716f7a5718a7f06a4f5dbef9c797a3723ac2b539bf742922dbf780a5fe80cde",
+      "quote": "Tasks that Vercel CI restores from cache or skips because your changes don't affect them don't run, so they don't use CPU minutes.",
+      "proved": "cached and skipped tasks use no CPU minutes"
+    },
+    {
+      "url": "https://vercel.com/docs/ci/pricing",
+      "date": "2026-11-02",
+      "capture": "sha256:c716f7a5718a7f06a4f5dbef9c797a3723ac2b539bf742922dbf780a5fe80cde",
+      "quote": "Vercel CI rounds up to the next second, with a minimum of 1 second.",
+      "proved": "usage rounds up to the next second, 1 second minimum"
+    },
+    {
+      "url": "https://vercel.com/docs/ci/pricing",
+      "date": "2026-11-02",
+      "capture": "sha256:c716f7a5718a7f06a4f5dbef9c797a3723ac2b539bf742922dbf780a5fe80cde",
+      "quote": "| Pro | $0.0035 per CPU minute |",
+      "proved": "Pro price per CPU minute"
+    },
+    {
+      "url": "https://vercel.com/docs/ci",
+      "date": "2026-11-02",
+      "capture": "sha256:2027418a2b53f8f57894283e1fc273994e675d25ae64325297acc386aa349655",
+      "quote": "- GitHub is currently the only supported source code forge.",
+      "proved": "GitHub is the only supported forge"
+    },
+    {
+      "url": "https://vercel.com/docs/ci",
+      "date": "2026-11-02",
+      "capture": "sha256:2027418a2b53f8f57894283e1fc273994e675d25ae64325297acc386aa349655",
+      "quote": "- Public repositories are not currently supported.",
+      "proved": "public repositories are not supported"
+    },
+    {
+      "url": "https://vercel.com/docs/ci",
+      "date": "2026-11-02",
+      "capture": "sha256:2027418a2b53f8f57894283e1fc273994e675d25ae64325297acc386aa349655",
+      "quote": "- Pushing code to GitHub with `git push` is currently the only supported trigger.",
+      "proved": "a git push is the only trigger"
+    },
+    {
+      "url": "https://vercel.com/docs/ci",
+      "date": "2026-11-02",
+      "capture": "sha256:2027418a2b53f8f57894283e1fc273994e675d25ae64325297acc386aa349655",
+      "quote": "- Vercel CI currently only offers Linux for its base image.",
+      "proved": "Linux only"
+    },
+    {
+      "url": "https://vercel.com/docs/ci",
+      "date": "2026-11-02",
+      "capture": "sha256:2027418a2b53f8f57894283e1fc273994e675d25ae64325297acc386aa349655",
+      "quote": "Vercel CI requires Turborepo 2.11.7 or later.",
+      "proved": "Turborepo 2.11.7 or later is required"
+    },
+    {
+      "url": "https://vercel.com/docs/ci",
+      "date": "2026-11-02",
+      "capture": "sha256:2027418a2b53f8f57894283e1fc273994e675d25ae64325297acc386aa349655",
+      "quote": "You must explicitly enable Vercel CI for your repository before it can run tasks.",
+      "proved": "CI is enabled per repository"
+    },
+    {
+      "url": "https://vercel.com/docs/ci",
+      "date": "2026-11-02",
+      "capture": "sha256:2027418a2b53f8f57894283e1fc273994e675d25ae64325297acc386aa349655",
+      "quote": "- A repository must be connected to at least one Vercel project.",
+      "proved": "a repository must be connected to a Vercel project"
+    },
+    {
+      "url": "https://vercel.com/docs/ci/image",
+      "date": "2026-11-02",
+      "capture": "sha256:54dbc20849d34c1c27105a43295acbb9195b2c0ae4da55aa8428ab7cc5c13f9d",
+      "quote": "Tasks without a `ci:os` tag use the Amazon Linux image. Both images run on the `x86_64` architecture.",
+      "proved": "default image is Amazon Linux 2023 on x86_64, Ubuntu 24.04 optional"
+    },
+    {
+      "url": "https://vercel.com/docs/ci/image",
+      "date": "2026-11-02",
+      "capture": "sha256:54dbc20849d34c1c27105a43295acbb9195b2c0ae4da55aa8428ab7cc5c13f9d",
+      "quote": "Your tasks can build and run Docker containers.",
+      "proved": "tasks can run Docker containers"
+    },
+    {
+      "url": "https://vercel.com/docs/cli/ci",
+      "date": "2026-11-02",
+      "capture": "sha256:fbdd8b4ab6255083da27e01d737e4d73eefcaeb01fcdf49adac71ced3c37f045",
+      "quote": "`vercel ci enable` enables Vercel CI for the current Git repository.",
+      "proved": "a CLI command enables CI; others list runs and read logs"
+    },
+    {
+      "url": "https://vercel.com/docs/accounts/create-an-account",
+      "date": "2026-11-02",
+      "capture": "sha256:1d33b20f4dc43f7ad912f4604f63ab43b7694c2eb0a48dbb4cf8da74bf66c04c",
+      "quote": "When signing up for Vercel, you can choose to sign up with an email address or a Git provider.",
+      "proved": "sign-up is by email address or Git provider"
+    },
+    {
+      "url": "https://vercel.com/docs/plans/hobby",
+      "date": "2026-11-02",
+      "capture": "sha256:09fcdb38ca8d6639deec2529077e24911b2a2d6be39ea57f2beb299b23d06eb1",
+      "quote": "In most cases, if you exceed your usage limits on the Hobby plan, you will have to wait until 30 days have passed before you can use the feature again.",
+      "proved": "Hobby overage generally means a 30-day pause rather than a charge (stated for Hobby usage limits in general, not for Vercel CI)"
+    },
+    {
+      "url": "https://vercel.com/docs/ci/pricing",
+      "date": "2026-11-04",
+      "proved": "Hobby includes 200 CPU minutes a month",
+      "capture": "sha256:58aaaed1d5bcc1e1c64c1f42232801923a6a837895bb19bf014694afffb70f55",
+      "quote": "| Hobby | 200 CPU minutes per month included |"
+    },
+    {
+      "url": "probe:https://vercel.com/docs/ci/pricing",
+      "date": "2026-11-04",
+      "proved": "the CI pricing page answered HTTP 200 on 2026-11-04",
+      "capture": "sha256:a8199a60ba84c136cf5850719c4d224649e9c31c902b2d6b0959b088d179a5de",
+      "quote": "\"status\": 200"
+    }
+  ],
+  "notes": "Confirmed as a hosted CI runner: it runs the Turborepo tasks tagged ci (lint, type checks, tests, builds) on every git push, each task in its own isolated container. It is not a general workflow runner: no YAML workflows, no scheduled or manual triggers, GitHub private repositories only. Launched in Beta on 2026-10-28 on all plans. Whether Hobby can use the 32-CPU task size and what a run does after the Hobby allowance is spent are unverified."
+}

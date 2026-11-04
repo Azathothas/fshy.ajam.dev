@@ -1,0 +1,267 @@
+{
+  "topic": "domains-dns",
+  "slug": "dynu-free",
+  "provider": "Dynu",
+  "url": "https://www.dynu.com/en-US/DynamicDNS",
+  "category": "free dynamic DNS and managed DNS",
+  "tier": "Free",
+  "free_tier": {
+    "stated": "4 hostnames free (third-level names under Dynu domains, or your own domain), no expiry for an unused free account, REST API free for all users",
+    "unit": "objects",
+    "source_url": "https://www.dynu.com/FAQ/Dynamic-DNS-Service",
+    "read_on": "2026-11-03",
+    "metered_on": "object-count"
+  },
+  "per_object_cap": {
+    "stated": "4 hostnames and up to 4 subdomains on the free plan per the FAQ; the membership page says members can have more than 3 third level domain names and 200 custom records, and no page read gives a free custom-record count (unverified)",
+    "bytes": null,
+    "source_url": "https://www.dynu.com/FAQ/Dynamic-DNS-Service"
+  },
+  "retention": {
+    "stated": "Dynu accounts never expire; a free dynamic DNS service stays fully functional until the user deletes it",
+    "days": null,
+    "source_url": "https://www.dynu.com/en-US/DynamicDNS"
+  },
+  "egress": {
+    "terms": "no DNS query cap published on the pages read",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.dynu.com/en-US/DynamicDNS"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "three update paths: a dyndns2-style HTTP update, GET https://api.dynu.com/nic/update?hostname=HOST&myip=IP&myipv6=IPV6&password=PASSWORD (the password may be sent as is or as an MD5 or SHA256 hash, and a separate IP update password can be set), up to 20 hostnames per request; HTTP and TCP GnuDIP at gnudip.dynu.com; and a REST API at https://api.dynu.com/v2/ with an API-Key header that manages hostnames and DNS records",
+  "tooling": "the free Dynu IP update clients for Windows, macOS and Linux, ddclient with protocol dyndns2, routers with a Dynu or Custom provider, GnuDIP clients, and curl against the REST API",
+  "chaining": "a free name that can also carry MX, TXT, SRV and CNAME records and a wildcard, on a Dynu domain or on a domain the user already owns that is served by Dynu name servers",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "4 hostnames and 4 subdomains free; the membership page's own figure is more than 3 third level domain names for members",
+      "source": "https://www.dynu.com/FAQ/Dynamic-DNS-Service"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "up to 20 hostnames in one update request (numhost above 20)",
+      "source": "https://www.dynu.com/en-US/DynamicDNS/IP-Update-Protocol"
+    },
+    {
+      "kind": "write-gated",
+      "value": "several record types are member-only, among them CAA on a third-level Dynu name and on the user's own domain; A, AAAA, CNAME, MX, SRV, TXT and PTR are free",
+      "source": "https://www.dynu.com/FAQ/Dynamic-DNS-Service"
+    }
+  ],
+  "binding": "per-object-cap",
+  "binding_note": "the hostname cap of 4 decides for a free account; the record-type gate matters only for CAA-class records",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "the sign-up form asks for a first name, a last name, a username, a password and an e-mail address entered twice, or a sign-up with GitHub or Google; no phone or card field in the captured form text (https://www.dynu.com/en-US/ControlPanel/CreateAccount)",
+    "country": null
+  },
+  "reliability_note": "a failed update authentication returns HTTP 200 with the body badauth, so a status-only check reports success on a failed update; an unknown domain name can also return badauth",
+  "confidence": "documented",
+  "confidence_note": "the dynamic DNS page, the FAQ, the membership page, the REST API page and the IP update protocol page were read and quoted; the update endpoint was probed once with a wrong password and answered 200 badauth. The free hostname count is 4 in the FAQ and implied as 3 by the membership page, so the figure is unreconciled",
+  "evidence": [
+    {
+      "url": "https://www.dynu.com/FAQ/Dynamic-DNS-Service",
+      "date": "2026-11-03",
+      "proved": "the free plan allows 4 hostnames",
+      "capture": "sha256:55b6133465be90d0bdd7128ee31bc6342f7f0632cdc582e793b51cb7e62d8b7c",
+      "quote": "You can have 4 hostnames for free"
+    },
+    {
+      "url": "https://www.dynu.com/FAQ/Dynamic-DNS-Service",
+      "date": "2026-11-03",
+      "proved": "the free plan allows up to 4 subdomains",
+      "capture": "sha256:55b6133465be90d0bdd7128ee31bc6342f7f0632cdc582e793b51cb7e62d8b7c",
+      "quote": "You are allowed to have up to 4 subdomains for free."
+    },
+    {
+      "url": "https://www.dynu.com/en-US/Membership",
+      "date": "2026-11-03",
+      "proved": "the membership page gives its own figures for members: more than 3 third level domain names and 200 custom records",
+      "capture": "sha256:ca6c8b1db08b5203acd1ae07191316791e6c275fa763ec590585a784d4fba8bc",
+      "quote": "members can have more than 3 third level domain names, 200 custom records"
+    },
+    {
+      "url": "https://www.dynu.com/FAQ/Dynamic-DNS-Service",
+      "date": "2026-11-03",
+      "proved": "A records are free on both a Dynu third-level name and an own domain",
+      "capture": "sha256:55b6133465be90d0bdd7128ee31bc6342f7f0632cdc582e793b51cb7e62d8b7c",
+      "quote": "| A - IPv4 | Supported | Supported | Free |"
+    },
+    {
+      "url": "https://www.dynu.com/FAQ/Dynamic-DNS-Service",
+      "date": "2026-11-03",
+      "proved": "TXT records are free on both a Dynu third-level name and an own domain",
+      "capture": "sha256:55b6133465be90d0bdd7128ee31bc6342f7f0632cdc582e793b51cb7e62d8b7c",
+      "quote": "| TXT - Text | Supported | Supported | Free |"
+    },
+    {
+      "url": "https://www.dynu.com/FAQ/Dynamic-DNS-Service",
+      "date": "2026-11-03",
+      "proved": "CAA is a member-only record type",
+      "capture": "sha256:55b6133465be90d0bdd7128ee31bc6342f7f0632cdc582e793b51cb7e62d8b7c",
+      "quote": "| CAA - Certification Authority Authorization | Supported | Supported | [Member-Only](https://www.dynu.com/Membership) |"
+    },
+    {
+      "url": "https://www.dynu.com/en-US/DynamicDNS",
+      "date": "2026-11-03",
+      "proved": "accounts never expire, free users included, and the service works until deleted",
+      "capture": "sha256:3caea35bfd1d76c719e8d05a09576547600918adb9a11f41fadf435260625330",
+      "quote": "Dynu accounts never expire! Even if you are a free user, your dynamic DNS service will remain fully functional until you delete it."
+    },
+    {
+      "url": "https://www.dynu.com/en-US/DynamicDNS",
+      "date": "2026-11-03",
+      "proved": "the service works with a top level domain name the user already owns",
+      "capture": "sha256:3caea35bfd1d76c719e8d05a09576547600918adb9a11f41fadf435260625330",
+      "quote": "Our Dynamic DNS service works with all top level domain names regardless of country of origin."
+    },
+    {
+      "url": "https://www.dynu.com/en-US/Resources/API",
+      "date": "2026-11-03",
+      "proved": "the advanced REST API is free for all users",
+      "capture": "sha256:371b0571443d1afc82ec89ac63c7cddc98f84e64150082b8dbb234a2b2055a73",
+      "quote": "Advanced API is free for all users."
+    },
+    {
+      "url": "https://www.dynu.com/en-US/Resources/API",
+      "date": "2026-11-03",
+      "proved": "the REST API manages hostnames and DNS records",
+      "capture": "sha256:371b0571443d1afc82ec89ac63c7cddc98f84e64150082b8dbb234a2b2055a73",
+      "quote": "Our fully-featured REST API gives you access to manage hostnames, DNS records and more without having to access the control panel."
+    },
+    {
+      "url": "https://www.dynu.com/en-US/DynamicDNS/IP-Update-Protocol",
+      "date": "2026-11-03",
+      "proved": "the HTTPS update URL on api.dynu.com with hostname, myip, myipv6 and password",
+      "capture": "sha256:a3a8ea8b32c085023144818f7ff1a17f08083cbdd9fa16bd27310fc2501f435a",
+      "quote": "https://api.dynu.com/nic/update?hostname=[HOSTNAME]&myip=[IP ADDRESS]&myipv6=[IPv6 ADDRESS]&password="
+    },
+    {
+      "url": "https://www.dynu.com/en-US/DynamicDNS/IP-Update-Protocol",
+      "date": "2026-11-03",
+      "proved": "an update with more than 20 hostnames returns numhost",
+      "capture": "sha256:a3a8ea8b32c085023144818f7ff1a17f08083cbdd9fa16bd27310fc2501f435a",
+      "quote": "numhost This response code is returned in cases where too many hostnames(more than 20) are specified for the update process."
+    },
+    {
+      "url": "https://www.dynu.com/en-US/DynamicDNS/IP-Update-Protocol",
+      "date": "2026-11-03",
+      "proved": "badauth is the response code for a failed authentication of the request",
+      "capture": "sha256:a3a8ea8b32c085023144818f7ff1a17f08083cbdd9fa16bd27310fc2501f435a",
+      "quote": "badauth This response code is returned in case of a failed authentication for the 'request'."
+    },
+    {
+      "url": "https://www.dynu.com/en-US/DynamicDNS/IP-Update-Protocol",
+      "date": "2026-11-03",
+      "proved": "an unknown domain name sent as a parameter can also return badauth",
+      "capture": "sha256:a3a8ea8b32c085023144818f7ff1a17f08083cbdd9fa16bd27310fc2501f435a",
+      "quote": "Please note that sending across an invalid parameter such as an unknown domain name can also result in this 'response code'."
+    },
+    {
+      "url": "https://www.dynu.com/FAQ/Dynamic-DNS-Service",
+      "date": "2026-11-03",
+      "proved": "MX records are free on both a Dynu third-level name and an own domain",
+      "capture": "sha256:55b6133465be90d0bdd7128ee31bc6342f7f0632cdc582e793b51cb7e62d8b7c",
+      "quote": "| MX - Mail Exchange | Supported | Supported | Free |"
+    },
+    {
+      "url": "https://www.dynu.com/FAQ/Dynamic-DNS-Service",
+      "date": "2026-11-03",
+      "proved": "wildcard DNS records are supported on Dynu third-level names and customer-owned domains",
+      "capture": "sha256:55b6133465be90d0bdd7128ee31bc6342f7f0632cdc582e793b51cb7e62d8b7c",
+      "quote": "Yes, wildcard DNS records are supported."
+    },
+    {
+      "url": "https://www.dynu.com/en-US/DynamicDNS/IP-Update-Protocol",
+      "date": "2026-11-03",
+      "proved": "GnuDIP over TCP and HTTP is supported",
+      "capture": "sha256:a3a8ea8b32c085023144818f7ff1a17f08083cbdd9fa16bd27310fc2501f435a",
+      "quote": "Both TCP and HTTP based GnuDIP is fully supported."
+    },
+    {
+      "url": "https://www.dynu.com/en-US/ControlPanel/CreateAccount",
+      "date": "2026-11-03",
+      "proved": "the sign-up form asks for the e-mail address twice",
+      "capture": "sha256:7e52a7067eca40a055b06d85d8021ac2417db1b7991214b6216e4b2b7c905745",
+      "quote": "Confirm Email Address"
+    },
+    {
+      "url": "https://www.dynu.com/en-US/ControlPanel/CreateAccount",
+      "date": "2026-11-03",
+      "proved": "the sign-up form offers a sign-up through Google",
+      "capture": "sha256:7e52a7067eca40a055b06d85d8021ac2417db1b7991214b6216e4b2b7c905745",
+      "quote": "Sign up with Google"
+    },
+    {
+      "url": "probe:https://api.dynu.com/nic/update",
+      "date": "2026-11-03",
+      "proved": "the update endpoint is live and answers HTTP 200 to a request with a wrong password",
+      "capture": "sha256:344c15fe3afee2fc117d0336227e933730f30fac98593453f177a0cf3a641b77",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:body-dynu",
+      "date": "2026-11-03",
+      "proved": "the body of that failed update is the text code badauth, under HTTP 200",
+      "capture": "sha256:b4c8d643f204c090b4e1ddc5b9f8f0bf35d031651ad9e64eca94f12ecb6c5a0d",
+      "quote": "badauth"
+    },
+    {
+      "url": "https://www.dynu.com/FAQ/Dynamic-DNS-Service",
+      "date": "2026-11-03",
+      "proved": "4 hostnames free, up to 500 for a member",
+      "capture": "sha256:55b6133465be90d0bdd7128ee31bc6342f7f0632cdc582e793b51cb7e62d8b7c",
+      "quote": "You can have 4 hostnames for free or you can become a member to have up to 500 hostnames."
+    },
+    {
+      "url": "https://www.dynu.com/FAQ/Dynamic-DNS-Service",
+      "date": "2026-11-03",
+      "proved": "up to 4 subdomains are free",
+      "capture": "sha256:55b6133465be90d0bdd7128ee31bc6342f7f0632cdc582e793b51cb7e62d8b7c",
+      "quote": "You are allowed to have up to 4 subdomains for free."
+    },
+    {
+      "url": "https://www.dynu.com/Membership",
+      "date": "2026-11-03",
+      "proved": "the membership page counts a different number of third level domain names for members",
+      "capture": "sha256:ca6c8b1db08b5203acd1ae07191316791e6c275fa763ec590585a784d4fba8bc",
+      "quote": "members can have more than 3 third level domain names"
+    },
+    {
+      "url": "https://www.dynu.com/",
+      "date": "2026-11-03",
+      "proved": "the dynamic DNS service is free",
+      "capture": "sha256:04a7eb9706d978b5f2d5e77bc324ea22a19c8c71b14529a0676b2ed170080831",
+      "quote": "100% free"
+    },
+    {
+      "url": "https://www.dynu.com/",
+      "date": "2026-11-03",
+      "proved": "a free account comes with a free third level domain name or the user's own domain",
+      "capture": "sha256:04a7eb9706d978b5f2d5e77bc324ea22a19c8c71b14529a0676b2ed170080831",
+      "quote": "Create a free account"
+    },
+    {
+      "url": "https://publicsuffix.org/list/public_suffix_list.dat",
+      "date": "2026-11-03",
+      "proved": "Dynu's suffixes (dynu.net, dynuddns.net) are entries of the private section of the Public Suffix List",
+      "capture": "sha256:617d1b276660e5a01209d7b58159450e400cf636634a7a9c2cfd50a1c6675d01",
+      "quote": "// Dynu.com : https://www.dynu.com/"
+    },
+    {
+      "url": "https://letsencrypt.org/docs/rate-limits/",
+      "date": "2026-11-03",
+      "proved": "Let's Encrypt finds the registered domain with the Public Suffix List",
+      "capture": "sha256:b5eee1fee7260f24a875dbca422432161e1e6e37041c64df017d7057af897c00",
+      "quote": "We use the [Public Suffix List](https://publicsuffix.org/) to identify registered domains."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-11-03T16:43:07.606Z",
+  "price_per_tb_month": null,
+  "notes": "Confirmation interval: none; the dynamic DNS page states that accounts never expire. The free hostname count is 4 in the FAQ and the membership page implies 3, so the figure needs a re-read."
+}

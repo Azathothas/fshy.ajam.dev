@@ -11,7 +11,7 @@
     "metered_on": "request-count",
     "source_url": "https://pricing-calculator.here.com/api/contentfulData?widget=Pricing%20Widget",
     "read_on": "2026-10-31",
-    "notes": "above the free amount geocoding is USD 0.88 per 1,000 up to 5,000,000 a month; the no-card Limited plan closed to new customers in March 2025 and was retired on August 31, 2025"
+    "notes": "above the free amount geocoding is USD 0.88 per 1,000 up to 5,000,000 a month; the no-card Limited plan closed to new customers in March 2025 and was retired on August 31, 2025, and was held to 5 requests a second for Geocode & Reverse Geocode and 10 for Routing Car, Bicycle, Pedestrian"
   },
   "per_object_cap": {
     "stated": "no batch geocoding on the Base plan: HERE Batch API v7 (up to 1 Million records a job) is not included in the Base plan",
@@ -33,7 +33,7 @@
   "interface": [
     "rest"
   ],
-  "interface_detail": "HTTPS to geocode.search.hereapi.com/v1/geocode and the other HERE REST APIs with an API key of an app ID; a keyless geocode answered HTTP 401 'No credentials found'; rate limits exist on every endpoint but their sizes are not published",
+  "interface_detail": "HTTPS to geocode.search.hereapi.com/v1/geocode and the other HERE REST APIs with an API key of an app ID; a keyless geocode answered HTTP 401 'No credentials found'; rate limits exist on every endpoint but their sizes are not published; the rate limit rules enforced for an account can be fetched with the IAM rate limit rules API or the platform CLI, which need an account",
   "endpoint": "https://geocode.search.hereapi.com/v1/geocode",
   "tooling": "any HTTP client; HERE Maps API for JavaScript and the HERE Explore SDK",
   "chaining": "30,000 geocodes and 30,000 car, bicycle or pedestrian routes a month behind a card on file, results kept at most 30 days; overage is billed per transaction rather than refused, and the Batch API is outside the Base plan, so the bulk path is single requests",
@@ -218,10 +218,59 @@
       "proved": "the geocode endpoint refuses a request with no key",
       "capture": "sha256:9ce41a4598cabf80c8e65c1c74b49dcf30598ccc74859a500cb927e6a71bb15d",
       "quote": "\"error_description\":\"No credentials found\""
+    },
+    {
+      "url": "https://docs.here.com/identity-and-access-management/docs/how-to-find-rate-limit-rules",
+      "date": "2026-11-02",
+      "proved": "the HERE platform serves the enforced rate limit rules through IAM rate limit APIs and the CLI",
+      "capture": "sha256:9df4756e9e2bfaa4ca6118a1729e082833f9cf209faf0c4779eea04ce28f78e1",
+      "quote": "The HERE platform lets you fetch the rate limit rules for certain identity types and endpoints."
+    },
+    {
+      "url": "https://www.here.com/get-started/pricing/rps-limits-excluded-use-cases",
+      "date": "2026-11-02",
+      "proved": "the published RPS table applies to Limited Plan customers who give no payment information: 5 for Geocode & Reverse Geocode, 10 for Routing Car, Bicycle, Pedestrian",
+      "capture": "sha256:a6fd63ec024c4cdf79ace070695512aa90588681ebc050be0eed54963ab00c36",
+      "quote": "the following Requests Per Second (RPS) limits apply to Limited Plan customers who do not provide payment information: ... | Geocode & Reverse Geocode | 5 | ... | Routing Car, Bicycle, Pedestrian | 10 |"
+    },
+    {
+      "url": "https://pricing-calculator.here.com/api/contentfulData?widget=Pricing%20Widget",
+      "date": "2026-11-02",
+      "proved": "Geocode and Reverse Geocode: 0 to 30,000 a month free, then USD 0.88 per 1,000",
+      "capture": "sha256:8b7dc25431c849e0f9f0e612b20fc5eef9a33b68932abb55eaf73401a027a310",
+      "quote": "\"title\":\"Geocode and Reverse Geocode\" ... \"0 to 30,000\" ... \"Free\" ... \"30,001 to 5,000,000\" ... \"$0.88\""
+    },
+    {
+      "url": "https://www.here.com/learn/blog/april-2025-platform-release-notes",
+      "date": "2026-11-02",
+      "proved": "sign-up needs a payment method",
+      "capture": "sha256:161b310fbf6f7d6d6e917b33daffba5eaf6104e1b6881eb3118a04d860472f28",
+      "quote": "The Base plan requires entering a payment method during the onboarding process to access our platform."
+    },
+    {
+      "url": "https://knowledge.here.com/csm_kb?id=public_kb_csm_details&number=KB0028316",
+      "date": "2026-11-02",
+      "proved": null,
+      "capture": "sha256:2d9eb2aa553e9462a5049425ce6d7007a7549eaa8916737fbd3270eef30e2546",
+      "quote": "By default, HERE Platform terms restrict the storage of geocoding results outside the platform for more than 30 days."
+    },
+    {
+      "url": "https://docs.here.com/geocoding-and-search/docs/readme",
+      "date": "2026-11-02",
+      "proved": "the Batch API is not in the Base plan",
+      "capture": "sha256:fb772e9322cc0f494d4a93b61a5f4928777d399f8a0f854d6cc806c5267246d3",
+      "quote": "HERE Batch API v7 is not included in the [HERE Base Plan](https://www.here.com/get-started/pricing)."
+    },
+    {
+      "url": "probe:https://geocode.search.hereapi.com/v1/geocode?q=Zurich#body",
+      "date": "2026-11-02",
+      "proved": "the geocode endpoint refuses a request with no key",
+      "capture": "sha256:9ce41a4598cabf80c8e65c1c74b49dcf30598ccc74859a500cb927e6a71bb15d",
+      "quote": "\"error_description\":\"No credentials found\""
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T10:04:03.987Z",
+  "verified_at": "2026-11-03T00:28:26.713Z",
   "notes": "Permanent storage is a separate plan not in the Base plan. Bulk path: none on the Base plan; HERE Batch API v7 is excluded from it.",
   "extras": {
     "bulk_path": "none on the Base plan; HERE Batch API v7 (up to 1 Million records a job) is excluded"

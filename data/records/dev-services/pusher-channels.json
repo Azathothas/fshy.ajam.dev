@@ -35,7 +35,7 @@
     "rest",
     "unknown"
   ],
-  "interface_detail": "HTTP API at api-CLUSTER.pusher.com (for example api-mt1.pusher.com) over HTTP or HTTPS, each request signed with an HMAC SHA256 digest; clients hold WebSocket connections with an HTTP fallback transport, which the interface vocabulary has no term for. The api-mt1 host answered 400 to an unsigned request.",
+  "interface_detail": "HTTP API at api-CLUSTER.pusher.com (for example api-mt1.pusher.com) over HTTP or HTTPS, each request signed with an HMAC SHA256 digest; clients hold WebSocket connections to ws-CLUSTER.pusher.com on port 80 for ws or 443 for wss, with an HTTP fallback transport, which the interface vocabulary has no term for.",
   "endpoint": "https://api-mt1.pusher.com",
   "tooling": "The pusher-js client and the Pusher server libraries, or any HTTP client that signs requests with the app secret.",
   "chaining": "A notification fan-out from a worker to a browser dashboard, sized for about 18,000 publishes a day to 10 subscribers each.",
@@ -207,9 +207,65 @@
       "proved": "the HTTP API host answers and refuses an unsigned request",
       "capture": "sha256:00bf1605fd081b328c67cff69114a7bc4ced6b2c0d43db65f88d9790f80ff47e",
       "quote": "\"status\": 400"
+    },
+    {
+      "url": "https://pusher.com/docs/channels/library_auth_reference/pusher-websockets-protocol/",
+      "date": "2026-11-01",
+      "proved": "clients connect to ws-CLUSTER.pusher.com on port 80 for ws or 443 for wss",
+      "capture": "sha256:7d66bf39a7e3be14932a19149bcf21879d16b5ffa1afdf330773a2d402df9159",
+      "quote": "ws-[cluster_name].pusher.com:[port]/app/[key] ... Default WebSocket ports: `80` (`ws`) or `443` (`wss`)"
+    },
+    {
+      "url": "probe:ws-mt1.pusher.com:443",
+      "date": "2026-11-01",
+      "proved": "the WebSocket host of the mt1 cluster accepts a TCP connection on port 443",
+      "capture": "sha256:92fd2c161f69eafc58f3ca69786e2ef53c6abcf8b3f52057fa2b44ad57c17a5e",
+      "quote": "\"ok\": true"
+    },
+    {
+      "url": "probe:https://api-mt1.pusher.com/apps/1/channels",
+      "date": "2026-11-01",
+      "proved": "the HTTP API host answers and refuses an unsigned request",
+      "capture": "sha256:217ffb96413840509bb528c66ae75c33d2e57507c0e941e6e4be08e806b82ce7",
+      "quote": "\"status\": 400"
+    },
+    {
+      "url": "https://pusher.com/channels/pricing",
+      "date": "2026-11-01",
+      "proved": "a concurrent connection is a live connected user, counted across the whole Channels application",
+      "capture": "sha256:29b6eeca36952c1e99d78960ef34fc074abdd1e183817ed73f0352095f672cf3",
+      "quote": "A connection is a live connected user. Concurrent connections are the number of simultaneous connections you have open across your Channels application."
+    },
+    {
+      "url": "https://pusher.com/docs/channels/library_auth_reference/rest-api/",
+      "date": "2026-11-01",
+      "proved": "an event whose data exceeds 10KB is refused with a 413 error code",
+      "capture": "sha256:5998893e4832e8db909da5056d9a70e1e5ec2ddbde38fce534922e3ec3a54c96",
+      "quote": "The event data should not be larger than 10KB. If you attempt to POST an event with a larger data parameter, you will receive a 413 error code."
+    },
+    {
+      "url": "https://dashboard.pusher.com/accounts/sign_up",
+      "date": "2026-11-01",
+      "proved": "the signup form asks for an email address",
+      "capture": "sha256:eabe2add8ca579c64b84ff5205fd01cfa80ad0e81d22af873c7c8e424b223e33",
+      "quote": "<input name=\"account[email]\" id=\"signup-email\" type=\"email\""
+    },
+    {
+      "url": "https://dashboard.pusher.com/accounts/sign_up",
+      "date": "2026-11-01",
+      "proved": "the signup form is submitted through an invisible reCAPTCHA",
+      "capture": "sha256:eabe2add8ca579c64b84ff5205fd01cfa80ad0e81d22af873c7c8e424b223e33",
+      "quote": "onsubmit=\"grecaptcha.execute(); return false;\""
+    },
+    {
+      "url": "https://pusher.com/channels/pricing",
+      "date": "2026-11-01",
+      "proved": "the Sandbox plan is free with 200k messages a day and 100 concurrent connections, unchanged",
+      "capture": "sha256:29b6eeca36952c1e99d78960ef34fc074abdd1e183817ed73f0352095f672cf3",
+      "quote": "Sandbox Free Messages per day 200k Concurrent connectionstooltip 100"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T00:43:05.347Z",
+  "verified_at": "2026-11-02T00:38:24.163Z",
   "notes": "Pusher Beams, the push-notification product, has its own Sandbox plan priced separately and is not part of this record."
 }

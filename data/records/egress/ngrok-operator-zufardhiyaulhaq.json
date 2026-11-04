@@ -1,0 +1,146 @@
+{
+  "topic": "egress",
+  "slug": "ngrok-operator-zufardhiyaulhaq",
+  "provider": "ngrok-operator (zufardhiyaulhaq)",
+  "url": "https://github.com/zufardhiyaulhaq/ngrok-operator",
+  "category": "tunnel software (self-hosted)",
+  "tier": "free",
+  "free_tier": {
+    "stated": "1 GB / month of data transfer out, 20,000 HTTP requests / month and 5,000 TCP connections / month, counted by the ngrok free plan that the operator's authtoken belongs to; up to 3 online endpoints",
+    "unit": "GB",
+    "metered_on": "downloaded-bytes",
+    "source_url": "https://ngrok.com/docs/pricing-limits/free-plan-limits",
+    "read_on": "2026-11-03",
+    "notes": "The operator itself meters nothing; the byte cap is the ngrok account plan of the authtoken in the Ngrok resource."
+  },
+  "per_object_cap": {
+    "stated": "not applicable: counted per month rather than per object",
+    "bytes": null,
+    "source_url": "https://ngrok.com/docs/pricing-limits/free-plan-limits",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "source_url": "https://ngrok.com/docs/pricing-limits/free-plan-limits",
+    "notes": ""
+  },
+  "egress": {
+    "terms": "metered at 1 GB / month on the free ngrok plan; the first paid plan, Hobbyist, includes 5 GB and adds more against credit; pay-as-you-go is 5 GB included, then $0.10/GB",
+    "metered": true,
+    "free_allowance": "1 GB / month",
+    "price_per_tb": "USD 0.10/GB",
+    "source_url": "https://ngrok.com/docs/pricing-limits"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "a Kubernetes custom resource of kind Ngrok (apiVersion ngrok.com/v1alpha1) with protocol http or tcp, applied with kubectl; the operator is installed with Helm",
+  "tooling": "the user installs and runs the operator, a Helm chart, in a Kubernetes cluster that they supply; the tunnels it creates are relayed by ngrok's hosted edge",
+  "chaining": "the byte volume is relayed by the hosted ngrok service (see egress/ngrok-free for its free plan); the operator only creates and renews the tunnel from a cluster",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "1 GB per month of data transfer out; 20,000 HTTP requests, 5,000 TCP connections, 10,000 log events and 500 webhook verifications per month, on the ngrok free plan",
+      "source": "https://ngrok.com/docs/pricing-limits/free-plan-limits"
+    },
+    {
+      "kind": "request-rate",
+      "value": "4,000 HTTP requests per minute and 100 TCP connections per minute on the ngrok free plan, separate from the monthly quotas",
+      "source": "https://ngrok.com/docs/pricing-limits/free-plan-limits"
+    }
+  ],
+  "limits_note": "the allowance is a byte volume over a period, which none of the six kinds names; the number is in egress.free_allowance. Up to 3 online endpoints and 1 development domain on the free plan.",
+  "binding": "volume-quota",
+  "binding_note": "1 GB per month on the free ngrok plan is about 1,100 times below 1 TiB, so the byte quota fails first; the first paid plan, Hobbyist at $10 monthly, includes 5 GB.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an ngrok account and its authtoken, which the Ngrok resource takes in spec.authtoken; TCP endpoints on the free plan need a valid payment method added to the account; the sign-up form fields are unverified: behind a sign-up",
+    "country": null
+  },
+  "reliability_note": "the last commit of the repository is dated 10 March 2023 (a dependency bump) and its example resources point at ngrok.io hostnames; no commit for more than three years",
+  "verdict": "fails-quota",
+  "confidence": "documented",
+  "confidence_note": "Operator behaviour is read from its README and example resource; the byte cap is read from the first-party ngrok plan pages. No tunnel was run, because that needs an ngrok account.",
+  "evidence": [
+    {
+      "url": "https://github.com/zufardhiyaulhaq/ngrok-operator",
+      "date": "2026-11-03",
+      "capture": "sha256:f2a07b618c73dd2f4d5a75e8fa6ac72c5702c8b2b7033a5be31ee64846af414e",
+      "quote": "Ngrok operator provide developer easy access to private Kubernetes cluster for testing purpose via ngrok.",
+      "proved": "the project is a Kubernetes operator that creates ngrok tunnels, not a relay of its own"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/zufardhiyaulhaq/ngrok-operator/master/examples/http/full-configuration/ngrok.yaml",
+      "date": "2026-11-03",
+      "capture": "sha256:9cc5e2f8bc290129ae65ddfdcb164f1ce441dd88eb52a89a54947468856c0b12",
+      "quote": "# protocol used, currently support http & tcp",
+      "proved": "the operator supports the http and tcp protocols only"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/zufardhiyaulhaq/ngrok-operator/master/examples/http/full-configuration/ngrok.yaml",
+      "date": "2026-11-03",
+      "capture": "sha256:9cc5e2f8bc290129ae65ddfdcb164f1ce441dd88eb52a89a54947468856c0b12",
+      "quote": "# ngrok authtoken",
+      "proved": "every Ngrok resource carries an ngrok account authtoken"
+    },
+    {
+      "url": "https://ngrok.com/docs/pricing-limits/free-plan-limits",
+      "date": "2026-11-03",
+      "capture": "sha256:bda9952c9f038f9d45e8edd89b334a88609ce46743ffe1a04db5ed18e0e737f8",
+      "quote": "| Data transfer out | 1 GB / month |",
+      "proved": "the ngrok free plan caps data transfer out at 1 GB per month"
+    },
+    {
+      "url": "https://ngrok.com/docs/pricing-limits",
+      "date": "2026-11-03",
+      "capture": "sha256:0f015baedf63e3b3903a735bf16512c6305235a783e9c5cceb1c455139d4d56e",
+      "quote": "| Data Transfer Out | 1 GB | 5 GB included (more with credit) | 5 GB included, then \\$0.10/GB (volume discounts) |",
+      "proved": "Free is 1 GB, Hobbyist includes 5 GB, pay-as-you-go is 5 GB then $0.10/GB"
+    },
+    {
+      "url": "https://ngrok.com/pricing",
+      "date": "2026-11-03",
+      "capture": "sha256:7f9d14df7072d369271de115d11329687a4a855e4a73273d19116656ee5b9f50",
+      "quote": "$10 monthly",
+      "proved": "the Hobbyist card, the first paid plan after Free, is priced at $10 monthly"
+    },
+    {
+      "url": "https://ngrok.com/docs/gateway/endpoints/tcp",
+      "date": "2026-11-03",
+      "capture": "sha256:bc2af89f9fd74c5e295d36bd0341738ae6d2297823d46a935a34a2bf317f336d",
+      "quote": "TCP endpoints are only available on a free plan after [adding a valid payment method](https://dashboard.ngrok.com/settings#id-verification) to your account.",
+      "proved": "TCP tunnels on the free plan need a payment method on the account"
+    },
+    {
+      "url": "https://github.com/zufardhiyaulhaq/ngrok-operator/commits/master",
+      "date": "2026-11-03",
+      "capture": "sha256:ff4c739793a2fead59aa125d96c190d1e2dfec137c3627ead668df82c17d927d",
+      "quote": "Commits on Mar 10, 2023",
+      "proved": "the most recent commit listed is dated 10 March 2023"
+    },
+    {
+      "url": "https://github.com/zufardhiyaulhaq/ngrok-operator/blob/master/LICENSE",
+      "date": "2026-11-03",
+      "capture": "sha256:f4f8b8454bcce9b9e0941d568853081fc1d40bbbadafa861dc67a8f2a78f5108",
+      "quote": "MIT License",
+      "proved": "the operator is under the MIT License"
+    },
+    {
+      "url": "https://ngrok.com/docs/pricing-limits/free-plan-limits",
+      "date": "2026-11-03",
+      "capture": "sha256:bda9952c9f038f9d45e8edd89b334a88609ce46743ffe1a04db5ed18e0e737f8",
+      "quote": "* ngrok Kubernetes Operator",
+      "proved": "the first-party ngrok Kubernetes Operator is a separate product that every plan includes"
+    }
+  ],
+  "extras": {
+    "stale_after_days": 180,
+    "bytes_transit": "yes",
+    "transit_note": "the operator runs the ngrok agent in a pod and ngrok's edge relays the bytes, which is what the 1 GB monthly counter counts",
+    "ingress": "tcp"
+  },
+  "notes": "MIT licensed. The ngrok project's own Kubernetes operator is a different product that the free plan page lists as included on all plans. This record is the community operator by zufardhiyaulhaq; its tunnel capacity is the ngrok plan of the authtoken.",
+  "verified_at": "2026-11-03T07:36:39.325Z",
+  "self_hosted": true
+}

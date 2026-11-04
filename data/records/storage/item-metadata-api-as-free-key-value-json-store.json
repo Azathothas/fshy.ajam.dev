@@ -32,16 +32,22 @@
   "interface_detail": "rest",
   "tooling": "ia metadata -m / Python MDAPI; auth via the same IAS3 keys (Authorization: LOW)",
   "chaining": "Side-car index for the 20TiB: one small JSON doc per item holding checksums, shard maps, source URLs — solves IAS3's 'cannot list all my items' problem without running your own database.",
-  "limits": [],
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "unverified: writes are tasks limited per user over a period, HTTP 429 Too Many Requests at the threshold; the threshold is not published",
+      "source": "https://archive.org/developers/md-write.html"
+    }
+  ],
   "limits_note": "One item per call, no wildcarding; custom fields must follow XML naming; writes are queued like any other item transaction; not intended for bulk blob data.",
   "identity_cost": {
-    "kind": "institution",
-    "detail": "inferred from the category 'academic'; the source record states no identity cost, so this is a class assumption, not evidence",
+    "kind": "email",
+    "detail": "Internet Archive account (email address, screen name, password); the S3 keys used for MDAPI writes come from that account.",
     "country": null
   },
   "reliability_note": "Safe for bookkeeping, useless for bytes; concurrent writers need the documented concurrency pattern or they clobber metadata.",
   "confidence": "reported",
-  "confidence_note": null,
+  "confidence_note": "reported: vendor pages read on 2026-11-03 show the sign-up fields (https://archive.org/account/signup), the per-user write task limit (https://archive.org/developers/md-write.html) and the one-item-per-call rule (https://archive.org/developers/metadata.html). The free allowance and the write threshold are not stated there; retention and per-object cap were not read.",
   "evidence": [
     {
       "url": "https://archive.org/developers/metadata.html",
@@ -52,10 +58,59 @@
       "url": "https://archive.org/developers/ias3.html",
       "date": "2026-10-21",
       "proved": "S3 keys sent with 'Authorization: LOW' are accepted by MDAPI write"
+    },
+    {
+      "url": "https://archive.org/account/signup",
+      "date": "2026-11-03",
+      "proved": "the Internet Archive sign-up asks for an email address, a screen name and a password",
+      "capture": "sha256:4b8b71aa7dd07a92b006c16919f3bc85576963d0e7852ea30ce4dd5b0a6cafee",
+      "quote": "Enter your email address"
+    },
+    {
+      "url": "https://archive.org/developers/md-write.html",
+      "date": "2026-11-03",
+      "proved": "metadata writes are rate limited per user; the threshold is not given",
+      "capture": "sha256:12173a1463a5c31c1f168dd4b704d4605bf21270762c3acdb5e82c0ba0522405",
+      "quote": "Users are limited in the number of tasks they may submit over a period of time."
+    },
+    {
+      "url": "https://archive.org/developers/metadata.html",
+      "date": "2026-11-03",
+      "proved": "one item per call, no wildcarding",
+      "capture": "sha256:7f8c886c76904cef1f82cfd19f9414ab36249fcfbe8572a03651904efc284daa",
+      "quote": "MDAPI cannot operate on more than one item at a time."
+    },
+    {
+      "url": "https://archive.org/developers/metadata.html",
+      "date": "2026-11-03",
+      "proved": "S3 keys authorize MDAPI calls with Authorization: LOW",
+      "capture": "sha256:7f8c886c76904cef1f82cfd19f9414ab36249fcfbe8572a03651904efc284daa",
+      "quote": "Internet Archive’s S3 keys can be sent using the `Authorization: LOW` header."
+    },
+    {
+      "url": "https://archive.org/developers/md-write.html",
+      "date": "2026-11-04",
+      "proved": "metadata writes are rate limited per user; the threshold is not given",
+      "capture": "sha256:12173a1463a5c31c1f168dd4b704d4605bf21270762c3acdb5e82c0ba0522405",
+      "quote": "Users are limited in the number of tasks they may submit over a period of time."
+    },
+    {
+      "url": "https://archive.org/developers/metadata.html",
+      "date": "2026-11-04",
+      "proved": "one item per call, no wildcarding",
+      "capture": "sha256:7f8c886c76904cef1f82cfd19f9414ab36249fcfbe8572a03651904efc284daa",
+      "quote": "MDAPI cannot operate on more than one item at a time."
+    },
+    {
+      "url": "https://archive.org/account/signup",
+      "date": "2026-11-04",
+      "proved": "the sign-up asks for an email address",
+      "capture": "sha256:4b8b71aa7dd07a92b006c16919f3bc85576963d0e7852ea30ce4dd5b0a6cafee",
+      "quote": "Enter your email address"
     }
   ],
   "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
+  "verified_at": "2026-11-04T01:24:26.502Z",
   "notes": "No per-item metadata size is published; unlimited items x one JSON doc each, transaction-safe, free.",
   "extras": {
     "dead_end": {
@@ -65,6 +120,6 @@
       "first_recorded": "2026-10-21"
     }
   },
-  "binding": "none",
-  "binding_note": null
+  "binding": "request-rate",
+  "binding_note": "writes are tasks limited per user over a period (HTTP 429); the threshold is not published"
 }

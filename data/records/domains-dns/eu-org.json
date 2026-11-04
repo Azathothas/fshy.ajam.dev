@@ -16,9 +16,10 @@
     "bytes": null
   },
   "retention": {
-    "stated": "unverified: the home, registration, general policy and direct-subdomain policy pages state no term, expiry or renewal rule",
+    "stated": "no term, expiry date or renewal step is stated on the home, policy, registration or direct-subdomain pages, and none exists in the account-area templates and registry source published for the eu.org project: its domain list shows Created and Updated dates, its domain page offers Delete Domain, or Undelete during the grace period, and has no renewal control, and its one expiry job removes a deleted domain after a 30-day grace period",
     "days": null,
-    "source_url": "https://nic.eu.org/"
+    "source_url": "https://nic.eu.org/",
+    "notes": "forum posters report subdomains still active with no renewal, and state that EU.org does not reclaim domains; two threads report a subdomain missing from an account, which other posters attribute to an account takeover"
   },
   "egress": {
     "terms": "no query cap published",
@@ -48,7 +49,7 @@
   },
   "reliability_note": "the operator is a volunteer organisation and the review queue is the service",
   "confidence": "documented",
-  "confidence_note": "the home, registration, general policy, direct-subdomain policy and contact-creation pages were read and quoted; they give the review time as a few days and state no renewal rule",
+  "confidence_note": "the home, registration, general policy, direct-subdomain policy and contact-creation pages were read and quoted; they give the review time as a few days and state no renewal rule; the registry source and account-area templates published for the eu.org project hold no term, expiry or renewal feature for a live domain, but that source was last pushed in 2021 and the account area behind the sign-in is not readable without an account",
   "evidence": [
     {
       "url": "https://nic.eu.org/register.html",
@@ -108,10 +109,101 @@
       "proved": "the phone field carries no required attribute, so a phone number is optional",
       "capture": "sha256:e2b9fc59902554e6402a2446cbd16a861870446aefe8d31cdca9c1efd7e72d49",
       "quote": "<input type=\"text\" name=\"ph1\" maxlength=\"30\" id=\"id_ph1\">"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pbeyssac/autoreg/master/autoreg/conf.py",
+      "date": "2026-11-02",
+      "proved": "the registry configuration sets 30 grace days for restoring a deleted domain",
+      "capture": "sha256:ed009fc2a52bb3eeb6c1fbae54a3606ba99bb3ef35313b2d3bf16f4be34e1e93",
+      "quote": "# number of grace days for domain restoration\nDEFAULT_GRACE_DAYS=30"
+    },
+    {
+      "url": "https://www.nodeloc.com/t/topic/29964",
+      "date": "2026-11-02",
+      "proved": "a registrant reports in a November 2024 thread that a subdomain registered earlier is still alive and was never renewed",
+      "capture": "sha256:cc73235d4b3ec06ddd184748d95c5a20b039b37cf0063cc7eae71fb5045dcda0",
+      "quote": "反正我之前注册的一个子域名到现在还活着了\n也没有续期"
+    },
+    {
+      "url": "https://api.github.com/repos/pbeyssac/autoreg",
+      "date": "2026-11-02",
+      "proved": "the repository is described as the source code for the eu.org project and its last push was on 2021-01-20",
+      "capture": "sha256:5d344789178ff8b01296541e818fb0e5631c07d9789289a950973b5a17edb413",
+      "quote": "\"description\": \"Source code for the eu.org project\", ... \"pushed_at\": \"2021-01-20T13:47:58Z\""
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pbeyssac/autoreg/master/sample-config/crontab",
+      "date": "2026-11-02",
+      "proved": "the registry's sample crontab has one expiry job, a daily run described as domain grace period expiration",
+      "capture": "sha256:d07bbdf62776af0f427488ecf6279b895e051d4cb33469e0b1ff584f6ca9ac86",
+      "quote": "# domain grace period expiration\n0\t0\t*\t*\t*\tautoreg\t/usr/local/bin/autoreg-expire"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pbeyssac/autoreg/master/postgres/autoreg.schema",
+      "date": "2026-11-02",
+      "proved": "the registry's domains table holds created_on, updated_on and end_grace_period and no expiry or renewal column",
+      "capture": "sha256:f0de87a5faacefc96997671d6eff4452bb83f7bc83d544260c78a4f6291ccc8e",
+      "quote": "created_on TIMESTAMP WITH TIME ZONE,\n\tupdated_by INTEGER REFERENCES admins(id) DEFAULT 0,\n\tupdated_on TIMESTAMP WITH TIME ZONE,\n\tend_grace_period TIMESTAMP WITH TIME ZONE,"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pbeyssac/autoreg/master/autoreg/arf/templates/whois/domainedit.html",
+      "date": "2026-11-02",
+      "proved": "the account area's domain page offers Delete Domain, or Undelete until the end of the grace period, and has no renewal control",
+      "capture": "sha256:42145255e1be0fb561ad33d80898e8df120b62e6251603ac7a41528ac660c632",
+      "quote": "<INPUT class=\"miniaction\" TYPE=\"submit\" NAME=\"del\" VALUE=\"{% trans \"Delete Domain\" %}\">"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pbeyssac/autoreg/master/autoreg/arf/templates/whois/domainlist.html",
+      "date": "2026-11-02",
+      "proved": "the account area's domain list has the columns Domain, Created, Updated, DNSSEC and Flags and no expiry column",
+      "capture": "sha256:fec085d767c5cac896bcf30a3ed7e9a86e8a1f94c5bdb6500f8e719411554a1c",
+      "quote": "<tr><th>{% trans \"Domain\" %}</th><th>{% trans \"Created\" %}</th><th>{% trans \"Updated\" %}</th><th>DNSSEC</th><th>{% trans \"Flags\" %}</th></tr>"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pbeyssac/autoreg/master/autoreg/arf/arf/urlsubs.py",
+      "date": "2026-11-02",
+      "proved": "the account application's routes include domain edit, delete and undelete and list no renewal or extension route",
+      "capture": "sha256:f286a869ea9b5e0e042e4671f53c48d440091faca218081813d9fcfe799b1271",
+      "quote": "re_path(r'^domain/del/(?P<fqdn>[a-z0-9\\.-]+)/$',\n        whois_views.domaindelete,\n        name='domaindelete'),\n  re_path(r'^domain/undel/(?P<fqdn>[a-z0-9\\.-]+)/$',"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pbeyssac/autoreg/master/README.md",
+      "date": "2026-11-02",
+      "proved": "the repository README calls this the software that has run most of eu.org since 1996",
+      "capture": "sha256:5bdb8db10612c7bcd674ef2bd5c219af96a40fa232331d30a1c74724bca98bb2",
+      "quote": "Autoreg (formerly known as AutoReg 4.1, short name AR41, now retired),\nis the software that's been running most of eu.org since 1996."
+    },
+    {
+      "url": "https://nic.eu.org/register.html",
+      "date": "2026-11-02",
+      "proved": "step 6 of the six registration steps: every request is validated by a person, in what the page calls a few days; the steps state no term or renewal",
+      "capture": "sha256:16d2f528d6a8f187618c9905237975c4aa0fa08e09990716b54070f070db7360",
+      "quote": "Wait for an e-mail reply indicating that your request has been validated. This step requires human intervention and can take a few days."
+    },
+    {
+      "url": "https://www.nodeseek.com/post-104532-1",
+      "date": "2026-11-02",
+      "proved": "a registrant whose subdomains vanished from an account says there is no precedent of a domain being reclaimed and suspects an account takeover",
+      "capture": "sha256:03c2d99e493c49b167eb0bd9862bc1f9307fdcf4e76e2c75169507b5000ff3ef",
+      "quote": "好像没有域名被收回的先例，估计被盗号过户给其他账号了。"
+    },
+    {
+      "url": "https://www.hostloc.net/thread-274687-1-1.html",
+      "date": "2026-11-02",
+      "proved": "a poster in a thread about a subdomain missing from an account says EU.org does not reclaim domains and that long-idle subdomains are still present",
+      "capture": "sha256:934f50971a0607b9750e1e35f2ac02b64964239b0e43602498ddbf356cde4631",
+      "quote": "eu不存在收回域名的情况，我的闲置很长时间了，查看还都在。"
+    },
+    {
+      "url": "https://nic.eu.org/",
+      "date": "2026-11-02",
+      "proved": "the home page states free subdomain registration and says nothing of a term, expiry or renewal",
+      "capture": "sha256:59648ecbbdad87d14f4ecff82695b81e190cad881abf4f90579b077b4b2f9afb",
+      "quote": "The main goal of EU.org is to provide free subdomain registration to users or non-profit organizations who cannot afford the fees demanded by some NICs."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-30T18:07:10.559Z",
+  "verified_at": "2026-11-02T10:17:37.009Z",
   "price_per_tb_month": null,
   "notes": "The gate is a person, not a number: a manual validation with no published queue length or approval rate. That is a discretionary throttle, and a design that depends on it has no ceiling to plan against."
 }

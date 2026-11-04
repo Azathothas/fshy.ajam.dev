@@ -32,7 +32,7 @@
     "rest",
     "webdav"
   ],
-  "tooling": "the OpenList wopan driver, which has its own maintained SDK at OpenListTeam/wopan-sdk-go with refresh-token and family-id support. That makes it maintained rather than reverse-engineered, which is unusual for a Chinese carrier drive",
+  "tooling": "the OpenList wopan driver, which mounts through the web client with a refresh token and an access token that a helper tool mints or that are captured from the browser. The OpenList documentation calls the interface a reverse-engineered one that the OpenList project does not actively maintain. A separate Go SDK, OpenListTeam/wopan-sdk-go, takes a refresh token",
   "chaining": "60 GB per account and phone-bound, so each additional carrier number is a new identity. Carrier family sharing pools within a household. Not a 500 GB play without multiplication",
   "limits": [
     {
@@ -83,13 +83,48 @@
       "url": "probe:https://pan.wo.cn/",
       "date": "2026-10-21",
       "proved": "The site answered a title through another path, so the DNS result is vantage-dependent and not a death"
+    },
+    {
+      "url": "https://openlistteam.github.io/docs/zh/guide/drivers/wopan.html",
+      "date": "2026-11-03",
+      "proved": "the OpenList wopan driver page calls the interface a reverse-engineered one that the project does not actively maintain",
+      "capture": "sha256:aec32fa6844ac0f882c1c14d6742c4997052091c5c409229024715c63a4ecced",
+      "quote": "本接口是基于历史产物的逆向接口，项目组不会主动进行维护，请勿针对此驱动提出有关于任何修复或进行进一步逆向行为需求的issue。"
+    },
+    {
+      "url": "probe:https://pan.wo.cn/",
+      "date": "2026-11-03",
+      "proved": "the host resolves and answers 200 with the 联通云盘 page, whose title advertises 不限速",
+      "capture": "sha256:4254db127d8ed4b858b9516927623e7553db9b2d3bb04e21213a4f5fd2490554",
+      "quote": "<title>联通云盘-开启美好时光|不限速</title>"
+    },
+    {
+      "url": "https://zh.wikipedia.org/zh-cn/中国大陆网盘列表",
+      "date": "2026-11-03",
+      "proved": "the table row lists 500G free, a 2G upload limit and a 0.5M/s download limit, unlike the 60 GB and unthrottled figures of this record",
+      "capture": "sha256:87cfd4212b0eaf2bb73b16353c13f114920639a0b2df7d9e3a6465f3bf0ce870",
+      "quote": "| 联通云盘 | 500G | 2G |  |  | 0.5M/s |  |  |"
+    },
+    {
+      "url": "https://openlistteam.github.io/docs/zh/guide/drivers/wopan.html",
+      "date": "2026-11-03",
+      "proved": "an OpenList mount of the pan uses the web client, and a later web login signs the mount out",
+      "capture": "sha256:aec32fa6844ac0f882c1c14d6742c4997052091c5c409229024715c63a4ecced",
+      "quote": "如果你先使用工具获取了令牌，再去登录网页端联通云盘会将OpenList挂载的踢下线导致失效"
+    },
+    {
+      "url": "https://github.com/OpenListTeam/wopan-sdk-go",
+      "date": "2026-11-03",
+      "proved": "the Go SDK is built from a refresh token",
+      "capture": "sha256:0a8b329f16a63ca53007239e588d64fc4f1e30951a2b20f7513513a9bc25dba4",
+      "quote": "w := wopan.DefaultWithRefreshToken(\"91d4b946-xxxx-4909-bac1-d9914e45f2de\")"
     }
   ],
   "verdict": "trial-only",
-  "verified_at": "2026-10-21T00:00:00.000Z",
+  "verified_at": "2026-11-04T00:20:53.783Z",
   "binding": "per-object-cap",
   "binding_note": "The per-file cap is unpublished, so the account total is what binds, and 60 GB does not reach the filter at any identity cost.",
-  "notes": "A carrier pan whose WebDAV mount is maintained rather than reverse-engineered, which makes it the most stable of the three and the smallest.",
+  "notes": "A carrier pan reached through an OpenList driver and a separate Go SDK; the OpenList documentation calls the interface reverse-engineered and not actively maintained by that project. Two earlier records disagreed: one called it trial-only on a one-year promo and one called it fails-quota on the permanent free tier. Both are right about different tiers, and the verdict follows the permanent tier because the promo is time-limited. A third-party table now lists a larger free quota, which is open to a check",
   "extras": {
     "access_mode": "registration-gated",
     "sdk": "OpenListTeam/wopan-sdk-go, maintained",

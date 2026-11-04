@@ -5,7 +5,7 @@
   "category": "Usenet indexer (Newznab API, paid membership)",
   "tier": "free",
   "free_tier": {
-    "stated": "No usable free API, and the free tier itself is in dispute. Three third-party readings: 'you need a paid membership to search and download' (usenet.com, 2026); '3-day trial, 15 NZBs total' (datahoarder.io); '5 NZB downloads per day, around 5 API calls per day' (bigwritehook.co.uk). What is measured: /api?t=search without a key returns <error code=\"102\" description=\"Empty API Key\"/>, and caps declares <registration available=\"no\" open=\"no\"/>. A membership is USD 12/year.",
+    "stated": "No free tier is documented: a third-party review checked in October 2026 states that search and downloads require an active subscription, and a comparison table lists NZBGeek's free tier as 'None (subscription required)'. An unkeyed search is refused with an empty-API-key error and caps declares registration available=no. Earlier third-party readings of a free trial and of a few downloads a day are not found on the pages read now. The public site lists no prices.",
     "unit": "requests",
     "metered_on": "request-count",
     "source_url": "https://api.nzbgeek.info/api?t=caps",
@@ -55,7 +55,7 @@
   "binding_note": "The API call allowance is what fails first: without a key the first automated search is refused outright (error 102), and the readings of the free tier that describe an allowance put it at 5 calls a day, which is one search every five hours.",
   "identity_cost": {
     "kind": "email",
-    "detail": "Registration is contradictory at the vendor: the login page links 'register account?' and register.php serves a Registration Agreement with an agree step, while /api?t=caps declares <registration available=\"no\" open=\"no\"/>.",
+    "detail": "Registration is contradictory at the vendor: the login page links 'register account?' and register.php serves a Registration Agreement with an 'agree' submit, while /api?t=caps declares <registration available=\"no\" open=\"no\"/>; a third-party review checked in October 2026 states that registration was open. The fields a signup demands are unverified: behind a sign-up.",
     "country": null
   },
   "reliability_note": "The membership is what keeps the index alive; a lapsed membership drops the account back to the capped tier and automation stops with no partial service.",
@@ -98,21 +98,72 @@
       "proved": "third-party: 'NZBgeek used to have a free level, but now you need a paid membership to search and download.'"
     },
     {
+      "url": "https://datahoarder.io/nzbgeek-review/",
+      "date": "2026-11-03",
+      "proved": "a 2026 third-party review: search and downloads require an active subscription",
+      "capture": "sha256:353a2166e05f491ace74bf1619e192b82dad43b8a67665de8788ab3b3a15771b",
+      "quote": "Registration was open when we checked in October 2026, but search and downloads require an active subscription and the policy states there are no refunds, so choose a plan length you are comfortable with before paying."
+    },
+    {
+      "url": "probe:https://nzbgeek.info/register.php",
+      "date": "2026-11-03",
+      "proved": "an anonymous GET of register.php still serves the Registration Agreement with an 'agree' submit",
+      "capture": "sha256:0035bbdc45a6c9b1cc2809ed47a685db20bf09c8d2a67e891bf71467d1711207",
+      "quote": "<input class=\"login_button\" tabindex=\"2\" type=\"submit\" name=\"terms\" value=\"agree\" id=\"terms\">"
+    },
+    {
+      "url": "https://www.usenet.com/free-nzb-sites/",
+      "date": "2026-11-03",
+      "proved": "third party: no free level, a paid membership is needed to search and download",
+      "capture": "sha256:4fb8969be035c81787b5758be09ea61789f17486b6dbcfc3a8ca52620769032d",
+      "quote": "NZBgeek used to have a free level, but now you need a paid membership to search and download."
+    },
+    {
+      "url": "https://api.nzbgeek.info/api?t=caps",
+      "date": "2026-11-03",
+      "proved": "caps still declares a 100-result ceiling and registration available=no",
+      "capture": "sha256:5e6abdb0ee09ae266514c935c0d9701417027c1a5dfe5fb9c3e5e865c3eef1fb",
+      "quote": "<limits max=\"100\" default=\"100\"/><registration available=\"no\" open=\"no\"/>"
+    },
+    {
       "url": "https://datahoarder.io/drunkenslug-vs-nzbgeek/",
-      "date": "2026-10-23",
-      "proved": "third-party table: NZBGeek free tier '3-day trial, 15 NZBs total', API 'unlimited on paid plans'"
+      "date": "2026-11-03",
+      "proved": "third-party table: NZBGeek's free tier is 'None (subscription required)'",
+      "capture": "sha256:292540c8bb826f676e1f6fc436f8f09f10148d74423d0b32ce6b38e5f6b2f0af",
+      "quote": "| Free Tier | 5 NZBs, 100 API hits/day | None (subscription required) |"
+    },
+    {
+      "url": "probe:https://api.nzbgeek.info/api?t=search&q=linux&x=2",
+      "date": "2026-11-03",
+      "proved": "an unkeyed search is refused with error 102 (probe 2026-11-03)",
+      "capture": "sha256:afb41bce94e8ab6613b7b561b5b1e4ed12c50e02174efa8f1f8bd6d16a0cfd44",
+      "quote": "<error code=\"102\" description=\"Empty API Key\"/>"
+    },
+    {
+      "url": "https://nzbhydra.com/indexers/",
+      "date": "2026-11-03",
+      "proved": "third-party index: USD 12/year VIP with 6-month, 1-year, 2-year and lifetime options",
+      "capture": null,
+      "quote": "$12/year VIP (flexible options: 6 months, 1 year, 2 years, lifetime)"
+    },
+    {
+      "url": "https://datahoarder.io/nzbgeek-review/",
+      "date": "2026-11-03",
+      "proved": "third-party review: plan prices are not on the public site",
+      "capture": "sha256:353a2166e05f491ace74bf1619e192b82dad43b8a67665de8788ab3b3a15771b",
+      "quote": "NZBgeek does not list its prices on the public site."
     }
   ],
   "verdict": "fails-quota",
   "extras": {
-    "price": "USD 12/year (reported)",
+    "price": "USD 12/year (reported by a third-party index; the vendor's public site lists no prices; another third party says plans start at USD 6 for six months)",
     "nzb_is_newznab": true,
     "caps_limits": 100,
     "api_host": "api.nzbgeek.info",
     "unkeyed_error": "102 Empty API Key"
   },
   "notes": "Two vendor signals contradict each other on registration: a served agreement form says open, caps says available=no. The conservative reading is recorded on the record and not resolved, because resolving it needs an account. The verdict rests on the API allowance, which is independent of that question.",
-  "verified_at": "2026-10-23T02:11:54.066Z",
+  "verified_at": "2026-11-03T11:28:59.770Z",
   "topic": "debrid",
   "price_per_tb_month": null
 }

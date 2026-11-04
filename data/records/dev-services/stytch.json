@@ -11,11 +11,12 @@
     "metered_on": "identity-count",
     "source_url": "https://stytch.com/pricing",
     "read_on": "2026-10-30",
-    "notes": "A project has one Live and one Test environment by default. In the Live environment some endpoints answer billing_not_verified until credit card details are added, and email goes only to the sign-up address or addresses on its domain until then; the Test environment works without them. SMS and WhatsApp are enabled for United States and Canada numbers by default. Dashboard seats are unlimited."
+    "notes": "A project has one Live and one Test environment by default. In the Live environment some endpoints answer billing_not_verified until credit card details are added, and the error reference names none of them; email goes only to the sign-up address or addresses on its domain until then, which a Stytch staff reply of 2024-11-14 on its forum applies to a Test environment too. SMS and WhatsApp are enabled for United States and Canada numbers by default, and other countries need an allowlist entry and credit card details. Dashboard seats are unlimited."
   },
   "per_object_cap": {
-    "stated": "unverified: no size limit for user or organization metadata is stated on the pages read",
-    "bytes": null
+    "stated": "a metadata object (trusted_metadata or untrusted_metadata) of a user or member holds at most 20 top-level keys and cannot exceed 4KB in size",
+    "bytes": null,
+    "source_url": "https://stytch.com/docs/api-reference/consumer/api/resources/metadata"
   },
   "retention": {
     "stated": "unverified: no data or log retention period is stated on the pages read",
@@ -31,7 +32,7 @@
   "interface": [
     "rest"
   ],
-  "interface_detail": "REST API with JSON responses and HTTP Basic auth (project_id and secret); Test environments at test.stytch.com and the Live environment at api.stytch.com. A GET to a user on test.stytch.com without credentials answered 400 invalid_authorization_header.",
+  "interface_detail": "REST API with JSON responses and HTTP Basic auth (project_id and secret); Test environments at test.stytch.com and the Live environment at api.stytch.com. A GET to a user on test.stytch.com without credentials answered 400 invalid_authorization_header. An OpenID configuration endpoint per project for Connected Apps implements OpenID Connect discovery and lists the OAuth 2.0 grant types supported.",
   "endpoint": "https://api.stytch.com/v1",
   "tooling": "Stytch backend SDKs for Node, Python, Ruby, Go and Java, front-end SDKs, or any HTTP client with Basic auth.",
   "chaining": "Passwordless or OAuth login for an app on free compute; building and testing in a Test environment needs no card.",
@@ -43,20 +44,25 @@
     },
     {
       "kind": "write-gated",
-      "value": "Live environment endpoints answer billing_not_verified until credit card details are added; email goes only to the sign-up address or its domain until then",
+      "value": "Live environment endpoints answer billing_not_verified until credit card details are added, and the error reference names none of them; email goes only to the sign-up address or addresses on its domain until then (billing_not_verified_for_email); the B2B country code allowlist cannot be updated until credit card details are added, and enabling SMS to countries beyond the United States and Canada needs them too",
       "source": "https://stytch.com/docs/api-reference/consumer/api/errors/400"
     },
     {
       "kind": "request-rate",
       "value": "SMS OTP sends from Test environments: 60 per hour per project",
       "source": "https://stytch.com/docs/resources/platform/rate-limits"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "a metadata object holds at most 20 top-level keys and 4KB",
+      "source": "https://stytch.com/docs/api-reference/consumer/api/resources/metadata"
     }
   ],
   "binding": "write-gated",
   "binding_note": "Without a card on file the Live environment cannot email arbitrary users, so a public app with email login meets the card gate before the 10,000 MAU allowance.",
   "identity_cost": {
     "kind": "card",
-    "detail": "Sign-up takes a Google, GitHub or single sign-on login or an email address. The Test environment works without payment details; Live-environment endpoints answer billing_not_verified until credit card details are added, and email to addresses outside the sign-up domain needs them too.",
+    "detail": "Sign-up takes a Google, GitHub or single sign-on login or an email address, and the sign-up flow asks which authentication type to set up, such as B2B Authentication, before it creates a first project. The Test environment works without payment details; Live-environment endpoints answer billing_not_verified until credit card details are added, and email to addresses outside the sign-up domain needs them too, in a Test environment as well. Whether a later step asks for a phone number is unverified: behind a sign-up.",
     "country": null
   },
   "reliability_note": "Rate limits answer 429 and reset at the top of the interval; a limit reached for a field or user generally cannot be reset.",
@@ -216,9 +222,114 @@
       "proved": "test.stytch.com answers a request without credentials with invalid_authorization_header",
       "capture": "sha256:ec8bc9746514b8f57187027e08f49ae9301b8f6fc8a3dde0198e288e8f2cd4b2",
       "quote": "\"error_type\":\"invalid_authorization_header\""
+    },
+    {
+      "url": "https://stytch.com/docs/api-reference/consumer/api/resources/metadata",
+      "date": "2026-11-01",
+      "proved": "a Stytch metadata object holds at most 20 top-level keys and cannot exceed 4KB",
+      "capture": "sha256:ec82f0d601e0e12550d0c2bbbb071a459fbb123b1c9da7488f733edc743a7361",
+      "quote": "* Metadata objects may contain a maximum of 20 top-level keys.\n* Metadata objects cannot exceed 4KB in size"
+    },
+    {
+      "url": "https://stytch.com/docs/api-reference/b2b/api/members/overview",
+      "date": "2026-11-01",
+      "proved": "B2B member metadata has the same limits: 20 top-level keys and 4KB per metadata object",
+      "capture": "sha256:16210bfbcd076d8555f07165de426faaf3a057816d565e70dc9e12503ade5ca6",
+      "quote": "* Maximum 20 top-level keys per metadata object\n* Cannot exceed 4KB in size per metadata object"
+    },
+    {
+      "url": "https://changelog.stytch.com/announcements/2022-11-04-release",
+      "date": "2026-11-01",
+      "proved": "user metadata objects are limited to 20 top-level keys and 4KB in total",
+      "capture": "sha256:92ab3aebf6583befb9b133a5cd1a255166586449b283a4315e97ffbe97bb865d",
+      "quote": "each metadata object can store up to 20 top-level keys and supports deeply nested fields. Total data size per metadata object is 4KB."
+    },
+    {
+      "url": "https://stytch.com/docs/api-reference/consumer/api/errors/400",
+      "date": "2026-11-01",
+      "proved": "the billing_not_verified error says an endpoint cannot be used in the Live environment until credit card details are added, and names no endpoint",
+      "capture": "sha256:587bebd2cc959fd737ec1896deaf087fe3c681672d720780c0e418ef8896428c",
+      "quote": "You cannot use this endpoint in the Live environment until credit card details are added to your account, but you can try the endpoint in the Test environment."
+    },
+    {
+      "url": "https://stytch.com/docs/api-reference/consumer/api/errors/400",
+      "date": "2026-11-01",
+      "proved": "billing_not_verified_for_email limits email to the sign-up address and its domain until credit card details are added",
+      "capture": "sha256:587bebd2cc959fd737ec1896deaf087fe3c681672d720780c0e418ef8896428c",
+      "quote": "You can only send emails to yourself or to coworkers sharing the same email domain used to sign up to Stytch until credit card details are added to your account."
+    },
+    {
+      "url": "https://stytch.com/docs/api-reference/b2b/api/errors/400",
+      "date": "2026-11-01",
+      "proved": "the B2B API answers country_code_allowlist_billing_not_verified for allowlist updates until credit card details are added",
+      "capture": "sha256:f1dc3b4e4a5255a3d44b119cbb94729628e39b1404ed96c8455769d96bee2ab6",
+      "quote": "Billing is not verified for this project. Country code allowlist cannot be updated until credit card details are added to your account."
+    },
+    {
+      "url": "https://stytch.com/docs/api-reference/consumer/api/errors/400",
+      "date": "2026-11-01",
+      "proved": "SMS outside the United States and Canada is off by default for newer customers",
+      "capture": "sha256:587bebd2cc959fd737ec1896deaf087fe3c681672d720780c0e418ef8896428c",
+      "quote": "SMS to phone numbers outside of the US and Canada is disabled by default for customers who did not use SMS prior to October 2023."
+    },
+    {
+      "url": "https://stytch.com/docs/api-reference/consumer/api/errors/400",
+      "date": "2026-11-01",
+      "proved": "enabling international SMS needs credit card details on the account besides an allowlist entry",
+      "capture": "sha256:587bebd2cc959fd737ec1896deaf087fe3c681672d720780c0e418ef8896428c",
+      "quote": "and [add credit card details](https://stytch.com/dashboard/settings/billing) to your account."
+    },
+    {
+      "url": "https://forum.stytch.com/t/magic-link-fails-billing-not-verified-for-email/315",
+      "date": "2026-11-01",
+      "proved": "a Stytch staff reply of 2024-11-14, read in an archived copy of 2025-05-20, says a Test environment user needs a credit card to email addresses other than the sign-up address",
+      "capture": "sha256:83a021e714a5ee8b50360a4713c2b75169c8853989acaa2a189ed7dfb317c9e8",
+      "quote": "You’ll either need to add a credit card to your account (you won’t be charged for any requests made in our Test environment – this is just for accountability purposes), or send test emails to the Gmail account that you signed up with."
+    },
+    {
+      "url": "https://forum.stytch.com/t/magic-link-fails-billing-not-verified-for-email/315",
+      "date": "2026-11-01",
+      "proved": "the forum post describes a request made against a Test environment",
+      "capture": "sha256:83a021e714a5ee8b50360a4713c2b75169c8853989acaa2a189ed7dfb317c9e8",
+      "quote": "I double checked and my env variables are correctly pointing to the test instance, not the live one."
+    },
+    {
+      "url": "https://forum.stytch.com/t/magic-link-fails-billing-not-verified-for-email/315",
+      "date": "2026-11-01",
+      "proved": "a Stytch staff reply calls the email restriction intended behaviour",
+      "capture": "sha256:83a021e714a5ee8b50360a4713c2b75169c8853989acaa2a189ed7dfb317c9e8",
+      "quote": "This is the intended behavior. This restriction prevents bad actors from creating a Stytch account and sending spam emails without any guardrails."
+    },
+    {
+      "url": "https://github.com/stytchauth/stytch-b2b-node-example",
+      "date": "2026-11-01",
+      "proved": "the sign-up flow asks for an authentication type such as B2B Authentication and then creates a first project",
+      "capture": "sha256:3004e13458425358bff10c2ad61b6826581fb2fdd8b6ccec823afc95ce53dd01",
+      "quote": "Create a [Stytch](https://stytch.com/) account. During the signup flow, select B2B Authentication. Once your account is set up, a project called \"My first project\" will be created for you."
+    },
+    {
+      "url": "https://stytch.com/docs/api-reference/consumer/api/connected-apps/configuration/get-openid-configuration",
+      "date": "2026-11-01",
+      "proved": "the Connected Apps OpenID configuration endpoint implements OpenID Connect discovery",
+      "capture": "sha256:1da14812c04d50df98119c04b8eccca837ecb29da6f57d2547e2d52e058eeb83",
+      "quote": "This endpoint implements the [OpenID configuration](https://openid.net/specs/openid-connect-discovery-1%5F0.html#ProviderConfigurationRequest) endpoint."
+    },
+    {
+      "url": "https://stytch.com/docs/api-reference/consumer/api/connected-apps/configuration/get-openid-configuration",
+      "date": "2026-11-01",
+      "proved": "the OpenID configuration lists the OAuth 2.0 grant types supported",
+      "capture": "sha256:1da14812c04d50df98119c04b8eccca837ecb29da6f57d2547e2d52e058eeb83",
+      "quote": "JSON array containing a list of the OAuth 2.0 grant types supported."
+    },
+    {
+      "url": "https://stytch.com/dashboard/start-now",
+      "date": "2026-11-01",
+      "proved": "the sign-up page offers Google, GitHub, single sign-on and an email address",
+      "capture": "sha256:03a532d1c4020de1a271798962980d49f97144e552b4ff1596f03d6ec6c948bc",
+      "quote": "Sign up or log in\n\nContinue with GoogleContinue with GitHubUse single sign-on\n\nor\n\nEmail\n\nContinue with email"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T06:23:28.112Z",
+  "verified_at": "2026-11-02T00:37:55.409Z",
   "notes": "Custom branding is a USD 99 add-on, SSO or SCIM connections past 5 are USD 125 each, and fraud fingerprints past 10,000 are USD 0.005 each."
 }

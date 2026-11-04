@@ -5,27 +5,27 @@
   "url": "https://www.scaleway.com/en/pricing/storage/",
   "category": "S3-compatible cold archive class",
   "free_tier": {
-    "stated": "Per-GB-month; Paris (DC4), one region",
-    "unit": "GB",
-    "metered_on": "unstated",
+    "stated": "No free allowance for Glacier: the 750 GB a new account receives over 90 days covers the Standard Multi-AZ and Standard One Zone classes only",
+    "unit": "none",
+    "metered_on": "stored-bytes",
     "source_url": "https://www.scaleway.com/en/pricing/storage/",
-    "read_on": "2026-10-21",
-    "notes": null
+    "read_on": "2026-11-01",
+    "notes": "the pricing page and the Object Storage FAQ were read on 2026-11-01; the binding constraint is the 75 GB a month of free egress"
   },
   "per_object_cap": {
-    "stated": "not stated",
+    "stated": "5 TB per object, with no maximum on the number of objects, and files larger than 1 MB recommended over many small files",
     "source_url": "https://www.scaleway.com/en/pricing/storage/",
-    "notes": "not stated"
+    "notes": "the 5 TB cap is per object and the number of objects is unlimited; the 1 MB figure is a recommendation about file mix, not a cap"
   },
   "retention": {
-    "stated": "not stated",
+    "stated": "the pricing page states no minimum storage duration for the class",
     "source_url": "https://www.scaleway.com/en/pricing/storage/",
-    "notes": "not stated"
+    "notes": "no retention period is stated on the page; the class is billed by the hour held"
   },
   "egress": {
-    "terms": "75 GB free every month, then EUR 0.01/GB (= EUR 10/TB) for all classes. No free-egress exemption for Glacier.",
+    "terms": "75 GB free every month then EUR 0.01/GB (EUR 10/TB) for every class; an object in Glacier is not downloadable until restored, and the restore is billed at EUR 0.009/GB (EUR 9/TB)",
     "metered": true,
-    "price_per_tb": "EUR 10/TB"
+    "price_per_tb": "EUR 10/TB of egress beyond 75 GB a month, plus EUR 9/TB to restore an object out of Glacier"
   },
   "interface": [
     "s3-compatible",
@@ -35,7 +35,13 @@
   "interface_detail": "S3 API",
   "tooling": "AWS CLI, rclone, all S3 SDKs",
   "chaining": "Archive leg only — objects must be restored to Standard Multi-AZ before download.",
-  "limits": [],
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "75 GB a month of free egress, then EUR 0.01/GB",
+      "source": "https://www.scaleway.com/en/pricing/storage/"
+    }
+  ],
   "limits_note": "`retention-clamped` + restore path: objects are listed but not downloadable until restored; restore target is Standard Multi-AZ only (lifecycle rules are top-down, so you cannot restore Glacier -> One Zone); restore start takes minutes to 24 h for objects over 1 MB; default restore window is 1 day and the object is billed at Standard Multi-AZ while restored. Also: \"a billable unit started is due, so 1KB for 1 second on Object Storage is billed 1 GB hour\".",
   "identity_cost": {
     "kind": "card",
@@ -44,7 +50,7 @@
   },
   "reliability_note": "Hosted in the DC4 fallout shelter, 25 m underground — high physical durability, deliberately slow retrieval path.",
   "confidence": "reported",
-  "confidence_note": null,
+  "confidence_note": "the pricing page and the Object Storage FAQ were read on 2026-11-01, and the class price, its free allowance and its egress terms were taken from them",
   "evidence": [
     {
       "url": "https://www.scaleway.com/en/pricing/storage/",
@@ -60,21 +66,196 @@
       "url": "https://www.scaleway.com/en/docs/object-storage/how-to/restore-an-object-from-glacier/",
       "date": "2026-10-21",
       "proved": "restore Days=NUM, default 1 day, minutes-to-24h to start for objects >1 MB"
+    },
+    {
+      "url": "https://www.scaleway.com/en/pricing/storage/",
+      "date": "2026-11-01",
+      "proved": "the Glacier class is priced at EUR 0.05986 per GB-month",
+      "capture": "sha256:bc0f131fd793a743ce6b4d5d4d71587cc31dd7a44e2c0e073e3705b15d3d1d24",
+      "quote": "| Glacier | €0.000082/GB /HOUR | €0.05986/GB /MONTH |"
+    },
+    {
+      "url": "https://www.scaleway.com/en/docs/object-storage/faq/",
+      "date": "2026-11-01",
+      "proved": "the 750 GB a new account receives is pooled across the Standard Multi-AZ and Standard One Zone classes",
+      "capture": "sha256:831535b27d4fbd15ca34c4fbbfbcdf1d6197cd23090bd9e944533a7447997410",
+      "quote": "As a new user, you benefit from a total 750 GB of free storage across the"
+    },
+    {
+      "url": "https://www.scaleway.com/en/docs/object-storage/faq/",
+      "date": "2026-11-01",
+      "proved": "the 750 GB is split across the two Standard classes, leaving nothing for Glacier",
+      "capture": "sha256:831535b27d4fbd15ca34c4fbbfbcdf1d6197cd23090bd9e944533a7447997410",
+      "quote": "750 GB is the total amount of free storage, and can be split as desired between the Standard Multi-AZ and Standard One Zone classes."
+    },
+    {
+      "url": "https://www.scaleway.com/en/pricing/storage/",
+      "date": "2026-11-01",
+      "proved": "storage is billed by the gigabyte-hour the bytes are held",
+      "capture": "sha256:bc0f131fd793a743ce6b4d5d4d71587cc31dd7a44e2c0e073e3705b15d3d1d24",
+      "quote": "A billable unit started is due, so 1KB for 1 second on Object Storage is billed 1 GB hour."
+    },
+    {
+      "url": "https://www.scaleway.com/en/pricing/storage/",
+      "date": "2026-11-01",
+      "proved": "egress is metered beyond 75 GB a month",
+      "capture": "sha256:bc0f131fd793a743ce6b4d5d4d71587cc31dd7a44e2c0e073e3705b15d3d1d24",
+      "quote": "| Egress * |  | 75GB free every month then €0.01/GB /MONTH |"
+    },
+    {
+      "url": "https://www.scaleway.com/en/pricing/storage/",
+      "date": "2026-11-01",
+      "proved": "a restore out of Glacier is billed at EUR 0.009/GB",
+      "capture": "sha256:bc0f131fd793a743ce6b4d5d4d71587cc31dd7a44e2c0e073e3705b15d3d1d24",
+      "quote": "| Restore from Glacier | €0.009/GB |  |"
+    },
+    {
+      "url": "https://www.scaleway.com/en/pricing/storage/",
+      "date": "2026-11-01",
+      "proved": "75 GB a month is the free egress allowance that would have to grow",
+      "capture": "sha256:bc0f131fd793a743ce6b4d5d4d71587cc31dd7a44e2c0e073e3705b15d3d1d24",
+      "quote": "| Egress * |  | 75GB free every month then €0.01/GB /MONTH |"
+    },
+    {
+      "url": "https://www.scaleway.com/en/pricing/storage/",
+      "date": "2026-11-01",
+      "proved": "the restore fee out of Glacier is EUR 0.009/GB",
+      "capture": "sha256:bc0f131fd793a743ce6b4d5d4d71587cc31dd7a44e2c0e073e3705b15d3d1d24",
+      "quote": "| Restore from Glacier | €0.009/GB |  |"
+    },
+    {
+      "url": "https://www.scaleway.com/en/pricing/storage/",
+      "date": "2026-11-01",
+      "proved": "a restore costs EUR 0.009/GB, which is EUR 9/TB",
+      "capture": "sha256:bc0f131fd793a743ce6b4d5d4d71587cc31dd7a44e2c0e073e3705b15d3d1d24",
+      "quote": "| Restore from Glacier | €0.009/GB |  |"
+    },
+    {
+      "url": "https://www.scaleway.com/en/pricing/storage/",
+      "date": "2026-11-01",
+      "proved": "the class is priced at EUR 0.05986 per GB-month",
+      "capture": "sha256:bc0f131fd793a743ce6b4d5d4d71587cc31dd7a44e2c0e073e3705b15d3d1d24",
+      "quote": "| Glacier | €0.000082/GB /HOUR | €0.05986/GB /MONTH |"
+    },
+    {
+      "url": "https://www.scaleway.com/en/pricing/storage/",
+      "date": "2026-11-01",
+      "proved": "free egress is a monthly volume of 75 GB before the meter runs",
+      "capture": "sha256:bc0f131fd793a743ce6b4d5d4d71587cc31dd7a44e2c0e073e3705b15d3d1d24",
+      "quote": "| Egress * |  | 75GB free every month then €0.01/GB /MONTH |"
+    },
+    {
+      "url": "https://www.scaleway.com/en/pricing/storage/",
+      "date": "2026-11-01",
+      "proved": "75 GB a month of free egress is a volume quota",
+      "capture": "sha256:bc0f131fd793a743ce6b4d5d4d71587cc31dd7a44e2c0e073e3705b15d3d1d24",
+      "quote": "| Egress * |  | 75GB free every month then €0.01/GB /MONTH |"
+    },
+    {
+      "url": "https://www.scaleway.com/en/pricing/storage/",
+      "date": "2026-11-01",
+      "proved": "75 GB a month is free before egress is billed",
+      "capture": "sha256:bc0f131fd793a743ce6b4d5d4d71587cc31dd7a44e2c0e073e3705b15d3d1d24",
+      "quote": "| Egress * |  | 75GB free every month then €0.01/GB /MONTH |"
+    },
+    {
+      "url": "https://web.archive.org/web/20260924064732/https://www.scaleway.com/en/pricing/storage/?provider=wayback",
+      "date": "2026-11-01",
+      "proved": "the same pricing page stated EUR 0.00254/GB-month on the Wayback capture of 2026-09-24, so the class was repriced after that date",
+      "capture": "sha256:a72af58f59de63141f4d54d5333572c94618bcd71a70e57fde6e23b815992a5d",
+      "quote": "| Glacier | €0.0000035/GB /HOUR | €0.00254/GB /MONTH |"
+    },
+    {
+      "url": "https://www.scaleway.com/en/docs/object-storage/faq/",
+      "date": "2026-11-01",
+      "proved": "an object in the class cannot be read until it is restored to the Standard Multi-AZ class",
+      "capture": "sha256:831535b27d4fbd15ca34c4fbbfbcdf1d6197cd23090bd9e944533a7447997410",
+      "quote": "An object stored in the Glacier class is listed but cannot be downloaded instantly. It needs to be restored to the Standard Multi-AZ class first."
+    },
+    {
+      "url": "https://www.scaleway.com/en/pricing/storage/",
+      "date": "2026-11-01",
+      "proved": "the pricing page states the free egress allowance and the rate beyond it",
+      "capture": "sha256:bc0f131fd793a743ce6b4d5d4d71587cc31dd7a44e2c0e073e3705b15d3d1d24",
+      "quote": "| Egress * |  | 75GB free every month then €0.01/GB /MONTH |"
+    },
+    {
+      "url": "https://www.scaleway.com/en/docs/object-storage/faq/",
+      "date": "2026-11-01",
+      "proved": "the FAQ states what the 750 GB trial covers",
+      "capture": "sha256:831535b27d4fbd15ca34c4fbbfbcdf1d6197cd23090bd9e944533a7447997410",
+      "quote": "As a new user, you benefit from a total 750 GB of free storage across the"
+    },
+    {
+      "url": "https://www.scaleway.com/en/pricing/storage/",
+      "date": "2026-11-01",
+      "proved": "storage is billed by the hour held, with no minimum duration stated",
+      "capture": "sha256:bc0f131fd793a743ce6b4d5d4d71587cc31dd7a44e2c0e073e3705b15d3d1d24",
+      "quote": "A billable unit started is due, so 1KB for 1 second on Object Storage is billed 1 GB hour."
+    },
+    {
+      "url": "https://www.scaleway.com/en/pricing/storage/",
+      "date": "2026-11-01",
+      "proved": "the pricing page was read and carries the current class price",
+      "capture": "sha256:bc0f131fd793a743ce6b4d5d4d71587cc31dd7a44e2c0e073e3705b15d3d1d24",
+      "quote": "| Glacier | €0.000082/GB /HOUR | €0.05986/GB /MONTH |"
+    },
+    {
+      "url": "https://www.scaleway.com/en/pricing/storage/",
+      "date": "2026-11-01",
+      "proved": "storage is billed by the hour held, with no retention period stated",
+      "capture": "sha256:bc0f131fd793a743ce6b4d5d4d71587cc31dd7a44e2c0e073e3705b15d3d1d24",
+      "quote": "A billable unit started is due, so 1KB for 1 second on Object Storage is billed 1 GB hour."
+    },
+    {
+      "url": "https://www.scaleway.com/en/docs/object-storage/faq/",
+      "date": "2026-11-02",
+      "proved": "the FAQ states a per-object cap of 5 TB for the Glacier class and no limit on the number of objects",
+      "capture": "sha256:0ff77cc898ffe95ab3503ffd423d7bd4daaba8aeb0fd55df730c306dff5320a0",
+      "quote": "There is no maximum data size. Glacier accepts an unlimited number of objects up to 5 TB each."
+    },
+    {
+      "url": "https://www.scaleway.com/en/docs/object-storage/faq/",
+      "date": "2026-11-02",
+      "proved": "the 1 MB figure is a recommendation on file mix, separate from the per-object cap",
+      "capture": "sha256:0ff77cc898ffe95ab3503ffd423d7bd4daaba8aeb0fd55df730c306dff5320a0",
+      "quote": "We recommend you use Glacier to store average-sized files (larger than 1 MB), as opposed to several small files."
+    },
+    {
+      "url": "https://www.scaleway.com/en/docs/object-storage/faq/",
+      "date": "2026-11-02",
+      "proved": "the FAQ recommends files larger than 1 MB for the class instead of many small files, beside the 5 TB cap",
+      "capture": "sha256:0ff77cc898ffe95ab3503ffd423d7bd4daaba8aeb0fd55df730c306dff5320a0",
+      "quote": "We recommend you use Glacier to store average-sized files (larger than 1 MB), as opposed to several small files."
+    },
+    {
+      "url": "https://www.scaleway.com/en/docs/object-storage/faq/",
+      "date": "2026-11-02",
+      "proved": "the multipart upload specifications of the same page repeat a 5 TB ceiling per object",
+      "capture": "sha256:0ff77cc898ffe95ab3503ffd423d7bd4daaba8aeb0fd55df730c306dff5320a0",
+      "quote": "Each object stores up to 5 TB"
+    },
+    {
+      "url": "https://www.scaleway.com/en/docs/object-storage/faq/",
+      "date": "2026-11-02",
+      "proved": "the per-object cap of the Glacier class is 5 TB and the number of objects is unlimited",
+      "capture": "sha256:0ff77cc898ffe95ab3503ffd423d7bd4daaba8aeb0fd55df730c306dff5320a0",
+      "quote": "There is no maximum data size. Glacier accepts an unlimited number of objects up to 5 TB each."
     }
   ],
   "verdict": "fails-egress",
-  "verified_at": "2026-10-21T00:00:00.000Z",
-  "price_per_tb_month": "$2.85/TB at both 5 TB and 20 TB (EUR 2.54 = $2.85), plus EUR 10/TB on anything actually read out.",
-  "notes": "Per-GB-month; Paris (DC4), one region",
+  "verified_at": "2026-11-02T00:46:52.148Z",
+  "price_per_tb_month": "EUR 59.86 per TB-month at the Glacier class in Paris: EUR 0.000082/GB-hour, EUR 0.05986/GB-month",
+  "notes": "EUR 59.86 per TB-month for the Glacier class in Paris (EUR 0.05986/GB-month); read-out costs EUR 9/TB of restore plus EUR 10/TB of egress beyond 75 GB a month",
   "extras": {
     "dead_end": {
-      "failure_class": "quota",
-      "why": "Per-GB-month; Paris (DC4), one region",
-      "retry_when": null,
+      "failure_class": "egress",
+      "why": "Objects are listed but cannot be downloaded until restored to the Standard Multi-AZ class, and read-out costs EUR 9/TB of restore plus EUR 10/TB of egress beyond 75 GB a month, on a class with no free allowance",
+      "retry_when": "if read-out and restore become free, or the 75 GB a month of free egress grows enough to serve from",
       "first_recorded": "2026-10-21"
     },
     "price_verbatim": "$2.85/TB at both 5 TB and 20 TB (EUR 2.54 = $2.85), plus EUR 10/TB on anything actually read out."
   },
-  "binding": "none",
-  "binding_note": null
+  "binding": "volume-quota",
+  "binding_note": "the free egress allowance of 75 GB a month is a volume quota; the restore gate is not a limits kind"
 }

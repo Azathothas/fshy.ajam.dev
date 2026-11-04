@@ -17,7 +17,7 @@
     "source_url": "https://github.com/qaiu/netdisk-fast-download"
   },
   "retention": {
-    "stated": "Not applicable; signed redirects carry X-Amz-Expires=86400 and are cached for about 8 hours",
+    "stated": "Not applicable; the server caches a resolved link for a per-pan time in minutes set in its configuration (shipped values: 5 for ecpan, 20 for feijipan, 30 for lanzou), and a pan with no entry is not cached",
     "days": null,
     "source_url": "https://github.com/qaiu/netdisk-fast-download"
   },
@@ -31,13 +31,13 @@
   "interface": [
     "rest"
   ],
-  "tooling": "GET /parser?url=<encoded share>&pwd=<code> returns 302 to the CDN; self-hostable on ports 6400 for the API and 6401 for the web interface; JavaScript and Java parser plugins extend it",
-  "chaining": "One endpoint, about twenty providers, no keys: the highest-leverage piece of glue found. Self-hosting it on a non-Chinese IP is what makes it durable, because the public instance's rate limits belong to its operator",
+  "tooling": "hosted instances first: GET https://lz.qaiu.top/parser?url=<encoded share>&pwd=<code> returns a 302 to the pan's CDN, also on the mirror lz0.qaiu.top. Last resort: the user installs and runs the open-source server (a release archive on Java 17 or later, or the Docker image) on a rented or free machine, with the API on port 6400 and the web tool on port 6401; JavaScript and Java parser plugins extend it",
+  "chaining": "Resolve a share link with a hosted instance first (lz.qaiu.top, mirror lz0.qaiu.top), then fetch the returned direct URL with a plain ranged GET. A server the user installs and runs is the last resort; a pan that blocks datacentre addresses, such as feijipan for mainland ranges, is reached through a proxy set in its configuration",
   "limits": [
     {
       "kind": "request-rate",
-      "value": "IP rate limits on the public instance",
-      "source": "https://github.com/qaiu/netdisk-fast-download"
+      "value": "the server code has an optional per-IP request limiter, off unless rateLimit.enable is set; the example in the shipped configuration is 10 requests per 10 seconds on /v2/ paths",
+      "source": "https://raw.githubusercontent.com/qaiu/netdisk-fast-download/main/web-service/src/main/resources/app-dev.yml"
     },
     {
       "kind": "write-gated",
@@ -74,13 +74,104 @@
       "proved": "the project README links a free public (公益) instance at lz.qaiu.top and gives no quota, unit or price",
       "capture": "sha256:e605b75950b3d7e0b2c9d6a853c6f53b1b7db06d22bbe3f63f21b3759d1c8b52",
       "quote": "[公益解析，lz站](https://lz.qaiu.top/)"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/qaiu/netdisk-fast-download/main/README.md",
+      "date": "2026-11-01",
+      "proved": "the project README gives Docker deployment steps, an image pulled from ghcr.io, for a server that the user runs",
+      "capture": "sha256:6db0683295073400965eaad83a2c121f5603936be7fa72d1ff7b6ad18fb59992",
+      "quote": "#### 海外服务器Docker部署 ... docker pull ghcr.io/qaiu/netdisk-fast-download:latest"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/qaiu/netdisk-fast-download/main/README.md",
+      "date": "2026-11-01",
+      "proved": "the README names port 6400 for the API and port 6401 for the built-in web tool of the server that the user runs",
+      "capture": "sha256:6db0683295073400965eaad83a2c121f5603936be7fa72d1ff7b6ad18fb59992",
+      "quote": "- 6400: API 服务端口（建议使用 Nginx 代理） ... - 6401: 内置 Web 解析工具（个人使用可直接开放此端口）"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/qaiu/netdisk-fast-download/main/README.md",
+      "date": "2026-11-01",
+      "proved": "the README warns that feijipan blocks most mainland cloud-provider addresses and that a proxy can be configured",
+      "capture": "sha256:6db0683295073400965eaad83a2c121f5603936be7fa72d1ff7b6ad18fb59992",
+      "quote": "注意⚠️小飞机解析有IP限制，多数云服务商的大陆IP会被拦截（可以自行配置代理），和本程序无关"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/qaiu/netdisk-fast-download/main/web-service/src/main/resources/app-dev.yml",
+      "date": "2026-11-02",
+      "proved": "the shipped configuration file carries the rateLimit block commented out, with an example of 10 requests per 10 seconds on paths matching ^/v2/.*",
+      "capture": "sha256:f22ce30e77f56191f653d93c68a231113c70a92484df06f884de98b135b516b4",
+      "quote": "#rateLimit: #  # 是否启用限流 #  enable: true #  # 限流的请求数 #  limit: 10 #  # 限流的时间窗口(单位秒) #  timeWindow: 10 #  # 路径匹配规则 #  pathReg: ^/v2/.*"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/qaiu/netdisk-fast-download/main/web-service/src/main/resources/app-dev.yml",
+      "date": "2026-11-02",
+      "proved": "the shipped configuration sets the cache time of a resolved link per pan, in minutes: 5 for ecpan, 20 for feijipan and 30 for lanzou",
+      "capture": "sha256:f22ce30e77f56191f653d93c68a231113c70a92484df06f884de98b135b516b4",
+      "quote": "ec: 5 # 移动云空间 ... fj: 20 # 小飞机网盘 链接有效期约30分钟 ... lz: 30 # 蓝奏云 链接有效期约45分钟"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/qaiu/netdisk-fast-download/main/web-service/src/main/java/cn/qaiu/lz/common/interceptorImpl/DefaultInterceptor.java",
+      "date": "2026-11-02",
+      "proved": "the request interceptor skips the limiter unless rateLimit.enable is true, and answers an over-limit request with HTTP 429",
+      "capture": "sha256:e61caca43769725b1d186ca664bd5e904dcaa6b2d385f83d52e2903bd6547d93",
+      "quote": "if (!rateLimit.getBoolean(\"enable\", false)) { ... .setStatusCode(429)"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/qaiu/netdisk-fast-download/main/web-service/src/main/java/cn/qaiu/lz/common/interceptorImpl/RateLimiter.java",
+      "date": "2026-11-02",
+      "proved": "the limiter counts requests per remote address",
+      "capture": "sha256:9e4589e0e236146382c82d87fe118b24821269c7f3deb5c48d1d6590ad55d8b6",
+      "quote": "String ip = request.remoteAddress().host();"
+    },
+    {
+      "url": "https://nfd-parser.github.io/configuration.html",
+      "date": "2026-11-02",
+      "proved": "the project documentation lists the rate limit as a configuration section of the server, with a count, a window in seconds and a path pattern",
+      "capture": "sha256:535dba65a29445fdaa98f3987fcace4b946104ff34075f0bee9fd9776b07e8cf",
+      "quote": "### 限流配置 rateLimit: enable: true # 是否启用限流 limit: 10 # 限流请求数 timeWindow: 10 # 时间窗口(秒) pathReg: ^/v2/.*"
+    },
+    {
+      "url": "https://nfd-parser.github.io/api.html",
+      "date": "2026-11-02",
+      "proved": "the API documentation advises against frequent requests to avoid an address ban and states no figure",
+      "capture": "sha256:6a2c465b0e259425114f5c7715e7f20e227bd882817b1c38a999a2de92d40ffa",
+      "quote": "1. 请求频率: 建议不要过于频繁请求，避免IP被封"
+    },
+    {
+      "url": "https://nfd-parser.github.io/api.html",
+      "date": "2026-11-02",
+      "proved": "the API documentation describes a RESTful API that resolves share links of many pans to direct links",
+      "capture": "sha256:6a2c465b0e259425114f5c7715e7f20e227bd882817b1c38a999a2de92d40ffa",
+      "quote": "NFD Parser 提供 RESTful API 接口，支持解析多种网盘分享链接并获取直链。"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/qaiu/netdisk-fast-download/main/README.md",
+      "date": "2026-11-01",
+      "proved": "the project README lists the free public instance at lz.qaiu.top and prints no quota, unit or price",
+      "capture": "sha256:6db0683295073400965eaad83a2c121f5603936be7fa72d1ff7b6ad18fb59992",
+      "quote": "[公益解析，lz站](https://lz.qaiu.top)"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/qaiu/netdisk-fast-download/main/README.md",
+      "date": "2026-11-04",
+      "proved": "lz.qaiu.top is a free public instance of the program, so this record describes a hosted lane",
+      "capture": "sha256:6db0683295073400965eaad83a2c121f5603936be7fa72d1ff7b6ad18fb59992",
+      "quote": "[公益解析，lz站](https://lz.qaiu.top)"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/qaiu/netdisk-fast-download/main/README.md",
+      "date": "2026-11-04",
+      "proved": "the program can also be self-hosted through a Docker image",
+      "capture": "sha256:6db0683295073400965eaad83a2c121f5603936be7fa72d1ff7b6ad18fb59992",
+      "quote": "#### 海外服务器Docker部署 ... docker pull ghcr.io/qaiu/netdisk-fast-download:latest"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-30T17:26:52.226Z",
+  "verified_at": "2026-11-04T01:03:29.207Z",
   "binding": "write-gated",
   "binding_note": "The resolver is free and fast and stores nothing, so what binds is the auth table: the pans a user would most want, including Baidu, Quark and UC, need a cookie or sit behind the paid professional endpoint.",
-  "notes": "Not storage and recorded as such: it is the fetch path for other people's storage. Two endpoints exist and the split is the finding: lz.qaiu.top is free and covers lanzou, ilanzou, ctfile, wenshushu, feijipan and ecpan, while 189.qaiu.top needs an API key and adds Baidu, Xunlei, Quark, UC, 139, 189 and Unicom.",
+  "notes": "Not storage and recorded as such: it is the fetch path for other people's storage. Two endpoints exist and the split is the finding: lz.qaiu.top is free and covers lanzou, ilanzou, ctfile, wenshushu, feijipan and ecpan, while 189.qaiu.top needs an API key and adds Baidu, Xunlei, Quark, UC, 139, 189 and Unicom. The program can also be self-hosted (the docker span), and lz.qaiu.top is a free public instance.",
   "extras": {
     "access_mode": "anonymous",
     "free_drivers": [
@@ -108,5 +199,6 @@
     "aliases": [
       "netdisk-fast-download (NFD) — anonymous multi-pan parser"
     ]
-  }
+  },
+  "self_hosted": false
 }

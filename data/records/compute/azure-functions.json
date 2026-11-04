@@ -25,17 +25,18 @@
     "notes": null
   },
   "egress": {
-    "terms": "not stated",
-    "metered": false,
-    "free_allowance": null,
-    "price_per_tb": null,
+    "terms": "Internet egress is metered by the Azure bandwidth meter, separate from the Functions free grant: first 100 GB per month free, then $0.087 per GB for the next 10 TB from North America or Europe via the Microsoft Premium Global Network; inbound is free.",
+    "metered": true,
+    "free_allowance": "100 GB per month",
+    "price_per_tb": "USD 87 (from North America or Europe, next 10 TB, Premium Global Network)",
     "source_url": "https://azure.microsoft.com/en-us/pricing/details/functions/"
   },
   "interface": [
-    "unknown"
+    "cli",
+    "rest"
   ],
-  "interface_detail": "inferred from the tooling the provider documents; not probed",
-  "tooling": "not stated",
+  "interface_detail": "Azure CLI, Azure PowerShell, ARM templates or Bicep files, per the Functions reference: \"Programmatically using Azure CLI, Azure PowerShell, ARM templates, or Bicep files\"",
+  "tooling": "Azure CLI and Azure PowerShell, per the Functions reference: \"Programmatically using Azure CLI, Azure PowerShell, ARM templates, or Bicep files\"",
   "chaining": "3,200,000 instance-seconds is the largest perpetual serverless budget found and it needs no IPv4 front, so it composes with an IPv6-only VPS as the scheduler that renews and health-checks it, or as the worker for jobs the 10 minute limit can divide.",
   "limits": [
     {
@@ -69,10 +70,38 @@
       "url": "https://azure.microsoft.com/en-us/free/virtual-machines",
       "date": "2026-10-22",
       "proved": "the always-free table lists Functions at 1 million requests, distinct from the 12-month-only VM allowances"
+    },
+    {
+      "url": "https://azure.microsoft.com/en-us/pricing/details/bandwidth/",
+      "date": "2026-11-04",
+      "proved": "first 100 GB per month of internet egress is free, then $0.087 per GB for the next 10 TB",
+      "capture": "sha256:17b0834dc9bfb334d1ea1d89035316e3d5c65a5b6fe295104b858e261f5491e6",
+      "quote": "| From North America, Europe to any destination | Free | $0.087 per GB | $0.083 per GB | $0.07 per GB | $0.05 per GB |"
+    },
+    {
+      "url": "https://azure.microsoft.com/en-us/pricing/details/bandwidth/",
+      "date": "2026-11-04",
+      "proved": "first 100 GB per month of internet egress is free",
+      "capture": "sha256:17b0834dc9bfb334d1ea1d89035316e3d5c65a5b6fe295104b858e261f5491e6",
+      "quote": "Azure already offers the first 100 GB/month of egressed data for free to all customers in all Azure regions around the world"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference",
+      "date": "2026-11-04",
+      "proved": "function apps are created with the Azure CLI, PowerShell, ARM or Bicep, besides the portal",
+      "capture": "sha256:c51e6a97a6208336fc314a22f296fc9df2c2c5482a27f00577717fd5cedf0804",
+      "quote": "Programmatically using [Azure CLI](scripts/functions-cli-create-serverless), [Azure PowerShell](create-resources-azure-powershell#create-a-serverless-function-app-for-c), [ARM templates](functions-create-first-function-resource-manager), or [Bicep files](functions-create-first-function-bicep)"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference",
+      "date": "2026-11-04",
+      "proved": "the reference names Azure CLI, Azure PowerShell, ARM templates and Bicep files",
+      "capture": "sha256:c51e6a97a6208336fc314a22f296fc9df2c2c5482a27f00577717fd5cedf0804",
+      "quote": "Programmatically using Azure CLI, Azure PowerShell, ARM templates, or Bicep files"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-22T00:00:00.000Z",
+  "verified_at": "2026-11-04T11:01:15.544Z",
   "notes": "The 400,000 GB-s figure is a memory-time budget, not a wall-clock one: the same 400,000 buys 37 days at 128 MB, 18.5 days at 256 MB, or 9.3 days at 512 MB. The 'paid consumption subscriptions only' footnote is the unresolved part, because it may exclude the free trial subscription a user would start with.",
   "extras": {
     "facets": {

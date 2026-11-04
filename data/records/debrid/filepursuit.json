@@ -54,9 +54,9 @@
     "detail": "The API needs a RapidAPI account and key, which is an email signup; the amount of identity RapidAPI demands beyond that was not established because the signup flow was not entered.",
     "country": null
   },
-  "reliability_note": "The site answered HTTP 530 four times on 2026-10-23, which is Cloudflare reporting an origin failure. The API is a third-party marketplace listing, so its availability is a second dependency on top of the index.",
+  "reliability_note": "On 2026-11-03 the .com registry lists filepursuit.com with status client hold and the domain has no DNS answer (NXDOMAIN); the site answered an origin failure on 2026-10-23. Whether a datacenter address is accepted: not published.",
   "confidence": "unverified",
-  "confidence_note": "The API numbers came from the RapidAPI pricing page, which is the vendor's plan page and was read, but nothing was executed against the API.",
+  "confidence_note": "The domain's DNS answer (NXDOMAIN) and registry status (client hold) were read on 2026-11-03 and the RapidAPI listing shows a 0% service level; the API plan figures come from the RapidAPI pricing page and nothing was executed against the API.",
   "evidence": [
     {
       "url": "https://rapidapi.com/azharxes/api/filepursuit/pricing",
@@ -72,16 +72,62 @@
       "url": "https://pypi.org/project/filepursuit/",
       "date": "2026-10-23",
       "proved": "a third-party scraper's README says FilePursuit answers flooding with a captcha"
+    },
+    {
+      "url": "probe:https://dns.google/resolve?name=filepursuit.com&type=A",
+      "date": "2026-11-03",
+      "proved": "the public resolver answers NXDOMAIN (status 3) for filepursuit.com",
+      "capture": "sha256:1f30409690b9ee0a9b7e3d70344ac0fd14d00e2902c9cd79d492d115077fed04",
+      "quote": "\"Status\":3"
+    },
+    {
+      "url": "probe:https://rdap.verisign.com/com/v1/domain/filepursuit.com",
+      "date": "2026-11-03",
+      "proved": "the registry shows the domain on client hold, which removes it from DNS",
+      "capture": "sha256:1083a20c561f0b7b5b054f6cdd4f2d4e5b5834c985d59c1988bd68092bbfb28f",
+      "quote": null
+    },
+    {
+      "url": "https://rapidapi.com/azharxes/api/filepursuit",
+      "date": "2026-11-03",
+      "proved": "the marketplace listing for the API shows 0% service level",
+      "capture": "sha256:e613edf56bb83b9cc0a6cbe81a4f5533e3e3af2e973e8fe63f7483e8095b4b83",
+      "quote": "0% Service Level"
+    },
+    {
+      "url": "https://rapidapi.com/azharxes/api/filepursuit/pricing",
+      "date": "2026-11-04",
+      "proved": "the free plan rate limit is 500 requests per hour",
+      "capture": "sha256:3253f5e94a075f4e3f07c4f361500dc3388e2379e0c69ffc3ddf4e2e9242575f",
+      "quote": "Rate Limit 500 requests per hour"
+    },
+    {
+      "url": "probe:filepursuit.com",
+      "date": "2026-11-04",
+      "proved": "the site does not resolve in DNS",
+      "capture": "sha256:f7f461ec5aadb18fb1643c3a9e5a2008801d63c40a5108bf3cde394f7b71f270",
+      "quote": "\"error\": \"dns\""
+    },
+    {
+      "url": "probe:https://dns.google/resolve?name=filepursuit.com&type=A",
+      "date": "2026-11-04",
+      "proved": "the public resolver answers NXDOMAIN for filepursuit.com",
+      "capture": "sha256:71bc9d726284fe22542819f6d440cb71dffc664879fe20b93d4c03f7a3a82308",
+      "quote": "\"Status\":3"
     }
   ],
-  "verdict": "fails-identity",
-  "verified_at": "2026-10-23T01:52:28.000Z",
+  "verdict": "dead",
+  "verified_at": "2026-11-04T06:53:12.551Z",
   "price_per_tb_month": "USD 0",
-  "notes": "Not recorded as dead: HTTP 530 is an origin failure, and the API is a separate endpoint that may still answer. The identity finding is independent of the outage, because the machine interface is behind a RapidAPI key whatever the website does.",
+  "notes": "The index domain no longer resolves, so the service is recorded dead. The RapidAPI listing remains, showing a 0% service level, and its machine interface needs a RapidAPI key.",
   "extras": {
     "http_status_observed": 530,
     "attempts": 4,
     "api_marketplace": "RapidAPI",
-    "anonymous_api": false
+    "anonymous_api": false,
+    "death": {
+      "on": "2026-11-03",
+      "cause": "dead-service"
+    }
   }
 }

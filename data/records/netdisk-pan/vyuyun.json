@@ -5,44 +5,45 @@
   "url": "https://www.vyuyun.com",
   "category": "consumer-pan",
   "free_tier": {
-    "stated": "50 GB free: '纯免费50G'",
-    "unit": "GiB",
+    "stated": "50 GB free storage with unlimited traffic ('无限流量 50GB 免费存储空间'), on the vendor home page",
+    "unit": "GB",
     "metered_on": "stored-bytes",
-    "source_url": "https://linux.do/t/topic/457202",
+    "source_url": "https://www.vyuyun.com/",
     "read_on": "2026-10-21"
   },
   "per_object_cap": {
-    "stated": "Not published",
-    "bytes": null,
+    "stated": "500 MB per file for a registered member upload ('单文件上传500MB')",
+    "bytes": 500000000,
     "source_url": "https://www.vyuyun.com"
   },
   "retention": {
-    "stated": "Not published",
+    "stated": "A file or account may be deleted when the account has not logged in for six months ('如您的账号超过六个月未登录本平台时，我们可能会未经您的允许对账号、文件进行删除处理')",
     "days": null,
-    "source_url": "https://www.vyuyun.com"
+    "source_url": "https://docs.vyuyun.com/"
   },
   "egress": {
-    "terms": "Unmetered and unthrottled per the forum post: 不限速",
+    "terms": "Unmetered and unthrottled: '我们对下载速度和流量没有限制'. A per-IP download request limit applies, 10 requests per 10 seconds, and direct links are limited to 1000 requests per hour per account",
     "metered": false,
     "free_allowance": null,
     "price_per_tb": null,
-    "source_url": "https://linux.do/t/topic/457202"
+    "source_url": "https://docs.vyuyun.com/"
   },
   "interface": [
-    "rest"
+    "rest",
+    "webdav"
   ],
-  "tooling": "browser only as far as documented, with no rclone, WebDAV or API named. Any use would need a wrapper",
+  "tooling": "The vendor documents a REST API (token from an appid and appkey) that is open only to VIP accounts, and lists WebDAV under the VIP plan with a 50 MB per-file upload limit. A free account has the web page and the mobile apps. No third-party reverse-engineered client was found: the netdisk-fast-download parser for it is struck through in its list and answered a login-required error to a free account",
   "chaining": "The distinguishing property is the identity cost: '无需手机号，不收验证码，纯免费50G，不限速', and the poster registered with a throwaway address. 50 GB times unbounded email accounts, with nothing automating the signup",
   "limits": [
     {
       "kind": "per-object-cap",
-      "value": "50 GB is the free tier total; the per-file cap is unstated",
-      "source": "https://linux.do/t/topic/457202"
+      "value": "50 GB is the free tier total; a registered member uploads at most 500 MB per file",
+      "source": "https://www.vyuyun.com/"
     }
   ],
   "identity_cost": {
     "kind": "email",
-    "detail": "an email address, and per the poster a throwaway one: '免手机号，甚至只需要一个假邮箱就可以注册的网盘至关重要'. No human-verification step and no SMS reported",
+    "detail": "the sign-up form asks for an email address ('电子邮箱:'), a nickname, a password and its confirmation, and ends with a slider puzzle to complete; it shows no phone field. Whether the mailbox is verified after submission is unverified: behind a sign-up",
     "country": null
   },
   "reliability_note": "A tiny domestic operator with no published SLA. The domain answered HTTP 200 with a 6.6 KB landing page in 2026-10",
@@ -57,12 +58,89 @@
       "url": "probe:https://www.vyuyun.com",
       "date": "2026-10-21",
       "proved": "HTTP 200, 6,634 bytes, so the domain is live"
+    },
+    {
+      "url": "https://www.vyuyun.com/",
+      "date": "2026-11-03",
+      "proved": "the vendor home page advertises 50 GB of free storage with unlimited traffic",
+      "capture": "sha256:cebb177afc4cfc00e10a84c2443ee3c774ae6f26d524b28a612ef93dec7e9b79",
+      "quote": "无限流量 50GB 免费存储空间"
+    },
+    {
+      "url": "https://www.vyuyun.com/",
+      "date": "2026-11-03",
+      "proved": "under the registered-member plan the per-file upload cap is 500 MB",
+      "capture": "sha256:cebb177afc4cfc00e10a84c2443ee3c774ae6f26d524b28a612ef93dec7e9b79",
+      "quote": "单文件上传500MB"
+    },
+    {
+      "url": "https://docs.vyuyun.com/",
+      "date": "2026-11-03",
+      "proved": "the vendor API document states no limit on download speed and traffic",
+      "capture": "sha256:74aadf1dfd902cc93ab23ecc1e39247020383e601533ff46f6b584385fca7bfa",
+      "quote": "我们对下载速度和流量没有限制"
+    },
+    {
+      "url": "https://docs.vyuyun.com/",
+      "date": "2026-11-03",
+      "proved": "the REST API is open only to accounts that bought VIP",
+      "capture": "sha256:74aadf1dfd902cc93ab23ecc1e39247020383e601533ff46f6b584385fca7bfa",
+      "quote": "token获取方式：使用appid和appkey调用获取token接口获取（api目前只针对开通vip会员的账号使用）"
+    },
+    {
+      "url": "https://www.vyuyun.com/",
+      "date": "2026-11-03",
+      "proved": "WebDAV, API and SDK support are listed under the VIP monthly plan",
+      "capture": "sha256:cebb177afc4cfc00e10a84c2443ee3c774ae6f26d524b28a612ef93dec7e9b79",
+      "quote": "WebDAV、API、SDK技术支持"
+    },
+    {
+      "url": "https://docs.vyuyun.com/",
+      "date": "2026-11-03",
+      "proved": "WebDAV upload is capped at 50 MB per file",
+      "capture": "sha256:74aadf1dfd902cc93ab23ecc1e39247020383e601533ff46f6b584385fca7bfa",
+      "quote": "使用webdav请注意api请求频率限制，因系统限制webdav单文件最大上传为：50MB"
+    },
+    {
+      "url": "https://github.com/qaiu/netdisk-fast-download",
+      "date": "2026-11-03",
+      "proved": "the resolver lists the Vyuyun parser struck through, so no maintained third-party client covers it",
+      "capture": "sha256:2aded33baf58d4db11e401f91bd2a995d2ea877fad4fd5cb9aea9b845fbde0ab",
+      "quote": "~~[微雨云存储-pvvy](https://www.vyuyun.com/)~~"
+    },
+    {
+      "url": "https://github.com/qaiu/netdisk-fast-download/issues/85",
+      "date": "2026-11-03",
+      "proved": "the resolver's Vyuyun parser failed on a free account's share with this server message",
+      "capture": "sha256:41f04ec82d07d6f47e618c2921557944d7edab9cd59bb2c16795c83093c22357",
+      "quote": "浏览器版本过低，请登录后下载"
+    },
+    {
+      "url": "https://docs.vyuyun.com/",
+      "date": "2026-11-03",
+      "proved": "inactive accounts and their files may be deleted after six months",
+      "capture": "sha256:74aadf1dfd902cc93ab23ecc1e39247020383e601533ff46f6b584385fca7bfa",
+      "quote": "如您的账号超过六个月未登录本平台时，我们可能会未经您的允许对账号、文件进行删除处理"
+    },
+    {
+      "url": "https://www.vyuyun.com/sign-up",
+      "date": "2026-11-03",
+      "proved": "the sign-up form ends with a slider puzzle that must be completed",
+      "capture": "sha256:6e574edf9d5938057e19f0c8f9231ac8b1f3154e2f44f0f6ccec5490d278a84c",
+      "quote": "请拖动滑块完成拼图"
+    },
+    {
+      "url": "https://www.vyuyun.com/sign-up",
+      "date": "2026-11-03",
+      "proved": "the first field of the sign-up form is an email address",
+      "capture": "sha256:6e574edf9d5938057e19f0c8f9231ac8b1f3154e2f44f0f6ccec5490d278a84c",
+      "quote": "电子邮箱:"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-21T00:00:00.000Z",
+  "verified_at": "2026-11-04T00:21:07.066Z",
   "binding": "per-object-cap",
-  "binding_note": "With no API and no WebDAV, the per-file ceiling is unstated and the only real constraint is that nothing programmatic reaches it.",
+  "binding_note": "50 GB free with a 500 MB per-file cap, and an email-only sign-up. The REST API and WebDAV are VIP only, so a free account has no programmatic route.",
   "notes": "Recorded despite low confidence because an email-only 50 GB pan with no human-verification step is the rarest thing in this topic. Two facts decide whether it is useful: whether a foreign throwaway address survives registration, and whether any API exists. Neither is established, and the record says so rather than guessing.",
   "extras": {
     "access_mode": "registration-gated",

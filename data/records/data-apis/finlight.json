@@ -1,0 +1,635 @@
+{
+  "topic": "data-apis",
+  "slug": "finlight",
+  "provider": "finlight",
+  "url": "https://finlight.me/pricing",
+  "category": "financial news API (REST, WebSocket and webhooks; sentiment and entity enrichment on paid plans)",
+  "tier": "Launchpad",
+  "free_tier": {
+    "stated": "Launchpad plan USD 0 per month: 5,000 requests per month, articles after a 12-hour delay, REST only, Discord support; webhook registration, ticker and entity data, sentiment analysis and WebSocket streams are not included.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://finlight.me/pricing",
+    "read_on": "2026-11-02",
+    "notes": "Each REST request consumes one request from the monthly allowance, which resets at the start of the billing period. The Free plan covers roughly the last month of articles. A short-term burst limit per 10 seconds is enforced only on plans that define one. The next plan up is Pro Light at USD 29 a month with 10k requests per month; prices exclude applicable taxes."
+  },
+  "per_object_cap": {
+    "stated": "100 results per page at most (pageSize 1-100)",
+    "bytes": null,
+    "source_url": "https://docs.finlight.me/v2/rest-endpoints/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "roughly the last month of articles on the Free plan; requests for dates outside the window return no results",
+    "days": null,
+    "notes": "A query API with no stored objects.",
+    "source_url": "https://docs.finlight.me/v2/rate-limits/"
+  },
+  "egress": {
+    "terms": "not metered in bytes; the 5,000 requests a month bound what a free key can pull",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://finlight.me/pricing"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "POST https://api.finlight.me/v2/articles with an X-API-KEY header and a JSON body such as {\"query\": \"Nvidia\"}; WebSocket streams and webhooks are paid features. An MCP server at https://mcp.finlight.me is available on all plans, signs in with OAuth 2.0 and counts toward the same monthly quota.",
+  "endpoint": "https://api.finlight.me/v2/articles",
+  "tooling": "any HTTP client; official client libraries for eight languages; an MCP server",
+  "chaining": "A news feed delayed 12 hours over the last month at 5,000 requests a month, without sentiment or entity data on the Free plan, so a free stack pairs it with the GDELT event dataset for volume and a quote feed for prices.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "5,000 requests per month on the Free plan; over it the API answers HTTP 429 until the next billing period",
+      "source": "https://docs.finlight.me/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "unverified: a burst limit per 10 seconds is enforced only on plans that define one, and the Free value is not published",
+      "source": "https://docs.finlight.me/v2/rate-limits/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "100 results per page at most (pageSize 1-100)",
+      "source": "https://docs.finlight.me/v2/rest-endpoints/"
+    }
+  ],
+  "limits_note": "Plan gating: Free is REST only with no sentiment, ticker or entity data, webhooks or WebSocket streams; a request for a capability outside the plan answers HTTP 403. Bulk path: none; 100 articles per call.",
+  "binding": "request-rate",
+  "binding_note": "5,000 requests a month binds first; the burst limit, where a plan defines one, is not published for Free.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The sign-up form takes a full name, an email and a password of at least 8 characters with uppercase, lowercase, a number and a symbol, or Continue with Google, with a terms checkbox, and shows no card field. unverified: no first-party page states whether the free plan needs a card.",
+    "country": null
+  },
+  "reliability_note": "Past the monthly quota the API answers HTTP 429, which clears at the start of the billing period; a burst 429 should wait about 10 seconds; no Retry-After or rate-limit headers are sent; a missing key answers HTTP 401.",
+  "confidence": "documented",
+  "confidence_note": "The plan, quota, delay and history window are read from the first-party pricing and documentation pages. The articles route takes POST only, so the keyless 401 is documented, not measured; a free key was not exercised, so the card requirement and the Free burst limit are unverified: behind a sign-up.",
+  "evidence": [
+    {
+      "url": "https://finlight.me/pricing",
+      "date": "2026-11-02",
+      "proved": "the Launchpad plan is USD 0 per month for individuals and small teams",
+      "capture": "sha256:5d6d5568aca2ee2e8f8b98233482908fb4d005b001d576dde7fdebd253988104",
+      "quote": "## Launchpad\n\nFree for individuals and small teams.\n\n$0\n\nUSD\n\nper month"
+    },
+    {
+      "url": "https://finlight.me/pricing",
+      "date": "2026-11-02",
+      "proved": "the Launchpad plan includes 5k requests per month",
+      "capture": "sha256:5d6d5568aca2ee2e8f8b98233482908fb4d005b001d576dde7fdebd253988104",
+      "quote": "- 5k requests per month"
+    },
+    {
+      "url": "https://finlight.me/pricing",
+      "date": "2026-11-02",
+      "proved": "the Launchpad plan has real-time access with a 12-hour delay",
+      "capture": "sha256:5d6d5568aca2ee2e8f8b98233482908fb4d005b001d576dde7fdebd253988104",
+      "quote": "- Real-Time Access 12h delay"
+    },
+    {
+      "url": "https://finlight.me/pricing",
+      "date": "2026-11-02",
+      "proved": "the Launchpad plan comes with Discord support",
+      "capture": "sha256:5d6d5568aca2ee2e8f8b98233482908fb4d005b001d576dde7fdebd253988104",
+      "quote": "- Discord Support"
+    },
+    {
+      "url": "https://finlight.me/pricing",
+      "date": "2026-11-02",
+      "proved": "the Launchpad plan does not include sentiment analysis",
+      "capture": "sha256:5d6d5568aca2ee2e8f8b98233482908fb4d005b001d576dde7fdebd253988104",
+      "quote": "- Not included:Sentiment Analysis"
+    },
+    {
+      "url": "https://finlight.me/pricing",
+      "date": "2026-11-02",
+      "proved": "the Launchpad plan does not include ticker and entity data",
+      "capture": "sha256:5d6d5568aca2ee2e8f8b98233482908fb4d005b001d576dde7fdebd253988104",
+      "quote": "- Not included:Ticker / Entities"
+    },
+    {
+      "url": "https://finlight.me/pricing",
+      "date": "2026-11-02",
+      "proved": "the Launchpad plan does not include webhook registration",
+      "capture": "sha256:5d6d5568aca2ee2e8f8b98233482908fb4d005b001d576dde7fdebd253988104",
+      "quote": "- Not included:Webhook Registration"
+    },
+    {
+      "url": "https://finlight.me/pricing",
+      "date": "2026-11-02",
+      "proved": "the Launchpad plan does not include WebSocket streams",
+      "capture": "sha256:5d6d5568aca2ee2e8f8b98233482908fb4d005b001d576dde7fdebd253988104",
+      "quote": "- Not included:Websocket Streams"
+    },
+    {
+      "url": "https://finlight.me/pricing",
+      "date": "2026-11-02",
+      "proved": "the next plan up, Pro Light, is USD 29 per month",
+      "capture": "sha256:5d6d5568aca2ee2e8f8b98233482908fb4d005b001d576dde7fdebd253988104",
+      "quote": "## Pro Light\n\nFor small teams and startups looking to grow.\n\n$29\n\nUSD\n\nper month"
+    },
+    {
+      "url": "https://finlight.me/pricing",
+      "date": "2026-11-02",
+      "proved": "Pro Light includes 10k requests per month",
+      "capture": "sha256:5d6d5568aca2ee2e8f8b98233482908fb4d005b001d576dde7fdebd253988104",
+      "quote": "- 10k requests per month"
+    },
+    {
+      "url": "https://finlight.me/pricing",
+      "date": "2026-11-02",
+      "proved": "prices exclude applicable taxes",
+      "capture": "sha256:5d6d5568aca2ee2e8f8b98233482908fb4d005b001d576dde7fdebd253988104",
+      "quote": "All prices are shown in USD or your local currency and exclude applicable taxes."
+    },
+    {
+      "url": "https://docs.finlight.me/",
+      "date": "2026-11-02",
+      "proved": "the free tier includes 5,000 requests per month",
+      "capture": "sha256:9dfacd0f7734d853cd327daf913aa95957cfca0c53e8544b44d3ac43b2fd131d",
+      "quote": "The free tier includes 5,000 requests per month for more details visit the [pricing section](https://finlight.me/pricing)."
+    },
+    {
+      "url": "https://docs.finlight.me/",
+      "date": "2026-11-02",
+      "proved": "the free key comes from the dashboard after signing up for a free account",
+      "capture": "sha256:9dfacd0f7734d853cd327daf913aa95957cfca0c53e8544b44d3ac43b2fd131d",
+      "quote": "Visit the [finlight Dashboard](https://app.finlight.me) and sign up for a free account."
+    },
+    {
+      "url": "https://docs.finlight.me/",
+      "date": "2026-11-02",
+      "proved": "the articles route is a POST that takes the key in an X-API-KEY header",
+      "capture": "sha256:9dfacd0f7734d853cd327daf913aa95957cfca0c53e8544b44d3ac43b2fd131d",
+      "quote": "curl -X POST 'https://api.finlight.me/v2/articles' \\"
+    },
+    {
+      "url": "https://docs.finlight.me/",
+      "date": "2026-11-02",
+      "proved": "the request body is JSON with a query field",
+      "capture": "sha256:9dfacd0f7734d853cd327daf913aa95957cfca0c53e8544b44d3ac43b2fd131d",
+      "quote": "-d '{ \"query\": \"Nvidia\" }'"
+    },
+    {
+      "url": "https://docs.finlight.me/",
+      "date": "2026-11-02",
+      "proved": "the key travels in the X-API-KEY header",
+      "capture": "sha256:9dfacd0f7734d853cd327daf913aa95957cfca0c53e8544b44d3ac43b2fd131d",
+      "quote": "-H 'X-API-KEY: YOUR_API_KEY' \\"
+    },
+    {
+      "url": "https://docs.finlight.me/",
+      "date": "2026-11-02",
+      "proved": "official client libraries exist for eight languages",
+      "capture": "sha256:9dfacd0f7734d853cd327daf913aa95957cfca0c53e8544b44d3ac43b2fd131d",
+      "quote": "finlight offers official client libraries for eight languages"
+    },
+    {
+      "url": "https://docs.finlight.me/v2/rate-limits/",
+      "date": "2026-11-02",
+      "proved": "each REST request consumes one request from the monthly allowance",
+      "capture": "sha256:4e1a1365ba51373903388e01d6a51366b4f7429f5bf3f326adade2139aba30ca",
+      "quote": "Each REST request consumes one request from your monthly allowance."
+    },
+    {
+      "url": "https://docs.finlight.me/v2/rate-limits/",
+      "date": "2026-11-02",
+      "proved": "a burst limit per 10 seconds exists only on plans that define it",
+      "capture": "sha256:4e1a1365ba51373903388e01d6a51366b4f7429f5bf3f326adade2139aba30ca",
+      "quote": "A short-term limit on requests per 10 seconds, smoothing spikes. Only enforced on plans that define it."
+    },
+    {
+      "url": "https://docs.finlight.me/v2/rate-limits/",
+      "date": "2026-11-02",
+      "proved": "the Free plan covers roughly the last month of articles",
+      "capture": "sha256:4e1a1365ba51373903388e01d6a51366b4f7429f5bf3f326adade2139aba30ca",
+      "quote": "The Free and Pro Light plans currently cover roughly the last month of articles"
+    },
+    {
+      "url": "https://docs.finlight.me/v2/rate-limits/",
+      "date": "2026-11-02",
+      "proved": "the Free plan is REST only",
+      "capture": "sha256:4e1a1365ba51373903388e01d6a51366b4f7429f5bf3f326adade2139aba30ca",
+      "quote": "| Free | Evaluation and low-volume use. REST only (no WebSocket). |"
+    },
+    {
+      "url": "https://docs.finlight.me/v2/rate-limits/",
+      "date": "2026-11-02",
+      "proved": "monthly counters reset at the start of the billing period and a quota 429 clears automatically",
+      "capture": "sha256:4e1a1365ba51373903388e01d6a51366b4f7429f5bf3f326adade2139aba30ca",
+      "quote": "Monthly counters reset at the start of your billing period — a quota `429` clears automatically."
+    },
+    {
+      "url": "https://docs.finlight.me/v2/errors/",
+      "date": "2026-11-02",
+      "proved": "a missing or invalid X-API-KEY answers HTTP 401",
+      "capture": "sha256:ec40a44fd965ecf2a0e01aea34d5563b149fb8a5a978336a834acd9664a167e5",
+      "quote": "| `401` | Unauthorized | Missing or invalid `X-API-KEY`. |"
+    },
+    {
+      "url": "https://docs.finlight.me/v2/errors/",
+      "date": "2026-11-02",
+      "proved": "a capability outside the plan answers HTTP 403",
+      "capture": "sha256:ec40a44fd965ecf2a0e01aea34d5563b149fb8a5a978336a834acd9664a167e5",
+      "quote": null
+    },
+    {
+      "url": "https://docs.finlight.me/v2/errors/",
+      "date": "2026-11-02",
+      "proved": "a monthly quota or burst limit answers HTTP 429",
+      "capture": "sha256:ec40a44fd965ecf2a0e01aea34d5563b149fb8a5a978336a834acd9664a167e5",
+      "quote": "| `429` | Too Many Requests | Monthly quota or burst rate limit exceeded. |"
+    },
+    {
+      "url": "https://docs.finlight.me/v2/errors/",
+      "date": "2026-11-02",
+      "proved": "the monthly quota 429 names a token limit of 5000 for the current period",
+      "capture": "sha256:ec40a44fd965ecf2a0e01aea34d5563b149fb8a5a978336a834acd9664a167e5",
+      "quote": "\"message\": \"Throttling Exception: Exceeded token limit of 5000 for the current period.\""
+    },
+    {
+      "url": "https://docs.finlight.me/v2/errors/",
+      "date": "2026-11-02",
+      "proved": "no Retry-After or rate-limit headers are sent",
+      "capture": "sha256:ec40a44fd965ecf2a0e01aea34d5563b149fb8a5a978336a834acd9664a167e5",
+      "quote": "> Note: finlight does not currently return `Retry-After` or rate-limit headers."
+    },
+    {
+      "url": "https://docs.finlight.me/v2/rest-endpoints/",
+      "date": "2026-11-02",
+      "proved": "the pageSize parameter takes 1-100 results per page",
+      "capture": "sha256:055020494b6007d957a76da9b923dc778ac669481b2e56ca3678448e8686b8ef",
+      "quote": "Number of results per page (1-100)."
+    },
+    {
+      "url": "https://finlight.me/mcp",
+      "date": "2026-11-02",
+      "proved": "MCP access is on all plans and counts toward the same quota of 5,000 requests a month on the free tier",
+      "capture": "sha256:994dca3a4b3aa22616c7ad6b9a11e8ac1cd18c29f40781b74976779015c21d81",
+      "quote": "MCP server access is available on all plans. MCP requests count toward your normal API quota. The free tier includes 5,000 requests per month."
+    },
+    {
+      "url": "https://finlight.me/mcp",
+      "date": "2026-11-02",
+      "proved": "the MCP server URL is mcp.finlight.me",
+      "capture": "sha256:994dca3a4b3aa22616c7ad6b9a11e8ac1cd18c29f40781b74976779015c21d81",
+      "quote": "Add https://mcp.finlight.me as a remote MCP server in your client. No API key or headers in the config."
+    },
+    {
+      "url": "https://finlight.me/mcp",
+      "date": "2026-11-02",
+      "proved": "the MCP server signs in with OAuth 2.0",
+      "capture": "sha256:994dca3a4b3aa22616c7ad6b9a11e8ac1cd18c29f40781b74976779015c21d81",
+      "quote": "The server uses OAuth 2.0 with dynamic client registration."
+    },
+    {
+      "url": "https://finlight.me/blog/finlight-free-trial-and-support",
+      "date": "2026-11-02",
+      "proved": "real-time WebSocket delivery and webhooks are paid features",
+      "capture": "sha256:69f1bf3d7244f3baa51a9982294e447c16bf28a10c67cfa5191f8802a2006c85",
+      "quote": "- Real-time delivery (WebSocket) and webhooks are paid features."
+    },
+    {
+      "url": "https://app.finlight.me/auth/sign-up",
+      "date": "2026-11-02",
+      "proved": "the sign-up form takes a full name, an email and a strong password",
+      "capture": "sha256:1cc5ccf49a84db2d8466157ee43d71a935bfd4a68696a3d309feb3a66690ac0d",
+      "quote": "Full name\n\nEmail\n\nPassword\n\nAt least 8 characters, with uppercase, lowercase, a number and a symbol."
+    },
+    {
+      "url": "https://app.finlight.me/auth/sign-up",
+      "date": "2026-11-02",
+      "proved": "the sign-up form carries a terms checkbox",
+      "capture": "sha256:1cc5ccf49a84db2d8466157ee43d71a935bfd4a68696a3d309feb3a66690ac0d",
+      "quote": null
+    },
+    {
+      "url": "https://app.finlight.me/auth/sign-up",
+      "date": "2026-11-02",
+      "proved": "the sign-up page offers Continue with Google",
+      "capture": "sha256:fdabe04490f387d785fc491721575a43315596a87d33c61f7703d53b1ad2cbb3",
+      "quote": "Continue with Google"
+    },
+    {
+      "url": "https://finlight.me/pricing",
+      "date": "2026-11-02",
+      "proved": "the Launchpad plan is free for individuals and small teams at USD 0 a month",
+      "capture": "sha256:5d6d5568aca2ee2e8f8b98233482908fb4d005b001d576dde7fdebd253988104",
+      "quote": "## Launchpad\n\nFree for individuals and small teams.\n\n$0"
+    },
+    {
+      "url": "https://finlight.me/pricing",
+      "date": "2026-11-02",
+      "proved": "Launchpad allows 5k requests a month",
+      "capture": "sha256:5d6d5568aca2ee2e8f8b98233482908fb4d005b001d576dde7fdebd253988104",
+      "quote": "- 5k requests per month"
+    },
+    {
+      "url": "https://finlight.me/pricing",
+      "date": "2026-11-02",
+      "proved": "Launchpad access carries a 12-hour delay",
+      "capture": "sha256:5d6d5568aca2ee2e8f8b98233482908fb4d005b001d576dde7fdebd253988104",
+      "quote": "- Real-Time Access 12h delay"
+    },
+    {
+      "url": "https://finlight.me/pricing",
+      "date": "2026-11-02",
+      "proved": "Launchpad has no WebSocket streams",
+      "capture": "sha256:5d6d5568aca2ee2e8f8b98233482908fb4d005b001d576dde7fdebd253988104",
+      "quote": "- Not included:Websocket Streams"
+    },
+    {
+      "url": "https://finlight.me/pricing",
+      "date": "2026-11-02",
+      "proved": "Launchpad has no webhook registration",
+      "capture": "sha256:5d6d5568aca2ee2e8f8b98233482908fb4d005b001d576dde7fdebd253988104",
+      "quote": "- Not included:Webhook Registration"
+    },
+    {
+      "url": "https://finlight.me/pricing",
+      "date": "2026-11-02",
+      "proved": "monthly requests are 5000 on Launchpad and 10000 on Pro Light",
+      "capture": "sha256:9bd84df07e8c0c29a13f7001377b12fdd359bd05dc72f8b820c404d26d15763e",
+      "quote": "| Monthly Requests | 5000 | 10000 | 50000 | 150000 |"
+    },
+    {
+      "url": "https://finlight.me/pricing",
+      "date": "2026-11-02",
+      "proved": "real-time access has a 12-hour delay on Launchpad and is included from Pro Light",
+      "capture": "sha256:9bd84df07e8c0c29a13f7001377b12fdd359bd05dc72f8b820c404d26d15763e",
+      "quote": "| Real-Time Access | 12h delay | Included in Pro Light | Included in Pro Standard | Included in Pro Scale |"
+    },
+    {
+      "url": "https://finlight.me/pricing",
+      "date": "2026-11-02",
+      "proved": "historical data is 1 month on Launchpad and Pro Light",
+      "capture": "sha256:9bd84df07e8c0c29a13f7001377b12fdd359bd05dc72f8b820c404d26d15763e",
+      "quote": "| Historical Data | 1 month | 1 month | Included in Pro Standard | Included in Pro Scale |"
+    },
+    {
+      "url": "https://finlight.me/pricing",
+      "date": "2026-11-02",
+      "proved": "sentiment analysis is not in Launchpad and starts at Pro Standard",
+      "capture": "sha256:9bd84df07e8c0c29a13f7001377b12fdd359bd05dc72f8b820c404d26d15763e",
+      "quote": "| Sentiment Analysis | Not included in Launchpad | Not included in Pro Light | Included in Pro Standard | Included in Pro Scale |"
+    },
+    {
+      "url": "https://finlight.me/pricing",
+      "date": "2026-11-02",
+      "proved": "ticker entities are not in Launchpad and start at Pro Light",
+      "capture": "sha256:9bd84df07e8c0c29a13f7001377b12fdd359bd05dc72f8b820c404d26d15763e",
+      "quote": "| Ticker / Entities | Not included in Launchpad | Included in Pro Light | Included in Pro Standard | Included in Pro Scale |"
+    },
+    {
+      "url": "https://finlight.me/pricing",
+      "date": "2026-11-02",
+      "proved": "webhook registration is not in Launchpad and starts at Pro Light with 1",
+      "capture": "sha256:9bd84df07e8c0c29a13f7001377b12fdd359bd05dc72f8b820c404d26d15763e",
+      "quote": "| Webhook Registration | Not included in Launchpad | 1 | 2 | 5 |"
+    },
+    {
+      "url": "https://finlight.me/pricing",
+      "date": "2026-11-02",
+      "proved": "Launchpad is free and Pro Light is USD 29 a month",
+      "capture": "sha256:9bd84df07e8c0c29a13f7001377b12fdd359bd05dc72f8b820c404d26d15763e",
+      "quote": "| Monthly price | Free | 29 USD | 99 USD | 249 USD |"
+    },
+    {
+      "url": "https://docs.finlight.me/en/v2/rate-limits/",
+      "date": "2026-11-02",
+      "proved": "each REST request counts as one request and the counter resets every billing period",
+      "capture": "sha256:4e1a1365ba51373903388e01d6a51366b4f7429f5bf3f326adade2139aba30ca",
+      "quote": "Each REST request consumes one request from your monthly allowance. The counter resets at the start of every billing period."
+    },
+    {
+      "url": "https://docs.finlight.me/en/v2/rate-limits/",
+      "date": "2026-11-02",
+      "proved": "the Free plan covers roughly the last month of articles",
+      "capture": "sha256:4e1a1365ba51373903388e01d6a51366b4f7429f5bf3f326adade2139aba30ca",
+      "quote": "The Free and Pro Light plans currently cover roughly the last month of articles; higher plans unlock deeper historical coverage."
+    },
+    {
+      "url": "https://docs.finlight.me/en/v2/rate-limits/",
+      "date": "2026-11-02",
+      "proved": "dates outside the plan's window return no results",
+      "capture": "sha256:4e1a1365ba51373903388e01d6a51366b4f7429f5bf3f326adade2139aba30ca",
+      "quote": "Use the `from` / `to` date filters to query within your plan's window — requests for dates outside it simply return no results for that range."
+    },
+    {
+      "url": "https://docs.finlight.me/en/v2/rate-limits/",
+      "date": "2026-11-02",
+      "proved": "a burst rate per 10 seconds exists only on plans that define it",
+      "capture": "sha256:4e1a1365ba51373903388e01d6a51366b4f7429f5bf3f326adade2139aba30ca",
+      "quote": "A short-term limit on requests per 10 seconds, smoothing spikes. Only enforced on plans that define it."
+    },
+    {
+      "url": "https://docs.finlight.me/en/v2/rate-limits/",
+      "date": "2026-11-02",
+      "proved": "WebSocket needs a paid plan",
+      "capture": "sha256:4e1a1365ba51373903388e01d6a51366b4f7429f5bf3f326adade2139aba30ca",
+      "quote": "WebSocket requires a paid plan."
+    },
+    {
+      "url": "https://docs.finlight.me/en/v2/rate-limits/",
+      "date": "2026-11-02",
+      "proved": "no Retry-After or X-RateLimit headers are sent",
+      "capture": "sha256:4e1a1365ba51373903388e01d6a51366b4f7429f5bf3f326adade2139aba30ca",
+      "quote": "- No rate-limit headers. finlight does not currently send `Retry-After` or `X-RateLimit-*` headers."
+    },
+    {
+      "url": "https://docs.finlight.me/en/v2/rate-limits/",
+      "date": "2026-11-02",
+      "proved": "dashboard usage is aggregated about once a day and lags by a day",
+      "capture": "sha256:4e1a1365ba51373903388e01d6a51366b4f7429f5bf3f326adade2139aba30ca",
+      "quote": "- Dashboard usage isn't live. The usage shown in the [finlight dashboard](https://app.finlight.me/) is aggregated about once a day and reflects activity through the previous day — it is not a real-time counter."
+    },
+    {
+      "url": "https://docs.finlight.me/en/v2/rate-limits/",
+      "date": "2026-11-02",
+      "proved": "the exact numeric limits of each plan are not published on the page",
+      "capture": "sha256:4e1a1365ba51373903388e01d6a51366b4f7429f5bf3f326adade2139aba30ca",
+      "quote": "Exact numeric limits (monthly tokens, burst rate, WebSocket connections, webhook quota) and the feature set per plan are part of pricing and can change."
+    },
+    {
+      "url": "https://docs.finlight.me/en/v2/rate-limits/",
+      "date": "2026-11-02",
+      "proved": "a burst 429 means pausing about 10 seconds",
+      "capture": "sha256:4e1a1365ba51373903388e01d6a51366b4f7429f5bf3f326adade2139aba30ca",
+      "quote": "- Burst `429` → pause ~10 seconds, then continue."
+    },
+    {
+      "url": "https://docs.finlight.me/en/v2/rest-endpoints/",
+      "date": "2026-11-02",
+      "proved": "a request returns 1 to 100 articles",
+      "capture": "sha256:055020494b6007d957a76da9b923dc778ac669481b2e56ca3678448e8686b8ef",
+      "quote": "Number of results per page (1-100)."
+    },
+    {
+      "url": "https://docs.finlight.me/en/v2/errors/",
+      "date": "2026-11-02",
+      "proved": "an example monthly-quota 429 shows a limit of 5000 for the period",
+      "capture": "sha256:ec40a44fd965ecf2a0e01aea34d5563b149fb8a5a978336a834acd9664a167e5",
+      "quote": "\"message\": \"Throttling Exception: Exceeded token limit of 5000 for the current period.\""
+    },
+    {
+      "url": "https://docs.finlight.me/en/v2/errors/",
+      "date": "2026-11-02",
+      "proved": "an example burst 429 reads 10 requests per 10 seconds, with no plan named",
+      "capture": "sha256:ec40a44fd965ecf2a0e01aea34d5563b149fb8a5a978336a834acd9664a167e5",
+      "quote": "\"message\": \"Throttling Exception: Exceeded rate limit of 10 requests per 10 seconds.\""
+    },
+    {
+      "url": "https://docs.finlight.me/en/v2/errors/",
+      "date": "2026-11-02",
+      "proved": "a monthly-quota 429 clears at the start of the next billing period",
+      "capture": "sha256:ec40a44fd965ecf2a0e01aea34d5563b149fb8a5a978336a834acd9664a167e5",
+      "quote": "For a monthly quota `429`, requests will succeed again at the start of your next billing period (or after an upgrade)."
+    },
+    {
+      "url": "https://app.finlight.me/auth/sign-up",
+      "date": "2026-11-02",
+      "proved": "the sign-up page offers Google sign-in or an account form",
+      "capture": "sha256:ce2320e8315a4b13e24eca1d34f5ea8029a699fbcb7fdc0f90ee86b4ce196c5d",
+      "quote": "## Create a new account\n\n Continue with Google"
+    },
+    {
+      "url": "https://app.finlight.me/auth/sign-up",
+      "date": "2026-11-02",
+      "proved": "the account form lists a full name, an email and a password",
+      "capture": "sha256:ce2320e8315a4b13e24eca1d34f5ea8029a699fbcb7fdc0f90ee86b4ce196c5d",
+      "quote": "Full name\n\nEmail\n\nPassword"
+    },
+    {
+      "url": "https://app.finlight.me/auth/sign-up",
+      "date": "2026-11-02",
+      "proved": "the password needs 8 characters with upper-case, lower-case, a number and a symbol",
+      "capture": "sha256:ce2320e8315a4b13e24eca1d34f5ea8029a699fbcb7fdc0f90ee86b4ce196c5d",
+      "quote": "At least 8 characters, with uppercase, lowercase, a number and a symbol."
+    },
+    {
+      "url": "https://finlight.me/blog/getting-started-finlight-news-api",
+      "date": "2026-11-02",
+      "proved": "the API key comes from a free account created at app.finlight.me",
+      "capture": "sha256:891980973893387fac24cbae6f2875cfb3672e1dad160b62c512e26082e03b3f",
+      "quote": "1. Create a free account at [app.finlight.me](https://app.finlight.me/)."
+    },
+    {
+      "url": "https://finlight.me/blog/getting-started-finlight-news-api",
+      "date": "2026-11-02",
+      "proved": "the API key is generated in the dashboard after sign-up",
+      "capture": "sha256:891980973893387fac24cbae6f2875cfb3672e1dad160b62c512e26082e03b3f",
+      "quote": "2. Open the dashboard and generate an API key."
+    },
+    {
+      "url": "https://finlight.me/blog/getting-started-finlight-news-api",
+      "date": "2026-11-02",
+      "proved": "the free plan is REST-only",
+      "capture": "sha256:891980973893387fac24cbae6f2875cfb3672e1dad160b62c512e26082e03b3f",
+      "quote": "The free plan is REST-only and great for testing."
+    },
+    {
+      "url": "https://docs.finlight.me/",
+      "date": "2026-11-02",
+      "proved": "the quickstart states the free tier includes 5,000 requests a month",
+      "capture": "sha256:9dfacd0f7734d853cd327daf913aa95957cfca0c53e8544b44d3ac43b2fd131d",
+      "quote": "- The free tier includes 5,000 requests per month for more details visit the [pricing section](https://finlight.me/pricing)."
+    },
+    {
+      "url": "https://finlight.me/blog/finlight-free-trial-and-support",
+      "date": "2026-11-02",
+      "proved": "free-plan request volume is capped per month",
+      "capture": "sha256:69f1bf3d7244f3baa51a9982294e447c16bf28a10c67cfa5191f8802a2006c85",
+      "quote": "- Request volume is capped per month."
+    },
+    {
+      "url": "https://finlight.me/blog/finlight-free-trial-and-support",
+      "date": "2026-11-02",
+      "proved": "history depth on the free plan is limited to recent news",
+      "capture": "sha256:69f1bf3d7244f3baa51a9982294e447c16bf28a10c67cfa5191f8802a2006c85",
+      "quote": "- History depth is limited to recent news; deeper archives come with higher plans."
+    },
+    {
+      "url": "https://docs.finlight.me/en/v2/ai-assistants/developers/",
+      "date": "2026-11-02",
+      "proved": "the MCP server takes the finlight API key as a Bearer token",
+      "capture": "sha256:dbd1de7882ad8fa10c5269c6570c74958d95287d9d62f2a17ff3e2481a6e33f5",
+      "quote": "All tool calls require authentication via Bearer token. Your finlight API key serves as the access token."
+    },
+    {
+      "url": "https://docs.finlight.me/en/v2/ai-assistants/developers/",
+      "date": "2026-11-02",
+      "proved": "MCP rate limits depend on the subscription plan and the API answers 429",
+      "capture": "sha256:dbd1de7882ad8fa10c5269c6570c74958d95287d9d62f2a17ff3e2481a6e33f5",
+      "quote": "Rate limits depend on your finlight subscription plan. When limits are exceeded, the API returns a `429` status code."
+    },
+    {
+      "url": "https://finlight.me/mcp",
+      "date": "2026-11-02",
+      "proved": "an MCP server serves financial news to Claude, ChatGPT, Cursor and other MCP clients",
+      "capture": "sha256:994dca3a4b3aa22616c7ad6b9a11e8ac1cd18c29f40781b74976779015c21d81",
+      "quote": "Real-time financial and geopolitical news for Claude, ChatGPT, Cursor, and any MCP client."
+    },
+    {
+      "url": "https://docs.finlight.me/llms.txt",
+      "date": "2026-11-02",
+      "proved": "the REST base URL is api.finlight.me, version v2",
+      "capture": "sha256:49a032731e286c95ef71b228e321e6840689c5bbe4a284137233076c9708f169",
+      "quote": "- REST base URL: `https://api.finlight.me` (current version: v2, e.g. `POST https://api.finlight.me/v2/articles`)"
+    },
+    {
+      "url": "https://docs.finlight.me/llms.txt",
+      "date": "2026-11-02",
+      "proved": "the MCP server is at mcp.finlight.me with OAuth or an x-api-key header and three tools",
+      "capture": "sha256:49a032731e286c95ef71b228e321e6840689c5bbe4a284137233076c9708f169",
+      "quote": "- MCP server (Model Context Protocol, Streamable HTTP): `https://mcp.finlight.me` — connect Claude, ChatGPT, or your own agents; auth via OAuth or `x-api-key` header; tools: `search_articles`, `get_article_by_link`, `list_sources`"
+    },
+    {
+      "url": "https://docs.finlight.me/llms.txt",
+      "date": "2026-11-02",
+      "proved": "the REST endpoints are POST /v2/articles, GET /v2/articles/by-link and GET /v2/sources",
+      "capture": "sha256:49a032731e286c95ef71b228e321e6840689c5bbe4a284137233076c9708f169",
+      "quote": "- [REST Endpoints](https://docs.finlight.me/en/v2/rest-endpoints/): Full reference for POST /v2/articles (search articles), GET /v2/articles/by-link (fetch a single article), and GET /v2/sources (list supported sources), including the Article and Company response models"
+    },
+    {
+      "url": "https://docs.finlight.me/llms.txt",
+      "date": "2026-11-02",
+      "proved": "official client libraries exist for eight languages",
+      "capture": "sha256:49a032731e286c95ef71b228e321e6840689c5bbe4a284137233076c9708f169",
+      "quote": "Official client libraries are published for TypeScript/JavaScript, Python, Go, .NET, Java/Kotlin, PHP, Ruby, and Rust"
+    },
+    {
+      "url": "https://finlight.me/blog/newsapi-vs-finlight",
+      "date": "2026-11-02",
+      "proved": "the vendor's blog describes a Viral Boost of 10,000 requests and real-time access for a month for tagging finlight publicly",
+      "capture": "sha256:163479b9889cb30a8e7fb72873dd14a4bcc94177ce6efa8dc9db3ebb2baa5615",
+      "quote": "finlight adds flexibility with support for both REST and WebSocket protocols, a robust query language (AND, OR, NOT, etc.), and a viral incentive model — 10,000 requests and real-time access for a month when you tag them publicly."
+    },
+    {
+      "url": "https://finlight.me/blog/newsapi-vs-finlight",
+      "date": "2026-11-02",
+      "proved": "the blog's comparison table lists 5k requests a month, 10k with Viral Boost",
+      "capture": "sha256:163479b9889cb30a8e7fb72873dd14a4bcc94177ce6efa8dc9db3ebb2baa5615",
+      "quote": "| Free tier | 100 requests/day | 5k reqs/month (10k with Viral Boost) |"
+    },
+    {
+      "url": "probe:https://api.finlight.me/v2/sources",
+      "date": "2026-11-02",
+      "proved": "a keyless call to the sources endpoint answers HTTP 401 Unauthorized",
+      "capture": "sha256:e1654c7ad9ce4df238c7c18cafe8b85a27ac81155501831fcb1583963308e9a5",
+      "quote": "{\"message\":\"Unauthorized\",\"statusCode\":401}"
+    },
+    {
+      "url": "https://free-for.dev/",
+      "date": "2026-11-02",
+      "proved": "free-for.dev lists finlight with 5,000 requests a month on REST and MCP, 12-hour delayed articles, no card",
+      "capture": "sha256:332a2db9b08c17ba7ad96ca55df70697bf2f4790a2b272fb1a0bedaf661f15a2",
+      "quote": "Free tier: 5,000 requests/month on both REST and MCP, 12-hour delayed articles, no card required."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-11-02T00:23:43.773Z",
+  "notes": "Free is REST only and returns articles after a 12-hour delay without sentiment or entity data; real-time delivery, webhooks and WebSocket streams are paid."
+}

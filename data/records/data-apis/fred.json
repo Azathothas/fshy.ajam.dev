@@ -19,7 +19,7 @@
     "notes": ""
   },
   "retention": {
-    "stated": "not applicable: a query API with no stored objects",
+    "stated": "not applicable",
     "days": null,
     "notes": ""
   },
@@ -62,9 +62,9 @@
     "detail": "Every API request needs a key, and a key is requested from a fredaccount.stlouisfed.org account. The account asks only for a valid email address and a password, and is active as soon as the form is submitted; no card, no phone. The keyless fredgraph.csv download and the website need no account.",
     "country": null
   },
-  "reliability_note": "Past 120 requests a minute the API answers HTTP 429, and ignoring the throttle can bring a temporary block of the key.",
+  "reliability_note": "Past 120 requests a minute the API answers HTTP 429, and ignoring the throttle can bring a temporary block; an error answer is an HTTP status with an XML or JSON body that carries the error.",
   "confidence": "documented",
-  "confidence_note": "The rate, the row caps and the account fields are documented on the FRED API and help pages. Probes measured that a keyless API call answers HTTP 400 and that fredgraph.csv serves GDP as CSV with no key. The 120 per minute throttle needs a key to measure.",
+  "confidence_note": "The rate, the row caps and the account fields are documented on the FRED API and help pages. Probes measured that a keyless API call answers HTTP 400 and that fredgraph.csv serves GDP as CSV with no key. The 429 message text, any reset moment and the length of a temporary block need a key to measure (unverified: behind a sign-up).",
   "evidence": [
     {
       "url": "https://fred.stlouisfed.org/docs/api/fred/errors.html",
@@ -191,10 +191,38 @@
       "proved": "the keyless CSV carries the GDP series with its dates",
       "capture": "sha256:209e45690e4a85a6e99578c0a2ad6f1860875f61824dd2f67f9cba25386abd9e",
       "quote": "observation_date,GDP"
+    },
+    {
+      "url": "https://fred.stlouisfed.org/docs/api/fred/errors.html",
+      "date": "2026-11-02",
+      "proved": "429 past 120 requests a minute, with a possible temporary block",
+      "capture": "sha256:ff59aa7539e23db095b5b6ac60f1507ac03e382773359dafd70d3cc16f048c2f",
+      "quote": "429 Too Many Requests (Up to 120 requests per minute are allowed before being served a 429 error code. Not complying with the throttling can result in a temporary block.)"
+    },
+    {
+      "url": "https://fred.stlouisfed.org/docs/api/fred/errors.html",
+      "date": "2026-11-02",
+      "proved": "an error answer is an HTTP status with an XML or JSON body",
+      "capture": "sha256:ff59aa7539e23db095b5b6ac60f1507ac03e382773359dafd70d3cc16f048c2f",
+      "quote": "If an error occurs, the web service will return an HTTP response with the error status code and an XML or JSON body containing the error."
+    },
+    {
+      "url": "https://fred.stlouisfed.org/docs/api/fred/errors.html",
+      "date": "2026-11-02",
+      "proved": "the 120 per minute throttle is documented",
+      "capture": "sha256:ff59aa7539e23db095b5b6ac60f1507ac03e382773359dafd70d3cc16f048c2f",
+      "quote": "429 Too Many Requests (Up to 120 requests per minute are allowed before being served a 429 error code. Not complying with the throttling can result in a temporary block.)"
+    },
+    {
+      "url": "https://fred.stlouisfed.org/docs/api/fred/errors.html",
+      "date": "2026-11-02",
+      "proved": "the 120 per minute throttle is unchanged",
+      "capture": "sha256:ff59aa7539e23db095b5b6ac60f1507ac03e382773359dafd70d3cc16f048c2f",
+      "quote": "429 Too Many Requests (Up to 120 requests per minute are allowed before being served a 429 error code. Not complying with the throttling can result in a temporary block.)"
     }
   ],
   "verdict": "qualifies",
-  "verified_at": "2026-10-31T10:04:07.279Z",
+  "verified_at": "2026-11-03T00:28:53.390Z",
   "notes": "Free with an email-only key, no stated daily or monthly count, and a documented bulk path (v2 release observations). The series notes name them.",
   "extras": {
     "bulk_path": "API v2 fred/v2/release/observations: all series on a release with full history, 500,000 observations per call, cursor paging",

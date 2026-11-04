@@ -1,0 +1,275 @@
+{
+  "topic": "dev-services",
+  "slug": "inngest-server",
+  "provider": "Inngest server (self-hosted)",
+  "url": "https://www.inngest.com/docs/self-hosting",
+  "category": "self-hosted durable-execution and event orchestration server (open-source Inngest server)",
+  "tier": "Self-hosted",
+  "free_tier": {
+    "stated": "The Inngest server is published on GitHub: installing the Inngest CLI, a single binary that includes all Inngest services, and running inngest start gives a self-hosted server on a machine the user runs, with SQLite for persistence by default",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://www.inngest.com/docs/self-hosting",
+    "read_on": "2026-11-01",
+    "notes": "The hosted Inngest free tier (dev-services/inngest) comes first. The user's function code stays on an app host of the user's own, served through HTTP or Connect."
+  },
+  "per_object_cap": {
+    "stated": "not stated on the self-hosting pages read",
+    "bytes": null,
+    "source_url": "https://www.inngest.com/docs/self-hosting"
+  },
+  "retention": {
+    "stated": "the server does not delete old PostgreSQL rows for events, runs or traces by itself, so retention is whatever the user's cleanup keeps; the default database is SQLite at ./.inngest/main.db",
+    "days": null,
+    "source_url": "https://www.inngest.com/docs/self-hosting"
+  },
+  "egress": {
+    "terms": "not set by the software: the server invokes the user's functions over HTTPS or the Connect gateway from the machine the user runs it on, so the network terms of that host apply",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.inngest.com/docs/self-hosting"
+  },
+  "interface": [
+    "rest",
+    "graphql",
+    "cli"
+  ],
+  "interface_detail": "the server provides GraphQL and REST APIs for programmatic access and management of system resources, with the Event API and the Dashboard UI on port 8288 and the Connect gateway on port 8289; the Inngest CLI starts it with inngest start, and the Inngest SDKs in the user's app send events with an event key and share a signing key with the server",
+  "tooling": "the user installs and runs the Inngest server on a rented or free machine: the Inngest CLI (npm install -g inngest-cli, the inngest/inngest Docker image or a release binary) started with inngest start, with SQLite and an in-memory Redis by default, or with PostgreSQL and Redis through the Docker Compose example or the Helm chart for Kubernetes; the Inngest SDKs in the user's own app.",
+  "chaining": "Last resort after the hosted durable-execution offers (the hosted Inngest free tier in dev-services/inngest, then Temporal Cloud in dev-services/temporal-cloud and the n8n Cloud trial in dev-services/n8n-cloud): the user's functions still run on a host that serves them, and the server adds the queue, schedules, retries and fan-out from a machine that the user installs and keeps running.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "100 queue workers run in parallel on one server by default (--queue-workers)",
+      "source": "https://www.inngest.com/docs/self-hosting"
+    }
+  ],
+  "limits_note": "inngest start runs Inngest as a single-node service labelled beta, and with the default SQLite database the server does not scale beyond a single node. The signing key must be a hexadecimal string with an even number of characters.",
+  "binding": "none",
+  "binding_note": "The self-hosting pages state no execution or event quota; the machine, Redis and the database bound throughput, and 100 queue workers run in parallel by default.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No Inngest account is needed: the user creates an event key and a signing key in any format they choose (the signing key a hexadecimal string with an even number of characters) and passes them to inngest start.",
+    "country": null
+  },
+  "reliability_note": "Inngest's support team does not guarantee direct support for self-hosted instances; inngest start is labelled beta; without external services the queue and run state live in an in-memory Redis whose snapshots are saved to SQLite periodically and at shutdown, a Docker run that does not mount the SQLite directory loses the database with the container, and PostgreSQL rows for events, runs and traces are not removed automatically.",
+  "confidence": "documented",
+  "confidence_note": "Install, configuration, persistence and the interfaces are read on the first-party self-hosting documentation and the repository README; the server was not installed or run, and the self-hosting pages state no price or quota.",
+  "evidence": [
+    {
+      "url": "https://www.inngest.com/docs/self-hosting",
+      "date": "2026-11-01",
+      "proved": "self-hosting is supported as of the Inngest 1.0 release",
+      "capture": "sha256:2004324b231334279b247263c0f335988a59a03abfe4f424b509f4c9be87fc3e",
+      "quote": "Self-hosting support for Inngest is supported as of the 1.0 release."
+    },
+    {
+      "url": "https://www.inngest.com/docs/self-hosting",
+      "date": "2026-11-01",
+      "proved": "the Inngest CLI is a single binary that includes all Inngest services and is all that self-hosting needs to install",
+      "capture": "sha256:2004324b231334279b247263c0f335988a59a03abfe4f424b509f4c9be87fc3e",
+      "quote": "To begin self-hosting Inngest, you only need to install the Inngest CLI. The Inngest CLI is a single binary that includes all Inngest services and can be run in any environment."
+    },
+    {
+      "url": "https://www.inngest.com/docs/self-hosting",
+      "date": "2026-11-01",
+      "proved": "the source code for Inngest and all its services is available on GitHub",
+      "capture": "sha256:2004324b231334279b247263c0f335988a59a03abfe4f424b509f4c9be87fc3e",
+      "quote": "The source code for Inngest and all services is [available on GitHub](https://github.com/inngest/inngest)."
+    },
+    {
+      "url": "https://www.inngest.com/docs/self-hosting",
+      "date": "2026-11-01",
+      "proved": "the CLI binary can be downloaded directly from the GitHub releases",
+      "capture": "sha256:2004324b231334279b247263c0f335988a59a03abfe4f424b509f4c9be87fc3e",
+      "quote": "Alternatively, you can download the binary directly from [GitHub releases]"
+    },
+    {
+      "url": "https://www.inngest.com/docs/self-hosting",
+      "date": "2026-11-01",
+      "proved": "the Event API receives events from the SDKs over HTTP",
+      "capture": "sha256:2004324b231334279b247263c0f335988a59a03abfe4f424b509f4c9be87fc3e",
+      "quote": "Receives events from SDKs via HTTP requests."
+    },
+    {
+      "url": "https://www.inngest.com/docs/self-hosting",
+      "date": "2026-11-01",
+      "proved": "the signing key signs and validates data between the server and the apps",
+      "capture": "sha256:2004324b231334279b247263c0f335988a59a03abfe4f424b509f4c9be87fc3e",
+      "quote": "Signing key used to sign and validate data between the server and apps."
+    },
+    {
+      "url": "https://www.inngest.com/docs/self-hosting",
+      "date": "2026-11-01",
+      "proved": "the self-hosting page includes a Docker Compose example",
+      "capture": "sha256:2004324b231334279b247263c0f335988a59a03abfe4f424b509f4c9be87fc3e",
+      "quote": "## Docker compose example"
+    },
+    {
+      "url": "https://www.inngest.com/docs/self-hosting",
+      "date": "2026-11-01",
+      "proved": "the CLI installs as a Docker image",
+      "capture": "sha256:2004324b231334279b247263c0f335988a59a03abfe4f424b509f4c9be87fc3e",
+      "quote": "docker pull inngest/inngest"
+    },
+    {
+      "url": "https://www.inngest.com/docs/self-hosting",
+      "date": "2026-11-01",
+      "proved": "the CLI installs from npm",
+      "capture": "sha256:2004324b231334279b247263c0f335988a59a03abfe4f424b509f4c9be87fc3e",
+      "quote": "npm install -g inngest-cli"
+    },
+    {
+      "url": "https://www.inngest.com/docs/self-hosting",
+      "date": "2026-11-01",
+      "proved": "inngest start serves on port 8288 with SQLite for persistence, and the Connect gateway is on port 8289",
+      "capture": "sha256:2004324b231334279b247263c0f335988a59a03abfe4f424b509f4c9be87fc3e",
+      "quote": "This will start the Inngest server on the default port `8288` and use the default configuration, including SQLite for persistence. Additionally, the Connect gateway will be available on port `8289`."
+    },
+    {
+      "url": "https://www.inngest.com/docs/self-hosting",
+      "date": "2026-11-01",
+      "proved": "the server provides GraphQL and REST APIs",
+      "capture": "sha256:2004324b231334279b247263c0f335988a59a03abfe4f424b509f4c9be87fc3e",
+      "quote": "API - GraphQL and REST APIs for programmatic access and management of system resources."
+    },
+    {
+      "url": "https://www.inngest.com/docs/self-hosting",
+      "date": "2026-11-01",
+      "proved": "the event and signing keys are chosen by the user in any format",
+      "capture": "sha256:2004324b231334279b247263c0f335988a59a03abfe4f424b509f4c9be87fc3e",
+      "quote": "To securely configure your server, create your event and signing keys using whatever format you choose and start the Inngest server using them."
+    },
+    {
+      "url": "https://www.inngest.com/docs/self-hosting",
+      "date": "2026-11-01",
+      "proved": "the signing key must be a hexadecimal string with an even number of characters",
+      "capture": "sha256:2004324b231334279b247263c0f335988a59a03abfe4f424b509f4c9be87fc3e",
+      "quote": "The signing key must be a valid hexadecimal string with an even number of characters."
+    },
+    {
+      "url": "https://www.inngest.com/docs/self-hosting",
+      "date": "2026-11-01",
+      "proved": "by default the queue and state store run in an in-memory Redis server",
+      "capture": "sha256:2004324b231334279b247263c0f335988a59a03abfe4f424b509f4c9be87fc3e",
+      "quote": "Use an in-memory Redis server for the queue and state store."
+    },
+    {
+      "url": "https://www.inngest.com/docs/self-hosting",
+      "date": "2026-11-01",
+      "proved": "the default database is SQLite at ./.inngest/main.db and snapshots are saved periodically and before shutdown",
+      "capture": "sha256:2004324b231334279b247263c0f335988a59a03abfe4f424b509f4c9be87fc3e",
+      "quote": "Use SQLite for persistence. The default database is located at `./.inngest/main.db`. Queue and state store snapshots are periodically saved to the SQLite database, including prior to shutdown."
+    },
+    {
+      "url": "https://www.inngest.com/docs/self-hosting",
+      "date": "2026-11-01",
+      "proved": "the default SQLite persistence does not scale beyond a single node",
+      "capture": "sha256:2004324b231334279b247263c0f335988a59a03abfe4f424b509f4c9be87fc3e",
+      "quote": "By default, the Inngest server uses SQLite for persistence. This is convenient for zero-dependency deployments, but does not support scaling beyond a single node."
+    },
+    {
+      "url": "https://www.inngest.com/docs/self-hosting",
+      "date": "2026-11-01",
+      "proved": "an external PostgreSQL database is set with the postgres-uri flag",
+      "capture": "sha256:2004324b231334279b247263c0f335988a59a03abfe4f424b509f4c9be87fc3e",
+      "quote": "--postgres-uri string              PostgreSQL database URI for configuration and history persistence. Defaults to SQLite database."
+    },
+    {
+      "url": "https://www.inngest.com/docs/self-hosting",
+      "date": "2026-11-01",
+      "proved": "an external Redis server is set with the redis-uri flag",
+      "capture": "sha256:2004324b231334279b247263c0f335988a59a03abfe4f424b509f4c9be87fc3e",
+      "quote": "--redis-uri string                 Redis server URI for external queue and run state. Defaults to self-contained, in-memory Redis server with periodic snapshot backups."
+    },
+    {
+      "url": "https://www.inngest.com/docs/self-hosting",
+      "date": "2026-11-01",
+      "proved": "the server does not delete old PostgreSQL rows for events, runs or traces",
+      "capture": "sha256:2004324b231334279b247263c0f335988a59a03abfe4f424b509f4c9be87fc3e",
+      "quote": "The Inngest server does not automatically delete old database rows within Postgres for events, runs, or traces."
+    },
+    {
+      "url": "https://www.inngest.com/docs/self-hosting",
+      "date": "2026-11-01",
+      "proved": "each Inngest server runs 100 queue workers in parallel by default",
+      "capture": "sha256:2004324b231334279b247263c0f335988a59a03abfe4f424b509f4c9be87fc3e",
+      "quote": "By default, each Inngest server only runs `100` queue workers in parallel for execution."
+    },
+    {
+      "url": "https://www.inngest.com/docs/self-hosting",
+      "date": "2026-11-01",
+      "proved": "inngest start is a single-node service labelled beta",
+      "capture": "sha256:2004324b231334279b247263c0f335988a59a03abfe4f424b509f4c9be87fc3e",
+      "quote": "inngest start - [Beta] Run Inngest as a single-node service."
+    },
+    {
+      "url": "https://www.inngest.com/docs/self-hosting",
+      "date": "2026-11-01",
+      "proved": "Inngest's support team does not guarantee direct support for self-hosted instances",
+      "capture": "sha256:2004324b231334279b247263c0f335988a59a03abfe4f424b509f4c9be87fc3e",
+      "quote": "Inngest's support team does not guarantee direct support for self-hosted instances."
+    },
+    {
+      "url": "https://www.inngest.com/docs/self-hosting",
+      "date": "2026-11-01",
+      "proved": "a Helm chart deploys the server on Kubernetes",
+      "capture": "sha256:2004324b231334279b247263c0f335988a59a03abfe4f424b509f4c9be87fc3e",
+      "quote": "Inngest provides a Helm chart for production-ready Kubernetes deployments."
+    },
+    {
+      "url": "https://www.inngest.com/docs-markdown/platform-and-operations/self-host-inngest",
+      "date": "2026-11-01",
+      "proved": "the application hosts its function code separately from the self-hosted server",
+      "capture": "sha256:2c9c64ce67e146fa1f3764b371919abb7cf06a936b3a598acde2f4fce8fe9acb",
+      "quote": "Your application hosts its function code separately."
+    },
+    {
+      "url": "https://www.inngest.com/docs-markdown/platform-and-operations/self-host-inngest",
+      "date": "2026-11-01",
+      "proved": "the app serves its function code to the self-hosted server through HTTP serve() or Connect",
+      "capture": "sha256:2c9c64ce67e146fa1f3764b371919abb7cf06a936b3a598acde2f4fce8fe9acb",
+      "quote": "Your app still serves function code through HTTP `serve()` or Connect."
+    },
+    {
+      "url": "https://www.inngest.com/docs-markdown/platform-and-operations/self-host-inngest",
+      "date": "2026-11-01",
+      "proved": "a Docker run without a mounted SQLite database loses the database with the container",
+      "capture": "sha256:2c9c64ce67e146fa1f3764b371919abb7cf06a936b3a598acde2f4fce8fe9acb",
+      "quote": "It does not mount the SQLite database, so removing the container also removes its local database."
+    },
+    {
+      "url": "https://www.inngest.com/docs-markdown/platform-and-operations/self-host-inngest",
+      "date": "2026-11-01",
+      "proved": "PostgreSQL rows for events, runs and traces are not removed automatically",
+      "capture": "sha256:2c9c64ce67e146fa1f3764b371919abb7cf06a936b3a598acde2f4fce8fe9acb",
+      "quote": "PostgreSQL rows for events, runs, and traces are not automatically removed; plan retention and cleanup."
+    },
+    {
+      "url": "https://github.com/inngest/inngest",
+      "date": "2026-11-01",
+      "proved": "the repository states that self-hosting the Inngest server is possible",
+      "capture": "sha256:711400f5e0ceec9b5c1104a85a6aed4856db528987f62dd39b6bf3c6d26be67b",
+      "quote": "Self-hosting the Inngest server is possible and easy to get started with."
+    },
+    {
+      "url": "https://github.com/inngest/inngest",
+      "date": "2026-11-01",
+      "proved": "the server invokes the user's functions over HTTPS when triggering events arrive",
+      "capture": "sha256:711400f5e0ceec9b5c1104a85a6aed4856db528987f62dd39b6bf3c6d26be67b",
+      "quote": "Inngest invokes your functions securely via HTTPS whenever triggering events are received."
+    },
+    {
+      "url": "https://github.com/inngest/inngest",
+      "date": "2026-11-01",
+      "proved": "functions are written with the Inngest language SDKs",
+      "capture": "sha256:711400f5e0ceec9b5c1104a85a6aed4856db528987f62dd39b6bf3c6d26be67b",
+      "quote": "Write durable functions using any of our language SDKs"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-11-01T18:13:27.751Z",
+  "notes": "Self-hosted software and the last resort: the hosted offers come first (the hosted Inngest free tier dev-services/inngest, the Temporal Cloud credit dev-services/temporal-cloud and the n8n Cloud trial dev-services/n8n-cloud). This record is no duplicate of dev-services/inngest: it is the server that the user installs and runs.",
+  "self_hosted": true
+}

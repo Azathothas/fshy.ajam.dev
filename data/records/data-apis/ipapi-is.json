@@ -47,7 +47,7 @@
   "binding": "volume-quota",
   "identity_cost": {
     "kind": "email",
-    "detail": "a free account with email and password and a short how-did-you-hear field, or GitHub or Google sign-in; no payment details",
+    "detail": "a free account: the sign-up form requires an email address, a password and a country, and has an optional how-did-you-hear field and no payment field; GitHub or Google sign-in is offered",
     "country": null
   },
   "reliability_note": "keyless callers get HTTP 429 after 30 lookups a day and a 24-hour firewall block if they keep sending; the free database has fewer entries and reduced accuracy",
@@ -172,13 +172,49 @@
       "proved": "the free IPv4 zip is 65,954,248 bytes and downloads with no account",
       "capture": "sha256:9eb16f8d09255672d0f00848e132a0a093f29ed9cc580108942150e1e0cc5838",
       "quote": "\"content-range\": \"bytes 0-1023/65954248\""
+    },
+    {
+      "url": "https://ipapi.is/app/signup",
+      "date": "2026-11-02",
+      "proved": "the sign-up form requires email address, password and country, has an optional how-did-you-hear field and no payment field, and offers GitHub and Google sign-in",
+      "capture": "sha256:3dabd7c005f4beca491b7ce0d81c9d1d835b9563bbc4d3cb7a5321a29b611e2a",
+      "quote": "name=\"country\" required id=\"country-list\""
+    },
+    {
+      "url": "https://ipapi.is/developers.html",
+      "date": "2026-11-02",
+      "proved": "a keyless 429 carries a Retry-After header with the seconds until UTC midnight; the documentation names no header for a keyed answer",
+      "capture": "sha256:238929769adc853764ed05dffc6e7ba181afc1db4fdb5a47d550f3fb36a7f8ae",
+      "quote": "After the 30th lookup, the next 10 requests are answered with `429 ERR_FREE_TIER_EXHAUSTED` and a `Retry-After` header holding the seconds until UTC midnight."
+    },
+    {
+      "url": "https://api.ipapi.is/?q=8.8.8.8",
+      "date": "2026-11-02",
+      "proved": "a keyless lookup answered HTTP 200 with the short anonymous response of eleven keys and a docs link",
+      "capture": "sha256:7a1e88e04bd02a1daa56ba3631ab6fd1b7bb9f3444a5678e5b605c89f9b62298",
+      "quote": "\"docs\": \"https://ipapi.is/free-tier.html?ref=api\""
+    },
+    {
+      "url": "https://ipapi.is/data/geolocationDatabaseIPv4.csv.zip",
+      "date": "2026-11-02",
+      "proved": "a ranged read of the free IPv4 zip with no account answered HTTP 206 and the file is 65954248 bytes, last modified 30 Oct 2026",
+      "capture": "sha256:a1c03bf7c894fda1d859d5bf514578dbf61317b324014da4aa771450ec4602c8",
+      "quote": "Content-Range: bytes 0-1023/65954248"
+    },
+    {
+      "url": "https://ipapi.is/free-tier.html",
+      "date": "2026-11-02",
+      "proved": "keyless use is 30 lookups per client IP per UTC day, and a free account raises it to 1,000 lookups a day",
+      "capture": "sha256:4ace7fef36d34d1e4711c915a9a456b85563ce642e85a99803a6fef70782cde4",
+      "quote": "Anonymous use is capped at 30 lookups per client IP per UTC day."
     }
   ],
   "verdict": "qualifies",
-  "verified_at": "2026-10-31T06:24:05.368Z",
+  "verified_at": "2026-11-03T00:27:33.115Z",
   "notes": "Free requests: 1,000 a day with a free key; 30 a day per IP without. Rate limit: HTTP 429 past the daily budget, 24-hour block on persistent overrun. Bulk path: free IPv4 and IPv6 geolocation CSV downloads, no account.",
   "extras": {
     "bulk_path": "free IPv4 and IPv6 geolocation database CSV zips, no account",
     "free_requests": "1,000 a day with a key; 30 a day keyless"
-  }
+  },
+  "limits_note": "keyless requests past the 30th lookup of a UTC day get HTTP 429 ERR_FREE_TIER_EXHAUSTED for the next 10 requests, with a Retry-After header holding the seconds until UTC midnight; the response headers of a keyed answer are unverified: behind a sign-up"
 }

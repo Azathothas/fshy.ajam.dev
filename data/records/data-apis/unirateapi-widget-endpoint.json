@@ -1,0 +1,176 @@
+{
+  "topic": "data-apis",
+  "slug": "unirateapi-widget-endpoint",
+  "provider": "UniRateAPI public widget endpoint",
+  "url": "https://unirateapi.com/widgets",
+  "category": "currency exchange-rate API (keyless endpoint behind the embeddable widgets: rates, currencies, conversion, VAT rates)",
+  "tier": "Public widget endpoint",
+  "free_tier": {
+    "stated": "Keyless endpoint at api.unirateapi.com/api/widget/v1: 60 requests per minute per IP with no API key, signup or credit card; rates refresh hourly.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://unirateapi.com/widgets",
+    "read_on": "2026-11-02",
+    "notes": "The widgets page names this endpoint as the data source of its embeddable widgets. GET /widget/v1/rates?base=USD answered the full rate table for a base, fiat and crypto, as JSON; the widget script also calls /widget/v1/currencies, /widget/v1/convert and /widget/v1/vat/all. The keyed Free tier of the same vendor is recorded separately."
+  },
+  "per_object_cap": {
+    "stated": "no cap is stated; one rates answer for the base USD was 21969 bytes of JSON",
+    "bytes": null,
+    "source_url": "https://unirateapi.com/widgets"
+  },
+  "retention": {
+    "stated": "not applicable: a query API with no stored objects; the widget calls serve current rates, currencies, conversions and VAT rates",
+    "days": null,
+    "notes": "",
+    "source_url": "https://unirateapi.com/widgets"
+  },
+  "egress": {
+    "terms": "not metered in bytes; 60 requests a minute per IP bound what an address can pull",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://unirateapi.com/widgets"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "GET https://api.unirateapi.com/api/widget/v1/rates?base=USD, /widget/v1/currencies, /widget/v1/convert?amount=&from=&to= and /widget/v1/vat/all with no key; JSON answers carrying x-ratelimit-burst-limit, x-ratelimit-burst-remaining and x-ratelimit-burst-reset headers.",
+  "endpoint": "https://api.unirateapi.com/api/widget/v1/rates?base=USD",
+  "tooling": "any HTTP client; the embeddable widget script at unirateapi.com/lander/static/js/unirate-widgets.js calls the same routes",
+  "chaining": "Keyless current fiat and crypto rates for any base at 60 requests a minute per IP, so a free stack can refresh a rate table hourly without a key; history, time series and metals need the keyed Pro tier of the same vendor or another source.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "60 requests per minute per IP, with no authentication; past it the endpoint answers HTTP 429 with Retry-After",
+      "source": "https://unirateapi.com/widgets"
+    }
+  ],
+  "limits_note": "Current data only: the widget routes cover rates, currencies, conversion and VAT rates, with no history route.",
+  "binding": "request-rate",
+  "binding_note": "The only limit stated is 60 requests a minute per IP.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No key, signup or card: the widgets page says the widget pulls rates from the public endpoint with no key, and a keyless GET answered HTTP 200 with a rates table.",
+    "country": null
+  },
+  "reliability_note": "Past the per-minute limit the endpoint answers HTTP 429 with Retry-After 20; it is documented as the data source of the embeddable widgets rather than as a general API, and refreshes hourly.",
+  "confidence": "measured",
+  "confidence_note": "The keyless HTTP 200 answer, its size, the burst limit of 60 in its headers and the HTTP 429 answer past it are measured; the hourly refresh and the intended use are read from the widgets page.",
+  "evidence": [
+    {
+      "url": "https://unirateapi.com/widgets",
+      "date": "2026-11-02",
+      "proved": "the widget needs no API key, signup or credit card and pulls rates from a public endpoint",
+      "capture": "sha256:8252c9dd00e1f81becce21dd380b60b2e52bb52677427193de9ca16343d5b42b",
+      "quote": "No API key, no signup, no credit card — the widget pulls real exchange rates from UniRate's public endpoint the moment the page loads."
+    },
+    {
+      "url": "https://unirateapi.com/widgets",
+      "date": "2026-11-02",
+      "proved": "the public endpoint allows 60 requests per minute per IP with no auth",
+      "capture": "sha256:8252c9dd00e1f81becce21dd380b60b2e52bb52677427193de9ca16343d5b42b",
+      "quote": "Rate limits\n\n60 requests / minute / IP\n\nEnough for any mid-traffic embed. No auth required."
+    },
+    {
+      "url": "https://unirateapi.com/widgets",
+      "date": "2026-11-02",
+      "proved": "the data refreshes hourly from central bank and exchange sources",
+      "capture": "sha256:8252c9dd00e1f81becce21dd380b60b2e52bb52677427193de9ca16343d5b42b",
+      "quote": "Refreshes hourly\n\nAggregated from ECB, Coinbase, RBA and 9 other sources."
+    },
+    {
+      "url": "https://unirateapi.com/lander/static/js/unirate-widgets.js",
+      "date": "2026-11-02",
+      "proved": "the widget script targets the api.unirateapi.com/api host",
+      "capture": "sha256:96827dfecc434230eb26e493b062b751196a90dd1f3c0a97ac5c60a8af139ced",
+      "quote": "'https://api.unirateapi.com/api';"
+    },
+    {
+      "url": "https://unirateapi.com/lander/static/js/unirate-widgets.js",
+      "date": "2026-11-02",
+      "proved": "the widget script calls the rates route with a base",
+      "capture": "sha256:96827dfecc434230eb26e493b062b751196a90dd1f3c0a97ac5c60a8af139ced",
+      "quote": "fetch(`${API_BASE}/widget/v1/rates?base=${base}`)"
+    },
+    {
+      "url": "https://unirateapi.com/lander/static/js/unirate-widgets.js",
+      "date": "2026-11-02",
+      "proved": "the widget script calls the currencies route",
+      "capture": "sha256:96827dfecc434230eb26e493b062b751196a90dd1f3c0a97ac5c60a8af139ced",
+      "quote": "fetch(`${API_BASE}/widget/v1/currencies`)"
+    },
+    {
+      "url": "https://unirateapi.com/lander/static/js/unirate-widgets.js",
+      "date": "2026-11-02",
+      "proved": "the widget script calls the convert route with an amount and two currencies",
+      "capture": "sha256:96827dfecc434230eb26e493b062b751196a90dd1f3c0a97ac5c60a8af139ced",
+      "quote": "fetch(`${API_BASE}/widget/v1/convert?amount=${amount}&from=${from}&to=${to}`)"
+    },
+    {
+      "url": "https://unirateapi.com/lander/static/js/unirate-widgets.js",
+      "date": "2026-11-02",
+      "proved": "the widget script calls the VAT route",
+      "capture": "sha256:96827dfecc434230eb26e493b062b751196a90dd1f3c0a97ac5c60a8af139ced",
+      "quote": "fetch(`${API_BASE}/widget/v1/vat/all`)"
+    },
+    {
+      "url": "probe:https://api.unirateapi.com/api/widget/v1/rates?base=USD",
+      "date": "2026-11-02",
+      "proved": "a keyless GET of the rates route answered HTTP 200",
+      "capture": "sha256:274da9ce1651105bf17199b73409dad0fe514a2cc6578a1712f54d40714494af",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:https://api.unirateapi.com/api/widget/v1/rates?base=USD",
+      "date": "2026-11-02",
+      "proved": "the answer carries a burst limit header of 60",
+      "capture": "sha256:274da9ce1651105bf17199b73409dad0fe514a2cc6578a1712f54d40714494af",
+      "quote": "\"x-ratelimit-burst-limit\": \"60\""
+    },
+    {
+      "url": "probe:https://api.unirateapi.com/api/widget/v1/rates?base=USD",
+      "date": "2026-11-02",
+      "proved": "the answer was 21969 bytes of JSON",
+      "capture": "sha256:274da9ce1651105bf17199b73409dad0fe514a2cc6578a1712f54d40714494af",
+      "quote": "\"bytes\": 21969"
+    },
+    {
+      "url": "probe:https://api.unirateapi.com/api/widget/v1/rates?base=USD",
+      "date": "2026-11-02",
+      "proved": "the keyless answer is a success flag with a base and a rates table",
+      "capture": "sha256:315f29e89b48417dcc8343fa4849965d7cb634232e3d1d94b0cf4e0ed3da2128",
+      "quote": "{\"success\":true,\"base\":\"USD\",\"rates\":{"
+    },
+    {
+      "url": "probe:https://api.unirateapi.com/api/widget/v1/currencies",
+      "date": "2026-11-02",
+      "proved": "past the burst limit the endpoint answered HTTP 429",
+      "capture": "sha256:d7bf62d096f37397c0ad11e13e8b659aa191b9adff28523d26053ec7e1ee120a",
+      "quote": "\"status\": 429"
+    },
+    {
+      "url": "probe:https://api.unirateapi.com/api/widget/v1/currencies",
+      "date": "2026-11-02",
+      "proved": "the 429 answer carried a Retry-After of 20 seconds",
+      "capture": "sha256:d7bf62d096f37397c0ad11e13e8b659aa191b9adff28523d26053ec7e1ee120a",
+      "quote": "\"retry-after\": \"20\""
+    },
+    {
+      "url": "probe:https://api.unirateapi.com/api/widget/v1/currencies",
+      "date": "2026-11-02",
+      "proved": "the 429 answer reported no burst budget remaining against a limit of 60",
+      "capture": "sha256:d7bf62d096f37397c0ad11e13e8b659aa191b9adff28523d26053ec7e1ee120a",
+      "quote": "\"x-ratelimit-burst-remaining\": \"0\""
+    },
+    {
+      "url": "probe:https://api.unirateapi.com/api/widget/v1/currencies",
+      "date": "2026-11-02",
+      "proved": "the 429 body says the rate limit was exceeded",
+      "capture": "sha256:b43be32713b8745365a3c60285ab9d5e2291d9d7905bc3ce6f7d63de8f138597",
+      "quote": "{\"error\":\"Rate limit exceeded. Please try again later.\"}"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-11-02T00:23:43.773Z",
+  "notes": "A keyless public endpoint: current rates, currencies, conversion and VAT rates, 60 requests a minute per IP, hourly refresh."
+}

@@ -34,11 +34,17 @@
   "interface_detail": "s3",
   "tooling": "Real S3: s3cmd, boto3, AWS SDKs, documented setup pages per OS and per language. A workspace issues an access key pair; buckets live inside it and are private by default, switchable to public, in which case 'objects can be accessed directly via permanent URL'. Platform API exposes usage reporting (24h/7d/30d) and key rotation, and usage is metered hourly.",
   "chaining": "Workspaces are the multiplier and nothing published caps how many you create. The genuinely interesting property is the price inversion: at $0 storage and $10/TB egress this is a very cheap place to PARK 20 TB (write-once, rare read = the cold-archive workload) and an expensive place to serve from. So the correct chain is Nebula Block as the backing store, with Cloudflare in front so the paid egress is consumed once by the cache rather than once per request.",
-  "limits": [],
-  "limits_note": "Credit on the account is a stated prerequisite, bought with a payment card or USDC. Tier availability varies: a tier can show as out of stock. Bucket names get a platform prefix (u-<id>-<workspace>.<bucket>), so the name the S3 tools see is read from the console. No per-object cap is published.",
+  "limits": [
+    {
+      "kind": "write-gated",
+      "value": "A funded credit balance is a stated prerequisite of object storage, and the vendor's object-storage documentation put the minimum at least USD 0.01 credit; credit is bought up front with a payment card or USDC, so an unfunded account owns no workspace and therefore no bucket",
+      "source": "https://web.archive.org/web/20260416005407/https://docs.nebulablock.com/core-services/overview-2"
+    }
+  ],
+  "limits_note": "Credit on the account is a stated prerequisite, bought with a payment card or USDC; the vendor's object-storage documentation put the minimum at least USD 0.01 and the current page states the prerequisite without a number, so the live console's minimum is unverified behind a sign-up. The console create form prices the three tiers and creates the workspace, and only then does a bucket exist. Tier availability varies: a tier can show as out of stock. Bucket names get a platform prefix (u-<id>-<workspace>.<bucket>), so the name the S3 tools see is read from the console. No per-object cap is published.",
   "identity_cost": {
     "kind": "email",
-    "detail": "email and password, or a Google account, then an activation email; object storage needs credit bought in advance with a payment card or USDC, so no card is needed when paying in USDC; one payment card cannot be added to more than one account",
+    "detail": "email and password, or a Google account, then an activation email; object storage needs credit bought in advance with a payment card or USDC, so no card is needed when paying in USDC, and the vendor's object-storage documentation put the minimum at least USD 0.01 of credit for the workspace that holds the buckets; one payment card cannot be added to more than one account",
     "country": null
   },
   "reliability_note": "Services may be geo-restricted, and access from outside the provider's list of supported countries may result in service restrictions or account suspension.",
@@ -167,16 +173,72 @@
       "proved": "the storage speaks the S3 API and works with the s3cmd CLI",
       "capture": "sha256:b4f81c7f9e8ed5d3c80c8bbca75905bd0932e4fdb5f5f842031e135e4fcc8e2d",
       "quote": "Nebula Block object storage speaks the S3 API, so `s3cmd` works against it unchanged once it is pointed at your workspace's endpoint."
+    },
+    {
+      "url": "https://web.archive.org/web/20260416005407/https://docs.nebulablock.com/core-services/overview-2",
+      "date": "2026-11-01",
+      "proved": "the vendor's object-storage page stated a prepaid credit balance of at least USD 0.01 as a prerequisite, quoted from the Wayback copy captured 2026-04-16 of docs.nebulablock.com/core-services/overview-2, which now redirects to /products/object-storage",
+      "capture": "sha256:19caa3f6eb0385c98bbc303999d37765591dac1c2f963ce2015dd2899036e7da",
+      "quote": "Credit Balance: Ensure you have at least $0.01 credit balance in your account."
+    },
+    {
+      "url": "https://docs.nebulablock.com/products/object-storage.md",
+      "date": "2026-11-01",
+      "proved": "credit is a prerequisite of object storage and the Standard tier bills no stored data, only outgoing traffic",
+      "capture": "sha256:df5196d79673bd2c6a41db15bea91b81b6748415008280795d392c1cc16d6e51",
+      "quote": "Credit on your account — Standard workspaces store data free and bill outgoing traffic per GB"
+    },
+    {
+      "url": "https://docs.nebulablock.com/getting-started/get-started/billing.md",
+      "date": "2026-11-01",
+      "proved": "object storage draws on a prepaid credit balance bought up front, so the write is gated on funding rather than on a rate or a byte allowance",
+      "capture": "sha256:3e9b67f635d2c978d0c681cf13b6b74f0ff878cfa898f41db96c32a97c882428",
+      "quote": "Everything on Nebula Block is paid for with credits. You buy credits up front, and usage — per-token inference, hourly instance charges, object storage egress — is deducted from that balance."
+    },
+    {
+      "url": "https://docs.nebulablock.com/getting-started/get-started/billing.md",
+      "date": "2026-11-01",
+      "proved": "credit is bought in advance and the payment method is a card or USDC, so a card is not required when paying in crypto",
+      "capture": "sha256:3e9b67f635d2c978d0c681cf13b6b74f0ff878cfa898f41db96c32a97c882428",
+      "quote": "Select the amount you want on the billing page and pay with your default card, a new card, or USDC if you prefer to pay in crypto."
+    },
+    {
+      "url": "https://console.nebulablock.com/create-object-storage",
+      "date": "2026-11-01",
+      "proved": "the console create form prices the three tiers and shows the workspace is created before any bucket exists, so the funding gate sits ahead of the bucket",
+      "capture": "sha256:1381f717171d140499b722a73f9e1e210b85cb8bf8e5b1b778f1a5ade27c43e4",
+      "quote": "After creating the object storage, you will be able to create buckets and manage your storage."
+    },
+    {
+      "url": "https://docs.nebulablock.com/getting-started/get-started/billing.md",
+      "date": "2026-11-01",
+      "proved": "deposited credit sets the account tier and the rate limits; a deposit is measured against the balance, so the balance is the unit of the gate",
+      "capture": "sha256:3e9b67f635d2c978d0c681cf13b6b74f0ff878cfa898f41db96c32a97c882428",
+      "quote": "How much credit you have deposited or spent also determines your [tier](/account/tiers-and-limits.md), which sets your rate limits and whether you can rent CPU and GPU instances."
+    },
+    {
+      "url": "https://docs.nebulablock.com/products/object-storage.md",
+      "date": "2026-11-01",
+      "proved": "credit on the account is still the prerequisite, Standard still stores data free, and the tiers still bill only outgoing traffic",
+      "capture": "sha256:df5196d79673bd2c6a41db15bea91b81b6748415008280795d392c1cc16d6e51",
+      "quote": "Credit on your account — Standard workspaces store data free and bill outgoing traffic per GB"
+    },
+    {
+      "url": "https://web.archive.org/web/20260416005407/https://docs.nebulablock.com/core-services/overview-2",
+      "date": "2026-11-01",
+      "proved": "the documented funding gate is a credit balance of at least USD 0.01 before object storage is usable",
+      "capture": "sha256:19caa3f6eb0385c98bbc303999d37765591dac1c2f963ce2015dd2899036e7da",
+      "quote": "Credit Balance: Ensure you have at least $0.01 credit balance in your account."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-30T12:45:38.883Z",
+  "verified_at": "2026-11-01T23:50:09.131Z",
   "price_per_tb_month": "USD 0/TB/month stored on Standard; egress USD 0.01/GB (USD 10/TB); Performance USD 0.015/GB/month (USD 15/TB/month); Accelerated USD 0.02/GB/month (USD 20/TB/month)",
   "notes": "No storage quota on the Standard tier — it is priced at $0/GB/month by design: 'Standard — Stored data: Free — Durable, high-capacity storage. The default'. The paid tiers are Performance at $0.015/GB/month and Accelerated at $0.02/GB/month. There is no published cap on bytes stored, only 'availability varies — a tier can show as out of stock'.",
   "extras": {
     "price_verbatim": "$0/TB/month storage on the Standard tier; $10/TB egress ($0.01/GB). Performance $15/TB/mo, Accelerated $20/TB/mo. Effective cost for the cold-archive workload (write once, read rarely) is ~$0/TB/mo."
   },
-  "binding": "none",
-  "binding_note": null,
+  "binding": "write-gated",
+  "binding_note": "the gate is money, not identity: sign-up costs an email address and grants Tier 1, and nothing is stored until a credit purchase funds the account, payable by card or in USDC. Egress at USD 0.01/GB is the recurring cost, not a limit on creation.",
   "endpoint": "s3-ca-east.nebulablock.com:443 over HTTPS, path-style addressing, Signature V4; each workspace shows its own Hostname in the S3 Credentials panel of its Overview tab"
 }

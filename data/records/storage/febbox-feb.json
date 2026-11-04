@@ -5,9 +5,9 @@
   "url": "https://www.febbox.com/plan",
   "category": "rejected-provider",
   "free_tier": {
-    "stated": "The 'free 1TB' figure is stale marketing. The 2024 press release still says 'free 1TB storage', but the live plan page now reads 'Free Plan ... 10GB basic space', and the FAQ confirms a…",
-    "unit": "none",
-    "metered_on": "none",
+    "stated": "10GB basic space on the Free Plan at $0/Year, with 10GB/day high-speed traffic; the paid Personal Plan is 1 TB Basic Storage",
+    "unit": "GB",
+    "metered_on": "stored-bytes",
     "source_url": "https://www.febbox.com/plan",
     "read_on": "2026-10-21",
     "notes": null
@@ -25,25 +25,36 @@
     "notes": null
   },
   "egress": {
-    "terms": "not recorded",
-    "metered": false
+    "terms": "Beyond the high-speed traffic allowance, large-file downloads are limited to 100KB/s; viewing small files such as photos has no speed limit; buying Premium lifts the limit. The plan page and the FAQ give different allowances (see limits).",
+    "metered": true
   },
   "interface": [
-    "unknown"
+    "webdav"
   ],
-  "interface_detail": null,
-  "tooling": "not recorded",
+  "interface_detail": "webdav at https://webdav.febbox.com, per-account credentials with a chosen authorization directory and a read-only option",
+  "tooling": "WebDAV access is enabled in the account settings (server address https://webdav.febbox.com), usable from rclone and WinSCP; the site also lists an Open Platform.",
   "chaining": "not recorded",
-  "limits": [],
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "10GB basic space on the Free Plan; 1 TB Basic Storage on the Personal Plan",
+      "source": "https://www.febbox.com/plan"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "10GB/day high-speed traffic on the Free Plan; 100GB/day on the Personal Plan (the FAQ says 100GB per month for free users)",
+      "source": "https://www.febbox.com/plan"
+    }
+  ],
   "limits_note": null,
   "identity_cost": {
     "kind": "email",
     "detail": null,
     "country": null
   },
-  "reliability_note": "The 'free 1TB' figure is stale marketing. The 2024 press release still says 'free 1TB storage', but the live plan page now reads 'Free Plan ... 10GB basic space', and the FAQ confirms a…",
-  "confidence": "reported",
-  "confidence_note": null,
+  "reliability_note": "Per the FAQ, a downgrade to the free plan leaves existing files readable, allows no new uploads while over the free storage limit, and deletes files if usage stays over the limit for 3 months.",
+  "confidence": "documented",
+  "confidence_note": "Documented from vendor pages re-read on 2026-11-04: https://www.febbox.com/plan (free 10GB basic space; Personal Plan 1 TB), https://www.febbox.com/faq (throttle, 3-month deletion over the limit, purchasable capacity) and https://www.febbox.com/article/detail/id/34 (WebDAV server).",
   "evidence": [
     {
       "url": "https://www.febbox.com/plan",
@@ -59,11 +70,109 @@
       "url": "https://www.febbox.com/faq",
       "date": "2026-10-21",
       "proved": "cited as the basis of the rejection: The 'free 1TB' figure is stale marketing. The 2024 press release still says 'free 1TB storage', but the live plan page now reads 'Free Plan ... 10GB basic space', and the FAQ confirms a down"
+    },
+    {
+      "url": "https://www.febbox.com/plan",
+      "date": "2026-11-03",
+      "proved": "the free plan includes 10GB basic space",
+      "capture": "sha256:ef0ceb9128678ca423feca1bd8ea230cab31d5e505107bd2acb92ab0c2c07f5e",
+      "quote": "10GB basic space"
+    },
+    {
+      "url": "https://www.febbox.com/plan",
+      "date": "2026-11-03",
+      "proved": "the free allowance is stated in GB",
+      "capture": "sha256:ef0ceb9128678ca423feca1bd8ea230cab31d5e505107bd2acb92ab0c2c07f5e",
+      "quote": "10GB basic space"
+    },
+    {
+      "url": "https://www.febbox.com/plan",
+      "date": "2026-11-03",
+      "proved": "the free allowance is basic space, a stored-bytes quota",
+      "capture": "sha256:ef0ceb9128678ca423feca1bd8ea230cab31d5e505107bd2acb92ab0c2c07f5e",
+      "quote": "10GB basic space"
+    },
+    {
+      "url": "https://www.febbox.com/plan",
+      "date": "2026-11-03",
+      "proved": "the Personal Plan with 1 TB Basic Storage costs $26.39 a year",
+      "capture": "sha256:ef0ceb9128678ca423feca1bd8ea230cab31d5e505107bd2acb92ab0c2c07f5e",
+      "quote": "$ 26.39/Year"
+    },
+    {
+      "url": "https://www.febbox.com/faq",
+      "date": "2026-11-03",
+      "proved": "a free user over the traffic limit is throttled to 100KB/s on large downloads",
+      "capture": "sha256:f3b096a4b997086be0d0ee7b0f03b83bfcb3a867376711a6fa35393ac7f64121",
+      "quote": "when downloading large files, the speed will be limited to 100KB/s."
+    },
+    {
+      "url": "https://www.febbox.com/article/detail/id/34",
+      "date": "2026-11-03",
+      "proved": "the account settings expose a WebDAV server for clients such as rclone",
+      "capture": "sha256:bfbc223c684095de583dd58ea14805eb86f7bc9a5b73dd51f35d7525cfeecf3d",
+      "quote": "You can use the above information to configure access in clients that support the WebDAV protocol, such as Rclone, WinSCP, etc."
+    },
+    {
+      "url": "https://www.febbox.com/article/detail/id/34",
+      "date": "2026-11-03",
+      "proved": "the WebDAV server address",
+      "capture": "sha256:bfbc223c684095de583dd58ea14805eb86f7bc9a5b73dd51f35d7525cfeecf3d",
+      "quote": "https://webdav.febbox.com"
+    },
+    {
+      "url": "https://www.febbox.com/plan",
+      "date": "2026-11-03",
+      "proved": "the free plan is capped at 10GB of space",
+      "capture": "sha256:ef0ceb9128678ca423feca1bd8ea230cab31d5e505107bd2acb92ab0c2c07f5e",
+      "quote": "10GB basic space"
+    },
+    {
+      "url": "https://www.febbox.com/plan",
+      "date": "2026-11-03",
+      "proved": "the binding constraint is the 10GB free allowance",
+      "capture": "sha256:ef0ceb9128678ca423feca1bd8ea230cab31d5e505107bd2acb92ab0c2c07f5e",
+      "quote": "10GB basic space"
+    },
+    {
+      "url": "https://www.febbox.com/plan",
+      "date": "2026-11-03",
+      "proved": "the free space is 10GB",
+      "capture": "sha256:ef0ceb9128678ca423feca1bd8ea230cab31d5e505107bd2acb92ab0c2c07f5e",
+      "quote": "10GB basic space"
+    },
+    {
+      "url": "https://www.febbox.com/faq",
+      "date": "2026-11-03",
+      "proved": "files over the free storage limit are deleted after 3 months",
+      "capture": "sha256:f3b096a4b997086be0d0ee7b0f03b83bfcb3a867376711a6fa35393ac7f64121",
+      "quote": "If you remain over this limit for 3 months, your files will be deleted."
+    },
+    {
+      "url": "https://www.febbox.com/faq",
+      "date": "2026-11-03",
+      "proved": "the FAQ states purchasable capacity has no upper limit",
+      "capture": "sha256:f3b096a4b997086be0d0ee7b0f03b83bfcb3a867376711a6fa35393ac7f64121",
+      "quote": "There is no limit, you can expand your maximum space by continuously purchasing additional storage capacity packages."
+    },
+    {
+      "url": "https://www.febbox.com/plan",
+      "date": "2026-11-03",
+      "proved": "the free plan is 10GB basic space",
+      "capture": "sha256:ef0ceb9128678ca423feca1bd8ea230cab31d5e505107bd2acb92ab0c2c07f5e",
+      "quote": "10GB basic space"
+    },
+    {
+      "url": "https://www.febbox.com/plan",
+      "date": "2026-11-04",
+      "proved": "the free plan includes 10GB basic space",
+      "capture": "sha256:ef0ceb9128678ca423feca1bd8ea230cab31d5e505107bd2acb92ab0c2c07f5e",
+      "quote": "10GB basic space"
     }
   ],
   "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
-  "notes": "The 'free 1TB' figure is stale marketing. The 2024 press release still says 'free 1TB storage', but the live plan page now reads 'Free Plan ... 10GB basic space', and the FAQ confirms a…",
+  "verified_at": "2026-11-04T01:24:13.492Z",
+  "notes": "Free Plan: 10GB basic space at $0/Year. Personal Plan: 1 TB Basic Storage at $26.39/Year ($2.20 / Month), additional space can be purchased. Family Plan: $35.99/Year ($2.99 / Month), up to 5 users share the storage. The FAQ states there is no limit on the capacity that can be purchased; the price of space above 1 TB is not on the plan page (unverified).",
   "extras": {
     "dead_end": {
       "failure_class": "quota",
@@ -72,6 +181,6 @@
       "first_recorded": "2026-10-21"
     }
   },
-  "binding": "none",
-  "binding_note": null
+  "binding": "volume-quota",
+  "binding_note": "the free space is 10GB, a stored-bytes quota far below the need; space above 1 TB is a priced purchase"
 }

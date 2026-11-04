@@ -49,7 +49,7 @@
   "binding_note": "10 forwarding rules is the inbound budget and they are rules rather than a port range, so the buyer has less room than the sellers that hand out 20 consecutive ports.",
   "identity_cost": {
     "kind": "card",
-    "detail": "a WHMCS account whose registration form requires first name, last name, city and postcode, with email mandatory and phone present but not marked required; no national ID field exists. Payment rails and any authorisation hold are unestablished, because every cart route tried resolved to a different product group and no checkout was reachable.",
+    "detail": "a WHMCS account whose registration form asks first name, last name, email, phone, street address, city, postcode and a password with an image captcha; no national ID field exists. The cart prices the plan once a session exists, but the checkout then renders an empty cart ('您的购物车是空的') with no payment selector, so the rail is chosen only after an order is placed. Payment rails, any authorisation hold, and whether a prepaid or virtual card passes are not published at https://miaomiao.moe/cart.php?a=checkout: the storefront terms name no rail, and the product page states '无技术支持 无退款'.",
     "country": null
   },
   "reliability_note": "the store states '无技术支持 无退款' (no technical support, no refund) and '购买前请确保掌握基础使用知识' (make sure you have basic knowledge before buying); no uptime figure or SLA published",
@@ -100,6 +100,62 @@
       "url": "https://miaomiao.moe/register.php",
       "date": "2026-10-24",
       "proved": "the form source marks firstname (名字), lastname (姓氏), city (城市) and postcode (邮编) as required, with email and phonenumber (手机号码) present and no national ID field"
+    },
+    {
+      "url": "https://miaomiao.moe/cart.php?a=checkout",
+      "date": "2026-11-02",
+      "proved": "the checkout renders an empty cart and no payment selector, so no rail or hold is published there",
+      "capture": "sha256:9c4cf8bfab30324b7bf2ba8d6a062646dedb5bc42e936334115424dae3dfa555",
+      "quote": "您的购物车是空的"
+    },
+    {
+      "url": "https://miaomiao.moe/register.php",
+      "date": "2026-11-02",
+      "proved": "the registration form carries a billing-address block with phone, street, city, postcode, country and state",
+      "capture": "sha256:e39be7db82319be1c998325849a3df7a6389906f4d16e03462cf1e78e7bf6663",
+      "quote": "账单地址"
+    },
+    {
+      "url": "https://miaomiao.moe/index.php?rp=/store/hgc-nat",
+      "date": "2026-11-02",
+      "proved": "the product page states no technical support and no refund",
+      "capture": "sha256:988d9ae22f646c9f2e2efafe77fe048c4bb700892c91c76b4e2b8a272063b12f",
+      "quote": "无技术支持 无退款"
+    },
+    {
+      "url": "https://miaomiao.moe/index.php?rp=%2Fannouncements%2F2%2FMiaoMiaoMoe-%E4%BD%BF%E7%94%A8%E6%9D%A1%E6%AC%BETOS.html",
+      "date": "2026-11-02",
+      "proved": "the terms' refund clause is the only payment-adjacent statement and names no rail",
+      "capture": "sha256:44db4b931ecffd3b098fb595daf8357de2a39f49926f20429cbac6f897c60c67",
+      "quote": "1.產品未有使用問題無退款政策，不接受任何因速度、延遲以及個人問題理由進行退款。"
+    },
+    {
+      "url": "probe:https://miaomiao.moe/cart.php?a=add&pid=39",
+      "date": "2026-11-02",
+      "proved": "with a warmed cookie jar the cart resolves to the product configuration page and renders a price",
+      "capture": "sha256:9e859b3409ae7f628563f902d6af91a06cf1a65e9c338b380e08efe7478bd8cf",
+      "quote": "\"verdict\": \"priced\""
+    },
+    {
+      "url": "probe:https://miaomiao.moe/cart.php?a=add&pid=39",
+      "date": "2026-11-02",
+      "proved": "the add route for pid 39 lands on the configuration page for HGC-Nano rather than another product group",
+      "capture": "sha256:9e859b3409ae7f628563f902d6af91a06cf1a65e9c338b380e08efe7478bd8cf",
+      "quote": "\"final_url\": \"https://miaomiao.moe/cart.php?a=confproduct&i=0\""
+    },
+    {
+      "url": "probe:https://miaomiao.moe/cart.php?a=add&pid=39",
+      "date": "2026-11-02",
+      "proved": "the record of the cart read shows the resolved product page and its size",
+      "capture": "sha256:9e859b3409ae7f628563f902d6af91a06cf1a65e9c338b380e08efe7478bd8cf",
+      "quote": "\"bytes\": 39084"
+    },
+    {
+      "url": "https://miaomiao.moe/cart.php?a=checkout",
+      "date": "2026-11-02",
+      "proved": "the checkout still offers an empty cart and a cart view, with no payment rail and no hold",
+      "capture": "sha256:9c4cf8bfab30324b7bf2ba8d6a062646dedb5bc42e936334115424dae3dfa555",
+      "quote": "查看购物车"
     }
   ],
   "verdict": "qualifies-with-caveat",
@@ -141,13 +197,13 @@
     "card_hold": "not stated on any page read",
     "checkout_fields": "first name, last name, city and postcode required; email and phone present; no national ID field",
     "stock": "not published on the Hong Kong groups; the Taiwan HiNet group is the only one with a marker and its cheapest tier reads '0 可用'",
-    "cart_url": null,
-    "cart_works": "unknown",
+    "cart_url": "https://miaomiao.moe/cart.php?a=add&pid=39",
+    "cart_works": "yes: the add route resolves to the product configuration page and prices HGC-Nano at CNY 6.60 a month",
     "product_url": "https://miaomiao.moe/index.php?rp=/store/hgc-nat",
     "signup_url": "https://miaomiao.moe/register.php",
-    "cart_url_note": "the order buttons target cart.php?a=add&pid=<id>, but pids 39 and 45 both rendered the German DEIDC group instead of the product, so the cart was never seen to price a plan.",
+    "cart_url_note": "pid 39 resolves to the HGC configuration page and prices HGC-Nano; the price is visible only after the session cookie is set, and the checkout still returns an empty cart",
     "other_groups": "HKT NAT from CNY 8.80, HKBN NAT from CNY 9.90, HiNet NAT (Taiwan) from CNY 9.90, HKIDC VPS with a dedicated IPv4 from CNY 19.90, HKIDC IPv6 VPS from CNY 9.90 with a /64 and DNS64, DEIDC VPS in Germany from CNY 19.90, and separate Macau and Taiwan HKIDC groups",
     "why_recorded": "the widest carrier choice - four real Hong Kong and Taiwan ISP lines plus an IPv6-first product - at the lowest Hong Kong-native price found"
   },
-  "verified_at": "2026-10-24T06:03:49.000Z"
+  "verified_at": "2026-11-02T02:17:38.787Z"
 }

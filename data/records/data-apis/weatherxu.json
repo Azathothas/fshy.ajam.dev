@@ -1,0 +1,355 @@
+{
+  "topic": "data-apis",
+  "slug": "weatherxu",
+  "provider": "WeatherXu",
+  "url": "https://weatherxu.com/pricing",
+  "category": "weather API",
+  "tier": "Free",
+  "free_tier": {
+    "stated": "Free plan, USD 0: 10,000 API calls a month at up to 10 requests a second, with real-time weather data, basic forecasting and daily forecasts for 5 days; no historical weather.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://weatherxu.com/pricing",
+    "read_on": "2026-11-02",
+    "notes": "Each call counts as one request whatever it returns; the X-API-CURRENT and X-API-QUOTA response headers report the month's count and limit, and error code 105 answers once the allowance is reached. Bulk path: none on Free; each call returns one location by latitude and longitude, and the hourly Historical API (start and end timestamps) is on Plus (1 year) and Business (5 years) only. The next plan up is Starter at USD 20 a month for 500,000 calls a month."
+  },
+  "per_object_cap": {
+    "stated": "not applicable",
+    "bytes": null,
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: the unit is a request",
+    "days": null,
+    "notes": "",
+    "source_url": "https://weatherxu.com/pricing"
+  },
+  "egress": {
+    "terms": "not applicable",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://weatherxu.com/pricing"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "REST over HTTPS at api.weatherxu.com/v1/weather (current conditions, hourly and daily forecasts) and, on Plus and Business, historical.weatherxu.com/v1/history; the key goes in the api_key query parameter or the X-API-KEY header; JSON answers",
+  "endpoint": "https://api.weatherxu.com/v1/weather",
+  "tooling": "any HTTP client; open-source SDKs on GitHub for Python, JavaScript, Ruby and more, and a Postman collection",
+  "chaining": "A small keyed forecast source: current conditions and a 5-day daily forecast per latitude and longitude at 10,000 calls a month, with no history on the Free plan.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "10,000 API calls a month on the Free plan; error code 105 answers once the allowance is reached",
+      "source": "https://weatherxu.com/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "10 requests a second (600 requests a minute) on the Free plan; over it the API answers HTTP 429",
+      "source": "https://weatherxu.com/documentation/api_rate_limit"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "The monthly allowance is the ceiling a steady poller meets first; the per-second limit only shapes bursts.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The sign-up form lists a full name, an email and a password (8 characters or more with upper-case, lower-case and a number) and acceptance of the terms; the pricing and FAQ pages say no credit card is required, and the API key is issued after the email is verified.",
+    "country": null
+  },
+  "reliability_note": "api.weatherxu.com answered HTTP 525 (the CDN's TLS handshake with the origin failed) and historical.weatherxu.com HTTP 522 on every probe between 10:39 and 15:21 UTC on 2026-11-02, from several networks, while the website answered 200 and the status page showed all services operational; over the limits the API answers HTTP 429 or error code 105.",
+  "confidence": "documented",
+  "confidence_note": "Plan, limits, error codes and sign-up fields are read from first-party pages. The API host answered HTTP 525 on every probe, so the free key was not exercised and no keyless API answer was read; a call with a free key would move this to measured.",
+  "evidence": [
+    {
+      "url": "https://weatherxu.com/pricing",
+      "date": "2026-11-02",
+      "proved": "the Free plan allows 10,000 requests a month; Starter allows 500,000",
+      "capture": "sha256:309c4973d3cf17dabae05c70bfed03a7d6f4059e86acafa77bcdd59f37475359",
+      "quote": "| Requests per month | 10,000 | 500,000 | 2,000,000 | 5,000,000 | Custom |"
+    },
+    {
+      "url": "https://weatherxu.com/pricing",
+      "date": "2026-11-02",
+      "proved": "the Free plan is USD 0 a month and Starter is USD 20 a month",
+      "capture": "sha256:309c4973d3cf17dabae05c70bfed03a7d6f4059e86acafa77bcdd59f37475359",
+      "quote": "| Price | $0/mo | $20/mo | $50/mo | $90/mo | Custom pricing |"
+    },
+    {
+      "url": "https://weatherxu.com/pricing",
+      "date": "2026-11-02",
+      "proved": "the Free plan lists real-time weather data and basic forecasting",
+      "capture": "sha256:309c4973d3cf17dabae05c70bfed03a7d6f4059e86acafa77bcdd59f37475359",
+      "quote": "- Real-time weather data\n- Basic forecasting"
+    },
+    {
+      "url": "https://weatherxu.com/pricing",
+      "date": "2026-11-02",
+      "proved": "the Free plan has daily forecasts for 5 days",
+      "capture": "sha256:309c4973d3cf17dabae05c70bfed03a7d6f4059e86acafa77bcdd59f37475359",
+      "quote": "| Daily forecasts | 5 days | 15 days | 15 days | 15 days | 15 days |"
+    },
+    {
+      "url": "https://weatherxu.com/pricing",
+      "date": "2026-11-02",
+      "proved": "Historical Weather Data is blank for Free and Starter, 1 year on Plus and 5 years on Business",
+      "capture": "sha256:309c4973d3cf17dabae05c70bfed03a7d6f4059e86acafa77bcdd59f37475359",
+      "quote": "| [Historical Weather Data](https://weatherxu.com/documentation/history) |  |  | 1 year | 5 years | 10 years |"
+    },
+    {
+      "url": "https://weatherxu.com/pricing",
+      "date": "2026-11-02",
+      "proved": "the pricing page says no credit card is required",
+      "capture": "sha256:309c4973d3cf17dabae05c70bfed03a7d6f4059e86acafa77bcdd59f37475359",
+      "quote": "No credit card required. Cancel anytime."
+    },
+    {
+      "url": "https://weatherxu.com/documentation/api_rate_limit",
+      "date": "2026-11-02",
+      "proved": "the Free plan is limited to 10 requests a second (600 a minute)",
+      "capture": "sha256:fc0c90611c046a815ae7193c3400810d4cc67ea06e1fab8ab84b971c9c683eeb",
+      "quote": "#### Free Plan\n\n- Limit: 10 requests per second (600 requests per minute)"
+    },
+    {
+      "url": "https://weatherxu.com/documentation/api_rate_limit",
+      "date": "2026-11-02",
+      "proved": "over the rate limit the API answers HTTP 429",
+      "capture": "sha256:fc0c90611c046a815ae7193c3400810d4cc67ea06e1fab8ab84b971c9c683eeb",
+      "quote": "- Exceeding this limit will result in a `429 Too Many Requests` response"
+    },
+    {
+      "url": "https://weatherxu.com/documentation",
+      "date": "2026-11-02",
+      "proved": "the quick-start page lists 10 requests a second under the Free Plan",
+      "capture": "sha256:44326d714da5499f2aec34dbf6e64569385e907979b81ce434f0688bb37e3243",
+      "quote": "##### Free Plan\n\n- 10 requests per second"
+    },
+    {
+      "url": "https://weatherxu.com/documentation/api_error_code",
+      "date": "2026-11-02",
+      "proved": "error code 105 means the monthly request allowance is reached or exceeded",
+      "capture": "sha256:a49643f8efffcf2bdc2f62fde173b8bc51298a6e682abb2898f9793d417e9818",
+      "quote": "| `105` | User has reached or exceeded the monthly API request allowance for their subscription plan. |"
+    },
+    {
+      "url": "https://weatherxu.com/documentation/api_quota",
+      "date": "2026-11-02",
+      "proved": "the X-API-CURRENT response header reports the month's request count",
+      "capture": "sha256:101246b250875775a06666a454a82da33103778b67e57633f06640805d1ffdb1",
+      "quote": "| `X-API-CURRENT` | Current number of API requests made this month |"
+    },
+    {
+      "url": "https://weatherxu.com/documentation/api_quota",
+      "date": "2026-11-02",
+      "proved": "the X-API-QUOTA response header reports the monthly limit of the plan",
+      "capture": "sha256:101246b250875775a06666a454a82da33103778b67e57633f06640805d1ffdb1",
+      "quote": "| `X-API-QUOTA` | Monthly request limit based on your plan |"
+    },
+    {
+      "url": "https://weatherxu.com/faq",
+      "date": "2026-11-02",
+      "proved": "every call counts as one request, whether it returns current, forecast or historical data",
+      "capture": "sha256:4abd7070905077785eb51e34cb18f811e5acbd41d9fc5ef82aa8014786744d95",
+      "quote": "Each call to our API endpoints counts as one request. This includes retrieving current conditions, forecasts, or historical data. Multiple data points within a single call still count as one request."
+    },
+    {
+      "url": "https://weatherxu.com/faq",
+      "date": "2026-11-02",
+      "proved": "the API key is issued after the email is verified",
+      "capture": "sha256:4abd7070905077785eb51e34cb18f811e5acbd41d9fc5ef82aa8014786744d95",
+      "quote": "Simply sign up and verify your email to receive your unique API key."
+    },
+    {
+      "url": "https://weatherxu.com/faq",
+      "date": "2026-11-02",
+      "proved": "the free tier needs no credit card",
+      "capture": "sha256:4abd7070905077785eb51e34cb18f811e5acbd41d9fc5ef82aa8014786744d95",
+      "quote": "Our free tier lets you start immediately with no credit card required."
+    },
+    {
+      "url": "https://weatherxu.com/register",
+      "date": "2026-11-02",
+      "proved": "the sign-up page says free API calls every month and no credit card",
+      "capture": "sha256:11219e3720e1c22ec39ca4e183cfc80b8f82a2eaddb8c4421d94a4e2805e1203",
+      "quote": "Get started with free API calls every month. No credit card required. Cancel anytime."
+    },
+    {
+      "url": "https://weatherxu.com/register",
+      "date": "2026-11-02",
+      "proved": "the sign-up form lists a full name and an email",
+      "capture": "sha256:11219e3720e1c22ec39ca4e183cfc80b8f82a2eaddb8c4421d94a4e2805e1203",
+      "quote": "Full Name *\n\nYour Email *"
+    },
+    {
+      "url": "https://weatherxu.com/register",
+      "date": "2026-11-02",
+      "proved": "the password needs 8 characters or more with a lower-case letter, an upper-case letter and a number",
+      "capture": "sha256:11219e3720e1c22ec39ca4e183cfc80b8f82a2eaddb8c4421d94a4e2805e1203",
+      "quote": "Minimum 8 characters\n\nAt least one lowercase letter (a-z)\n\nAt least one uppercase letter (A-Z)\n\nAt least one number (0-9)"
+    },
+    {
+      "url": "https://weatherxu.com/register",
+      "date": "2026-11-02",
+      "proved": null,
+      "capture": "sha256:11219e3720e1c22ec39ca4e183cfc80b8f82a2eaddb8c4421d94a4e2805e1203",
+      "quote": null
+    },
+    {
+      "url": "https://weatherxu.com/documentation/history",
+      "date": "2026-11-02",
+      "proved": "the hourly Historical API is available on the Plus and Business plans only",
+      "capture": "sha256:70ff3a9936357e33545ae10a0c0b2a706717f9320a85ef511e8aa97461449c8d",
+      "quote": "`/history` provides hourly historical weather api data for any location worldwide. Only available for [Plus](https://weatherxu.com/pricing) and [Business](https://weatherxu.com/pricing) plan."
+    },
+    {
+      "url": "https://weatherxu.com/documentation/weather",
+      "date": "2026-11-02",
+      "proved": "the forecast endpoint is api.weatherxu.com/v1/weather",
+      "capture": "sha256:8d20967876cbe31a11dcf1417c7fe9c2f946f49f82c80f73a2af4761ef226c03",
+      "quote": "`https://api.weatherxu.com/v1/weather`"
+    },
+    {
+      "url": "https://weatherxu.com/documentation/weather",
+      "date": "2026-11-02",
+      "proved": "the endpoint returns current conditions, hourly forecasts and daily forecasts for any location",
+      "capture": "sha256:8d20967876cbe31a11dcf1417c7fe9c2f946f49f82c80f73a2af4761ef226c03",
+      "quote": "`/weather` provides comprehensive weather data including current conditions, hourly forecasts, and daily forecasts for any location worldwide."
+    },
+    {
+      "url": "https://weatherxu.com/documentation/api_key",
+      "date": "2026-11-02",
+      "proved": "every call needs a key, sent as a query parameter or a request header",
+      "capture": "sha256:257cab870b6f21dce2679aecfa33e0effe76dbbf8094a2448238b3f78a534ae1",
+      "quote": "Authentication is required for all API requests. You can include your API key using either a query parameter or request headers:"
+    },
+    {
+      "url": "https://weatherxu.com/documentation/api_key",
+      "date": "2026-11-02",
+      "proved": "the key header is X-API-KEY",
+      "capture": "sha256:257cab870b6f21dce2679aecfa33e0effe76dbbf8094a2448238b3f78a534ae1",
+      "quote": "-H 'X-API-KEY: YOUR_API_KEY' \\"
+    },
+    {
+      "url": "https://weatherxu.com/documentation/weather",
+      "date": "2026-11-02",
+      "proved": "the key query parameter is api_key",
+      "capture": "sha256:8d20967876cbe31a11dcf1417c7fe9c2f946f49f82c80f73a2af4761ef226c03",
+      "quote": "https://api.weatherxu.com/v1/weather?lat=40.7128&lon=-74.0060&api_key=YOUR_API_KEY"
+    },
+    {
+      "url": "https://weatherxu.com/documentation/sdk",
+      "date": "2026-11-02",
+      "proved": "open-source SDKs exist for Python, JavaScript and Ruby",
+      "capture": "sha256:47fbe065e8624b5a61c5704a29ef07a422f6fe33853077e314f41f167e46f4ee",
+      "quote": "Access our open-source SDKs on GitHub for seamless integration with Python, JavaScript, Ruby and more."
+    },
+    {
+      "url": "https://weatherxu.com/documentation/api_additional",
+      "date": "2026-11-02",
+      "proved": "a Postman collection is published",
+      "capture": "sha256:a44fccb2fed490de26c988a23aef5916732bfa666cd760b61b84c51cc898bd82",
+      "quote": "##### Check out our Postman collection"
+    },
+    {
+      "url": "https://weatherxu.com/sponsorship",
+      "date": "2026-11-02",
+      "proved": "free-plan weather data is offered to open source developers and students",
+      "capture": "sha256:b67bb07ef9dff25a5a0452df7735138411d622d232ca45d879fdc14c68f2d0b3",
+      "quote": "Free plan weather data access for open source developers and students. Build the next generation of weather applications."
+    },
+    {
+      "url": "https://weatherxu.com/sponsorship",
+      "date": "2026-11-02",
+      "proved": "the Student Program lasts 6 months",
+      "capture": "sha256:b67bb07ef9dff25a5a0452df7735138411d622d232ca45d879fdc14c68f2d0b3",
+      "quote": "6 Month Access"
+    },
+    {
+      "url": "https://weatherxu.com/sponsorship",
+      "date": "2026-11-02",
+      "proved": "the Student Program asks for a valid student status and an academic email",
+      "capture": "sha256:b67bb07ef9dff25a5a0452df7735138411d622d232ca45d879fdc14c68f2d0b3",
+      "quote": "- ✓ Valid student status\n\n- ✓ Academic email"
+    },
+    {
+      "url": "https://weatherxu.com/sponsorship",
+      "date": "2026-11-02",
+      "proved": "the Open Source Program asks for a public repository and an open source license",
+      "capture": "sha256:b67bb07ef9dff25a5a0452df7735138411d622d232ca45d879fdc14c68f2d0b3",
+      "quote": "- ✓ Public repository\n\n- ✓ Open source license"
+    },
+    {
+      "url": "https://weatherxu.com/sponsorship",
+      "date": "2026-11-02",
+      "proved": "applications are reviewed within about 48 hours",
+      "capture": "sha256:b67bb07ef9dff25a5a0452df7735138411d622d232ca45d879fdc14c68f2d0b3",
+      "quote": "Applications are typically reviewed within 48 hours. Once approved, you'll receive immediate access to your API credentials."
+    },
+    {
+      "url": "probe:https://api.weatherxu.com/v1/weather?lat=40.7128&lon=-74.0060",
+      "date": "2026-11-02",
+      "proved": "the API host answered HTTP 525 at 10:39 UTC",
+      "capture": "sha256:c34af86555f314c719c6f171e4040feadd7b64b17d8e6b0b41782a75b89bac30",
+      "quote": "\"status\": 525"
+    },
+    {
+      "url": "probe:https://api.weatherxu.com/v1/weather?lat=40.7128&lon=-74.0060",
+      "date": "2026-11-02",
+      "proved": "the API host still answered HTTP 525 at 15:21 UTC",
+      "capture": "sha256:ac59810c7c498f597fa05e01ae4fa94686e6b2530a2101d8a288551cdd2d8c7b",
+      "quote": "\"status\": 525"
+    },
+    {
+      "url": "probe:https://historical.weatherxu.com/v1/history?lat=40.7128&lon=-74.0060&start=1704880800&end=1704970800",
+      "date": "2026-11-02",
+      "proved": "the historical host answered HTTP 522 at 10:39 UTC",
+      "capture": "sha256:04224772302dbb305fc7491b06695c05e588e25dd9c33d95b174e446216cc89f",
+      "quote": "\"status\": 522"
+    },
+    {
+      "url": "probe:https://historical.weatherxu.com/v1/history?lat=40.7128&lon=-74.0060&start=1704880800&end=1704970800",
+      "date": "2026-11-02",
+      "proved": "the historical host still answered HTTP 522 at 15:21 UTC",
+      "capture": "sha256:ec01423d24d090ad67974b0c939b9111e558c4d957176ffe3d04dce283e6e6a3",
+      "quote": "\"status\": 522"
+    },
+    {
+      "url": "probe:https://weatherxu.com/pricing",
+      "date": "2026-11-02",
+      "proved": "the website answered HTTP 200 at 10:39 UTC while the API host answered 525",
+      "capture": "sha256:34b264c29d07589834d9e40617cc5b1504ffdcbd0300de8fd63e604e37bb350b",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "https://api.weatherxu.com/v1/weather?lat=40.7128&lon=-74.0060",
+      "date": "2026-11-02",
+      "proved": "a read from a separate network at 10:44 UTC also got the Cloudflare 525 page for the API host",
+      "capture": "sha256:968ed5e153b58096e1c64ef12b57dc21ef4a3df08b6f6f888cdbe319572ba45c",
+      "quote": "The SSL/TLS handshake between Cloudflare and the origin web server failed."
+    },
+    {
+      "url": "https://status.weatherxu.com/",
+      "date": "2026-11-02",
+      "proved": "the status page showed all services online at 10:43 UTC while the API host answered 525",
+      "capture": "sha256:be6a9be5c1272f75947fe1c03c39fc71188c7e5932f9e0b1d69f8fce61f457c5",
+      "quote": "# All services are online\n\nLast updated on Nov 2, 2026 at 10:43am UTC"
+    },
+    {
+      "url": "https://status.weatherxu.com/",
+      "date": "2026-11-02",
+      "proved": "the status page still showed all services online at 15:22 UTC, with api.weatherxu.com listed as a service",
+      "capture": "sha256:16db8801024c3a30394bd42c56b0e6f47c42b03831082367dec8619ba6f06604",
+      "quote": "# All services are online\n\nLast updated on Nov 2, 2026 at 3:22pm UTC"
+    },
+    {
+      "url": "https://free-for.dev/",
+      "date": "2026-11-02",
+      "proved": "free-for.dev lists WeatherXu with a free tier of 10,000 API calls a month",
+      "capture": "sha256:332a2db9b08c17ba7ad96ca55df70697bf2f4790a2b272fb1a0bedaf661f15a2",
+      "quote": "Free tier includes 10,000 API calls/month."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-11-02T00:23:44.610Z",
+  "notes": "Bulk path: none on Free; the hourly Historical API is on Plus and Business. An Open Source Program (renewable access, for a public repository with an open source license) and a Student Program (6 months, for a valid student status and an academic email) give premium or full API access on application, reviewed within about 48 hours. The API host was unreachable on 2026-11-02 while the status page showed all services operational."
+}

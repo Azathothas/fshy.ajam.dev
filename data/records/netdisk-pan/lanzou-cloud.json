@@ -5,7 +5,7 @@
   "url": "https://www.lanzou.com",
   "category": "consumer-pan",
   "free_tier": {
-    "stated": "Unlimited total storage on the free tier: '拥有无限制的总存储空间'. The per-file cap is 100 MB, and share links are permanent",
+    "stated": "Unlimited total storage on the free tier: '拥有无限制的总存储空间'. The per-file cap is on the per-object field",
     "unit": "unlimited",
     "metered_on": "stored-bytes",
     "source_url": "https://www.lanzou.com/",
@@ -17,7 +17,7 @@
     "source_url": "https://www.cnblogs.com/Dongmy/p/18143085"
   },
   "retention": {
-    "stated": "Share links are stated to be permanent: '分享文件地址永久有效'. Account retention is not published",
+    "stated": "unverified: the vendor home page as read states no share-link lifetime; account retention is not published",
     "days": null,
     "source_url": "https://www.lanzou.com/"
   },
@@ -31,7 +31,7 @@
   "interface": [
     "rest"
   ],
-  "tooling": "no official API. A mature unofficial Python wrapper, zaxtyson/LanZouCloud-API with 811 stars and PyPI lanzou-api 2.6.10, does login, list, upload, download, delete, move, folder operations and direct-link extraction, and its README claims it works around both the file-type and the per-file size limits by splitting",
+  "tooling": "no official API. Reverse-engineered clients mount it: the OpenList Lanzou driver in account, cookie or link mode, and a mature unofficial Python wrapper, zaxtyson/LanZouCloud-API, which does login, list, upload, download, delete, move, folder operations and direct-link extraction, and whose README claims it works around both the file-type and the per-file size limits by splitting",
   "chaining": "Unlimited total times 100 MB per object is the pure per-record-unlimited shape: 20 TiB is about 210,000 objects, all inside one free account's allowance. The gate is that registration is SMS-only on a mainland number",
   "limits": [
     {
@@ -47,7 +47,7 @@
   ],
   "identity_cost": {
     "kind": "country-phone",
-    "detail": "registration moved to accounts.woozooo.com and asks for 手机号 plus an SMS code with no email path and no documented foreign-number path",
+    "detail": "the register form (pc.woozooo.com, terms on accounts.woozooo.com) asks for 手机号 plus an SMS code, then a username and password; it shows no email field and no country selector. A foreign-number path is unverified: behind a sign-up",
     "country": "86"
   },
   "reliability_note": "Domains rotate constantly, across lanzou.com, lanzoue, lanzouj, lanzoux and lanzoul, and a share link that works on one suffix 404s on another, so a script must carry a domain list. The CDN host itself is geo-flaky.",
@@ -92,10 +92,38 @@
       "url": "https://openlistteam.github.io/docs/zh/guide/drivers/lanzou.html",
       "date": "2026-10-21",
       "proved": "'链接：只能显示链接里面的内容（不需要提供cookie就可以挂载）'"
+    },
+    {
+      "url": "https://www.lanzou.com/",
+      "date": "2026-11-03",
+      "proved": "the vendor page states unlimited total storage",
+      "capture": "sha256:5b05f639888fc838d484db8cbd6c9eab5b1697c8de56482ddb0f69de4e20a18d",
+      "quote": "拥有无限制的总存储空间，支持个性化定制。"
+    },
+    {
+      "url": "https://pc.woozooo.com/account.php?action=register",
+      "date": "2026-11-03",
+      "proved": "the register form asks for a phone number, used for SMS verification and recovery, and a username and password",
+      "capture": "sha256:392416d0d364934533ee37ce79a1d509337ab3a498b29033449939cf440c8818",
+      "quote": "请使用用户名登录，手机号仅用于找回短信验证。"
+    },
+    {
+      "url": "https://openlistteam.github.io/docs/zh/guide/drivers/lanzou.html",
+      "date": "2026-11-03",
+      "proved": "the OpenList Lanzou driver mounts an account from a username and password",
+      "capture": "sha256:ea97382be4ddfd770e37a0a1258a89fce5bef892ff485d54dbe66a90ba305ca2",
+      "quote": "可以显示自己网盘所有文件，只需要填写帐号密码，会自动帮你刷新cookie"
+    },
+    {
+      "url": "https://www.lanzou.com/",
+      "date": "2026-11-03",
+      "proved": "downloads are stated as unlimited in speed, volume and count, with no login",
+      "capture": "sha256:5b05f639888fc838d484db8cbd6c9eab5b1697c8de56482ddb0f69de4e20a18d",
+      "quote": "下载不限速度，不限流量，不限次数，免登录下载！"
     }
   ],
   "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
+  "verified_at": "2026-11-04T00:21:07.070Z",
   "binding": "per-object-cap",
   "binding_note": "The total is genuinely unlimited and the egress is genuinely free, so nothing about capacity or traffic binds. 100 MB per object over a 10 TiB working set is 105,000 objects, which makes the file count the problem before the bytes.",
   "notes": "The vendor's own page says unlimited and that is what is recorded, with the disagreement named.",

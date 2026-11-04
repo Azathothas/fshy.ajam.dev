@@ -10,13 +10,13 @@
     "unit": "requests",
     "metered_on": "request-count",
     "source_url": "https://gnews.io/pricing",
-    "read_on": "2026-10-31",
+    "read_on": "2026-11-02",
     "notes": "The counter resets at 00:00 UTC and unused requests do not carry over. Article content is truncated to a short excerpt on the Free plan, and pagination stops at 1,000 articles a query. CORS allows only localhost. The next plan up is Essential at EUR 49.99 a month for 1,000 requests a day. A free education plan built on Essential (1,000 requests a day, 25 articles a request, history back to 2020, full content) is granted after a manual review to students, researchers and teaching staff at a recognised institution."
   },
   "per_object_cap": {
     "stated": "10 articles a request on the Free plan; content truncated to a short excerpt",
     "bytes": null,
-    "notes": ""
+    "notes": "unverified: behind a sign-up. The first-party pages say only 'a short excerpt' for the Free plan content and give no length. Sample responses show an excerpt of 250 characters followed by '... [N chars]' (the documentation's JSON sample and a third-party sample of ten articles), and a third-party benchmark on a Free key reported a median visible content length of 265 characters over 80 values."
   },
   "retention": {
     "stated": "search reaches the last 30 days, and articles appear after a 12-hour delay",
@@ -64,7 +64,7 @@
   },
   "reliability_note": "Over the daily quota the API answers 403 until 00:00 UTC, and over 1 request a second it answers 429; the 99.95% uptime commitment covers only the Business and Enterprise plans.",
   "confidence": "documented",
-  "confidence_note": "Quota, delay, history window, rate and sign-up fields are read from first-party pages; a call with no key answered HTTP 400 'You did not provide an API key.', so the free key was not exercised. A call with a free key would move this to measured.",
+  "confidence_note": "unverified: behind a sign-up. The 101st request of a day answering 403, a second request inside one second answering 429 and the Free plan content excerpt length need a free key and were not measured: the 403 and the 429 are documented, and no first-party page states the excerpt length. Quota, delay, history window, rate and sign-up fields are read from first-party pages (pricing, FAQ, error handling); a call with no key answered HTTP 400 'You did not provide an API key.', which the error handling page documents for a missing key. A call with a free key would move this to measured.",
   "evidence": [
     {
       "url": "https://gnews.io/pricing",
@@ -233,9 +233,86 @@
       "proved": "the keyless answer names the missing key",
       "capture": "sha256:63c071ea422c63298508e4cd75844983ba9641ab97e397799b1d2d37da5cc68e",
       "quote": "You did not provide an API key."
+    },
+    {
+      "url": "https://docs.gnews.io/error-handling",
+      "date": "2026-11-02",
+      "proved": "the error-handling page maps HTTP 403 to the daily quota being used up, with the reset at 00:00 UTC",
+      "capture": "sha256:8ac223e4f91921143e01896e9f846023cd7eaf440d05df591932303ad0d3896f",
+      "quote": null
+    },
+    {
+      "url": "https://docs.gnews.io/error-handling",
+      "date": "2026-11-02",
+      "proved": "the error-handling page maps HTTP 429 to more than 1 request a second on the Free plan, and 10 a second on paid plans",
+      "capture": "sha256:8ac223e4f91921143e01896e9f846023cd7eaf440d05df591932303ad0d3896f",
+      "quote": "429Too Many RequestsToo many requests were sent in a short time period The Free plan is limited to 1 request per second Paid plans are limited to 10 requests per second"
+    },
+    {
+      "url": "probe:https://gnews.io/api/v4/search?q=test&lang=en&max=1",
+      "date": "2026-11-02",
+      "proved": "a search call with no key answered HTTP 400",
+      "capture": "sha256:3147cdf54d946435b590728021a257362a984bdc6649c7efe93dff25d0aa4021",
+      "quote": "\"status\": 400"
+    },
+    {
+      "url": "probe:https://gnews.io/api/v4/search?q=test&lang=en&max=1",
+      "date": "2026-11-02",
+      "proved": "the keyless answer names the missing key",
+      "capture": "sha256:63c071ea422c63298508e4cd75844983ba9641ab97e397799b1d2d37da5cc68e",
+      "quote": "You did not provide an API key."
+    },
+    {
+      "url": "https://docs.gnews.io/json-response",
+      "date": "2026-11-02",
+      "proved": "the documentation's response sample shows a truncated content of 250 characters (counted) followed by '... [1862 chars]'",
+      "capture": "sha256:477bb27a523e2f5732073f18ed0c7a0ba185344313e6a3da13dc85ba4e3542c3",
+      "quote": "Today, Apple’s as-yet-unannounced M5 iPad Pro was seemingly leaked by the same YouTuber who last year leaked the M4 MacBook Pro. Thanks to the surprise reveal, we now have benchmarks for Apple’s forthcoming M5 chip, and they point to big gains coming... [1862 chars]"
+    },
+    {
+      "url": "https://www.cnblogs.com/flyingsir/p/19061708",
+      "date": "2026-11-02",
+      "proved": "a third-party sample response shows content cut to 250 characters (counted) before '... [305 chars]', the same cut on all ten articles of the page",
+      "capture": "sha256:ee996d55ec2ffa581e49175d7b74aa5ec0efcfa79b6f4cdca59c40f3aecd1616",
+      "quote": "Le secteur de la gare de Chêne-Bourg va continuer à se développer. Ce mercredi, le Conseil d'Etat a adopté un plan localisé de quartier visant à bâtir, juste à côté de la halte du Léman Express, un nouvel immeuble abritant 115 logements. Les rez-de-c... [305 chars]"
+    },
+    {
+      "url": "https://gnews.io/legal/terms-of-service",
+      "date": "2026-11-02",
+      "proved": "the 99.95% monthly uptime commitment covers only the Business and Enterprise plans",
+      "capture": "sha256:d642e2f0a6f86f716d563bc449d139403c9b2ef4942fe1b328c1589745a5bacc",
+      "quote": "If you are on a paid Business or Enterprise plan, we commit to a monthly uptime of at least 99.95% for the API."
+    },
+    {
+      "url": "https://docs.gnews.io/error-handling",
+      "date": "2026-11-02",
+      "proved": "a request with no apikey parameter answers 400 with the message 'You did not provide an API key.' rather than 401",
+      "capture": "sha256:8ac223e4f91921143e01896e9f846023cd7eaf440d05df591932303ad0d3896f",
+      "quote": "Note that a request sent without an `apikey` parameter, or with a malformed one, returns a 400 - Bad Request with the message `You did not provide an API key.` rather than a 401."
+    },
+    {
+      "url": "https://webz.io/blog/news-api-benchmarks/webz-io-vs-gnews-api-news-api-comparison/",
+      "date": "2026-11-02",
+      "proved": "a third-party benchmark that used a Free key reported a median visible content length of 265 characters over 80 truncated values",
+      "capture": "sha256:69abc62cb11199702dd481ab3e9df2f9f94b51e77ec399d65c9893519c6317ab",
+      "quote": "The median visible GNews content value was 265 characters, and all 80 tested GNews content values were truncated because the supplied credential was on the free plan."
+    },
+    {
+      "url": "https://gnews.io/pricing",
+      "date": "2026-11-02",
+      "proved": "the Free plan gives 100 requests a day, 10 articles a request, a 12-hour delay and 30 days of history",
+      "capture": "sha256:71a8bb44351f01065f79767b9c0bf6897dffb5602cd70e6d928e2fd166d7a9d4",
+      "quote": "Free gives 100 requests/day and 10 articles per request, with a 12-hour delay and 30 days of history."
+    },
+    {
+      "url": "https://gnews.io/faq",
+      "date": "2026-11-02",
+      "proved": "the Free plan allows 1 request a second, and over it the API answers 429",
+      "capture": "sha256:4d99964c1c6f77614b5561e97cb44fcb33c68f7f48a0fe0cf35d01fd9ab378f8",
+      "quote": "Yes: 1 request per second on the Free plan and 10 requests per second on every paid plan. Going over that returns `429 Too Many Requests`, so spread out bursts or retry with exponential backoff."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T06:24:18.866Z",
+  "verified_at": "2026-11-03T00:28:40.847Z",
   "notes": "Bulk path: none; the API pages up to 1,000 articles a query."
 }

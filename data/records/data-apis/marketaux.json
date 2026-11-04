@@ -1,0 +1,172 @@
+{
+  "topic": "data-apis",
+  "slug": "marketaux",
+  "provider": "Marketaux",
+  "url": "https://www.marketaux.com/pricing",
+  "category": "financial news API",
+  "tier": "Free",
+  "free_tier": {
+    "stated": "Free plan, USD 0: 100 requests daily, 3 articles per news request, global market news with entity metadata; the Market Stats endpoints allow 0 entities per stat request.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://www.marketaux.com/pricing",
+    "read_on": "2026-11-02",
+    "notes": "Each call to access financial news or analysis data adds 1 request to the daily usage. The entity-stats, trending-entities and time-series endpoints are documented as available on Standard and above. The next plan up is Basic at USD 29 a month for 2,500 requests daily and 20 articles per request."
+  },
+  "per_object_cap": {
+    "stated": "3 articles per news request on the Free plan; an article carries a short snippet of its body, not the body",
+    "bytes": null,
+    "source_url": "https://www.marketaux.com/documentation",
+    "notes": "A result set cannot exceed 20,000 articles; the source and entity list endpoints return 50 rows a page."
+  },
+  "retention": {
+    "stated": "no history window is stated for the Free plan",
+    "days": null,
+    "notes": "",
+    "source_url": "https://www.marketaux.com/pricing"
+  },
+  "egress": {
+    "terms": "not applicable",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.marketaux.com/documentation"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "REST over HTTPS at api.marketaux.com/v1 (news/all, news/similar, news/uuid, news/sources, entity search and metadata lists); the token goes in the api_token parameter; answers are UTF-8 JSON with dates in UTC",
+  "endpoint": "https://api.marketaux.com/v1/news/all",
+  "tooling": "any HTTP client",
+  "chaining": "News articles tagged with the stock, index, currency and crypto entities they mention, with a sentiment score for each entity; the full article is fetched from the source URL by a crawler.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "100 requests daily on the Free plan",
+      "source": "https://www.marketaux.com/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "unverified: a per-minute limit exists (HTTP 429 for too many requests in the past 60 seconds) and its size is read from the X-RateLimit-Limit header, which needs a token",
+      "source": "https://www.marketaux.com/documentation"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "3 articles per request on the Free plan; at most 20,000 articles in one result set",
+      "source": "https://www.marketaux.com/documentation"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "100 requests a day is met first; at 3 articles a request that is at most 300 articles a day.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "The pages say no billing details are required on the free plan.",
+    "country": null
+  },
+  "reliability_note": "Over the daily usage the API answers HTTP 402 usage_limit_reached, and over the per-minute limit HTTP 429 rate_limit_reached; a call with no token answered HTTP 401.",
+  "confidence": "documented",
+  "confidence_note": "Quota, article cap, error codes and register fields are read from first-party pages; a call with no token answered HTTP 401, so the free token was not exercised. A call with a free token would move this to measured.",
+  "evidence": [
+    {
+      "url": "https://www.marketaux.com/pricing",
+      "date": "2026-11-02",
+      "proved": "the Free plan allows 100 requests daily",
+      "capture": "sha256:24947a94ef9cb7255fbeaa8338a8cfec1866ae0ca4c3a1a8cf01bb01d1dfaa57",
+      "quote": "- 100 requests daily"
+    },
+    {
+      "url": "https://www.marketaux.com/pricing",
+      "date": "2026-11-02",
+      "proved": "the Free plan returns 3 articles per news request",
+      "capture": "sha256:24947a94ef9cb7255fbeaa8338a8cfec1866ae0ca4c3a1a8cf01bb01d1dfaa57",
+      "quote": "- 3 articles / news request"
+    },
+    {
+      "url": "https://www.marketaux.com/pricing",
+      "date": "2026-11-02",
+      "proved": "the Free plan gets no entities per stat request, so the stats endpoints are not usable on it",
+      "capture": "sha256:24947a94ef9cb7255fbeaa8338a8cfec1866ae0ca4c3a1a8cf01bb01d1dfaa57",
+      "quote": "- 0 entities per stat request"
+    },
+    {
+      "url": "https://www.marketaux.com/pricing",
+      "date": "2026-11-02",
+      "proved": "Basic, the next plan up, is USD 29 a month",
+      "capture": "sha256:24947a94ef9cb7255fbeaa8338a8cfec1866ae0ca4c3a1a8cf01bb01d1dfaa57",
+      "quote": "$ 29.00 /mo"
+    },
+    {
+      "url": "https://www.marketaux.com/faq",
+      "date": "2026-11-02",
+      "proved": "the free plan needs no payment details",
+      "capture": "sha256:3c25bcdfb44b484bfb39e6562ba2bdee20d9ea465704a4449b55b319a31bc7df",
+      "quote": "Our service is 100% free to use on our free plan - no payment details are required."
+    },
+    {
+      "url": "https://www.marketaux.com/faq",
+      "date": "2026-11-02",
+      "proved": "every API call that accesses financial news or analysis data counts as 1 request against the daily usage",
+      "capture": "sha256:3c25bcdfb44b484bfb39e6562ba2bdee20d9ea465704a4449b55b319a31bc7df",
+      "quote": "Each time the API is used to access financial news or analysis data, 1 API request is added to your daily usage."
+    },
+    {
+      "url": "https://www.marketaux.com/faq",
+      "date": "2026-11-02",
+      "proved": "only a short snippet of each article is returned, with its link",
+      "capture": "sha256:3c25bcdfb44b484bfb39e6562ba2bdee20d9ea465704a4449b55b319a31bc7df",
+      "quote": "We only provide a short snippet of articles along with their links."
+    },
+    {
+      "url": "https://www.marketaux.com/documentation",
+      "date": "2026-11-02",
+      "proved": "a result set cannot exceed 20,000 articles",
+      "capture": "sha256:3944d0a6351ddd2ecf52efe13273a443ae8bb55012a6dafdcfbdd70e81f1f31d",
+      "quote": "Note that the max result set can't exceed 20,000."
+    },
+    {
+      "url": "https://www.marketaux.com/documentation",
+      "date": "2026-11-02",
+      "proved": "the entity stats endpoints are available on Standard and above",
+      "capture": "sha256:3944d0a6351ddd2ecf52efe13273a443ae8bb55012a6dafdcfbdd70e81f1f31d",
+      "quote": "## Entity Stats (time series) Available on: Standard and above"
+    },
+    {
+      "url": "https://www.marketaux.com/documentation",
+      "date": "2026-11-02",
+      "proved": "too many requests in the past 60 seconds answer HTTP 429, with the limit in a response header",
+      "capture": "sha256:3944d0a6351ddd2ecf52efe13273a443ae8bb55012a6dafdcfbdd70e81f1f31d",
+      "quote": "| `rate_limit_reached` | `429` | Too many requests in the past 60 seconds. Rate limit and remaining requests can be found on the `X-RateLimit-Limit` header. |"
+    },
+    {
+      "url": "https://www.marketaux.com/documentation",
+      "date": "2026-11-02",
+      "proved": "the usage limit of the plan answers HTTP 402",
+      "capture": "sha256:3944d0a6351ddd2ecf52efe13273a443ae8bb55012a6dafdcfbdd70e81f1f31d",
+      "quote": "| `usage_limit_reached` | `402` | Usage limit of your plan has been reached. Usage limit and remaining requests can be found on the `X-UsageLimit-Limit` header. |"
+    },
+    {
+      "url": "https://www.marketaux.com/documentation",
+      "date": "2026-11-02",
+      "proved": "each article has a uuid that is meant to be stored and used to fetch the article again",
+      "capture": "sha256:3944d0a6351ddd2ecf52efe13273a443ae8bb55012a6dafdcfbdd70e81f1f31d",
+      "quote": "| `data > uuid` | The unique identifier for an article in our system. Store this and use it to find specific articles using our single article endpoint. |"
+    },
+    {
+      "url": "https://www.marketaux.com/register",
+      "date": "2026-11-02",
+      "proved": "the register form asks for an email address",
+      "capture": "sha256:17533f90d56edc3d72a345e9b440406a8d8d44bfe09c9ba8f6c9ed0dd939296b",
+      "quote": "Email address *"
+    },
+    {
+      "url": "probe:https://api.marketaux.com/v1/news/all",
+      "date": "2026-11-02",
+      "proved": "a call with no token answers HTTP 401",
+      "capture": "sha256:b5cbd27c79ef202e82722ffa01ad5fc7187845f29b222e07742abd9c8aac2a39",
+      "quote": "\"status\": 401"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-11-02T00:23:50.592Z",
+  "notes": "Storage: no caching or storage limit is stated on the documentation, pricing or FAQ pages; the uuid of each article is meant to be stored and used to fetch it again. Bulk path: none; paging stops at 20,000 articles a result set, 3 articles a request on Free."
+}

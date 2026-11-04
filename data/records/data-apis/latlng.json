@@ -1,0 +1,280 @@
+{
+  "topic": "data-apis",
+  "slug": "latlng",
+  "provider": "LatLng",
+  "url": "https://www.latlng.work/docs",
+  "category": "geocoding, places and map tiles API",
+  "tier": "Free",
+  "free_tier": {
+    "stated": "Free plan, USD 0 a month, no credit card: 3,000 forward geocodes a day, 300 reverse geocodes a day and 100 places searches a day by the terms table; the API docs describe one unified pool of 3,000 total API calls a day shared by geocoding, reverse, places and tile requests",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://www.latlng.work/terms",
+    "read_on": "2026-11-02",
+    "notes": "the terms table and the docs page describe the daily quota differently, and which one applies is unverified; calls without any key are also answered in small numbers (the Python SDK page says 30 geocodes a day, and a keyless call returned an x-ratelimit-limit header of 60); the Pro plan is USD 29 a month for 1,000,000 geocoding requests a month"
+  },
+  "per_object_cap": {
+    "stated": "no batch endpoint: one address a request, and the batch geocoding page sends 10 to 50 parallel single requests; Free dataset uploads are 3 datasets of at most 50 MB each",
+    "bytes": null,
+    "source_url": "https://www.latlng.work/batch-geocoding"
+  },
+  "retention": {
+    "stated": "no rule for storing results is stated",
+    "days": null,
+    "source_url": "https://www.latlng.work/terms"
+  },
+  "egress": {
+    "terms": "not applicable: a query API metered in requests, not bytes",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.latlng.work/docs"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "HTTPS GET to api.latlng.work/api (forward) and /reverse with the key in an X-Api-Key header or an api_key parameter, GeoJSON answers; places, static map and autosuggest endpoints and vector tiles at tiles.latlng.work use the same account; a call without any key answered HTTP 200 with GeoJSON and an x-ratelimit-limit header of 60",
+  "endpoint": "https://api.latlng.work/api",
+  "tooling": "any HTTP client; an official Rust crate and a Python SDK",
+  "chaining": "3,000 forward geocodes a day on an email or GitHub account with no card, built on OpenStreetMap data, plus 300 reverse geocodes a day and vector tiles on the same key; public applications must show the OpenStreetMap attribution; bulk work is parallel single requests since no batch endpoint exists",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "3,000 forward geocodes, 300 reverse geocodes and 100 places searches a day on the Free plan (terms table); the docs list one pool of 3,000 total API calls a day",
+      "source": "https://www.latlng.work/terms"
+    },
+    {
+      "kind": "request-rate",
+      "value": "no per-second limit is published; the API answers HTTP 429 when the quota is exceeded and sends X-RateLimit-Limit and X-RateLimit-Remaining headers",
+      "source": "https://www.latlng.work/docs"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "3 datasets of at most 50 MB each on the Free plan",
+      "source": "https://www.latlng.work/docs"
+    }
+  ],
+  "binding": "volume-quota",
+  "binding_note": "no per-second figure is published, so the daily quota is the ceiling that is stated and met first",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an account at dash.latlng.work, a JavaScript sign-in page whose fields are not in the page text; the vendor's page says to sign up with an email or GitHub and get instant API keys with no credit card; one account and one API key per entity on the free tier; the form fields themselves are unverified: behind a sign-up",
+    "country": null
+  },
+  "reliability_note": "exceeding the plan limits may suspend access to the affected service, and extra free accounts opened to get more quota can end every account; the allowance without a key is small",
+  "confidence": "documented",
+  "confidence_note": "the home page, the docs, the terms, the batch geocoding page, the Python SDK page and the key-free sign-up page were quoted on 2026-11-02; a call without a key answered HTTP 200 with GeoJSON. No account was opened, so the free daily quota and the sign-up fields were not exercised.",
+  "evidence": [
+    {
+      "url": "https://www.latlng.work/terms",
+      "date": "2026-11-02",
+      "proved": "the Free plan allows 3,000 forward geocodes a day",
+      "capture": "sha256:4aa5539f207650a3b40e6cb4548d57caca3ed3089aa9b4a69481e3ce3b78e767",
+      "quote": "| Geocoding (forward) | 3,000 / day | 1,000,000 / month |"
+    },
+    {
+      "url": "https://www.latlng.work/terms",
+      "date": "2026-11-02",
+      "proved": "the Free plan allows 300 reverse geocodes a day",
+      "capture": "sha256:4aa5539f207650a3b40e6cb4548d57caca3ed3089aa9b4a69481e3ce3b78e767",
+      "quote": "| Reverse Geocoding | 300 / day | 100,000 / month |"
+    },
+    {
+      "url": "https://www.latlng.work/terms",
+      "date": "2026-11-02",
+      "proved": "the Free plan allows 100 places searches a day",
+      "capture": "sha256:4aa5539f207650a3b40e6cb4548d57caca3ed3089aa9b4a69481e3ce3b78e767",
+      "quote": "| Places Search | 100 / day | 50,000 / month |"
+    },
+    {
+      "url": "https://www.latlng.work/docs",
+      "date": "2026-11-02",
+      "proved": "the docs list the Free plan as 3,000 total API calls a day",
+      "capture": "sha256:9b2e3b2a4dfa27cdd98175f3910b4fa18bd7f770055712901c1497a3053ba3a1",
+      "quote": "| Free | 3,000 total API calls | Per day |"
+    },
+    {
+      "url": "https://www.latlng.work/docs",
+      "date": "2026-11-02",
+      "proved": "the docs describe one unified quota shared by geocoding, reverse, places and tile calls",
+      "capture": "sha256:9b2e3b2a4dfa27cdd98175f3910b4fa18bd7f770055712901c1497a3053ba3a1",
+      "quote": "Usage is tracked per-user across all API keys with a unified quota — all API calls (geocoding, reverse, places, tiles) count toward one shared pool."
+    },
+    {
+      "url": "https://www.latlng.work/",
+      "date": "2026-11-02",
+      "proved": "the home page prices the Free plan at USD 0 a month",
+      "capture": "sha256:b4e1a3dadca9bf1edf7c5f6ac4b4be83f407497f67cced781b6ee1e1bf27dfdc",
+      "quote": "$0/month"
+    },
+    {
+      "url": "https://www.latlng.work/",
+      "date": "2026-11-02",
+      "proved": "the home page lists 3,000 geocoding requests a day on the Free plan",
+      "capture": "sha256:b4e1a3dadca9bf1edf7c5f6ac4b4be83f407497f67cced781b6ee1e1bf27dfdc",
+      "quote": "3,000 geocoding requests/day"
+    },
+    {
+      "url": "https://www.latlng.work/docs",
+      "date": "2026-11-02",
+      "proved": "exceeding the rate limit answers HTTP 429",
+      "capture": "sha256:9b2e3b2a4dfa27cdd98175f3910b4fa18bd7f770055712901c1497a3053ba3a1",
+      "quote": "| `429` | Too Many Requests — Rate limit exceeded |"
+    },
+    {
+      "url": "https://www.latlng.work/terms",
+      "date": "2026-11-02",
+      "proved": "exceeding the limits may suspend access to the affected service",
+      "capture": "sha256:4aa5539f207650a3b40e6cb4548d57caca3ed3089aa9b4a69481e3ce3b78e767",
+      "quote": "Exceeding these limits may result in temporary suspension of API access for the affected service."
+    },
+    {
+      "url": "https://www.latlng.work/terms",
+      "date": "2026-11-02",
+      "proved": "the free tier allows one account and one API key per entity",
+      "capture": "sha256:4aa5539f207650a3b40e6cb4548d57caca3ed3089aa9b4a69481e3ce3b78e767",
+      "quote": "Each entity is permitted only one account and one API key on the free tier."
+    },
+    {
+      "url": "https://www.latlng.work/terms",
+      "date": "2026-11-02",
+      "proved": "public applications must carry the OpenStreetMap attribution",
+      "capture": "sha256:4aa5539f207650a3b40e6cb4548d57caca3ed3089aa9b4a69481e3ce3b78e767",
+      "quote": null
+    },
+    {
+      "url": "https://www.latlng.work/terms",
+      "date": "2026-11-02",
+      "proved": "automated scraping of results to build a competing dataset is barred",
+      "capture": "sha256:4aa5539f207650a3b40e6cb4548d57caca3ed3089aa9b4a69481e3ce3b78e767",
+      "quote": null
+    },
+    {
+      "url": "https://www.latlng.work/batch-geocoding",
+      "date": "2026-11-02",
+      "proved": "the batch geocoding page advises caching results to avoid re-geocoding duplicates",
+      "capture": "sha256:3068db32661180e62a7384f4d27ab89c266f288e90d0d28949b09b3c0399cdfd",
+      "quote": "Cache results to avoid re-geocoding duplicates"
+    },
+    {
+      "url": "https://www.latlng.work/batch-geocoding",
+      "date": "2026-11-02",
+      "proved": "bulk geocoding is parallel single requests, 10 to 50 at a time",
+      "capture": "sha256:3068db32661180e62a7384f4d27ab89c266f288e90d0d28949b09b3c0399cdfd",
+      "quote": "Use parallel requests (10-50 concurrent) for best performance"
+    },
+    {
+      "url": "https://www.latlng.work/docs",
+      "date": "2026-11-02",
+      "proved": "Free dataset uploads are 3 datasets of at most 50 MB each",
+      "capture": "sha256:9b2e3b2a4dfa27cdd98175f3910b4fa18bd7f770055712901c1497a3053ba3a1",
+      "quote": "| Free | 3 | 50 MB |"
+    },
+    {
+      "url": "https://www.latlng.work/docs",
+      "date": "2026-11-02",
+      "proved": "forward geocoding is a GET to api.latlng.work/api",
+      "capture": "sha256:9b2e3b2a4dfa27cdd98175f3910b4fa18bd7f770055712901c1497a3053ba3a1",
+      "quote": "GET https://api.latlng.work/api"
+    },
+    {
+      "url": "https://www.latlng.work/docs",
+      "date": "2026-11-02",
+      "proved": "the key goes in an X-Api-Key header or an api_key parameter",
+      "capture": "sha256:9b2e3b2a4dfa27cdd98175f3910b4fa18bd7f770055712901c1497a3053ba3a1",
+      "quote": "The `X-Api-Key` header is the recommended format. You can also pass the key as a query parameter (`?api_key=YOUR_KEY`) for backward compatibility."
+    },
+    {
+      "url": "https://www.latlng.work/",
+      "date": "2026-11-02",
+      "proved": "the Pro plan is $29/month for 1,000,000 geocoding requests a month",
+      "capture": "sha256:b4e1a3dadca9bf1edf7c5f6ac4b4be83f407497f67cced781b6ee1e1bf27dfdc",
+      "quote": "### Pro\n\n$29/month\n\n- 1,000,000 geocoding requests/month"
+    },
+    {
+      "url": "https://www.latlng.work/docs",
+      "date": "2026-11-02",
+      "proved": "reverse geocoding is a GET to api.latlng.work/reverse",
+      "capture": "sha256:9b2e3b2a4dfa27cdd98175f3910b4fa18bd7f770055712901c1497a3053ba3a1",
+      "quote": "GET https://api.latlng.work/reverse"
+    },
+    {
+      "url": "https://www.latlng.work/docs",
+      "date": "2026-11-02",
+      "proved": "a places search endpoint exists on the same API host",
+      "capture": "sha256:9b2e3b2a4dfa27cdd98175f3910b4fa18bd7f770055712901c1497a3053ba3a1",
+      "quote": "https://api.latlng.work/v1/places/search"
+    },
+    {
+      "url": "https://www.latlng.work/docs",
+      "date": "2026-11-02",
+      "proved": "an autosuggest endpoint exists at suggest.latlng.work",
+      "capture": "sha256:9b2e3b2a4dfa27cdd98175f3910b4fa18bd7f770055712901c1497a3053ba3a1",
+      "quote": "https://suggest.latlng.work/autosuggest"
+    },
+    {
+      "url": "https://www.latlng.work/docs",
+      "date": "2026-11-02",
+      "proved": "vector tiles are served at tiles.latlng.work with a maps key",
+      "capture": "sha256:9b2e3b2a4dfa27cdd98175f3910b4fa18bd7f770055712901c1497a3053ba3a1",
+      "quote": "https://tiles.latlng.work/v1/tiles/{z}/{x}/{y}.pbf?key=pk_latlng_..."
+    },
+    {
+      "url": "https://www.latlng.work/docs",
+      "date": "2026-11-02",
+      "proved": "a static maps endpoint exists on the same API host",
+      "capture": "sha256:9b2e3b2a4dfa27cdd98175f3910b4fa18bd7f770055712901c1497a3053ba3a1",
+      "quote": "https://api.latlng.work/v1/static"
+    },
+    {
+      "url": "https://www.latlng.work/docs",
+      "date": "2026-11-02",
+      "proved": "an official Rust crate is offered",
+      "capture": "sha256:9b2e3b2a4dfa27cdd98175f3910b4fa18bd7f770055712901c1497a3053ba3a1",
+      "quote": "Use the official Rust crate for geocoding"
+    },
+    {
+      "url": "https://www.latlng.work/free-geocoding-api",
+      "date": "2026-11-02",
+      "proved": "sign-up takes an email or GitHub login, with no credit card gate",
+      "capture": "sha256:ff21fda109e9cc8f052671f0ada80a052ca6989b77a31640c8a5c531bec34adf",
+      "quote": "Zero Credit Card Gatekeeping:** Sign up with your email or GitHub and get instant API keys."
+    },
+    {
+      "url": "https://www.latlng.work/python-sdk",
+      "date": "2026-11-02",
+      "proved": "the SDK page sends users to dash.latlng.work for a free key",
+      "capture": "sha256:7c60afe1df7c7755041ddd7d67905f046a438c20f86bca67db3bc8b84d9ba4c4",
+      "quote": "Get your free key at dash.latlng.work"
+    },
+    {
+      "url": "https://www.latlng.work/python-sdk",
+      "date": "2026-11-02",
+      "proved": "a client without a key is allowed 30 geocodes a day",
+      "capture": "sha256:7c60afe1df7c7755041ddd7d67905f046a438c20f86bca67db3bc8b84d9ba4c4",
+      "quote": "client = LatlngClient()  # anonymous — 30 geocodes/day"
+    },
+    {
+      "url": "probe:https://api.latlng.work/api?q=Zurich",
+      "date": "2026-11-02",
+      "proved": "a geocode call without any key answers HTTP 200",
+      "capture": "sha256:d6f9987b258a33627591d51c93310d36441fd2a38c759efb77198eadaf1ce9e1",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:https://api.latlng.work/api?q=Zurich",
+      "date": "2026-11-02",
+      "proved": "the key-free call carries an x-ratelimit-limit header of 60, whose period is not stated",
+      "capture": "sha256:d6f9987b258a33627591d51c93310d36441fd2a38c759efb77198eadaf1ce9e1",
+      "quote": "\"x-ratelimit-limit\": \"60\""
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-11-02T00:23:41.926Z",
+  "notes": "Free requests: 3,000 forward geocodes a day (the docs describe a shared 3,000-call pool). Rate limit: no per-second figure published. Caching is advised and scraping to build a competing dataset is barred. Bulk path: none; parallel single requests.",
+  "extras": {
+    "free_requests": "3,000 forward geocodes, 300 reverse geocodes and 100 places searches a day (terms); 3,000 total calls a day (docs)",
+    "rate_limit": "unverified: no per-second limit is published; a key-free call returned x-ratelimit-limit 60",
+    "bulk_path": "none: no batch endpoint; parallel single requests, 10 to 50 at a time"
+  }
+}

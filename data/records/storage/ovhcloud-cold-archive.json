@@ -25,7 +25,7 @@
     "notes": "a billing minimum, not a deletion clock"
   },
   "egress": {
-    "terms": "External ingoing and outgoing traffic free and API requests free; an object is read back only after a restore, billed at USD 0.01062 per GiB retrieved, and the restored copy is billed in the Standard class while it stays accessible",
+    "terms": "External ingoing and outgoing traffic free and API requests free; an object is read back only after a restore request, which carries the per-GiB retrieval fee and bills the restored copy upfront at the Standard Multi Zone rate of USD 0.00002152 per GiB-hour for the number of days set in the request",
     "metered": false,
     "price_per_tb": "USD 9.89 per TB retrieved, the retrieval fee; outgoing traffic itself is free"
   },
@@ -52,7 +52,7 @@
   },
   "reliability_note": "Tape-backed class with a 99.9% availability SLA and eleven nines of durability; a restore takes from a few minutes to several hours up to a terabyte and at most 48 hours for hundreds of terabytes",
   "confidence": "documented",
-  "confidence_note": "documented: the international price list, the storage classes page, the Object Storage technical limits page, the account-creation guide and the free-trial page were read and quoted on 2026-10-30; a read timed from a bucket would make it measured",
+  "confidence_note": "documented: the international and EUR price lists, the Cold Archive page, the storage classes page, the Object Storage limits page, the restore guides, the rclone guide, the account-creation guide and the free-trial page were read and quoted on 2026-11-01, and the public price catalogue answered a direct query; a timed read and restore from a bucket would make it measured",
   "evidence": [
     {
       "url": "https://us.ovhcloud.com/public-cloud/object-storage/",
@@ -63,11 +63,6 @@
       "url": "https://www.ovhcloud.com/en/public-cloud/cold-archive/",
       "date": "2026-10-21",
       "proved": "\"Minimum storage billed: 180 days; Retrieval fee: Yes; Magnetic tapes; Durability: 11 nines; SLA 99.9%\" and restore-time FAQ (max 48 h at hundreds of TB)"
-    },
-    {
-      "url": "https://s3providers.com/providers/ovhcloud-object-storage",
-      "date": "2026-10-20",
-      "proved": "Cold Archive EUR 0.00128/GB/month (derived from api.ovh.com catalog addon coldarchive.archive.hour.consumption x 730 h), retrieval EUR 0.005/GB, Paris only, verified 2026-10-20"
     },
     {
       "url": "https://www.ovhcloud.com/en/public-cloud/prices/",
@@ -159,14 +154,140 @@
       "proved": "the legacy bucket-archive model on the legacy price page bills USD 0.005 per GB restored, the source of the old 0.005 retrieval figure; the current class bills USD 0.01062 per GiB",
       "capture": "sha256:f0553abf517acadc679110ebbedb8777ec2018f60d7ef9bccc0c59e10c425963",
       "quote": "| Cold restore | $0.005 |"
+    },
+    {
+      "url": "https://www.ovhcloud.com/en/public-cloud/prices/",
+      "date": "2026-11-01",
+      "proved": "the USD price list bills Cold Archive storage at USD 0.0000027 per GiB-hour, about USD 0.001971 per GiB-month, with a USD 0.01062 per GiB data-retrieval column, free external traffic and API requests, and 180 days of minimum storage billed",
+      "capture": "sha256:592d28765238669188fc8855269fbcad0c1ae6d8adf83d80063cda0ff79c8325",
+      "quote": "| Cold Archive | \\- | Free | Free | $0.01062 | Free | 180 days | $0.0000027 | ~$0.001971 |"
+    },
+    {
+      "url": "https://www.ovhcloud.com/en/public-cloud/prices/",
+      "date": "2026-11-01",
+      "proved": "Cold Archive is billed USD 0.0000027 per GiB-hour (about USD 0.001971 per GiB-month) with a USD 0.01062 per GiB retrieval fee and 180 days of minimum storage",
+      "capture": "sha256:592d28765238669188fc8855269fbcad0c1ae6d8adf83d80063cda0ff79c8325",
+      "quote": "| Cold Archive | \\- | Free | Free | $0.01062 | Free | 180 days | $0.0000027 | ~$0.001971 |"
+    },
+    {
+      "url": "https://www.ovhcloud.com/en/public-cloud/prices/",
+      "date": "2026-11-01",
+      "proved": "a restored Cold Archive object is moved into the Object Storage Standard class and billed there for the period named in the restore request",
+      "capture": "sha256:592d28765238669188fc8855269fbcad0c1ae6d8adf83d80063cda0ff79c8325",
+      "quote": "Once restored, you can access the object, which is then stored in the Object Storage (Standard) class and billed for the specified timeframe."
+    },
+    {
+      "url": "https://www.ovhcloud.com/en-ie/public-cloud/prices/",
+      "date": "2026-11-01",
+      "proved": "the EUR price list bills Cold Archive at EUR 0.00000228 per GiB-hour (about EUR 0.0016644 per GiB-month) with a EUR 0.009 per GiB data-retrieval fee, free external traffic and API requests, and 180 days of minimum storage",
+      "capture": "sha256:4a49769519017d015bd7fd5450cb2d0db66da5a0cc79b2433aed3f69fafe95ed",
+      "quote": "| Cold Archive | \\- | Free | Free | €0.009 | Free | 180 days | €0.00000228 | ~€0.0016644 |"
+    },
+    {
+      "url": "https://www.ovhcloud.com/en/public-cloud/cold-archive/",
+      "date": "2026-11-01",
+      "proved": "Cold Archive carries 11 nines of durability, a 99.9% SLA and 180 days of minimum storage billed, and the restore-time FAQ on the same page gives a maximum of 48 hours for hundreds of terabytes",
+      "capture": "sha256:3275d4e576183a62178d980a162ab6eac023abf0991241084a584488999d2876",
+      "quote": "Data durability: 11 nines Service Level Agreement (SLA): 99.9% Minimum storage billed: 180 days"
+    },
+    {
+      "url": "https://www.ovhcloud.com/en/public-cloud/prices/",
+      "date": "2026-11-01",
+      "proved": "Object Storage bills in GiB, not GB, with a granularity of 1 GiB",
+      "capture": "sha256:592d28765238669188fc8855269fbcad0c1ae6d8adf83d80063cda0ff79c8325",
+      "quote": "1 TiB = 1024 GiB. Object Storage is billed based on the storage space used, with a granularity of 1 GiB."
+    },
+    {
+      "url": "https://www.ovhcloud.com/en/public-cloud/prices/",
+      "date": "2026-11-01",
+      "proved": "the monthly figure on the page is the hourly rate x 730 hours, so the published per-GiB-month rate is the one to compare",
+      "capture": "sha256:592d28765238669188fc8855269fbcad0c1ae6d8adf83d80063cda0ff79c8325",
+      "quote": "For optimal readability, the price is displayed as GiB/month – but since there are 730 hours in an average month, the invoicing granularity is GiB/hour."
+    },
+    {
+      "url": "https://www.ovhcloud.com/en/public-cloud/cold-archive/",
+      "date": "2026-11-01",
+      "proved": "the Cold Archive product page states eleven nines of durability, a 99.9% SLA and 180 days of minimum storage billed",
+      "capture": "sha256:3275d4e576183a62178d980a162ab6eac023abf0991241084a584488999d2876",
+      "quote": "Data durability: 11 nines Service Level Agreement (SLA): 99.9% Minimum storage billed: 180 days"
+    },
+    {
+      "url": "https://docs.ovhcloud.com/en/guides/storage-and-backup/object-storage/s3-choosing-the-right-storage-class-for-your-needs",
+      "date": "2026-11-01",
+      "proved": "a restore bills the per-GiB restoration fee and the Standard-class storage of the restored object, so the retrieval fee is not the only restore charge",
+      "capture": "sha256:181f031145ebc4092e7912a123b416ab4d8a3ed5f61aacc1989c525d296d9ebd",
+      "quote": "In summary, for each object restored, a one time restoration fee per GiB of data plus the storage cost at the Standard rate of the object are billed."
+    },
+    {
+      "url": "https://docs.ovhcloud.com/en/guides/storage-and-backup/object-storage/s3-restoring-objects",
+      "date": "2026-11-01",
+      "proved": "a restore takes up to 48 hours, and the same guide states the restored copy is billed upfront at the Standard class rate for the days set in the request",
+      "capture": "sha256:adc9b57b2683f88357e78ffe930c704884827efb89ecc3acd0fa1e5d74da5a1a",
+      "quote": "Restore process can take up to 48 hours depending on the size of the objects."
+    },
+    {
+      "url": "https://docs.ovhcloud.com/en/guides/storage-and-backup/object-storage/s3-rclone",
+      "date": "2026-11-01",
+      "proved": "OVHcloud documents an rclone remote configuration for its S3-compatible Object Storage endpoint",
+      "capture": "sha256:5c760086d892be44928eff3316336fe9f57989e4f3b88b81be17dcd8619b51ea",
+      "quote": "This guide explains how to set up Rclone to synchronize your files to and from Object Storage."
+    },
+    {
+      "url": "https://www.ovhcloud.com/en/public-cloud/object-storage/classes/",
+      "date": "2026-11-01",
+      "proved": "the Cold Archive class is reachable only from the Paris region EU-WEST-PAR",
+      "capture": "sha256:13c979ffcc3e5955e7055d779498ef0b07db7a5a56e291588cbfa3c2042e0768",
+      "quote": "Accessible only from the Paris region (EU-WEST-PAR): your data is securely stored in France, distributed across four dedicated datacentres optimised for this storage class."
+    },
+    {
+      "url": "https://docs.ovhcloud.com/en/guides/storage-and-backup/object-storage/s3-limitations",
+      "date": "2026-11-01",
+      "proved": "the largest object is 48 TiB by multipart upload and 5 GiB by a single PUT, unchanged on 2026-11-01",
+      "capture": "sha256:eb85a82eeca983386bbc398a29f6fd8610cb084c18e136ed158079d3ccc499eb",
+      "quote": "| Maximum Object size | 48 TiB | This maximum can be achieved using Multi-Part Upload (MPU), via a single PUT request, the maximum object size is 5 GiB |"
+    },
+    {
+      "url": "https://www.ovhcloud.com/en/public-cloud/free-trial/",
+      "date": "2026-11-01",
+      "proved": "a valid payment method is required on the account before the first Public Cloud project, unchanged on 2026-11-01",
+      "capture": "sha256:833a8cfc5f5b014146b61bc60e022d12222c9157a6b8ef84510e03864ce36f6e",
+      "quote": "You need to add a valid payment method to your OVHcloud customer account before starting the free trial, which will be used after your free trial ends, if you want to keep running the project you have launched."
+    },
+    {
+      "url": "https://docs.ovhcloud.com/en/guides/account-and-service-management/account-information/ovhcloud-account-creation",
+      "date": "2026-11-01",
+      "proved": "account creation validates the email address with a one-time code, unchanged on 2026-11-01",
+      "capture": "sha256:945f4e98b5d2464730e482bbf6d18a52f2b8a530031f2e94ba7fcf8f4fc3af25",
+      "quote": "After you submit this form, a one-time code will be sent to the email address you entered."
+    },
+    {
+      "url": "https://www.ovhcloud.com/en/terms-and-conditions/payment/",
+      "date": "2026-11-01",
+      "proved": "OVHcloud accepts Visa, Mastercard and Maestro cards, unchanged on 2026-11-01",
+      "capture": "sha256:1bb040f010d78fc15cad2155da6cdc0195337f3af99e51d70c12b68810997e37",
+      "quote": "Cards accepted are Visa, Mastercard, Maestro."
+    },
+    {
+      "url": "probe:https://api.ovh.com/1.0/order/catalog/public/cloud?ovhSubsidiary=IE",
+      "date": "2026-11-01",
+      "proved": "OVHcloud's public price catalogue for the IE subsidiary answered HTTP 200 with 8,322,930 bytes of JSON, so the Cold Archive rates are also published in machine-readable form; the record's saved body in this workspace carries the coldarchive addons",
+      "capture": "sha256:45475671e2ca4647bc1fc33542dd314ee7b9411892315b1cad646591896e34f1",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "https://www.ovhcloud.com/en/public-cloud/prices/",
+      "date": "2026-11-01",
+      "proved": "the Cold Archive row of the international price list is unchanged as of 2026-11-01: storage USD 0.0000027 per GiB-hour with a monthly equivalent of USD 0.001971, retrieval USD 0.01062 per GiB, free external traffic and API requests, 180 days of minimum storage, and no free tier",
+      "capture": "sha256:592d28765238669188fc8855269fbcad0c1ae6d8adf83d80063cda0ff79c8325",
+      "quote": "| Cold Archive | \\- | Free | Free | $0.01062 | Free | 180 days | $0.0000027 | ~$0.001971 |"
     }
   ],
   "verdict": "paid-only",
-  "verified_at": "2026-10-30T18:30:29.209Z",
-  "price_per_tb_month": "USD 1.84 per TB per month (USD 0.001971 per GiB-month x 931.32 GiB per TB); one rate at every volume",
+  "verified_at": "2026-11-01T23:50:06.643Z",
+  "price_per_tb_month": "USD 1.84 per TB per month (USD 0.001971 per GiB-month x 931.32 GiB per TB, billed per GiB-hour) at every volume from the first byte; a restore adds a retrieval fee of USD 9.89 per TB retrieved (USD 0.01062 per GiB) and bills the restored copy at the Standard rate while it is readable",
   "notes": "EUR price list: EUR 0.00000228 per GiB-hour (about EUR 0.0016644 per GiB-month) and EUR 0.009 per GiB retrieved, 180 days minimum",
   "extras": {
-    "price_verbatim": "$1.44/TB at 20 TB (EUR 25.60 = $28.76). Same rate at 5 TB ($1.44/TB). Lowest storage rate in the entire survey — but archive-class, with a EUR 5/TB restore fee."
+    "price_verbatim": "USD 1.84/TB/month (USD 0.001971 per GiB-month x 931.32 GiB per TB) at every volume, billed per GiB-hour from the first byte; archive-class, so a restore adds a retrieval fee of USD 0.01062/GiB (USD 9.89/TB) and bills the restored copy at the Standard rate. The EUR price list gives EUR 0.00000228 per GiB-hour (about EUR 0.0016644 per GiB-month) and EUR 0.009 per GiB retrieved."
   },
   "binding": "none",
   "binding_note": "none: no limit row binds before the restore step, which takes up to 48 hours for hundreds of terabytes and carries a retrieval fee"

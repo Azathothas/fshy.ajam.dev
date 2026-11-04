@@ -37,7 +37,7 @@
   ],
   "interface_detail": "SSH to the shared IPv4 on the assigned port, plus a web panel.",
   "tooling": "ssh, wg-quick",
-  "chaining": "A zero-cost WG endpoint if the port list includes a UDP port and the service still issues machines.",
+  "chaining": "none: the distribution host does not resolve, so no machine is issued and no endpoint exists.",
   "limits": [
     {
       "kind": "request-rate",
@@ -60,7 +60,7 @@
   },
   "reliability_note": "Shared IPv4 with a restricted port list; nothing about durability is documented.",
   "confidence": "unverified",
-  "confidence_note": "Every source is from 2023 and the distribution endpoint was not opened today. The provider may no longer issue machines; that is the check to run first.",
+  "confidence_note": "The distribution host answers a DNS failure, so the offer is dead; the other sources are from 2023 and describe the offer while it was live.",
   "evidence": [
     {
       "url": "https://v2cross.com/4198.html",
@@ -71,12 +71,26 @@
       "url": "https://www.nodeseek.com/post-6248-1",
       "date": "2026-10-23",
       "proved": "the free NAT machines were handed out through a Telegram bot in 2023"
+    },
+    {
+      "url": "probe:distribute.vpslog.net",
+      "date": "2026-11-04",
+      "proved": "the host distribute.vpslog.net does not resolve; a public DoH resolver answered NXDOMAIN for it and for vpslog.net",
+      "capture": "sha256:293ea806d2e67139d4a4f6cdc2193eb853e9174773206cf65d10f1e03af4035b",
+      "quote": "\"error\": \"dns\""
+    },
+    {
+      "url": "probe:distribute.vpslog.net",
+      "date": "2026-11-04",
+      "proved": "the distribution host does not resolve",
+      "capture": "sha256:fa819a7f5e09e92469c5ed6b7268a3348ac57fd29c66f07768a425db27f95452",
+      "quote": "\"error\": \"dns\""
     }
   ],
-  "verdict": "trial-only",
-  "verified_at": "2026-10-23T00:00:00.000Z",
+  "verdict": "dead",
+  "verified_at": "2026-11-04T06:52:57.446Z",
   "price_per_tb_month": "USD 0",
-  "notes": "Kept because it is the archetype of the Telegram-only free NAT VPS, and the write-up names the trap: a shared IPv4 where only a listed subset of ports is forwarded. Three-year-old evidence, so this is a lead to re-check, not a finding.",
+  "notes": "Dead: the distribution host distribute.vpslog.net does not resolve (DNS failure), so the free NAT VPS is no longer issued. Kept as the archetype of the Telegram-only free NAT VPS, where only a listed subset of ports of a shared IPv4 is forwarded; the write-ups date from 2023.",
   "extras": {
     "wg_path": "native-conf",
     "wg_detail": "Root on a NAT VPS with a published port list; WG would bind a listed port. The port list is the open question: only a subset of ports is usable.",
@@ -84,6 +98,10 @@
     "volume_tib_month": null,
     "volume_stated": "No traffic figure is stated in the write-ups.",
     "bytes_transit": "yes",
-    "transit_note": "Unverified."
+    "transit_note": "Unverified.",
+    "death": {
+      "on": "2026-11-04",
+      "cause": "dead-service"
+    }
   }
 }

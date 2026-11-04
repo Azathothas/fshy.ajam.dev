@@ -24,14 +24,15 @@
   "egress": {
     "terms": "no traffic volume quota stated; the port is capped at 100 Mbit/s on the 1 GB and 2 GB shapes and 500 Mbit/s on the 4 GB shape",
     "metered": false,
-    "free_allowance": "unstated, port-capped",
+    "free_allowance": "unlimited: no data transfer volume limit; port speed capped per shape; no overage price",
     "source_url": "https://web.arena.ne.jp/indigo/price/"
   },
   "interface": [
-    "unknown"
+    "rest",
+    "ssh"
   ],
-  "interface_detail": "inferred from the tooling the provider documents; not probed",
-  "tooling": "not stated",
+  "interface_detail": "The spec page documents a REST API (English-only API documentation at indigo.arena.ne.jp/userapi/, access token by POST to /oauth/v1/accesstokens) and public-key SSH login to instances.",
+  "tooling": "No client library or CLI is named: the spec page and the API document at indigo.arena.ne.jp/userapi/ were read and describe the REST API with cURL examples only.",
   "chaining": "At JPY 0.48 an hour with no minimum term, a 768 MB instance costs about JPY 12 for a day, which is the cheapest way found in Japan to hold a reachable IPv6 box for a single job; the missing IPv4 pushes any client that needs one to the JPY 0.64 1 GB shape.",
   "limits": [
     {
@@ -80,10 +81,45 @@
       "url": "https://web.arena.ne.jp/indigo/",
       "date": "2026-10-24",
       "proved": "quoted signup flow: 'メール認証 / SMSまたは電話認証 / クレジットカード登録' and 'クレジットカード登録時点で料金は発生しません。インスタンス作成後に料金が発生します。'"
+    },
+    {
+      "url": "https://web.arena.ne.jp/indigo/spec/",
+      "date": "2026-11-03",
+      "proved": "a REST API is offered",
+      "capture": "sha256:8f19ef4cd0a02889cb8bb3fc49aa027d7bac689863d62a75e212650db69e71cc",
+      "quote": "| Rest-API | Rest-APIが利用できます。APIドキュメント（英語のみ）は[こちら](https://indigo.arena.ne.jp/userapi/) |"
+    },
+    {
+      "url": "https://web.arena.ne.jp/indigo/spec/",
+      "date": "2026-11-03",
+      "proved": "instances are logged into over SSH",
+      "capture": "sha256:8f19ef4cd0a02889cb8bb3fc49aa027d7bac689863d62a75e212650db69e71cc",
+      "quote": "インスタンスへのログインは、公開鍵暗号方式のSSH接続です。"
+    },
+    {
+      "url": "https://web.arena.ne.jp/indigo/spec/",
+      "date": "2026-11-03",
+      "proved": "data transfer volume is unlimited, so no overage price exists",
+      "capture": "sha256:8f19ef4cd0a02889cb8bb3fc49aa027d7bac689863d62a75e212650db69e71cc",
+      "quote": "| データ転送量 | 制限はありません。 |"
+    },
+    {
+      "url": "https://web.arena.ne.jp/indigo/spec/",
+      "date": "2026-11-04",
+      "proved": "a REST API is offered with English-only API documentation",
+      "capture": "sha256:8f19ef4cd0a02889cb8bb3fc49aa027d7bac689863d62a75e212650db69e71cc",
+      "quote": "| Rest-API | Rest-APIが利用できます。APIドキュメント（英語のみ）は[こちら](https://indigo.arena.ne.jp/userapi/) |"
+    },
+    {
+      "url": "https://indigo.arena.ne.jp/userapi/",
+      "date": "2026-11-04",
+      "proved": "the API document describes token generation over plain HTTP requests with a cURL example and names no client library",
+      "capture": "sha256:a7692facb793eb1f175fd198b22a47a450d0a50ba121667049fa496d8191197b",
+      "quote": "To generate Access token, send a POST request to `/oauth/v1/accesstokens`."
     }
   ],
   "verdict": "qualifies",
-  "verified_at": "2026-10-24T02:05:00.000Z",
+  "verified_at": "2026-11-04T05:24:50.431Z",
   "notes": "Prices on the page are shown pre-tax with the tax-inclusive figure in parentheses, and both are recorded. The 10 h/day figure uses the hourly rate because this product is billed hourly; the 24/7 figure is the monthly cap. The Japanese site is the only route; no English page was found.",
   "extras": {
     "facets": {

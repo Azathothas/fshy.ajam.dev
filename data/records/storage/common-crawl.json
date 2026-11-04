@@ -47,7 +47,7 @@
       "source": "https://status.commoncrawl.org/"
     }
   ],
-  "limits_note": "An unsigned GET to the S3 endpoint commoncrawl.s3.amazonaws.com answered 403 on 2026-10-30, while HTTPS on data.commoncrawl.org and the Hugging Face bucket mirror served the same WARC file list with no account.",
+  "limits_note": "An unsigned GET to the S3 endpoint commoncrawl.s3.amazonaws.com answered 403 on 2026-10-30 and again on 2026-11-03, while HTTPS on data.commoncrawl.org and the Hugging Face bucket mirror served the same WARC file list with no account. The Get Started page still shows --no-sign-request commands in a second AWS CLI section.",
   "identity_cost": {
     "kind": "anonymous",
     "detail": "no account for HTTPS downloads from data.commoncrawl.org",
@@ -253,10 +253,73 @@
       "proved": "HTTPS downloads from data.commoncrawl.org need no account",
       "capture": "sha256:25e9bc50af15ca0235cbc0fad6a7fe9463e3bcf37b9233e78236f9ca6578ba7a",
       "quote": "There is no need to create an AWS account in order to access the data using this method."
+    },
+    {
+      "url": "probe:https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2026-43/warc.paths.gz",
+      "date": "2026-11-03",
+      "proved": "an unsigned GET on the S3 endpoint of the commoncrawl bucket was refused with 403",
+      "capture": "sha256:419053cac96b00fc6360c5a748fefd78d16d00a4517968a4c2220a5f16ecc8c6",
+      "quote": "\"status\": 403"
+    },
+    {
+      "url": "https://commoncrawl.org/blog/introducing-cloudfront-access-to-common-crawl-data",
+      "date": "2026-11-03",
+      "proved": "the S3 API from the Amazon cloud is restricted to authenticated AWS users and unsigned access to s3://commoncrawl/ is disabled",
+      "capture": "sha256:f881cf8594afd9f12340ff8c0cfc5372c123906a02a259ee6b51f565f2b23ed4",
+      "quote": "will be restricted to authenticated AWS users, and unsigned access to s3://commoncrawl/ will be disabled."
+    },
+    {
+      "url": "https://commoncrawl.org/blog/introducing-cloudfront-access-to-common-crawl-data",
+      "date": "2026-11-03",
+      "proved": null,
+      "capture": "sha256:f881cf8594afd9f12340ff8c0cfc5372c123906a02a259ee6b51f565f2b23ed4",
+      "quote": null
+    },
+    {
+      "url": "https://groups.google.com/g/common-crawl/c/KL64eJzq304",
+      "date": "2026-11-03",
+      "proved": "a Common Crawl reply on the user forum states the S3 API needs an AWS account, from us-east-1",
+      "capture": "sha256:f744c3bef07ebc19cf8b79dc11df8e74d270c44e1f67508a93169fa81abd054d",
+      "quote": "accessing data on the bucket s3://commoncrawl/ using the S3 API requires an AWS account and should be done only from the AWS region \"us-east-1\"."
+    },
+    {
+      "url": "https://commoncrawl.org/get-started",
+      "date": "2026-11-03",
+      "proved": "a second AWS CLI section of the Get Started page still shows --no-sign-request commands",
+      "capture": "sha256:f035bf60f3892932f25c16f775fb450fc05385e94f3405fd0ba1b9e5f7714d37",
+      "quote": "aws --no-sign-request s3 ls s3://commoncrawl/crawl-data/CC-MAIN-2018-17/segments/1524125937193.1/warc/"
+    },
+    {
+      "url": "https://commoncrawl.org/get-started",
+      "date": "2026-11-03",
+      "proved": "HTTPS downloads from data.commoncrawl.org need no account",
+      "capture": "sha256:f035bf60f3892932f25c16f775fb450fc05385e94f3405fd0ba1b9e5f7714d37",
+      "quote": "There is no need to create an AWS account in order to access the data using this method."
+    },
+    {
+      "url": "https://commoncrawl.org/faq",
+      "date": "2026-11-03",
+      "proved": "the CDXJ index is heavily rate limited and blocks an IP address that sends too many requests, so request-rate is the constraint that binds reads",
+      "capture": "sha256:eb8cba4c974736f6f2bb2d8eedacf491f2fb960db386bb581669780186d3a1b5",
+      "quote": "Our CDX API endpoint is frequently abused and therefore heavily rate limited. If your client sends too many requests in a short period of time, your IP address may be temporarily blocked."
+    },
+    {
+      "url": "https://status.commoncrawl.org/",
+      "date": "2026-11-03",
+      "proved": "index lookups and single-capture reads stay rate bound under load, so request-rate binds reads",
+      "capture": "sha256:2e34822f6633068569cc7442aa799d06a03d06dc821806bd623b32a9c0dcddea",
+      "quote": "This retry technique does not work well enough for partial file downloads, such as index lookups and downloading individual webpage captures from within a WARC file."
+    },
+    {
+      "url": "https://commoncrawl.org/faq",
+      "date": "2026-11-04",
+      "proved": "the CDXJ index is rate limited and blocks an IP address that sends too many requests, so request-rate binds",
+      "capture": "sha256:eb8cba4c974736f6f2bb2d8eedacf491f2fb960db386bb581669780186d3a1b5",
+      "quote": "Our CDX API endpoint is frequently abused and therefore heavily rate limited. If your client sends too many requests in a short period of time, your IP address may be temporarily blocked."
     }
   ],
   "verdict": "fails-quota",
-  "verified_at": "2026-10-31T06:44:32.046Z",
+  "verified_at": "2026-11-04T05:30:27.067Z",
   "notes": "Fails the storage quota filter: the bucket holds only Common Crawl's own crawls of the web and takes no user data, so it offers no allowance a user can write to. One offer with crawler-scraper/commoncrawl, the same corpus judged as a crawl archive, which keeps qualifies-with-caveat as a read source.",
   "extras": {
     "dead_end": {

@@ -30,7 +30,7 @@
   "interface": [
     "rest"
   ],
-  "interface_detail": "REST API at https://api.growthbook.io/api with a Secret Key or Personal Access Token over HTTP Basic or Bearer auth, 60 requests per minute (a GET /api/v1/features without a key answered 400 Missing Authorization header); an MCP server.",
+  "interface_detail": "REST API at https://api.growthbook.io/api with a Secret Key or Personal Access Token over HTTP Basic or Bearer auth, 60 requests per minute (a GET /api/v1/features without a key answered 400 Missing Authorization header); an MCP server hosted for GrowthBook Cloud at https://mcp.growthbook.io/mcp, with sign-in through OAuth.",
   "endpoint": "https://api.growthbook.io/api",
   "tooling": "24+ SDKs, the setup wizard (npx @growthbook/wizard), an MCP server, or any HTTP client against the REST API.",
   "chaining": "Flags and experiments for apps on free compute, analysed in a warehouse the user already has or in the managed warehouse at 1M events a month.",
@@ -56,12 +56,12 @@
   "binding_note": "Flag payloads are served from the CDN, so 1M CDN requests a month is the first ceiling for an app with traffic; it is enforced by notice, not a hard stop.",
   "identity_cost": {
     "kind": "email",
-    "detail": "The pricing page states no credit card is required and that every user needs an own login and password. The Cloud register form at app.growthbook.io renders only in a browser and could not be read, so its fields are unverified.",
+    "detail": "The pricing page states no credit card is required and that every user needs an own login and password. The Cloud register form at app.growthbook.io asks for a First Name, a Work Email Address and a Password, or offers Sign up with Google, and lists no phone or card field; GrowthBook documents a role chosen during signup and an organization and a project named when the account is created. Whether a later step asks for a phone number, and whether an address at a public mail domain passes as a Work Email Address, is unverified: behind a sign-up.",
     "country": null
   },
   "reliability_note": "Usage above the CDN guidelines triggers a notice and a CDN usage exceeded warning in the UI rather than a stop.",
   "confidence": "documented",
-  "confidence_note": "The REST API host was probed and answered 400 Missing Authorization header without a key. The identity kind rests on the login-and-password sentence, because the register form could not be rendered.",
+  "confidence_note": "The REST API host was probed and answered 400 Missing Authorization header without a key. The identity kind rests on the login-and-password sentence and on the register form of the Cloud app as rendered in text.",
   "evidence": [
     {
       "url": "https://www.growthbook.io/pricing",
@@ -244,9 +244,65 @@
       "proved": "api.growthbook.io answers a request without a key with Missing Authorization header",
       "capture": "sha256:6822ec1eb9ff38d2d71d6dc7095a65c72a3e35c7b00be161ef926fd00949efa3",
       "quote": "{\"message\":\"Missing Authorization header\"}"
+    },
+    {
+      "url": "https://app.growthbook.io/",
+      "date": "2026-11-01",
+      "proved": "the Cloud register form lists First Name, Work Email Address and Password",
+      "capture": "sha256:019823a11d0bcee1628cd3b70c1234d2297721c22f121fcd48fd2230ec744fc4",
+      "quote": "First Name \n\nWork Email Address \n\nPassword"
+    },
+    {
+      "url": "https://app.growthbook.io/login",
+      "date": "2026-11-01",
+      "proved": "a second render of the Cloud app lists the same register fields",
+      "capture": "sha256:cbc47ab5223722758acef4569569585319247abe1788bdfd3fd91d6e95d67ae7",
+      "quote": "First Name \n\nWork Email Address \n\nPassword"
+    },
+    {
+      "url": "https://app.growthbook.io/",
+      "date": "2026-11-01",
+      "proved": "the register form offers Sign up with Google",
+      "capture": "sha256:019823a11d0bcee1628cd3b70c1234d2297721c22f121fcd48fd2230ec744fc4",
+      "quote": "Sign up with Google"
+    },
+    {
+      "url": "https://docs.growthbook.io/integrations/ai-agents/wizard",
+      "date": "2026-11-01",
+      "proved": "the signup lets the creator of an organization select a role",
+      "capture": "sha256:ae1d3b25b463fe6342babb836f4141c4fbc44129a2e8b323b5c548707632624b",
+      "quote": "GrowthBook currently shows this setup flow only for organizations whose creator selected Engineering as their role during signup."
+    },
+    {
+      "url": "https://www.growthbook.io/insights/first-feature-flag",
+      "date": "2026-11-01",
+      "proved": "creating a Cloud Starter account names an organization and a project",
+      "capture": "sha256:db5fec04c3be7a898279d3d8945b8a1e99d6bd523079aa4a225a5e0a8b95795d",
+      "quote": "Name the organization and project after the real product rather than this one flag."
+    },
+    {
+      "url": "https://www.growthbook.io/insights/first-feature-flag",
+      "date": "2026-11-01",
+      "proved": "a GrowthBook seat is an individual platform user, not an end user who receives flags",
+      "capture": "sha256:db5fec04c3be7a898279d3d8945b8a1e99d6bd523079aa4a225a5e0a8b95795d",
+      "quote": "Seats are individual platform users; application end users who receive flags do not use seats."
+    },
+    {
+      "url": "https://docs.growthbook.io/integrations/mcp",
+      "date": "2026-11-01",
+      "proved": "GrowthBook Cloud has a hosted MCP server that signs in through OAuth",
+      "capture": "sha256:90163e1991072802977f32816403d5dca3a1c19b9deaa2394f8304b2eacc7b81",
+      "quote": "If you use [GrowthBook Cloud](https://app.growthbook.io), connect your MCP client to the hosted server. You sign in with OAuth in the browser — no API key in the MCP config."
+    },
+    {
+      "url": "https://docs.growthbook.io/integrations/mcp",
+      "date": "2026-11-01",
+      "proved": "the hosted MCP endpoint of GrowthBook Cloud is https://mcp.growthbook.io/mcp",
+      "capture": "sha256:90163e1991072802977f32816403d5dca3a1c19b9deaa2394f8304b2eacc7b81",
+      "quote": "| `https://mcp.growthbook.io/mcp` | Skills + API read/write (recommended) |"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T06:23:28.112Z",
+  "verified_at": "2026-11-02T00:37:55.411Z",
   "notes": "Pro is USD 40 per seat a month with 2M CDN requests and 20 GB of CDN bandwidth included. GrowthBook is also open-source software that the user can install and run on a rented or free machine, with unlimited users; that is the last resort after the hosted Starter plan."
 }

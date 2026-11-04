@@ -17,7 +17,7 @@
     "source_url": "https://github.com/qaiu/netdisk-fast-download"
   },
   "retention": {
-    "stated": "Not applicable. Signed redirects carry X-Amz-Expires=86400 and are cached about eight hours, so a URL is resolved per session rather than stored",
+    "stated": "Not applicable. The instance caches a resolved ecpan link for 5 minutes, and the signed redirect carries X-Amz-Expires=86400, so a URL is resolved per session rather than stored",
     "days": 1,
     "source_url": "https://github.com/qaiu/netdisk-fast-download"
   },
@@ -32,7 +32,7 @@
     "rest"
   ],
   "tooling": "two public keyless forms, GET https://lz.qaiu.top/parser?url=<enc>&pwd=<pin> which 302s, or the short form https://lz.qaiu.top/ec/<key>@<pin>. A mirror at lz0.qaiu.top. Self-hostable from the repository with Docker on ports 6400 and 6401",
-  "chaining": "Pair with a public AList that lists share links, or with any resource site, to fetch Chinese-pan content without an account. The self-hosted build is the real win: run it on any VPS and the public instance's rate limits stop mattering",
+  "chaining": "Pair with a public AList that lists share links, or with any resource site, to fetch Chinese-pan content without an account. The server software can also be installed and run on a rented or free machine, the last resort after the hosted instances",
   "limits": [
     {
       "kind": "write-gated",
@@ -41,8 +41,8 @@
     },
     {
       "kind": "request-rate",
-      "value": "the public instance is rate-limited and the author warns 请不要过度依赖 lz.qaiu.top",
-      "source": "https://github.com/qaiu/netdisk-fast-download"
+      "value": "no per-client limit is published for the public instance; the owner announces that from August 2026 requests with no Referer header may be rate limited, with no figure; 100 parallel requests with no Referer from one address were all answered 200",
+      "source": "https://github.com/qaiu/netdisk-fast-download/issues/197"
     },
     {
       "kind": "per-ip-shaping",
@@ -55,7 +55,7 @@
     "detail": "no account, no key and no cookie for the free drivers. The professional endpoint needs an X-API-Key",
     "country": null
   },
-  "reliability_note": "Alive and actively maintained, Trendshift-listed. A community-run free instance can be throttled or blocked by pan vendors at any moment and the README says so, so self-hosting is what makes it load-bearing",
+  "reliability_note": "Alive and actively maintained, Trendshift-listed. It is the project's official free public instance. The README asks users not to over-rely on it. The README says heavy request volume can get the server limited by the pan vendors.",
   "confidence": "measured",
   "evidence": [
     {
@@ -103,10 +103,143 @@
       "proved": "lz.qaiu.top answered 200 with the NFD direct-link resolver web page",
       "capture": "sha256:acbe2727b4bbc12ee0b3861ec34acfcf2734aad7ac7bcafa6418632209d68519",
       "quote": "Netdisk fast download 网盘直链解析工具"
+    },
+    {
+      "url": "https://github.com/qaiu/lz.qaiu.top",
+      "date": "2026-11-02",
+      "proved": "the owner's repository for lz.qaiu.top describes the site as the online parsing service built on netdisk-fast-download, a hosted instance of the project",
+      "capture": "sha256:444d444ce2341ea92c2afd37fb250d641c9d778107c5e4094cf2cf7bcbdce175",
+      "quote": "基于netdisk-fast-download实现的在线解析服务"
+    },
+    {
+      "url": "probe:https://lz.qaiu.top/json/ec/70017ece572737b12b30709b7f029308eJD0@1234",
+      "date": "2026-11-02",
+      "proved": "100 parallel keyless GETs of the JSON resolve route from one address, sent without a Referer header, were all answered 200 with a direct link, and none was refused or limited",
+      "capture": "sha256:88cf87a46d63161f67be6f62781c5cb476024e00f26e6fa2c2ef2c007b5d63db",
+      "quote": "\"status\": 200, \"bytes\": 220356 ... \"mode\": \"concurrency\", \"concurrency\": 100 ... \"usable\": true"
+    },
+    {
+      "url": "probe:https://lz.qaiu.top/json/ec/70017ece572737b12b30709b7f029308eJD0@1234",
+      "date": "2026-11-02",
+      "proved": "an uncached answer for an ecpan share carries an expiration that is the cache time after its timestamp, and its signed link carries X-Amz-Expires=86400",
+      "capture": "sha256:88e73b8700e0d11d40c54ed0cad5421381ab656f76040d20c208a7e48bc6227b",
+      "quote": "\"cacheHit\":false,\"expires\":\"2026-11-02 08:24:40\",\"expiration\":1793579080034 ... \"timestamp\":1793578780034"
+    },
+    {
+      "url": "probe:https://lz.qaiu.top/v2/linkInfo?url=https%3A%2F%2Fwww.ecpan.cn%2Fweb%2F%23%2FyunpanProxy%3Fpath%3D%252F%2523%252Fdrive%252Foutside%26data%3D70017ece572737b12b30709b7f029308eJD0%26isShare%3D1&pwd=1234",
+      "date": "2026-11-02",
+      "proved": "40 parallel keyless GETs of the /v2/linkInfo route, the path class that the documented example limiter covers, were all answered 200",
+      "capture": "sha256:c5b8559bc6d966a27075abdc4b91a96a2d78dcd10b27d4f27d041d15553e7784",
+      "quote": "\"status\": 200, \"bytes\": 37160 ... \"mode\": \"concurrency\", \"concurrency\": 40 ... \"usable\": true"
+    },
+    {
+      "url": "https://github.com/qaiu/netdisk-fast-download/issues/197",
+      "date": "2026-11-01",
+      "proved": "the announcement says that from August 2026 requests carrying no Referer header may trigger a rate-limit policy, and gives no figure",
+      "capture": "sha256:9bad922efc7993ce057c94156db5416121423b55748c85b8d51fd7a44bb43f4e",
+      "quote": "自 2026 年 8 月起，未携带 `Referer` 的请求将可能：- 触发限流策略"
+    },
+    {
+      "url": "https://github.com/qaiu/netdisk-fast-download/issues/197",
+      "date": "2026-11-01",
+      "proved": "the announcement names lz.qaiu.top, lz0.qaiu.top and 189.qaiu.top as the official parse sites that the policy covers",
+      "capture": "sha256:9bad922efc7993ce057c94156db5416121423b55748c85b8d51fd7a44bb43f4e",
+      "quote": "- `lz.qaiu.top` - `lz0.qaiu.top` - `189.qaiu.top`"
+    },
+    {
+      "url": "https://api.github.com/repos/qaiu/netdisk-fast-download/issues/197",
+      "date": "2026-11-02",
+      "proved": "the announcement was posted by the repository owner",
+      "capture": "sha256:918240509dac761dd08ceab9366c58874497e7c09031742cb49f59dcc9ff3eb5",
+      "quote": "\"author_association\": \"OWNER\""
+    },
+    {
+      "url": "https://raw.githubusercontent.com/qaiu/netdisk-fast-download/main/README.md",
+      "date": "2026-11-01",
+      "proved": "the README says only that heavy request volume can get the server limited by the pan vendors, and states no per-client limit",
+      "capture": "sha256:6db0683295073400965eaad83a2c121f5603936be7fa72d1ff7b6ad18fb59992",
+      "quote": "请求量过多的话服务器可能会被云盘厂商限制，遇到解析失败的分享链接不要着急提issues，请先检查分享是否有效。"
+    },
+    {
+      "url": "https://github.com/qaiu/netdisk-fast-download/issues/101",
+      "date": "2026-11-02",
+      "proved": "the owner's comment of April 2025 says that Alibaba Cloud and Tencent Cloud addresses are restricted in tests and that lz.qaiu.top runs through Alibaba Cloud and China Telecom Cloud proxies",
+      "capture": "sha256:0a086335a85fbaa5886e1c1b18aed3971bdf75ae3fdecdd7b8c802ea38948aa8",
+      "quote": "可以考虑天翼云/华为云 测试阿里云和腾讯云ip都有限制 lz.qaiu.top是阿里云+天翼云代理"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/qaiu/netdisk-fast-download/main/README.md",
+      "date": "2026-11-01",
+      "proved": "the project README lists lz.qaiu.top as a free public resolver instance and gives it no quota, unit or price",
+      "capture": "sha256:6db0683295073400965eaad83a2c121f5603936be7fa72d1ff7b6ad18fb59992",
+      "quote": "[公益解析，lz站](https://lz.qaiu.top)"
+    },
+    {
+      "url": "probe:https://api.github.com/repos/qaiu/netdisk-fast-download/issues/197",
+      "date": "2026-11-02",
+      "proved": "the repository owner's announcement lists lz.qaiu.top under the heading for the official parse sites",
+      "capture": "sha256:58131807e0d5c286eaf8abb82a4b6fd31eb3c09dd77bf5a5bd6f80a4670af7cb",
+      "quote": "\"author_association\":\"OWNER\" ... ### 官方解析站点\\n\\n- `lz.qaiu.top`"
+    },
+    {
+      "url": "https://github.com/qaiu/netdisk-fast-download/issues/197",
+      "date": "2026-11-02",
+      "proved": "the announcement that lists lz.qaiu.top as an official parse site is signed by the netdisk-fast-download project team",
+      "capture": "sha256:9bad922efc7993ce057c94156db5416121423b55748c85b8d51fd7a44bb43f4e",
+      "quote": "netdisk-fast-download 项目团队 · 2026 年 6 月"
+    },
+    {
+      "url": "probe:https://api.github.com/repos/qaiu/netdisk-fast-download",
+      "date": "2026-11-02",
+      "proved": "the description of the project repository gives lz.qaiu.top and 189.qaiu.top as the project's demo addresses",
+      "capture": "sha256:371740275768d3b3cb416853b13525a8e86f0a0e1ffe244a01f4058f4835234a",
+      "quote": "体验地址: https://lz.qaiu.top https://189.qaiu.top"
+    },
+    {
+      "url": "https://github.com/qaiu/netdisk-fast-download/issues/90",
+      "date": "2026-11-02",
+      "proved": "the repository owner retitled issue 90 to send lz.qaiu.top parse problems to the owner's own feedback repository",
+      "capture": "sha256:f8580f500a39769b62e7761d816b2401b914a069a6e0457136d665ead1eb6921",
+      "quote": "lz.qaiu.top解析问题请到https://github.com/qaiu/lz.qaiu.top 按问题模板提交Issue"
+    },
+    {
+      "url": "probe:https://api.github.com/repos/qaiu/netdisk-fast-download",
+      "date": "2026-11-02",
+      "proved": "the project repository was last pushed on 2026-10-30 and is not archived",
+      "capture": "sha256:371740275768d3b3cb416853b13525a8e86f0a0e1ffe244a01f4058f4835234a",
+      "quote": "\"pushed_at\":\"2026-10-30T23:45:47Z\" ... \"archived\":false"
+    },
+    {
+      "url": "https://trendshift.io/repositories/12101",
+      "date": "2026-11-02",
+      "proved": "Trendshift lists the project repository with its star and fork trend. The page shows no top 25 ranking in the period.",
+      "capture": "sha256:407f6ce169ecd36b2e2a487d0c9aeef2064acd93314d55275a08b7fae756207d",
+      "quote": "## qaiu/netdisk-fast-download ... Stars +263 in 61 days ... Forks +28 in 61 days"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/qaiu/netdisk-fast-download/main/README.md",
+      "date": "2026-11-02",
+      "proved": "the project README carries the Trendshift badge of the project repository",
+      "capture": "sha256:6db0683295073400965eaad83a2c121f5603936be7fa72d1ff7b6ad18fb59992",
+      "quote": "<a href=\"https://trendshift.io/repositories/12101\" target=\"_blank\"><img src=\"https://trendshift.io/api/badge/repositories/12101\" alt=\"qaiu%2Fnetdisk-fast-download | Trendshift\""
+    },
+    {
+      "url": "probe:https://lz.qaiu.top/",
+      "date": "2026-11-02",
+      "proved": "the instance answered a GET of its front page with HTTP 200 and 6462 bytes of HTML",
+      "capture": "sha256:49b1e847c43deba877341ad74f485d37be1c0c5c1fad23902b95445759ea75e3",
+      "quote": "\"status\": 200, \"bytes\": 6462"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/qaiu/netdisk-fast-download/main/README.md",
+      "date": "2026-11-02",
+      "proved": "the README links lz.qaiu.top as the free public instance, asks users not to over-rely on it, and says heavy request volume can get the server limited by the pan vendors",
+      "capture": "sha256:6db0683295073400965eaad83a2c121f5603936be7fa72d1ff7b6ad18fb59992",
+      "quote": "[公益解析，lz站](https://lz.qaiu.top) ... 请不要过度依赖 lz.qaiu.top ... 请求量过多的话服务器可能会被云盘厂商限制，遇到解析失败的分享链接不要着急提issues，请先检查分享是否有效。"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-30T17:26:52.226Z",
+  "verified_at": "2026-11-02T10:52:56.733Z",
   "binding": "write-gated",
   "binding_note": "The resolver is free, keyless and fast, and it stores nothing, so what binds is that it only resolves: there is no write path, and the pans a client would most want are behind the keyed endpoint.",
   "notes": "The single highest-leverage piece of glue in the topic and the reason the pan survey is usable at all. Two endpoints, and the split is the finding: the free one covers lanzou, ilanzou, ctfile, wenshushu, feijipan and ecpan, and the keyed one adds Baidu, Xunlei, Quark, UC, 139, 189 and Unicom.",
@@ -139,5 +272,6 @@
       "lz.qaiu.top / netdisk-fast-download — keyless multi-pan direct-link resolver (30+ Chinese pans)"
     ],
     "sibling_record": "netdisk-pan/netdisk-fast-download-anonymous-multi-pan-parser covers the project as a self-hostable parser; this record covers the hosted instance and what it resolves"
-  }
+  },
+  "self_hosted": false
 }

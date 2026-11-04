@@ -14,7 +14,7 @@
     "notes": "Past 100,000 calls no data is served until the quota resets at 00:00 UTC on the 1st of the month. No bulk path on the Free plan: Bulk Request (up to 50 locations a call) starts at Pro+."
   },
   "per_object_cap": {
-    "stated": "not applicable: the unit is a request",
+    "stated": "not applicable",
     "bytes": null,
     "notes": ""
   },
@@ -46,7 +46,7 @@
     },
     {
       "kind": "request-rate",
-      "value": "unverified: the terms name a per-minute burst limit and a blog post a per-second ceiling by plan, but no number for the Free plan is published",
+      "value": "unverified: behind a sign-up; no per-minute number for the Free plan is published: the terms name a per-minute burst limit and say rate limits by plan are on the pricing page, whose plan table has no rate-limit row, and a blog post names a per-second ceiling by plan and HTTP 429 for a burst",
       "source": "https://www.weatherapi.com/terms.aspx"
     }
   ],
@@ -54,10 +54,10 @@
   "binding_note": "100,000 calls a month is about 3,333 a day over 30 days and is the only published ceiling; the burst limit has no published number.",
   "identity_cost": {
     "kind": "email",
-    "detail": "The sign-up form asks for a website, an email that becomes the username, a password twice, an arithmetic check and acceptance of the terms, or a Google sign-in; the home page says no credit card is required. A new account starts on a 7-day Business trial and moves to the Free plan when it ends.",
+    "detail": "The email sign-up form asks for an email that becomes the username, a password twice, an arithmetic check and acceptance of the terms, or a Google sign-in; the home page says no credit card is required. A new account starts on a 7-day Business trial and moves to the Free plan when it ends.",
     "country": null
   },
-  "reliability_note": "A call with no key answers HTTP 401 with error code 1002; exceeding the monthly count or the burst limit can suspend API access for a time.",
+  "reliability_note": "A call with no key answers HTTP 401 with error code 1002; a call over the monthly count answers HTTP 403 with error code 2007 and no data is served until the quota resets. The error table lists no code for the per-minute burst limit and so does not say what a call over it answers; exceeding it can suspend API access for a time.",
   "confidence": "documented",
   "confidence_note": "Quota, plan contents, caching limits and sign-up fields are read from first-party pages; a call with no key answered HTTP 401, so the free key was not exercised.",
   "evidence": [
@@ -197,13 +197,6 @@
     {
       "url": "https://www.weatherapi.com/signup.aspx",
       "date": "2026-10-31",
-      "proved": "the sign-up form has a Website field",
-      "capture": "sha256:350f4717f223fe2412e0c0c38f1c444ab52ea85bba47d61fa191a7cf4d12b430",
-      "quote": "Website"
-    },
-    {
-      "url": "https://www.weatherapi.com/signup.aspx",
-      "date": "2026-10-31",
       "proved": "the sign-up form asks for the password twice",
       "capture": "sha256:350f4717f223fe2412e0c0c38f1c444ab52ea85bba47d61fa191a7cf4d12b430",
       "quote": "Retype Password Show password"
@@ -242,9 +235,100 @@
       "proved": "listed under Weather in the public-apis list with an apiKey",
       "capture": "sha256:7c0d65a75227ba9bd3f8576a39262f7af32373d3eca4190cd91e66329ca1d059",
       "quote": "| [WeatherAPI](https://www.weatherapi.com/) | Weather API with other stuff like Astronomy and Geolocation API | `apiKey` | Yes | Yes |"
+    },
+    {
+      "url": "https://blog.weatherapi.com/rate-limit-aware-request-queue-weatherapi",
+      "date": "2026-11-02",
+      "proved": "a blog post names HTTP 429 as what a brief burst over the plan's per-second limit can draw",
+      "capture": "sha256:4cdcf5c1903cba530750888d91242af489edb0e726876eea9fc623e860e781bb",
+      "quote": "Set `ratePerSecond` below your actual plan limit, not right at it. Leaving headroom means a brief burst doesn’t immediately 429 you."
+    },
+    {
+      "url": "https://www.weatherapi.com/docs/error-codes/",
+      "date": "2026-11-02",
+      "proved": "a call over the monthly count answers HTTP 403 with error code 2007",
+      "capture": "sha256:6af0cedd35b26c3405c894def7e890b5163f18601ceabb2210986d8b656b5ab8",
+      "quote": "| 403 | 2007 | API key has exceeded calls per month quota. |"
+    },
+    {
+      "url": "https://www.weatherapi.com/signup",
+      "date": "2026-11-02",
+      "proved": "the Website input sits in a container positioned off-screen and marked aria-hidden, so the visible form does not ask for a website",
+      "capture": "sha256:e6daf3f89d82afaae0b0b283a88d398ef32286520053c1b31dcb9ee346ad9299",
+      "quote": "<div style=\"position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;\" aria-hidden=\"true\"> <label for=\"website\">Website</label>"
+    },
+    {
+      "url": "https://www.weatherapi.com/terms.aspx",
+      "date": "2026-11-02",
+      "proved": "the terms say rate limits by plan are published on the pricing page",
+      "capture": "sha256:807212cce96363e162293d5a685b31d6d8e74a8ed8edb671da3ae9388065359b",
+      "quote": "Current rate limits by plan are published at weatherapi.com/pricing."
+    },
+    {
+      "url": "https://www.weatherapi.com/pricing.aspx",
+      "date": "2026-11-02",
+      "proved": "the plan table gives each plan's monthly call count: 100K on Free",
+      "capture": "sha256:6206d066e26a8d3e2e1c1685dc1ecfd83ad9ace18cb93f77558014836d06943e",
+      "quote": "| Calls per month | 100K | 3 Million | 5 Million | 10 Million Need more? Up to 500 Million | Custom |"
+    },
+    {
+      "url": "https://www.weatherapi.com/pricing.aspx",
+      "date": "2026-11-02",
+      "proved": "past the monthly count no data is served, and the quota resets at midnight UTC on the 1st",
+      "capture": "sha256:6206d066e26a8d3e2e1c1685dc1ecfd83ad9ace18cb93f77558014836d06943e",
+      "quote": "If you go over your calls or request per month then you will stop receiving data for that month. ... The quota is reset at midnight on 1st of each month UTC."
+    },
+    {
+      "url": "https://www.weatherapi.com/pricing.aspx",
+      "date": "2026-11-02",
+      "proved": "the Free plan has 1 day of marine weather",
+      "capture": "sha256:6206d066e26a8d3e2e1c1685dc1ecfd83ad9ace18cb93f77558014836d06943e",
+      "quote": "| Marine Weather New | 1 Day. No Tide Data | 3 Day. No Tide Data | 5 Day + Tide Data | 7 Day + Tide Data | 7 Day + Tide Data |"
+    },
+    {
+      "url": "https://www.weatherapi.com/",
+      "date": "2026-11-02",
+      "proved": "the home page FAQ says the Free plan includes the past day of history",
+      "capture": "sha256:882235fbcc84693579a06852336b1048ff99338556e837ae3ca5e706acfaa7f7",
+      "quote": "The Free plan includes the past day, Starter the past 7 days, Pro+ the past 365 days, and Business and Enterprise the full archive from 2010."
+    },
+    {
+      "url": "https://www.weatherapi.com/docs/error-codes/",
+      "date": "2026-11-02",
+      "proved": "the page lists the error codes the API answers with for 4xx statuses",
+      "capture": "sha256:6af0cedd35b26c3405c894def7e890b5163f18601ceabb2210986d8b656b5ab8",
+      "quote": "If there is an error, API response contains error message including error code for following 4xx HTTP Status codes."
+    },
+    {
+      "url": "https://blog.weatherapi.com/historical-weather-data-backtesting-request-strategy/",
+      "date": "2026-11-02",
+      "proved": "a blog post says free plans have burst rate limits and that a throttled call gets an unclear error",
+      "capture": "sha256:f882e069231a86c147895af42d445794f3e9a7e5924eb40cc6ccf0119af920c1",
+      "quote": "On free and lower-tier plans, burst rate limits are real. A tight loop pulling 52 weekly chunks back-to-back will likely get throttled partway through, leaving you with a partial dataset and an unclear error."
+    },
+    {
+      "url": "https://www.weatherapi.com/signup",
+      "date": "2026-11-02",
+      "proved": "the sign-up form takes an email as the username",
+      "capture": "sha256:e6daf3f89d82afaae0b0b283a88d398ef32286520053c1b31dcb9ee346ad9299",
+      "quote": "<label for=\"Email\">Email (<i>Your email is your username</i>)</label>"
+    },
+    {
+      "url": "https://www.weatherapi.com/signup",
+      "date": "2026-11-02",
+      "proved": null,
+      "capture": "sha256:e6daf3f89d82afaae0b0b283a88d398ef32286520053c1b31dcb9ee346ad9299",
+      "quote": "<label for=\"Agree\">&nbsp;I have read and agree to </label>"
+    },
+    {
+      "url": "https://www.weatherapi.com/",
+      "date": "2026-11-02",
+      "proved": "the home page FAQ gives the Free plan 100,000 calls a month with realtime weather, a 3-day forecast, search, astronomy and IP lookup, and asks for no credit card",
+      "capture": "sha256:882235fbcc84693579a06852336b1048ff99338556e837ae3ca5e706acfaa7f7",
+      "quote": "Yes. The Free plan gives you 100,000 API calls a month with realtime weather, a 3-day forecast, search, astronomy, IP lookup and weather maps. No credit card is needed"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T10:04:05.824Z",
+  "verified_at": "2026-11-03T00:28:30.654Z",
   "notes": "Storage: cached responses are bounded at 60 minutes for current conditions and 24 hours for forecasts; historical data has no caching limit. Bulk path: none on Free; Bulk Request starts at Pro+ (USD 25 a month on the pricing page)."
 }

@@ -43,7 +43,7 @@
   "binding_note": "Checkpointing every ten minutes makes preemption overhead a rounding error on every lane measured, so the discount is real rather than eaten by restarts; what breaks a run is the absence of a resume path, not the interruption rate.",
   "identity_cost": {
     "kind": "card",
-    "detail": null,
+    "detail": "a phone number, a credit or debit card that is not prepaid, and a Microsoft account or a GitHub account. 'We don't charge your credit card or debit card anything when you sign up for Azure, but you may see a one-dollar (or equivalent) verification hold'; the hold 'is removed within three to five days'. The offer page adds 'Your card will not be charged initially except for a temporary authorization hold', and 'We do not accept prepaid or virtual credit cards'.",
     "country": null
   },
   "reliability_note": "no reliability event recorded",
@@ -118,10 +118,52 @@
       "url": "https://learn.microsoft.com/en-us/azure/virtual-machines/spot-vms",
       "date": "2026-10-22",
       "proved": "pricing history for 90 days and eviction rates for 28 trailing days are queryable through Azure Resource Graph in the SpotResources table, with a sample KQL query"
+    },
+    {
+      "url": "https://azure.microsoft.com/en-us/pricing/purchase-options/azure-account",
+      "date": "2026-11-02",
+      "proved": "the signup hold is USD 1 or the local equivalent and is removed on verification",
+      "capture": "sha256:13afa84fbe53f911296fa20915e4949a8c610aa3a56be64ebb351a753d2af7a6",
+      "quote": "During the signup verification process, a one-dollar (or equivalent) temporary authorization charge may be placed on your card and then removed upon verification."
+    },
+    {
+      "url": "https://azure.microsoft.com/en-us/pricing/purchase-options/azure-account",
+      "date": "2026-11-02",
+      "proved": "signup places a verification hold and no charge",
+      "capture": "sha256:13afa84fbe53f911296fa20915e4949a8c610aa3a56be64ebb351a753d2af7a6",
+      "quote": "We don't charge your credit card or debit card anything when you sign up for Azure, but you may see a one-dollar (or equivalent) verification hold on your credit card or debit card account."
+    },
+    {
+      "url": "https://azure.microsoft.com/en-au/pricing/offers/ms-azr-0017g",
+      "date": "2026-11-02",
+      "proved": "debit and credit cards are accepted; prepaid and virtual cards are refused",
+      "capture": "sha256:3e9ff04eb42253f2c897b4fda500ffd2171265f1d0db788cfa337d5973b642e4",
+      "quote": "Both debit card and credit cards are accepted. We do not accept prepaid or virtual credit cards."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/cost-management-billing/manage/supported-payment-methods",
+      "date": "2026-11-02",
+      "proved": "prepaid and stored-value cards are not valid payment instruments",
+      "capture": "sha256:838087dbc2fd6cb7951e2b1e5de115443a4eb2d0e9a2dbd776e6bb91a47a3f02",
+      "quote": "Prepaid cards (aka stored value cards, Visa gift cards, MasterCard gift cards, etc.) are not accepted as valid payment instruments."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/cost-management-billing/troubleshoot-subscription/troubleshoot-azure-sign-up",
+      "date": "2026-11-02",
+      "proved": "the hold is removed within three to five days",
+      "capture": "sha256:5f7503baf33fdce6b37b81eaea6f06ec6e969b077016fffeeee4a612f20fac81",
+      "quote": "You might see a small, temporary verification hold on your credit card account after you sign up. This hold is removed within three to five days."
+    },
+    {
+      "url": "https://azure.microsoft.com/en-au/pricing/offers/ms-azr-0017g",
+      "date": "2026-11-02",
+      "proved": "nothing is charged at signup except the temporary authorisation",
+      "capture": "sha256:3e9ff04eb42253f2c897b4fda500ffd2171265f1d0db788cfa337d5973b642e4",
+      "quote": "Your card will not be charged initially except for a temporary authorization hold."
     }
   ],
   "verdict": "qualifies",
-  "verified_at": "2026-10-22T00:00:00.000Z",
+  "verified_at": "2026-11-02T02:17:36.635Z",
   "notes": "No provider publishes a run-survival figure. Azure publishes a per-hour eviction probability per SKU and region through Resource Graph over 28 trailing days, and GCP publishes a preemption rate through advice.capacityHistory, but neither is a survival curve and the two are not the same statistic: GCP divides preempted VMs by VMs that stopped running, which counts user-caused stops in the denominator and so understates the rate a long job experiences. GCP also publishes an estimated uptime in three buckets only (60 minutes, 10 minutes, 1 minute) from advice.capacity, which is the closest thing to a published survival figure and is coarse. The numbers above use third-party rates as the probability input, so the finding is inferred, not measured. qualifies-with-caveat via a05-spot; fails-identity via a05-spot; qualifies-with-caveat via a05-spot. The one recorded is the better-evidenced.",
   "extras": {
     "facets": {
@@ -133,6 +175,17 @@
         "gpu_class": "A100-80GiB",
         "gpu_count": 1
       }
+    },
+    "payment_methods": {
+      "card_at_signup": "yes",
+      "debit": "accepted",
+      "prepaid": "refused",
+      "virtual": "refused",
+      "hold_amount": "USD 1 (or equivalent)",
+      "hold_detail": "'a one-dollar (or equivalent) temporary authorization charge may be placed on your card and then removed upon verification'; 'The hold is temporary and will be removed', and 'This hold is removed within three to five days'. The offer page adds 'Your card will not be charged initially except for a temporary authorization hold', and 'We do not accept prepaid or virtual credit cards.'",
+      "identity": "a phone number, a non-prepaid credit or debit card, and a Microsoft or GitHub account",
+      "source_url": "https://azure.microsoft.com/en-us/pricing/purchase-options/azure-account",
+      "read_on": "2026-11-02"
     }
   }
 }

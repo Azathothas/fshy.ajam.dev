@@ -5,10 +5,10 @@
   "url": "https://share.weiyun.com",
   "category": "consumer-pan",
   "free_tier": {
-    "stated": "About 10 GB free",
-    "unit": "GiB",
+    "stated": "5 GB for a free account, per the vendor member-centre page",
+    "unit": "GB",
     "metered_on": "stored-bytes",
-    "source_url": "https://share.weiyun.com/5BPnTh7",
+    "source_url": "https://www.weiyun.com/vip",
     "read_on": "2026-10-21"
   },
   "per_object_cap": {
@@ -17,9 +17,9 @@
     "source_url": "https://share.weiyun.com"
   },
   "retention": {
-    "stated": "Not published. Tencent has left Weiyun on minimal maintenance",
-    "days": null,
-    "source_url": "https://share.weiyun.com"
+    "stated": "When a membership lapses and usage exceeds the free quota, the account has 180 days to upgrade or clear the excess, after which it is frozen",
+    "days": 180,
+    "source_url": "https://www.weiyun.com/vip"
   },
   "egress": {
     "terms": "Member-gated speed, with free downloads heavily throttled",
@@ -31,13 +31,13 @@
   "interface": [
     "rest"
   ],
-  "tooling": "the OpenList weiyun driver, which is cookie-based; github.com/billzhong/weiyun scrapes the share page and then wgets. No rclone backend",
+  "tooling": "A reverse-engineered client mounts it: the OpenList weiyun driver takes a pasted login cookie and is unmaintained. A pull request to OpenList proposes a further driver on the vendor's MCP API with an MCPToken; its merge state is unverified. github.com/billzhong/weiyun scrapes the share page and then wgets. No rclone backend",
   "chaining": "Nothing to chain. A QQ or WeChat account is required, which is +86-gated in practice, and the share endpoints answer with a null body to an unauthenticated caller",
   "limits": [
     {
       "kind": "per-object-cap",
-      "value": "10 GB is the free tier total, which is the cap in practice",
-      "source": "https://share.weiyun.com/5BPnTh7"
+      "value": "5 GB is the free tier total, which is the cap in practice",
+      "source": "https://www.weiyun.com/vip"
     },
     {
       "kind": "write-gated",
@@ -47,7 +47,7 @@
   ],
   "identity_cost": {
     "kind": "country-phone",
-    "detail": "a QQ or WeChat account",
+    "detail": "login is by WeChat app QR scan or by QQ login ('微信登录', 'QQ登录'); the page shows no email or phone sign-in, and what a new WeChat or QQ account needs is unverified: behind a sign-up",
     "country": "86"
   },
   "reliability_note": "The share page ships the share record in a JavaScript blob, so the metadata is embedded and public, and the CGI then answers ret 102027 with a null body. Tencent has left the product on minimal maintenance and the old scrapers work only where the markup has not changed",
@@ -67,12 +67,54 @@
       "url": "probe:POST https://share.weiyun.com/api/v4/weiyun/share/queryShareInfo",
       "date": "2026-10-21",
       "proved": "returned HTML and not JSON, so the endpoint does not exist"
+    },
+    {
+      "url": "https://www.weiyun.com/vip",
+      "date": "2026-11-03",
+      "proved": "the free account has 5 GB of storage",
+      "capture": "sha256:30e640ff39803b6d4dbfdee35f8590081b7b2f0ad04f06c037ba80a1aee94c48",
+      "quote": "会员服务到期后，存储空间将恢复到免费账号的5GB存储空间。"
+    },
+    {
+      "url": "https://www.weiyun.com/vip",
+      "date": "2026-11-03",
+      "proved": "usage over the quota must be cleared or upgraded within 180 days",
+      "capture": "sha256:30e640ff39803b6d4dbfdee35f8590081b7b2f0ad04f06c037ba80a1aee94c48",
+      "quote": "若您的已用容量超出可用额度，需要在180天内升级存储空间或对容量超额部分进行清理。"
+    },
+    {
+      "url": "https://openlistteam.github.io/docs/zh/guide/drivers/weiyun.html",
+      "date": "2026-11-03",
+      "proved": "the OpenList Weiyun driver is a reverse-engineered interface that its team does not maintain",
+      "capture": "sha256:947a1572e76f0c84452d0cac8c4318a5a801b77d1246a0af4b267cf28cd2b23e",
+      "quote": "本接口是基于历史产物的逆向接口，项目组不会主动进行维护"
+    },
+    {
+      "url": "https://openlistteam.github.io/docs/zh/guide/drivers/weiyun.html",
+      "date": "2026-11-03",
+      "proved": "a QQ-login cookie must be replaced after 48 hours",
+      "capture": "sha256:947a1572e76f0c84452d0cac8c4318a5a801b77d1246a0af4b267cf28cd2b23e",
+      "quote": "QQ：登录目前只能保活48小时就得更换cookie"
+    },
+    {
+      "url": "https://github.com/OpenListTeam/OpenList/pull/2305",
+      "date": "2026-11-03",
+      "proved": "a pull request adds an OpenList driver on the vendor's official MCP API",
+      "capture": "sha256:1e32a8e601b225649b4c02180f7ea54f10742369f2e515d5b4edbb2a0e5b23cc",
+      "quote": "新增微云开放平台（WeiYun Open，基于 MCP 官方 API）的存储驱动 `weiyun_open`，支持通过官方 MCP 接口访问微云网盘。"
+    },
+    {
+      "url": "https://www.weiyun.com/",
+      "date": "2026-11-03",
+      "proved": "the login panel offers a WeChat app QR scan, with QQ login as the other option",
+      "capture": "sha256:0007e348281b815b87ee86a7579eb56f1992cd80308fdca1a9790a06f1fdedac",
+      "quote": "请使用微信App扫码登录"
     }
   ],
   "verdict": "fails-egress",
-  "verified_at": "2026-10-21T00:00:00.000Z",
+  "verified_at": "2026-11-04T00:21:07.067Z",
   "binding": "per-object-cap",
-  "binding_note": "Either number closes it; the quota is the one a reader can check without an account.",
+  "binding_note": "The free account is 5 GB, and the share path is closed to an unauthenticated caller even for metadata. Either number closes it; the quota is the one a reader can check without an account.",
   "notes": null,
   "extras": {
     "access_mode": "registration-gated",

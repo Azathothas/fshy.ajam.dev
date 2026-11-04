@@ -5,26 +5,30 @@
   "url": "https://cloud.ru",
   "category": "iaas",
   "free_tier": {
-    "stated": "Free tier object storage: 15 GB standard + 1,000 GB cold + 3,000 GB ice, with 100k PUT / 100k POST on standard and 4,000 bonus roubles per block",
+    "stated": "Free tier object storage: 15 GB of standard-class storage, 100 000 PUT, POST and LIST operations, 1 000 000 GET and HEAD operations, and the first 10 TB of outgoing traffic each month; the free volume covers standard-class storage only",
     "unit": "GB",
     "metered_on": "stored-bytes",
-    "source_url": "https://cloud.ru/offers/free-tier",
-    "read_on": "2026-10-21",
-    "notes": null
+    "source_url": "https://cloud.ru/docs/s3e/ug/topics/overview__free-tier",
+    "read_on": "2026-11-01",
+    "notes": "The marketing page shows a standard, a cold and an ice panel together, at 15 GB, 1 000 GB and 3 000 GB; the documentation restricts the free volume to standard-class storage, so the cold and ice figures are panels of a calculator and not free capacity."
   },
   "per_object_cap": {
-    "stated": "not stated",
-    "source_url": "https://cloud.ru/offers/free-tier",
-    "notes": "not stated"
+    "stated": "A single object is limited to 5 TB; one request uploads at most 5 GB and larger objects need multipart upload; in the cold and ice classes an object smaller than 128 KB is billed as 128 KB",
+    "source_url": "https://cloud.ru/docs/s3e/ug/topics/overview__limitations",
+    "notes": "the 5 TB object cap and the 5 GB per-request limit are tenant limits that cannot be raised; the storage volume itself is unlimited by default; a bucket created in the console can be given a maximum volume, buckets created through the API are unlimited in volume"
   },
   "retention": {
-    "stated": "not stated",
-    "source_url": "https://cloud.ru/offers/free-tier",
-    "notes": "not stated"
+    "stated": "Storage is billed on the largest volume held during each hour, at the tariff of the class the object is in",
+    "days": null,
+    "source_url": "https://cloud.ru/docs/s3e/ug/topics/pricing",
+    "notes": "no minimum storage duration and no delete charge are stated on the pricing, class or free-tier pages"
   },
   "egress": {
-    "terms": "No egress line on the free-tier page; S3-compatible storage inside a Russian cloud, so egress is priced separately on the paid tariff (unverified for the free bucket)",
-    "metered": false
+    "terms": "The first 10 TB of outgoing traffic each month is not billed in any storage class; beyond it traffic bills at 1,1712 ₽ per GB",
+    "metered": true,
+    "free_allowance": "the first 10 TB each month, in any storage class",
+    "price_per_tb": "RUB 1 171,20 per TB beyond the 10 TB, billed at 1,1712 ₽ per GB",
+    "source_url": "https://cloud.ru/docs/s3e/ug/topics/pricing"
   },
   "interface": [
     "s3-compatible",
@@ -32,33 +36,249 @@
   ],
   "interface_detail": "s3",
   "tooling": "S3 API (rclone 's3' with a custom endpoint) — the free-tier page is explicitly 'Соберите свое Объектное хранилище S3'",
-  "chaining": "Per-account 1 TB cold + 3 TB ice is a real cold-archive number; multiplication is limited by Russian-phone identity unless a foreign legal entity is accepted",
-  "limits": [],
+  "chaining": "The free path is 15 GB of standard-class storage plus the first 10 TB of outgoing traffic each month; a cold or ice bucket bills per GB-month at its class tariff, so an archive tier there is a paid tier.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "15 GB of standard-class storage per organisation per month",
+      "source": "https://cloud.ru/docs/s3e/ug/topics/overview__free-tier"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "10 TB of outgoing traffic per organisation per month, in any storage class",
+      "source": "https://cloud.ru/docs/s3e/ug/topics/overview__free-tier"
+    },
+    {
+      "kind": "request-rate",
+      "value": "100 000 PUT, POST and LIST operations and 1 000 000 GET and HEAD operations per month",
+      "source": "https://cloud.ru/docs/s3e/ug/topics/overview__free-tier"
+    }
+  ],
   "limits_note": "The free tier is explicitly a test allowance: 'Ресурсы предоставляются исключительно для тестирования. Не подразумевается их безвозмездное предоставление' — i.e. a test allowance and not a standing free tier; 4,000 bonus roubles is credit-shaped and will expire",
   "identity_cost": {
     "kind": "card",
-    "detail": null,
+    "detail": "Participation is limited to individuals, sole traders and legal entities registered in Russia. An individual registers with a phone number confirmed by SMS plus an email address, or with SberID. The account must hold at least 100 ₽ or 100 bonus points before any resource is created, and the 4000 bonus points are granted only after a bank card is bound.",
     "country": null
   },
-  "reliability_note": "the free tier is a promotional calculator allowance with an explicit 'for testing only' disclaimer, so treat any capacity as revocable; console is unreachable to non-JS clients",
-  "confidence": "inferred",
-  "confidence_note": null,
+  "reliability_note": "the free volume is granted for an unlimited time from the date of the contract, the promotion itself runs to 31 December 2026, and the operator reserves the right to change quota sizes at any time; an account that starts no service within 60 days may be dropped from the promotion",
+  "confidence": "documented",
+  "confidence_note": "every value is quoted from a first-party Cloud.ru page read on 2026-11-01; the marketing page's cold and ice panels are not a free allowance, which the service documentation contradicts. The identity gate is read from the promotion rules, not from the registration form itself.",
   "evidence": [
     {
-      "url": "https://cloud.ru/offers/free-tier",
-      "date": "2026-10-21",
-      "proved": "'Стандартное 15 ГБ / PUT 100 000 / POST 100 000 / 4 000 бонусных рублей', 'Холодное 1 000 ГБ', 'Ледяное 3 000 ГБ', plus the 'исключительно для тестирования' disclaimer"
+      "url": "https://cloud.ru/docs/s3e/ug/topics/overview__free-tier",
+      "date": "2026-11-01",
+      "proved": "15 GB, 100 000 PUT/POST/LIST and 1 000 000 GET/HEAD are free on standard storage, plus 10 TB of outgoing traffic",
+      "capture": "sha256:b7b5435aaa85fd976e702a66adaeacec6d99d6861d0a5575beedafbf915dbc1b",
+      "quote": "Каждый месяц для любого типа хранилища не тарифицируются первые 10 ТБ исходящего трафика.\n\nКаждый месяц в стандартном хранилище не тарифицируются:\n\n- первые 15 ГБ объема занятого пространства;\n- первые 100 000 операций LIST, POST, PUT;\n- первые 1 000 000 операций GET, HEAD."
     },
     {
-      "url": "https://console.cloud.ru/static-page/login-destination",
-      "date": "2026-10-21",
-      "proved": null
+      "url": "https://cloud.ru/docs/s3e/ug/topics/overview__free-tier",
+      "date": "2026-11-01",
+      "proved": "the free volume is stated in the service documentation",
+      "capture": "sha256:b7b5435aaa85fd976e702a66adaeacec6d99d6861d0a5575beedafbf915dbc1b",
+      "quote": "Каждый месяц для любого типа хранилища не тарифицируются первые 10 ТБ исходящего трафика.\n\nКаждый месяц в стандартном хранилище не тарифицируются:\n\n- первые 15 ГБ объема занятого пространства;\n- первые 100 000 операций LIST, POST, PUT;\n- первые 1 000 000 операций GET, HEAD."
+    },
+    {
+      "url": "https://cloud.ru/offers/free-tier",
+      "date": "2026-11-01",
+      "proved": "the marketing page lists a cold panel of 1 000 GB beside the standard 15 GB panel",
+      "capture": "sha256:a02140edfbb352e9510883df78521a5af2df7c51777a7c6779ce6ecf5b0d9eb8",
+      "quote": "Тип хранилища Холодное\n\nОбъем хранилища 1 000 ГБ"
+    },
+    {
+      "url": "https://cloud.ru/docs/s3e/ug/topics/overview__free-tier",
+      "date": "2026-11-01",
+      "proved": "15 GB of standard-class storage is still the free volume",
+      "capture": "sha256:b7b5435aaa85fd976e702a66adaeacec6d99d6861d0a5575beedafbf915dbc1b",
+      "quote": "первые 15 ГБ объема занятого пространства"
+    },
+    {
+      "url": "https://cloud.ru/docs/s3e/ug/topics/overview__free-tier",
+      "date": "2026-11-01",
+      "proved": "the free volume is counted per organisation over the whole storage account, not per bucket",
+      "capture": "sha256:b7b5435aaa85fd976e702a66adaeacec6d99d6861d0a5575beedafbf915dbc1b",
+      "quote": "Бесплатный объем ресурсов выделяется в рамках организации и только на хранилище в целом, а не на каждый бакет в отдельности."
+    },
+    {
+      "url": "https://cloud.ru/docs/s3e/ug/topics/overview__free-tier",
+      "date": "2026-11-01",
+      "proved": "storage beyond 15 GB in the standard class is billed, so a monthly volume quota is what binds",
+      "capture": "sha256:b7b5435aaa85fd976e702a66adaeacec6d99d6861d0a5575beedafbf915dbc1b",
+      "quote": "Если объем занятого пространства в стандартном хранилище превысил 15 ГБ, то последующий объем оплачивается согласно"
+    },
+    {
+      "url": "https://cloud.ru/docs/s3e/ug/topics/overview__free-tier",
+      "date": "2026-11-01",
+      "proved": "both quotas are counted per organisation over the storage account, not per bucket",
+      "capture": "sha256:b7b5435aaa85fd976e702a66adaeacec6d99d6861d0a5575beedafbf915dbc1b",
+      "quote": "Бесплатный объем ресурсов выделяется в рамках организации и только на хранилище в целом, а не на каждый бакет в отдельности."
+    },
+    {
+      "url": "https://cloud.ru/docs/s3e/ug/topics/pricing",
+      "date": "2026-11-01",
+      "proved": "outgoing traffic beyond the free volume costs 1,1712 ₽ per GB per month",
+      "capture": "sha256:a8e6f70f5f54b61014cbed561f8289e2a1ee5669f71e5271dde5da8cd1b02ab6",
+      "quote": "| Исходящий трафик, 1 ГБ | 1,1712 ₽ |"
+    },
+    {
+      "url": "https://cloud.ru/docs/s3e/ug/topics/pricing",
+      "date": "2026-11-01",
+      "proved": "storage bills on the largest volume held in the hour, with no minimum duration stated",
+      "capture": "sha256:a8e6f70f5f54b61014cbed561f8289e2a1ee5669f71e5271dde5da8cd1b02ab6",
+      "quote": "Тариф применяется к максимальному показателю занятого объема данных в хранилище за час"
+    },
+    {
+      "url": "https://cloud.ru/docs/s3e/ug/topics/concepts__storage-class",
+      "date": "2026-11-01",
+      "proved": "cold and ice storage bills an object smaller than 128 KB as 128 KB",
+      "capture": "sha256:9e1ce29f25fe1f7d1cbaf2a61e6a55b4243b0989fcb882dbad5d2198f658b83f",
+      "quote": "В холодном и ледяном классах выгодно хранить объекты размером от 128 КБ: если размер объекта меньше, при расчете стоимости потребления значение округляется до 128 КБ."
+    },
+    {
+      "url": "https://cloud.ru/documents/promotions/active/evolution-free-tier",
+      "date": "2026-11-01",
+      "proved": "the account needs at least 100 ₽ and the 4000 bonus points need a bound bank card",
+      "capture": "sha256:fe4d8e6f67389c99c690e2fa496f4f6facb61c5ad586ba7aa136435baa22ce3e",
+      "quote": "4.2. Обеспечивает наличие на своем лицевом счете минимальной суммы (не менее 100 (Ста) рублей либо Гранта в размере не менее 100 (Ста) Бонусов); физическое лицо также имеет право получить 4000 (Четыре тысячи) Бонусов при условии привязки банковской карты"
+    },
+    {
+      "url": "https://cloud.ru/docs/s3e/ug/topics/overview__free-tier",
+      "date": "2026-11-01",
+      "proved": "the free volume covers standard-class storage only, apart from the 10 TB of outgoing traffic",
+      "capture": "sha256:b7b5435aaa85fd976e702a66adaeacec6d99d6861d0a5575beedafbf915dbc1b",
+      "quote": "Бесплатный объем ресурсов предоставляется бессрочно и действует только для хранилища стандартного класса (за исключением первых 10 ТБ исходящего трафика)."
+    },
+    {
+      "url": "https://cloud.ru/documents/promotions/active/evolution-free-tier",
+      "date": "2026-11-01",
+      "proved": "the promotion runs to 31 December 2026",
+      "capture": "sha256:fe4d8e6f67389c99c690e2fa496f4f6facb61c5ad586ba7aa136435baa22ce3e",
+      "quote": "3. Срок действия Акции с «26» декабря 2024 г. до «31» декабря 2026 г. включительно"
+    },
+    {
+      "url": "https://cloud.ru/docs/s3e/ug/topics/overview__free-tier",
+      "date": "2026-11-01",
+      "proved": "the vendor's own documentation states the free tier and its volumes",
+      "capture": "sha256:b7b5435aaa85fd976e702a66adaeacec6d99d6861d0a5575beedafbf915dbc1b",
+      "quote": "В Object Storage есть уровень бесплатного пользования или free tier."
+    },
+    {
+      "url": "https://cloud.ru/docs/s3e/ug/topics/overview__free-tier",
+      "date": "2026-11-01",
+      "proved": "the free volume is stated for standard storage only",
+      "capture": "sha256:b7b5435aaa85fd976e702a66adaeacec6d99d6861d0a5575beedafbf915dbc1b",
+      "quote": "Каждый месяц в стандартном хранилище не тарифицируются:"
+    },
+    {
+      "url": "https://cloud.ru/offers/free-tier",
+      "date": "2026-11-01",
+      "proved": "the marketing page lists an ice panel of 3 000 GB beside the standard and cold panels",
+      "capture": "sha256:a02140edfbb352e9510883df78521a5af2df7c51777a7c6779ce6ecf5b0d9eb8",
+      "quote": "Тип хранилища Ледяное\n\nОбъем хранилища 3 000 ГБ"
+    },
+    {
+      "url": "https://cloud.ru/offers/free-tier",
+      "date": "2026-11-01",
+      "proved": "no resource starts at a zero balance and the smallest top-up is 100 roubles",
+      "capture": "sha256:a02140edfbb352e9510883df78521a5af2df7c51777a7c6779ce6ecf5b0d9eb8",
+      "quote": "Создать любой другой ресурс можно только при положительном балансе — рублевом или бонусном. Минимальная сумма пополнения - 100 рублей"
+    },
+    {
+      "url": "https://cloud.ru/calculator?product=evolutionStorageS3",
+      "date": "2026-11-01",
+      "proved": "the calculator charges every storage class above a single 15 GB free volume",
+      "capture": "sha256:2762a0ee9523df4a8c30cbba167eb636e1dd8335fae5b97eed334e40999ab5fb",
+      "quote": "Размер хранилища (бесплатно до 15 ГБ)"
+    },
+    {
+      "url": "https://cloud.ru/docs/s3e/ug/topics/guides__bucket-edit",
+      "date": "2026-11-01",
+      "proved": "the free tier applies to standard-class buckets, and a colder class bills at its own tariff",
+      "capture": "sha256:7efcfd155235b127371f60abd5752ebada7a333c1c60f7e7a4b383ca15d2b0c4",
+      "quote": "На бакеты со стандартным классом хранения действует уровень бесплатного пользования."
+    },
+    {
+      "url": "https://cloud.ru/documents/promotions/active/evolution-free-tier",
+      "date": "2026-11-01",
+      "proved": "the promotion rules grant only 15 GB of standard storage for object storage",
+      "capture": "sha256:fe4d8e6f67389c99c690e2fa496f4f6facb61c5ad586ba7aa136435baa22ce3e",
+      "quote": "- 15 ГБ стандартного хранилища;"
+    },
+    {
+      "url": "https://cloud.ru/documents/promotions/active/evolution-free-tier",
+      "date": "2026-11-01",
+      "proved": "only parties registered in Russia may take part",
+      "capture": "sha256:fe4d8e6f67389c99c690e2fa496f4f6facb61c5ad586ba7aa136435baa22ce3e",
+      "quote": "2. В Акции имеют право принять участие физические лица, индивидуальные предприниматели и юридические лица, зарегистрированные на территории РФ."
+    },
+    {
+      "url": "https://cloud.ru/documents/promotions/active/4000-rubles-testing",
+      "date": "2026-11-01",
+      "proved": "an individual registers by phone with an SMS confirmation, or by SberID",
+      "capture": "sha256:39cceb63a4c4c7dc92b564274b3bfe8b8b5d0f9c6b1828a2ef924b693eb4a869",
+      "quote": "5.3. путем регистрации с помощью номера телефона (с последующим подтверждением по смс-сообщению) и адреса электронной почты."
+    },
+    {
+      "url": "https://cloud.ru/documents/promotions/active/evolution-free-tier",
+      "date": "2026-11-01",
+      "proved": "the free volume may be used for an unlimited time from the date of the contract",
+      "capture": "sha256:fe4d8e6f67389c99c690e2fa496f4f6facb61c5ad586ba7aa136435baa22ce3e",
+      "quote": "Участник имеет право использовать установленный в п. 4.3 Правил объем услуг [Cloud.ru Evolution](https://cloud.ru/documents/glossary/index?source-platform=Evolution#term-Cloud.ru-Evolution-EVO) в течение неограниченного количества времени с даты заключения [Договора](https://cloud.ru/documents/glossary/index?source-platform=Evolution#term-21)."
+    },
+    {
+      "url": "https://cloud.ru/documents/promotions/active/evolution-free-tier",
+      "date": "2026-11-01",
+      "proved": "an account that starts no service within 60 days may be dropped from the promotion",
+      "capture": "sha256:fe4d8e6f67389c99c690e2fa496f4f6facb61c5ad586ba7aa136435baa22ce3e",
+      "quote": "если в течение 60 (шестидесяти) календарных дней (с даты фактического предоставления услуги) Участник акции не начнет использовать услуги Cloud.ru Evolution, Общество имеет право прекратить его участие в Акции"
+    },
+    {
+      "url": "https://cloud.ru/documents/promotions/active/evolution-free-tier",
+      "date": "2026-11-01",
+      "proved": "the operator may change the quota sizes at any time during the promotion",
+      "capture": "sha256:fe4d8e6f67389c99c690e2fa496f4f6facb61c5ad586ba7aa136435baa22ce3e",
+      "quote": "Размеры/параметры квот указываются в Личном кабинете, и Общество имеет право менять их на протяжении всего срока действия Акции в одностороннем порядке."
+    },
+    {
+      "url": "https://cloud.ru/docs/s3e/ug/topics/overview__free-tier",
+      "date": "2026-11-01",
+      "proved": "the free volume is permanent, covers standard-class storage only, and the 10 TB of outgoing traffic is the exception",
+      "capture": "sha256:b7b5435aaa85fd976e702a66adaeacec6d99d6861d0a5575beedafbf915dbc1b",
+      "quote": "Бесплатный объем ресурсов предоставляется бессрочно и действует только для хранилища стандартного класса (за исключением первых 10 ТБ исходящего трафика)."
+    },
+    {
+      "url": "https://cloud.ru/docs/s3e/ug/topics/overview__limitations",
+      "date": "2026-11-02",
+      "proved": "the vendor's limits table states a maximum object size of 5 TB",
+      "capture": "sha256:79cd22f7650b23b7ebb4e1d693b2a9dcfef38f4c2e02263506ac10fae5cb806f",
+      "quote": "| Максимальный размер объекта | 5 ТБ |"
+    },
+    {
+      "url": "https://cloud.ru/docs/s3e/ug/topics/faq__file-size-limitations-s3e",
+      "date": "2026-11-02",
+      "proved": "the size-limitations FAQ states the same 5 TB cap on one object",
+      "capture": "sha256:fc26ca6e72981d4b816b7efed18b030fb0e947b8b50d579e7b752f1d8dee92da",
+      "quote": "Максимальный размер одного объекта — 5 ТБ."
+    },
+    {
+      "url": "https://cloud.ru/docs/s3e/ug/topics/overview__limitations",
+      "date": "2026-11-02",
+      "proved": "a bucket's maximum volume can only be set in the console, not through the API",
+      "capture": "sha256:79cd22f7650b23b7ebb4e1d693b2a9dcfef38f4c2e02263506ac10fae5cb806f",
+      "quote": "При создании бакета через API ограничить его размер нельзя."
+    },
+    {
+      "url": "https://cloud.ru/docs/s3e/ug/topics/overview__free-tier",
+      "date": "2026-11-02",
+      "proved": "15 GB of standard-class storage, 100 000 write operations, 1 000 000 read operations and the first 10 TB of traffic each month are unchanged",
+      "capture": "sha256:b7b5435aaa85fd976e702a66adaeacec6d99d6861d0a5575beedafbf915dbc1b",
+      "quote": "Каждый месяц для любого типа хранилища не тарифицируются первые 10 ТБ исходящего трафика.\n\nКаждый месяц в стандартном хранилище не тарифицируются:\n\n- первые 15 ГБ объема занятого пространства;\n- первые 100 000 операций LIST, POST, PUT;\n- первые 1 000 000 операций GET, HEAD."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-21T00:00:00.000Z",
-  "notes": "Free tier object storage: 15 GB standard + 1,000 GB cold + 3,000 GB ice, with 100k PUT / 100k POST on standard and 4,000 bonus roubles per block",
+  "verified_at": "2026-11-02T00:46:50.620Z",
+  "notes": "Free tier object storage: 15 GB of standard-class storage, 100 000 PUT, POST and LIST operations, 1 000 000 GET and HEAD operations, and the first 10 TB of outgoing traffic each month; cold and ice storage bills at the class tariff and is not part of the free volume.",
   "extras": {},
-  "binding": "none",
-  "binding_note": null
+  "binding": "volume-quota",
+  "binding_note": "the 15 GB of standard-class storage and the 10 TB of monthly outgoing traffic are the two ceilings that meter, and both are counted per organisation over the whole storage account rather than per bucket"
 }

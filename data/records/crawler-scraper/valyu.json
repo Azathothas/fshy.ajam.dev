@@ -7,14 +7,14 @@
   "verdict": "trial-only",
   "confidence": "documented",
   "confidence_note": "the signup credit, its 12-month expiry, the no-card statement and the per-result price are quoted from first-party documentation; no keyed search was made, so the read path is unprobed; a keyed call that returns results would raise it to measured",
-  "verified_at": "2026-10-30T10:46:44.796Z",
+  "verified_at": "2026-11-02T01:02:19.439Z",
   "free_tier": {
     "stated": "USD 10 of free credits on signup, USD 20 with a company email, no card; the free credits expire 12 months after signup",
     "unit": "credits",
     "metered_on": "request-count",
     "source_url": "https://docs.valyu.ai/pricing.md",
     "read_on": "2026-10-30",
-    "notes": "Search is billed per result returned, not per request: a 10-result web search is 1 credit, and pay-as-you-go buys 1,600 credits per USD 10. The nearest metered_on term is request-count; the true basis is the count of results returned."
+    "notes": "Search is billed per result returned, not per request, and priced per source: a 10-result web search is 1 credit, and pay-as-you-go buys 1,600 credits per USD 10. The nearest metered_on term is request-count; the true basis is the count of results returned (result-count), a term the vocabulary lacks."
   },
   "per_object_cap": {
     "stated": "not applicable: the unit is a search result",
@@ -50,13 +50,18 @@
     },
     {
       "kind": "request-rate",
-      "value": "5 search requests a second on the Pay-as-you-go plan, per the documented 429 example; limits are per organisation and per endpoint, with no daily quota",
+      "value": "5 search requests a second on the Pay-as-you-go plan and 10 on Ridiculously Cheap, per the documented 429 example; limits are per organisation and per endpoint, with no daily quota; unverified: the plan and search rate of an account that holds only signup credits, which the billing page, `valyu account whoami` and the plan field of a keyed 429 body show, behind a sign-up",
       "source": "https://docs.valyu.ai/api-reference/overview.md"
+    },
+    {
+      "kind": "request-rate",
+      "value": "10 requests per second with bursts up to 20 and 86,400 requests per day by default, an over-limit request answered 403, per the OpenAPI description on the Search reference page; the API overview documents per-plan limits answered 429 with no daily quota instead",
+      "source": "https://docs.valyu.ai/api-reference/endpoint/search.md"
     }
   ],
   "binding": "request-rate",
   "binding_note": "the one-time signup balance is exhausted long before the 5-a-second rate limit is reached",
-  "limits_note": "",
+  "limits_note": "The pricing page lists the signup credit in its Pay As You Go plan card, priced Free, with every data source while the free credits last and then web, arXiv and PubMed on pay-as-you-go, and the academia page says new accounts get the credits across every source and then pay as you go; the documented plan IDs are tier_0 Pay-as-you-go, tier_1 Ridiculously Cheap, tier_2 Comfortably Pro and tier_3 Serious Business, with no plan named for signup credits",
   "identity_cost": {
     "kind": "email",
     "detail": "signup by email, Google or GitHub with no card; a company email doubles the signup credit to USD 20",
@@ -124,6 +129,111 @@
     {
       "url": "probe:api.valyu.ai/v1/search",
       "date": "2026-10-30",
+      "proved": "a keyless GET to the search endpoint answered 403 with a missing-token body",
+      "capture": "sha256:f249b63cb2fcb66b47e86f906c98f8fd912e82dd035b4e53d7e72fc1960cfd16",
+      "quote": "{\"message\":\"Missing Authentication Token\"}"
+    },
+    {
+      "url": "https://docs.valyu.ai/api-reference/overview.md",
+      "date": "2026-11-01",
+      "proved": "the documented 429 example gives the Pay-as-you-go plan 5 search requests a second and Ridiculously Cheap 10",
+      "capture": "sha256:984e865768830fa44c84cb71f49fc2a066dff030bd6ef7dd16f1a2dc69fd2354",
+      "quote": "Search rate limit reached: your Pay-as-you-go plan allows 5 requests per second. Retry after 2 seconds. Upgrade to Ridiculously Cheap for 10 requests per second:"
+    },
+    {
+      "url": "https://docs.valyu.ai/api-reference/endpoint/search.md",
+      "date": "2026-11-01",
+      "proved": "the OpenAPI description on the Search reference states a default of 10 requests per second, bursts up to 20 and 86,400 requests a day",
+      "capture": "sha256:8a0b22d7008a4f900e2f961ffda4c1b238701d1364c126d76330521ba1c2c0b8",
+      "quote": "Limits apply per organisation: 10 requests per second with bursts up to 20, and 86,400 requests per day by default."
+    },
+    {
+      "url": "https://docs.valyu.ai/api-reference/warnings.md",
+      "date": "2026-11-01",
+      "proved": "the documented plan IDs are tier_0 Pay-as-you-go to tier_3 Serious Business, with no plan named for signup credits",
+      "capture": "sha256:9218d746fb737bbb10c4c314f0d945af5fd556ac22550144e1a2722fda9fd87a",
+      "quote": "Plan IDs map to plans as follows: `tier_0` Pay-as-you-go, `tier_1` Ridiculously Cheap (\\$29/mo), `tier_2` Comfortably Pro (\\$99/mo), `tier_3` Serious Business (\\$499/mo)."
+    },
+    {
+      "url": "https://docs.valyu.ai/pricing.md",
+      "date": "2026-11-01",
+      "proved": "Search is charged per result returned, priced per source, and not as a flat fee per query",
+      "capture": "sha256:ae12968c52ddd9186c828089f7eabf23e44126359e8b7cf03df0f6828a8f7114",
+      "quote": "Search charges credits for the results it returns, priced per source. It is not a flat fee per query and is not based on tokens."
+    },
+    {
+      "url": "https://www.valyu.ai/pricing",
+      "date": "2026-11-01",
+      "proved": "the Pay As You Go plan card of the pricing page is priced Free and holds the signup credit of USD 10, or USD 20 with a work email, with no card",
+      "capture": "sha256:11e3952e89ecc66f606c4374e09b8be797b8689940fc31724b3fc41c0028f348",
+      "quote": "Pay As You Go1,600 CREDITS PER $10\n\nFree\n\n$10 free credits on signup, $20 with a work email. No card required."
+    },
+    {
+      "url": "https://www.valyu.ai/academia-research",
+      "date": "2026-11-01",
+      "proved": "new accounts get the signup credit across every source and then pay as you go, which covers web search, arXiv and PubMed",
+      "capture": "sha256:286a550ec5bdaac8c0c017edc3295f07f8b517f94fcaf2448044ab17d03752ac",
+      "quote": "New accounts get $10 in free credits ($20 with a work email) across every source, then pay as you go. Pay-as-you-go covers web search, arXiv and PubMed."
+    },
+    {
+      "url": "https://docs.valyu.ai/changelog/sdk-and-api.md",
+      "date": "2026-11-01",
+      "proved": "the changelog entry of October 21, 2026 states that rate limits scale with the plan and that there is no daily quota",
+      "capture": "sha256:43908308815234b8742cca21731d22583b81d255ac3b5df02c9acccacf0bf97a",
+      "quote": "Search, Contents, Answer, and creating or polling DeepResearch tasks each have their own limit, lower on cheaper plans and higher on paid plans. There is no daily quota."
+    },
+    {
+      "url": "https://docs.valyu.ai/api-reference/openapi.json",
+      "date": "2026-11-01",
+      "proved": "the OpenAPI file itself carries the same default-rate sentence",
+      "capture": "sha256:e8b8d9e9ecd8627c2f69b448fd7b62586099648a3821f75fee089c79d719dff2",
+      "quote": "Limits apply per organisation: 10 requests per second with bursts up to 20, and 86,400 requests per day by default."
+    },
+    {
+      "url": "https://docs.valyu.ai/api-reference/overview.md",
+      "date": "2026-11-01",
+      "proved": "rate limits apply per organisation and per endpoint, and are lower on cheaper plans",
+      "capture": "sha256:984e865768830fa44c84cb71f49fc2a066dff030bd6ef7dd16f1a2dc69fd2354",
+      "quote": "Limits apply per organisation and per endpoint. Search, Contents, Answer, and creating or polling DeepResearch tasks each have their own limit. The limit is lower on cheaper plans and higher on paid plans."
+    },
+    {
+      "url": "https://docs.valyu.ai/pricing.md",
+      "date": "2026-11-01",
+      "proved": "USD 10 of free credits on signup, USD 20 with a company email, no card",
+      "capture": "sha256:ae12968c52ddd9186c828089f7eabf23e44126359e8b7cf03df0f6828a8f7114",
+      "quote": "New accounts get \\$10 of free credits, or \\$20 when you sign up with a company email. No card is required."
+    },
+    {
+      "url": "https://docs.valyu.ai/pricing.md",
+      "date": "2026-11-01",
+      "proved": "the signup credit expires 12 months after signup",
+      "capture": "sha256:ae12968c52ddd9186c828089f7eabf23e44126359e8b7cf03df0f6828a8f7114",
+      "quote": "Free credits expire 12 months after signup."
+    },
+    {
+      "url": "https://docs.valyu.ai/pricing.md",
+      "date": "2026-11-01",
+      "proved": "a request that the balance cannot cover answers 402 and is not run, with no overage charge",
+      "capture": "sha256:ae12968c52ddd9186c828089f7eabf23e44126359e8b7cf03df0f6828a8f7114",
+      "quote": "There are no overage charges. When your balance cannot cover a request, the API returns `402 Payment Required` and does not run it."
+    },
+    {
+      "url": "https://platform.valyu.ai/",
+      "date": "2026-11-01",
+      "proved": "the sign-in page offers sign-up by email, Google or GitHub and states free credits with no card",
+      "capture": "sha256:2b1b664f663a7d717a166b89fa3804d0e92db40cd5e6fa8b82d2272f5821e5b1",
+      "quote": "Email\n\nContinue with email\n\nor\n\nGoogle\n\nGitHub\n\nFree credits on signup · no card required"
+    },
+    {
+      "url": "https://docs.valyu.ai/api-reference/overview.md",
+      "date": "2026-11-01",
+      "proved": "requests go to api.valyu.ai with the key in an x-api-key header and JSON bodies",
+      "capture": "sha256:984e865768830fa44c84cb71f49fc2a066dff030bd6ef7dd16f1a2dc69fd2354",
+      "quote": "Every request goes to `https://api.valyu.ai` and carries your API key in the `x-api-key` header. Request and response bodies are JSON, except Answer, which streams server-sent events."
+    },
+    {
+      "url": "probe:api.valyu.ai/v1/search",
+      "date": "2026-11-01",
       "proved": "a keyless GET to the search endpoint answered 403 with a missing-token body",
       "capture": "sha256:f249b63cb2fcb66b47e86f906c98f8fd912e82dd035b4e53d7e72fc1960cfd16",
       "quote": "{\"message\":\"Missing Authentication Token\"}"

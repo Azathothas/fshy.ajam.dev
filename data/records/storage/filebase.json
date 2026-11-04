@@ -5,27 +5,27 @@
   "url": "https://filebase.com",
   "category": "p2p",
   "free_tier": {
-    "stated": "Free: 5 GB pooled storage across Object Storage and IPFS, 500 pinned files, 10 GB/month IPFS bandwidth, object egress free. Pro $7.50/mo: 500 GB pooled.",
+    "stated": "Free: 5 GB of pooled Object Storage and IPFS storage, 500 pinned files, 10 GB a month of IPFS egress and free object egress; Pro $7.50 a month raises storage to 500 GB",
     "unit": "GB",
     "metered_on": "stored-bytes",
     "source_url": "https://filebase.com/pricing/",
-    "read_on": "2026-10-21",
-    "notes": null
+    "read_on": "2026-11-01",
+    "notes": "the pricing page was read on 2026-11-01; the binding constraint is the 5 GB volume, which limits[] carries"
   },
   "per_object_cap": {
-    "stated": "not stated",
+    "stated": "the pricing page states no per-object cap; the limits it does state are a bucket count and a pinned-file count",
     "source_url": "https://filebase.com/pricing/",
     "notes": "not stated"
   },
   "retention": {
-    "stated": "not stated",
+    "stated": "Pinned content stays on the Filebase node indefinitely and files uploaded to an IPFS bucket stay pinned for as long as they are kept in the bucket; the pricing page states no period, its footnote calling pinned files objects maintained for persistence on the IPFS network",
     "source_url": "https://filebase.com/pricing/",
-    "notes": "not stated"
+    "notes": "indefinite while the file is pinned and kept in the bucket; deleting an object unpins the CID and Filebase stops guaranteeing its availability; the pricing page's footnote describes pinning as persistence with no period"
   },
   "egress": {
     "terms": "Split, and the split is the trap. 'For S3-compatible object storage buckets on the non-IPFS tier at s3.filebase.io, egress is free on every paid plan.' But 'IPFS bandwidth is not free... On the free tier, there is a 5 GB / month egress cap' — and the pricing page states 10 GB IPFS Egress. Either way it is single-digit-to-10 GB/month.",
-    "metered": false,
-    "free_allowance": "5 GB per month"
+    "metered": true,
+    "free_allowance": "10 GB per month of IPFS egress on Free"
   },
   "interface": [
     "s3-compatible",
@@ -35,16 +35,22 @@
   "interface_detail": "s3",
   "tooling": "S3 API at s3.filebase.io, region 'auto', SigV4; rclone s3 backend works; IPFS Pinning Service API; dedicated gateways; docs list rclone/boto3/aws-cli explicitly.",
   "chaining": "1 bucket on Free, no limit on object count within it. 5 GB per account is not repeatable to 500 GB in any practical way, and each account needs its own S3 keys.",
-  "limits": [],
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "5 GB of pooled storage on the Free plan",
+      "source": "https://filebase.com/pricing/"
+    }
+  ],
   "limits_note": "Single PUT 5 GB; multipart total 5 TB (1 TB recommended); 500 req/s S3 API; 1 bucket on Free; 500 pinned files.",
   "identity_cost": {
-    "kind": "institution",
-    "detail": null,
+    "kind": "email",
+    "detail": "the sign-up form asks for a first name, a last name, an email address and a password, with a Google sign-up option; no card, phone or ID field appears on the form",
     "country": null
   },
   "reliability_note": "S3 API held up live: the public gateway served the test CID at 200 (414,201 bytes, Server: Filebase) but throttled during a rapid burst (2 of 8 answered before the burst ran long). The 'no egress fees' headline applies to the S3 tier, not the IPFS tier — a genuinely confusing pricing page and the single most common misread in this niche.",
   "confidence": "reported",
-  "confidence_note": null,
+  "confidence_note": "the pricing page, the bandwidth docs and the sign-up form were read on 2026-11-01; the identity, interface, retention and per-object fields were re-read, the live probe of the gateway was not repeated",
   "evidence": [
     {
       "url": "https://filebase.com/pricing/",
@@ -60,19 +66,173 @@
       "url": "https://ipfs.filebase.io/ipfs/bafybei...5u4",
       "date": "2026-10-21",
       "proved": "probe: GET -> 200, 414201 bytes, Server: Filebase"
+    },
+    {
+      "url": "https://filebase.com/pricing/",
+      "date": "2026-11-01",
+      "proved": "object egress is free on both plans, so the read path is not the constraint",
+      "capture": "sha256:d1c349bb79c31b0687b3a86e07f45c1cb1522442dd2077e81fddda789777a8e7",
+      "quote": "| Object EgressObject egress covers delivery from Object Storage. | Free | Free |"
+    },
+    {
+      "url": "https://filebase.com/pricing/",
+      "date": "2026-11-01",
+      "proved": "the Free plan stores 5 GB against 500 GB on Pro",
+      "capture": "sha256:d1c349bb79c31b0687b3a86e07f45c1cb1522442dd2077e81fddda789777a8e7",
+      "quote": "| Storage | 5 GB | 500 GB |"
+    },
+    {
+      "url": "https://filebase.com/pricing/",
+      "date": "2026-11-01",
+      "proved": "500 GB is what the paid plan stores, so it is the retry threshold for a quota failure",
+      "capture": "sha256:d1c349bb79c31b0687b3a86e07f45c1cb1522442dd2077e81fddda789777a8e7",
+      "quote": "| Storage | 5 GB | 500 GB |"
+    },
+    {
+      "url": "https://filebase.com/pricing/",
+      "date": "2026-11-01",
+      "proved": "Free holds 5 GB of pooled storage and Pro 500 GB",
+      "capture": "sha256:d1c349bb79c31b0687b3a86e07f45c1cb1522442dd2077e81fddda789777a8e7",
+      "quote": "| Storage | 5 GB | 500 GB |"
+    },
+    {
+      "url": "https://filebase.com/pricing/",
+      "date": "2026-11-01",
+      "proved": "IPFS bandwidth beyond the allowance is priced at $0.015/GB",
+      "capture": "sha256:d1c349bb79c31b0687b3a86e07f45c1cb1522442dd2077e81fddda789777a8e7",
+      "quote": "| Additional IPFS Bandwidth | Not included | $0.015/GB |"
+    },
+    {
+      "url": "https://filebase.com/pricing/",
+      "date": "2026-11-01",
+      "proved": "the Free plan includes 10 GB of IPFS egress",
+      "capture": "sha256:d1c349bb79c31b0687b3a86e07f45c1cb1522442dd2077e81fddda789777a8e7",
+      "quote": "| IPFS EgressIPFS egress covers IPFS content delivery and retrieval before additional IPFS egress charges apply. | 10 GB | 250 GB |"
+    },
+    {
+      "url": "https://console.filebase.com/signup",
+      "date": "2026-11-01",
+      "proved": "the sign-up form carries an email field and no card, phone or ID field",
+      "capture": "sha256:4a71616fe2ce5a3c9ec0e348ea612632a0e48a11419795c057b79eff1c3e9221",
+      "quote": "id=\"user_email\" name=\"user[email]\" type=\"email\""
+    },
+    {
+      "url": "https://console.filebase.com/signup",
+      "date": "2026-11-01",
+      "proved": "a Google sign-up option sits beside the email form",
+      "capture": "sha256:4a71616fe2ce5a3c9ec0e348ea612632a0e48a11419795c057b79eff1c3e9221",
+      "quote": "Sign up with Google"
+    },
+    {
+      "url": "https://filebase.com/pricing/",
+      "date": "2026-11-01",
+      "proved": "the Free plan's storage is a volume allowance of 5 GB",
+      "capture": "sha256:d1c349bb79c31b0687b3a86e07f45c1cb1522442dd2077e81fddda789777a8e7",
+      "quote": "| Storage | 5 GB | 500 GB |"
+    },
+    {
+      "url": "https://filebase.com/pricing/",
+      "date": "2026-11-01",
+      "proved": "5 GB of free storage is the volume that binds",
+      "capture": "sha256:d1c349bb79c31b0687b3a86e07f45c1cb1522442dd2077e81fddda789777a8e7",
+      "quote": "| Storage | 5 GB | 500 GB |"
+    },
+    {
+      "url": "https://filebase.com/pricing/",
+      "date": "2026-11-01",
+      "proved": "5 GB is the Free plan's pooled storage allowance",
+      "capture": "sha256:d1c349bb79c31b0687b3a86e07f45c1cb1522442dd2077e81fddda789777a8e7",
+      "quote": "| Storage | 5 GB | 500 GB |"
+    },
+    {
+      "url": "https://filebase.com/pricing/",
+      "date": "2026-11-01",
+      "proved": "the Free and Pro storage allowances are unchanged at 5 GB and 500 GB",
+      "capture": "sha256:d1c349bb79c31b0687b3a86e07f45c1cb1522442dd2077e81fddda789777a8e7",
+      "quote": "| Storage | 5 GB | 500 GB |"
+    },
+    {
+      "url": "https://filebase.com/pricing/",
+      "date": "2026-11-01",
+      "proved": "the pricing page states the Free and Pro storage allowances",
+      "capture": "sha256:d1c349bb79c31b0687b3a86e07f45c1cb1522442dd2077e81fddda789777a8e7",
+      "quote": "| Storage | 5 GB | 500 GB |"
+    },
+    {
+      "url": "https://filebase.com/pricing/",
+      "date": "2026-11-01",
+      "proved": "the Free plan states a bucket count of 1 and no per-object size cap",
+      "capture": "sha256:d1c349bb79c31b0687b3a86e07f45c1cb1522442dd2077e81fddda789777a8e7",
+      "quote": "| Bucket Count | 1 | 100 |"
+    },
+    {
+      "url": "https://filebase.com/pricing/",
+      "date": "2026-11-01",
+      "proved": "pinning is described as persistence with no retention period",
+      "capture": "sha256:d1c349bb79c31b0687b3a86e07f45c1cb1522442dd2077e81fddda789777a8e7",
+      "quote": "Pinned files are IPFS-pinned objects maintained for persistence on the IPFS network."
+    },
+    {
+      "url": "https://filebase.com/docs/concepts/bandwidth",
+      "date": "2026-11-01",
+      "proved": "the bandwidth docs were read and state that IPFS bandwidth is metered",
+      "capture": "sha256:2ce4a13b7ab01f81f36e257045883b482547a34f147c260bc7e82b08f76bbe61",
+      "quote": "IPFS bandwidth is not free."
+    },
+    {
+      "url": "https://filebase.com/pricing/",
+      "date": "2026-11-01",
+      "proved": "pinning is described as persistence with no retention period stated",
+      "capture": "sha256:d1c349bb79c31b0687b3a86e07f45c1cb1522442dd2077e81fddda789777a8e7",
+      "quote": "Pinned files are IPFS-pinned objects maintained for persistence on the IPFS network."
+    },
+    {
+      "url": "https://filebase.com/docs/ipfs/concepts/what-is-ipfs-pinning",
+      "date": "2026-11-02",
+      "proved": "the docs state an indefinite retention period for pinned content, so 'no period stated' contradicts the docs",
+      "capture": "sha256:1b5db3dcfbca0a16a037bdf5b23924f0b3001e419ac8871e63848982515a3436",
+      "quote": "Pinned content stays on that node indefinitely, regardless of how often it's requested."
+    },
+    {
+      "url": "https://filebase.com/docs/ipfs/concepts/what-is-ipfs-pinning",
+      "date": "2026-11-02",
+      "proved": "retention lasts while the object stays in the bucket, so deletion is what ends it",
+      "capture": "sha256:1b5db3dcfbca0a16a037bdf5b23924f0b3001e419ac8871e63848982515a3436",
+      "quote": "Files uploaded to a Filebase IPFS bucket are automatically pinned to IPFS and stay pinned for as long as you keep them in the bucket."
+    },
+    {
+      "url": "https://filebase.com/docs/ipfs/pinning/deleting-files",
+      "date": "2026-11-02",
+      "proved": "deletion is the event that ends retention, and Filebase then no longer guarantees availability",
+      "capture": "sha256:3a1bec29e650205d1a043edf5491c49d1375b31289cee43363f3fe3c2fef0430",
+      "quote": "Deleting an object from a Filebase IPFS bucket unpins the underlying CID."
+    },
+    {
+      "url": "https://filebase.com/pricing/",
+      "date": "2026-11-02",
+      "proved": "the pricing page footnote describes pinning as persistence and states no period, and the row is the pricing page's own text, not the docs'",
+      "capture": "sha256:d1c349bb79c31b0687b3a86e07f45c1cb1522442dd2077e81fddda789777a8e7",
+      "quote": "Pinned files are IPFS-pinned objects maintained for persistence on the IPFS network."
+    },
+    {
+      "url": "https://filebase.com/docs/ipfs/concepts/what-is-ipfs-pinning",
+      "date": "2026-11-02",
+      "proved": null,
+      "capture": "sha256:1b5db3dcfbca0a16a037bdf5b23924f0b3001e419ac8871e63848982515a3436",
+      "quote": "Pinned content stays on that node indefinitely, regardless of how often it's requested."
     }
   ],
   "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
+  "verified_at": "2026-11-02T00:46:51.523Z",
   "notes": "Free: 5 GB pooled storage across Object Storage and IPFS, 500 pinned files, 10 GB/month IPFS bandwidth, object egress free. Pro $7.50/mo: 500 GB pooled.",
   "extras": {
     "dead_end": {
-      "failure_class": "egress",
-      "why": "Free: 5 GB pooled storage across Object Storage and IPFS, 500 pinned files, 10 GB/month IPFS bandwidth, object egress free. Pro $7.50/mo: 500 GB pooled.",
-      "retry_when": null,
+      "failure_class": "quota",
+      "why": "The free plan holds 5 GB of pooled storage against the 500 GB per unit this topic requires; object egress is free on both plans, so the byte allowance binds and the read path does not",
+      "retry_when": "if the free allowance rises to 500 GB of pooled storage on the $0 plan",
       "first_recorded": "2026-10-21"
     }
   },
-  "binding": "none",
-  "binding_note": null
+  "binding": "volume-quota",
+  "binding_note": "the free plan's 5 GB of pooled storage is a volume quota and is the constraint that fails first; object egress is free"
 }

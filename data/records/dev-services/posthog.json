@@ -11,11 +11,13 @@
     "metered_on": "request-count",
     "source_url": "https://posthog.com/pricing",
     "read_on": "2026-10-30",
-    "notes": "Each product has its own monthly count (events, recordings, flag requests, exceptions, survey responses), so no single unit of the vocabulary fits; all are counts of requests. Usage across projects shares one free allowance. On the free plan, events past the allowance are permanently dropped and feature flags return a quota-limited response, so usage stops rather than bills."
+    "notes": "Each product has its own monthly count (events, recordings, flag requests, exceptions, survey responses), so no single unit of the vocabulary fits; analytics is counted in events, and one batch request can carry many events, so request-count is only the nearest metered_on term. Usage across projects shares one free allowance. On the free plan, events past the allowance are permanently dropped and feature flags return a quota-limited response, so usage stops rather than bills."
   },
   "per_object_cap": {
-    "stated": "unverified: no event size limit is stated on the pages read",
-    "bytes": null
+    "stated": "Events over 1 megabyte after processing are discarded; a distinct_id is limited to 200 characters",
+    "bytes": null,
+    "source_url": "https://posthog.com/docs/data/ingestion-warnings",
+    "notes": "A /batch request body must be less than 20MB, with no limit on the number of events in it."
   },
   "retention": {
     "stated": "Events and metadata: 1 year on a free plan (7 years on paid). Session recordings: 1 month on the free plan. Logs: 14 days by default.",
@@ -202,9 +204,44 @@
       "proved": "the private API host answers 401 without a key",
       "capture": "sha256:ed004fca5138f23ad5f53ca577bd7b1017c465ddb8d19c53ba73b76726137d1f",
       "quote": "\"status\": 401"
+    },
+    {
+      "url": "https://posthog.com/docs/data/ingestion-warnings",
+      "date": "2026-11-01",
+      "proved": "PostHog discards events larger than 1 megabyte after processing",
+      "capture": "sha256:0d0c6f1d9d39da94ae9110f45febb666a957ce93c8ff10f90d66e34bfdd8f251",
+      "quote": "PostHog discards events exceeding 1 megabyte in size after processing."
+    },
+    {
+      "url": "https://posthog.com/docs/data/ingestion-warnings",
+      "date": "2026-11-01",
+      "proved": "a distinct_id longer than 200 characters is shortened to its first 200 characters",
+      "capture": "sha256:0d0c6f1d9d39da94ae9110f45febb666a957ce93c8ff10f90d66e34bfdd8f251",
+      "quote": "PostHog shortens any `distinct_id` longer than 200 characters to its first 200 characters and ingests the event under the shortened ID."
+    },
+    {
+      "url": "https://posthog.com/docs/api/capture",
+      "date": "2026-11-01",
+      "proved": "a /batch request body must be under 20MB with no limit on the number of events in it",
+      "capture": "sha256:b7ea16b34e241b99f1a12b636c60d53518f453ee28f869ef8e9d868e914b6bfa",
+      "quote": "There is no limit on the number of events you can send in a batch, but the entire request body must be less than 20MB by default."
+    },
+    {
+      "url": "https://posthog.com/docs/api/capture",
+      "date": "2026-11-01",
+      "proved": "one /batch request carries multiple events, so an event count is not a request count",
+      "capture": "sha256:b7ea16b34e241b99f1a12b636c60d53518f453ee28f869ef8e9d868e914b6bfa",
+      "quote": "You can capture multiple events in one request with the `/batch` API route."
+    },
+    {
+      "url": "https://posthog.com/docs/api/capture",
+      "date": "2026-11-01",
+      "proved": "a distinct_id is limited to 200 characters",
+      "capture": "sha256:b7ea16b34e241b99f1a12b636c60d53518f453ee28f869ef8e9d868e914b6bfa",
+      "quote": "`distinct_id` is limited to 200 characters."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T00:42:59.132Z",
+  "verified_at": "2026-11-02T00:37:34.248Z",
   "notes": "The free plan stops at its limits instead of billing, so an app sending more than 1M events a month loses the excess. Moving to pay-as-you-go needs a card and raises the project count to 6 and event retention to 7 years."
 }

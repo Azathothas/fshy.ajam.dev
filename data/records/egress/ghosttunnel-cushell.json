@@ -20,13 +20,13 @@
     "notes": ""
   },
   "retention": {
-    "stated": "not applicable",
+    "stated": "not applicable: a live tunnel, not stored bytes; tunnels inactive 7+ days are auto-deleted",
     "days": null,
     "source_url": "https://tb.cushell.com/",
     "notes": ""
   },
   "egress": {
-    "terms": "no monthly byte allowance is published; the FAQ names only tunnel count and a best-effort basis; ingress: tcp+udp",
+    "terms": "no monthly byte allowance is published; the terms state a fair-usage soft cap of 50 Mbit/s per tunnel and the FAQ names tunnel count and a best-effort basis; ingress: tcp+udp",
     "metered": false,
     "free_allowance": "none published",
     "price_per_tb": null,
@@ -39,16 +39,22 @@
   "interface_detail": "'Create, manage, and monitor tunnels programmatically' via a REST API; configurations are also downloadable from the dashboard",
   "tooling": "wg-quick; iproute2 for SIT/GRE; REST API claimed",
   "chaining": "one /64 per tunnel and a browser-free config download make it a fast way to give a single free VM a public address; three tunnels per account covers three instances.",
-  "limits": [],
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "50 Mbit/s per tunnel, soft cap",
+      "source": "https://tb.cushell.com/?page=terms"
+    }
+  ],
   "limits_note": "",
   "binding": "none",
-  "binding_note": "No byte meter, no rate and no quota is published: 'free forever'. The limits are shape limits the vocabulary does not name - 'Each account can create up to 3 active tunnels' and 'Each user receives a dedicated ::/64 IPv6 subnet' - so nothing here fails at 1 TiB/month. Reachability is IPv6-only, and SIT/GRE need a public IPv4.",
+  "binding_note": "A soft cap of 50 Mbit/s per tunnel is published and no byte quota is, so no byte volume is capped. The other limits are shape limits the vocabulary does not name: tunnel count, one tunnel per prefix, and auto-deletion of inactive tunnels. Reachability is IPv6-only, and SIT/GRE need a public IPv4.",
   "identity_cost": {
     "kind": "email",
     "detail": "'Sign in your way - Google, GitHub, or email. Privacy-first authentication with no vendor lock-in and no unnecessary tracking.'",
     "country": "None"
   },
-  "reliability_note": "hobby network, 'no SLA': 'This is a hobby project provided on a best-effort basis with no SLA.'",
+  "reliability_note": "hobby network, 'no SLA': 'This is a hobby project provided on a best-effort basis with no SLA.' The terms add that routes, tunnels and access may change at any time.",
   "confidence": "documented",
   "confidence_note": "documented from the vendor pages read. Measuring would need a tunnel and a UDP service behind it.",
   "evidence": [
@@ -76,10 +82,52 @@
       "url": "https://tb.cushell.com/",
       "date": "2026-10-23",
       "proved": "'Full REST API - Create, manage, and monitor tunnels programmatically.'"
+    },
+    {
+      "url": "https://tb.cushell.com/?page=terms",
+      "date": "2026-11-03",
+      "proved": "the terms state a fair-usage soft cap of 50 Mbit/s per tunnel",
+      "capture": "sha256:7e0f03e2223e00bc072b0eab9d32f4ae3164c8d0f4db5a5f3c046a74cd7268c7",
+      "quote": "50 Mbit/s per tunnel, soft cap"
+    },
+    {
+      "url": "https://tb.cushell.com/?page=terms",
+      "date": "2026-11-03",
+      "proved": "an inactive tunnel is deleted after 7 or more days",
+      "capture": "sha256:7e0f03e2223e00bc072b0eab9d32f4ae3164c8d0f4db5a5f3c046a74cd7268c7",
+      "quote": "Tunnels inactive 7+ days are auto-deleted"
+    },
+    {
+      "url": "https://tb.cushell.com/?page=terms",
+      "date": "2026-11-03",
+      "proved": "the service reserves changes to routes, tunnels and access without notice",
+      "capture": "sha256:7e0f03e2223e00bc072b0eab9d32f4ae3164c8d0f4db5a5f3c046a74cd7268c7",
+      "quote": "Routes, tunnels and access may change at any time"
+    },
+    {
+      "url": "https://tb.cushell.com/",
+      "date": "2026-11-03",
+      "proved": "the home page lists the free tunnel types and the routed /64",
+      "capture": "sha256:6cc26fedbec8c7b2608a97cabef3eaf95ea7a3c7250179e019396d57a044514d",
+      "quote": "SIT & GRE and WireGuard tunnels · routed ::/64 prefix"
+    },
+    {
+      "url": "https://tb.cushell.com/?page=faq",
+      "date": "2026-11-03",
+      "proved": "the tunnel-count limit is described as a fairness limit",
+      "capture": "sha256:2242484178c03ab4650ae81ed6d425f78ef30e3da8a3b6cc386814cd4fca556d",
+      "quote": "This limit exists to keep the service fair for everyone"
+    },
+    {
+      "url": "https://tb.cushell.com/?page=terms",
+      "date": "2026-11-04",
+      "proved": "the terms page fair-usage section states a 50 Mbit/s per-tunnel soft cap and no byte cap",
+      "capture": "sha256:70d7ecd413959ca7ca1c1306129670843179997eacc3111c2c2a55240ced7c13",
+      "quote": "50 Mbit/s per tunnel, soft cap"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-23T00:00:00.000Z",
+  "verified_at": "2026-11-04T06:53:00.065Z",
   "price_per_tb_month": "USD 0",
   "notes": "A /64 rather than a /48, which still gives every port and protocol but no room to subnet. The REST API is claimed on the landing page; the API documentation URL (?page=api) returned a 504 on 2026-10-23, so whether an API can mint a WireGuard profile unattended is unestablished. Uplinks listed as Cilix Limited and Hurricane Electric LLC; AS209552 is described as a hobby network run by an individual in Belgium.",
   "extras": {

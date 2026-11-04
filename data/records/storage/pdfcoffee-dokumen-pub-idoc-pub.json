@@ -5,7 +5,7 @@
   "url": "https://pdfcoffee.com",
   "category": "anonymous-dump",
   "free_tier": {
-    "stated": "\"Upload as much as you need! Unlimited volume of uploaded files\" — no document count or account quota; dokument.pub FAQ caps a single PDF at 200 MB and states \"No limitation\" on number of pages/uploads. Per-record unlimited x unlimited records.",
+    "stated": "pdfcoffee.com states 'Upload as much as you need! Unlimited volume of uploaded files.' with any number of documents in PDF, Microsoft Word and PowerPoint format; no document count or account quota is stated on the page.",
     "unit": "unlimited",
     "metered_on": "unstated",
     "source_url": "https://dokument.pub/faqs",
@@ -13,8 +13,8 @@
     "notes": null
   },
   "per_object_cap": {
-    "stated": "200 MB per file",
-    "bytes": 200000000,
+    "stated": "unverified: the dokument.pub FAQ that stated 200 MB per PDF now serves a domain-for-sale page, and no current page of the three sites states a per-file cap",
+    "bytes": null,
     "source_url": "https://dokument.pub/faqs",
     "notes": "not stated"
   },
@@ -35,25 +35,20 @@
   "chaining": "Per-record unlimited means the chain is just 'keep uploading': 200 MB/PDF x unlimited PDFs. But every unit needs a form POST, so throughput is bounded by bot defences, not quota.",
   "limits": [
     {
-      "kind": "per-object-cap",
-      "value": "200 MB per file",
-      "source": "https://dokument.pub/faqs"
-    },
-    {
       "kind": "write-gated",
-      "value": "approval before publishing (idoc",
-      "source": "https://dokument.pub/faqs"
+      "value": "dokumen.pub answers HTTP 403 with a Cloudflare challenge page to a plain GET",
+      "source": "https://dokumen.pub/"
     }
   ],
-  "limits_note": "200 MB per PDF (dokument.pub); 150 MB-200 MB per file on siblings; three-step moderation/approval before publishing (idoc.pub); file types restricted to PDF/DOC/PPT.",
+  "limits_note": "pdfcoffee.com states no document count, account quota or per-file cap; the 200 MB per-file figure of the dokument.pub FAQ can no longer be read because that address serves a domain-for-sale page. dokumen.pub sits behind a Cloudflare challenge. File types are PDF, Microsoft Word and PowerPoint.",
   "identity_cost": {
     "kind": "anonymous",
-    "detail": null,
+    "detail": "unverified: the pdfcoffee.com sign-in page offers only Login with Google and no upload was attempted; the earlier anonymous kind rests on page text, not on an executed upload",
     "country": null
   },
-  "reliability_note": "Upload path is walled by an automated-traffic filter and by login (idoc.pub), so unattended bulk ingest fails.",
+  "reliability_note": "On 2026-11-03 idoc.pub and dokument.pub serve a domain-for-sale page, dokumen.pub answers HTTP 403 with a Cloudflare challenge, and pdfcoffee.com serves its pages and offers sign-in only with a Google account. Documents are public pages, and sibling sites share templates.",
   "confidence": "reported",
-  "confidence_note": null,
+  "confidence_note": "reported: the pages read on 2026-11-03 are https://pdfcoffee.com/about (states unlimited volume of uploaded files and publication of any number of documents in PDF, Microsoft Word and PowerPoint format), https://pdfcoffee.com/login (sign-in offers only Login with Google), https://dokument.pub/faqs and https://idoc.pub/faqs (both now serve a domain-for-sale page with no FAQ content) and a plain-GET probe of https://dokumen.pub/ that was refused with a Cloudflare challenge. The write-gated binding rests on that probe, and no per-file cap or sign-up route is stated on any page read, so the rung stays reported.",
   "evidence": [
     {
       "url": "https://dokument.pub/faqs",
@@ -79,10 +74,80 @@
       "url": "https://pdfcoffee.com/download/upload-10-pdf-free.html",
       "date": "2026-10-21",
       "proved": "probe: GET -> 200 but Content-Type text/html (viewer page, not the original bytes)"
+    },
+    {
+      "url": "https://pdfcoffee.com/about",
+      "date": "2026-11-03",
+      "proved": "pdfcoffee.com states unlimited volume of uploaded files",
+      "capture": "sha256:0839458b818160fa2484e8c25c24b7d701abf55a4469eb65ad2603d2c56f460f",
+      "quote": "Upload as much as you need! Unlimited volume of uploaded files."
+    },
+    {
+      "url": "https://dokument.pub/faqs",
+      "date": "2026-11-03",
+      "proved": "the dokument.pub FAQ address now serves a domain-for-sale page",
+      "capture": "sha256:7c7044dafee22ec7e0beb53d4b1b97e65bbac1d5a853a1cddec801b607860946",
+      "quote": "is for sale!"
+    },
+    {
+      "url": "probe:dokumen.pub",
+      "date": "2026-11-03",
+      "proved": "a plain GET of dokumen.pub answered HTTP 403",
+      "capture": "sha256:1dbfd488265741defbaf338345085f5cd95d751ecb3f8a9c764a6610b14a429f",
+      "quote": "\"status\": 403"
+    },
+    {
+      "url": "https://pdfcoffee.com/about",
+      "date": "2026-11-03",
+      "proved": "pdfcoffee.com lists PDF, Word and PowerPoint documents",
+      "capture": "sha256:0839458b818160fa2484e8c25c24b7d701abf55a4469eb65ad2603d2c56f460f",
+      "quote": "Upload as much as you need! Unlimited volume of uploaded files."
+    },
+    {
+      "url": "https://idoc.pub/faqs",
+      "date": "2026-11-03",
+      "proved": "idoc.pub serves a domain-for-sale page",
+      "capture": "sha256:11ed843e6602840535c5f0a3a10c64fbaa85feb7b782932a80488e55d92c906b",
+      "quote": "is for sale!"
+    },
+    {
+      "url": "https://dokument.pub/faqs",
+      "date": "2026-11-03",
+      "proved": "dokument.pub serves a domain-for-sale page",
+      "capture": "sha256:7c7044dafee22ec7e0beb53d4b1b97e65bbac1d5a853a1cddec801b607860946",
+      "quote": "is for sale!"
+    },
+    {
+      "url": "https://pdfcoffee.com/login",
+      "date": "2026-11-03",
+      "proved": "the pdfcoffee.com sign-in page offers only Login with Google",
+      "capture": "sha256:5ff44c4950eb91ab7b52b2205bf173036f9fff2debb4b3ee31d23dc41d8dfd56",
+      "quote": "[Login with Google](https://pdfcoffee.com/login/google)"
+    },
+    {
+      "url": "https://pdfcoffee.com/login",
+      "date": "2026-11-03",
+      "proved": "the sign-in page offers only Login with Google",
+      "capture": "sha256:5ff44c4950eb91ab7b52b2205bf173036f9fff2debb4b3ee31d23dc41d8dfd56",
+      "quote": "[Login with Google](https://pdfcoffee.com/login/google)"
+    },
+    {
+      "url": "https://pdfcoffee.com/about",
+      "date": "2026-11-03",
+      "proved": "pdfcoffee.com still states unlimited volume of uploaded files",
+      "capture": "sha256:0839458b818160fa2484e8c25c24b7d701abf55a4469eb65ad2603d2c56f460f",
+      "quote": "Upload as much as you need! Unlimited volume of uploaded files."
+    },
+    {
+      "url": "https://pdfcoffee.com/about",
+      "date": "2026-11-04",
+      "proved": "pdfcoffee.com states unlimited volume of uploaded files",
+      "capture": "sha256:0839458b818160fa2484e8c25c24b7d701abf55a4469eb65ad2603d2c56f460f",
+      "quote": "Upload as much as you need! Unlimited volume of uploaded files."
     }
   ],
   "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
+  "verified_at": "2026-11-04T02:22:32.524Z",
   "notes": "\"Upload as much as you need! Unlimited volume of uploaded files\" — no document count or account quota; dokument.pub FAQ caps a single PDF at 200 MB and states \"No limitation\" on number of pages/uploads. Per-record unlimited x unlimited records.",
   "extras": {
     "dead_end": {
@@ -92,6 +157,6 @@
       "first_recorded": "2026-10-21"
     }
   },
-  "binding": "per-object-cap",
-  "binding_note": null
+  "binding": "write-gated",
+  "binding_note": "the site behind the upload form answers a bot challenge (HTTP 403 to a plain GET), so bulk ingest is bounded by that gate rather than by a quota"
 }

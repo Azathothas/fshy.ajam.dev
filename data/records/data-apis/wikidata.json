@@ -60,9 +60,24 @@
       "kind": "per-ip-shaping",
       "value": "dump downloads rate limited and capped at 3 connections per IP; one connection read 16,777,216 bytes in 5501.7 ms",
       "source": "https://dumps.wikimedia.org/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "200 requests per minute for a User-Agent that carries a contact URL: the 201st request in a minute answered 429 with a Retry-After header, on the Action API and on the REST API",
+      "source": "probe:https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q2201&props=labels&languages=en&format=json"
+    },
+    {
+      "kind": "request-rate",
+      "value": "a User-Agent that names no contact, with the Action API and the REST API counted together: each source address was answered 200 for its first 10 requests in a minute and 429 after, so requests that left from four source addresses were answered 429 from the 41st",
+      "source": "probe:https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q7001&props=labels&languages=en&format=json"
+    },
+    {
+      "kind": "request-rate",
+      "value": "Wikidata Query Service: no per-minute request ceiling was met; 50 parallel queries with a User-Agent that names no contact, and 250 queries within one minute with a User-Agent that carries a contact URL, all answered 200, although the manual gives 5 parallel queries per IP",
+      "source": "probe:https://query.wikidata.org/sparql?format=json&query=SELECT%20%3Fl%20WHERE%20%7B%20wd%3AQ3101%20rdfs%3Alabel%20%3Fl%20FILTER(LANG(%3Fl)%3D%22en%22)%20%7D%20LIMIT%201"
     }
   ],
-  "limits_note": "Every SPARQL query has a hard 60-second deadline. A client that keeps sending past a 429 can be temporarily banned from the query service. The rate-limit page asks for 3 or fewer concurrent requests. Fifteen parallel REST reads sent with a User-Agent that names no contact answered 13 times 200 and twice 404, with no 429. A request with a generic library User-Agent (python-requests) answered 403 with a request to set a User-Agent, and 30 such parallel reads all answered 403.",
+  "limits_note": "Every SPARQL query has a hard 60-second deadline. A client that keeps sending past a 429 can be temporarily banned from the query service. The rate-limit page asks for 3 or fewer concurrent requests. Fifteen parallel REST reads sent with a User-Agent that names no contact answered 13 times 200 and twice 404, with no 429. A request with a generic library User-Agent (python-requests) answered 403 with a request to set a User-Agent, and 30 such parallel reads all answered 403. The per-minute ceilings are enforced by the REST gateway, an Envoy rate-limit service that keeps its counters in Redis, on the Action API and the REST API; the rate-limit FAQ says the request limits currently apply to those two APIs, and the query service is throttled by processing time instead. The gateway counts requests whose User-Agent names no contact per source address and requests whose User-Agent carries a contact per contact string. A 429 from the gateway carries Retry-After, the header x-envoy-ratelimited and the text \"You are making too many requests to the API.\"",
   "binding": "request-rate",
   "binding_note": "An unidentified client gets 10 requests per minute and a compliant User-Agent 200, so a whole-graph read goes to the weekly dump, which is shaped per IP rather than counted.",
   "identity_cost": {
@@ -71,8 +86,8 @@
     "country": null
   },
   "reliability_note": "The 2026 per-minute limits are stated to be subject to change; a client that ignores 429 answers can be temporarily banned, and a request with a generic library User-Agent answered 403 at once.",
-  "confidence": "documented",
-  "confidence_note": "The rate classes are documented, not exhausted. The read path was probed: the SPARQL endpoint and the REST API answered 200 with no account, the JSON dump answered a HEAD with its size and a 206 to a 16 MiB range, 15 parallel REST reads with a User-Agent that names no contact met no 429, and reads with a generic library User-Agent answered 403. Reading a 429 at the 10 and 200 per-minute ceilings would raise the limits to measured.",
+  "confidence": "measured",
+  "confidence_note": "The per-minute ceilings are read: requests whose User-Agent carries a contact URL were answered 429 from the 201st request in a minute on the Action API and on the REST API, and requests whose User-Agent names no contact were answered 429 after the first 10 requests from each source address, so from the 41st when the requests left from four source addresses; the query service answered 200 to all 250 queries sent in one minute. The read path was probed: the SPARQL endpoint and the REST API answered 200 with no account, the JSON dump answered a HEAD with its size and a 206 to a 16 MiB range, and reads with a generic library User-Agent answered 403. The 200 per minute of a new account and the 2000 of an established editor were not read: unverified: behind a sign-up.",
   "evidence": [
     {
       "url": "https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits",
@@ -339,9 +354,261 @@
       "proved": "30 parallel REST reads sent with a generic library User-Agent all answered 403",
       "capture": "sha256:f74e686a02df0f5263f79e930ec5d358a2e8548307f6c5036a6a84cc1c8076c8",
       "quote": "\"statuses\": [ 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403, 403 ]"
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q2201&props=labels&languages=en&format=json",
+      "date": "2026-11-02",
+      "proved": "the fifth burst of 50 parallel Action API requests, sent in one minute with no account and no key and a User-Agent that carries a contact URL, answered 429 for all 50",
+      "capture": "sha256:25be7d13e7a518d3067938fed6f0c0472fb0f1da9fe85a78acab2586cb8dc053",
+      "quote": "\"statuses\": [ 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429 ]"
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q2001&props=labels&languages=en&format=json",
+      "date": "2026-11-02",
+      "proved": "the first burst of 50 parallel Action API requests, sent in one minute with no account and no key and a User-Agent that carries a contact URL, answered 200 for all 50",
+      "capture": "sha256:7796ed84bc6a7bcd1e4c3cdfd44a92b3222a18dd041cf3a7d8b8aa4b8d93f4f5",
+      "quote": "\"statuses\": [ 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200 ]"
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q2051&props=labels&languages=en&format=json",
+      "date": "2026-11-02",
+      "proved": "the second burst of 50 parallel Action API requests, sent in one minute with no account and no key and a User-Agent that carries a contact URL, answered 200 for all 50",
+      "capture": "sha256:a19d9ffdc944169cd6f0bf939e595ce22c8e1a395bce1f3d54cfa78e93bede55",
+      "quote": "\"statuses\": [ 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200 ]"
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q2101&props=labels&languages=en&format=json",
+      "date": "2026-11-02",
+      "proved": "the third burst of 50 parallel Action API requests, sent in one minute with no account and no key and a User-Agent that carries a contact URL, answered 200 for all 50",
+      "capture": "sha256:504a9c4686289b5722eee802dbce6a155225ad451f3b51cf613261f8668775ba",
+      "quote": "\"statuses\": [ 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200 ]"
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q2151&props=labels&languages=en&format=json",
+      "date": "2026-11-02",
+      "proved": "the fourth burst of 50 parallel Action API requests, sent in one minute with no account and no key and a User-Agent that carries a contact URL, answered 200 for all 50",
+      "capture": "sha256:fc3a324a083903a486677aa743b93f4fda16d734749521e1d0ff6ac2675052e2",
+      "quote": "\"statuses\": [ 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200 ]"
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q2201&props=labels&languages=en&format=json",
+      "date": "2026-11-02",
+      "proved": "the 429 answers to the User-Agent that carries a contact URL on the Action API carried a Retry-After of 47 seconds and came from a server named envoy",
+      "capture": "sha256:25be7d13e7a518d3067938fed6f0c0472fb0f1da9fe85a78acab2586cb8dc053",
+      "quote": "\"retry_after\": \"47\" ... \"server\": \"envoy\""
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/rest.php/wikibase/v1/property-data-types?x=1201",
+      "date": "2026-11-02",
+      "proved": "the 429 answers to the User-Agent that carries a contact URL on the REST API carried a Retry-After of 48 seconds and came from a server named envoy",
+      "capture": "sha256:921d09406b6fae4398f336a0946e174bc23e25d21f2c9cc419a9cfabaf54ffc6",
+      "quote": "\"retry_after\": \"48\" ... \"server\": \"envoy\""
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/rest.php/wikibase/v1/property-data-types?x=1001",
+      "date": "2026-11-02",
+      "proved": "the first burst of 50 parallel REST API requests, sent in one minute with a User-Agent that carries a contact URL, answered 200 for all 50",
+      "capture": "sha256:ee24260c3999020634de10cdd10f45c9d7dfca2b14c3a160bd714ae07a16bd99",
+      "quote": "\"statuses\": [ 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200 ]"
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/rest.php/wikibase/v1/property-data-types?x=1051",
+      "date": "2026-11-02",
+      "proved": "the second burst of 50 parallel REST API requests, sent in one minute with a User-Agent that carries a contact URL, answered 200 for all 50",
+      "capture": "sha256:b6256a63e75964f097ad48f4349c002b4426415e539910f55fe687edf5640369",
+      "quote": "\"statuses\": [ 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200 ]"
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/rest.php/wikibase/v1/property-data-types?x=1101",
+      "date": "2026-11-02",
+      "proved": "the third burst of 50 parallel REST API requests, sent in one minute with a User-Agent that carries a contact URL, answered 200 for all 50",
+      "capture": "sha256:036c385cdcd894da897604ae8fee41b359851a3d52b72adf70d7e69f568b9b61",
+      "quote": "\"statuses\": [ 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200 ]"
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/rest.php/wikibase/v1/property-data-types?x=1151",
+      "date": "2026-11-02",
+      "proved": "the fourth burst of 50 parallel REST API requests, sent in one minute with a User-Agent that carries a contact URL, answered 200 for all 50",
+      "capture": "sha256:c3ba46269d093aaa8bdb79d5cee5de1aa339cd14e4717048b357d2ab33008f58",
+      "quote": "\"statuses\": [ 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200 ]"
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/rest.php/wikibase/v1/property-data-types?x=1201",
+      "date": "2026-11-02",
+      "proved": "the fifth burst of 50 parallel REST API requests, sent in one minute with a User-Agent that carries a contact URL, answered 429 for all 50",
+      "capture": "sha256:921d09406b6fae4398f336a0946e174bc23e25d21f2c9cc419a9cfabaf54ffc6",
+      "quote": "\"statuses\": [ 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429 ]"
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q7001&props=labels&languages=en&format=json",
+      "date": "2026-11-02",
+      "proved": "60 parallel requests with a User-Agent that names no contact left from four source addresses, shown here as labels; counted over its runs, each address was answered 200 for exactly 10 requests and 429 for each further request",
+      "capture": "sha256:4d22f7cf98718ba08b88367a92f0baa3b3b11a310065db06fded302c46588ce7",
+      "quote": "\"concurrency\": 60 ... \"x-client-ip\": \"[redacted-1]\" ... \"x-client-ip\": \"[redacted-2]\" ... \"x-client-ip\": \"[redacted-3]\" ... \"x-client-ip\": \"[redacted-4]\""
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q6001&props=labels&languages=en&format=json",
+      "date": "2026-11-02",
+      "proved": "45 parallel Action API requests with a User-Agent that names no contact, sent with no account and no key, answered 200 for 40 and 429 for 5",
+      "capture": "sha256:67d1fd623899c1393ff33f6435d06b8ab73c64c39f752660727b12b6e777bd96",
+      "quote": "\"statuses\": [200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 429, 200, 200, 200, 200, 200, 200, 200, 429, 200, 200, 200, 429, 200, 429, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 429, 200]"
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q4001&props=labels&languages=en&format=json",
+      "date": "2026-11-02",
+      "proved": "25 parallel Action API requests with a User-Agent that names no contact answered 200 for all 25",
+      "capture": "sha256:771df2253c26d451528eed12902b26eba4f9f585d6d3ef8f4d0690bc1a9bb2a4",
+      "quote": "\"statuses\": [ 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200 ]"
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/rest.php/wikibase/v1/property-data-types?x=2001",
+      "date": "2026-11-02",
+      "proved": "25 parallel REST API requests sent in the same minute with the same User-Agent answered 200 for 15 and 429 for 10, so the two APIs share one count",
+      "capture": "sha256:553024a656c889cc3ce5b0a05d82e9f08068622e44b14c90396c115bbeb1eb4c",
+      "quote": "\"statuses\": [ 429, 429, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 429, 429, 200, 200, 429, 200, 429, 429, 429, 429, 429, 200, 200 ]"
+    },
+    {
+      "url": "probe:https://query.wikidata.org/sparql?format=json&query=SELECT%20%3Fl%20WHERE%20%7B%20wd%3AQ3101%20rdfs%3Alabel%20%3Fl%20FILTER(LANG(%3Fl)%3D%22en%22)%20%7D%20LIMIT%201",
+      "date": "2026-11-02",
+      "proved": "50 parallel Wikidata Query Service queries with a User-Agent that names no contact answered 200 for all 50",
+      "capture": "sha256:9d72dccc7fc5caada1079e896d64bc61558cd63183fb64fbe47df9dce9535f6d",
+      "quote": "\"statuses\": [ 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200 ]"
+    },
+    {
+      "url": "probe:https://query.wikidata.org/sparql?format=json&query=SELECT%20%3Fl%20WHERE%20%7B%20wd%3AQ3201%20rdfs%3Alabel%20%3Fl%20FILTER(LANG(%3Fl)%3D%22en%22)%20%7D%20LIMIT%201",
+      "date": "2026-11-02",
+      "proved": "the first burst of 50 parallel Wikidata Query Service queries, sent in one minute with a User-Agent that carries a contact URL, answered 200 for all 50",
+      "capture": "sha256:8c3c2fd214546db9f9330264a4af0e3f028f4ff6900817e953567ce7e13039e2",
+      "quote": "\"statuses\": [ 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200 ]"
+    },
+    {
+      "url": "probe:https://query.wikidata.org/sparql?format=json&query=SELECT%20%3Fl%20WHERE%20%7B%20wd%3AQ3251%20rdfs%3Alabel%20%3Fl%20FILTER(LANG(%3Fl)%3D%22en%22)%20%7D%20LIMIT%201",
+      "date": "2026-11-02",
+      "proved": "the second burst of 50 parallel Wikidata Query Service queries, sent in one minute with a User-Agent that carries a contact URL, answered 200 for all 50",
+      "capture": "sha256:7caac76e7a13598cb71b01c6ffc9ea1b497aa519098b9a1b656a9b289dc36546",
+      "quote": "\"statuses\": [ 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200 ]"
+    },
+    {
+      "url": "probe:https://query.wikidata.org/sparql?format=json&query=SELECT%20%3Fl%20WHERE%20%7B%20wd%3AQ3301%20rdfs%3Alabel%20%3Fl%20FILTER(LANG(%3Fl)%3D%22en%22)%20%7D%20LIMIT%201",
+      "date": "2026-11-02",
+      "proved": "the third burst of 50 parallel Wikidata Query Service queries, sent in one minute with a User-Agent that carries a contact URL, answered 200 for all 50",
+      "capture": "sha256:cf3f242a24250bc125555585bec2db02744228edd68c77b3f712fb951a0c49b8",
+      "quote": "\"statuses\": [ 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200 ]"
+    },
+    {
+      "url": "probe:https://query.wikidata.org/sparql?format=json&query=SELECT%20%3Fl%20WHERE%20%7B%20wd%3AQ3351%20rdfs%3Alabel%20%3Fl%20FILTER(LANG(%3Fl)%3D%22en%22)%20%7D%20LIMIT%201",
+      "date": "2026-11-02",
+      "proved": "the fourth burst of 50 parallel Wikidata Query Service queries, sent in one minute with a User-Agent that carries a contact URL, answered 200 for all 50",
+      "capture": "sha256:62b0afc919cc2067a54b4da851923594b4e2bf2a11c52936ceb6fda612cdaf37",
+      "quote": "\"statuses\": [ 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200 ]"
+    },
+    {
+      "url": "probe:https://query.wikidata.org/sparql?format=json&query=SELECT%20%3Fl%20WHERE%20%7B%20wd%3AQ3401%20rdfs%3Alabel%20%3Fl%20FILTER(LANG(%3Fl)%3D%22en%22)%20%7D%20LIMIT%201",
+      "date": "2026-11-02",
+      "proved": "the fifth burst of 50 parallel Wikidata Query Service queries, sent in one minute with a User-Agent that carries a contact URL, answered 200 for all 50",
+      "capture": "sha256:d54d1a0ef7cf0159114ad070c35bdca57a92d1cf8274561f41fd54011dcf271a",
+      "quote": "\"statuses\": [ 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200 ]"
+    },
+    {
+      "url": "https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits/FAQ",
+      "date": "2026-11-02",
+      "proved": "the request-based rate limits currently apply to the Action API and the REST API",
+      "capture": "sha256:fb5de912737351ecee503b4d49b1b58e231e2ee2abc38e02f42078f74e1d574a",
+      "quote": "They currently apply to the [Action API](https://www.mediawiki.org/wiki/API:Action_API) and [REST API](https://www.mediawiki.org/wiki/API:REST_API)"
+    },
+    {
+      "url": "https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits/FAQ",
+      "date": "2026-11-02",
+      "proved": "cost-based or concurrency limits for the Wikidata Query Service are only being explored, so the request limits do not apply to it",
+      "capture": "sha256:fb5de912737351ecee503b4d49b1b58e231e2ee2abc38e02f42078f74e1d574a",
+      "quote": "We intend to explore the feasibility of cost-based or concurrency limits for [Wikidata Query Service](https://query.wikidata.org/)"
+    },
+    {
+      "url": "https://wikitech.wikimedia.org/wiki/External_request_limits",
+      "date": "2026-11-02",
+      "proved": "the API rate limits are enforced by the REST gateway",
+      "capture": "sha256:c9a37e0c7c49117b5af9f076ea0f1def4440b9591c6b5ebbd9bf2ae102c11204",
+      "quote": "[API Rate Limits](https://wikitech.wikimedia.org/wiki/REST_Gateway/Rate_limiting) are enforced by the [REST Gateway](https://wikitech.wikimedia.org/wiki/REST_Gateway)."
+    },
+    {
+      "url": "https://wikitech.wikimedia.org/wiki/External_request_limits",
+      "date": "2026-11-02",
+      "proved": "the API rate limits apply across sites and services but only to API endpoints",
+      "capture": "sha256:c9a37e0c7c49117b5af9f076ea0f1def4440b9591c6b5ebbd9bf2ae102c11204",
+      "quote": "They apply across sites and services, but only to API endpoints."
+    },
+    {
+      "url": "https://wikitech.wikimedia.org/wiki/REST_Gateway/Rate_limiting",
+      "date": "2026-11-02",
+      "proved": "the gateway rate limiting is an Envoy rate-limit service with Redis counters",
+      "capture": "sha256:cf53bb691c97e71bb1f67837980127506235089a2b43998fa7ceaf86f50f55ba",
+      "quote": "Rate limiting is implemented using an [envoyproxy/ratelimit](https://github.com/envoyproxy/ratelimit) instance that runs as a side-car of Envoy and uses Redis for storing rate limit counters."
+    },
+    {
+      "url": "https://wikitech.wikimedia.org/wiki/REST_Gateway/Rate_limiting",
+      "date": "2026-11-02",
+      "proved": "requests with no contact in the User-Agent fall in the anon class, whose counter key is the source address",
+      "capture": "sha256:cf53bb691c97e71bb1f67837980127506235089a2b43998fa7ceaf86f50f55ba",
+      "quote": "Includes bots that do not authenticate and do not comply with the user agent policy. The `x-client-ip` header is used to construct the rate limit counter key."
+    },
+    {
+      "url": "https://wikitech.wikimedia.org/wiki/REST_Gateway/Rate_limiting",
+      "date": "2026-11-02",
+      "proved": "requests with a compliant User-Agent are counted per contact string",
+      "capture": "sha256:cf53bb691c97e71bb1f67837980127506235089a2b43998fa7ceaf86f50f55ba",
+      "quote": "The `x-ua-contact` key is used to construct the rate limit counter key"
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q6100&props=labels&languages=en&format=json",
+      "date": "2026-11-02",
+      "proved": "a 429 answer came from a server named envoy with the header x-envoy-ratelimited: true and a Retry-After of 56 seconds",
+      "capture": "sha256:f77353b89a5ad8a06aad3822e314094e9385436dda8943bb37352f204e593e1c",
+      "quote": "\"server\": \"envoy\" ... \"x-envoy-ratelimited\": \"true\" ... \"retry-after\": \"56\""
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q6100&props=labels&languages=en&format=json#429-body",
+      "date": "2026-11-02",
+      "proved": "the 429 answer body says the caller is making too many requests to the API",
+      "capture": "sha256:b50f48fafb96c75d92d30aff315ac1dae6e879bdc5b979fbf27b6d6c30085306",
+      "quote": "You are making too many requests to the API."
+    },
+    {
+      "url": "https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits",
+      "date": "2026-11-02",
+      "proved": "an unidentified caller, identified by nothing but its IP address, is limited to 10 requests per minute",
+      "capture": "sha256:f1362fe46e9b28afabfc2d2d299740fcb53b0c5bd39df2d6f3e8beb86e209dee",
+      "quote": "| Unidentified | Requests with no identifying characteristics other than IP address | 10 |"
+    },
+    {
+      "url": "probe:https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q2201&props=labels&languages=en&format=json",
+      "date": "2026-11-02",
+      "proved": "the 429 ceiling of the User-Agent class that carries a contact URL was read on the Action API",
+      "capture": "sha256:25be7d13e7a518d3067938fed6f0c0472fb0f1da9fe85a78acab2586cb8dc053",
+      "quote": "\"status\": 429"
+    },
+    {
+      "url": "https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits",
+      "date": "2026-11-02",
+      "proved": "an unauthenticated caller with a compliant User-Agent is limited to 200 requests per minute",
+      "capture": "sha256:f1362fe46e9b28afabfc2d2d299740fcb53b0c5bd39df2d6f3e8beb86e209dee",
+      "quote": "| User-Agent only | Unauthenticated bot requests with a [compliant User-Agent](https://foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_User-Agent_Policy) header | 200 |"
+    },
+    {
+      "url": "https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits",
+      "date": "2026-11-02",
+      "proved": "a new or low-edit account is limited to 200 requests per minute",
+      "capture": "sha256:f1362fe46e9b28afabfc2d2d299740fcb53b0c5bd39df2d6f3e8beb86e209dee",
+      "quote": "| Authenticated | Authenticated requests from users who are new or have few edits | 200 |"
+    },
+    {
+      "url": "https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits",
+      "date": "2026-11-02",
+      "proved": "an established editor's account is limited to 2000 requests per minute",
+      "capture": "sha256:f1362fe46e9b28afabfc2d2d299740fcb53b0c5bd39df2d6f3e8beb86e209dee",
+      "quote": "| Authenticated requests from users who are established editors | 2000 |"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T05:06:55.547Z",
+  "verified_at": "2026-11-03T00:28:12.182Z",
   "notes": "Caveat: an unidentified client is held to 10 requests per minute, and the per-minute classes are new in 2026. The JSON and RDF entity dumps are stable interfaces; the XML dumps are not, and the XML dumps of all wikis are deprecated with a January 2027 sunset."
 }

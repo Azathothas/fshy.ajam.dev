@@ -1,0 +1,133 @@
+{
+  "topic": "data-apis",
+  "slug": "bls-public-data-api",
+  "provider": "BLS Public Data API (Bureau of Labor Statistics)",
+  "url": "https://www.bls.gov/developers/api_faqs.htm",
+  "category": "government economic data API (CPI, employment, wages, productivity time series)",
+  "tier": "Version 1.0 (unregistered)",
+  "free_tier": {
+    "stated": "Version 1.0, no registration: 25 queries a day, 25 series a query, 10 years a query, 50 requests per 10 seconds; Version 2.0 with a free registration key: 500 queries a day, 50 series, 20 years",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://www.bls.gov/developers/api_faqs.htm",
+    "read_on": "2026-11-03",
+    "notes": "Version 2.0 also returns net and percent changes, annual averages and series descriptions, and the key must be renewed at least once a year. A keyless v1 time-series call answered HTTP 200. The www.bls.gov pages answered HTTP 403 to an automated page fetch with no declared agent."
+  },
+  "per_object_cap": {
+    "stated": "25 series per query unregistered, 50 registered",
+    "bytes": null,
+    "source_url": "https://www.bls.gov/developers/api_faqs.htm",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "notes": "10 years per query unregistered, 20 registered."
+  },
+  "egress": {
+    "terms": "not metered in bytes; the daily query count bounds a caller",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.bls.gov/developers/api_faqs.htm"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "GET or POST https://api.bls.gov/publicAPI/v1/timeseries/data/SERIESID with no key; v2 adds the registrationkey with the same signatures",
+  "endpoint": "https://api.bls.gov/publicAPI/v1/timeseries/data",
+  "tooling": "curl or any HTTP client; sample code is published for several languages",
+  "chaining": "US labour and price series for free; they pair with FRED and Fiscal Data when a model mixes macro sources.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "25 queries per day unregistered, 500 registered",
+      "source": "https://www.bls.gov/developers/api_faqs.htm"
+    },
+    {
+      "kind": "request-rate",
+      "value": "50 requests per 10 seconds on both versions",
+      "source": "https://www.bls.gov/developers/api_faqs.htm"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "25 series and 10 years per query unregistered; 50 series and 20 years registered",
+      "source": "https://www.bls.gov/developers/api_faqs.htm"
+    }
+  ],
+  "limits_note": "Bulk path: flat files under download.bls.gov/pub/time.series/, one directory per survey, with no key.",
+  "binding": "request-rate",
+  "binding_note": "25 queries a day unregistered, 500 registered, is met long before the 50 per 10 seconds rate.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "Version 1.0 needs nothing. A Version 2.0 key needs an email address and an organization name and a CAPTCHA on the registration page, with the key emailed back.",
+    "country": null
+  },
+  "reliability_note": "Too many requests answer HTTP 429; the key expires unless renewed once a year.",
+  "confidence": "documented",
+  "confidence_note": "Limits are read from the vendor FAQ and a keyless v1 call answered 200; the v2 key was not exercised.",
+  "evidence": [
+    {
+      "url": "https://www.bls.gov/developers/api_faqs.htm",
+      "date": "2026-11-03",
+      "proved": "daily query limit 500 registered and 25 unregistered",
+      "capture": "sha256:515cba799e867c65fdcdbb6fbfd80cb1db4dcd439f8793115154ddf7d98993ff",
+      "quote": "| Daily query limit | 500 | 25 |"
+    },
+    {
+      "url": "https://www.bls.gov/developers/api_faqs.htm",
+      "date": "2026-11-03",
+      "proved": "series per query limits",
+      "capture": "sha256:515cba799e867c65fdcdbb6fbfd80cb1db4dcd439f8793115154ddf7d98993ff",
+      "quote": "| Series per query limit | 50 | 25 |"
+    },
+    {
+      "url": "https://www.bls.gov/developers/api_faqs.htm",
+      "date": "2026-11-03",
+      "proved": "years per query limits",
+      "capture": "sha256:515cba799e867c65fdcdbb6fbfd80cb1db4dcd439f8793115154ddf7d98993ff",
+      "quote": "| Years per query limit | 20 | 10 |"
+    },
+    {
+      "url": "https://www.bls.gov/developers/api_faqs.htm",
+      "date": "2026-11-03",
+      "proved": "request rate is 50 per 10 seconds on both versions",
+      "capture": "sha256:515cba799e867c65fdcdbb6fbfd80cb1db4dcd439f8793115154ddf7d98993ff",
+      "quote": "| Request rate limit | 50 requests per 10 seconds | 50 requests per 10 seconds |"
+    },
+    {
+      "url": "https://www.bls.gov/developers/api_faqs.htm",
+      "date": "2026-11-03",
+      "proved": "registration asks for an email address and organization name plus a CAPTCHA",
+      "capture": "sha256:515cba799e867c65fdcdbb6fbfd80cb1db4dcd439f8793115154ddf7d98993ff",
+      "quote": "enter your email address and organization name. Complete the CAPTCHA."
+    },
+    {
+      "url": "https://www.bls.gov/developers/api_faqs.htm",
+      "date": "2026-11-03",
+      "proved": "the registration must be renewed yearly",
+      "capture": "sha256:515cba799e867c65fdcdbb6fbfd80cb1db4dcd439f8793115154ddf7d98993ff",
+      "quote": "Users must renew registration with the BLS Public Data API at least once a year."
+    },
+    {
+      "url": "https://download.bls.gov/pub/time.series/",
+      "date": "2026-11-03",
+      "proved": "flat-file survey directories are published for download",
+      "capture": "sha256:6f2ed89dbcc939d6bbd3c6ea30c6a654c2c62b03c95a244262a9938b5734113f",
+      "quote": "download.bls.gov - /pub/time.series/"
+    },
+    {
+      "url": "probe:https://api.bls.gov/publicAPI/v1/timeseries/data/LNS14000000",
+      "date": "2026-11-03",
+      "proved": "a keyless v1 call answered HTTP 200",
+      "capture": "sha256:f56cf09f9e9f3254bc4373dd24418b296e571512c197e300f6a15fe6529863d7",
+      "quote": "\"status\": 200"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-11-03T00:30:00.000Z",
+  "notes": "Keyless v1 at 25 queries a day; a free emailed key raises it to 500. Bulk path: flat files. Storage terms: unverified.",
+  "extras": {
+    "bulk_path": "flat files at download.bls.gov/pub/time.series/"
+  }
+}

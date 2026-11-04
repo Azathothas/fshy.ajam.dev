@@ -1,0 +1,155 @@
+{
+  "topic": "data-apis",
+  "slug": "coinmarketcap",
+  "provider": "CoinMarketCap API",
+  "url": "https://coinmarketcap.com/api/pricing/",
+  "category": "crypto market data API (listings, quotes, metadata, global metrics, DEX data)",
+  "tier": "Basic",
+  "free_tier": {
+    "stated": "Basic plan, free: 15,000 monthly call credits at 50 requests per minute, 1 API key, 1 year of daily quote history; a keyless public API on a shared per-IP pool also exists",
+    "unit": "credits",
+    "metered_on": "request-count",
+    "source_url": "https://coinmarketcap.com/api/pricing/",
+    "read_on": "2026-11-02",
+    "notes": "The keyed host is pro-api.coinmarketcap.com with the X-CMC_PRO_API_KEY header; the keyless root adds /public-api and serves 18 standard and 17 DEX endpoints. A keyless call answered HTTP 429 with error 1022 on its first request from a residential ISP address. Builder is the first paid plan at USD 29 a month billed yearly for 150,000 credits."
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "bytes": null,
+    "source_url": "https://coinmarketcap.com/api/pricing/",
+    "notes": "One currency conversion per call on Basic."
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "notes": "Basic reaches 1 year of daily quotes and 1 month of intraday; all-time history starts at the Startup plan."
+  },
+  "egress": {
+    "terms": "not metered in bytes; credits per call bound what a Basic key can pull",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://coinmarketcap.com/api/pricing/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "GET https://pro-api.coinmarketcap.com/... with the key in the X-CMC_PRO_API_KEY header; GET https://pro-api.coinmarketcap.com/public-api/... with no key",
+  "endpoint": "https://pro-api.coinmarketcap.com",
+  "tooling": "curl or any HTTP client; official Python, JavaScript and Go SDKs, an MCP server and an OpenAPI file are published",
+  "chaining": "A free key gives 15,000 credits a month of listings and quotes; CoinPaprika and CoinLore give keyless prices with no monthly key.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "15,000 call credits per month on the Basic plan",
+      "source": "https://coinmarketcap.com/api/pricing/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "50 requests per minute on the Basic plan, reset every 60 seconds",
+      "source": "https://coinmarketcap.com/api/pricing/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "keyless public API: a shared IP-based rate pool, size not published; error 1022 once the anonymous limit is reached",
+      "source": "https://coinmarketcap.com/api/documentation/pro-api-reference/keyless-public-api"
+    }
+  ],
+  "limits_note": "Bulk path: none on Basic; all-time history and OHLCV start on paid plans. Storage terms: unverified, the commercial terms page rendered as an empty shell.",
+  "binding": "request-rate",
+  "binding_note": "15,000 credits a month, with more than 1 credit for larger responses, is spent before the 50 requests per minute matter.",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "A Basic key needs a Developer Portal account: the sign-up form asks for Email, Name and Password and a plan choice; the vendor says no credit card. The keyless public API needs no account, but it answers 429 once its shared anonymous limit is reached.",
+    "country": null
+  },
+  "reliability_note": "Keyless calls share an IP pool and answered HTTP 429 (error 1022) on the first probe; keyed calls past the minute limit answer 429 and wait 60 seconds.",
+  "confidence": "documented",
+  "confidence_note": "Plan numbers are read from the vendor pricing and guide pages; a keyless probe measured the 429. The key was not exercised.",
+  "evidence": [
+    {
+      "url": "https://coinmarketcap.com/api/",
+      "date": "2026-11-02",
+      "proved": "Basic is the free authenticated tier with 15,000 credits and 50 requests per minute",
+      "capture": "sha256:3f0c7136ca4fce3c450dc2a8e71fd985293d98f6924aee431d778a427fb0c044",
+      "quote": "The current pricing page lists Basic as the free authenticated tier with 15,000 monthly call credits and 50 requests per minute."
+    },
+    {
+      "url": "https://coinmarketcap.com/api/pricing/",
+      "date": "2026-11-02",
+      "proved": "a free plan by sign-up and a public API with no key",
+      "capture": "sha256:5a5cf49697df492c2eb2bf9e76e0ed6cd08f3a28f4132bd77be7f50da48a578a",
+      "quote": "Explore CoinMarketCap's API with our free plan by signing up, or just use our public API that doesn't require an API key."
+    },
+    {
+      "url": "https://coinmarketcap.com/api/pricing/",
+      "date": "2026-11-02",
+      "proved": "Basic daily quote history is 1 year",
+      "capture": "sha256:5a5cf49697df492c2eb2bf9e76e0ed6cd08f3a28f4132bd77be7f50da48a578a",
+      "quote": "Quotes Historical - Daily (1d–1y) ... 1 year"
+    },
+    {
+      "url": "https://coinmarketcap.com/api/pricing/",
+      "date": "2026-11-02",
+      "proved": "Builder is USD 29 a month",
+      "capture": "sha256:5a5cf49697df492c2eb2bf9e76e0ed6cd08f3a28f4132bd77be7f50da48a578a",
+      "quote": "Builder ... $29/mo"
+    },
+    {
+      "url": "https://coinmarketcap.com/api/documentation/pro-api-reference/keyless-public-api",
+      "date": "2026-11-02",
+      "proved": "keyless requests share an IP-based pool",
+      "capture": "sha256:3dacb206011005e5772fd237a1ca2cb649ba77065c1c4af3b38746fbc496d6c3",
+      "quote": "Keyless requests share an IP-based rate pool that keeps the public endpoint fast and stable for everyone."
+    },
+    {
+      "url": "https://coinmarketcap.com/api/documentation/pro-api-reference/keyless-public-api",
+      "date": "2026-11-02",
+      "proved": "18 standard and 17 DEX endpoints are keyless",
+      "capture": "sha256:3dacb206011005e5772fd237a1ca2cb649ba77065c1c4af3b38746fbc496d6c3",
+      "quote": "18 Standard API and 17 DEX endpoints, keyless."
+    },
+    {
+      "url": "https://coinmarketcap.com/api/documentation/pro-api-reference/keyless-public-api",
+      "date": "2026-11-02",
+      "proved": "a free key needs no card",
+      "capture": "sha256:3dacb206011005e5772fd237a1ca2cb649ba77065c1c4af3b38746fbc496d6c3",
+      "quote": "(no credit card) raises the rate limits"
+    },
+    {
+      "url": "https://coinmarketcap.com/api/documentation/guides/errors-and-rate-limits/",
+      "date": "2026-11-02",
+      "proved": "the minute limit resets every 60 seconds and answers 429",
+      "capture": "sha256:ea150fcbc59b737a1c527795bd2bac6daed4e49990538f37f5d9a874319f19f1",
+      "quote": "This limit scales with the [usage tier](https://coinmarketcap.com/api/pricing/) and resets every 60 seconds."
+    },
+    {
+      "url": "https://pro.coinmarketcap.com/signup",
+      "date": "2026-11-02",
+      "proved": "the sign-up form asks for email, name and password",
+      "capture": "sha256:5f6b82bb0ec3d4104df57778674a18432d655db3b73d63dfc66d2893a717cbc6",
+      "quote": "Email ... Name ... Password"
+    },
+    {
+      "url": "probe:https://pro-api.coinmarketcap.com/public-api/v2/simple/price?symbol=BTC&convert=USD",
+      "date": "2026-11-03",
+      "proved": "the keyless call answered HTTP 429",
+      "capture": "sha256:51bb247bc3326745bdc781bd3e558fa2bd887c05be0f5ddb377d76b7d80203f6",
+      "quote": "\"status\": 429"
+    },
+    {
+      "url": "probe:https://pro-api.coinmarketcap.com/public-api/v2/simple/price?symbol=BTC&convert=USD",
+      "date": "2026-11-03",
+      "proved": "the keyless 429 names the anonymous limit and points to a free plan",
+      "capture": "sha256:c482dfb44cc6aa20624d82986184f9c6f9d150242807725d7cb6bb324e89f9a5",
+      "quote": "You've reached the limit for anonymous access. Sign in to activate a free API plan or upgrade for higher limits."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-11-03T00:30:00.000Z",
+  "notes": "Free key with a monthly credit count; the keyless route is a shared pool that can already be exhausted. Bulk path: none on Basic. Storage terms: unverified.",
+  "extras": {
+    "bulk_path": "none on Basic",
+    "history_depth": "1 year of daily quotes and 1 month of intraday on Basic"
+  }
+}

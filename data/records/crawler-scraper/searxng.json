@@ -7,7 +7,7 @@
   "verdict": "dead",
   "confidence": "measured",
   "confidence_note": "public instances probed for JSON with registered probe records; the instance count read on searx.space",
-  "verified_at": "2026-10-31T06:44:29.577Z",
+  "verified_at": "2026-11-02T01:02:37.499Z",
   "free_tier": {
     "stated": "Keyless and anonymous: a public instance takes GET /search?q=...&format=json with no key or account. Each instance is run by its own operator and listed on searx.space. JSON output is off by default (search.formats lists html only) and an operator must enable it. Asked a scripted format=json query on 2026-10-31, none of 20 listed instances returned results: 14 answered 429 Too Many Requests, 3 a bot-challenge page, 1 a 418 cookie-setting script, 1 a 403 and 1 a redirect to its front page; a plain query without format=json returned no results from any of the 20 either (16 answered 429, 3 a bot-challenge page, 1 a 418).",
     "unit": "requests",
@@ -39,7 +39,7 @@
     "rest"
   ],
   "interface_detail": "a metasearch endpoint aggregating about 70 engines",
-  "tooling": "not stated",
+  "tooling": "curl or any HTTP client: GET or POST /search with q and format=json, no key. A plain scripted request is refused before any result is returned, for example by the SearXNG limiter with 429 Too Many Requests (its bot detection classes a request as a bot when Accept-Language is unset, Accept lacks text/html or the User-Agent matches a bot list that includes curl, wget and python-requests), by an instance that has not enabled json with 403, or by a bot-challenge page in front of the instance, from Anubis or Substation, that needs JavaScript.",
   "chaining": "Public instances do not chain as a scripted search source, since every listed instance probed on 2026-10-31 answered a scripted query with 429, 403, 418, a redirect or a bot-challenge page; scripted search goes to the hosted search APIs of this topic (for example crawler-scraper/tavily, crawler-scraper/exa and crawler-scraper/youdotcom), and a self-run SearXNG instance with the json format enabled is the last resort.",
   "limits": [
     {
@@ -55,14 +55,9 @@
     "detail": "no key on a public instance",
     "country": null
   },
-  "reliability_note": "no reliability event recorded",
+  "reliability_note": "On 2026-10-31, 20 listed instances were asked a scripted json query and none returned results: 14 answered 429 Too Many Requests, the default refusal of SearXNG's bot detection, 3 a bot-challenge page, 1 a 403, 1 a 418 cookie-setting script and 1 a redirect to its front page.",
   "price_per_tb_month": null,
   "evidence": [
-    {
-      "url": "https://searx.space/",
-      "date": "2026-10-22",
-      "proved": null
-    },
     {
       "url": "probe:https://search.utilibre.org/search?q=wikipedia&format=json",
       "date": "2026-10-30",
@@ -356,6 +351,90 @@
       "proved": "the first listed public instance in the probe record was probed at 2026-10-31T06:33:18.951Z, so the listed public instances were probed on 2026-10-31",
       "capture": "sha256:cf662eb1ab0eeb09806cdbd19ceca0286aef91185e6a94202c69ff788b116ea3",
       "quote": "2026-10-31T06:33:18.951Z"
+    },
+    {
+      "url": "https://searx.space/",
+      "date": "2026-11-01",
+      "proved": "the public instance list holds 72 online instances",
+      "capture": "sha256:1d6ec82cb1759a7da935b8f668d4369a3c1c36f78861452fd137c0493f5dc9b2",
+      "quote": "72 online instances"
+    },
+    {
+      "url": "https://docs.searxng.org/dev/search_api.html",
+      "date": "2026-11-01",
+      "proved": "an instance answers a request for a format that its settings do not enable with 403",
+      "capture": "sha256:b94236c6ee250d24f13bebf011986538fcf9101c9966eb2480dc01ad7e12dc6c",
+      "quote": null
+    },
+    {
+      "url": "https://docs.searxng.org/src/searx.botdetection.html",
+      "date": "2026-11-01",
+      "proved": "the limiter's Accept check classes a request as a bot when its Accept header does not contain text/html",
+      "capture": "sha256:7b9d93dc7a959f6a0fb434795fa12c5f564758f5e90a3eadfe47ffdd67f6f19e",
+      "quote": "The `http_accept` method evaluates a request as the request of a bot if the ... did not contain `text/html`"
+    },
+    {
+      "url": "https://docs.searxng.org/src/searx.botdetection.html",
+      "date": "2026-11-01",
+      "proved": "the limiter's User-Agent check matches a bot list that names curl, wget and python-requests",
+      "capture": "sha256:7b9d93dc7a959f6a0fb434795fa12c5f564758f5e90a3eadfe47ffdd67f6f19e",
+      "quote": "(unknown|[Cc][Uu][Rr][Ll]|[wW]get|Scrapy|splash|JavaFX|FeedFetcher|python-requests|Go-http-client|Java"
+    },
+    {
+      "url": "https://github.com/TecharoHQ/anubis/blob/main/docs/docs/design/how-anubis-works.mdx",
+      "date": "2026-11-02",
+      "proved": "Anubis checks with a proof-of-work challenge that a client is a modern browser",
+      "capture": "sha256:e4494224f07faa66c86eabbc4782cf2c4696751b3bdcb4106bb7234e0ed08996",
+      "quote": "Anubis uses a proof-of-work challenge to ensure that clients are using a modern browser and are able to calculate SHA-256 checksums."
+    },
+    {
+      "url": "https://baresearch.org/search?q=wikipedia&format=json",
+      "date": "2026-11-01",
+      "proved": "baresearch.org, a listed instance, answers a format=json query with an Anubis challenge page",
+      "capture": "sha256:7e9bb971b39eb5e1bc2badcc13ce06f92bbb72924f99c8e33623c6ebe6a76bcb",
+      "quote": "This website is running Anubis version `v1.25.0`."
+    },
+    {
+      "url": "https://baresearch.org/search?q=wikipedia&format=json",
+      "date": "2026-11-01",
+      "proved": "the Anubis challenge page states that it requires modern JavaScript features",
+      "capture": "sha256:7e9bb971b39eb5e1bc2badcc13ce06f92bbb72924f99c8e33623c6ebe6a76bcb",
+      "quote": "Please note that Anubis requires the use of modern JavaScript features that plugins like JShelter will disable."
+    },
+    {
+      "url": "probe:https://search.inetol.net/search?q=wikipedia&format=json",
+      "date": "2026-11-02",
+      "proved": "search.inetol.net answered a scripted format=json query with a Substation security-check page that says it requires JavaScript",
+      "capture": "sha256:ca905b2ccb3f971ae5d3540bb6e78f2053a226e309e33b52db678b687f6b4560",
+      "quote": "This page requires JavaScript to be enabled."
+    },
+    {
+      "url": "probe:https://search.utilibre.org/search?q=wikipedia&format=json",
+      "date": "2026-11-02",
+      "proved": "search.utilibre.org answered a scripted format=json query with 429 and the 17-byte body Too Many Requests, the text of the SearXNG default refusal",
+      "capture": "sha256:3850dfdbf4489250268b5f0740240a9f4445e7c5c29e1d03aa0c5446808d7507",
+      "quote": "Too Many Requests"
+    },
+    {
+      "url": "probe:https://search.ctq.ro/search?q=wikipedia&format=json",
+      "date": "2026-11-02",
+      "proved": "search.ctq.ro answered a scripted format=json query with HTTP 418 and a script that sets a cookie and reloads the page, with no results",
+      "capture": "sha256:8d04bdee5f9551b78cebe2f6dc0fdfca020a18e7ad28280b16871f833f0ba820",
+      "quote": "document.cookie = \"Yogsototh_opens_the_door=1; Path=/;\"; window.location.reload();"
+    },
+    {
+      "url": "probe:https://www.isci.si/search?q=wikipedia&format=json",
+      "date": "2026-11-01",
+      "proved": "www.isci.si answered a scripted format=json query with 429 Too Many Requests and no JSON",
+      "capture": "sha256:2199605470af9ffa3b013ab4a5e460f8ec9c9f591e9a0622bf6029476bfbf942",
+      "quote": "\"status\": 429"
+    },
+    {
+      "url": "https://docs.searxng.org/dev/search_api.html",
+      "date": "2026-11-01",
+      "proved": "the SearXNG search API takes GET and POST requests on / and /search",
+      "capture": "sha256:b94236c6ee250d24f13bebf011986538fcf9101c9966eb2480dc01ad7e12dc6c",
+      "quote": "Two endpoints, `/` and `/search`, are supported for both GET and POST methods."
     }
   ],
   "notes": "Every public instance probed answered format=json with 429, a refusal or a challenge page, and none answered JSON; a plain HTML query was refused with 429 too. The public instances are not a search API.",

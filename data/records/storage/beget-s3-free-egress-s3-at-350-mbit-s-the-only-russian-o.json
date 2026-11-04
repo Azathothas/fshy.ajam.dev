@@ -5,17 +5,17 @@
   "url": "https://beget.com/ru/cloud/storage",
   "category": "object-storage",
   "free_tier": {
-    "stated": "₽0.07 per GB per DAY (≈ ₽2.10/GB/month), billed daily on actual usage, unlimited buckets. Avail 99.98 %, three copies across servers.",
-    "unit": "unlimited",
-    "metered_on": "unstated",
+    "stated": "No free allowance: pay-as-you-go at 0.07 RUB per 1 GB per day on used space; unlimited buckets, unlimited traffic on a 350 Mbit/s port, free GET/POST/PUT requests; stored volume is not capped.",
+    "unit": "none",
+    "metered_on": "none",
     "source_url": "https://beget.com/ru/cloud/storage",
     "read_on": "2026-10-21",
     "notes": null
   },
   "per_object_cap": {
-    "stated": "not stated",
+    "stated": "50 TB maximum object size; 5 GB maximum per upload request; at most 10000 segments in a segmented upload.",
     "source_url": "https://beget.com/ru/cloud/storage",
-    "notes": "not stated"
+    "notes": "stated in the vendor's technical-limits list (control-panel guide)"
   },
   "retention": {
     "stated": "not stated",
@@ -44,17 +44,27 @@
       "kind": "per-ip-shaping",
       "value": "3.8 TB/day",
       "source": "https://beget.com/ru/cloud/storage"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "50 TB per object; 5 GB per upload request",
+      "source": "https://beget.com/ru/kb/manual/obektnoe-hranilishche-s3-v-beget"
+    },
+    {
+      "kind": "request-rate",
+      "value": "2000 requests per second per account",
+      "source": "https://beget.com/ru/kb/manual/obektnoe-hranilishche-s3-v-beget"
     }
   ],
-  "limits_note": null,
+  "limits_note": "350 Mbit/s is the port cap, about 3.8 TB per day (derived), so serving 1 TiB per day fits with no burst; stored volume is not capped and billing is per GB per day.",
   "identity_cost": {
     "kind": "card",
-    "detail": "card",
+    "detail": "unverified: behind a sign-up; the product page does not state what registration requires (payment card, phone).",
     "country": null
   },
   "reliability_note": "Long-running Russian shared host with 24/7 support and 99.98 % stated availability. No throttling evidence found. The commercial risk is FX: rouble pricing on a foreign card will carry the same discrimination pattern seen at Yandex.",
-  "confidence": "reported",
-  "confidence_note": null,
+  "confidence": "documented",
+  "confidence_note": "Re-read on 2026-11-03 from vendor pages: https://beget.com/ru/cloud/storage (0.07 RUB per 1 GB per day; 350 Mbit/s port; unlimited buckets; availability 99,98%), https://beget.com/ru/kb/manual/obektnoe-hranilishche-s3-v-beget (50 TB object, 5 GB per upload request, 2000 requests per second, unlimited volume) and https://beget.com/ru/publichnaya-oferta (acceptance is by registering on the site; registration fields not listed). Registration fields stay unverified.",
   "evidence": [
     {
       "url": "https://beget.com/ru/cloud/storage",
@@ -65,11 +75,81 @@
       "url": "https://serverdelo.ru/rejtingi/s3-hranilishche/",
       "date": "2026-10-21",
       "proved": "«Цены сверены с сайтами провайдеров 3 октября 2026 года»; table row «Beget | 2,10 ₽ (0,07 ₽ в день) | бесплатно, скорость до 350 Мбит/с | бесплатно»; lead «Скачивать бесплатно можно у Beget и Рег.облака»"
+    },
+    {
+      "url": "https://beget.com/ru/cloud/storage",
+      "date": "2026-11-03",
+      "proved": "storage is billed at 0.07 RUB per 1 GB per day on used space",
+      "capture": "sha256:16375d21d4c08a9beb7fb6965c324e51ef8e36a0a534349312c867976d053bbb",
+      "quote": "Стоимость хранения 0,07 ₽ за каждый 1 ГБ / день."
+    },
+    {
+      "url": "https://beget.com/ru/kb/manual/obektnoe-hranilishche-s3-v-beget",
+      "date": "2026-11-03",
+      "proved": "the maximum object size is 50 TB",
+      "capture": "sha256:8eb42555ec2678db62dd1ea8b426325faaf5ffe9e93b44c24235a210ae1bd736",
+      "quote": "Максимальный размер объекта – 50 ТБ"
+    },
+    {
+      "url": "https://beget.com/ru/kb/manual/obektnoe-hranilishche-s3-v-beget",
+      "date": "2026-11-03",
+      "proved": "one upload request carries at most 5 GB",
+      "capture": "sha256:8eb42555ec2678db62dd1ea8b426325faaf5ffe9e93b44c24235a210ae1bd736",
+      "quote": "Максимальный размер данных для загрузки за один запрос – 5 ГБ"
+    },
+    {
+      "url": "https://beget.com/ru/kb/manual/obektnoe-hranilishche-s3-v-beget",
+      "date": "2026-11-03",
+      "proved": "the account is limited to 2000 S3 API requests per second",
+      "capture": "sha256:8eb42555ec2678db62dd1ea8b426325faaf5ffe9e93b44c24235a210ae1bd736",
+      "quote": "Максимальное количество HTTP-запросов к S3 API для аккаунта – 2000 запросов в секунду"
+    },
+    {
+      "url": "https://beget.com/ru/cloud/storage",
+      "date": "2026-11-03",
+      "proved": "the port bandwidth is 350 Mbit/s",
+      "capture": "sha256:16375d21d4c08a9beb7fb6965c324e51ef8e36a0a534349312c867976d053bbb",
+      "quote": "Полоса 350 Мбит/с"
+    },
+    {
+      "url": "https://beget.com/ru/publichnaya-oferta",
+      "date": "2026-11-03",
+      "proved": "the offer is accepted by registering on the site; its fields are not stated",
+      "capture": "sha256:e8809c373b8c429bfb2f9b196d8c06e987197a43a299b11c1bd300ce7a2e6e72",
+      "quote": "Акцепт Оферты — регистрация на сайте и получение прав доступа к собственным ресурсам Исполнителя"
+    },
+    {
+      "url": "https://beget.com/ru/kb/manual/obektnoe-hranilishche-s3-v-beget",
+      "date": "2026-11-03",
+      "proved": "stored volume is not capped",
+      "capture": "sha256:8eb42555ec2678db62dd1ea8b426325faaf5ffe9e93b44c24235a210ae1bd736",
+      "quote": "Объем хранилища – не ограничено"
+    },
+    {
+      "url": "https://beget.com/ru/cloud/storage",
+      "date": "2026-11-03",
+      "proved": "the number of buckets is unlimited",
+      "capture": "sha256:16375d21d4c08a9beb7fb6965c324e51ef8e36a0a534349312c867976d053bbb",
+      "quote": "Количество создаваемых бакетов при этом не ограничено."
+    },
+    {
+      "url": "https://beget.com/ru/cloud/storage",
+      "date": "2026-11-03",
+      "proved": "unlimited traffic on a 350 Mbit/s port, free GET/POST/PUT requests",
+      "capture": "sha256:16375d21d4c08a9beb7fb6965c324e51ef8e36a0a534349312c867976d053bbb",
+      "quote": "Полоса 350 Мбит/с"
+    },
+    {
+      "url": "https://beget.com/ru/cloud/storage",
+      "date": "2026-11-03",
+      "proved": "the vendor page states availability of 99,98%",
+      "capture": "sha256:16375d21d4c08a9beb7fb6965c324e51ef8e36a0a534349312c867976d053bbb",
+      "quote": "Доступность 99,98%"
     }
   ],
-  "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
-  "price_per_tb_month": "$26.04/TB/mo at both 5 TB and 20 TB (₽0.07/GB/day × 30 × 1024 GB × 0.012111), egress $0 and requests $0. Compare OVH One-Zone at $9.34/TB/mo with the same free-egress structure — Beget is 2.8× the price for geography.",
+  "verdict": "paid-only",
+  "verified_at": "2026-11-03T15:04:17.075Z",
+  "price_per_tb_month": "0.07 RUB per GB per day, 2.10 RUB per GB per month at 30 days (2,100 RUB per 1000 GB, 2,150.4 RUB per 1024 GB); egress and GET/POST/PUT requests are free; USD conversion unverified: no exchange rate was captured.",
   "notes": "₽0.07 per GB per DAY (≈ ₽2.10/GB/month), billed daily on actual usage, unlimited buckets. Avail 99.98 %, three copies across servers.",
   "extras": {
     "dead_end": {

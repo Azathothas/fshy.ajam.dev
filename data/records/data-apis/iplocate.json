@@ -42,6 +42,16 @@
       "kind": "volume-quota",
       "value": "1,000 requests a day with a free key",
       "source": "https://www.iplocate.io/pricing"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "50 requests a day per IP address without an API key; the day resets at 00:00:00 UTC",
+      "source": "https://www.iplocate.io/docs/getting-started/quota-rate-limits"
+    },
+    {
+      "kind": "request-rate",
+      "value": "100 requests per second from a single IP address, within the plan limits",
+      "source": "https://www.iplocate.io/docs/getting-started/quota-rate-limits"
     }
   ],
   "binding": "volume-quota",
@@ -50,7 +60,7 @@
     "detail": "email address and password, or GitHub or Google sign-in; no credit card; the databases need no sign-up",
     "country": null
   },
-  "reliability_note": "no throttling is stated within the daily quota",
+  "reliability_note": "a rate of up to 100 requests per second per IP address applies within the plan limits, and a request past a quota answers HTTP 429",
   "confidence": "documented",
   "confidence_note": "the pricing page, the free-database docs, the GitHub repository and the signup page were quoted on 2026-10-30; a keyless lookup answered HTTP 200 with x-ratelimit-limit 50 and a ranged read of the MMDB on GitHub answered HTTP 206.",
   "evidence": [
@@ -151,10 +161,45 @@
       "proved": "a keyless call answered with privacy fields",
       "capture": "sha256:82bec9db539bd6b0ae53e2c728f37d80f97ac42e993a716b6e20d4f609d5e248",
       "quote": "\"is_vpn\":false"
+    },
+    {
+      "url": "https://www.iplocate.io/docs/getting-started/quota-rate-limits",
+      "date": "2026-11-02",
+      "proved": "the quota with no API key is 50 requests per day by IP address, and the daily quota resets at 00:00:00 UTC each day",
+      "capture": "sha256:e4be64a9877dac975282c7e89b151a659bfcf0f69b389e29de2241df7186d102",
+      "quote": "| With no API key | 50 requests per day by IP address |"
+    },
+    {
+      "url": "https://www.iplocate.io/docs/getting-started/quota-rate-limits",
+      "date": "2026-11-02",
+      "proved": "a single IP address may send up to 100 requests per second within the plan limits",
+      "capture": "sha256:e4be64a9877dac975282c7e89b151a659bfcf0f69b389e29de2241df7186d102",
+      "quote": "You can make up to 100 requests per second from a single IP address (within your plan limits)."
+    },
+    {
+      "url": "https://www.iplocate.io/docs/getting-started/quota-rate-limits",
+      "date": "2026-11-02",
+      "proved": "a single IP address may send up to 100 requests per second within the plan limits, and a request past a quota gets a 429 error",
+      "capture": "sha256:e4be64a9877dac975282c7e89b151a659bfcf0f69b389e29de2241df7186d102",
+      "quote": "You can make up to 100 requests per second from a single IP address (within your plan limits)."
+    },
+    {
+      "url": "https://iplocate.io/api/lookup/8.8.8.8",
+      "date": "2026-11-02",
+      "proved": "a keyless lookup sent x-ratelimit-limit 50 and x-ratelimit-reset 1793664000, which is 2026-11-03T00:00:00Z, the next UTC midnight",
+      "capture": "sha256:08a019beeb253d042ac03d3732ae3add7519ae8bb48ff63e9c29be256148a5fa",
+      "quote": "x-ratelimit-reset: 1793664000"
+    },
+    {
+      "url": "https://www.iplocate.io/pricing",
+      "date": "2026-11-02",
+      "proved": "the free plan is 1,000 requests per day with no credit card",
+      "capture": "sha256:b2c26e1c5dea34e105838810e6e08a6446ed459e1e080eaa0763a51a6caf7ea8",
+      "quote": "1,000 requests per day, free forever. No credit card required."
     }
   ],
   "verdict": "qualifies",
-  "verified_at": "2026-10-31T06:24:05.368Z",
+  "verified_at": "2026-11-03T00:27:33.116Z",
   "notes": "Free requests: 1,000 a day with a key; a keyless call carried a 50-request limit. Rate limit: none stated within the quota. Bulk path: free daily IP to Country and IP to ASN files on GitHub.",
   "extras": {
     "bulk_path": "free IP to Country and IP to ASN databases (CSV, MMDB) on GitHub, daily, no sign-up",

@@ -1,0 +1,366 @@
+{
+  "topic": "coding-subs",
+  "slug": "charm-hyper",
+  "provider": "Charm Hyper",
+  "url": "https://hyper.charm.land/",
+  "category": "coding subscription",
+  "free_tier": {
+    "stated": "no free plan: 'We've retired the monthly free Hypercredit allowance.' Entry is Shred Diet at USD 10 a month for 180 Hypercredits a week (about USD 9.00 of inference), or prepaid Hypercredits from USD 5. Personal ladder: Shred Diet USD 10 (180 a week), Shred Classic USD 20 (250), Shred Energy USD 50 (400), Shred Nitro USD 100 (690), Shred Animal USD 200 (1,200)",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://hyper.charm.land/docs/plans-billing.md",
+    "read_on": "2026-11-02",
+    "notes": "allowances are in Hypercredits, each worth USD 0.05 of inference at the models' listed per-token prices, so they are spent per token and not per request; Business plans for teams cost USD 30 to USD 220 per user a month for the same allowances as the five Shred tiers"
+  },
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "Shred (Personal) plans are not zero-data-retention: prompts and responses are retained and used to train the vendor's models, and are not deleted on account closure. Prepaid Hypercredits and Business plans are zero-data-retention: content is not stored by default and is held up to 30 days if temporarily retained; request metadata (timestamps, model identifiers, token counts, billing records) is kept",
+    "days": null,
+    "source_url": "https://hyper.charm.land/legal/privacy-policy"
+  },
+  "egress": {
+    "terms": "not applicable",
+    "metered": false
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "an HTTP API at https://hyper.charm.land/v1 with the OpenAI chat-completions (/v1/chat/completions), OpenAI responses (/v1/responses) and Anthropic messages (/v1/messages) protocols; Bearer key beginning sk-hyper-, with x-api-key also accepted on /v1/messages; GET /v1/models needs no key and GET /v1/credits returns the Hypercredit balance",
+  "endpoint": "https://hyper.charm.land/v1",
+  "tooling": "any OpenAI-compatible or Anthropic-compatible client; the vendor documents Crush (first-class, device-code sign-in or HYPER_API_KEY), Claude Code (ANTHROPIC_BASE_URL), Codex (responses wire API in config.toml), OpenCode (Connect Provider), Pi (npm:@charmland/pi-hyper-provider), Zed and the Go library Fantasy",
+  "chaining": "one key serves every OpenAI- or Anthropic-compatible agent; subscription Hypercredits are spent first and prepaid Hypercredits, which are zero-data-retention and carry no concurrency limit, take over, so a Shred plan plus a prepaid top-up covers bursts past the weekly allowance",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "Shred Diet 180 Hypercredits a week (about USD 9.00 of inference), refreshed Sunday 00:00 UTC with no roll-over; Classic 250, Energy 400, Nitro 690, Animal 1,200",
+      "source": "https://hyper.charm.land/docs/plans-billing.md"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "rolling five-hour window: 100 Hypercredits on Shred Diet, 150, 250, 400 and 700 on the higher Shred tiers",
+      "source": "https://hyper.charm.land/docs/plans-billing.md"
+    },
+    {
+      "kind": "request-rate",
+      "value": "concurrent requests: 2 on Shred Diet, 3, 4, 8 and 12 on the higher Shred tiers; prepaid Hypercredits carry no concurrency limit",
+      "source": "https://hyper.charm.land/docs/plans-billing.md"
+    },
+    {
+      "kind": "request-rate",
+      "value": "HTTP 429 rate_limit_error when a rate limit is exceeded and HTTP 402 billing_error when Hypercredits run out; the per-model request rate is not published",
+      "source": "https://hyper.charm.land/docs/api/openai-chat-completions.md"
+    }
+  ],
+  "binding": "volume-quota",
+  "binding_note": "for sustained use the weekly Hypercredit allowance runs out first; the five-hour window and the 2-request concurrency of Shred Diet bind bursts",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "sign-up is 'Sign up with Google, GitHub, or email' (the app offers Google and GitHub buttons and an email and password form, loads a Cloudflare Turnstile check, and sends an email verification link); the account holder must be 18 or older. The free allowance is retired, so use needs a Shred plan or prepaid Hypercredits from USD 5, paid through Stripe, which collects payment card details and a billing address. The app also has a waitlist screen ('Your account is pending approval'); whether new accounts are waitlisted now, and which payment methods checkout accepts: unverified: behind a sign-up",
+    "country": null
+  },
+  "reliability_note": "the plan structure has been replaced: subscribers on the original Shred plan move to Pay As You Go at the end of the billing cycle and the monthly free allowance is retired; a rate limit answers 429 and an empty balance 402; the sign-up app can hold a new account on a waitlist",
+  "confidence": "documented",
+  "confidence_note": "plans, allowances, retention, protocols and sign-up options are quoted from first-party pages and the live sign-in app, and the model list is a probe of the public endpoint, all read on 2026-11-02. The checkout payment methods, waitlisting of new accounts and the per-model request rate are unverified: behind a sign-up.",
+  "evidence": [
+    {
+      "url": "https://hyper.charm.land/docs/plans-billing.md",
+      "date": "2026-11-02",
+      "proved": "Shred Diet is USD 10 a month for 180 Hypercredits a week (about USD 9.00 of inference), 100 per five hours and 2 concurrent requests",
+      "capture": "sha256:c744c3a69dece055a87c6f3fac13322665d925c5e413cf215fd688984f6e75ab",
+      "quote": "| Shred Diet | $10 / month | 180 | ≈ $9.00 | 100 | 2 |"
+    },
+    {
+      "url": "https://hyper.charm.land/docs/plans-billing.md",
+      "date": "2026-11-02",
+      "proved": "Shred Classic is USD 20 a month for 250 Hypercredits a week, 150 per five hours and 3 concurrent requests",
+      "capture": "sha256:c744c3a69dece055a87c6f3fac13322665d925c5e413cf215fd688984f6e75ab",
+      "quote": "| Shred Classic | $20 / month | 250 | ≈ $12.50 | 150 | 3 |"
+    },
+    {
+      "url": "https://hyper.charm.land/docs/plans-billing.md",
+      "date": "2026-11-02",
+      "proved": "Shred Energy is USD 50 a month for 400 Hypercredits a week, 250 per five hours and 4 concurrent requests",
+      "capture": "sha256:c744c3a69dece055a87c6f3fac13322665d925c5e413cf215fd688984f6e75ab",
+      "quote": "| Shred Energy | $50 / month | 400 | ≈ $20.00 | 250 | 4 |"
+    },
+    {
+      "url": "https://hyper.charm.land/docs/plans-billing.md",
+      "date": "2026-11-02",
+      "proved": "Shred Nitro is USD 100 a month for 690 Hypercredits a week, 400 per five hours and 8 concurrent requests",
+      "capture": "sha256:c744c3a69dece055a87c6f3fac13322665d925c5e413cf215fd688984f6e75ab",
+      "quote": "| Shred Nitro | $100 / month | 690 | ≈ $34.50 | 400 | 8 |"
+    },
+    {
+      "url": "https://hyper.charm.land/docs/plans-billing.md",
+      "date": "2026-11-02",
+      "proved": "Shred Animal is USD 200 a month for 1,200 Hypercredits a week, 700 per five hours and 12 concurrent requests",
+      "capture": "sha256:c744c3a69dece055a87c6f3fac13322665d925c5e413cf215fd688984f6e75ab",
+      "quote": "| Shred Animal | $200 / month | 1,200 | ≈ $60.00 | 700 | 12 |"
+    },
+    {
+      "url": "https://hyper.charm.land/docs/plans-billing.md",
+      "date": "2026-11-02",
+      "proved": "the team ladder starts at USD 30 per user a month with the same allowances as Shred Diet",
+      "capture": "sha256:c744c3a69dece055a87c6f3fac13322665d925c5e413cf215fd688984f6e75ab",
+      "quote": "| Business Casual | $30 / month / user | 180 | ≈ $9.00 | 100 | 2 |"
+    },
+    {
+      "url": "https://hyper.charm.land/docs/plans-billing.md",
+      "date": "2026-11-02",
+      "proved": "the team ladder ends at USD 220 per user a month with the same allowances as Shred Animal",
+      "capture": "sha256:c744c3a69dece055a87c6f3fac13322665d925c5e413cf215fd688984f6e75ab",
+      "quote": "| Business Champagne | $220 / month / user | 1,200 | ≈ $60.00 | 700 | 12 |"
+    },
+    {
+      "url": "https://hyper.charm.land/docs/plans-billing.html",
+      "date": "2026-11-02",
+      "proved": "Pay As You Go sells prepaid Hypercredits from USD 5 with no rate limits",
+      "capture": "sha256:0040359a9631f672bbf9ee7c3de42ab40eaf8fb5fe563a3dbc34e53697825a98",
+      "quote": "There is no subscription: you spend only the prepaid Hypercredits you buy, starting at $5, and you get all available models, the Prism routing model, ZDR, and no rate limits."
+    },
+    {
+      "url": "https://hyper.charm.land/docs/plans-billing.html",
+      "date": "2026-11-02",
+      "proved": "every plan reaches the whole model roster",
+      "capture": "sha256:0040359a9631f672bbf9ee7c3de42ab40eaf8fb5fe563a3dbc34e53697825a98",
+      "quote": "Every plan includes all available models and the Prism routing model."
+    },
+    {
+      "url": "https://hyper.charm.land/docs/plans-billing.html",
+      "date": "2026-11-02",
+      "proved": "the weekly allowance refreshes Sunday 00:00 UTC and a five-hour rolling window applies",
+      "capture": "sha256:0040359a9631f672bbf9ee7c3de42ab40eaf8fb5fe563a3dbc34e53697825a98",
+      "quote": "Subscription Hypercredits refresh every week on Sunday at 00:00 UTC, and the five-hour rolling window means part of your weekly allocation becomes available again over time."
+    },
+    {
+      "url": "https://hyper.charm.land/docs/plans-billing.md",
+      "date": "2026-11-02",
+      "proved": "Shred (Personal) plans are not zero-data-retention",
+      "capture": "sha256:c744c3a69dece055a87c6f3fac13322665d925c5e413cf215fd688984f6e75ab",
+      "quote": "Personal plans are not ZDR (Zero Data Retention)."
+    },
+    {
+      "url": "https://hyper.charm.land/faq",
+      "date": "2026-11-02",
+      "proved": "Hyper has no free plan",
+      "capture": "sha256:c183ba6d8152850e3d310fb8ecd5c0d3533a0608ca36080e97da81d646b9a30c",
+      "quote": "We've retired the monthly free Hypercredit allowance."
+    },
+    {
+      "url": "https://hyper.charm.land/faq",
+      "date": "2026-11-02",
+      "proved": "prepaid credits are a separate balance from the subscription allowance",
+      "capture": "sha256:c183ba6d8152850e3d310fb8ecd5c0d3533a0608ca36080e97da81d646b9a30c",
+      "quote": "Prepaid Hypercredits are held separately from your subscription allowance."
+    },
+    {
+      "url": "https://hyper.charm.land/faq",
+      "date": "2026-11-02",
+      "proved": "prepaid Hypercredits never expire, are zero-data-retention and carry no concurrency limit",
+      "capture": "sha256:c183ba6d8152850e3d310fb8ecd5c0d3533a0608ca36080e97da81d646b9a30c",
+      "quote": "They never expire, always use ZDR, and aren't subject to concurrency limits. Go crazy."
+    },
+    {
+      "url": "https://hyper.charm.land/faq",
+      "date": "2026-11-02",
+      "proved": "the weekly allowance does not carry over",
+      "capture": "sha256:c183ba6d8152850e3d310fb8ecd5c0d3533a0608ca36080e97da81d646b9a30c",
+      "quote": "Unused subscription Hypercredits don't roll over to the following week."
+    },
+    {
+      "url": "https://hyper.charm.land/faq",
+      "date": "2026-11-02",
+      "proved": "Shred plans retain prompts and responses",
+      "capture": "sha256:c183ba6d8152850e3d310fb8ecd5c0d3533a0608ca36080e97da81d646b9a30c",
+      "quote": "Shred subscriptions don't include ZDR. Prompts and responses may be used to develop, train, and improve Charm's models."
+    },
+    {
+      "url": "https://hyper.charm.land/faq",
+      "date": "2026-11-02",
+      "proved": "subscribers on the original Shred plan are moved to Pay As You Go when the cycle ends",
+      "capture": "sha256:c183ba6d8152850e3d310fb8ecd5c0d3533a0608ca36080e97da81d646b9a30c",
+      "quote": "At the end of the billing cycle, you'll be switched to Pay As You Go, at which point you can choose a new plan."
+    },
+    {
+      "url": "https://hyper.charm.land/docs/",
+      "date": "2026-11-02",
+      "proved": "the API speaks the OpenAI and Anthropic protocols at https://hyper.charm.land/v1",
+      "capture": "sha256:595e192a9b02a4847b0cd0f0e30ff550b00a16a838d844cf303c6091c43afcd0",
+      "quote": "Hyper speaks OpenAI and Anthropic out of the box. Swap the base URL, drop in your key, and go:"
+    },
+    {
+      "url": "https://hyper.charm.land/docs/",
+      "date": "2026-11-02",
+      "proved": "sign-up takes a Google or GitHub login or an email address",
+      "capture": "sha256:595e192a9b02a4847b0cd0f0e30ff550b00a16a838d844cf303c6091c43afcd0",
+      "quote": "2. Sign up with Google, GitHub, or email."
+    },
+    {
+      "url": "https://hyper.charm.land/docs/api/authentication.md",
+      "date": "2026-11-02",
+      "proved": "the model list needs no key",
+      "capture": "sha256:300ceb66a87c76e1b8c4e35e39b4ec5d7e80d55c06a96afebc6582417fe8205b",
+      "quote": "The `/v1/models` endpoint is public and doesn't require an API key:"
+    },
+    {
+      "url": "https://hyper.charm.land/docs/models.md",
+      "date": "2026-11-02",
+      "proved": "Hypercredits are computed from token cost at USD 0.05 each",
+      "capture": "sha256:da8dd9f4c0c0fc2a51b0746e2a9716039edd28208a85bb4a700516966ad5e99c",
+      "quote": "computed based on total token cost with 1 Hypercredit equating to $0.05."
+    },
+    {
+      "url": "https://hyper.charm.land/docs/api/openai-chat-completions.md",
+      "date": "2026-11-02",
+      "proved": "a rate limit answers HTTP 429",
+      "capture": "sha256:0c599ff1b7005253e65643241d0f9cdf8893fb9f85c8ed71299357b94361cfb3",
+      "quote": "| 429 | `rate_limit_error` | Rate limit exceeded |"
+    },
+    {
+      "url": "https://hyper.charm.land/docs/api/openai-chat-completions.md",
+      "date": "2026-11-02",
+      "proved": "an empty balance answers HTTP 402",
+      "capture": "sha256:0c599ff1b7005253e65643241d0f9cdf8893fb9f85c8ed71299357b94361cfb3",
+      "quote": "| 402 | `billing_error` | Insufficient Hypercredits |"
+    },
+    {
+      "url": "https://hyper.charm.land/docs/api/openai-responses.md",
+      "date": "2026-11-02",
+      "proved": "/v1/responses speaks the OpenAI Responses protocol",
+      "capture": "sha256:ec8a2f002513c690fc04e8f05f5a1d0621b41e800e0721e659e7050d4bd4a8a7",
+      "quote": "OpenAI Responses API compatible endpoint. This is a standard pass-through."
+    },
+    {
+      "url": "https://hyper.charm.land/docs/api/anthropic-messages.md",
+      "date": "2026-11-02",
+      "proved": "/v1/messages speaks the Anthropic Messages protocol",
+      "capture": "sha256:c59484391cb94a5d83548462bb862cc2fcd0294b83bd3b189ad87f48f1a69d47",
+      "quote": "Anthropic Messages API compatible endpoint."
+    },
+    {
+      "url": "https://hyper.charm.land/docs/coding-agents/claude-code.md",
+      "date": "2026-11-02",
+      "proved": "Claude Code is pointed at Hyper with ANTHROPIC_BASE_URL",
+      "capture": "sha256:f322534f0d3a7290c2542ae151c3aacadead13a9cc0dc5fea4803b0307959972",
+      "quote": "\"ANTHROPIC_BASE_URL\": \"https://hyper.charm.land\","
+    },
+    {
+      "url": "https://hyper.charm.land/docs/coding-agents/codex.md",
+      "date": "2026-11-02",
+      "proved": "Codex reaches Hyper over the responses wire API",
+      "capture": "sha256:016707f18cc40a7c4996086b18db4d8b887a293efced7e097424def8915fe8e8",
+      "quote": "wire_api = \"responses\""
+    },
+    {
+      "url": "https://hyper.charm.land/docs/coding-agents/opencode.md",
+      "date": "2026-11-02",
+      "proved": "OpenCode lists Charm Hyper as a provider and takes the API key",
+      "capture": "sha256:841fcebe0da9cc21b3e78ece0c3a24d50e968bef7addab000699e52659f20560",
+      "quote": "3. Choose `Connect Provider` and then search for `Charm Hyper` to paste your"
+    },
+    {
+      "url": "https://hyper.charm.land/docs/coding-agents/pi.md",
+      "date": "2026-11-02",
+      "proved": "Pi reaches Hyper through a provider extension",
+      "capture": "sha256:7962b29e87616e4e6984010d2c0bf19f0afb6b464e2bff4346e2be3e239cd073",
+      "quote": "pi install npm:@charmland/pi-hyper-provider"
+    },
+    {
+      "url": "https://hyper.charm.land/docs/coding-agents/crush.html",
+      "date": "2026-11-02",
+      "proved": "Charm's own agent signs in to Hyper or reads HYPER_API_KEY",
+      "capture": "sha256:465e9aa587c0cc0318ed753f7129c5329743eae99e57892d295bfccab4f92e2c",
+      "quote": "Crush has first-class support for Hyper."
+    },
+    {
+      "url": "https://hyper.charm.land/legal/terms-of-service",
+      "date": "2026-11-02",
+      "proved": "registration needs an account holder aged 18 or older",
+      "capture": "sha256:795b6aa35427bccf71cca2a2e719bb4a917d0c395cad6b22d39ba8ddcc22e709",
+      "quote": "In order to use the Services, you must: (i) be age 18 or older, (ii) agree to this Agreement, (iii) create a valid Account, and (iv) have a suitable connection to the Internet."
+    },
+    {
+      "url": "https://hyper.charm.land/legal/terms-of-service",
+      "date": "2026-11-02",
+      "proved": "fees are paid through a third-party payment processor",
+      "capture": "sha256:795b6aa35427bccf71cca2a2e719bb4a917d0c395cad6b22d39ba8ddcc22e709",
+      "quote": "Payment of fees must be made through the third-party payment processing system indicated on the Services"
+    },
+    {
+      "url": "https://hyper.charm.land/legal/terms-of-service",
+      "date": "2026-11-02",
+      "proved": "request metadata is retained under zero data retention",
+      "capture": "sha256:795b6aa35427bccf71cca2a2e719bb4a917d0c395cad6b22d39ba8ddcc22e709",
+      "quote": "We may retain metadata about your requests, such as timestamps, model identifiers, token counts, and billing records, which does not include User Content."
+    },
+    {
+      "url": "https://hyper.charm.land/legal/privacy-policy",
+      "date": "2026-11-02",
+      "proved": "the account holds a name, an email address, a username and a password",
+      "capture": "sha256:439d054fdcd25bb358266dbeb5c6b3b169c4ca030e4a38fae08858c0ea0febe3",
+      "quote": "| Account Data | Name, email address, username, password |"
+    },
+    {
+      "url": "https://hyper.charm.land/legal/privacy-policy",
+      "date": "2026-11-02",
+      "proved": "paying collects card details and a billing address, processed by Stripe",
+      "capture": "sha256:439d054fdcd25bb358266dbeb5c6b3b169c4ca030e4a38fae08858c0ea0febe3",
+      "quote": "| Payment Data | Payment card details, billing address (processed securely by Stripe) |"
+    },
+    {
+      "url": "https://hyper.charm.land/legal/privacy-policy",
+      "date": "2026-11-02",
+      "proved": "zero-data-retention content is not stored by default and held up to 30 days at most",
+      "capture": "sha256:439d054fdcd25bb358266dbeb5c6b3b169c4ca030e4a38fae08858c0ea0febe3",
+      "quote": "| Content Data (Service Plans with ZDR; prepaid Hypercredits) | Not stored by default"
+    },
+    {
+      "url": "https://hyper.charm.land/legal/privacy-policy",
+      "date": "2026-11-02",
+      "proved": "non-ZDR plan content is kept for training and survives account closure",
+      "capture": "sha256:439d054fdcd25bb358266dbeb5c6b3b169c4ca030e4a38fae08858c0ea0febe3",
+      "quote": "| Content Data (Service Plans without ZDR) | As long as needed for Model Training; not deleted on account closure | Model Training (see Section 2) |"
+    },
+    {
+      "url": "https://hyper.charm.land/legal/privacy-policy",
+      "date": "2026-11-02",
+      "proved": "outside the United States a Shred plan needs a separate consent checkbox at checkout",
+      "capture": "sha256:439d054fdcd25bb358266dbeb5c6b3b169c4ca030e4a38fae08858c0ea0febe3",
+      "quote": "you may select a Service Plan without ZDR only if you consent to Model Training by checking a separate consent checkbox at checkout."
+    },
+    {
+      "url": "https://hyper.charm.land/app/assets/index-C7JiyLcS.js",
+      "date": "2026-11-02",
+      "proved": "the sign-in app offers GitHub sign-in (and Google sign-in beside it)",
+      "capture": "sha256:2b91cefc4f91f90b282f0e0e9601f2978ea4d122064d9748ad36a60af1be50fd",
+      "quote": "Continue with GitHub"
+    },
+    {
+      "url": "https://hyper.charm.land/app/assets/index-C7JiyLcS.js",
+      "date": "2026-11-02",
+      "proved": "the app has a waitlist state for new accounts",
+      "capture": "sha256:2b91cefc4f91f90b282f0e0e9601f2978ea4d122064d9748ad36a60af1be50fd",
+      "quote": "Thanks for signing up. Your account is pending approval. We'll let you know when it's been activated."
+    },
+    {
+      "url": "https://hyper.charm.land/app/assets/index-C7JiyLcS.js",
+      "date": "2026-11-02",
+      "proved": "the sign-in calls carry a Cloudflare Turnstile token",
+      "capture": "sha256:2b91cefc4f91f90b282f0e0e9601f2978ea4d122064d9748ad36a60af1be50fd",
+      "quote": "?cf_turnstile_response="
+    },
+    {
+      "url": "probe:https://hyper.charm.land/v1/models",
+      "date": "2026-11-02",
+      "proved": "the public Hyper model list answered 200 with 23 model ids, among them kimi-k3, glm-5.3, deepseek-v4.1-flash, qwen3.8-max and gpt-oss-120b, each with per-million-token USD prices and a context window",
+      "capture": "sha256:e61a291612da3db21563877d94be064a3799214ef47d7eaed563e428ef958969",
+      "quote": "\"id\": \"kimi-k3\""
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-11-02T15:23:26.114Z",
+  "notes": "Hosted service from Charm, the maker of Crush. Hyper serves open-weight models itself (23 model ids on the public list, with context windows up to 1,048,576 tokens and USD prices per million tokens, for example deepseek-v4.1-flash at 0.33 input, 1.31 output and 0.03 cached input, kimi-k3 at 3.2664 input and 16.332 output), plus the routing model Prism. Entry plan Shred Diet is USD 10 a month, under USD 20. Pay As You Go has no subscription and no rate limits; Enterprise (dedicated instances, SAML SSO, bring-your-own keys) is contact-sales. Outside the United States a Shred plan is sold only after a separate training-consent checkbox at checkout; prepaid Hypercredits and Business plans need none."
+}

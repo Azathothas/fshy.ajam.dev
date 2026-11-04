@@ -1,0 +1,124 @@
+{
+  "topic": "data-apis",
+  "slug": "exchangerate-api-open",
+  "provider": "ExchangeRate-API (open access endpoint)",
+  "url": "https://www.exchangerate-api.com/docs/free",
+  "category": "currency exchange rate API, keyless open access",
+  "tier": "Open API (no key)",
+  "free_tier": {
+    "stated": "Open access API with no key: GET https://open.er-api.com/v6/latest/USD, rates updated once per day, rate limited per IP address.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://www.exchangerate-api.com/docs/free",
+    "read_on": "2026-11-02",
+    "notes": "The page names no request count and no per-minute number. Requesting once every 24 hours needs no further reading, and one request an hour per server never meets the limit. A rate limited IP address receives HTTP 429 for 20 minutes."
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "bytes": null,
+    "source_url": "https://www.exchangerate-api.com/docs/free",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not metered in bytes; the per-IP rate limit bounds what a caller can pull",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.exchangerate-api.com/docs/free"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "GET https://open.er-api.com/v6/latest/USD returns JSON with all supported currencies against the base",
+  "endpoint": "https://open.er-api.com/v6/latest/USD",
+  "tooling": "curl or any HTTP client",
+  "chaining": "A daily table of all currencies with no sign-up; cache it for 24 hours. Pair this with data-apis/exchangerate-api when a key is acceptable.",
+  "limits": [
+    {
+      "kind": "per-ip-shaping",
+      "value": "a rate limit per IP address with no published number; a limited address receives HTTP 429 for 20 minutes",
+      "source": "https://www.exchangerate-api.com/docs/free"
+    }
+  ],
+  "limits_note": "Update rate: once per day. Bulk path: none; the page asks to cache the daily table.",
+  "binding": "per-ip-shaping",
+  "binding_note": "The only limit is the per-IP shaping with no published threshold; one request an hour never meets it.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No key and no account.",
+    "country": null
+  },
+  "reliability_note": "A rate limited IP address receives HTTP 429 and is let through again after 20 minutes.",
+  "confidence": "documented",
+  "confidence_note": "Limits and license are quoted from the open access docs page. One keyless GET answered HTTP 200 with a success body; the rate threshold was not measured.",
+  "evidence": [
+    {
+      "url": "https://www.exchangerate-api.com/docs/free",
+      "date": "2026-11-02",
+      "proved": "the open API needs no key",
+      "capture": "sha256:69f1aae1c425c41498f1c91b334bc951cde537ebc28355020b7f502d45987731",
+      "quote": "- No API Key"
+    },
+    {
+      "url": "https://www.exchangerate-api.com/docs/free",
+      "date": "2026-11-02",
+      "proved": null,
+      "capture": "sha256:69f1aae1c425c41498f1c91b334bc951cde537ebc28355020b7f502d45987731",
+      "quote": null
+    },
+    {
+      "url": "https://www.exchangerate-api.com/docs/free",
+      "date": "2026-11-02",
+      "proved": "the open API updates once per day",
+      "capture": "sha256:69f1aae1c425c41498f1c91b334bc951cde537ebc28355020b7f502d45987731",
+      "quote": "Updates Once Per Day"
+    },
+    {
+      "url": "https://www.exchangerate-api.com/docs/free",
+      "date": "2026-11-02",
+      "proved": "one request an hour never meets the rate limit",
+      "capture": "sha256:69f1aae1c425c41498f1c91b334bc951cde537ebc28355020b7f502d45987731",
+      "quote": "If you can't keep a cached response for that long, you could still request once every hour and never get rate limited."
+    },
+    {
+      "url": "https://www.exchangerate-api.com/docs/free",
+      "date": "2026-11-02",
+      "proved": "a limited IP address gets 429 for 20 minutes",
+      "capture": "sha256:69f1aae1c425c41498f1c91b334bc951cde537ebc28355020b7f502d45987731",
+      "quote": "Rate limited IP's will receive HTTP code 429 responses. After 20 minutes the rate limit will finish and new requests will be allowed through."
+    },
+    {
+      "url": "https://www.exchangerate-api.com/docs/free",
+      "date": "2026-11-02",
+      "proved": "re-distribution is not",
+      "capture": "sha256:69f1aae1c425c41498f1c91b334bc951cde537ebc28355020b7f502d45987731",
+      "quote": "You're welcome to cache the data we respond with and to use it for either personal or commercial currency conversion purposes. You are, however, not allowed to re-distribute it."
+    },
+    {
+      "url": "probe:https://open.er-api.com/v6/latest/USD",
+      "date": "2026-11-03",
+      "proved": "a keyless GET of the open endpoint answered HTTP 200",
+      "capture": "sha256:245474e71237a67cd9cd971635febc81b2d3713c2b8f8cdf10cbd9519b37de6f",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:https://open.er-api.com/v6/latest/USD",
+      "date": "2026-11-03",
+      "proved": "the keyless answer body reports success",
+      "capture": "sha256:92ac914e7c91e6503439c15b805a55b293e5e257985213b177b5b299caa10a92",
+      "quote": "\"result\":\"success\""
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-11-03T00:02:00.000Z",
+  "notes": "Free requests: no count, no key. Rate limit: per IP address, no number published. re-distribution is not allowed. Bulk path: none.",
+  "extras": {
+    "bulk_path": "none; one daily table of all currencies per request",
+    "free_requests": "no count; per-IP rate limit, number not published"
+  }
+}
