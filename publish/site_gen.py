@@ -20,7 +20,9 @@ import unicodedata
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO_SITE = os.path.join(HERE, "..", "site")
-CHUNK = 20 * 1024 * 1024
+# the chunks of the Worker DB: 40 percent of the 25 MiB asset limit, under the weight budget of any file (70 percent,
+# publish/test_weight.py), so a larger store makes more chunks; the Worker joins them (site/worker/db.js)
+CHUNK = 10 * 1024 * 1024
 # the parts of the public store download: 40 percent of the 25 MiB asset limit, so the build never warns on one, and a
 # larger store makes more parts. The Worker joins them at /data/fshy-public.sqlite.gz (site/worker/index.js download).
 PUBLIC_PART = 10 * 1024 * 1024
