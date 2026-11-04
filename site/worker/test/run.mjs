@@ -1202,16 +1202,18 @@ test('self-hosted last: every list of the API, the MCP tools and the static file
     const n = await call(`/api/v1/need/${x.id}?limit=200`);
     assert.equal(n.res.status, 200, n.body);
     for (const r of [...n.json.rows, ...n.json.null_rows, ...(n.json.unstated_rows || [])]) assert.ok(!sh.has(r[0]), x.id + ': ' + r[0] + ' is self-hosted');
-    for (const r of n.json.self_hosted_rows) assert.ok(sh.has(r[0]), x.id + ': ' + r[0] + ' is hosted');
+    // a self-hosted row whose card or phone requirement is not stated is in self_hosted_unstated_rows, the last part
+    const selfAll = [...n.json.self_hosted_rows, ...(n.json.self_hosted_unstated_rows || [])];
+    for (const r of selfAll) assert.ok(sh.has(r[0]), x.id + ': ' + r[0] + ' is hosted');
     if (n.json.self_hosted_rows.length) {
       withSelf++;
       const tsv = await call(`/api/v1/need/${x.id}.tsv?limit=200`);
       assert.match(tsv.body, /\n# self-hosted, the last resort: \d+ rows below, after every hosted row\n/);
-      const shown = n.json.rows.length + n.json.null_rows.length + (n.json.unstated_rows || []).length + n.json.self_hosted_rows.length;
+      const shown = n.json.rows.length + n.json.null_rows.length + (n.json.unstated_rows || []).length + selfAll.length;
       assert.match(tsv.body, new RegExp(`# ${shown} of `));
       // the self-hosted rows come after every other part of the TSV
       const body = tsv.body.split('# self-hosted, the last resort:')[0];
-      for (const r of n.json.self_hosted_rows) assert.ok(!body.includes('\n' + r[0] + '\t'), x.id + ': ' + r[0] + ' is above the self-hosted part');
+      for (const r of selfAll) assert.ok(!body.includes('\n' + r[0] + '\t'), x.id + ': ' + r[0] + ' is above the self-hosted part');
     }
   }
   assert.ok(withSelf > 0, 'a need lists self-hosted rows');
