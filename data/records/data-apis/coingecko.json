@@ -14,13 +14,13 @@
     "notes": "1 call = 1 credit on every endpoint, and requests are counted from the first day of the calendar month to the last. Every request counts toward the per-minute limit, 4xx and 5xx answers included. The keyless public API (api.coingecko.com/api/v3 with no key, and api.geckoterminal.com/api/v2 for onchain DEX data) shares an IP-based pool of about 5 calls per minute that varies with server load; a keyless request past 365 days of history answered HTTP 401 with error_code 10012. The cheapest paid plan is Basic: paid plans start at USD 35/month with 100,000 calls a month at 300 calls per minute, and a second pricing table shows Basic at USD 29/mo billed yearly."
   },
   "per_object_cap": {
-    "stated": "1 year of daily and hourly history per coin on Demo and on the keyless API; 13+ years from 2013 on paid tiers",
+    "stated": "1 year of daily and hourly history per coin on Demo and on the keyless API; 2 years on Basic; daily history from 2013 and hourly history from 2018 on Analyst and above",
     "bytes": null,
     "source_url": "https://www.coingecko.com/en/api/pricing",
     "notes": ""
   },
   "retention": {
-    "stated": "not applicable: a query API with no stored objects",
+    "stated": "not applicable",
     "days": null,
     "notes": ""
   },
@@ -63,9 +63,9 @@
     "detail": "A Demo key needs a CoinGecko account: Google, Apple, or an email with a password of at least 8 characters (one uppercase, one lowercase, one number, one special character), with an email confirmation step; the pricing page says no credit card is required. The keyless public API needs no account and no key.",
     "country": null
   },
-  "reliability_note": "A call past the per-minute limit answers HTTP 429; keyless limits are shared per IP and vary with server load, so a shared egress address meets 429 sooner.",
+  "reliability_note": "A call past the per-minute limit answers HTTP 429; a keyless 429 carries a Retry-After of 60 seconds and a JSON body with status.error_code 429 and the message \"You've exceeded the Rate Limit.\"; keyless limits are shared per IP and vary with server load, so a shared egress address meets 429 sooner.",
   "confidence": "documented",
-  "confidence_note": "The Demo quota, rate and history depth are documented on the pricing page and the rate-limit page. Two keyless probes measured the public API: a price answered HTTP 200 and a 400-day history answered 401 with the 365-day limit. The 10,000-call cut-off needs a Demo key to measure.",
+  "confidence_note": "The Demo quota, rate and history depth are documented on the pricing page and the rate-limit page. Two keyless probes measured the public API: a price answered HTTP 200 and a 400-day history answered 401 with the 365-day limit. A keyless burst measured the 429 answer of the public API. The Demo key's own 429 body and Retry-After, and the answer at the monthly credit cut-off, need a Demo key to measure (unverified: behind a sign-up); the knowledge base says handling at the monthly limit depends on billing settings and describes only the overage-enabled case.",
   "evidence": [
     {
       "url": "https://www.coingecko.com/en/api/pricing",
@@ -262,13 +262,98 @@
       "proved": "a second pricing table shows Basic at USD 29/mo billed yearly",
       "capture": "sha256:c7b1fa43400dd8403301bc9b2be543cb1cbc1eaf72e05b481cb9e0dff4dc9b89",
       "quote": "Basic $29/mo Billed Yearly Subscribe"
+    },
+    {
+      "url": "probe:https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd",
+      "date": "2026-11-02",
+      "proved": "a keyless call past the pool limit answered with a Retry-After of 60 seconds",
+      "capture": "sha256:0fd1b686a9576397f1098b9827add5dd5ed2cdd310edbbcb612b02731db8eac8",
+      "quote": "\"retry-after\": \"60\""
+    },
+    {
+      "url": "probe:https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd",
+      "date": "2026-11-02",
+      "proved": "the keyless call answered HTTP 429",
+      "capture": "sha256:0fd1b686a9576397f1098b9827add5dd5ed2cdd310edbbcb612b02731db8eac8",
+      "quote": "\"status\": 429"
+    },
+    {
+      "url": "probe:https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd",
+      "date": "2026-11-02",
+      "proved": "the keyless 429 body is a JSON object with status.error_code 429",
+      "capture": "sha256:6529e19eb4c125e9bf94e997ea53c292ea8f4d6d0a8f8c25fb400947c088da2e",
+      "quote": "{\"status\":{\"error_code\":429,\"error_message\":\"You've exceeded the Rate Limit. Please visit https://www.coingecko.com/en/api/pricing to subscribe to our API plans for higher rate limits.\"}}"
+    },
+    {
+      "url": "https://docs.coingecko.com/docs/errors-and-rate-limits",
+      "date": "2026-11-02",
+      "proved": "HTTP 429 is the rate-limit answer",
+      "capture": "sha256:3621e37734c2289c1b6506a9650a59ae7c422d9d520bf6af43b5e9d3d86070d1",
+      "quote": "`429` Too Many Requests | Rate limit exceeded."
+    },
+    {
+      "url": "https://docs.coingecko.com/demo/reference/authentication",
+      "date": "2026-11-02",
+      "proved": "a Demo credit is deducted on an HTTP 200 request",
+      "capture": "sha256:d2683c96e5eaaec8e93f64666fdf4b3f6a0a5194e7e532fc59867a9e3d4578ae",
+      "quote": "Each successful request (HTTP 200) deducts 1 credit from your monthly quota."
+    },
+    {
+      "url": "https://docs.coingecko.com/demo/reference/coins-id-market-chart",
+      "date": "2026-11-02",
+      "proved": "Demo history reaches back 365 days",
+      "capture": "sha256:e6584ffd61951f38c5bb55773c31797e3d33b1caf2861ba3d876f259cacb09bb",
+      "quote": "Historical data via the Demo API is restricted to the past 365 days."
+    },
+    {
+      "url": "https://www.coingecko.com/en/api/pricing",
+      "date": "2026-11-02",
+      "proved": "Demo daily coin history is 1 year",
+      "capture": "sha256:a073cb2394109502f748c9d6be4b1e6a0324b5a901cb8d07b023af7f1a1f08a7",
+      "quote": "| Coin Historical Data Daily | 1 year | 2 years | from 2013 | from 2013 | from 2013 | from 2013 |"
+    },
+    {
+      "url": "https://www.coingecko.com/en/api/pricing",
+      "date": "2026-11-02",
+      "proved": "Demo hourly coin history is 1 year",
+      "capture": "sha256:a073cb2394109502f748c9d6be4b1e6a0324b5a901cb8d07b023af7f1a1f08a7",
+      "quote": "| Coin Historical Data Hourly | 1 year | 2 years | from 2018 | from 2018 | from 2018 | from 2018 |"
+    },
+    {
+      "url": "https://support.coingecko.com/articles/5761735734-what-happens-when-i-reach-100-of-my-monthly-api-call-limit",
+      "date": "2026-11-02",
+      "proved": "handling at the monthly limit depends on billing settings; only the overage-enabled case is described",
+      "capture": "sha256:c8f9ae750cf3a60de84c62eb6d515cd1347e60759f6ac59909ae8bd96eb71969",
+      "quote": "how your account handles further requests depends on your current billing settings"
+    },
+    {
+      "url": "https://www.coingecko.com/en/api/pricing",
+      "date": "2026-11-02",
+      "proved": "the Demo rate and monthly cap are documented",
+      "capture": "sha256:a073cb2394109502f748c9d6be4b1e6a0324b5a901cb8d07b023af7f1a1f08a7",
+      "quote": "The Demo API plan is accessible to all CoinGecko users at zero cost, with a stable rate limit of 100 calls/min and a monthly cap of 10,000 calls."
+    },
+    {
+      "url": "https://www.coingecko.com/en/api/pricing",
+      "date": "2026-11-02",
+      "proved": "the Demo plan is unchanged: 100 calls/min, 10,000 a month",
+      "capture": "sha256:a073cb2394109502f748c9d6be4b1e6a0324b5a901cb8d07b023af7f1a1f08a7",
+      "quote": "The Demo API plan is accessible to all CoinGecko users at zero cost, with a stable rate limit of 100 calls/min and a monthly cap of 10,000 calls."
+    },
+    {
+      "url": "https://www.coingecko.com/en/api/pricing",
+      "date": "2026-11-03",
+      "proved": "Demo gets 1 year of daily and hourly coin history, Basic 2 years, and Analyst and above daily from 2013 and hourly from 2018",
+      "capture": "sha256:a073cb2394109502f748c9d6be4b1e6a0324b5a901cb8d07b023af7f1a1f08a7",
+      "quote": "| Coin Historical Data Daily | 1 year | 2 years | from 2013 | from 2013 | from 2013 | from 2013 |\n| Coin Historical Data Hourly | 1 year | 2 years | from 2018 | from 2018 | from 2018 | from 2018 |"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T10:04:07.279Z",
+  "verified_at": "2026-11-03T01:13:18.738Z",
   "notes": "Two free routes: the keyless public API (no account, about 5 calls a minute per IP) and the Demo key (email, 10,000 calls a month at 100 a minute). Both stop at 1 year of history; full history from 2013 starts at the Analyst plan.",
   "extras": {
     "bulk_path": "no bulk path; per-coin CSV/XLS export of 1 year on the website",
-    "history_depth": "1 year of daily and hourly coin data on Demo and keyless; from 2013 on Analyst and above"
+    "history_depth": "1 year of daily and hourly coin data on Demo and keyless; from 2013 on Analyst and above",
+    "credit_deduction": "A Demo request deducts 1 credit from the monthly quota when it answers HTTP 200."
   }
 }

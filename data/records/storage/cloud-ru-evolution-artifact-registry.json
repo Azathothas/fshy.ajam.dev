@@ -5,9 +5,9 @@
   "url": "https://cloud.ru/docs/artifact-registry-evolution/ug/index",
   "category": "registry",
   "free_tier": {
-    "stated": "500 GB storage quota and 1 TB/month egress quota per organisation — but storage is billed, no free tier",
-    "unit": "TB",
-    "metered_on": "stored-bytes",
+    "stated": "none: Artifact Registry has no free tier; the free tier covers Object Storage, Container Apps and Managed BI only",
+    "unit": "none",
+    "metered_on": "none",
     "source_url": "https://cloud.ru/docs/artifact-registry-evolution/ug/topics/overview__limitations",
     "read_on": "2026-10-21",
     "notes": null
@@ -23,17 +23,29 @@
     "notes": "not stated"
   },
   "egress": {
-    "terms": "1 TB/month included as a quota, then 1.39995 RUB/GB (VAT incl.)",
+    "terms": "Egress is billed from 100 GB per month at 1.39995 RUB/GB (VAT incl., 22%); the first 100 GB per month is not billed",
     "metered": true,
-    "free_allowance": "1 TB per month"
+    "free_allowance": "100 GB per month"
   },
   "interface": [
-    "oci"
+    "oci",
+    "rest"
   ],
-  "interface_detail": "oci",
+  "interface_detail": "oci for Docker images and Helm charts; rest management API at https://ar.api.cloud.ru; Deb, RPM, PyPI, NPM and generic registries use their own package-manager protocols (no vocabulary term)",
   "tooling": "Docker/OCI registry at <registry_name>.cr.cloud.ru, ORAS-compatible; supports Docker, Helm, Deb, RPM, PyPI, NPM and generic artifacts; 10 registries per org",
   "chaining": "quotas are per organisation and raisable via support ticket, so the multiplication axis is organisations, not registries: 10 registries share one 500 GB pool",
-  "limits": [],
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "500 GB of stored space per organisation (initial quota, raisable via technical support)",
+      "source": "https://cloud.ru/docs/artifact-registry-evolution/ug/topics/overview__limitations"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "1 TB of egress per month per organisation (quota)",
+      "source": "https://cloud.ru/docs/artifact-registry-evolution/ug/topics/overview__limitations"
+    }
+  ],
   "limits_note": "500 GB / 1 TB egress per org by default; storage 0.00268071 RUB/GB-hour (~1.96 RUB/GB/mo); Docker image deletion can take up to 24 h and keeps billing until complete",
   "identity_cost": {
     "kind": "email",
@@ -41,8 +53,8 @@
     "country": null
   },
   "reliability_note": "Fully metered — 500 GB is a cap, not an allowance; no free tier is documented for this service, so it costs money from the first GB.",
-  "confidence": "reported",
-  "confidence_note": null,
+  "confidence": "documented",
+  "confidence_note": "the verdict rests on vendor pages read on 2026-11-03: the free tier page lists the services with a free tier (Artifact Registry is not among them), the limitations page quotes the initial stored-space quota, the pricing page quotes the unbilled first part of monthly egress, and the tariff PDF quotes the egress and storage rates",
   "evidence": [
     {
       "url": "https://cloud.ru/docs/artifact-registry-evolution/ug/topics/overview__limitations",
@@ -58,10 +70,73 @@
       "url": "https://cloud.ru/docs/evolution/overview/topics/free-tier",
       "date": "2026-10-21",
       "proved": "free tier is enumerated for Object Storage, Container Apps and Managed BI only; Artifact Registry is absent"
+    },
+    {
+      "url": "https://cloud.ru/docs/evolution/overview/topics/free-tier",
+      "date": "2026-11-03",
+      "proved": "the free tier covers Object Storage, Container Apps and Managed BI; Artifact Registry is not listed",
+      "capture": "sha256:75e1a945b41e514fac03ba16e07f7bfc8ea65e6dc172cf84f8de444be1196989",
+      "quote": "Free tier действует для следующих сервисов:"
+    },
+    {
+      "url": "https://cloud.ru/docs/evolution/overview/topics/free-tier",
+      "date": "2026-11-03",
+      "proved": "Artifact Registry is not among the services with a free tier",
+      "capture": "sha256:75e1a945b41e514fac03ba16e07f7bfc8ea65e6dc172cf84f8de444be1196989",
+      "quote": "Free tier действует для следующих сервисов:"
+    },
+    {
+      "url": "https://cloud.ru/docs/artifact-registry-evolution/ug/topics/pricing",
+      "date": "2026-11-03",
+      "proved": "the first 100 GB of egress per month is not billed",
+      "capture": "sha256:66cbc97d62218889bacf48484c74d33cbe21653192771f57f6280fd5248e56b0",
+      "quote": "Первые 100 ГБ в месяц не тарифицируются."
+    },
+    {
+      "url": "https://cdn.cloud.ru/docs/legal/tariffs/evolution/current-version/artifact-registry.pdf",
+      "date": "2026-11-03",
+      "proved": "egress from 100 GB costs 1.39995 RUB per GB including VAT",
+      "capture": "sha256:ca8a52a338d996299677f8e9e3c26192c39fe29dce52557160ed0e5f0fd434d1",
+      "quote": "Исходящий трафик от 100 ГБ ГБ месяц 1,1475 0,25245 1,39995"
+    },
+    {
+      "url": "https://cloud.ru/docs/artifact-registry-evolution/ug/topics/overview__limitations",
+      "date": "2026-11-03",
+      "proved": "the initial stored-space quota is 500 GB",
+      "capture": "sha256:4426106cd4a2a468d2443bfc18b3ec11d8fcc33d6e5c0fbe34ab13d396888e08",
+      "quote": "Первичная квота на занимаемое пространство составляет 500 ГБ."
+    },
+    {
+      "url": "https://cdn.cloud.ru/docs/legal/tariffs/evolution/current-version/artifact-registry.pdf",
+      "date": "2026-11-03",
+      "proved": "storage is billed per GB-hour from the first GB and no free tier lists Artifact Registry",
+      "capture": "sha256:ca8a52a338d996299677f8e9e3c26192c39fe29dce52557160ed0e5f0fd434d1",
+      "quote": "Хранение данных ГБ час 0,0021973 0,00048341 0,00268071"
+    },
+    {
+      "url": "https://cloud.ru/docs/artifact-registry-evolution/ug/topics/overview__limitations",
+      "date": "2026-11-03",
+      "proved": "the 500 GB stored-space quota and the 1 TB egress quota are unchanged",
+      "capture": "sha256:4426106cd4a2a468d2443bfc18b3ec11d8fcc33d6e5c0fbe34ab13d396888e08",
+      "quote": "Первичная квота на занимаемое пространство составляет 500 ГБ."
+    },
+    {
+      "url": "https://cloud.ru/docs/artifact-registry-evolution/ug/topics/api-ref",
+      "date": "2026-11-03",
+      "proved": "a public HTTP API endpoint exists at ar.api.cloud.ru for managing the service",
+      "capture": "sha256:4ad8b3090751a4808f5ccc415be961ef67a4bceb82884d31d818065bd487c3f3",
+      "quote": "Чтобы начать работу с API, пройдите аутентификацию и отправьте запрос на эндпоинт https://ar.api.cloud.ru."
+    },
+    {
+      "url": "https://cloud.ru/docs/artifact-registry-evolution/ug/index",
+      "date": "2026-11-03",
+      "proved": "the service stores Docker images, Helm charts, Deb, RPM and PyPI packages and generic files, so oci alone is incomplete",
+      "capture": "sha256:357ac4a3ff13f8cc1a8c99264f120d03393e14b85ac78cd008eb859cf9006f0e",
+      "quote": "Сервис Artifact Registry позволяет хранить и распространять артефакты: Docker-образы, Helm-чарты, Deb-пакеты, RPM-пакеты, PyPI-пакеты и Generic-файлы."
     }
   ],
-  "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
+  "verdict": "paid-only",
+  "verified_at": "2026-11-03T15:34:57.681Z",
   "notes": "500 GB storage quota and 1 TB/month egress quota per organisation — but storage is billed, no free tier",
   "extras": {
     "dead_end": {
@@ -71,6 +146,6 @@
       "first_recorded": "2026-10-21"
     }
   },
-  "binding": "none",
-  "binding_note": null
+  "binding": "volume-quota",
+  "binding_note": "500 GB initial stored-space quota per organisation, shared by up to 10 registries; raising it needs a request to technical support"
 }

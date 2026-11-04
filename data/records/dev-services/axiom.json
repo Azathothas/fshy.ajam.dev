@@ -34,7 +34,7 @@
   "interface": [
     "rest"
   ],
-  "interface_detail": "REST API with JSON bodies: ingest and query at the edge deployment's base domain (us-east-1.aws.edge.axiom.co for the US edge, the only edge Personal supports), every other endpoint at https://api.axiom.co, authorised with an API token or a personal access token. api.axiom.co answered 401 to /v2/datasets without a token. OpenTelemetry metrics go to a /v1/metrics endpoint.",
+  "interface_detail": "REST API with JSON bodies: ingest and query at the edge deployment's base domain (us-east-1.aws.edge.axiom.co for the US edge, the only edge Personal supports), every other endpoint at https://api.axiom.co, authorised with an API token or a personal access token. api.axiom.co answered 401 to /v2/datasets without a token. OpenTelemetry data is accepted as OTLP over HTTP at https://AXIOM_DOMAIN/v1/traces, /v1/logs and /v1/metrics, where AXIOM_DOMAIN is the base domain of the edge deployment; the metrics endpoint takes Protobuf or JSON.",
   "endpoint": "https://api.axiom.co",
   "tooling": "curl or any HTTP client with a Bearer token, and OpenTelemetry exporters",
   "chaining": "A 30-day searchable store for the logs of free compute services, up to 500 GB loaded a month, with only about 10 GB of it scanned by queries a month.",
@@ -69,7 +69,7 @@
   "binding_note": "10 GB-hours of query compute is roughly 10 GB scanned a month, against 500 GB that can be loaded, so querying runs out long before ingest.",
   "identity_cost": {
     "kind": "email",
-    "detail": "The sign-in page creates an account on the first sign-in and e-mails a login link; the pricing page states Personal needs no credit card. Whether a later step asks for a phone number is unverified: behind a sign-up.",
+    "detail": "The sign-in page creates an account on the first sign-in and e-mails a login link; the pricing page states Personal needs no credit card, and Axiom's Terraform page states that all a free account needs is an e-mail address. A public endpoint also creates a temporary organization with no sign-in: it is deleted with its data after 24 hours unless a person claims it, and claiming it creates an account when none exists.",
     "country": null
   },
   "reliability_note": "An event that would exceed a dataset's field limit is rejected with an error; strings over the field size are replaced with a placeholder.",
@@ -264,9 +264,58 @@
       "proved": "the API host answers 401 without a token",
       "capture": "sha256:54729776f4590f58b0e85d3779936bc8e6031d99379930187c583ea53c950985",
       "quote": "\"status\": 401"
+    },
+    {
+      "url": "https://axiom.co/docs/console/intelligence/agent-created-orgs",
+      "date": "2026-11-01",
+      "proved": "an unclaimed temporary organization is deleted with its data after 24 hours",
+      "capture": "sha256:c01d3f41dd24095b192cadefa02eadd8aaa441aa0dc163ec5238327e0632c59b",
+      "quote": "If nobody claims the organization within 24 hours, Axiom permanently deletes it together with all its data."
+    },
+    {
+      "url": "https://axiom.co/docs/send-data/opentelemetry",
+      "date": "2026-11-01",
+      "proved": "the OTLP metrics endpoint takes Protobuf or JSON",
+      "capture": "sha256:0b8e237f8c23869bddc156e7441a595da00027e36f22f2ada55dca301a6cdf67",
+      "quote": "The `/v1/metrics` endpoint accepts OTLP data encoded as Protobuf (`application/x-protobuf`) or JSON (`application/json`)."
+    },
+    {
+      "url": "https://axiom.co/docs/console/intelligence/agent-created-orgs",
+      "date": "2026-11-01",
+      "proved": "the endpoint that creates a temporary organization needs no authentication",
+      "capture": "sha256:c01d3f41dd24095b192cadefa02eadd8aaa441aa0dc163ec5238327e0632c59b",
+      "quote": "The endpoint is public: no authentication header is required."
+    },
+    {
+      "url": "https://axiom.co/docs/console/intelligence/agent-created-orgs",
+      "date": "2026-11-01",
+      "proved": "claiming a temporary organization creates an account when the person has none",
+      "capture": "sha256:c01d3f41dd24095b192cadefa02eadd8aaa441aa0dc163ec5238327e0632c59b",
+      "quote": "If you don’t have an Axiom account yet, one is created as part of the flow."
+    },
+    {
+      "url": "https://axiom.co/docs/send-data/opentelemetry",
+      "date": "2026-11-01",
+      "proved": "OTLP/HTTP traces go to /v1/traces on the edge deployment's base domain",
+      "capture": "sha256:0b8e237f8c23869bddc156e7441a595da00027e36f22f2ada55dca301a6cdf67",
+      "quote": "Traces: `https://AXIOM_DOMAIN/v1/traces`"
+    },
+    {
+      "url": "https://axiom.co/docs/send-data/opentelemetry",
+      "date": "2026-11-01",
+      "proved": "OTLP/HTTP logs go to /v1/logs on the edge deployment's base domain",
+      "capture": "sha256:0b8e237f8c23869bddc156e7441a595da00027e36f22f2ada55dca301a6cdf67",
+      "quote": "Logs: `https://AXIOM_DOMAIN/v1/logs`"
+    },
+    {
+      "url": "https://axiom.co/docs/apps/terraform",
+      "date": "2026-11-01",
+      "proved": "a free Axiom account needs only an e-mail address to sign up",
+      "capture": "sha256:9eb2f2d6a15a21552e9b82cfd3da24a120765d2adb7750e26f85aa8b1555d35a",
+      "quote": "Sign up for a free Axiom account. All you need is an email address."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T00:42:59.132Z",
+  "verified_at": "2026-11-02T00:37:34.243Z",
   "notes": "500 GB a month of free ingest, against 100 GB on New Relic's free tier and 3 GB on Better Stack's, held back by a 10 GB-hour query budget and 25 GB of storage."
 }

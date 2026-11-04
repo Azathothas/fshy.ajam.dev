@@ -6,15 +6,15 @@
   "category": "weather API",
   "tier": "free",
   "free_tier": {
-    "stated": "Free plan: 60 calls a minute and 1,000,000 calls a month, summed across every key of the account, for the Current weather API, the 3-hourly forecast for 5 days, Weather maps 1.0, Air Pollution and Geocoding; weather data refreshed every 2 hours. One Call API 3.0 is a separate pay-as-you-call subscription with 1,000 calls a day free.",
+    "stated": "Free plan: 60 calls a minute and 1,000,000 calls a month, summed across every key of the account, for the Current weather API, the 3-hourly forecast for 5 days, Weather maps 1.0, Air Pollution and Geocoding; weather API data update up to 10 min. One Call API 3.0 is a separate pay-as-you-call subscription with 1,000 calls a day free.",
     "unit": "requests",
     "metered_on": "request-count",
     "source_url": "https://openweathermap.org/full-price",
     "read_on": "2026-10-30",
-    "notes": "No free bulk path: the Free column of Bulk Download (standard presets) is locked, the presets start at the Professional plan (370 GBP a month), and History Bulk is a paid order per location. Free calls go only to api.openweathermap.org. One Call API 3.0 costs 0.0012 GBP a call past 1,000 a day and is opened through a billing form."
+    "notes": "No free path to the regularly updated bulk snapshot files: the Free column of Bulk Download (standard presets) is locked, the presets start at the Professional plan (370 GBP a month), and History Bulk is a paid order per location. Free calls go only to api.openweathermap.org. One Call API 3.0 costs 0.0012 GBP a call past 1,000 a day and is opened through a billing form."
   },
   "per_object_cap": {
-    "stated": "not applicable: the unit is a request",
+    "stated": "not applicable",
     "bytes": null,
     "notes": ""
   },
@@ -34,7 +34,7 @@
   "interface": [
     "rest"
   ],
-  "interface_detail": "REST over HTTPS with the key in the appid query parameter; free calls go only to api.openweathermap.org, and paid plans are given a different endpoint",
+  "interface_detail": "REST over HTTPS with the key in the appid query parameter; free calls go only to api.openweathermap.org, and paid plans are given a different endpoint. bulk.openweathermap.org/sample/ is an open directory of sample files dated 2017 to 2020, among them a city list of 4002796 bytes, that download with no key.",
   "endpoint": "https://api.openweathermap.org/data/2.5/weather",
   "tooling": "any HTTP client; the key goes in the appid query parameter",
   "chaining": "A point-weather source: current conditions and 5-day forecasts per coordinate or city, with one monthly count shared by every key on the account.",
@@ -62,7 +62,7 @@
     "detail": "The signup form asks for a username, an email, a password, a confirmation of age 16 or over and acceptance of the terms, behind a reCAPTCHA; it has no card and no phone field. The key is sent after the email is verified and activates within up to 2 hours. One Call API 3.0 needs a billing form on top of the account.",
     "country": null
   },
-  "reliability_note": "Past the plan limit the API answers HTTP 429 and the account is blocked for a couple of hours to several days; a call with no key answers HTTP 401.",
+  "reliability_note": "Past 60 calls a minute on the Free plan the API answers HTTP 429, and the blocking system suspends the account for a couple of hours to several days at random; the key guide asks for the request to be repeated after 10 minutes and says an email warning comes before a suspension. A call with no key answers HTTP 401, and so does a Free key that asks for another plan's product. The 429 answer and the length of a block with a Free key are unverified: behind a sign-up.",
   "confidence": "documented",
   "confidence_note": "Quota, rate, plan contents and signup fields are read from first-party pages; calls with no key to the API and to a bulk file answered HTTP 401, so the free key was not exercised. A call with a free key would move this to measured.",
   "evidence": [
@@ -226,9 +226,142 @@
       "proved": "listed under Weather in the public-apis list, with an apiKey",
       "capture": "sha256:41a8379b79df9d2cfb3729dbb2cdd9178b7c16b2e845c8529f9143787fb99ff0",
       "quote": "| [OpenWeatherMap](https://openweathermap.org/api) | Weather | `apiKey` | Yes | Unknown |"
+    },
+    {
+      "url": "https://openweathermap.org/full-price",
+      "date": "2026-11-02",
+      "proved": "the Weather API data update of the Free plan, the first plan column, is Up to 10 min",
+      "capture": "sha256:6db65ee015b43be8557174519307c4aa1c784f8596bb4495146efdd6bf7d3afd",
+      "quote": "| Weather API data update | Up to 10 min | Up to 10 min | Up to 10 min | Up to 10 min | Up to 10 min | Up to 10 min |"
+    },
+    {
+      "url": "https://openweathermap.org/full-price",
+      "date": "2026-11-02",
+      "proved": "the Free column cell of the Bulk Download (standard presets) row carries the lock icon",
+      "capture": "sha256:6db65ee015b43be8557174519307c4aa1c784f8596bb4495146efdd6bf7d3afd",
+      "quote": "| [Bulk Download (standard presets)](https://openweathermap.org/bulk) | ![lock](https://openweathermap.org/img/lock_icon.svg) |"
+    },
+    {
+      "url": "probe:https://bulk.openweathermap.org/sample/city.list.json.gz",
+      "date": "2026-11-02",
+      "proved": "the sample city list downloaded with no key, HTTP 200, at 4002796 bytes, the size the directory listing gives",
+      "capture": "sha256:6aa857f38e3f818dd1a9df3d4906b61f335083cb988df9d38b02257804bd7672",
+      "quote": "\"bytes\": 4002796"
+    },
+    {
+      "url": "https://openweathermap.org/faq",
+      "date": "2026-11-02",
+      "proved": "the blocking system suspends an account for a couple of hours to several days, at random",
+      "capture": "sha256:68f095ece169f3690a1cb90bb950d59a895b6994015baf37869e344218308036",
+      "quote": "Our blocking system suspends your account for a couple of hours to several days randomly."
+    },
+    {
+      "url": "https://openweathermap.org/full-price",
+      "date": "2026-11-02",
+      "proved": "the Free plan allows 60 calls a minute and 1,000,000 calls a month",
+      "capture": "sha256:6db65ee015b43be8557174519307c4aa1c784f8596bb4495146efdd6bf7d3afd",
+      "quote": "| API calls | 60 calls/minute<br>1,000,000 calls/month |"
+    },
+    {
+      "url": "https://openweathermap.org/faq",
+      "date": "2026-11-02",
+      "proved": "more than 60 calls a minute on the Free plan answers HTTP 429",
+      "capture": "sha256:68f095ece169f3690a1cb90bb950d59a895b6994015baf37869e344218308036",
+      "quote": "If you have a Free plan of Professional subscriptions and make more than 60 API calls per minute (surpassing the limit of your subscription)."
+    },
+    {
+      "url": "https://openweathermap.org/faq",
+      "date": "2026-11-02",
+      "proved": "a Free subscription that requests another plan's data answers HTTP 401",
+      "capture": "sha256:68f095ece169f3690a1cb90bb950d59a895b6994015baf37869e344218308036",
+      "quote": "You are using a Free subscription and try requesting data available in other subscriptions ."
+    },
+    {
+      "url": "https://openweathermap.org/appid.md",
+      "date": "2026-11-02",
+      "proved": "after a call is refused at the limit, the key guide asks for the request to be repeated in 10 minutes",
+      "capture": "sha256:6d8383acfe3182719ad4fa4ccf68d36be30804932b3e1cf06b2b53180f8dbf3f",
+      "quote": "In case you don’t obtain an API response due to hitting the limit of calls, we would ask you to repeat your request in 10 minutes."
+    },
+    {
+      "url": "https://openweathermap.org/appid.md",
+      "date": "2026-11-02",
+      "proved": "an email notification comes before a key is suspended for exceeding the call limit",
+      "capture": "sha256:6d8383acfe3182719ad4fa4ccf68d36be30804932b3e1cf06b2b53180f8dbf3f",
+      "quote": "we won’t immediately suspend your API key if you exceed the call limit. An automatic notification will be sent to your email"
+    },
+    {
+      "url": "https://openweathermap.org/bulk",
+      "date": "2026-11-02",
+      "proved": "the bulk snapshot files are fetched with the account's appid key",
+      "capture": "sha256:2c61e1c2dc74a919d51e749badbee049c9278c8b8f9ae4de19368859bc15b854",
+      "quote": "https://bulk.openweathermap.org/snapshot/{BULK_FILE_NAME}?appid={API key}"
+    },
+    {
+      "url": "https://openweathermap.org/bulk",
+      "date": "2026-11-02",
+      "proved": "the bulk page points to bulk.openweathermap.org/sample/ for sample files",
+      "capture": "sha256:2c61e1c2dc74a919d51e749badbee049c9278c8b8f9ae4de19368859bc15b854",
+      "quote": "Samples of bulk files can be downloaded here: [bulk samples](http://bulk.openweathermap.org/sample/)."
+    },
+    {
+      "url": "probe:https://bulk.openweathermap.org/sample/",
+      "date": "2026-11-02",
+      "proved": "bulk.openweathermap.org/sample/ answered HTTP 200 with a directory listing and no key",
+      "capture": "sha256:af7daf41572db95c26b7c55488b299d650551b266eb806c509953452da35a8cd",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:https://bulk.openweathermap.org/sample/#listing",
+      "date": "2026-11-02",
+      "proved": "bulk.openweathermap.org/sample/ serves an open directory index of sample files",
+      "capture": "sha256:127dde373ff0ceb557b9138d1628d2f95facc3016b07e51d2c30845563ea60f4",
+      "quote": "<h1>Index of /sample/</h1>"
+    },
+    {
+      "url": "probe:https://bulk.openweathermap.org/sample/#listing",
+      "date": "2026-11-02",
+      "proved": "the directory lists weather_14.json.gz, a current-weather sample file, last modified 14-Mar-2017",
+      "capture": "sha256:127dde373ff0ceb557b9138d1628d2f95facc3016b07e51d2c30845563ea60f4",
+      "quote": "<a href=\"weather_14.json.gz\">weather_14.json.gz</a> 14-Mar-2017 12:33 1564623"
+    },
+    {
+      "url": "probe:https://bulk.openweathermap.org/sample/#listing",
+      "date": "2026-11-02",
+      "proved": "the directory lists city.list.json.gz, last modified 05-Aug-2020, at 4002796 bytes",
+      "capture": "sha256:127dde373ff0ceb557b9138d1628d2f95facc3016b07e51d2c30845563ea60f4",
+      "quote": "<a href=\"city.list.json.gz\">city.list.json.gz</a> 05-Aug-2020 07:57 4002796"
+    },
+    {
+      "url": "probe:https://bulk.openweathermap.org/snapshot/weather_14.json.gz",
+      "date": "2026-11-02",
+      "proved": "a bulk snapshot request with no key answers HTTP 401",
+      "capture": "sha256:6e7118406500b06cfbd8dade54c3911b16e7a9ee75cd6080e0abd2b726cc9278",
+      "quote": "\"status\": 401"
+    },
+    {
+      "url": "probe:https://bulk.openweathermap.org/snapshot/weather_14.json.gz#body",
+      "date": "2026-11-02",
+      "proved": "the 401 body of a bulk snapshot request with no key says Invalid API key",
+      "capture": "sha256:cdee0b4f0401915d83300301514984fef2ddfb91245c52358326f9e11f8707d9",
+      "quote": "{\"cod\":401, \"message\": \"Invalid API key."
+    },
+    {
+      "url": "https://home.openweathermap.org/users/sign_up",
+      "date": "2026-11-02",
+      "proved": "the sign-up form takes an email, a username and a password, an age confirmation and an acceptance of the terms, behind a reCAPTCHA, with no card or phone field",
+      "capture": "sha256:e777851c5c82fa472db853096e3e440e56508579e0c15960556e719bddd5f825",
+      "quote": "name=\"user[email]\""
+    },
+    {
+      "url": "https://openweathermap.org/api/one-call-3",
+      "date": "2026-11-02",
+      "proved": "One Call API 3.0 is a separate subscription with 1,000 calls a day free",
+      "capture": "sha256:18d468d123bcd45dc854b70d1bc62816e3483c27a90bba8da128d6a1b604550c",
+      "quote": "This separate subscription includes 1,000 calls/day for free and allows you to pay only for the number of API calls made to this product."
     }
   ],
   "verdict": "qualifies",
-  "verified_at": "2026-10-30T12:52:13.090Z",
+  "verified_at": "2026-11-03T00:28:06.704Z",
   "notes": "Bulk path: none on the Free plan; Bulk Download presets start at the Professional plan and History Bulk is a paid order per location."
 }

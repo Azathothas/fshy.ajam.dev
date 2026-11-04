@@ -20,7 +20,7 @@
     "notes": ""
   },
   "retention": {
-    "stated": "not applicable: a query API with no stored objects",
+    "stated": "not applicable",
     "days": null,
     "notes": ""
   },
@@ -213,12 +213,73 @@
       "proved": "the demo key returned a daily series for AAPL",
       "capture": "sha256:cfec03ded427f6e8dfda6a2501da2496985fcfdbd0eae77a47396cbb9d091386",
       "quote": "\"symbol\":\"AAPL\",\"interval\":\"1day\""
+    },
+    {
+      "url": "https://support.twelvedata.com/en/articles/5615854-credits",
+      "date": "2026-11-02",
+      "proved": "running out of API credits answers HTTP 429",
+      "capture": "sha256:82bf4dbb5db5d1f8e76d33848304a2c146a7681f898540c6b87764c7f7540c20",
+      "quote": "If you run out of API credits, a 429 error code will notify you that the API credits limit has been reached."
+    },
+    {
+      "url": "https://twelvedata.com/docs/introduction/errors",
+      "date": "2026-11-02",
+      "proved": "the error table lists 429 Too Many Requests for a key that reached its request limit",
+      "capture": "sha256:3c41649934105bfda1bbb933bc08fe8c6e296beae725ac322a29547e04fab11a",
+      "quote": "| 429 | Too Many Requests | API request limit reached for your key. | Wait briefly or upgrade your plan [here](https://twelvedata.com/pricing). |"
+    },
+    {
+      "url": "https://api.twelvedata.com/doc/swagger/openapi.json",
+      "date": "2026-11-02",
+      "proved": "the OpenAPI spec gives this as the example message of the 429 error body, whose code example is 429",
+      "capture": "sha256:fb7330d8aac07b38750040240280ccd034f3e59b7bcf5ccf7df6e727474a1c72",
+      "quote": "You have run out of API credits for the current minute. 1000 API credits were used, with the current limit being 987. Wait for the next minute or consider upgrading your plan at https://twelvedata.com/pricing"
+    },
+    {
+      "url": "https://twelvedata.com/docs/introduction/errors",
+      "date": "2026-11-02",
+      "proved": "every error, the 429 included, is a JSON object with code, message and status keys",
+      "capture": "sha256:3c41649934105bfda1bbb933bc08fe8c6e296beae725ac322a29547e04fab11a",
+      "quote": "Twelve Data API employs a standardized error response format, delivering a JSON object with `code`, `message`, and `status` keys for clear and consistent error communication."
+    },
+    {
+      "url": "https://github.com/we-promise/sure/issues/194",
+      "date": "2026-11-02",
+      "proved": "a client log shows code 429 with this message for a key whose per-minute limit was 8 credits, the Basic plan's rate",
+      "capture": "sha256:740e33ffc2eee85417ad15fa48193a9a921d340fe91e78a04eb55eb822808522",
+      "quote": "API error (code: 429): You have run out of API credits for the current minute. 38 API credits were used, with the current limit being 8. Wait for the next minute or consider switching to a higher tier plan at https://twelvedata.com/pricing"
+    },
+    {
+      "url": "https://support.twelvedata.com/en/articles/5615854-credits",
+      "date": "2026-11-02",
+      "proved": "the Basic daily quota resets to 800 at midnight UTC",
+      "capture": "sha256:82bf4dbb5db5d1f8e76d33848304a2c146a7681f898540c6b87764c7f7540c20",
+      "quote": "The same principle applies to daily limits on the Basic plan, where the quota resets to 800 at midnight UTC (00:00:00)."
+    },
+    {
+      "url": "https://support.twelvedata.com/en/articles/5615854-credits",
+      "date": "2026-11-02",
+      "proved": "the per-minute credit quota is restored at the start of each new minute",
+      "capture": "sha256:82bf4dbb5db5d1f8e76d33848304a2c146a7681f898540c6b87764c7f7540c20",
+      "quote": "Your full API credit quota is restored at the start of each new minute."
+    },
+    {
+      "url": "https://twelvedata.com/pricing.md",
+      "date": "2026-11-02",
+      "proved": "Basic is USD 0 with 8 credits per minute, an 800 per day cap and US markets",
+      "capture": "sha256:7bb05e09eb5575f76cf5ed4a81a5a32780614c00d0fcd6ba53a39612ca8eca6f",
+      "quote": "| Basic | $0/mo     | 8 (800/day cap)   | 8 (trial)   | US      | Real-time US equities, forex, crypto                  |"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-30T12:52:12.830Z",
+  "verified_at": "2026-11-03T00:27:51.446Z",
   "notes": "Credits are a weight, not a request count: a 1-credit time_series call per symbol is the cheap path, and fundamentals at 100 credits per symbol exhaust a day's 800 in 8 symbols.",
   "extras": {
-    "bulk_path": "no bulk path"
+    "bulk_path": "no bulk path",
+    "cutoff": {
+      "http_status": "429",
+      "body": "a JSON object with code, message and status keys; the documented 429 message reads: You have run out of API credits for the current minute. 1000 API credits were used, with the current limit being 987. Wait for the next minute or consider upgrading your plan at https://twelvedata.com/pricing; the message for the 800-per-day cap is unverified: behind a sign-up",
+      "reset": "per-minute credits are restored at the start of each new minute; the Basic daily quota of 800 resets at midnight UTC (00:00:00)"
+    }
   }
 }

@@ -20,7 +20,7 @@
     "notes": "The compact daily series for IBM under the demo key returned 21302 bytes of JSON with 100 data points."
   },
   "retention": {
-    "stated": "not applicable: a query API with no stored objects",
+    "stated": "not applicable",
     "days": null,
     "notes": ""
   },
@@ -173,12 +173,88 @@
       "proved": "the daily series returned to the demo key is the compact output",
       "capture": "sha256:8d5a8a5708cce3eb871e51b5545cab2e7ae27cdd54545bcb7d0c2156aa4df857",
       "quote": "\"4. Output Size\": \"Compact\""
+    },
+    {
+      "url": "https://financialliterature.com/data/alphavantage/",
+      "date": "2026-11-02",
+      "proved": "a third-party guide reports that the quota notice of a free key arrives as HTTP 200 with an Information key",
+      "capture": "sha256:6b787d16ef15709a37866ab692569a09893033a7240c2f374edd9b59fe27432b",
+      "quote": "That is the quota or a premium-only endpoint. It arrives as HTTP 200, so test for the key before parsing."
+    },
+    {
+      "url": "https://data.clawrxiv.org/sources/alpha-vantage",
+      "date": "2026-11-02",
+      "proved": "a second third-party catalogue states that error responses arrive as HTTP 200 with the message in the JSON body",
+      "capture": "sha256:df8df3906525885972444076f0d0f9f1ede1dbad955c4c033d28cf7b54af3a13",
+      "quote": "Error responses return 200 with error message in JSON."
+    },
+    {
+      "url": "https://github.com/home-assistant/core/issues/109153",
+      "date": "2026-11-02",
+      "proved": "a client library raised the Information value of a free key's over-limit response with this text",
+      "capture": "sha256:515b0964f771b079f2f31fd2504f1fa4ad7b6f1f3927bcca0481aca4e892f3b1",
+      "quote": "ValueError: Thank you for using Alpha Vantage! Our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans at https://www.alphavantage.co/premium/ to instantly remove all daily rate limits."
+    },
+    {
+      "url": "https://www.alphavantage.co/support/",
+      "date": "2026-11-02",
+      "proved": "the support FAQ states the 25-per-day limit and names no reset instant",
+      "capture": "sha256:6f82474b8fc7a791696c13926cbb14404e55af0b71b532d501dc39f59b260674",
+      "quote": "We are pleased to provide free stock API service covering the majority of our datasets for 25 API requests per day and unlimited API requests for verified open-source or educational projects."
+    },
+    {
+      "url": "probe:https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBM&apikey=unregistered",
+      "date": "2026-11-02",
+      "proved": "calls made in the same second with one made-up key string were answered with this Information text in a JSON body",
+      "capture": "sha256:f29918acbdaee30bae9e463365dee0d624ee6017c6229765dd69d5d11498492e",
+      "quote": "\"Information\": \"Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to any of the premium plans at https://www.alphavantage.co/premium/ to lift the free key rate limit (25 requests per day), raise the per-second burst limit, and instantly unlock all premium endpoints\""
+    },
+    {
+      "url": "probe:https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBM&apikey=unregistered",
+      "date": "2026-11-02",
+      "proved": "the per-second throttle notice came with HTTP 200, not an HTTP error status",
+      "capture": "sha256:93e6020b329fadb932dc77954232afd0047ea95c63089b86cc8bd34169da2e7e",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "https://www.alphavantage.co/documentation/",
+      "date": "2026-11-02",
+      "proved": "the compact daily output is the latest 100 data points and the full output is the 25+ year series",
+      "capture": "sha256:e0b6b32cf9531eaaff105a6cbb7b6ac218c8f22052ce430f30abd9ea345b8f54",
+      "quote": "`compact` returns only the latest 100 data points; `full` returns the full-length time series of 25+ years of historical data."
+    },
+    {
+      "url": "https://www.alphavantage.co/documentation/",
+      "date": "2026-11-02",
+      "proved": "a free key gets the compact output; the full series needs a premium key",
+      "capture": "sha256:e0b6b32cf9531eaaff105a6cbb7b6ac218c8f22052ce430f30abd9ea345b8f54",
+      "quote": "The \"compact\" outputsize is available to both free and premium API keys. The \"full\" outputsize is available to premium keys."
+    },
+    {
+      "url": "https://www.alphavantage.co/support/",
+      "date": "2026-11-02",
+      "proved": "the free key form collects an email address, the contact channel for the key holder",
+      "capture": "sha256:6f82474b8fc7a791696c13926cbb14404e55af0b71b532d501dc39f59b260674",
+      "quote": "We highly recommend that you use a legitimate email address - this is the primary way we will contact you for feature announcements or troubleshooting (e.g., if you lose your API key)."
+    },
+    {
+      "url": "https://www.alphavantage.co/support/",
+      "date": "2026-11-02",
+      "proved": "the free key still allows 25 API requests per day, with unlimited requests for verified open-source or educational projects",
+      "capture": "sha256:6f82474b8fc7a791696c13926cbb14404e55af0b71b532d501dc39f59b260674",
+      "quote": "We are pleased to provide free stock API service covering the majority of our datasets for 25 API requests per day and unlimited API requests for verified open-source or educational projects."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-30T12:52:12.830Z",
+  "verified_at": "2026-11-03T00:27:51.441Z",
   "notes": "The free key reaches the majority of datasets at 25 requests a day; the premium plans sell request rate, from 75 to 1200 per minute, plus the premium-marked endpoints.",
   "extras": {
-    "bulk_path": "no bulk path"
+    "bulk_path": "no bulk path",
+    "cutoff": {
+      "http_status": "200 with a JSON body that names the limit in an Information field, not an HTTP error status (reported by third parties for the daily notice and measured for the per-second notice; no Alpha Vantage page states the status)",
+      "body": "a JSON object whose Information field reads: Thank you for using Alpha Vantage! Our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans at https://www.alphavantage.co/premium/ to instantly remove all daily rate limits. (reported by a third party)",
+      "reset": "unverified: behind a sign-up: no Alpha Vantage page states when the 25-per-day count resets, and a free key is needed to observe it",
+      "burst": "a JSON Information field that reads: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to any of the premium plans at https://www.alphavantage.co/premium/ to lift the free key rate limit (25 requests per day), raise the per-second burst limit, and instantly unlock all premium endpoints; measured on simultaneous calls with one made-up key string, all but one of which got this notice"
+    }
   }
 }

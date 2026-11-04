@@ -1,0 +1,180 @@
+{
+  "topic": "ci-cd-runners",
+  "slug": "cloudflare-pages-builds",
+  "provider": "Cloudflare Pages builds",
+  "url": "https://developers.cloudflare.com/pages/platform/limits/",
+  "category": "CI runner",
+  "tier": "Pages Free",
+  "verdict": "qualifies-with-caveat",
+  "confidence": "documented",
+  "confidence_note": "every number is quoted from the Cloudflare Pages limits page; no build was run, so CPU, memory and disk of the build container, outbound network access from it and what happens to a build after the 500 monthly builds are spent are unverified",
+  "verified_at": "2026-11-04T06:00:42.534Z",
+  "free_tier": {
+    "stated": "Free plan: 500 builds a month, 1 build at a time, 20 minutes per build. Pro: 5,000 builds a month and 5 concurrent builds. Business: 20,000 builds a month and 20 concurrent builds",
+    "unit": "mixed",
+    "metered_on": "unstated",
+    "source_url": "https://developers.cloudflare.com/pages/platform/limits/",
+    "read_on": "2026-11-02",
+    "notes": "the quota counts builds, not minutes: a one-minute build and a twenty-minute build each use one of the 500; the vocabulary has no builds term for the unit, so mixed stands in"
+  },
+  "per_object_cap": {
+    "stated": "20 minutes per build",
+    "bytes": null,
+    "source_url": "https://developers.cloudflare.com/pages/platform/limits/"
+  },
+  "retention": {
+    "stated": "unverified: the limits and build pages state no retention period for builds or build logs",
+    "days": null,
+    "source_url": "https://developers.cloudflare.com/pages/platform/limits/"
+  },
+  "egress": {
+    "terms": "not stated for the build container; the output of a build is a Pages deployment",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://developers.cloudflare.com/pages/platform/limits/"
+  },
+  "interface": [
+    "git",
+    "rest"
+  ],
+  "interface_detail": "a push to a connected GitHub or GitLab repository builds and deploys the project; a Deploy Hook is a unique URL that starts a build for one branch on an HTTP POST",
+  "endpoint": "unverified: the Deploy Hook URL is generated per hook in the dashboard and its format is not stated on the page read",
+  "tooling": "a gVisor container with Ruby, Node.js, Python, PHP and Go preinstalled and versions overridable by environment variable or version file; the user supplies a build command and an output directory",
+  "chaining": "a 20-minute job on every push or Deploy Hook call, ending in a Pages deployment. An external scheduler calling a Deploy Hook makes it a scheduled job, but each call spends one of the 500 monthly builds. Builds run by an external CI system and uploaded with Wrangler direct upload do not use the Pages build runner; Cloudflare Workers Builds is a separate service with its own record",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "500 builds a month on Free; 5,000 on Pro; 20,000 on Business",
+      "source": "https://developers.cloudflare.com/pages/platform/limits/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "1 build at a time per account on Free; 5 on Pro; 20 on Business",
+      "source": "https://developers.cloudflare.com/pages/platform/limits/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "20 minutes per build",
+      "source": "https://developers.cloudflare.com/pages/platform/limits/"
+    }
+  ],
+  "limits_note": "only GitHub and GitLab repositories connect; a project connected to Git cannot switch to Direct Upload later",
+  "binding": "volume-quota",
+  "binding_note": "the 500 monthly builds are spent by pushes and Deploy Hook calls whatever their length, so a busy repository reaches the count before the 20-minute cap matters",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "a Cloudflare account opened with an email address and a password, verified by email; a GitHub or GitLab account authorised to Cloudflare for Git builds",
+    "country": null
+  },
+  "reliability_note": "unverified: no page read states what happens to a Free account once the 500 monthly builds are used",
+  "price_per_tb_month": null,
+  "evidence": [
+    {
+      "url": "https://developers.cloudflare.com/pages/platform/limits/",
+      "date": "2026-11-02",
+      "capture": "sha256:7f4078e143d1dd096866771c0468b0d3334be8bd1008840fbb5479ad9d67a818",
+      "quote": "| Builds per month | 500 | 5,000 | 20,000 |",
+      "proved": "Free allows 500 builds a month; Pro 5,000; Business 20,000"
+    },
+    {
+      "url": "https://developers.cloudflare.com/pages/platform/limits/",
+      "date": "2026-11-02",
+      "capture": "sha256:7f4078e143d1dd096866771c0468b0d3334be8bd1008840fbb5479ad9d67a818",
+      "quote": "| Builds | 1 build at a time | 5 concurrent builds | 20 concurrent builds |",
+      "proved": "Free runs 1 build at a time; Pro 5 concurrent; Business 20"
+    },
+    {
+      "url": "https://developers.cloudflare.com/pages/platform/limits/",
+      "date": "2026-11-02",
+      "capture": "sha256:7f4078e143d1dd096866771c0468b0d3334be8bd1008840fbb5479ad9d67a818",
+      "quote": "Builds will timeout after 20 minutes. Concurrent builds are counted per account.",
+      "proved": "a build is terminated after 20 minutes; concurrency is counted per account"
+    },
+    {
+      "url": "https://developers.cloudflare.com/pages/configuration/git-integration/",
+      "date": "2026-11-02",
+      "capture": "sha256:73c43f19616fcdd6f71df18b93f65612330f53a4caa5ba1e8b3c368c7f03c0ed",
+      "quote": "Cloudflare supports connecting Cloudflare Pages to your GitHub and GitLab repositories. Pages does not currently support connecting self-hosted instances of GitHub or GitLab.",
+      "proved": "GitHub and GitLab connect; self-hosted instances of either do not"
+    },
+    {
+      "url": "https://developers.cloudflare.com/pages/configuration/git-integration/",
+      "date": "2026-11-02",
+      "capture": "sha256:73c43f19616fcdd6f71df18b93f65612330f53a4caa5ba1e8b3c368c7f03c0ed",
+      "quote": "If you deploy using the Git integration, you cannot switch to [Direct Upload](https://developers.cloudflare.com/pages/get-started/direct-upload/) later.",
+      "proved": "a Git-integrated Pages project cannot later become a Direct Upload project"
+    },
+    {
+      "url": "https://developers.cloudflare.com/pages/configuration/git-integration/",
+      "date": "2026-11-02",
+      "capture": "sha256:73c43f19616fcdd6f71df18b93f65612330f53a4caa5ba1e8b3c368c7f03c0ed",
+      "quote": "Cloudflare Workers now also supports Git integrations to automatically build and deploy Workers from your connected Git repository.",
+      "proved": "Workers has a separate Git build service, Workers Builds"
+    },
+    {
+      "url": "https://developers.cloudflare.com/pages/configuration/deploy-hooks/",
+      "date": "2026-11-02",
+      "capture": "sha256:5c3da66547a81eb3218f92253b7126f223e07b342e87b7f420b45046ef6737e4",
+      "quote": "Each event source may obtain its own unique URL, which will receive HTTP POST requests in order to initiate new deployments.",
+      "proved": "a Deploy Hook URL starts a new Pages build on an HTTP POST"
+    },
+    {
+      "url": "https://developers.cloudflare.com/pages/configuration/deploy-hooks/",
+      "date": "2026-11-02",
+      "capture": "sha256:5c3da66547a81eb3218f92253b7126f223e07b342e87b7f420b45046ef6737e4",
+      "quote": "Schedule a CRON trigger to update your website on a fixed timeline",
+      "proved": "a Deploy Hook can be called from a scheduler to run builds on a timetable"
+    },
+    {
+      "url": "https://developers.cloudflare.com/pages/configuration/build-image/",
+      "date": "2026-11-02",
+      "capture": "sha256:97ab4228abc5cdce1d30735e628db8e97a966c79b10383cfc55a0f45e0ef1d72",
+      "quote": "Cloudflare Pages builds are run in a [gVisor ↗︎](https://gvisor.dev/docs/) container.",
+      "proved": "builds run in a gVisor container"
+    },
+    {
+      "url": "https://developers.cloudflare.com/pages/configuration/build-image/",
+      "date": "2026-11-02",
+      "capture": "sha256:97ab4228abc5cdce1d30735e628db8e97a966c79b10383cfc55a0f45e0ef1d72",
+      "quote": "Cloudflare Pages' build environment has broad support for a variety of languages, such as Ruby, Node.js, Python, PHP, and Go.",
+      "proved": "the build image carries Ruby, Node.js, Python, PHP and Go"
+    },
+    {
+      "url": "https://developers.cloudflare.com/pages/configuration/build-image/",
+      "date": "2026-11-02",
+      "capture": "sha256:97ab4228abc5cdce1d30735e628db8e97a966c79b10383cfc55a0f45e0ef1d72",
+      "quote": "If you are using the Pages v2 build image, your project will be automatically moved to v3 on February 23, 2027.",
+      "proved": "older build images are retired into the v3 image"
+    },
+    {
+      "url": "https://developers.cloudflare.com/pages/how-to/use-direct-upload-with-continuous-integration/",
+      "date": "2026-11-02",
+      "capture": "sha256:6fe80c9fb8958c496743818c903c697f12fff897a3f1f552ba1fa06057a80ac2",
+      "quote": "Cloudflare Pages supports directly uploading prebuilt assets, allowing you to use custom build steps for your applications and deploy to Pages with",
+      "proved": "prebuilt assets can be deployed to Pages from an external CI system with Wrangler"
+    },
+    {
+      "url": "https://developers.cloudflare.com/fundamentals/account/create-account/",
+      "date": "2026-11-02",
+      "capture": "sha256:0165fdf250cc1338d7e7a94dd78c7adc2df6f592133ad72dfcf0651a080c5543",
+      "quote": "Enter your Email and Password.",
+      "proved": "the sign-up form asks for an email address and a password"
+    },
+    {
+      "url": "https://developers.cloudflare.com/pages/platform/limits/",
+      "date": "2026-11-04",
+      "proved": "Free allows 500 builds a month",
+      "capture": "sha256:7f4078e143d1dd096866771c0468b0d3334be8bd1008840fbb5479ad9d67a818",
+      "quote": "| Builds per month | 500 | 5,000 | 20,000 |"
+    },
+    {
+      "url": "probe:https://developers.cloudflare.com/pages/platform/limits/",
+      "date": "2026-11-04",
+      "proved": "the limits page answered HTTP 200 on 2026-11-04",
+      "capture": "sha256:2097533da27aaba2dcd808d6e409bfc67f207f859cbf72bbeb14c98d994e1edc",
+      "quote": "\"status\": 200"
+    }
+  ],
+  "notes": "A Git-driven build service whose job is bound to a Pages deployment: the build command writes an output directory that is deployed. Pro plan price is unverified; no page read states it. A separate Cloudflare service, Workers Builds, offers 3,000 build minutes a month on Free and has its own record."
+}

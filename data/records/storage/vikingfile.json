@@ -5,7 +5,7 @@
   "url": "https://vikingfile.com",
   "category": "anonymous-dump",
   "free_tier": {
-    "stated": "Tagline: 'Share large files anonymously. Unlimited storage. No mail required. No speed limit. No size limit.' No numeric quota page found.",
+    "stated": "The page states unlimited storage, anonymous use and no speed limit on the free Regular plan, which shows full advertisement and a captcha. The unlimited claim is not measured.",
     "unit": "unlimited",
     "metered_on": "stored-bytes",
     "source_url": "https://vikingfile.com/",
@@ -18,12 +18,13 @@
     "notes": "not stated"
   },
   "retention": {
-    "stated": "not stated",
+    "stated": "Free Regular plan: files deleted 15 days after last download. Premium: files never deleted if shared.",
     "source_url": "https://vikingfile.com/",
-    "notes": "not stated"
+    "notes": "not stated",
+    "days": 15
   },
   "egress": {
-    "terms": "Claims no speed limit; no GB meter published.",
+    "terms": "Free Regular plan: downloads go through a landing page with a captcha and full advertisement; no speed limit is claimed and no GB meter is published.",
     "metered": false
   },
   "interface": [
@@ -32,16 +33,22 @@
   "interface_detail": "wrapper-only",
   "tooling": "No documented API; the endpoints found in the page source (/api/complete, /api/get, /api/upload-url) reject naive curl with an HTML error page, so a browser/session is required.",
   "chaining": "Anonymous, no-mail, no-size-limit uploads — the same shape as Buzzheavier/ZeroFS. Retention policy is unpublished, which is the risk.",
-  "limits": [],
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "free Regular plan: files deleted 15 days after last download",
+      "source": "https://vikingfile.com/"
+    }
+  ],
   "limits_note": "Unpublished per-file and retention terms; only the marketing claims are visible without a session.",
   "identity_cost": {
     "kind": "anonymous",
-    "detail": null,
+    "detail": "The page states that no email is required to upload.",
     "country": null
   },
   "reliability_note": "Cannot be verified past the landing page: no FAQ, no terms, upload endpoints return 'File not found' HTML to scripted POSTs. Treat the unlimited claim as unverified marketing.",
-  "confidence": "inferred",
-  "confidence_note": null,
+  "confidence": "documented",
+  "confidence_note": "page read on 2026-11-03: vikingfile.com (landing page: Unlimited storage, Anonymous, No speed limit, No mail required; REGULAR is Free with Full advertisement, Landing page for download, Captcha, Files deleted 15 days after last download; PREMIUM is 10 € / month with Files never deleted if shared). Upload endpoints were not probed on 2026-11-03 and the unlimited-storage claim is not measured.",
   "evidence": [
     {
       "url": "https://vikingfile.com/",
@@ -52,11 +59,53 @@
       "url": "https://vikingfile.com/api/complete",
       "date": "2026-10-21",
       "proved": "probe: POST -F file=@vk2.txt -> 200 text/html 'File not found' (no JSON API)"
+    },
+    {
+      "url": "https://vikingfile.com/",
+      "date": "2026-11-03",
+      "proved": "the page states unlimited storage, anonymous use and no speed limit",
+      "capture": "sha256:3571d383f5b34363e99b8b6e75041836a9c17e468b7b2cb5d6ff9b5790a6d7e6",
+      "quote": "No speed limit\n\nUnlimited storage\n\nAnonymous"
+    },
+    {
+      "url": "https://vikingfile.com/",
+      "date": "2026-11-03",
+      "proved": "the free Regular plan shows advertisements and a captcha and deletes files 15 days after last download",
+      "capture": "sha256:3571d383f5b34363e99b8b6e75041836a9c17e468b7b2cb5d6ff9b5790a6d7e6",
+      "quote": "### REGULAR\n\n---\n\nFree\n\nFull advertisement\n\nLanding page for download\n\nCaptcha\n\nFiles deleted 15 days after last download"
+    },
+    {
+      "url": "https://vikingfile.com/",
+      "date": "2026-11-03",
+      "proved": "the page states unlimited filesize and no mail required",
+      "capture": "sha256:3571d383f5b34363e99b8b6e75041836a9c17e468b7b2cb5d6ff9b5790a6d7e6",
+      "quote": "Unlimited filesize\n\nNo mail required"
+    },
+    {
+      "url": "https://vikingfile.com/",
+      "date": "2026-11-03",
+      "proved": "the Option for webmaster is 10 EUR per TB stored per month with unlimited traffic",
+      "capture": "sha256:3571d383f5b34363e99b8b6e75041836a9c17e468b7b2cb5d6ff9b5790a6d7e6",
+      "quote": "### OPTION FOR WEBMASTER\n\n---\n\n10 € / TB stored / month\n\nTraffic unlimited"
+    },
+    {
+      "url": "https://vikingfile.com/",
+      "date": "2026-11-03",
+      "proved": "Premium is 10 EUR per month and never deletes shared files",
+      "capture": "sha256:3571d383f5b34363e99b8b6e75041836a9c17e468b7b2cb5d6ff9b5790a6d7e6",
+      "quote": "### PREMIUM\n\n---\n\n10 € / month\n\nNo advertisement\n\nDirect download\n\nNo captcha\n\nFiles never deleted if shared"
+    },
+    {
+      "url": "https://vikingfile.com/",
+      "date": "2026-11-03",
+      "proved": "the free Regular plan deletes files 15 days after last download",
+      "capture": "sha256:3571d383f5b34363e99b8b6e75041836a9c17e468b7b2cb5d6ff9b5790a6d7e6",
+      "quote": "Files deleted 15 days after last download"
     }
   ],
-  "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
-  "notes": "Tagline: 'Share large files anonymously. Unlimited storage. No mail required. No speed limit. No size limit.' No numeric quota page found.",
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-11-03T15:03:57.987Z",
+  "notes": "The page states unlimited storage, anonymous use and no speed limit; the free Regular plan deletes files 15 days after last download.",
   "extras": {
     "dead_end": {
       "failure_class": "quota",
@@ -65,6 +114,7 @@
       "first_recorded": "2026-10-21"
     }
   },
-  "binding": "none",
-  "binding_note": null
+  "binding": "retention-clamped",
+  "binding_note": "free files are deleted 15 days after last download, so stored data does not persist without downloads or a paid plan; the unlimited storage claim is not measured",
+  "price_per_tb_month": "10 EUR per TB stored per month on the Option for webmaster (traffic unlimited); Premium is 10 EUR per month."
 }

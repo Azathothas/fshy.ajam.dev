@@ -5,12 +5,12 @@
   "category": "Usenet indexer (Newznab API, open registration)",
   "tier": "free",
   "free_tier": {
-    "stated": "Vendor: 'Register and use altHUB without paying first. Upgrade later if you want higher limits.' A third-party table describes the free side as a '14-day trial: 5,000 downloads and 5,000 API calls' and lists AltPRO USD 5/year and AltUNLIMITED USD 10/year.",
+    "stated": "A new account starts on a 14-day Trial (500 API requests and 100 NZB downloads per day) and then moves to a Free tier with no expiry (100 API requests and 25 NZB downloads per day); Premium is USD 10 for 1 year. Vendor home page: 'Register and use altHUB without paying first. Upgrade later if you want higher limits.'",
     "unit": "requests",
     "metered_on": "request-count",
     "source_url": "https://althub.co.za/",
     "read_on": "2026-10-23",
-    "notes": "The vendor promises a free start without a number; the only number is third-party and describes a trial. Both readings are recorded because they lead to different verdicts."
+    "notes": "The vendor promises a free start without a number. The daily caps are third-party figures from a review dated 2026-10-08 (Trial 500 API requests and 100 NZB downloads per day for 14 days, then Free 100 and 25 per day with no expiry); the vendor plans page redirects to the sign-in page."
   },
   "per_object_cap": {
     "stated": "not applicable: an NZB pointer file",
@@ -37,30 +37,30 @@
   "interface_detail": "Newznab API. The site's own pages advertise 'Fast API', 'Works with SABnzbd and NZBGet, using the same API your client already speaks' and a response-time claim. An unauthenticated /api?t=caps returned 403 with text/plain, so the API refuses anonymous callers.",
   "endpoint": "https://althub.co.za/api",
   "tooling": "Native Newznab, explicitly built for SABnzbd and NZBGet; Prowlarr and NZBHydra2 add it with URL plus key.",
-  "chaining": "At USD 5/year it is the cheapest paid escape from a 25-call free tier; the free start is what makes it worth trying before paying.",
+  "chaining": "Premium is USD 10 for 1 year (USD 25 for 3 years, USD 40 for 5 years) and lifts the daily caps of the Free tier; the Trial and the Free tier make it worth trying before paying.",
   "limits": [
     {
       "kind": "request-rate",
-      "value": "5,000 API calls and 5,000 downloads during a reported 14-day trial",
-      "source": "https://nzbhydra.com/indexers/"
+      "value": "Free tier with no expiry: 100 API requests and 25 NZB downloads per day; 14-day Trial: 500 API requests and 100 NZB downloads per day",
+      "source": "https://usenetreviewz.com/althub-review/"
     },
     {
       "kind": "write-gated",
-      "value": "the plans page is behind a Cloudflare challenge, so the allowance a free account actually keeps after a trial was not readable",
-      "source": "probe:https://althub.co.za/plans"
+      "value": "the vendor plans page redirects to the sign-in page (final URL /login?redirect=%2Fplans), so the Free and Trial caps are third-party figures",
+      "source": "https://althub.co.za/plans"
     }
   ],
   "limits_note": "",
   "binding": "request-rate",
-  "binding_note": "A daily counter is the only kind of limit this service has been reported to run, and the free side is either generous (5,000) or time-boxed (14 days). Which of those is true decides whether it binds at all.",
+  "binding_note": "A daily counter is the limit: the Free tier has no expiry and allows 100 API requests and 25 NZB downloads per day, so request-rate binds on any automated use.",
   "identity_cost": {
     "kind": "email",
-    "detail": "Registration is open: /register serves username, password, confirm and email fields, with no invite field and no card.",
+    "detail": "Registration is open: /register asks for a username, an email address that must be confirmed before sign-in, a password and a password confirmation, with no invite field and no card.",
     "country": null
   },
   "reliability_note": "The domain moved from althub.ovh, which now returns a Cloudflare 530 to every request; a saved config pointing at the old host fails at DNS, not at auth.",
   "confidence": "reported",
-  "confidence_note": "The registration form and the 403 on the API were observed today. The allowance is third-party because the plans page is challenged.",
+  "confidence_note": "The registration form was observed on 2026-10-23 and again on 2026-11-03, and the unauthenticated API request was refused on 2026-10-23. The allowances are third-party (a review dated 2026-10-08) because the plans page redirects to the sign-in page. One free account would show the first-party caps.",
   "evidence": [
     {
       "url": "probe:https://althub.co.za/",
@@ -86,17 +86,123 @@
       "url": "https://nzbhydra.com/indexers/",
       "date": "2026-10-23",
       "proved": "third-party: 'Open registration', 'AltPRO USD 5/year, AltUNLIMITED USD 10/year', '14-day trial: 5,000 downloads and 5,000 API calls'"
+    },
+    {
+      "url": "https://usenetreviewz.com/althub-review/",
+      "date": "2026-11-03",
+      "proved": "a review that read the plans page on 2026-10-08 lists the Free tier as 100 API requests and 25 NZB downloads per day with no expiry",
+      "capture": "sha256:c2d35fe2d7d04ce47653d43bfa16716b859efe80ccb97cc869d742dbb8460ee5",
+      "quote": "Free (free, no expiry): 100 API requests and 25 NZB downloads per day. No requests or invites."
+    },
+    {
+      "url": "https://usenetreviewz.com/althub-review/",
+      "date": "2026-11-03",
+      "proved": "the Trial tier is free for 14 days at 500 API requests and 100 NZB downloads per day and then moves to Free",
+      "capture": "sha256:c2d35fe2d7d04ce47653d43bfa16716b859efe80ccb97cc869d742dbb8460ee5",
+      "quote": "Trial (free, 14 days): 500 API requests and 100 NZB downloads per day. No requests or invites. Moves to Free automatically."
+    },
+    {
+      "url": "https://usenetreviewz.com/althub-review/",
+      "date": "2026-11-03",
+      "proved": "the Free tier caps are 100 API requests and 25 NZB downloads per day",
+      "capture": "sha256:c2d35fe2d7d04ce47653d43bfa16716b859efe80ccb97cc869d742dbb8460ee5",
+      "quote": "Free (free, no expiry): 100 API requests and 25 NZB downloads per day. No requests or invites."
+    },
+    {
+      "url": "https://usenetreviewz.com/althub-review/",
+      "date": "2026-11-03",
+      "proved": "the review is the source of the Free tier caps",
+      "capture": "sha256:c2d35fe2d7d04ce47653d43bfa16716b859efe80ccb97cc869d742dbb8460ee5",
+      "quote": "Free (free, no expiry): 100 API requests and 25 NZB downloads per day. No requests or invites."
+    },
+    {
+      "url": "https://althub.co.za/plans",
+      "date": "2026-11-03",
+      "proved": "a read of /plans through a pinned provider ended on the sign-in page with a redirect back to /plans",
+      "capture": "sha256:3afbf4a09b1324f80c8b53bb3751dc5a8660c647960c340cfc35b091ba55804a",
+      "quote": "x-web-final-url: https://althub.co.za/login?redirect=%2Fplans"
+    },
+    {
+      "url": "https://althub.co.za/plans",
+      "date": "2026-11-03",
+      "proved": "the row cites the plans page itself",
+      "capture": "sha256:3afbf4a09b1324f80c8b53bb3751dc5a8660c647960c340cfc35b091ba55804a",
+      "quote": "x-web-final-url: https://althub.co.za/login?redirect=%2Fplans"
+    },
+    {
+      "url": "https://usenetreviewz.com/althub-review/",
+      "date": "2026-11-03",
+      "proved": "Premium costs $10 for 1 year, $25 for 3 years and $40 for 5 years, with unlimited API requests and NZB downloads",
+      "capture": "sha256:c2d35fe2d7d04ce47653d43bfa16716b859efe80ccb97cc869d742dbb8460ee5",
+      "quote": "Premium ($10 for 1 year, $25 for 3 years, $40 for 5 years): unlimited API requests, NZB downloads and requests, plus 10 invites. Returns to Free when the term ends."
+    },
+    {
+      "url": "https://usenetreviewz.com/althub-review/",
+      "date": "2026-11-03",
+      "proved": "Premium is $10 for 1 year",
+      "capture": "sha256:c2d35fe2d7d04ce47653d43bfa16716b859efe80ccb97cc869d742dbb8460ee5",
+      "quote": "Premium ($10 for 1 year, $25 for 3 years, $40 for 5 years): unlimited API requests, NZB downloads and requests, plus 10 invites. Returns to Free when the term ends."
+    },
+    {
+      "url": "https://usenetreviewz.com/althub-review/",
+      "date": "2026-11-03",
+      "proved": "the Free tier is a daily counter of 100 API requests and 25 NZB downloads",
+      "capture": "sha256:c2d35fe2d7d04ce47653d43bfa16716b859efe80ccb97cc869d742dbb8460ee5",
+      "quote": "Free (free, no expiry): 100 API requests and 25 NZB downloads per day. No requests or invites."
+    },
+    {
+      "url": "https://althub.co.za/register",
+      "date": "2026-11-03",
+      "proved": "the registration form is served and asks for an email address that must be confirmed",
+      "capture": "sha256:c27344a32799374be24560ca3cc29c1018fd298d7f0f809bdbf8a412dbb032a4",
+      "quote": "Email addressUse an address you can access. You'll need to confirm it before you can sign in."
+    },
+    {
+      "url": "https://althub.co.za/register",
+      "date": "2026-11-03",
+      "proved": "the form asks for an email address that is confirmed before sign-in",
+      "capture": "sha256:c27344a32799374be24560ca3cc29c1018fd298d7f0f809bdbf8a412dbb032a4",
+      "quote": "Email addressUse an address you can access. You'll need to confirm it before you can sign in."
+    },
+    {
+      "url": "https://usenetreviewz.com/althub-review/",
+      "date": "2026-11-03",
+      "proved": "the site relaunched on 2026-09-15 and reopened registration two days later",
+      "capture": "sha256:c2d35fe2d7d04ce47653d43bfa16716b859efe80ccb97cc869d742dbb8460ee5",
+      "quote": "altHUB relaunched its site on September 15, 2026, and reopened registration two days later."
+    },
+    {
+      "url": "https://althub.co.za/",
+      "date": "2026-11-03",
+      "proved": "the vendor home page still promises a free start and gives no number",
+      "capture": "sha256:5715167c5582bea48e0db2045bbb8133eff22495c1b76ad212397a907826996d",
+      "quote": "Register and use altHUB without paying first. Upgrade later if you want higher limits."
+    },
+    {
+      "url": "https://usenetreviewz.com/althub-review/",
+      "date": "2026-11-03",
+      "proved": "a third-party review states that the vendor publishes no retention figure and no index size",
+      "capture": "sha256:c2d35fe2d7d04ce47653d43bfa16716b859efe80ccb97cc869d742dbb8460ee5",
+      "quote": "altHUB does not publish retention or index size"
+    },
+    {
+      "url": "https://usenetreviewz.com/althub-review/",
+      "date": "2026-11-03",
+      "proved": "the Free tier is 100 API requests and 25 NZB downloads per day with no expiry",
+      "capture": "sha256:c2d35fe2d7d04ce47653d43bfa16716b859efe80ccb97cc869d742dbb8460ee5",
+      "quote": "Free (free, no expiry): 100 API requests and 25 NZB downloads per day. No requests or invites."
     }
   ],
   "verdict": "qualifies-with-caveat",
   "extras": {
-    "price": "USD 5/year AltPRO (reported)",
+    "price": "USD 10/year Premium (reported)",
     "nzb_is_newznab": true,
     "old_host": "althub.ovh returns Cloudflare 530",
-    "registration_open": true
+    "registration_open": true,
+    "relaunched": "site relaunched on September 15, 2026 with registration reopened two days later (third-party review)"
   },
   "notes": "The old spelling altHUB.ovh is still circulating in lists; it answers 530, which reads like a dead service and is not one.",
-  "verified_at": "2026-10-23T02:11:54.066Z",
+  "verified_at": "2026-11-03T11:28:46.166Z",
   "topic": "debrid",
   "price_per_tb_month": null
 }

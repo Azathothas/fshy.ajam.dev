@@ -5,7 +5,7 @@
   "url": "https://raw.githubusercontent.com/tablelandnetwork/docs/main/docs/fundamentals/limits.md",
   "category": "rejected-provider",
   "free_tier": {
-    "stated": "500k rows / 24 columns per table. Their own docs tell you to put large media on IPFS and store the CID. A pointer store cannot hold 500 GB.",
+    "stated": "No file storage: limits are 500000 rows and 24 columns per table and 1kb per cell (open-beta limits), about 12 GB of cell data per table at most; the docs say to store pointers to IPFS, Filecoin or Arweave instead.",
     "unit": "none",
     "metered_on": "none",
     "source_url": "https://raw.githubusercontent.com/tablelandnetwork/docs/main/docs/fundamentals/limits.md",
@@ -25,7 +25,7 @@
     "notes": null
   },
   "egress": {
-    "terms": "not recorded",
+    "terms": "Reads go through an unauthenticated REST call to a gateway; no meter is stated.",
     "metered": false
   },
   "interface": [
@@ -34,25 +34,92 @@
   "interface_detail": null,
   "tooling": "not recorded",
   "chaining": "not recorded",
-  "limits": [],
-  "limits_note": null,
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "500000 rows and 24 columns per table",
+      "source": "https://raw.githubusercontent.com/tablelandnetwork/docs/main/docs/fundamentals/limits.md"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "1kb per cell",
+      "source": "https://raw.githubusercontent.com/tablelandnetwork/docs/main/docs/fundamentals/limits.md"
+    }
+  ],
+  "limits_note": "Mutating queries are onchain operations paying the chain's gas; query size is limited to 35kb (14.5kb on Ethereum mainnet).",
   "identity_cost": {
     "kind": "email",
-    "detail": null,
+    "detail": "unverified: no sign-up page was read; writes are onchain operations, so a wallet on a supported chain is needed.",
     "country": null
   },
-  "reliability_note": "500k rows / 24 columns per table. Their own docs tell you to put large media on IPFS and store the CID. A pointer store cannot hold 500 GB.",
-  "confidence": "reported",
-  "confidence_note": null,
+  "reliability_note": "tableland.xyz and docs.tableland.xyz redirect (HTTP 302) to the Recall Labs wind-down notice of 2026-10-30 on 2026-11-03; the notice names the Recall Network, not Tableland, so the service status is unverified.",
+  "confidence": "documented",
+  "confidence_note": "re-read on 2026-11-03: the vendor docs limits page https://raw.githubusercontent.com/tablelandnetwork/docs/main/docs/fundamentals/limits.md (row, column and cell limits, unauthenticated REST reads, not a file storage solution) and the Recall Labs wind-down post on x.com (RecallLabs_) that tableland.xyz and docs.tableland.xyz redirect to; identity and service status are unverified",
   "evidence": [
     {
       "url": "https://raw.githubusercontent.com/tablelandnetwork/docs/main/docs/fundamentals/limits.md",
       "date": "2026-10-21",
       "proved": "500k rows / 24 columns per table. Their own docs tell you to put large media on IPFS and store the CID. A pointer store cannot hold 500 GB."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tablelandnetwork/docs/main/docs/fundamentals/limits.md",
+      "date": "2026-11-03",
+      "proved": "a table is limited to 500000 rows",
+      "capture": "sha256:3de2af041bd64971a7ea2ca2ee46166f26434ed7885bce85336a1c5eb2606bc8",
+      "quote": "| Rows       | 500000   |"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tablelandnetwork/docs/main/docs/fundamentals/limits.md",
+      "date": "2026-11-03",
+      "proved": "each cell holds 1 kb",
+      "capture": "sha256:3de2af041bd64971a7ea2ca2ee46166f26434ed7885bce85336a1c5eb2606bc8",
+      "quote": "Each cell limit is 1kb."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tablelandnetwork/docs/main/docs/fundamentals/limits.md",
+      "date": "2026-11-03",
+      "proved": "the query size limit",
+      "capture": "sha256:3de2af041bd64971a7ea2ca2ee46166f26434ed7885bce85336a1c5eb2606bc8",
+      "quote": "Query size is limited to a maximum of 35kb."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tablelandnetwork/docs/main/docs/fundamentals/limits.md",
+      "date": "2026-11-03",
+      "proved": "reads are unauthenticated REST calls",
+      "capture": "sha256:3de2af041bd64971a7ea2ca2ee46166f26434ed7885bce85336a1c5eb2606bc8",
+      "quote": "All table reads must happen through an offchain interaction using an unauthenticated REST API call to a Tableland validator node's gateway."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tablelandnetwork/docs/main/docs/fundamentals/limits.md",
+      "date": "2026-11-03",
+      "proved": "the docs describe pointer storage, not file storage",
+      "capture": "sha256:3de2af041bd64971a7ea2ca2ee46166f26434ed7885bce85336a1c5eb2606bc8",
+      "quote": "Tableland is _not a file storage_ solution. Instead, use pointers to solutions like IPFS, Filecoin, & Arweave to enable large file integrations and store the pointers in table cells."
+    },
+    {
+      "url": "probe:docs.tableland.xyz",
+      "date": "2026-11-03",
+      "proved": "the docs page ends on the Recall Labs notice",
+      "capture": "sha256:4a9a6d32ff4dd317073b922d0b4b4ce90155a3cf5b94edef5b161be47f6ae018",
+      "quote": "\"final_url\": \"https://x.com/RecallLabs_/status/2116235386582426069\""
+    },
+    {
+      "url": "https://x.com/RecallLabs_/status/2116235386582426069",
+      "date": "2026-11-03",
+      "proved": "the notice that the Tableland domains redirect to",
+      "capture": "sha256:2194fd0ed6b74b82e6205c1576bc1797cf7e824f89c2ca393cfc4cd8758fac58",
+      "quote": "We’ve made the decision to wind down Recall Labs."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tablelandnetwork/docs/main/docs/fundamentals/limits.md",
+      "date": "2026-11-04",
+      "proved": "the vendor docs state the network is not file storage",
+      "capture": "sha256:3de2af041bd64971a7ea2ca2ee46166f26434ed7885bce85336a1c5eb2606bc8",
+      "quote": "Tableland is _not a file storage_ solution."
     }
   ],
   "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
+  "verified_at": "2026-11-04T01:24:43.357Z",
   "notes": "500k rows / 24 columns per table. Their own docs tell you to put large media on IPFS and store the CID. A pointer store cannot hold 500 GB.",
   "extras": {
     "dead_end": {
@@ -62,6 +129,6 @@
       "first_recorded": "2026-10-21"
     }
   },
-  "binding": "none",
-  "binding_note": null
+  "binding": "volume-quota",
+  "binding_note": "about 12 GB of cell data per table at most, far below 500 GB."
 }

@@ -53,7 +53,7 @@
     "detail": "Panel registration per the roundup; real-name requirements not stated.",
     "country": "None"
   },
-  "reliability_note": "Origin unreachable on the day checked.",
+  "reliability_note": "On 2026-11-03 the name www.locyanfrp.cn answered with a CNAME to www.locyanfrp.cn.a1.inithh.com and DNS status 3 (NXDOMAIN) at a public DNS-over-HTTPS resolver, so the site name resolves to no address.",
   "confidence": "unverified",
   "confidence_note": "The origin returned HTTP 530 on 2026-10-23, which is an origin-side failure, not a challenge.",
   "evidence": [
@@ -66,10 +66,45 @@
       "url": "https://www.nodeseek.com/post-570663-1",
       "date": "2026-10-23",
       "proved": "roundup lists unlimited tunnels and check-in traffic"
+    },
+    {
+      "url": "probe:https://8.8.8.8/resolve?name=www.locyanfrp.cn&type=A",
+      "date": "2026-11-03",
+      "proved": "a public DNS-over-HTTPS resolver answered the name www.locyanfrp.cn with a CNAME to www.locyanfrp.cn.a1.inithh.com and DNS status 3 (NXDOMAIN), so the site name resolves to no address",
+      "capture": "sha256:087ed4d1a5b3cd9c7ca5d5d7305624cdb7f7674c8944e72522ad524c4cd5ec4d",
+      "quote": "\"Status\":3,\"TC\":false,\"RD\":true,\"RA\":true,\"AD\":false,\"CD\":false,\"Question\":[{\"name\":\"www.locyanfrp.cn.\",\"type\":1}],\"Answer\":[{\"name\":\"www.locyanfrp.cn.\",\"type\":5,\"TTL\":300,\"data\":\"www.locyanfrp.cn.a1.inithh.com.\"}]"
+    },
+    {
+      "url": "probe:https://1.1.1.1/dns-query?name=www.locyanfrp.cn&type=A",
+      "date": "2026-11-03",
+      "proved": "a second public DNS-over-HTTPS resolver also answered DNS status 3 (NXDOMAIN) for www.locyanfrp.cn, which is a CNAME to www.locyanfrp.cn.a1.inithh.com",
+      "capture": "sha256:f09940447ddf393c2dafe7ebb7b2d2f4c172576e1bfe552fac21aeecdace73f9",
+      "quote": "\"Status\":3"
+    },
+    {
+      "url": "probe:locyanfrp.cn:443",
+      "date": "2026-11-03",
+      "proved": "a TCP connect to the apex locyanfrp.cn on port 443 timed out on 2026-11-03, so the HTTPS port of the apex did not accept a connection",
+      "capture": "sha256:90014ef9d71cebcfc870f324041eb35b8c97cbd12e4ac8ec442fce2d54f77f72",
+      "quote": "TimeoutError('timed out')"
+    },
+    {
+      "url": "probe:https://locyanfrp.cn/",
+      "date": "2026-11-03",
+      "proved": "an HTTPS GET of the apex locyanfrp.cn timed out on 2026-11-03 with no status",
+      "capture": "sha256:7fdf12c219ca17236d4c5157dbf024e4cea989a20da5b5da1decd4c1205de23e",
+      "quote": "\"error\": \"timeout\""
+    },
+    {
+      "url": "https://web.archive.org/web/20260515130252/http://locyanfrp.cn/",
+      "date": "2026-11-03",
+      "proved": "the Wayback Machine copy of the apex dated 2026-05-15 is a CDN not-found page, so the domain was not bound to a site on that date",
+      "capture": "sha256:58dbf2699dcb0d0d2732b5f7b54e443ee2ffcbf9ddde9cc08ba160540d52b441",
+      "quote": "Sorry, Please confirm that this domain name has been bound to your website."
     }
   ],
   "verdict": "dead",
-  "verified_at": "2026-10-23T00:00:00.000Z",
+  "verified_at": "2026-11-03T10:32:54.108Z",
   "price_per_tb_month": "USD 0",
   "notes": "HTTP 530 is Cloudflare reporting an origin DNS or connection failure, which usually means the backend is down rather than the page being blocked. Do not treat this as settled death without a second look.",
   "extras": {

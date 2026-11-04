@@ -6,10 +6,10 @@
   "category": "reader and extractor API",
   "verdict": "qualifies-with-caveat",
   "confidence": "measured",
-  "confidence_note": "liveness and the keyless RateLimit-Limit are measured; the keyless POST /scrape, the account credits and the paid rates are documented, not measured",
-  "verified_at": "2026-10-30T12:34:28.810Z",
+  "confidence_note": "liveness, the keyless RateLimit-Limit and the keyless 429 answer are measured with GET; the keyless POST /scrape, the account credits and the paid rates are documented, not measured",
+  "verified_at": "2026-11-02T01:02:36.094Z",
   "free_tier": {
-    "stated": "keyless /scrape: no key and no account, at a RateLimit-Limit of 4 with a RateLimit-Reset of 52 seconds, which the docs read as requests a minute; the documented keyless call is POST with a JSON body",
+    "stated": "keyless /scrape: no key and no account, 4 requests a minute (free_rpm 4 in the API's free_tier_rate_limited answer, RateLimit-Limit 4 on keyless answers that pass); the documented keyless call is POST with a JSON body",
     "unit": "requests",
     "metered_on": "request-count",
     "source_url": "https://api.spider.cloud/scrape?url=https://example.com",
@@ -17,7 +17,7 @@
     "notes": "an account that passes the vendor's signup checks gets 2,500 credits worth USD 0.25 once, with no card; the balance does not expire; pay as you go is USD 1 a GB of bandwidth plus USD 0.0001 a CPU minute"
   },
   "per_object_cap": {
-    "stated": "not applicable: the unit is a request",
+    "stated": "not applicable",
     "bytes": null,
     "source_url": "https://spider.cloud/",
     "notes": ""
@@ -44,7 +44,7 @@
   "limits": [
     {
       "kind": "request-rate",
-      "value": "keyless /scrape: RateLimit-Limit 4 with RateLimit-Reset 52 seconds on a keyless response, the header the docs define as requests allowed a minute",
+      "value": "keyless /scrape: 4 requests a minute, named as free_rpm 4 beside paid_rpm 10000 in the API's free_tier_rate_limited answer and sent as RateLimit-Limit 4 on keyless answers that pass, the header the docs define as requests allowed a minute",
       "source": "probe:https://api.spider.cloud/scrape?url=https://example.com"
     },
     {
@@ -59,13 +59,13 @@
     }
   ],
   "binding": "request-rate",
-  "limits_note": "a keyless GET of /scrape with a url query answered 400 with a zero-byte body and RateLimit-Limit 4, RateLimit-Remaining 3, RateLimit-Reset 52; the docs answer a GET on a POST route with 400 and define RateLimit-Limit as requests allowed a minute",
+  "limits_note": "keyless GETs of /scrape with a url query answer 400 with a zero-byte body and RateLimit-Limit 4, with RateLimit-Remaining 2 or 3 in a burst, until the throttle answers 429 with RateLimit-Limit 2 and RateLimit-Remaining 0, so RateLimit-Limit differs between the 400 and 429 answers; the docs answer a GET on a POST route with 400 and define RateLimit-Limit as requests allowed a minute",
   "identity_cost": {
     "kind": "anonymous",
     "detail": "/scrape takes no key and no account; keyless /crawl answers Payment Required with an offer to pay per request in USDC on Base with no account, key or signup; an account takes an email and password, or Google, GitHub or Discord",
     "country": null
   },
-  "reliability_note": "no reliability event recorded",
+  "reliability_note": "keyless /scrape throttles with 429: a burst of 12 parallel GETs answered 400 eight times and 429 four times, each 429 carrying Retry-After, RateLimit-Limit 2, RateLimit-Remaining 0 and a 328 byte JSON body; Retry-After read 1, 3 and 10 seconds in separate runs, and a call made after a Retry-After of 3 had elapsed answered 400 again; measured with GET, keyless POST /scrape is documented and not measured",
   "price_per_tb_month": null,
   "evidence": [
     {
@@ -205,8 +205,99 @@
       "proved": "official SDKs exist for Python, JavaScript, Rust and Go, and a CLI installs with cargo",
       "capture": "sha256:d0615be4624b269ecd34ffdebe67f6e9cd6532c90550aca57e81672fed9f59df",
       "quote": "Official SDKs for Python, JavaScript, Rust, and Go."
+    },
+    {
+      "url": "probe:https://api.spider.cloud/scrape?url=https://example.com",
+      "date": "2026-11-01",
+      "proved": "the keyless 429 answer is a JSON body with code free_tier_rate_limited that names free_rpm 4 and paid_rpm 10000: the free tier is 4 requests a minute and an account 10000",
+      "capture": "sha256:37662701f2d0d1d5c02978ebd6c6a90534fb1cb0c477f045895ef4033c69db4b",
+      "quote": "\"free_rpm\":4,\"paid_rpm\":10000"
+    },
+    {
+      "url": "probe:https://api.spider.cloud/scrape?url=https://example.com",
+      "date": "2026-11-02",
+      "proved": "a burst of 12 parallel keyless GETs of /scrape answered 400 eight times and 429 four times; each 429 carried Retry-After 10, RateLimit-Limit 2 and RateLimit-Remaining 0, each 400 carried RateLimit-Limit 4 and RateLimit-Remaining 2 or 3",
+      "capture": "sha256:126e09c9efaa7f62f2d62703e470d46b920502df55823ed23de9b2f1f0d2ec55",
+      "quote": "\"statuses\": [ 429, 400, 429, 400, 429, 400, 400, 429, 400, 400, 400, 400 ]"
+    },
+    {
+      "url": "probe:https://api.spider.cloud/scrape?url=https://example.com",
+      "date": "2026-11-01",
+      "proved": "the keyless 429 answer tells the caller to slow down, or create an account and add credits for up to 10,000 requests/min",
+      "capture": "sha256:37662701f2d0d1d5c02978ebd6c6a90534fb1cb0c477f045895ef4033c69db4b",
+      "quote": "\"error\":\"Free tier rate limit reached. Slow down, or create an account and add credits for up to 10,000 requests/min.\",\"code\":\"free_tier_rate_limited\""
+    },
+    {
+      "url": "probe:https://api.spider.cloud/scrape?url=https://example.com",
+      "date": "2026-11-01",
+      "proved": "a keyless GET of /scrape answered 429 with Retry-After 3, RateLimit-Limit 2, RateLimit-Remaining 0 and RateLimit-Reset 3",
+      "capture": "sha256:dca2a0118b495514da9958d760d1ba8810ee4f5fbfb959c39c12924ec89386d1",
+      "quote": "\"retry-after\": \"3\", \"ratelimit-limit\": \"2\", \"ratelimit-remaining\": \"0\", \"ratelimit-reset\": \"3\""
+    },
+    {
+      "url": "probe:https://api.spider.cloud/scrape?url=https://example.com",
+      "date": "2026-11-01",
+      "proved": "a keyless GET of /scrape answered 429 with Retry-After 1, RateLimit-Limit 2, RateLimit-Remaining 0 and RateLimit-Reset 1",
+      "capture": "sha256:629341b8791c58662e5d6650e520c4d2a3a16c19c1f0fc2c6ac47fab78881f54",
+      "quote": "\"retry-after\": \"1\", \"ratelimit-limit\": \"2\", \"ratelimit-remaining\": \"0\", \"ratelimit-reset\": \"1\""
+    },
+    {
+      "url": "probe:https://api.spider.cloud/scrape?url=https://example.com",
+      "date": "2026-11-01",
+      "proved": "a keyless GET probed at 19:27:59.949Z, 3.2 seconds after a 429 with Retry-After 3 probed at 19:27:56.708Z, answered 400 with RateLimit-Limit 4, RateLimit-Remaining 3 and RateLimit-Reset 59",
+      "capture": "sha256:855b3040cc05e9aaef08bc69690b4862a37f5cafa44dd2cdf9851d8e8aac969e",
+      "quote": "\"ratelimit-limit\": \"4\", \"ratelimit-remaining\": \"3\", \"ratelimit-reset\": \"59\""
+    },
+    {
+      "url": "https://spider.cloud/scrapers/indeed-scraper/",
+      "date": "2026-11-01",
+      "proved": "the vendor's scraper pages label the live keyless run with a rate of 4 a minute",
+      "capture": "sha256:f9a6aaa692c7f49212be6abb1335d0ecd6ddca859bf8f04c661cbd920977d044",
+      "quote": "run live · no key · 4/min"
+    },
+    {
+      "url": "https://spider.cloud/agent-skill/SKILL.md",
+      "date": "2026-11-01",
+      "proved": "the docs say going over the keyless limit returns 429 and tell the caller to honor Retry-After",
+      "capture": "sha256:87bd591a3360da68a08129533eb4aebd409de6a7edb8cdc33175b0162570d7cc",
+      "quote": "The keyless tier is rate limited and covers `/scrape` (and its alias `/v1/scrape`) only. Going over the limit returns `429`; honor `Retry-After`."
+    },
+    {
+      "url": "https://spider.cloud/docs/core/rate-limits/",
+      "date": "2026-11-01",
+      "proved": "an account starts at 10,000 core API requests a minute and rises through four levels, the fourth at 80,000",
+      "capture": "sha256:849dd493370e642933620329fddc40abaca31e6ee9df4a8c44e87497d915c0b0",
+      "quote": "Every account gets at least 10,000 requests per minute on the core API, and it goes up through four levels as you use more. ... | Level 4 | 80,000 |"
+    },
+    {
+      "url": "https://spider.cloud/docs/overview/",
+      "date": "2026-11-01",
+      "proved": "keyless runs from the documentation playground need no account and are capped at 25 a day",
+      "capture": "sha256:40c1ac1772ed082d9dca458c448ee3bfee5191fd8905acfe50973f18f4766208",
+      "quote": "Keyless runs work without an account, capped at 25 a day."
+    },
+    {
+      "url": "https://spider.cloud/llms-full.txt",
+      "date": "2026-11-01",
+      "proved": "POST /scrape is documented as working with no Authorization header and no account",
+      "capture": "sha256:1565f1f0993deb63fbe37ef69d88d4c1bbb2c3b096d03556858d9a8a27886cf1",
+      "quote": "`POST /scrape` works with no `Authorization` header and no account."
+    },
+    {
+      "url": "https://spider.cloud/llms-full.txt",
+      "date": "2026-11-01",
+      "proved": "the docs say /scrape answers with a JSON array holding one object for its single page, with a content field",
+      "capture": "sha256:1565f1f0993deb63fbe37ef69d88d4c1bbb2c3b096d03556858d9a8a27886cf1",
+      "quote": "Every content route except `/transform` returns a JSON array, one object per page, including `/scrape` for its single page. ... \"content\": \"# Example Domain"
+    },
+    {
+      "url": "https://spider.cloud/llms-full.txt",
+      "date": "2026-11-01",
+      "proved": "the docs call the keyless tier a way to make a first call and confirm connectivity, and say anything sustained needs a key",
+      "capture": "sha256:1565f1f0993deb63fbe37ef69d88d4c1bbb2c3b096d03556858d9a8a27886cf1",
+      "quote": "Treat it as a way to make a first call and confirm connectivity. Anything sustained needs a key."
     }
   ],
-  "notes": "A keyless GET of /scrape with a url query answers 400 with a zero-byte body, the documented answer to a GET on a POST route, so it does not test the keyless route; keyless POST /scrape with a JSON body is documented and not measured.",
+  "notes": "A keyless GET of /scrape with a url query answers 400 with a zero-byte body, the documented answer to a GET on a POST route, so it returns no page content; it does reach the keyless rate limiter, which answers a burst with 429. Keyless POST /scrape with a JSON body is documented and not measured.",
   "binding_note": "the keyless RateLimit-Limit of 4 binds before any volume; past it, a key or a per-request payment is needed"
 }

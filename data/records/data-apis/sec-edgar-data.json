@@ -1,0 +1,109 @@
+{
+  "topic": "data-apis",
+  "slug": "sec-edgar-data",
+  "provider": "SEC EDGAR Data APIs",
+  "url": "https://www.sec.gov/search-filings/edgar-application-programming-interfaces",
+  "category": "government filings API (filer submissions, XBRL company facts, bulk archives)",
+  "tier": "Free",
+  "free_tier": {
+    "stated": "Free data.sec.gov JSON APIs with no authentication or key; maximum request rate 10 requests per second; automated tools must declare a User-Agent; nightly bulk ZIP archives of all the JSON",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://www.sec.gov/search-filings/edgar-application-programming-interfaces",
+    "read_on": "2026-11-03",
+    "notes": "The submissions API and XBRL data update through the day as filings are disseminated. The www.sec.gov documentation pages answered HTTP 403 to an automated page fetch with no declared agent. A keyless submissions call with a generic probe agent answered HTTP 200."
+  },
+  "per_object_cap": {
+    "stated": "not stated; one JSON per filer, and companyfacts.zip and submissions.zip hold every filer",
+    "bytes": null,
+    "source_url": "https://www.sec.gov/search-filings/edgar-application-programming-interfaces",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable",
+    "days": null,
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not metered in bytes; the 10 requests per second rate bounds a client",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.sec.gov/search-filings/edgar-search-assistance/accessing-edgar-data"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "GET https://data.sec.gov/submissions/CIK##########.json and https://data.sec.gov/api/xbrl/companyfacts/CIK##########.json; bulk ZIPs under https://www.sec.gov/Archives/edgar/daily-index/",
+  "endpoint": "https://data.sec.gov",
+  "tooling": "curl or any HTTP client that sends a declared User-Agent",
+  "chaining": "Company filings and XBRL facts for free; the nightly ZIPs replace thousands of calls and feed a database load.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "10 requests per second maximum",
+      "source": "https://www.sec.gov/search-filings/edgar-search-assistance/accessing-edgar-data"
+    }
+  ],
+  "limits_note": "Bulk path: companyfacts.zip and submissions.zip, rebuilt nightly at about 3:00 a.m. ET. Storage terms: no storage limit read; the page asks to download only what is needed.",
+  "binding": "request-rate",
+  "binding_note": "10 requests per second is the only ceiling, and the bulk ZIPs avoid it.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "The APIs need no authentication or key; automated callers declare a User-Agent with a company name and contact address in the request header, which is not an account.",
+    "country": null
+  },
+  "reliability_note": "Requests above the rate, or from an undeclared automated tool, can be limited or refused; the www.sec.gov pages answered HTTP 403 to an automated fetch with no declared agent.",
+  "confidence": "documented",
+  "confidence_note": "Rate, auth and bulk terms are read from SEC pages; a keyless submissions call answered 200.",
+  "evidence": [
+    {
+      "url": "https://www.sec.gov/search-filings/edgar-application-programming-interfaces",
+      "date": "2026-11-03",
+      "proved": "the APIs need no authentication or keys",
+      "capture": "sha256:7b38fa308d3d8f16f6d62377a36fac33cbe7ebcf43d4ea628920bd93270dbd39",
+      "quote": "These APIs do not require any authentication or API keys to access."
+    },
+    {
+      "url": "https://www.sec.gov/search-filings/edgar-application-programming-interfaces",
+      "date": "2026-11-03",
+      "proved": "the bulk ZIP is republished nightly",
+      "capture": "sha256:7b38fa308d3d8f16f6d62377a36fac33cbe7ebcf43d4ea628920bd93270dbd39",
+      "quote": "This ZIP file is updated and republished nightly at approximately 3:00 a.m. ET."
+    },
+    {
+      "url": "https://www.sec.gov/search-filings/edgar-application-programming-interfaces",
+      "date": "2026-11-03",
+      "proved": "bulk archives are the efficient route",
+      "capture": "sha256:7b38fa308d3d8f16f6d62377a36fac33cbe7ebcf43d4ea628920bd93270dbd39",
+      "quote": "The most efficient means to fetch large amounts of API data is the bulk archive ZIP files, which are recompiled nightly."
+    },
+    {
+      "url": "https://www.sec.gov/search-filings/edgar-search-assistance/accessing-edgar-data",
+      "date": "2026-11-03",
+      "proved": "maximum request rate is 10 per second",
+      "capture": "sha256:a64b9647ce8b92d2619d808d10774b08fe138313adeb787523d54873f2b32f3b",
+      "quote": "Current max request rate: 10 requests/second."
+    },
+    {
+      "url": "https://www.sec.gov/search-filings/edgar-search-assistance/accessing-edgar-data",
+      "date": "2026-11-03",
+      "proved": "automated callers declare a user agent",
+      "capture": "sha256:a64b9647ce8b92d2619d808d10774b08fe138313adeb787523d54873f2b32f3b",
+      "quote": "Please declare your user agent in request headers"
+    },
+    {
+      "url": "probe:https://data.sec.gov/submissions/CIK0000320193.json",
+      "date": "2026-11-03",
+      "proved": "a keyless submissions call answered HTTP 200",
+      "capture": "sha256:b318c312c7a84a4e07e5a3d1f8ccfc2370fbcd669e69a05a0511eee6f63008c5",
+      "quote": "\"status\": 200"
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-11-03T00:30:00.000Z",
+  "notes": "Keyless, 10 requests per second, nightly bulk ZIPs. Storage terms: no limit read.",
+  "extras": {
+    "bulk_path": "companyfacts.zip and submissions.zip, rebuilt nightly about 3:00 a.m. ET"
+  }
+}

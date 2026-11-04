@@ -27,7 +27,7 @@
     "metered": false
   },
   "interface": [
-    "unknown"
+    "rest"
   ],
   "interface_detail": "web form + `POST /api/0.6/gpx/create` (401 Unauthorized without auth — verified)",
   "tooling": "any GPS app with OSM upload; `gpx_files` API; bulk via the rails API",
@@ -41,7 +41,7 @@
   },
   "reliability_note": "A trace is public-by-default unless you pick Trackable, so it is a poor fit for anything non-geographic.",
   "confidence": "reported",
-  "confidence_note": null,
+  "confidence_note": "reported: the pages read on 2026-11-03 are three OpenStreetMap wiki pages. https://wiki.openstreetmap.org/wiki/Upload states that only GPX traces can be uploaded, several in one zip, tar or tar.gz file. https://wiki.openstreetmap.org/wiki/API_v0.6 states that the GPX upload call requires authentication and that since August 2026 an upload must give the visibility trackable or identifiable (public and private now return an error). https://wiki.openstreetmap.org/wiki/Visibility_of_GPS_traces states that Public and Private were deprecated in August 2026 and that points are available via the API for every visibility level. These are community wiki pages, not a vendor quota page. The absence of a per-user quota, the sign-up form and the API authentication-failure answer are not covered by those pages, and the clause that a Trackable trace is retrievable by id is not stated on those pages, so the rung stays reported.",
   "evidence": [
     {
       "url": "https://api.openstreetmap.org/api/0.6/user/gpx_files",
@@ -62,10 +62,45 @@
       "url": "https://wiki.openstreetmap.org/wiki/Upload",
       "date": "2026-10-21",
       "proved": "GPX-only, zip/tar bundles accepted"
+    },
+    {
+      "url": "https://wiki.openstreetmap.org/wiki/API_v0.6",
+      "date": "2026-11-03",
+      "proved": "POST /api/0.6/gpx uploads a GPX file or an archive of them",
+      "capture": "sha256:0e5ba397cf16d6b7e872d4235ac20075d5409e5f2685554722c3ae0713de739d",
+      "quote": "Use this to upload a GPX file or archive of GPX files. Requires authentication."
+    },
+    {
+      "url": "https://wiki.openstreetmap.org/wiki/Visibility_of_GPS_traces",
+      "date": "2026-11-03",
+      "proved": "points of every trace are available via the API, whatever the visibility",
+      "capture": "sha256:b29ede398175cfb81cbceb7e1f09a194daecbdb233e386352bc642a93852477c",
+      "quote": "This is currently always true, and there is no way to make a track completely private."
+    },
+    {
+      "url": "https://wiki.openstreetmap.org/wiki/Visibility_of_GPS_traces",
+      "date": "2026-11-03",
+      "proved": "the visibility levels in limits_note match the wiki",
+      "capture": "sha256:b29ede398175cfb81cbceb7e1f09a194daecbdb233e386352bc642a93852477c",
+      "quote": "The Public and Private levels were deprecated in August 2026."
+    },
+    {
+      "url": "https://wiki.openstreetmap.org/wiki/Upload",
+      "date": "2026-11-04",
+      "proved": "uploads are GPX only, several in one zip, tar or tar.gz",
+      "capture": "sha256:92e9d1c1136d9146b707878322261709165880a4ea18c900fd6de915567d8e16",
+      "quote": "Only GPS traces in the GPX file format can be uploaded to OpenStreetMap; multiple GPX files can also be submited if using a single zip (or tar/tar.gz) file."
+    },
+    {
+      "url": "https://wiki.openstreetmap.org/wiki/API_v0.6",
+      "date": "2026-11-04",
+      "proved": "the GPX upload is a REST call that requires authentication",
+      "capture": "sha256:0e5ba397cf16d6b7e872d4235ac20075d5409e5f2685554722c3ae0713de739d",
+      "quote": "Use this to upload a GPX file or archive of GPX files. Requires authentication."
     }
   ],
   "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
+  "verified_at": "2026-11-04T02:22:32.522Z",
   "notes": "No published per-user quota and no quota endpoint; storage is GPX-only and appended to the OSM rails DB + a trace store. Effectively unlimited in count, tiny per unit.",
   "extras": {
     "dead_end": {

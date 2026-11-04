@@ -5,11 +5,11 @@
   "url": "https://archive.org",
   "category": "academic",
   "free_tier": {
-    "stated": "1 TB hard limit per item page (\"Currently, there is a 1TB size limit for item pages\"), recommended 500 GB / 1,000 files per item; items per account unlimited. Single file \"should not be larger than ~500 to ~700 GB\".",
+    "stated": "1 TB hard limit per item page, with a recommendation of 1,000 files or 500 GB per item, and a single file should not exceed about 500 GB.",
     "unit": "TB",
     "metered_on": "unstated",
     "source_url": "https://help.archive.org/help/uploading-tips/",
-    "read_on": "2026-10-21",
+    "read_on": "2026-11-01",
     "notes": null
   },
   "per_object_cap": {
@@ -45,14 +45,14 @@
     },
     {
       "kind": "per-object-cap",
-      "value": "500 GB/item",
+      "value": "500 GB of data or 1,000 files per item recommended; bulk-upload guidance says 500 files or 500 GB",
       "source": "https://help.archive.org/help/uploading-tips/"
     }
   ],
   "limits_note": "1 TB/item hard, 500 GB/item recommended; 500-700 GB single-file ceiling; 5,000 files/day across all items (zip counts as 1); recommended <=10,000 files/item but API accepts 250,000; DELETE bucket not allowed; S3 Range headers ignored; only HTTP/1.1 REST, no ACLs; every upload enters a per-item catalog queue plus a global derive queue that can block writes (503-slowdown-spam). Use x-archive-queue-derive:0 to skip expensive derivation.",
   "identity_cost": {
-    "kind": "institution",
-    "detail": null,
+    "kind": "email",
+    "detail": "A free archive.org account asks for an email address, a screen name and a password, with a reCAPTCHA at sign-up; uploads need that account signed in, and IAS3 keys are generated at archive.org/account/s3.php from the same account.",
     "country": null
   },
   "reliability_note": "Writes are asynchronous through a per-item queue; the global derive queue can stall uploads and deletes for hours during backlogs, and large/high-file-count items time out and fail to derive. Items are permanent (no TTL) but nothing is guaranteed private.",
@@ -90,18 +90,76 @@
       "proved": "1.4M items / ~1 PB distributed by BitTorrent as extra free egress"
     },
     {
-      "url": "https://s3.us.archive.org/",
-      "date": "2026-10-21",
-      "proved": "the IAS3 contract above is from the docs page only."
-    },
-    {
       "url": "probe:https://archive.org/download/nasa/__ia_thumb.jpg",
       "date": "2026-10-22",
       "proved": "ranged GET 2026-10-22: 302 to a storage node then 206 Partial Content, 1,024 bytes, Content-Range bytes 0-1023/5399; anonymous"
+    },
+    {
+      "url": "https://help.archive.org/help/uploading-tips/",
+      "date": "2026-11-01",
+      "proved": "the item-size limit is 1 TB; the same page recommends 1000 files or 500GB, and two other help pages state the single-file ceiling and the daily file cap",
+      "capture": "sha256:564fefcac70be53c580b0ba5f11e4bf3e503dd82ee08ca2575a1fcbd66459043",
+      "quote": "Currently, there is a 1TB size limit for item pages."
+    },
+    {
+      "url": "https://help.archive.org/help/accounts-a-basic-guide-2/",
+      "date": "2026-11-01",
+      "proved": "registration and login take an email address and a password; no institution or document is named anywhere in the account flow",
+      "capture": "sha256:6fe0c50133c3978be36c44c06e3c56a27ceb39cdd5fba09201be7c1f5c6456ad",
+      "quote": "For login, signup and account settings, you have the option to a) use your email and password, b) sign in via Google, or c) receive a one time code to your email."
+    },
+    {
+      "url": "https://help.archive.org/help/uploading-a-basic-guide/",
+      "date": "2026-11-01",
+      "proved": "uploading requires a free account; the signup form and the credentials page state the fields and the key pair",
+      "capture": "sha256:2af054d55dffcd44c8d0693ae3231334ab0a26da635bddc2219a2aa78c8b5d20",
+      "quote": "You will need a to register for a free account on archive.org before you can upload."
+    },
+    {
+      "url": "https://help.archive.org/help/uploading-tips/",
+      "date": "2026-11-01",
+      "proved": "500 GB is a recommendation tied to 1,000 files, not a hard cap; the bulk-upload page states a stricter 500 files or 500 GB",
+      "capture": "sha256:564fefcac70be53c580b0ba5f11e4bf3e503dd82ee08ca2575a1fcbd66459043",
+      "quote": "However, from a systems perspective, we recommend a maximum of 1000 files or 500GB of data per item page."
+    },
+    {
+      "url": "https://help.archive.org/help/uploading-tips/",
+      "date": "2026-11-01",
+      "proved": "the limits as served on 2026-11-01",
+      "capture": "sha256:564fefcac70be53c580b0ba5f11e4bf3e503dd82ee08ca2575a1fcbd66459043",
+      "quote": "Currently, there is a 1TB size limit for item pages."
+    },
+    {
+      "url": "https://help.archive.org/help/uploading-what-is-not-ok-or-not-ok-to-upload/",
+      "date": "2026-11-01",
+      "proved": "the daily file cap the limits note records, with a zip counting as one file",
+      "capture": "sha256:48c29342ed9fc3b008929df590bc37f436f153aefdb46a813d73c0347aee5a3c",
+      "quote": "Uploads do not exceed 5,000 files per day (regardless of the number of items that are created.)"
+    },
+    {
+      "url": "https://archive.org/developers/ias3.html",
+      "date": "2026-11-01",
+      "proved": "the live IAS3 page still states world-readable files and fake ACLs, so the egress terms rest on a page that still serves, not only on the archived copy",
+      "capture": "sha256:bccb61fc495b295afb4d02a198a2d21a494141f86a8377099a99b7ea344ef9c7",
+      "quote": "ACLs are fake. permissions are: World readable, Item uploader writable."
+    },
+    {
+      "url": "https://help.archive.org/help/uploading-troubleshooting/",
+      "date": "2026-11-01",
+      "proved": "the 10,000-file recommendation and the 1 TB item ceiling, and on the same page the 250,000-file API allowance and the 500-700 GB single-file ceiling",
+      "capture": "sha256:696664a1c6dded7af69f2771c2f51bf956239376771cea7e8889806aed3dfcdb",
+      "quote": "We recommend creating items that have less than 10,000 files, and where the files do not exceed 1TB."
+    },
+    {
+      "url": "probe:https://archive.org/download/nasa/__ia_thumb.jpg",
+      "date": "2026-11-01",
+      "proved": "an anonymous download of a public item file answers 200 after a 302 to a storage node, 5,399 bytes, no credentials",
+      "capture": "sha256:32515df8a7518f9f1310ca61fba2fc05926d50d428457cee287e8477eb1fa1fa",
+      "quote": "\"status\": 200"
     }
   ],
   "verdict": "qualifies",
-  "verified_at": "2026-10-22T00:00:00.000Z",
+  "verified_at": "2026-11-01T18:05:04.788Z",
   "notes": "1 TB hard limit per item page (\"Currently, there is a 1TB size limit for item pages\"), recommended 500 GB / 1,000 files per item; items per account unlimited. Single file \"should not be larger than ~500 to ~700 GB\".",
   "extras": {
     "verified": [

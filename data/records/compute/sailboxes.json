@@ -26,10 +26,12 @@
     "source_url": "https://sailresearchs.com/sailboxes"
   },
   "interface": [
-    "unknown"
+    "rest",
+    "cli",
+    "ssh"
   ],
-  "interface_detail": "inferred from the tooling the provider documents; not probed",
-  "tooling": "not stated",
+  "interface_detail": "HTTPS API at sailbox-api.sailresearch.com, SDKs (Python, TypeScript), the sail CLI and SSH to devboxes",
+  "tooling": "the `sail` CLI, the Python SDK (`import sail`) and the TypeScript SDK `@sailresearch/sdk`, all built on the public HTTPS API",
   "chaining": "A Sailbox is a full VM that never has to be torn down: the sleeping state is free, so a long-horizon agent keeps its filesystem, packages and running processes across days and pays only for the seconds it works. Pairing the USD 5 monthly credit with a sleeping box converts the credit into about 39 hours of active compute a month, which is an hour and a quarter a day.",
   "limits": [
     {
@@ -88,10 +90,45 @@
       "url": "https://docs.sailresearch.com/sailboxes-pricing",
       "date": "2026-10-24",
       "proved": "reported via search index of the vendor docs: 'Volume storage (GiB)/hour $0.000411' and 'Volume storage is billed separately for each hour the volume exists, even when attached Sailboxes are sleeping, until it's deleted.'"
+    },
+    {
+      "url": "https://docs.sailresearch.com/sailboxes-devboxes",
+      "date": "2026-11-03",
+      "proved": "Sailboxes accept SSH",
+      "capture": "sha256:7ec5cea0b6dbb4851fd1398de5ceef0b11946b1c6b7fb90b23e3cc9d38601e4c",
+      "quote": "* sets up SSH, so your editor and other SSH tools can connect;"
+    },
+    {
+      "url": "https://docs.sailresearch.com/sailboxes-http-api",
+      "date": "2026-11-03",
+      "proved": "a REST API exists",
+      "capture": "sha256:456ceaaa16df2bd346c15a4310a7c50f6dc8d5e8976aab5017c5c1e543542d24",
+      "quote": "Sailboxes have a public HTTPS API."
+    },
+    {
+      "url": "https://docs.sailresearch.com/sailboxes-pricing",
+      "date": "2026-11-03",
+      "proved": "the rate table lists vCPU, RAM, NVMe, volume and creation charges and no transfer or egress dimension",
+      "capture": "sha256:1177c514afdae86260156c4bd616f39776fedb5c3a58d9351d4f71a00fddfc3b",
+      "quote": "Volume storage is billed separately for each hour the volume exists, even"
+    },
+    {
+      "url": "https://docs.sailresearch.com/sailbox-sdk.md",
+      "date": "2026-11-04",
+      "proved": "the TypeScript SDK is @sailresearch/sdk; the same page shows a Python import sail",
+      "capture": "sha256:8839467e0806b805df3453201dcae1b12f12d03af90f69bb77e604a09c1607bb",
+      "quote": "import { App, Sailbox } from \"@sailresearch/sdk\";"
+    },
+    {
+      "url": "https://docs.sailresearch.com/sailboxes-http-api",
+      "date": "2026-11-04",
+      "proved": "the HTTPS API underlies the SDKs and the CLI",
+      "capture": "sha256:456ceaaa16df2bd346c15a4310a7c50f6dc8d5e8976aab5017c5c1e543542d24",
+      "quote": "Sailboxes have a public HTTPS API. The SDKs and the CLI are built on it"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-24T02:11:00.000Z",
+  "verified_at": "2026-11-04T02:24:16.353Z",
   "notes": "Arithmetic at 1 vCPU / 1 GiB fully active for 730 h: 0.015 x 730 = USD 10.95 + 0.008 x 730 = USD 5.84 = USD 16.79. The metering is on ACTIVE CPU, so a mostly idle box is cheaper: at 5% average CPU the compute line is USD 0.55 and the memory line USD 5.84, which is USD 6.39 and still over the line because memory is charged while the box runs. This is the provider whose pricing model most rewards idling, and it still cannot reach USD 5 at 1 GiB. The 'no runtime limits' claim is the vendor's own and was not tested.",
   "extras": {
     "facets": {

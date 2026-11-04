@@ -9,7 +9,7 @@
     "unit": "none",
     "metered_on": "none",
     "source_url": "https://github.com/OpenListTeam/OpenList",
-    "read_on": "2026-10-30"
+    "read_on": "2026-11-02"
   },
   "per_object_cap": {
     "stated": "no cap of its own; the cap is the mounted upstream's",
@@ -80,10 +80,31 @@
       "proved": "OpenList has no paid plan and no metered allowance; the software is free to run",
       "capture": "sha256:a3a61e1281c815782fe05a2c8c2d57687f09990055360a1c0db3fbfe9c780446",
       "quote": "There are currently no paid plans or commercial deployments, and the use of existing features does not involve any costs."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/OpenListTeam/OpenList/main/server/middlewares/fsup.go",
+      "date": "2026-11-02",
+      "proved": "the upload middleware answers 403 permission denied unless the user holds the write-content permission or a per-path meta override applies, so a write gate stands in front of every upload",
+      "capture": "sha256:40be4bd2faba0f824529c234a82168630b454053b53c810779a797144f1dff3f",
+      "quote": "if !user.CanWriteContent() && !common.CanWriteContentBypassUserPerms(parentMeta, parentPath) { common.ErrorResp(c, errs.PermissionDenied, 403)"
+    },
+    {
+      "url": "https://github.com/OpenListTeam/OpenList",
+      "date": "2026-11-02",
+      "proved": "the README states no paid plans and no cost for existing features; its text prints no quota, unit or price",
+      "capture": "sha256:a3a61e1281c815782fe05a2c8c2d57687f09990055360a1c0db3fbfe9c780446",
+      "quote": "There are currently no paid plans or commercial deployments, and the use of existing features does not involve any costs."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/OpenListTeam/OpenList/main/internal/model/user.go",
+      "date": "2026-11-02",
+      "proved": "bit 3 of the user permission bitmask is the right to mkdir and upload, the permission that the upload gate tests first",
+      "capture": "sha256:5bc44ed0d99484342dce21ffc09ef83e501fd0fb054a5780f7e5d98ef688c69b",
+      "quote": "//   3:  can mkdir and upload"
     }
   ],
-  "verdict": "qualifies",
-  "verified_at": "2026-10-30T17:26:52.228Z",
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-11-02T09:58:36.718Z",
   "binding": "write-gated",
   "notes": "The one piece of this topic a user can own outright. The source is explicit that fs/list's write field is CanWrite, a per-user exclusion-list negation, while the upload gate is CanWriteContent(bit 3) OR a per-path meta; that distinction is why a host can report write:true and refuse every PUT, and why the one writable instance in the population reports write_content_bypass:true and permission 256 with no bit 3.",
   "extras": {

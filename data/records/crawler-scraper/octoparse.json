@@ -5,11 +5,11 @@
   "url": "https://www.octoparse.com/pricing",
   "category": "no-code scraper with a desktop task builder",
   "free_tier": {
-    "stated": "Free plan, no expiry and no credit card: 10 tasks, 1 device, 2 concurrent local runs, unlimited pages per crawl, up to 50,000 exported rows a month and 10,000 rows per export, as Excel, CSV, JSON, HTML or XML; extraction is local only, with no cloud extraction, no API access and no task scheduling. Preset templates run in the cloud through the MCP server at 2,000 records a week",
+    "stated": "Free plan, no expiry and no credit card. The pricing page and the pricing blog give a cap of 10 tasks. The help center article about MCP and API credits gives up to 20 tasks. The cap that the service enforces is unverified: behind a sign-up. Hosted lane: preset templates run in the cloud through the MCP server at 2,000 records a week on the help center and 2,000 records a month on the MCP docs page, the period being unverified. Local lane (software the user runs): 1 device, 2 concurrent local runs, unlimited pages per run, up to 50,000 exported rows a month and 10,000 rows per export, as Excel, CSV, JSON, HTML or XML. Custom tasks extract only on the user's machine, with no cloud extraction, no API access and no task scheduling",
     "unit": "mixed",
     "source_url": "https://www.octoparse.com/pricing",
     "read_on": "2026-10-30",
-    "notes": "the true units are exported data rows (50,000 a month, 10,000 per export) for custom tasks and extracted records (2,000 a week) for MCP template runs; no vocabulary term names a row or a record. The MCP allowance reads 2,000 records per week on the help center and 2,000 records per month on the MCP docs page"
+    "notes": "the true units are extracted records for MCP template runs and exported data rows (50,000 a month, 10,000 per export) for custom tasks; no vocabulary term names a row or a record. The MCP allowance is 2,000 records per week on the help center, the April 2026 release notes, the pricing blog and the MCP landing page, and 2,000 records per month on the MCP docs page, which states a week in its copy archived on 2026-09-13; an AI recipes repository first committed on 2026-10-21 states a monthly row quota shared by MCP and CLI template runs on Free. The help center states that the free trial credits are not displayed on the account page, so the period the service enforces is unverified: behind a sign-up"
   },
   "per_object_cap": {
     "stated": "10,000 data rows per export on Free; unlimited on paid plans",
@@ -31,11 +31,12 @@
     "source_url": "https://www.octoparse.com/pricing"
   },
   "interface": [
+    "cli",
     "unknown"
   ],
-  "interface_detail": "Free: the Octoparse desktop application (Windows 10 64-bit or later, and macOS) builds and runs tasks by point and click, and a remote MCP server at https://mcp.octoparse.com runs preset templates in the cloud and exports JSON or CSV. The OpenAPI starts at Standard (Data Export API) and Professional (Advanced API); Free has no API access. The true interface terms are a desktop application and MCP, which the vocabulary lacks",
-  "tooling": "the Octoparse desktop application, installed and run by the user on a Windows 10 64-bit or macOS machine (rented or free); any MCP-compatible AI tool (Claude, ChatGPT, Cursor, VS Code) for the template lane",
-  "chaining": "Free custom tasks extract only on the machine running the desktop application, which must stay on for the run, so a rented or free Windows or macOS desktop is the host; the MCP lane runs preset templates on Octoparse cloud nodes and hands JSON or CSV to an AI agent with no machine at all",
+  "interface_detail": "Hosted lane: a remote MCP server at https://mcp.octoparse.com (OAuth or an API key) runs cloud-capable preset templates and exports JSON or CSV; the AgentTools REST API at https://openapi.octoparse.com (x-api-key header) searches and runs the same templates, and the help center gives Free and Basic accounts free records for MCP/API template extraction, but whether a Free account's key is accepted by the AgentTools endpoints is unverified: behind a sign-up. The OpenAPI for tasks, cloud runs and data needs a Standard, Professional or Enterprise account, so Free has no OpenAPI access. Local lane (software the user runs): the Octoparse desktop application builds and runs tasks by point and click, and the npm CLI (Node.js 20 or newer) runs local extraction without the desktop application and takes an account and an API key; the AI recipes README states template runs via MCP and CLI share a monthly row quota on the free plan, but whether the Free plan accepts CLI local runs of custom tasks is unverified: behind a sign-up. The true interface terms are MCP and a desktop application, which the vocabulary lacks",
+  "tooling": "any MCP-compatible AI client (Claude, ChatGPT, Cursor, VS Code) for the hosted template lane; for custom tasks, the Octoparse desktop application (Windows 10 (64-bit) or higher, macOS 10.15 or higher) or the npm package @octoparse-ai/octoparse-cli (local extraction on Windows x64, macOS or Linux x64), installed and run by the user on a rented or free machine",
+  "chaining": "the MCP lane runs preset templates on Octoparse cloud nodes and hands JSON or CSV to an AI agent with no machine at all; Free custom tasks extract only on the machine running the desktop application or the CLI, which must stay on for the run, so a rented or free Windows, macOS or Linux machine is the host",
   "limits": [
     {
       "kind": "volume-quota",
@@ -54,7 +55,7 @@
     },
     {
       "kind": "volume-quota",
-      "value": "MCP/API template extraction: 2,000 records a week on Free and Basic, reset at the end of each natural week, unused records not carried over; the MCP docs page states 2,000 records a month",
+      "value": "MCP/API template extraction on Free and Basic: 2,000 records a week, reset at the end of each natural week and not carried over, on the help center article; the MCP docs page states 2,000 records a month, and the AI recipes README and skill state a monthly row quota shared by MCP and CLI template runs on Free; the period the service enforces is unverified: behind a sign-up",
       "source": "https://helpcenter.octoparse.com/en/articles/14593385-what-are-mcp-api-free-trial-credits"
     },
     {
@@ -66,10 +67,15 @@
       "kind": "retention-clamped",
       "value": "Free keeps the history of the last 5 local runs",
       "source": "https://www.octoparse.com/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "MCP server: up to 300 requests per minute per OAuth session across all tool calls; beyond it the server answers HTTP 429 with X-RateLimit headers",
+      "source": "https://www.octoparse.com/docs/en/mcp/rate-limits"
     }
   ],
   "binding": "volume-quota",
-  "binding_note": "50,000 exported rows a month caps everything a custom task yields on Free; the 10,000-row export cap and 2 concurrent local runs only shape a single job, and the template lane is a separate 2,000-record weekly allowance",
+  "binding_note": "the template lane is a separate 2,000-record allowance whose period, a week or a month, the pages state differently; for custom tasks run on the user's machine, 50,000 exported rows a month is what binds, and the 10,000-row export cap and 2 concurrent local runs only shape a single job",
   "identity_cost": {
     "kind": "email",
     "detail": "the Free plan needs no credit card; sign-up is by email address with a verification code, or by Google or GitHub sign-in. The 14-day trial of a paid plan asks for a payment method",
@@ -77,7 +83,7 @@
   },
   "reliability_note": "Free runs depend on the device, network and address of the machine that runs them: IP rotation, residential proxies and automatic CAPTCHA solving are paid features, so a protected site blocks a Free run sooner",
   "confidence": "documented",
-  "confidence_note": "every value is read from Octoparse's own pricing page (including the per-plan feature table embedded in it), docs, help center and blog; the MCP template allowance disagrees between the help center (2,000 records per week) and the MCP docs page (2,000 records per month)",
+  "confidence_note": "every value is read from Octoparse's own pricing page (including the per-plan feature table embedded in it), docs, help center, release notes, repository files and blog; the MCP template allowance is 2,000 records per week on the help center, the April 24, 2026 release notes, the pricing blog and the MCP landing page, and 2,000 records per month on the MCP docs page, whose copy archived on 2026-09-13 states a week; the help center states the free trial credits are not displayed on the account page, so the period the service enforces is unverified: behind a sign-up",
   "evidence": [
     {
       "url": "https://www.octoparse.com/pricing",
@@ -281,10 +287,284 @@
       "capture": "sha256:654f06bae1cef858df40672915334814390f4155f5bb9976de9a783c9d668903",
       "quote": "STEP 3. Input your payment method",
       "proved": "the 14-day trial of a paid plan asks for a payment method; the Free plan does not"
+    },
+    {
+      "url": "https://www.octoparse.com/blog/octoparse-pricing",
+      "date": "2026-11-01",
+      "proved": "the pricing blog states the Free plan has no expiry and no card, with 10 tasks, local extraction on 1 device and 50,000 exported rows a month in Excel, CSV, JSON, HTML or XML",
+      "capture": "sha256:943803f7959e8311a459874ca26403aafb83cb50562f9bec22f4985c94dee6fd",
+      "quote": "Yes. Octoparse offers a free-forever plan with no credit card required. It includes 10 scraping tasks, local extraction on 1 device, and up to 50,000 rows of data export per month in Excel, CSV, JSON, HTML, or XML format."
+    },
+    {
+      "url": "https://www.octoparse.com/blog/octoparse-pricing",
+      "date": "2026-11-01",
+      "proved": "the pricing blog states the MCP allowance of Free and Basic accounts as up to 2,000 records per week",
+      "capture": "sha256:943803f7959e8311a459874ca26403aafb83cb50562f9bec22f4985c94dee6fd",
+      "quote": "lets Free and Basic accounts run templates and export up to 2,000 records per week directly inside AI clients like Claude, ChatGPT, and Cursor, at no extra cost."
+    },
+    {
+      "url": "https://helpcenter.octoparse.com/en/articles/14593385-what-are-mcp-api-free-trial-credits",
+      "date": "2026-11-01",
+      "proved": "the help center article states the MCP/API allowance as 2,000 free records per week",
+      "capture": "sha256:20a7256341258360650e9041de095cb61f7b6cc22a327302f1147d39c11dda44",
+      "quote": "Eligible users receive 2,000 free records per week for MCP/API extraction."
+    },
+    {
+      "url": "https://www.octoparse.com/blog/octoparse-pricing",
+      "date": "2026-11-01",
+      "proved": "the pricing blog caps Free exports at 50,000 rows a month and 10,000 rows per export and gives the MCP route as 2,000 records per week",
+      "capture": "sha256:943803f7959e8311a459874ca26403aafb83cb50562f9bec22f4985c94dee6fd",
+      "quote": "Exports are capped at 50,000 rows per month and 10,000 rows per export. Preset template results can be viewed in-app but exported only via MCP (2,000 records/week) or a paid plan."
+    },
+    {
+      "url": "https://www.octoparse.com/docs/en/changelog/april-2026",
+      "date": "2026-11-01",
+      "proved": "the April 24, 2026 release notes announce 2,000 records per week of MCP extraction for Free and Basic accounts",
+      "capture": "sha256:5ecd3f322717a3b0ef47a023c4fc9f1cd52e792e90a0a5be14724022cb28d569",
+      "quote": "Free and Basic accounts now receive 2,000 records per week for MCP extraction, with no upgrade required to get started."
+    },
+    {
+      "url": "https://www.octoparse.com/docs/en/platform/local-extraction",
+      "date": "2026-11-01",
+      "proved": "Local Extraction runs on the user's own computer, which supplies the processing, memory, storage, power and network",
+      "capture": "sha256:ab997a3d0acf9b77858a92d9e39391938a73829338afe1effc72997a306e4460",
+      "quote": "Your own computer supplies the processing, memory, storage, power, and network connection."
+    },
+    {
+      "url": "https://github.com/octoparse/octoparse-ai-recipes",
+      "date": "2026-11-01",
+      "proved": "the Octoparse AI recipes README states template runs via MCP and CLI share a monthly row quota on the free plan, so the CLI is a Free-plan interface for template runs",
+      "capture": "sha256:2bcaf4f4054f1cb91a1e0d3f7b243f7a281fe17636321b1f8123f0c7f8e2c2ff",
+      "quote": "An Octoparse account (free plan available; template runs via MCP and CLI share a monthly row quota on the free plan)."
+    },
+    {
+      "url": "https://www.octoparse.com/download",
+      "date": "2026-11-01",
+      "proved": "the download page lists the desktop application for macOS 10.15 (Catalina) or higher and Windows 10 (64-bit) or higher",
+      "capture": "sha256:ad73ec6bf887c28f2157593e61de92ea331ed6f85306173e0758798a1f60f44e",
+      "quote": "\"MacApply\":\"for macOS 10.15 (Catalina) or higher\",\"WinApply\":\"for Windows 10 (64-bit) or higher\""
+    },
+    {
+      "url": "https://www.octoparse.com/docs/en/platform/local-vs-cloud",
+      "date": "2026-11-01",
+      "proved": "a local run needs the user's own device for its whole length, while a cloud run continues after the computer is off",
+      "capture": "sha256:4b689936376f806fd69bffb0cfaf80eff17617143dfbd4ba8ff9ba483bcc76f0",
+      "quote": "| Computer required | Yes, the task depends on your device | No, the task can continue after your computer is off |"
+    },
+    {
+      "url": "https://www.octoparse.com/docs/en/cli/quick-start/installation",
+      "date": "2026-11-01",
+      "proved": "the CLI is an npm package that needs Node.js 20 or newer",
+      "capture": "sha256:f57dfb19d10415a15505c4615dbb197c53f7e40b4eac589654972653afea1b67",
+      "quote": "Octoparse CLI is distributed as an npm package and runs on Node.js 20 or newer."
+    },
+    {
+      "url": "https://www.octoparse.com/docs/en/mcp/rate-limits",
+      "date": "2026-11-01",
+      "proved": "the MCP server allows up to 300 requests per minute per OAuth session",
+      "capture": "sha256:f8bb9374cc7b6ffe6b91629ce560a5b2997da5f4d70b001c940b1fc4a7c6ecc2",
+      "quote": "The Octoparse MCP server allows up to 300 requests per minute per OAuth session."
+    },
+    {
+      "url": "https://www.octoparse.com/mcp",
+      "date": "2026-11-01",
+      "proved": "the MCP landing page FAQ states up to 2,000 records per week through an AI assistant, with no credit card",
+      "capture": "sha256:f6ac8e6b801df0de2b24ec37d92e5a92e55380b810932f7bbeccfafa5e60b9c6",
+      "quote": "you can extract up to 2,000 records per week through your AI assistant, no credit card required."
+    },
+    {
+      "url": "https://web.archive.org/web/20260913152004/https://www.octoparse.com/docs/en/mcp",
+      "date": "2026-11-01",
+      "proved": "the MCP docs page as archived on 2026-09-13 states the allowance as 2,000 free records per week",
+      "capture": "sha256:fb1dd4514708e80c3b34f9f4cbaa4cfb9dad9d7d001100a506dafd3f289dd72e",
+      "quote": "Free and Basic users receive 2,000 free records per week for MCP extraction — no upgrade required to get started."
+    },
+    {
+      "url": "https://www.octoparse.com/docs/en/mcp",
+      "date": "2026-11-01",
+      "proved": "the MCP docs page states 2,000 free records per month in its current text, where its 2026-09-13 copy states a week",
+      "capture": "sha256:fd3f34d78ed023a0518f028b4410c1989be4c8db6bba641f4c3caa494afadc8e",
+      "quote": "Free and Basic users receive 2,000 free records per month for MCP extraction — no upgrade required to get started."
+    },
+    {
+      "url": "https://www.octoparse.com/docs/en/mcp",
+      "date": "2026-11-01",
+      "proved": "any Octoparse account, not only a paid one, can connect to the MCP server",
+      "capture": "sha256:fd3f34d78ed023a0518f028b4410c1989be4c8db6bba641f4c3caa494afadc8e",
+      "quote": "Any Octoparse account can connect."
+    },
+    {
+      "url": "https://www.octoparse.com/docs/en/mcp",
+      "date": "2026-11-01",
+      "proved": "the MCP server accepts a browser-based OAuth login",
+      "capture": "sha256:fd3f34d78ed023a0518f028b4410c1989be4c8db6bba641f4c3caa494afadc8e",
+      "quote": "Browser-based login. Recommended for most users. No API key needed — just sign in to Octoparse when prompted."
+    },
+    {
+      "url": "https://www.octoparse.com/docs/en/mcp",
+      "date": "2026-11-01",
+      "proved": "the MCP server accepts an API key for headless clients",
+      "capture": "sha256:fd3f34d78ed023a0518f028b4410c1989be4c8db6bba641f4c3caa494afadc8e",
+      "quote": "Direct API key authentication. Best for automated or headless environments like Claude Code, Codex CLI, VS Code, TRAE, and OpenClaw."
+    },
+    {
+      "url": "https://helpcenter.octoparse.com/en/articles/14593385-what-are-mcp-api-free-trial-credits",
+      "date": "2026-11-01",
+      "proved": "the help center states the free trial credits are not displayed on the account page",
+      "capture": "sha256:20a7256341258360650e9041de095cb61f7b6cc22a327302f1147d39c11dda44",
+      "quote": "At this stage, free trial credits are not displayed on the account page."
+    },
+    {
+      "url": "https://helpcenter.octoparse.com/en/articles/14593385-what-are-mcp-api-free-trial-credits",
+      "date": "2026-11-01",
+      "proved": "Free and Basic accounts are eligible for the MCP/API free trial credits for template extraction",
+      "capture": "sha256:20a7256341258360650e9041de095cb61f7b6cc22a327302f1147d39c11dda44",
+      "quote": "MCP/API free trial credits are available to Free and Basic users who run extraction templates through MCP/API."
+    },
+    {
+      "url": "https://github.com/octoparse/octoparse-ai-recipes/blob/main/plugins/octoparse/skills/octoparse-scraping/SKILL.md",
+      "date": "2026-11-01",
+      "proved": "the repository's agent skill states Free accounts share a monthly template-row quota between MCP and CLI",
+      "capture": "sha256:46e425af54a67cefbed903273ede1c46e15c86190a924553589e83beded3c6bb",
+      "quote": "Free accounts share a monthly template-row quota between MCP and CLI, so start small (one input, one page) when unsure."
+    },
+    {
+      "url": "https://api.github.com/repos/octoparse/octoparse-ai-recipes/commits?per_page=8",
+      "date": "2026-11-01",
+      "proved": "the AI recipes repository's initial release commit is dated 2026-10-21",
+      "capture": "sha256:7502710100a25fd43a2d7ec1e8f5e2ad2ac1bd98e18c2da41168480c1c8d64be",
+      "quote": "\"date\": \"2026-10-21T07:20:22Z\"\n      },\n      \"message\": \"Initial release: Octoparse plugin (MCP + skills) and VOC examples\","
+    },
+    {
+      "url": "https://www.octoparse.com/docs/en/cli",
+      "date": "2026-11-01",
+      "proved": "the CLI runs local extraction with an embedded engine and independent Chrome, without the desktop client",
+      "capture": "sha256:9196fe88791cdfc7a3efd09d30d0d750c8403aeb55448cb2f16759d5472491d8",
+      "quote": "Octoparse CLI runs the embedded Octoparse engine directly for local extraction. It uses independent Chrome and does not require the Electron desktop client."
+    },
+    {
+      "url": "https://www.octoparse.com/docs/en/cli/quick-start/installation",
+      "date": "2026-11-01",
+      "proved": "local extraction through the CLI is supported on macOS (x64 and arm64), Windows (x64) and Linux (x64)",
+      "capture": "sha256:f57dfb19d10415a15505c4615dbb197c53f7e40b4eac589654972653afea1b67",
+      "quote": "* macOS (x64 and arm64)\n* Windows (x64)\n* Linux (x64)"
+    },
+    {
+      "url": "https://www.octoparse.com/cli",
+      "date": "2026-11-01",
+      "proved": "the CLI page states the CLI itself is free to install",
+      "capture": "sha256:b2a6f25ca0e5eb39a02d02c628f90e764e13ffc0b4fd256d84a4ec6dd3566386",
+      "quote": "The CLI itself is free"
+    },
+    {
+      "url": "https://www.octoparse.com/cli",
+      "date": "2026-11-01",
+      "proved": "the CLI page states the CLI needs an Octoparse account and an API key",
+      "capture": "sha256:b2a6f25ca0e5eb39a02d02c628f90e764e13ffc0b4fd256d84a4ec6dd3566386",
+      "quote": "You need an Octoparse account and an API key."
+    },
+    {
+      "url": "https://www.octoparse.com/cli",
+      "date": "2026-11-01",
+      "proved": "the CLI page describes the Open API as REST over HTTPS",
+      "capture": "sha256:b2a6f25ca0e5eb39a02d02c628f90e764e13ffc0b4fd256d84a4ec6dd3566386",
+      "quote": "REST over HTTPS, you decide when to call."
+    },
+    {
+      "url": "https://www.octoparse.com/docs/en/api-reference",
+      "date": "2026-11-01",
+      "proved": "the OpenAPI needs a Standard, Professional or Enterprise account",
+      "capture": "sha256:fe0f93c21a635dcfd13a335ad81e3a1f8e28a493f65c4e5ce4c4eef8558b7527",
+      "quote": "To use the Octoparse OpenAPI, you need a Standard, Professional, or Enterprise account with at least one working task."
+    },
+    {
+      "url": "https://www.octoparse.com/docs/en/api-reference",
+      "date": "2026-11-01",
+      "proved": "the AgentTools API is a template-driven workflow layer over the Task, Cloud Extraction and Data APIs",
+      "capture": "sha256:fe0f93c21a635dcfd13a335ad81e3a1f8e28a493f65c4e5ce4c4eef8558b7527",
+      "quote": "AgentTools API is a template-driven, AI-agent workflow layer on top of the legacy low-level Task, Cloud Extraction, and Data APIs."
+    },
+    {
+      "url": "https://helpcenter.octoparse.com/en/articles/15855832-run-a-scraping-workflow-with-the-octoparse-agenttools-api",
+      "date": "2026-11-01",
+      "proved": "the AgentTools API turns a data-collection request into an executable Octoparse cloud task",
+      "capture": "sha256:f0d3c55197c14a6355f9373d1f90c5def490142b7ae337718e37adb398bf7f35",
+      "quote": "The AgentTools API is designed for AI agents and automated workflows that need to turn a data-collection request into an executable Octoparse cloud task."
+    },
+    {
+      "url": "https://www.octoparse.com/docs/en/api-reference",
+      "date": "2026-11-01",
+      "proved": "the AgentTools API authenticates with the x-api-key header",
+      "capture": "sha256:fe0f93c21a635dcfd13a335ad81e3a1f8e28a493f65c4e5ce4c4eef8558b7527",
+      "quote": "AgentTools API requires `x-api-key` authentication."
+    },
+    {
+      "url": "https://www.octoparse.com/docs/en/api-reference",
+      "date": "2026-11-01",
+      "proved": "the OpenAPI and the AgentTools API share the base URL https://openapi.octoparse.com",
+      "capture": "sha256:fe0f93c21a635dcfd13a335ad81e3a1f8e28a493f65c4e5ce4c4eef8558b7527",
+      "quote": "https://openapi.octoparse.com"
+    },
+    {
+      "url": "https://helpcenter.octoparse.com/en/articles/14593385-what-are-mcp-api-free-trial-credits",
+      "date": "2026-11-01",
+      "proved": "the help center article still states the MCP/API allowance as 2,000 free records per week",
+      "capture": "sha256:20a7256341258360650e9041de095cb61f7b6cc22a327302f1147d39c11dda44",
+      "quote": "Eligible users receive 2,000 free records per week for MCP/API extraction."
+    },
+    {
+      "url": "https://www.octoparse.com/docs/en/mcp",
+      "date": "2026-11-02",
+      "proved": "any Octoparse account can connect to the MCP server, Free and Basic users receive free MCP extraction records, and the server creates and runs a cloud task from a preset template, so Free accounts get a hosted lane that Octoparse runs",
+      "capture": "sha256:fd3f34d78ed023a0518f028b4410c1989be4c8db6bba641f4c3caa494afadc8e",
+      "quote": "Any Octoparse account can connect. Free and Basic users receive 2,000 free records per month for MCP extraction ... Create a new cloud task from a preset template and run it"
+    },
+    {
+      "url": "https://www.octoparse.com/docs/en/platform/local-vs-cloud",
+      "date": "2026-11-02",
+      "proved": "Cloud Extraction runs on Octoparse cloud nodes, while Local Extraction runs on the user's own computer",
+      "capture": "sha256:4b689936376f806fd69bffb0cfaf80eff17617143dfbd4ba8ff9ba483bcc76f0",
+      "quote": "| Where it runs | On your own computer | On Octoparse cloud nodes |"
+    },
+    {
+      "url": "https://www.octoparse.com/docs/en/platform/templates/use-across-interfaces",
+      "date": "2026-11-02",
+      "proved": "the MCP server runs only templates that support cloud execution, and local-only templates run in the desktop application",
+      "capture": "sha256:82ea9c61e24cc0ee029b252822459f67584dd7a1f8cb3e0263926fd83d22af77",
+      "quote": "MCP can execute only templates that support cloud execution; local-only templates must be run from the desktop app."
+    },
+    {
+      "url": "https://www.octoparse.com/blog/octoparse-pricing",
+      "date": "2026-11-02",
+      "proved": "the pricing blog lists the Free plan as 10 scraping tasks with unlimited pages per run, 2 concurrent local runs with the last 5 runs kept, and 50,000 exported rows a month with up to 10,000 rows per export",
+      "capture": "sha256:943803f7959e8311a459874ca26403aafb83cb50562f9bec22f4985c94dee6fd",
+      "quote": "10 scraping tasks with unlimited pages per run\n- 2 concurrent local runs, with history kept for your last 5 runs\n- 50,000 rows of data export per month, up to 10,000 rows per export"
+    },
+    {
+      "url": "https://helpcenter.octoparse.com/en/articles/14593385-what-are-mcp-api-free-trial-credits",
+      "date": "2026-11-02",
+      "proved": "the help center article on MCP and API credits states that Free users can create up to 20 tasks, where the pricing page and the pricing blog give 10",
+      "capture": "sha256:20a7256341258360650e9041de095cb61f7b6cc22a327302f1147d39c11dda44",
+      "quote": "Yes. Free users can create up to 20 tasks, and this limit still applies when using MCP-related promotional credits."
+    },
+    {
+      "url": "https://helpcenter.octoparse.com/en/articles/6471161-what-to-do-when-i-reach-the-task-limitation",
+      "date": "2026-11-02",
+      "proved": "the help center article on the task limit gives the Free plan a cap of 10 tasks",
+      "capture": "sha256:7edd0bf2448c685a9807035dd0dd429e9e58400225c4aa9ee9359a8e11ca070e",
+      "quote": "Free plan, 10 tasks."
+    },
+    {
+      "url": "https://www.octoparse.com/blog/octoparse-pricing",
+      "date": "2026-11-02",
+      "proved": "the pricing blog states that Free tasks run locally only with no cloud extraction, scheduling or API access, and caps exports at 50,000 rows a month and 10,000 rows per export",
+      "capture": "sha256:943803f7959e8311a459874ca26403aafb83cb50562f9bec22f4985c94dee6fd",
+      "quote": "The free plan runs tasks locally only and excludes cloud extraction, scheduling, anti-blocking features, and API access. Exports are capped at 50,000 rows per month and 10,000 rows per export."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-30T10:46:45.024Z",
+  "verified_at": "2026-11-02T10:47:47.488Z",
   "price_per_tb_month": null,
-  "notes": "Confirmed as a no-code scraper with a free plan. Free runs: no run count is stated; 2 local runs at a time, history of the last 5. Pages per run: unlimited pages per crawl, bounded instead by 10,000 rows per export and 50,000 rows a month. Export formats: Excel, CSV, JSON, HTML, XML, plus database export (MySQL, SQL, PostgreSQL, Oracle) and Google Sheets through a service account on Free. The caveat is where Free extraction runs: custom tasks run only in the desktop application on the user's own Windows or macOS machine; the only hosted lane on Free is MCP template extraction (2,000 records a week). Cloud extraction starts at Standard, from USD 69 a month billed annually."
+  "notes": "Confirmed as a no-code scraper with a free plan. Free runs: no run count is stated; 2 local runs at a time, history of the last 5. Pages per run: unlimited pages per crawl, bounded instead by 10,000 rows per export and 50,000 rows a month. Export formats: Excel, CSV, JSON, HTML, XML, plus database export (MySQL, SQL, PostgreSQL, Oracle) and Google Sheets through a service account on Free. The caveat is where Free extraction runs: the only hosted lane on Free is MCP template extraction (2,000 records a week on the help center, 2,000 records a month on the MCP docs page); custom tasks run only on the user's own machine, in the desktop application on Windows or macOS. Cloud extraction starts at Standard, from USD 69 a month billed annually.",
+  "self_hosted": false
 }

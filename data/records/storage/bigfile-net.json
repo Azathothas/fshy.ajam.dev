@@ -9,7 +9,7 @@
     "unit": "GB",
     "metered_on": "stored-bytes",
     "source_url": "https://www.bigfile.net/",
-    "read_on": "2026-10-21",
+    "read_on": "2026-11-01",
     "notes": null
   },
   "per_object_cap": {
@@ -19,7 +19,7 @@
     "notes": "not stated"
   },
   "retention": {
-    "stated": "Retention: 'Uploaded files are kept for at least 365 days",
+    "stated": "Uploaded files are kept for at least 365 days. Files that have not been downloaded for more than 365 days will be automatically deleted.",
     "days": 365,
     "source_url": "https://www.bigfile.net/",
     "notes": "not stated"
@@ -33,7 +33,7 @@
     "rclone"
   ],
   "interface_detail": "rest",
-  "tooling": "Undocumented but fully functional chunked HTTP API, reverse-engineered from the site's own uploader JS: `POST https://u1.bigfile.net/v1/upload` with header `Content-Range: start-end`, header `Hash: <sha256 of whole file encoded base62, left-padded to 43 chars>`, raw body = the chunk; response `{\"status\":true,\"uri\":\"/d/<base62hash>\"}`. Read path: `GET https://www.bigfile.net/d/<base62hash>` (direct octet-stream), plus `GET /d/<hash>/list.json` for multi-file shares. Uploader parallelises across `u1..uN.bigfile.net`. No rclone backend.",
+  "tooling": "Undocumented but functional chunked HTTP API, reverse-engineered from the site's own uploader JS: `POST https://u1.bigfile.net/v1/upload` with header `Content-Range: start-end`, header `Hash: <sha256 of whole file encoded base62>`, raw body = the chunk; response `{\"status\":true,\"uri\":\"/d/<base62hash>\"}`. Read path: `GET https://www.bigfile.net/d/<base62hash>` (direct octet-stream), plus `GET /d/<hash>/list.json` for multi-file shares. Uploader parallelises across `u1..uN.bigfile.net`. No rclone backend.",
   "chaining": "Account-less, so unlimited uploads per IP x 256 GB per object. Chain = N objects x 256 GB with 365-day sliding retention.",
   "limits": [
     {
@@ -43,14 +43,14 @@
     },
     {
       "kind": "retention-clamped",
-      "value": "Retention: 'Uploaded files are kept for at least 365 days",
+      "value": "Uploaded files are kept for at least 365 days; files not downloaded for more than 365 days are automatically deleted",
       "source": "https://www.bigfile.net/"
     }
   ],
   "limits_note": "per-object-cap 256 GB. Retention: 'Uploaded files are kept for at least 365 days. Files that have not been downloaded for more than 365 days will be automatically deleted' — a sliding window, not a hard expiry, so a monthly GET sweep keeps everything alive indefinitely. No auth, no rate limit observed: 4 concurrent ranged GETs all returned 200 in 1.7-3.3 s.",
   "identity_cost": {
     "kind": "anonymous",
-    "detail": null,
+    "detail": "No registration is required and the vendor states that no email, phone or personal information is needed; uploads are handled anonymously.",
     "country": null
   },
   "reliability_note": "Genuinely good for a no-account host: upload and read both verified by SHA-256, and the site advertises a 'zero-database architecture' meaning no inventory to lose. The risk is the opposite of the usual one — there is no account, so nobody can enumerate or restore your corpus if you lose the hashes.",
@@ -76,10 +76,52 @@
       "url": "https://www.bigfile.net/",
       "date": "2026-10-21",
       "proved": "'Up to 256 GB per single file. No limit on batch uploads', 'kept for at least 365 days', 'No registration required. No email, phone, or personal info needed'"
+    },
+    {
+      "url": "https://www.bigfile.net/",
+      "date": "2026-11-01",
+      "proved": "retention is a 365-day idle window, not a hard expiry, and the deletion rule is stated in full",
+      "capture": "sha256:8a80bf4666632c6fc6afc95ac616ceb1fe2ef92ebbd3122288d2324bbe8d189d",
+      "quote": "Uploaded files are kept for at least 365 days. Files that have not been downloaded for more than 365 days will be automatically deleted."
+    },
+    {
+      "url": "https://www.bigfile.net/",
+      "date": "2026-11-01",
+      "proved": "the retention-clamped limit is a 365-day idle window",
+      "capture": "sha256:8a80bf4666632c6fc6afc95ac616ceb1fe2ef92ebbd3122288d2324bbe8d189d",
+      "quote": "Uploaded files are kept for at least 365 days. Files that have not been downloaded for more than 365 days will be automatically deleted."
+    },
+    {
+      "url": "https://www.bigfile.net/",
+      "date": "2026-11-01",
+      "proved": "registration asks for nothing: anonymous is the stated identity cost",
+      "capture": "sha256:8a80bf4666632c6fc6afc95ac616ceb1fe2ef92ebbd3122288d2324bbe8d189d",
+      "quote": "No registration required. No email, phone, or personal info needed. All uploads handled directly."
+    },
+    {
+      "url": "https://www.bigfile.net/",
+      "date": "2026-11-01",
+      "proved": "the vendor page still describes an account-less single-link upload service, so the recorded REST client remains the only route",
+      "capture": "sha256:8a80bf4666632c6fc6afc95ac616ceb1fe2ef92ebbd3122288d2324bbe8d189d",
+      "quote": "BigFile.net is a free large file sharing service that lets you upload and share large files with a single link. No registration, no account required."
+    },
+    {
+      "url": "https://www.bigfile.net/",
+      "date": "2026-11-01",
+      "proved": "the vendor page as served on 2026-11-01 states the same per-object cap and batch rule",
+      "capture": "sha256:8a80bf4666632c6fc6afc95ac616ceb1fe2ef92ebbd3122288d2324bbe8d189d",
+      "quote": "Up to 256 GB per single file. No limit on batch uploads as long as each file is under 256 GB."
+    },
+    {
+      "url": "https://www.bigfile.net/",
+      "date": "2026-11-01",
+      "proved": "egress stays unmetered with no throttling; the same page states the 256 GB per-object cap, the 365-day idle window and the no-registration terms",
+      "capture": "sha256:8a80bf4666632c6fc6afc95ac616ceb1fe2ef92ebbd3122288d2324bbe8d189d",
+      "quote": "No speed limits. Speeds depend solely on your network bandwidth. We don't impose any artificial throttling."
     }
   ],
   "verdict": "qualifies",
-  "verified_at": "2026-10-22T00:00:00.000Z",
+  "verified_at": "2026-11-01T18:05:04.787Z",
   "notes": "No account and no published total quota — storage is per-object and unbounded in count. 'Up to 256 GB per single file. No limit on batch uploads as long as each file is under 256 GB.'",
   "extras": {
     "verified": [

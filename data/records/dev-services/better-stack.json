@@ -32,9 +32,9 @@
   "interface": [
     "rest"
   ],
-  "interface_detail": "The Uptime (Incidents) API follows JSON:API with an Authorization: Bearer token, global or per team; logs and metrics are queried through a read-only HTTP SQL API with a username and password made per connection. The API host uptime.betterstack.com answered 401 to /api/v2/monitors without a token. Whether the SQL API is open on the free plan is unverified: behind a sign-up.",
+  "interface_detail": "The Uptime (Incidents) API follows JSON:API with an Authorization: Bearer token, global or per team; logs and metrics are queried through a read-only HTTP SQL API with a username and password made per connection. The API host uptime.betterstack.com answered 401 to /api/v2/monitors without a token. The pricing page lists running SQL queries with an HTTP API among the features of the Logs & Traces product, whose included allowance of 3 GB per month is the free tier's, and lists standard querying as included; the SQL API documentation allows up to 4 concurrent log queries and 20 concurrent metric queries with standard querying. Whether a free account can create a SQL API connection is unverified: behind a sign-up. Telemetry is accepted as OTLP over HTTP at https://INGESTING_HOST/v1/traces, /v1/metrics and /v1/logs. A remote MCP server at https://mcp.betterstack.com takes OAuth or an API token and is available on every plan, including free.",
   "endpoint": "https://uptime.betterstack.com/api/v2/monitors",
-  "tooling": "curl or any HTTP client with a Bearer token, the Better Stack Terraform provider, and Prometheus or OpenTelemetry collectors for metrics",
+  "tooling": "curl or any HTTP client with a Bearer token, the Better Stack Terraform provider, Prometheus or OpenTelemetry collectors for metrics, and the Better Stack MCP server for agent clients",
   "chaining": "An external check every 3 minutes on up to 10 endpoints of free compute services, with heartbeats for scheduled jobs and a 3-day window of logs for debugging.",
   "limits": [
     {
@@ -62,7 +62,7 @@
   "binding_note": "Logs, traces and web events older than 3 days are deleted, so the free telemetry is a 3-day debugging window whatever the volume; the 10-monitor count binds the uptime side.",
   "identity_cost": {
     "kind": "email",
-    "detail": "The sign-up form asks for an e-mail address and sends a magic link; Better Stack's own comparison page states the free plan needs no credit card. Whether a later step asks for a phone number is unverified: behind a sign-up.",
+    "detail": "The sign-up form asks for an e-mail address and sends a magic link; Better Stack's own comparison page states the free plan needs no credit card. Phone numbers are added after sign-up under Settings, Account settings, up to three per account. Whether a later step asks for a phone number at sign-up is unverified: behind a sign-up.",
     "country": null
   },
   "reliability_note": "Logs, traces and web events are deleted after 3 days on the free plan.",
@@ -201,9 +201,114 @@
       "proved": "the Uptime API host answers 401 without a token",
       "capture": "sha256:53e3040e14bdc1bb43fc23a6253b6b4fe2e5633880af44cba3f0c84433251759",
       "quote": "\"status\": 401"
+    },
+    {
+      "url": "https://betterstack.com/docs/uptime/phone-number/",
+      "date": "2026-11-01",
+      "proved": "phone numbers are added under Account settings, up to three per account",
+      "capture": "sha256:ea4c3f5e0725a773de7e2fc6d8a144c614e683d5123c7f6d330bd2b7bf48e072",
+      "quote": "There, you can add up to three phone numbers."
+    },
+    {
+      "url": "https://betterstack.com/docs/logs/query-api/connect-remotely/",
+      "date": "2026-11-01",
+      "proved": "the SQL API allows up to 4 concurrent log queries and 20 concurrent metric queries with standard querying",
+      "capture": "sha256:5383cb20f17811c8c97c6e7cc39bd389d7affe0ef14b1deb464764da226341b8",
+      "quote": "With Standard querying, you can run up to 4 concurrent queries for logs and 20 concurrent queries for metrics."
+    },
+    {
+      "url": "https://betterstack.com/docs/getting-started/integrations/mcp/",
+      "date": "2026-11-01",
+      "proved": "Better Stack runs a remote HTTP MCP server for AI clients",
+      "capture": "sha256:ad63c065b838944196ec1eef3e04889ae6dae2b511fc2645ecfb46d7cdfe6486",
+      "quote": "The Better Stack MCP server runs as a remote HTTP server."
+    },
+    {
+      "url": "https://betterstack.com/press/introducing-better-stack/",
+      "date": "2026-11-01",
+      "proved": "Logtail was rebranded as Logs on the Better Stack platform",
+      "capture": "sha256:f743c4986a459f298fe1019a1a98fddd3e07bf22676a0782720074a6e9787b32",
+      "quote": "Better Uptime and Logtail have been rebranded as Uptime and Logs on the Better Stack platform."
+    },
+    {
+      "url": "https://betterstack.com/press/introducing-better-stack/",
+      "date": "2026-11-01",
+      "proved": "Better Stack Logs is the former Logtail log product",
+      "capture": "sha256:f743c4986a459f298fe1019a1a98fddd3e07bf22676a0782720074a6e9787b32",
+      "quote": "Formerly Logtail, lets you visualize your entire stack, turn your logs into structured data, and query everything like a single database with SQL."
+    },
+    {
+      "url": "https://logtail.com",
+      "date": "2026-11-01",
+      "proved": "logtail.com redirects to Better Stack's log-management page",
+      "capture": "sha256:98ab5a3f01cba94ded66d0417c5425faf5367edad5b4842ca636629a79855e1d",
+      "quote": "x-web-final-url: https://betterstack.com/log-management"
+    },
+    {
+      "url": "https://web.archive.org/web/20211127091511/https://logtail.com/pricing",
+      "date": "2026-11-01",
+      "proved": "an archived copy of Logtail's pricing page lists a free plan of 1 GB per month with 3-day retention",
+      "capture": "sha256:499c7286c0d2767c778b109449830feed4656ba33655224f058a12b87e2b7ae3",
+      "quote": "- No credit card required - 1 GB per month - 3-day retention"
+    },
+    {
+      "url": "https://betterstack.com/pricing",
+      "date": "2026-11-01",
+      "proved": "running SQL queries with an HTTP API is listed as a feature of the Logs & Traces product",
+      "capture": "sha256:165f6f4cb431c67efa47e30d6850b78dabcb52da5036eca494af9a8ba2d1bbbf",
+      "quote": "- Run SQL queries with an HTTP API"
+    },
+    {
+      "url": "https://betterstack.com/pricing",
+      "date": "2026-11-01",
+      "proved": "standard querying is included in the Logs & Traces pricing",
+      "capture": "sha256:165f6f4cb431c67efa47e30d6850b78dabcb52da5036eca494af9a8ba2d1bbbf",
+      "quote": "| Standard querying | included | included |"
+    },
+    {
+      "url": "https://betterstack.com/docs/logs/open-telemetry/",
+      "date": "2026-11-01",
+      "proved": "traces are sent as OTLP over HTTP to /v1/traces on the source's ingesting host",
+      "capture": "sha256:c398e8497160a850e5bcfbf4b1cb06d588c5d7053f3b158650fca069e9216249",
+      "quote": "endpoint=\"https://$INGESTING_HOST/v1/traces\","
+    },
+    {
+      "url": "https://betterstack.com/docs/logs/open-telemetry/",
+      "date": "2026-11-01",
+      "proved": "metrics are sent as OTLP over HTTP to /v1/metrics on the source's ingesting host",
+      "capture": "sha256:c398e8497160a850e5bcfbf4b1cb06d588c5d7053f3b158650fca069e9216249",
+      "quote": "endpoint=\"https://$INGESTING_HOST/v1/metrics\","
+    },
+    {
+      "url": "https://betterstack.com/docs/logs/open-telemetry/",
+      "date": "2026-11-01",
+      "proved": "logs are sent as OTLP over HTTP to /v1/logs on the source's ingesting host",
+      "capture": "sha256:c398e8497160a850e5bcfbf4b1cb06d588c5d7053f3b158650fca069e9216249",
+      "quote": "endpoint=\"https://$INGESTING_HOST/v1/logs\","
+    },
+    {
+      "url": "https://betterstack.com/docs/getting-started/integrations/mcp/",
+      "date": "2026-11-01",
+      "proved": "the MCP server is at https://mcp.betterstack.com",
+      "capture": "sha256:ad63c065b838944196ec1eef3e04889ae6dae2b511fc2645ecfb46d7cdfe6486",
+      "quote": "\"url\": \"https://mcp.betterstack.com\""
+    },
+    {
+      "url": "https://betterstack.com/docs/ai-sre/mcp-server-comparison/",
+      "date": "2026-11-01",
+      "proved": "the MCP server is available on every plan, including free",
+      "capture": "sha256:6b5736cfa8fedb4f64295db063e4df684b863aeec50143b28db399ed88f2ab16",
+      "quote": "| Plan requirement | Requires a paid plan. | Available on every plan, including free. |"
+    },
+    {
+      "url": "https://betterstack.com/docs/ai-sre/mcp-server-comparison/",
+      "date": "2026-11-01",
+      "proved": "the MCP server takes OAuth or a Better Stack API token",
+      "capture": "sha256:6b5736cfa8fedb4f64295db063e4df684b863aeec50143b28db399ed88f2ab16",
+      "quote": "| Authentication | Your Better Stack login | OAuth or Better Stack API token |"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T00:42:59.132Z",
-  "notes": "One account covers uptime checks, heartbeats, a status page, logs, traces, metrics, error tracking and session replay. The telemetry part is small and short-lived (3 GB a month kept 3 days); the uptime part is 10 monitors at a 3-minute interval."
+  "verified_at": "2026-11-02T00:37:34.244Z",
+  "notes": "One account covers uptime checks, heartbeats, a status page, logs, traces, metrics, error tracking and session replay. The telemetry part is small and short-lived (3 GB a month kept 3 days); the uptime part is 10 monitors at a 3-minute interval. Logs was sold as Logtail before the products were unified into Better Stack, and logtail.com now redirects to betterstack.com/log-management; an archived copy of Logtail's pricing page lists a free plan of 1 GB per month with 3-day retention, against 3 GB per month with 3-day retention on the Better Stack free plan now."
 }

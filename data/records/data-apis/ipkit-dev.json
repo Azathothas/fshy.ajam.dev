@@ -1,0 +1,136 @@
+{
+  "topic": "data-apis",
+  "slug": "ipkit-dev",
+  "provider": "IPKit (ipkit.dev)",
+  "url": "https://ipkit.dev/docs",
+  "category": "IP geolocation API",
+  "tier": "Free keyless",
+  "free_tier": {
+    "stated": "keyless JSON lookups of any public IPv4 or IPv6 address at https://ipkit.dev/{ip}: 300 requests per 60 seconds per caller IP address, no key; location, ASN, organisation and VPN, proxy and Tor flags from an upstream Ipregistry key held by the operator",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://ipkit.dev/docs",
+    "read_on": "2026-11-02",
+    "notes": "the limit applies to current-IP and arbitrary lookups; no SLA or uptime promise is published."
+  },
+  "per_object_cap": {
+    "stated": "one IP address per request (GET /{ip}); private and reserved ranges answer HTTP 400 RESERVED_IP",
+    "bytes": null,
+    "source_url": "https://ipkit.dev/docs"
+  },
+  "retention": {
+    "stated": "not applicable: a lookup API; specific-IP answers carry cache-control max-age=300 at the caller and s-maxage=3600 at the edge",
+    "days": null,
+    "source_url": "https://ipkit.dev/docs"
+  },
+  "egress": {
+    "terms": "not applicable: JSON answers, not metered in bytes",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://ipkit.dev/docs"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "GET or HEAD https://ipkit.dev/{ip} and /api/ip/{ip} answer ipkit.v1 JSON; GET /api/my-ip answers for the caller; OPTIONS answers CORS preflight with 204",
+  "endpoint": "https://ipkit.dev/{ip}",
+  "tooling": "any HTTP client; branch on the HTTP status and the ipkit.v1 object",
+  "chaining": "A keyless front end to Ipregistry data (source ipregistry) at 300 lookups a minute per caller IP, for scripts that need location, ASN and privacy flags with no account. Bulk path: none in the HTTP API.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "300 requests per 60 seconds per caller IP address; HTTP 429 RATE_LIMITED with Retry-After 60",
+      "source": "https://ipkit.dev/docs"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "the per-minute limit per caller IP is the only published cap; arbitrary lookups also depend on one operator-held upstream key and answer HTTP 503 LOOKUP_UNAVAILABLE without it.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "callers send no API key",
+    "country": null
+  },
+  "reliability_note": "no SLA or uptime promise is published; arbitrary lookups need the operator's upstream key and answer HTTP 503 LOOKUP_UNAVAILABLE when it is missing; past the limit the API answers HTTP 429 with Retry-After 60",
+  "confidence": "measured",
+  "confidence_note": "A keyless lookup of 8.8.8.8 was probed on 2026-11-02 and returned HTTP 200 with source ipregistry; the 300 requests per 60 seconds limit is quoted from the documentation and was not exhausted.",
+  "evidence": [
+    {
+      "url": "https://ipkit.dev/docs",
+      "date": "2026-11-02",
+      "proved": "callers send no API key",
+      "capture": "sha256:28114e23d6df0c7a58d334600943cad5f084f0d3c906cca644dce601b6757029",
+      "quote": "Callers send no API key."
+    },
+    {
+      "url": "https://ipkit.dev/docs",
+      "date": "2026-11-02",
+      "proved": "no SLA is published",
+      "capture": "sha256:28114e23d6df0c7a58d334600943cad5f084f0d3c906cca644dce601b6757029",
+      "quote": "There is no published SLA; use the service reasonably."
+    },
+    {
+      "url": "https://ipkit.dev/docs",
+      "date": "2026-11-02",
+      "proved": "the limit is 300 requests per 60 seconds per connecting IP",
+      "capture": "sha256:28114e23d6df0c7a58d334600943cad5f084f0d3c906cca644dce601b6757029",
+      "quote": "Lookups are limited to 300 requests per 60 seconds per connecting client IP. The limit applies to current-IP and arbitrary lookups."
+    },
+    {
+      "url": "https://ipkit.dev/docs",
+      "date": "2026-11-02",
+      "proved": "HTTP 429 RATE_LIMITED is the answer past the limit",
+      "capture": "sha256:28114e23d6df0c7a58d334600943cad5f084f0d3c906cca644dce601b6757029",
+      "quote": "The connecting client IP exceeded the lookup limit."
+    },
+    {
+      "url": "https://ipkit.dev/docs",
+      "date": "2026-11-02",
+      "proved": "arbitrary lookups need the operator's Ipregistry key and answer HTTP 503 without it",
+      "capture": "sha256:28114e23d6df0c7a58d334600943cad5f084f0d3c906cca644dce601b6757029",
+      "quote": "Look up a specific public IPv4 or IPv6 address. Always JSON, even in a browser. Example: /8.8.8.8. Invalid syntax returns 400 INVALID_IP. Private and reserved ranges return 400 RESERVED_IP. Requires the Worker secret IPREGISTRY_API_KEY; otherwise 503 LOOKUP_UNAVAILABLE."
+    },
+    {
+      "url": "https://ipkit.dev/docs",
+      "date": "2026-11-02",
+      "proved": "specific-IP answers are public-cacheable",
+      "capture": "sha256:28114e23d6df0c7a58d334600943cad5f084f0d3c906cca644dce601b6757029",
+      "quote": "Specific-IP lookups (/{ip} and /api/ip/{ip}) are Cache-Control: public, max-age=300, s-maxage=3600, stale-while-revalidate=86400."
+    },
+    {
+      "url": "probe:https://ipkit.dev/8.8.8.8",
+      "date": "2026-11-02",
+      "proved": "a keyless GET of /8.8.8.8 answered HTTP 200",
+      "capture": "sha256:ffc759588344a99f2d10d86e7ff159519e18bf409102ca53f961675112581864",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:https://ipkit.dev/8.8.8.8",
+      "date": "2026-11-02",
+      "proved": "the answer comes from the Ipregistry data source",
+      "capture": "sha256:e8d9dcf7b355ae1b6d9387d2acaf71bb93c65ccf2d50984d5c489cff747df0c4",
+      "quote": "\"source\": \"ipregistry\""
+    },
+    {
+      "url": "probe:https://ipkit.dev/8.8.8.8",
+      "date": "2026-11-02",
+      "proved": "the answer carries an ASN",
+      "capture": "sha256:e8d9dcf7b355ae1b6d9387d2acaf71bb93c65ccf2d50984d5c489cff747df0c4",
+      "quote": "\"asn\": \"AS15169\""
+    },
+    {
+      "url": "probe:https://ipkit.dev/8.8.8.8",
+      "date": "2026-11-02",
+      "proved": "the answer carries the documented cache-control header",
+      "capture": "sha256:ffc759588344a99f2d10d86e7ff159519e18bf409102ca53f961675112581864",
+      "quote": "\"cache-control\": \"public, max-age=300, s-maxage=3600, stale-while-revalidate=86400\""
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-11-02T00:23:42.887Z",
+  "notes": "Free requests: the only published limit is 300 per 60 seconds per caller IP. Rate limit: HTTP 429 with Retry-After 60. Bulk path: none in the HTTP API.",
+  "extras": {
+    "bulk_path": "none in the HTTP API",
+    "free_requests": "300 per 60 seconds per caller IP"
+  }
+}

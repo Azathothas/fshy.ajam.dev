@@ -35,9 +35,9 @@
     "rest",
     "unknown"
   ],
-  "interface_detail": "REST API at https://main.realtime.ably.net for publish, history, presence, tokens and stats, in JSON or MessagePack; long-lived realtime connections through the Ably SDKs, which the interface vocabulary has no WebSocket term for. The /time endpoint answered 200 without a key.",
+  "interface_detail": "REST API at https://main.realtime.ably.net for publish, history, presence, tokens and stats, in JSON or MessagePack; realtime connections use the native WebSockets-based protocol through the Ably SDKs, and protocol adapters add MQTT, SSE, AMQP, STOMP, Pusher and PubNub at no extra charge. The interface vocabulary has no term for WebSocket, MQTT, SSE, AMQP or STOMP, so they are listed here.",
   "endpoint": "https://main.realtime.ably.net",
-  "tooling": "Ably SDKs for JavaScript, Python, Go, Java, Ruby, .NET, iOS and Android, or any HTTP client against the REST API with an API key or token.",
+  "tooling": "Ably SDKs for JavaScript, Python, Go, Java, Ruby, .NET, iOS and Android, any HTTP client against the REST API with an API key or token, or an MQTT 3.1.1 client against main.mqtt.ably.net on port 8883 with TLS.",
   "chaining": "A fan-out layer that pushes job status from free compute workers to browsers or other workers, with one day of history for a consumer that reconnects.",
   "limits": [
     {
@@ -71,12 +71,12 @@
       "source": "https://ably.com/docs/platform/pricing/limits"
     }
   ],
-  "limits_note": "200 concurrent connections, 200 concurrent channels and 50 messages a second per channel. The vocabulary has no kind for a concurrency cap.",
+  "limits_note": "200 concurrent connections, 200 concurrent channels, 200 channels per connection and 50 messages a second per channel, and up to 5 queues per account that hold 50,000 queued messages between them. The vocabulary has no kind for a concurrency cap or a queued-message backlog cap.",
   "binding": "request-rate",
   "binding_note": "6,000,000 a month is 200,000 a day (6,000,000 / 30) and every delivery counts, so a fan-out meets the monthly count first; messages that average above 5 KiB meet the 28.6 GiB monthly bandwidth before it (6,000,000 x 5 KiB = 28.6 GiB).",
   "identity_cost": {
     "kind": "email",
-    "detail": "The signup form asks for a full name, an optional company name, an email and a password, or a GitHub or Google sign-in; the Free package needs no credit card.",
+    "detail": "The signup form asks for a full name, an optional company name, an email and a password with a reCAPTCHA check, or a GitHub or Google sign-in; the Free package needs no credit card.",
     "country": null
   },
   "reliability_note": "Rate-limit excess is rejected with an error and count limits refuse new connections or channels; Free support is a best-effort service level objective.",
@@ -278,9 +278,86 @@
       "proved": "the REST host answers its time endpoint without a key",
       "capture": "sha256:41fa823c30c8a92a55964218ea5cb11f0f07ab0a53fdb523531211891f4d0416",
       "quote": "\"status\": 200"
+    },
+    {
+      "url": "https://ably.com/docs/protocols",
+      "date": "2026-11-01",
+      "proved": "Ably offers a native WebSockets-based protocol and adapters for MQTT, SSE, AMQP, STOMP, Pusher and PubNub",
+      "capture": "sha256:7e642865fa375fe965e39c8ccdc56e9ad1df898533eb557fd6bf7c5adfddc77a",
+      "quote": "Ably supports multiple protocols in addition to the native WebSockets-based one: MQTT, SSE, AMQP, STOMP, Pusher, PubNub"
+    },
+    {
+      "url": "https://ably.com/docs/protocols/mqtt",
+      "date": "2026-11-01",
+      "proved": "the MQTT adapter takes MQTT 3.1.1 clients at host main.mqtt.ably.net on TLS port 8883",
+      "capture": "sha256:eeacede2be1098ca723ff54c1ee3aa7c595c22edab5e2daf373cf6dba3d98133",
+      "quote": "Only supports MQTT 3.1.1 clients only ... Set the host to \"main.mqtt.ably.net\" ... Set SSL / TLS to true and the port to 8883."
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing/limits",
+      "date": "2026-11-01",
+      "proved": "all queues of an account share one backlog of at most 50,000 queued messages on every package, Free included",
+      "capture": "sha256:4d802669870eb4ace7c282dc2ca954e43df46569583fbb23ecc832d9e54c9603",
+      "quote": "| Max queue length<p>*the maximum number of messages that can be stored in queues whilst waiting to be consumed. This value is shared between all queues in an account*</p> | 50,000 | 50,000 | 50,000 | 50,000 |"
+    },
+    {
+      "url": "https://ably.com/sign-up",
+      "date": "2026-11-01",
+      "proved": "the email signup form carries a reCAPTCHA check after the name, company, email and password fields",
+      "capture": "sha256:8b50d7faca4f73c0616d170997a26bb7f3dacc502e4ab9535dc29bc0d29d6011",
+      "quote": "Full name * Company name(Optional) Email * Create password * Recaptcha requires verification. I'm not a robot"
+    },
+    {
+      "url": "https://ably.com/docs/protocols",
+      "date": "2026-11-01",
+      "proved": "protocol adapters add no charge, and their connections and messages count as they do on the native protocol",
+      "capture": "sha256:7e642865fa375fe965e39c8ccdc56e9ad1df898533eb557fd6bf7c5adfddc77a",
+      "quote": "Use of protocol adapters carries no additional charge. You are charged for the total number of peak connections and messages sent as if you were using Ably's native protocol."
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing/limits",
+      "date": "2026-11-01",
+      "proved": "the Free package allows 5 queues per account",
+      "capture": "sha256:4d802669870eb4ace7c282dc2ca954e43df46569583fbb23ecc832d9e54c9603",
+      "quote": "| Max number of queues (per account)<p>the maximum number of queues that can be created per account</p> | 5 | 10 | 50 | 100+ |"
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing/limits",
+      "date": "2026-11-01",
+      "proved": "a realtime connection attaches to at most 200 channels on every package, Free included",
+      "capture": "sha256:4d802669870eb4ace7c282dc2ca954e43df46569583fbb23ecc832d9e54c9603",
+      "quote": "| Number of channels per connection<p>*the maximum number of channels that each connection can be attached to*</p> | 200 | 200 | 200 | 200 |"
+    },
+    {
+      "url": "probe:https://main.realtime.ably.net/time",
+      "date": "2026-11-01",
+      "proved": "the REST host answers its time endpoint without a key",
+      "capture": "sha256:a14debbe1d1eb2e1fbf3db591396c68ffe441029145d8062a9a006284565f0af",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:main.mqtt.ably.net:8883",
+      "date": "2026-11-01",
+      "proved": "the MQTT adapter host accepts a TCP connection on its TLS port 8883",
+      "capture": "sha256:146da450eb2db70eea719868d3c5bc30ce6c7ab944f03474eaaf7d18e9e576a1",
+      "quote": "\"ok\": true"
+    },
+    {
+      "url": "https://ably.com/sign-up",
+      "date": "2026-11-01",
+      "proved": "the signup also accepts a GitHub or Google sign-in",
+      "capture": "sha256:8b50d7faca4f73c0616d170997a26bb7f3dacc502e4ab9535dc29bc0d29d6011",
+      "quote": "Continue with GitHub Continue with Google"
+    },
+    {
+      "url": "https://ably.com/docs/platform/pricing/free",
+      "date": "2026-11-01",
+      "proved": "the Free package page lists 200 concurrent connections, unchanged",
+      "capture": "sha256:a90e5c08b1314172ddbf70bc3ec82be97d8aa141dccd59ad7a55b4fa279c0a34",
+      "quote": "| Concurrent connections | 200 |"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T00:43:05.347Z",
+  "verified_at": "2026-11-02T00:38:24.162Z",
   "notes": "The Standard package is USD 29 a month plus usage, with 2,500 messages a second, 10,000 connections and 30 days of history."
 }

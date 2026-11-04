@@ -7,25 +7,25 @@
   "verdict": "qualifies-with-caveat",
   "confidence": "documented",
   "confidence_note": "free tier and caps quoted from the vendor's rate-limit page; the refusal of a VPN or proxy address measured with a keyless probe",
-  "verified_at": "2026-10-30T11:10:02.159Z",
+  "verified_at": "2026-11-02T01:02:29.002Z",
   "free_tier": {
     "stated": "free with no API key: Search, Scrape and Parse on the hosted MCP endpoint, Interact as well from official clients, the CLI, SDKs and REST API, and the research, developer and government search endpoints on Firecrawl Cloud; capped per IP address per day by a request count and a credit count, neither published",
     "unit": "requests",
     "metered_on": "request-count",
     "source_url": "https://docs.firecrawl.dev/rate-limits",
     "read_on": "2026-10-30",
-    "notes": ""
+    "notes": "the API source code on GitHub reads the two per-IP caps from the settings KEYLESS_REQUESTS_PER_DAY and KEYLESS_CREDITS_PER_DAY and ships no default for either; the tier is off unless both are set"
   },
   "per_object_cap": {
-    "stated": "not applicable: the unit is a request",
+    "stated": "not applicable",
     "bytes": null,
     "source_url": "https://www.firecrawl.dev/",
     "notes": ""
   },
   "retention": {
-    "stated": "the per-IP caps reset every day",
+    "stated": "each per-IP request counter and credit counter expires 86400 seconds after it is created",
     "days": null,
-    "source_url": "https://www.firecrawl.dev/",
+    "source_url": "https://raw.githubusercontent.com/firecrawl/firecrawl/main/apps/api/src/lib/keyless.ts",
     "notes": ""
   },
   "egress": {
@@ -39,7 +39,7 @@
     "rest"
   ],
   "interface_detail": "REST at api.firecrawl.dev with no key (the Research Index at GET /v2/search/research/papers, Search, Scrape and Interact) and the hosted MCP keyless endpoint",
-  "tooling": "not stated",
+  "tooling": "plain HTTP with no Authorization header, an SDK, the CLI run as npx -y firecrawl-cli@latest, or an MCP client pointed at https://mcp.firecrawl.dev/v2/mcp",
   "chaining": "The works index's last leg, after OpenAlex, TinyFish and Exa",
   "limits": [
     {
@@ -54,7 +54,7 @@
     }
   ],
   "binding": "request-rate",
-  "limits_note": "",
+  "limits_note": "keyless calls with no World ID credential are accepted from IPv4 client addresses only; a call from an IPv6 address falls through to HTTP 401",
   "identity_cost": {
     "kind": "anonymous",
     "detail": "no account and no API key",
@@ -116,6 +116,83 @@
       "proved": "the refusal of the keyless research search from a VPN or proxy address is HTTP 403",
       "capture": "sha256:65866a233a3388d6fb3d98f0a95c61a4ca73d4abe35925dd8a91ce1934c16e3e",
       "quote": "\"status\": 403"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/firecrawl/firecrawl/main/apps/api/src/controllers/auth.ts",
+      "date": "2026-11-01",
+      "proved": "the API source refuses a keyless call from a client address that is not IPv4 with the 401 answer, unless the caller presents a World ID credential",
+      "capture": "sha256:cd69d59adeb409d0b54d346416c5f34955199a2bb5ec8eb5ca47fcf7945be9d7",
+      "quote": "Only a valid IPv4 identity gets keyless: IPv6 is too cheap to rotate for a ... Anything else falls through to 401. if (!worldIdIdentity && !isKeylessIpEligible(ip)) { return denied(req, \"keyless_ip_ineligible\", unauthorized); }"
+    },
+    {
+      "url": "https://www.firecrawl.dev/agent-onboarding/SKILL.md",
+      "date": "2026-11-01",
+      "proved": "the vendor lists the clients that work with no key (MCP, CLI, SDK, plain HTTP), the MCP endpoint and the CLI command, and says a call from some networks (VPNs, proxies) is refused",
+      "capture": "sha256:100c0b343a4b65250dae903f9aa4b8468bd8fb4954d6c5591d73e091c99930d5",
+      "quote": "from any client (MCP, CLI, SDK, or plain HTTP). It is rate-limited, and calls from some networks (VPNs, proxies) are refused ... point any MCP-compatible client at https://mcp.firecrawl.dev/v2/mcp ... run npx -y firecrawl-cli@latest ... without an Authorization header"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/firecrawl/firecrawl/main/apps/api/src/lib/keyless.ts",
+      "date": "2026-11-01",
+      "proved": "the API source expires each per-IP request counter and credit counter 86400 seconds after it is created",
+      "capture": "sha256:79aca9736dd4fc7936616b1a996f81a5b18498f266bff48893efd2fe35c49a3d",
+      "quote": "const DAY_SECONDS = 86400; ... if (requestsUsed === 1) { await redisRateLimitClient.expire(rKey, DAY_SECONDS); } ... if redis.call(\"TTL\", KEYS[1]) < 0 then redis.call(\"EXPIRE\", KEYS[1], ttl)"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/firecrawl/firecrawl/main/apps/api/src/lib/keyless.ts",
+      "date": "2026-11-01",
+      "proved": "the API source takes the two per-IP caps from settings that have no default, and the keyless tier is off unless both are configured",
+      "capture": "sha256:79aca9736dd4fc7936616b1a996f81a5b18498f266bff48893efd2fe35c49a3d",
+      "quote": "No defaults: the keyless free tier is OFF unless BOTH limits are configured. ... const KEYLESS_REQUESTS_PER_DAY = config.KEYLESS_REQUESTS_PER_DAY; const KEYLESS_CREDITS_PER_DAY = config.KEYLESS_CREDITS_PER_DAY;"
+    },
+    {
+      "url": "probe:https://api.firecrawl.dev/v2/search/research/papers?query=attention%20is%20all%20you%20need&k=3",
+      "date": "2026-11-01",
+      "proved": "a keyless GET of the research papers search, sent from one egress address with no proxy, answered HTTP 403 on 2026-11-01, as it did on 2026-10-30",
+      "capture": "sha256:cea037c3f63c27ae80969240d4e83df85a097c5785b71481ff9dd18c760a3f58",
+      "quote": "\"status\": 403"
+    },
+    {
+      "url": "https://api.firecrawl.dev/v2/search/research/papers?query=attention%20is%20all%20you%20need&k=3",
+      "date": "2026-11-01",
+      "proved": "a keyless GET of the research papers search answered HTTP 200 with success true and three results on 2026-11-01 from a Cloudflare Workers fetch egress, an address the vendor does not refuse",
+      "capture": "sha256:ce28aa9d41a574ec513deca51f1d3752f8c65904c0a083c928ec5b826c1f949a",
+      "quote": "HTTP/1.1 200 OK ... egress=cf-fetch tried=cf-fetch ... {\"success\":true,\"partial\":false,\"results\":[{\"paperId\":\"8319239866974784291\""
+    },
+    {
+      "url": "https://api.firecrawl.dev/v2/search/research/papers?query=retrieval%20augmented%20generation&k=2",
+      "date": "2026-11-01",
+      "proved": "a keyless GET of the research papers search with a second query also answered HTTP 200 with success true and two results on 2026-11-01 from the same kind of egress",
+      "capture": "sha256:a71208f77b0d4b20c36f947c98f82a498bea55393fa96362dd6bf00b26cc2ebb",
+      "quote": "HTTP/1.1 200 OK ... egress=cf-fetch tried=cf-fetch ... {\"success\":true,\"partial\":false,\"results\":[{\"paperId\":\"3318503568925695457\""
+    },
+    {
+      "url": "https://raw.githubusercontent.com/firecrawl/firecrawl/main/apps/api/src/controllers/auth.ts",
+      "date": "2026-11-01",
+      "proved": "the vendor's API answers HTTP 403 with a message naming the address as a VPN or proxy and pointing to a free API key when its address check flags a keyless caller",
+      "capture": "sha256:cd69d59adeb409d0b54d346416c5f34955199a2bb5ec8eb5ca47fcf7945be9d7",
+      "quote": "Unfortunately, your IP address looks like a VPN or proxy, so Firecrawl can't be used without an API key from here. Sign up with Google or GitHub at ${signupUrl} for a free API key with 1000 credits and higher rate limits. ... error: keylessSuspiciousIpMessage(url), status: 403"
+    },
+    {
+      "url": "https://www.firecrawl.dev/blog/firecrawl-keyless-launch",
+      "date": "2026-11-01",
+      "proved": "keyless use needs no account and no API key",
+      "capture": "sha256:092c5f0aa29a0ab58bd73ad769c58b3b6ee8dec6e5bb491041ad4baa2f24d929",
+      "quote": "Firecrawl is now keyless. Search, scrape, and interact with the web for free without an account, setup or key rotation."
+    },
+    {
+      "url": "https://xitter.cf/ericciarla/status/2093375835679977570",
+      "date": "2026-11-01",
+      "proved": "a public post announcing Firecrawl keyless states that the keyless credit and rate limits vary based on demand (reported, from a mirror of the post)",
+      "capture": "sha256:653c75dbe6e1a0a56b10e039a6c54ece01164b3da272ee0392e658977973527d",
+      "quote": "keyless firecrawl is free but not unlimited, with credit + rate limits that vary based on demand."
+    },
+    {
+      "url": "https://docs.firecrawl.dev/rate-limits",
+      "date": "2026-11-01",
+      "proved": "keyless use is free and capped per IP address per day by a request count and a credit count, and the page states no number for either",
+      "capture": "sha256:6867c1561cc51e8baee2be6a360f73e7bc4cfeff7ffec16ca2b438b06e5d2d82",
+      "quote": "Keyless usage is free and capped per IP address per day by two limits, and exceeding either returns a 429: ... A maximum number of requests per day. ... A maximum number of credits per day."
     }
   ],
   "notes": "Two caps and no number is worse than one cap with a number: there is no threshold to design against.",

@@ -6,12 +6,12 @@
   "category": "payment rail (instant bank transfer, Brazil)",
   "tier": "rail",
   "free_tier": {
-    "stated": "Not a metered service and not a subscription. No fee is published on any page read; the rail's own rulebook at bcb.gov.br is served by a client-rendered application that returned navigation and a cookie banner on two attempts.",
+    "stated": "Not a metered service and not a subscription. The central bank's Pix page states the fee: 'Gratuito para pessoa física e custo baixo para empresa' (free for individuals, low cost for businesses). The amount charged to businesses is not published on the page read.",
     "unit": "none",
     "metered_on": "none",
     "source_url": "https://www.bcb.gov.br/estabilidadefinanceira/pix",
     "read_on": "2026-10-23",
-    "notes": "The trial and fee rules for individuals are unverified. What is verified is the buyer-side behaviour at two checkouts, below."
+    "notes": "The fee for individuals is free, per the central bank. The buyer-side behaviour at two checkouts is below."
   },
   "per_object_cap": {
     "stated": "not applicable: a payment, not an object.",
@@ -41,11 +41,11 @@
   "limits": [
     {
       "kind": "write-gated",
-      "value": "a Brazilian bank account and a CPF are required. At a foreign IP the checkout hides the CPF field and disables Pix, boleto and installments",
+      "value": "a current, savings or prepaid payment account at a Pix participant institution is required. At a foreign IP the Kiwify checkout hides the CPF field and disables Pix and boleto; choosing Brazil in the checkout's country selector brings back the CPF and cellphone fields and Pix",
       "source": "https://ajuda.kiwify.com.br/pt-br/article/o-checkout-funciona-fora-do-brasil-1cdb1ri/"
     }
   ],
-  "limits_note": "Kiwify states the exclusion from the merchant side in plain Portuguese: 'Quando um comprador acessa o checkout de fora do Brasil, nos escondemos o campo de CPF e desabilitamos algumas funcionalidades como: Boleto bancario, Pix, Parcelamento'. Hotmart lists Pix under 'Metodos de pagamento exclusivos do Brasil'.",
+  "limits_note": "Kiwify states the exclusion from the merchant side: 'Quando um comprador acessa o checkout de fora do Brasil, nós escondemos o campo de CPF e desabilitamos o boleto bancário e o Pix.' Hotmart lists Pix under 'Métodos de pagamento exclusivos do Brasil'.",
   "binding": "write-gated",
   "binding_note": "Nothing about volume applies. A buyer without a Brazilian account cannot complete the payment at all, which is the gate that fails before any other consideration.",
   "price_per_tb_month": null,
@@ -54,9 +54,9 @@
     "detail": "CPF plus an account at a Brazilian financial institution. The checkout hides the CPF field for foreign IPs and disables Pix, which is the operational proof that the rail is closed to a buyer outside Brazil.",
     "country": "Brazil"
   },
-  "reliability_note": "Instant settlement, so a mistaken transfer is not reversible through the rail; none of the checkout pages read here describe a dispute path. A payer travelling abroad can re-select Brazil in the checkout's country selector to get Pix back, per Kiwify, so the gate is residency rather than location.",
-  "confidence": "reported",
-  "confidence_note": "Two checkout vendors document the rail's buyer-side gate, and both agree. The rail's own rulebook was not readable: bcb.gov.br returned a cookie banner and navigation on two URLs, and the PDF path 404s. Reading the BCB rulebook would move the fee and limit statements from absent to documented.",
+  "reliability_note": "Settlement is instant. The central bank page lists a 'Mecanismo Especial de Devolução do Pix (MED)' and a page for a mistaken Pix or a scam; the rules of that mechanism were not read. A payer travelling abroad can re-select Brazil in the checkout's country selector to get Pix back, per Kiwify, and a seller can force the Brazilian checkout with a URL parameter, so the checkout's gate follows its region setting, not the payer's location.",
+  "confidence": "documented",
+  "confidence_note": "Two checkout vendors document the rail's buyer-side gate on their own help pages, and the central bank's Pix page states the fee for individuals. The rulebook (Regulamento do Pix) and its limits were not read.",
   "evidence": [
     {
       "url": "https://ajuda.kiwify.com.br/pt-br/article/o-checkout-funciona-fora-do-brasil-1cdb1ri/",
@@ -72,10 +72,108 @@
       "url": "https://suportehotmart.zendesk.com/hc/pt-br/articles/25648853025037-Quais-s%C3%A3o-os-m%C3%A9todos-de-pagamento-dispon%C3%ADveis-para-comprar-na-Hotmart",
       "date": "2026-10-23",
       "proved": "'Metodos de pagamento exclusivos do Brasil > Pix' - a second, independent checkout vendor classifying Pix as Brazil-only"
+    },
+    {
+      "url": "https://www.bcb.gov.br/estabilidadefinanceira/pix",
+      "date": "2026-11-03",
+      "proved": "the central bank states Pix is free for individuals",
+      "capture": "sha256:35076e0f1603cbfaf4b2c9f963563ec4d4c313cf82d38aeee5867de37a9c675d",
+      "quote": "Gratuito para pessoa física e custo baixo para empresa"
+    },
+    {
+      "url": "https://www.bcb.gov.br/estabilidadefinanceira/pix",
+      "date": "2026-11-03",
+      "proved": "the fee for individuals is stated",
+      "capture": "sha256:35076e0f1603cbfaf4b2c9f963563ec4d4c313cf82d38aeee5867de37a9c675d",
+      "quote": "Gratuito para pessoa física e custo baixo para empresa"
+    },
+    {
+      "url": "https://ajuda.kiwify.com.br/pt-br/article/o-checkout-funciona-fora-do-brasil-1cdb1ri/",
+      "date": "2026-11-03",
+      "proved": "Kiwify hides the CPF field and disables boleto and Pix for a buyer outside Brazil; installments are no longer listed",
+      "capture": "sha256:08b2e681e2adf042625e53c79739bd6e4674bbfaba2dea5ac0b43dc19f2a524b",
+      "quote": "Quando um comprador acessa o checkout de fora do Brasil, nós escondemos o campo de CPF e desabilitamos o boleto bancário e o Pix."
+    },
+    {
+      "url": "https://ajuda.kiwify.com.br/pt-br/article/o-checkout-funciona-fora-do-brasil-1cdb1ri/",
+      "date": "2026-11-03",
+      "proved": "the Kiwify sentence as it reads now",
+      "capture": "sha256:08b2e681e2adf042625e53c79739bd6e4674bbfaba2dea5ac0b43dc19f2a524b",
+      "quote": "Quando um comprador acessa o checkout de fora do Brasil, nós escondemos o campo de CPF e desabilitamos o boleto bancário e o Pix."
+    },
+    {
+      "url": "https://www.bcb.gov.br/estabilidadefinanceira/pix",
+      "date": "2026-11-03",
+      "proved": "the central bank page lists a return mechanism for Pix",
+      "capture": "sha256:35076e0f1603cbfaf4b2c9f963563ec4d4c313cf82d38aeee5867de37a9c675d",
+      "quote": "Mecanismo Especial de Devolução do Pix (MED)"
+    },
+    {
+      "url": "https://ajuda.kiwify.com.br/pt-br/article/o-checkout-funciona-fora-do-brasil-1cdb1ri/",
+      "date": "2026-11-03",
+      "proved": "a seller can force the Brazilian checkout (with ?region=br), so the Pix gate is the checkout's region setting",
+      "capture": "sha256:08b2e681e2adf042625e53c79739bd6e4674bbfaba2dea5ac0b43dc19f2a524b",
+      "quote": "Sim, é possível forçar o seu checkout a sempre exibir CPF / Celular / Boleto / Pix / Parcelamento, independente de onde o comprador esteja acessando."
+    },
+    {
+      "url": "https://www.bcb.gov.br/meubc/faqs/p/quem-pode-fazer-o-pix",
+      "date": "2026-11-03",
+      "proved": "Pix needs a current, savings or prepaid payment account at a participant institution",
+      "capture": "sha256:9d5cfc21cbf0c4b6adc22a3e3ae2cf4d2ea2ef6346bacc19663670b51f873b84",
+      "quote": "Qualquer pessoa física ou jurídica que tenha uma conta corrente, conta poupança ou conta de pagamento pré-paga em uma instituição participante do Pix."
+    },
+    {
+      "url": "https://suportehotmart.zendesk.com/hc/pt-br/articles/25648853025037-Quais-s%C3%A3o-os-m%C3%A9todos-de-pagamento-dispon%C3%ADveis-para-comprar-na-Hotmart",
+      "date": "2026-11-03",
+      "proved": "Hotmart still lists Pix under the heading of methods exclusive to Brazil",
+      "capture": "sha256:4ed2204da82ec9428056ce88b845b3bf96f6261a9bc8d7e8513ce43fca14e7eb",
+      "quote": "Métodos de pagamento exclusivos do Brasil"
+    },
+    {
+      "url": "https://www.bcb.gov.br/estabilidadefinanceira/pix",
+      "date": "2026-11-03",
+      "proved": "the rail's own operator page is now read and states the fee",
+      "capture": "sha256:35076e0f1603cbfaf4b2c9f963563ec4d4c313cf82d38aeee5867de37a9c675d",
+      "quote": "Gratuito para pessoa física e custo baixo para empresa"
+    },
+    {
+      "url": "https://www.bcb.gov.br/estabilidadefinanceira/pix",
+      "date": "2026-11-03",
+      "proved": "the central bank page is readable through a pinned route",
+      "capture": "sha256:35076e0f1603cbfaf4b2c9f963563ec4d4c313cf82d38aeee5867de37a9c675d",
+      "quote": "Gratuito para pessoa física e custo baixo para empresa"
+    },
+    {
+      "url": "https://ajuda.kiwify.com.br/pt-br/article/o-checkout-funciona-fora-do-brasil-1cdb1ri/",
+      "date": "2026-11-03",
+      "proved": "foreign buyers need no CPF and pay by card at the Kiwify checkout",
+      "capture": "sha256:08b2e681e2adf042625e53c79739bd6e4674bbfaba2dea5ac0b43dc19f2a524b",
+      "quote": "Ou seja, os estrangeiros não precisam de CPF e pagam com cartão."
+    },
+    {
+      "url": "https://www.bcb.gov.br/meubc/faqs/p/quem-pode-fazer-o-pix",
+      "date": "2026-11-03",
+      "proved": "Pix needs a current, savings or prepaid payment account at a participating institution; the page names no CPF requirement",
+      "capture": "sha256:f558ace2fce72bcf67ed03879a251e85bf9a53d9232b80ecbfd7d05ea64bd864",
+      "quote": "Qualquer pessoa física ou jurídica que tenha uma conta corrente, conta poupança ou conta de pagamento pré-paga em uma instituição participante do Pix."
+    },
+    {
+      "url": "https://ajuda.kiwify.com.br/pt-br/article/o-checkout-funciona-fora-do-brasil-1cdb1ri/",
+      "date": "2026-11-03",
+      "proved": "choosing Brazil in the checkout's country selector brings back the CPF and cellphone fields and enables boleto, Pix and installments",
+      "capture": "sha256:d752610a77461506110de17e9996bbffb086d43318fa492a414b01e8976fc6f7",
+      "quote": "Dessa forma os campos CPF e celular voltarão a aparecer e será possível pagar via boleto, pix ou parcelar."
+    },
+    {
+      "url": "https://ajuda.kiwify.com.br/pt-br/article/o-checkout-funciona-fora-do-brasil-1cdb1ri/",
+      "date": "2026-11-03",
+      "proved": "at a foreign IP the Kiwify checkout hides the CPF field and disables boleto and Pix",
+      "capture": "sha256:d752610a77461506110de17e9996bbffb086d43318fa492a414b01e8976fc6f7",
+      "quote": "Quando um comprador acessa o checkout de fora do Brasil, nós escondemos o campo de CPF e desabilitamos o boleto bancário e o Pix."
     }
   ],
   "verdict": "fails-identity",
-  "verified_at": "2026-10-23T02:15:00.000Z",
+  "verified_at": "2026-11-03T15:29:05.335Z",
   "notes": "A payment rail is not a retrieval service, and this record exists because question cannot be answered without it: every R$ price is a Pix price, and Pix is the one part of the Brazilian stack a foreign buyer cannot join. The Chinese parallel is Alipay or WeChat Pay; the shape is the same, a domestic clearing rail that local storefronts build on.",
   "extras": {
     "buyer_gate": "CPF + Brazilian bank account",

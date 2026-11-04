@@ -31,7 +31,7 @@
   "interface": [
     "rest"
   ],
-  "tooling": "the AList 3.45.1 REST API anonymously. No working WebDAV was observed. Mounts cover iOS sideloading content: 自签, Trollstore, IPCC, shortcuts, jailbreak tools, signing tools and shared enterprise certificates",
+  "tooling": "the AList v3.45.1 REST API anonymously. No working WebDAV was observed. The root listing shows eight directories of iOS sideloading content: 自签, Trollstore, IPCC, shortcuts, jailbreak tools, signing tools, shared enterprise certificates and Windows. Five root-level paths are absent from the root listing: /Apple Arcade, /天翼, /看书软件, /越狱插件 and /视频教程. The /天翼 listing is empty",
   "chaining": "Read-only. The structural point is the important one: a 139Yun-backed public AList proves that a non-Chinese reader can reach Chinese carrier pan bytes through a proxy layer with no account. The access problem is solved by the proxy and only the write problem remains",
   "limits": [
     {
@@ -79,18 +79,129 @@
       "proved": "the public settings endpoint answered 200 with no session and returns the AList site settings of 晴天网盘, none of which is a quota, unit or price",
       "capture": "sha256:9993727c81cbe25cd44bb82971f481da8e24e04c968f71c83f76a9fe37598be6",
       "quote": "\"site_title\":\"晴天网盘\""
+    },
+    {
+      "url": "probe:https://alist.jiejingfan.vip/api/fs/get?path=%2F%E5%A4%A9%E7%BF%BC",
+      "date": "2026-11-02",
+      "proved": "fs/get on /天翼 answers provider 189CloudPC for a path that the root listing omits",
+      "capture": "sha256:9f0d63138523ed0a6527f012a843e402dc286f2e9b50fa1753d7296a3118f9a5",
+      "quote": "\"id\":\"\",\"path\":\"\",\"name\":\"天翼\" ... \"provider\":\"189CloudPC\""
+    },
+    {
+      "url": "probe:https://alist.jiejingfan.vip/api/fs/list?path=%2F&page=1&per_page=0",
+      "date": "2026-11-02",
+      "proved": "the root listing answers code 200 to a request with no session: eight directories, write false, provider 139Yun",
+      "capture": "sha256:3626ddad174eaa933c34160cab7af2d12c8144361b5bdab8fe2f575c7aea76de",
+      "quote": "\"name\":\"自签\" ... \"name\":\"Windows\" ... \"total\":8 ... \"write\":false,\"provider\":\"139Yun\"}}"
+    },
+    {
+      "url": "probe:https://alist.jiejingfan.vip/d/%E5%BF%AB%E6%8D%B7%E6%8C%87%E4%BB%A4/%E9%94%81%E5%B1%8F%E5%A4%A9%E6%B0%94.txt",
+      "date": "2026-11-02",
+      "proved": "a direct link to a file in the root tree answers 302 to the object-storage host hcybf06.eos-huhehaote-5.cmecloud.cn; the query string is redacted in the stored record",
+      "capture": "sha256:f47822a53605bbe9c31a62f6fa042bcecd744463d76ced79f6a97a1cc66bcb84",
+      "quote": "\"status\": 302, \"location\": \"https://hcybf06.eos-huhehaote-5.cmecloud.cn/K5127205e001c3bdd966011e9fef47f733?[redacted]\""
+    },
+    {
+      "url": "probe:https://alist.jiejingfan.vip/api/public/settings",
+      "date": "2026-11-02",
+      "proved": "the settings answer serves the favicon and the logo from /d/天翼/素材/, a path under the 天翼 mount",
+      "capture": "sha256:9993727c81cbe25cd44bb82971f481da8e24e04c968f71c83f76a9fe37598be6",
+      "quote": "\"favicon\":\"https://alist.jiejingfan.vip/d/%E5%A4%A9%E7%BF%BC/%E7%B4%A0%E6%9D%90/ ... \"logo\":\"https://alist.jiejingfan.vip/d/%E5%A4%A9%E7%BF%BC/%E7%B4%A0%E6%9D%90/"
+    },
+    {
+      "url": "probe:https://alist.jiejingfan.vip/api/fs/get?path=%2FApple%20Arcade",
+      "date": "2026-11-02",
+      "proved": "fs/get on /Apple Arcade answers provider 139Yun for a path that the root listing omits",
+      "capture": "sha256:d7bf5aac5788622c87d03a1ca4bf0f7af119d175f502f681745595c9e6297433",
+      "quote": "\"id\":\"\",\"path\":\"\",\"name\":\"Apple Arcade\" ... \"provider\":\"139Yun\""
+    },
+    {
+      "url": "probe:https://alist.jiejingfan.vip/api/fs/list?path=%2F%E5%A4%A9%E7%BF%BC&page=1&per_page=0",
+      "date": "2026-11-02",
+      "proved": "fs/list on /天翼 answers code 200 with no entries and provider 189CloudPC; the path header reads that the netdisk is under maintenance",
+      "capture": "sha256:4faa82b9c2d5c725b38257f46388d7e0fe03ca7ae3f3ac47c67acc816d28e2cc",
+      "quote": "\"content\":null,\"total\":0,\"readme\":\"\",\"header\":\"网盘维护中...关注公众号：捷径范 开放时间另行通知\",\"write\":false,\"provider\":\"189CloudPC\"}}"
+    },
+    {
+      "url": "probe:https://alist.jiejingfan.vip/d/%E5%A4%A9%E7%BF%BC/%E7%B4%A0%E6%9D%90/%E7%BD%91%E7%AB%99%E5%9B%BE%E6%A0%87.jpg",
+      "date": "2026-11-02",
+      "proved": "the site icon under /天翼/素材/ answers 302 to the object-storage host cloudcube.telecomjs.com; the query string is redacted in the stored record",
+      "capture": "sha256:0304c324d30356f31fbb47432a1df72c97e38be05c32af17d2df29984e3bceea",
+      "quote": "\"status\": 302, \"location\": \"https://cloudcube.telecomjs.com/media-bjcy-fy-person/PERSONCLOUD/"
+    },
+    {
+      "url": "probe:https://alist.jiejingfan.vip/api/fs/get?path=%2F%E7%9C%8B%E4%B9%A6%E8%BD%AF%E4%BB%B6%2F%E4%B9%A6%E6%BA%90",
+      "date": "2026-11-02",
+      "proved": "fs/get on /看书软件/书源 answers provider 139Yun; /看书软件 is absent from the root listing",
+      "capture": "sha256:04cc91b17e20f6bb0c4e42241cfab7fa75100c88cd3295fa1663b732d9e38bb2",
+      "quote": "\"name\":\"书源\" ... \"provider\":\"139Yun\""
+    },
+    {
+      "url": "probe:https://alist.jiejingfan.vip/api/fs/get?path=%2F%E8%B6%8A%E7%8B%B1%E6%8F%92%E4%BB%B6%2FH5GG",
+      "date": "2026-11-02",
+      "proved": "fs/get on /越狱插件/H5GG answers provider 139Yun; /越狱插件 is absent from the root listing",
+      "capture": "sha256:c34f4ee251ef066235ecef727b9d52acd49a89fabca242ff586269132e97b6f5",
+      "quote": "\"name\":\"H5GG\" ... \"provider\":\"139Yun\""
+    },
+    {
+      "url": "probe:https://alist.jiejingfan.vip/api/fs/get?path=%2F%E8%A7%86%E9%A2%91%E6%95%99%E7%A8%8B%2FQuantumult%20X%E6%95%99%E7%A8%8B",
+      "date": "2026-11-02",
+      "proved": "fs/get on /视频教程/Quantumult X教程 answers provider 139Yun; /视频教程 is absent from the root listing",
+      "capture": "sha256:12e5deaee28ae693c700ee2c831d4506e3f0a733f5f9cf253676ea167fcd839e",
+      "quote": "\"name\":\"Quantumult X教程\" ... \"provider\":\"139Yun\""
+    },
+    {
+      "url": "probe:https://alist.jiejingfan.vip/api/public/settings",
+      "date": "2026-11-02",
+      "proved": "the settings endpoint answers code 200 with no session and carries the site title and version v3.45.1; it holds no allowance, quota, unit or price field",
+      "capture": "sha256:9993727c81cbe25cd44bb82971f481da8e24e04c968f71c83f76a9fe37598be6",
+      "quote": "\"site_title\":\"晴天网盘\""
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-30T17:26:52.227Z",
+  "verified_at": "2026-11-02T09:58:35.803Z",
   "binding": "write-gated",
   "binding_note": "The read path reaches a Chinese carrier pan and that is the finding. What binds is the write gate plus a tree that is half stubs, so it is a fetch source at best.",
-  "notes": "The only host in the population whose upstream is a genuine Chinese carrier netdisk, which makes it the existence proof for the bridge pattern: a proxy layer converts an unreachable quota into a reachable read path without transferring an account.",
+  "notes": "A host whose upstream is Chinese carrier netdisk storage, which makes it an existence proof for the bridge pattern: a proxy layer converts an unreachable quota into a reachable read path without transferring an account. A direct-link request answers 302 to a carrier object-storage host: cmecloud.cn for a file in the root tree, telecomjs.com for the /天翼 mount.",
   "extras": {
     "access_mode": "public-instance",
     "upstream_provider": "139Yun",
     "fronting_cdn": "nginx",
     "advertised_write_flag": false,
-    "flaps": true
+    "flaps": true,
+    "root_providers": [
+      {
+        "path": "/",
+        "provider": "139Yun"
+      },
+      {
+        "path": "/Apple Arcade",
+        "provider": "139Yun",
+        "listed_at_root": false
+      },
+      {
+        "path": "/天翼",
+        "provider": "189CloudPC",
+        "listed_at_root": false
+      },
+      {
+        "path": "/看书软件",
+        "provider": "139Yun",
+        "listed_at_root": false,
+        "read_at": "/看书软件/书源"
+      },
+      {
+        "path": "/越狱插件",
+        "provider": "139Yun",
+        "listed_at_root": false,
+        "read_at": "/越狱插件/H5GG"
+      },
+      {
+        "path": "/视频教程",
+        "provider": "139Yun",
+        "listed_at_root": false,
+        "read_at": "/视频教程/Quantumult X教程"
+      }
+    ]
   }
 }

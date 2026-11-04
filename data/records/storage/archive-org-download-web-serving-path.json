@@ -49,8 +49,8 @@
   ],
   "limits_note": "Canonical URLs 302 at least once (clients need --location-trusted when sending Authorization); do NOT link iaNNNNNN.us.archive.org directly (nodes move); 429/503 under load; no auth on GET, so everything is world-readable.",
   "identity_cost": {
-    "kind": "institution",
-    "detail": "inferred from the category 'academic'; the source record states no identity cost, so this is a class assumption, not evidence",
+    "kind": "anonymous",
+    "detail": "no credential is needed to read: an anonymous GET of archive.org/download/<identifier>/<filename> redirects once to a datanode and serves the file. Uploading needs an Internet Archive account whose form asks an email address, a screen name and a password, and asks no phone number",
     "country": null
   },
   "reliability_note": "Throughput is the binding constraint, not quota: measured 1.19 MB/s on one 90s stream and 1.66 MB/s aggregate across 8 parallel range requests to one datanode from one IP (~145 GB/day) — against a local link calibrated at 27.6 MB/s, so this is server-side shaping, not a user.",
@@ -76,10 +76,45 @@
       "url": null,
       "date": "2026-10-21",
       "proved": "probe: 8 parallel 5MB range GETs to one replay target -> 40,000,000 bytes in 23s = ~1.7 MB/s aggregate; single 90s stream -> 1.19 MB/s; Cloudflare 50MB control download -> 27.6 MB/s"
+    },
+    {
+      "url": "probe:archive.org",
+      "date": "2026-11-01",
+      "proved": "an unauthenticated GET of an archive.org/download URL answered 200 after one redirect",
+      "capture": "sha256:2344ace3e7bab201e26cff36d7f3fd40f9e4df12bcb0b0420d93f7faa75ffe7b",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "https://archive.org/developers/items.html",
+      "date": "2026-11-01",
+      "proved": "the download URL is a public URL, with no account named",
+      "capture": "sha256:f876449c8138dfef8cb710c3be34f15c757af8eb026d9e538a006f6257df504e",
+      "quote": "A particular file can always be downloaded from:"
+    },
+    {
+      "url": "probe:archive.org",
+      "date": "2026-11-01",
+      "proved": "an unauthenticated GET of an archive.org/download URL answered 200, so the read path needs no identity",
+      "capture": "sha256:2344ace3e7bab201e26cff36d7f3fd40f9e4df12bcb0b0420d93f7faa75ffe7b",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "https://archive.org/account/signup",
+      "date": "2026-11-01",
+      "proved": "an upload account asks a screen name, an email address and a password",
+      "capture": "sha256:b64a400f01d831157d788d8375563bd617f1248e0d53a3cf9f3805097ffce4a2",
+      "quote": "Choose a screen name3 to 40 characters"
+    },
+    {
+      "url": "https://archive.org/developers/items.html",
+      "date": "2026-11-01",
+      "proved": "the download URL redirects to a datanode",
+      "capture": "sha256:f876449c8138dfef8cb710c3be34f15c757af8eb026d9e538a006f6257df504e",
+      "quote": "The resultant URL is not a permalink."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-21T00:00:00.000Z",
+  "verified_at": "2026-11-01T18:05:15.762Z",
   "notes": "Serving is unmetered and free; no per-file download cap and no egress fee. Practical ceiling is throughput, not quota.",
   "extras": {},
   "binding": "per-ip-shaping",

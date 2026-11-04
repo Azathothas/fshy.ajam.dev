@@ -5,51 +5,51 @@
   "url": "https://servercrate.net/",
   "category": "cloud VM",
   "free_tier": {
-    "stated": "10 GB of encrypted backup storage free, with no credit card and no expiry: 2 devices and 7 days of snapshot history, over a private Restic REST endpoint on a per-customer ZFS dataset. Paid vaults: Starter USD 3 a month for 250 GB, 10 devices and 30-day history; Standard USD 9 a month for 1 TB, 25 devices and 60-day history; Pro USD 17 a month for 2 TB, 50 devices and 90-day history; Business USD 45 a month for 5 TB, 100 devices and 180-day history; a Lite vault of 100 GB at USD 2 a month; vaults from 6 TB at USD 8 per TB a month. The Business tier is a dated observation: the page read on 2026-10-22 marked it 'Opening soon, join the waitlist', and the page read on 2026-10-30 marks it 'Available on request: contact us'. The same host sells KVM cloud servers on NVMe from USD 3 a month, Proxmox Backup Server datastores, hosted Borg repositories and website hosting, and states no egress fees on restore. Annual billing is ten months for twelve.",
-    "unit": "GB",
-    "metered_on": "stored-bytes",
-    "source_url": "https://servercrate.net/",
-    "read_on": "2026-10-30",
-    "notes": "perpetual"
+    "stated": "no free cloud server; the cheapest is SC-0 at USD 3 a month or USD 30 a year: 1 vCPU, 512 MB RAM, 10 GB NVMe, a shared IPv4 with SSH and 20 forwarded ports, a 25 Mbps network, 1 TB of transfer a month, full root on KVM and a 25 GB encrypted backup vault included. SC-1 is USD 7 a month or USD 70 a year: 1 vCPU, 1 GB RAM, 20 GB NVMe, a dedicated IPv4 with all 65535 ports, 50 Mbps down and 40 Mbps up, 3 TB of transfer a month and a 100 GB backup vault. SC-2 is USD 12 a month and SC-3 USD 20 a month. The same vendor also sells a free 10 GB Restic backup vault, a separate backup offer.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://servercrate.net/cloud-servers/",
+    "read_on": "2026-11-03",
+    "notes": "no free cloud server"
   },
   "per_object_cap": {
     "stated": "not applicable",
     "bytes": null,
     "source_url": "https://servercrate.net/",
-    "notes": "no per-object cap is published; the plan caps the vault's total stored bytes"
+    "notes": "not applicable to a cloud server"
   },
   "retention": {
-    "stated": "The free tier has no expiry ('10 GB free tier never expires'). Snapshot history is kept 7 days on Free, 30 on Starter, 60 on Standard, 90 on Pro and 180 on Business; on cancellation the page states 'Cancel anytime, snapshots stay.'",
+    "stated": "unverified: the cloud-servers page states no retention window for a server disk after cancellation",
     "days": null,
-    "source_url": "https://servercrate.net/",
-    "notes": "snapshot history is a per-plan window; the account itself has no stated expiry"
+    "source_url": "https://servercrate.net/cloud-servers/",
+    "notes": "the vault snapshot history belongs to the separate backup offer"
   },
   "egress": {
-    "terms": "no egress fees on restore, and no restore penalties or per-API-call charges stated; the vendor also states no egress fees on the cloud server line",
-    "metered": false,
-    "free_allowance": "unmetered egress; the free tier is capped at 10 GB of stored bytes",
+    "terms": "SC-0 includes a 25 Mbps network and 1 TB of transfer a month; SC-1 and up include 3 TB a month on 50 Mbps down and 40 Mbps up. A server that reaches its allowance has its networking paused until the 1st of the next month; the server keeps running and nothing is deleted, and overage is not billed automatically.",
+    "metered": true,
+    "free_allowance": "1 TB a month on SC-0, 3 TB a month on SC-1 and up",
     "price_per_tb": null,
-    "source_url": "https://servercrate.net/"
+    "source_url": "https://servercrate.net/cloud-servers/"
   },
   "interface": [
-    "rest"
+    "ssh"
   ],
-  "interface_detail": "inferred from the tooling the provider documents; not probed",
-  "tooling": "plain Restic over HTTPS against a private REST endpoint. On Linux one command copied from the portal installs Restic, creates the encryption key, runs the first backup and schedules the next; on macOS and Windows standard restic is pointed at the vault URL and token. status.servercrate.net publishes a restore-verification check. It is a backup target and not a filesystem, so it is not mounted like a bucket",
-  "chaining": "10 GB free with client-side encryption, no egress fee and no expiry is an offsite copy for small state: configuration, keys and indexes. It does not hold bulk data: past 10 GB the paid vaults run to 5 TB at USD 45 a month, and USD 8 per TB a month from 6 TB.",
+  "interface_detail": "SSH on the shared IPv4 and its forwarded ports on SC-0, on the dedicated IPv4 from SC-1; a portal handles status, power, credentials, IPv6, firewall, cancellation and resumption; not probed",
+  "tooling": "full root on a KVM guest over SSH; the portal handles status, power, credentials, IPv6, firewall, cancellation and resumption. Each server includes an encrypted backup vault that standard Restic writes to from inside the guest",
+  "chaining": "SC-0 is a 512 MB server at USD 3 a month whose shared IPv4 carries SSH and 20 forwarded ports only; a dedicated address with all 65535 ports starts at SC-1 at USD 7 a month. Every server bundles a backup vault: 25 GB on SC-0 and 100 GB on SC-1.",
   "limits": [
     {
       "kind": "volume-quota",
-      "value": "the binding count is stored bytes rather than transferred bytes: 10 GB on the free tier against a stated 'no backup or bandwidth caps' and 'No egress fees on restore'. The seven vocabulary kinds have no separate name for a storage-size cap, so this is filed as volume-quota and the distinction is stated here rather than left to the kind. Nothing binds on transfer.",
-      "source": "https://servercrate.net/"
+      "value": "1 TB of transfer a month on SC-0 and 3 TB on SC-1 and up, with networking paused at the allowance until the 1st of the next month; SC-0 has a 25 Mbps network and shares one IPv4, with SSH plus 20 forwarded ports",
+      "source": "https://servercrate.net/cloud-servers/"
     }
   ],
-  "limits_note": "the binding count is stored bytes rather than transferred bytes: 10 GB on the free tier against a stated 'no backup or bandwidth caps' and 'No egress fees on restore'. The seven vocabulary kinds have no separate name for a storage-size cap, so this is filed as volume-quota and the distinction is stated here rather than left to the kind. Nothing binds on transfer.",
+  "limits_note": "the binding count is the monthly transfer allowance (1 TB on SC-0, 3 TB on SC-1 and up); SC-0 also has a shared IPv4 with 20 forwarded ports",
   "binding": "volume-quota",
-  "binding_note": "the binding count is stored bytes rather than transferred bytes: 10 GB on the free tier against a stated 'no backup or bandwidth caps' and 'No egress fees on restore'. The seven vocabulary kinds have no separate name for a storage-size cap, so this is filed as volume-quota and the distinction is stated here rather than left to the kind. Nothing binds on transfer.",
+  "binding_note": "the binding count is the monthly transfer allowance (1 TB on SC-0, 3 TB on SC-1 and up); the server stays up and its networking pauses at the cap",
   "identity_cost": {
     "kind": "email",
-    "detail": "The free signup form asks for an email address and a password of at least 12 characters, with full name optional, behind a Cloudflare Turnstile check and a proof-of-work field; its subtitle reads 'Free encrypted vault - no credit card needed'. No card, phone or ID field is on the form. Paid plans are paid by card through Stripe, PayPal or on-chain Bitcoin.",
+    "detail": "Sign-up asks for an email address and a password, with an optional full name; no card, phone or ID field is on the form. Paid servers can be paid by card through Stripe, by PayPal, or by on-chain Bitcoin, so a card is one of three payment choices and not required. The server order form was not read, so any further field it asks for is unverified: behind a sign-up.",
     "country": null
   },
   "reliability_note": "The status page read on 2026-10-30 shows every monitored component operational and no active incident. The incidents page read on 2026-10-30 lists 2 incidents in 2026, each resolved the same day with no stored data lost: on 2026-09-27 vault creation failed for some new signups; on 2026-08-09 a rate limit shared by every vault returned temporary HTTP 503 responses to backup requests under load, seen only on the vendor's internal test vaults with no customer backup failed, and the limits are now per vault at 16 connections and 60 requests per second.",
@@ -155,11 +155,102 @@
       "proved": "the status page read on 2026-10-30 shows all monitored components operational and no active incident or maintenance notice",
       "capture": "sha256:36781a6a3defc3b7c4cb519e85aa65c7c7cd1bb4dea2790d8e61b45acaf66e48",
       "quote": "No active incidents reported"
+    },
+    {
+      "url": "https://servercrate.net/cloud-servers/",
+      "date": "2026-11-03",
+      "proved": "SC-0 is a paid cloud server at USD 3 a month or USD 30 a year; no free server plan is listed",
+      "capture": "sha256:d5b05938277a3459f22537301179ec8e39cc79bfb3ed1ca55baf5353a82d6030",
+      "quote": "$3/mo$30/yr"
+    },
+    {
+      "url": "https://servercrate.net/cloud-servers/",
+      "date": "2026-11-03",
+      "proved": "transfer allowance behaviour at the cap",
+      "capture": "sha256:d5b05938277a3459f22537301179ec8e39cc79bfb3ed1ca55baf5353a82d6030",
+      "quote": "if a server reaches its allowance its networking pauses until the 1st of the next month; the server keeps running and nothing is deleted."
+    },
+    {
+      "url": "https://servercrate.net/cloud-servers/",
+      "date": "2026-11-03",
+      "proved": "monthly transfer allowance by plan",
+      "capture": "sha256:d5b05938277a3459f22537301179ec8e39cc79bfb3ed1ca55baf5353a82d6030",
+      "quote": "3 TB per server on SC-1 and up and 1 TB on SC-0, per calendar month"
+    },
+    {
+      "url": "https://servercrate.net/cloud-servers/",
+      "date": "2026-11-03",
+      "proved": "SC-0 is reached over SSH on a shared IPv4 with 20 forwarded ports",
+      "capture": "sha256:d5b05938277a3459f22537301179ec8e39cc79bfb3ed1ca55baf5353a82d6030",
+      "quote": "SC-0, our budget plan, uses a shared IPv4 with SSH plus 20 forwarded ports."
+    },
+    {
+      "url": "https://servercrate.net/cloud-servers/",
+      "date": "2026-11-03",
+      "proved": "every server bundles a backup vault written to with Restic from inside the guest",
+      "capture": "sha256:d5b05938277a3459f22537301179ec8e39cc79bfb3ed1ca55baf5353a82d6030",
+      "quote": "Every server includes an encrypted backup vault on separate storage"
+    },
+    {
+      "url": "https://servercrate.net/cloud-servers/",
+      "date": "2026-11-03",
+      "proved": "SC-0 has a 25 Mbps network and 1 TB of transfer",
+      "capture": "sha256:d5b05938277a3459f22537301179ec8e39cc79bfb3ed1ca55baf5353a82d6030",
+      "quote": "25 Mbps network, 1 TB transfer"
+    },
+    {
+      "url": "https://servercrate.net/",
+      "date": "2026-11-03",
+      "proved": "payment routes for paid plans",
+      "capture": "sha256:70319d932fd7a5da65d20121e5e5dc05cf2e1a1c86f0622ace1d56af987685f7",
+      "quote": "Pay by card via Stripe, with PayPal, or on-chain Bitcoin via our self-hosted BTCPay."
+    },
+    {
+      "url": "https://servercrate.net/cloud-servers/",
+      "date": "2026-11-03",
+      "proved": "location and routing of the dedicated address",
+      "capture": "sha256:d5b05938277a3459f22537301179ec8e39cc79bfb3ed1ca55baf5353a82d6030",
+      "quote": "Los Angeles, California. Dedicated IPv4 on SC-1 and up is routed through Ashburn, Virginia"
+    },
+    {
+      "url": "https://portal.servercrate.net/register?plan=free",
+      "date": "2026-11-03",
+      "proved": "the signup page offers a free 10 GB vault with no card; the free offer is a backup vault, and the form asks for an email address and a password",
+      "capture": "sha256:ed938fe772da0e9dd43434183ec0cc70e7bb27c6d71626bc49afe475d494b4b1",
+      "quote": "Free 10 GB encrypted vault. No credit card. First backup in about five minutes."
+    },
+    {
+      "url": "https://servercrate.net/pricing/",
+      "date": "2026-11-03",
+      "proved": "the free plan is the 10 GB backup vault, listed under zero-knowledge encrypted offsite backup and not under the cloud servers",
+      "capture": "sha256:e7e284844b4a0ab5e034db1dc96cb987a39bc038f325b3298fb04b8f1094dcc0",
+      "quote": "No credit card. Never expires."
+    },
+    {
+      "url": "https://portal.servercrate.net/register?plan=sc-0",
+      "date": "2026-11-03",
+      "proved": "the sign-up form reached from the SC-0 Deploy link asks for an optional full name, an email address and a password; no card, phone or ID field",
+      "capture": "sha256:768fa1522adacc26a10d2c06e18df2a56a91dac4176be8dd4fa40ec01f145e51",
+      "quote": "Full name (optional) Email address Password"
+    },
+    {
+      "url": "https://servercrate.net/pricing/",
+      "date": "2026-11-03",
+      "proved": "paid plans can be paid by card, PayPal or Bitcoin, so a card is one of three payment choices",
+      "capture": "sha256:e773ba0a5b68eb1404e1e2c055f173eeff52d2622f5bfa794e72bbeda0f2c617",
+      "quote": "Pay by card through Stripe, PayPal, or Bitcoin. Cancel anytime."
+    },
+    {
+      "url": "https://servercrate.net/",
+      "date": "2026-11-03",
+      "proved": "payment choices are card via Stripe, PayPal or on-chain Bitcoin",
+      "capture": "sha256:70319d932fd7a5da65d20121e5e5dc05cf2e1a1c86f0622ace1d56af987685f7",
+      "quote": "Pay by card via Stripe, with PayPal, or on-chain Bitcoin via our self-hosted BTCPay."
     }
   ],
-  "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T00:12:47.555Z",
-  "notes": "The vendor's domain is servercrate.net. The free tier is backup storage; the compute line of the same vendor is paid, from the SC-0 cloud server at USD 3 a month (1 vCPU, 512 MB RAM, 10 GB NVMe, a shared IPv4 with SSH and 20 forwarded ports). The 5 TB Business vault read 'Opening soon, join the waitlist' on 2026-10-22 and 'Available on request: contact us' on 2026-10-30, so on that date it is ordered through a contact request rather than the self-service portal.",
+  "verdict": "paid-only",
+  "verified_at": "2026-11-04T00:11:55.481Z",
+  "notes": "The vendor's domain is servercrate.net. The compute line is paid: SC-0 USD 3 a month, SC-1 USD 7, SC-2 USD 12 and SC-3 USD 20, on hardware in Los Angeles; the dedicated IPv4 of SC-1 and up is routed through Ashburn, Virginia and carried to Los Angeles over an encrypted tunnel, so latency follows an East Coast path. The vendor also sells a free 10 GB Restic backup vault (2 devices, 7-day snapshot history, no card, no expiry), a separate offer from these servers.",
   "extras": {
     "facets": {
       "class": null,
@@ -172,5 +263,6 @@
         "gpu_count": null
       }
     }
-  }
+  },
+  "tier": "SC-0"
 }

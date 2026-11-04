@@ -1,0 +1,273 @@
+{
+  "topic": "data-apis",
+  "slug": "geocodio",
+  "provider": "Geocodio",
+  "url": "https://www.geocod.io/pricing/",
+  "category": "geocoding API and spreadsheet geocoder (US, Canada, Mexico)",
+  "tier": "Pay-As-You-Go",
+  "free_tier": {
+    "stated": "Pay-As-You-Go plan: 2,500 lookups free per day, forever, for US, Canada and Mexico addresses; beyond that USD 1.00 per 1,000 lookups; 1 address or coordinate lookup is 1 credit and each additional data append is 1 more credit",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://www.geocod.io/pricing/",
+    "read_on": "2026-11-02",
+    "notes": "no credit card is required until usage passes the free tier, and the overage is billed on the 1st of the following month instead of being refused; a billing limit can be set; the UK needs a Flex or Unlimited plan and Australia and New Zealand are outside Pay-As-You-Go"
+  },
+  "per_object_cap": {
+    "stated": "a batch request takes up to 10,000 lookups, each field append counting as a lookup; a CSV list job takes up to 1GB per CSV",
+    "bytes": null,
+    "source_url": "https://www.geocod.io/docs/"
+  },
+  "retention": {
+    "stated": "data of spreadsheets processed through the lists API is deleted 72 hours after processing completes",
+    "days": 3,
+    "source_url": "https://www.geocod.io/terms-of-use/"
+  },
+  "egress": {
+    "terms": "not applicable: a query API metered in lookups, not bytes",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.geocod.io/pricing/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "HTTPS to api.geocod.io/v2 (GET /geocode and /reverse for one lookup, a POST of a JSON array for a batch of up to 10,000 lookups, and an asynchronous lists API for CSV, TSV and Excel files) with the key in an api_key parameter; spreadsheet geocoding is also in the dashboard; a keyless geocode answered HTTP 403 with Invalid API key",
+  "endpoint": "https://api.geocod.io/v2/geocode",
+  "tooling": "any HTTP client; spreadsheet geocoding in the web dashboard",
+  "chaining": "2,500 permanently storable lookups a day for US, Canada and Mexico addresses on an email account with no card, then USD 1.00 per 1,000; bulk work goes through batch requests of up to 10,000 lookups or CSV list jobs, each lookup costing 1 credit",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "2,500 lookups a day free on Pay-As-You-Go, then USD 1.00 per 1,000 lookups",
+      "source": "https://www.geocod.io/common-questions-about-geocoding-and-geocodio"
+    },
+    {
+      "kind": "request-rate",
+      "value": "1,000 lookups a minute on Pay-As-You-Go, answered with HTTP 429 beyond it",
+      "source": "https://www.geocod.io/pricing/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "up to 10,000 lookups in one batch request; CSV lists up to 1GB per CSV",
+      "source": "https://www.geocod.io/docs/"
+    }
+  ],
+  "binding": "volume-quota",
+  "binding_note": "1,000 lookups a minute allows far more than 2,500 lookups in a day, so the free daily allowance is met first",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an account at dash.geocod.io with a name, an email address and a password, behind a terms checkbox; the page says no credit card is required, and a card is asked for only once usage passes the free 2,500 lookups a day",
+    "country": null
+  },
+  "reliability_note": "Pay-As-You-Go answers HTTP 429 at the 1,000-lookups-a-minute limit with X-RateLimit headers to read; a lookup past the free daily allowance is billed monthly, not refused",
+  "confidence": "documented",
+  "confidence_note": "the pricing page, the FAQ, the storage terms, the API docs and the raw sign-up form were quoted on 2026-11-02; a keyless geocode answered HTTP 403. No account was opened, so the free daily allowance was not exercised.",
+  "evidence": [
+    {
+      "url": "https://www.geocod.io/pricing/",
+      "date": "2026-11-02",
+      "proved": "the Pay-As-You-Go plan gives 2,500 lookups free per day, forever",
+      "capture": "sha256:dbbde49fb6b9270a8dacd33cf09908a73323bfe3eae39e7aa6fe15468400fc74",
+      "quote": "2,500 lookups free per day, forever"
+    },
+    {
+      "url": "https://www.geocod.io/common-questions-about-geocoding-and-geocodio",
+      "date": "2026-11-02",
+      "proved": "past the 2,500 free lookups a day the cost is USD 1.00 per 1,000 lookups",
+      "capture": "sha256:3d81c10c694725aef46805550bddde8171402eda312a6eb6b3c2a046b97874d0",
+      "quote": "Customers receive 2,500 free lookups each day, after which the cost is $1.00 for every additional 1,000 lookups."
+    },
+    {
+      "url": "https://www.geocod.io/pricing/",
+      "date": "2026-11-02",
+      "proved": "one lookup is one credit and each data append is one more credit",
+      "capture": "sha256:dbbde49fb6b9270a8dacd33cf09908a73323bfe3eae39e7aa6fe15468400fc74",
+      "quote": "1 address or coordinate lookup = 1 credit. Each additional data append = 1 credit."
+    },
+    {
+      "url": "https://www.geocod.io/pricing/",
+      "date": "2026-11-02",
+      "proved": "the Pay-As-You-Go plan covers US, Canada and Mexico addresses only",
+      "capture": "sha256:dbbde49fb6b9270a8dacd33cf09908a73323bfe3eae39e7aa6fe15468400fc74",
+      "quote": "US, Canada, and Mexico only."
+    },
+    {
+      "url": "https://www.geocod.io/common-questions-about-geocoding-and-geocodio",
+      "date": "2026-11-02",
+      "proved": "UK access is not on Pay-As-You-Go and needs a Flex or Unlimited plan",
+      "capture": "sha256:3d81c10c694725aef46805550bddde8171402eda312a6eb6b3c2a046b97874d0",
+      "quote": "Pay-As-You-Go does not offer UK access. You’ll need to use a Flex or Unlimited plan."
+    },
+    {
+      "url": "https://www.geocod.io/pricing/",
+      "date": "2026-11-02",
+      "proved": "the Pay-As-You-Go rate limit is 1,000 lookups a minute",
+      "capture": "sha256:dbbde49fb6b9270a8dacd33cf09908a73323bfe3eae39e7aa6fe15468400fc74",
+      "quote": "Rate limit: 1,000 lookups/min"
+    },
+    {
+      "url": "https://www.geocod.io/docs/",
+      "date": "2026-11-02",
+      "proved": "reaching the Pay-As-You-Go rate limit answers HTTP 429 with X-RateLimit headers",
+      "capture": "sha256:c522dbd29e07b96361af8dff87faf564aabe849f64a32a6016ddb9dd32277948",
+      "quote": "429 Too Many Requests | You've reached the Pay as You Go rate limit."
+    },
+    {
+      "url": "https://www.geocod.io/pricing/",
+      "date": "2026-11-02",
+      "proved": "no credit card is required below the free tier",
+      "capture": "sha256:dbbde49fb6b9270a8dacd33cf09908a73323bfe3eae39e7aa6fe15468400fc74",
+      "quote": "No credit card is required until you exceed the free tier."
+    },
+    {
+      "url": "https://www.geocod.io/pricing/",
+      "date": "2026-11-02",
+      "proved": "usage past the free tier is billed at month end, not refused",
+      "capture": "sha256:dbbde49fb6b9270a8dacd33cf09908a73323bfe3eae39e7aa6fe15468400fc74",
+      "quote": "We'll wrap up your usage for the month and charge you on the 1st of the following month."
+    },
+    {
+      "url": "https://www.geocod.io/pricing/",
+      "date": "2026-11-02",
+      "proved": "a billing limit can be set against runaway lookups",
+      "capture": "sha256:dbbde49fb6b9270a8dacd33cf09908a73323bfe3eae39e7aa6fe15468400fc74",
+      "quote": "Set a billing limit to prevent runaway lookups"
+    },
+    {
+      "url": "https://www.geocod.io/common-questions-about-geocoding-and-geocodio",
+      "date": "2026-11-02",
+      "proved": "the API takes single locations, batches of up to 10,000 and CSVs of up to 1GB",
+      "capture": "sha256:3d81c10c694725aef46805550bddde8171402eda312a6eb6b3c2a046b97874d0",
+      "quote": "With the API, you have the option to process single locations, small batches (up to 10,000/each), or CSVs (up to 1GB per CSV)."
+    },
+    {
+      "url": "https://www.geocod.io/docs/",
+      "date": "2026-11-02",
+      "proved": "a batch request is capped at 10,000 lookups",
+      "capture": "sha256:c522dbd29e07b96361af8dff87faf564aabe849f64a32a6016ddb9dd32277948",
+      "quote": "You can process up to 10,000 lookups at a time with the batch endpoint."
+    },
+    {
+      "url": "https://www.geocod.io/docs/",
+      "date": "2026-11-02",
+      "proved": "a batch is a POST to the geocode endpoint",
+      "capture": "sha256:c522dbd29e07b96361af8dff87faf564aabe849f64a32a6016ddb9dd32277948",
+      "quote": "Batch geocoding requests can be performed by making a `POST` request to the geocode endpoint"
+    },
+    {
+      "url": "https://www.geocod.io/docs/",
+      "date": "2026-11-02",
+      "proved": "a batch reverse geocoding request is a POST to the reverse endpoint",
+      "capture": "sha256:c522dbd29e07b96361af8dff87faf564aabe849f64a32a6016ddb9dd32277948",
+      "quote": "Batch reverse geocoding requests are performed by making a `POST` request to the reverse endpoint"
+    },
+    {
+      "url": "https://www.geocod.io/docs/",
+      "date": "2026-11-02",
+      "proved": "the lists API is asynchronous and needs a second request to download the result",
+      "capture": "sha256:c522dbd29e07b96361af8dff87faf564aabe849f64a32a6016ddb9dd32277948",
+      "quote": "method is asynchronous and requires a second request to be made to download the data once it is ready."
+    },
+    {
+      "url": "https://www.geocod.io/common-questions-about-geocoding-and-geocodio",
+      "date": "2026-11-02",
+      "proved": "the spreadsheet tool geocodes CSV, TSV and Excel files",
+      "capture": "sha256:3d81c10c694725aef46805550bddde8171402eda312a6eb6b3c2a046b97874d0",
+      "quote": "With the spreadsheet geocoding tool, you can geocode CSV, TSV, or Excel files."
+    },
+    {
+      "url": "https://www.geocod.io/terms-of-use/",
+      "date": "2026-11-02",
+      "proved": "results can be stored permanently in the majority of use cases and countries",
+      "capture": "sha256:0cb6e5d24f193ae20157daec554e0249034a2b93973bac7df764124bf59dec59",
+      "quote": "In the majority of use cases and countries, Geocodio results can be stored permanently without restrictions."
+    },
+    {
+      "url": "https://www.geocod.io/common-questions-about-geocoding-and-geocodio",
+      "date": "2026-11-02",
+      "proved": "results can be stored in a database or CRM and used on any map",
+      "capture": "sha256:3d81c10c694725aef46805550bddde8171402eda312a6eb6b3c2a046b97874d0",
+      "quote": "You are able to store most results, put them in your CRM, use them on any type of map, etc."
+    },
+    {
+      "url": "https://www.geocod.io/terms-of-use/",
+      "date": "2026-11-02",
+      "proved": "UK reverse geocoding results are storable only up to twelve months after the UK terms end",
+      "capture": "sha256:0cb6e5d24f193ae20157daec554e0249034a2b93973bac7df764124bf59dec59",
+      "quote": null
+    },
+    {
+      "url": "https://www.geocod.io/docs/",
+      "date": "2026-11-02",
+      "proved": "list data is deleted 72 hours after processing",
+      "capture": "sha256:c522dbd29e07b96361af8dff87faf564aabe849f64a32a6016ddb9dd32277948",
+      "quote": "Data for spreadsheets processed through the lists API is automatically deleted 72 hours after processing completes."
+    },
+    {
+      "url": "https://www.geocod.io/common-questions-about-geocoding-and-geocodio",
+      "date": "2026-11-02",
+      "proved": "the key goes in an api_key parameter of api.geocod.io/v2 requests",
+      "capture": "sha256:3d81c10c694725aef46805550bddde8171402eda312a6eb6b3c2a046b97874d0",
+      "quote": "&api_key=YOUR_API_KEY"
+    },
+    {
+      "url": "https://dash.geocod.io/register",
+      "date": "2026-11-02",
+      "proved": "sign-up takes 30 seconds and no credit card",
+      "capture": "sha256:5d6c138bf54be5b994abb018a0006b01ccb8d22377410badef57459144fcac87",
+      "quote": "Sign up in 30 seconds. No credit card required."
+    },
+    {
+      "url": "https://dash.geocod.io/register",
+      "date": "2026-11-02",
+      "proved": "the sign-up form has a required name field",
+      "capture": "sha256:5d6c138bf54be5b994abb018a0006b01ccb8d22377410badef57459144fcac87",
+      "quote": "<input id=\"name\" name=\"name\" value=\"\" type=\"text\" required"
+    },
+    {
+      "url": "https://dash.geocod.io/register",
+      "date": "2026-11-02",
+      "proved": "the sign-up form has a required email field",
+      "capture": "sha256:5d6c138bf54be5b994abb018a0006b01ccb8d22377410badef57459144fcac87",
+      "quote": "<input id=\"email\" name=\"email\" value=\"\" type=\"email\" required"
+    },
+    {
+      "url": "https://dash.geocod.io/register",
+      "date": "2026-11-02",
+      "proved": "the sign-up form has a required password field",
+      "capture": "sha256:5d6c138bf54be5b994abb018a0006b01ccb8d22377410badef57459144fcac87",
+      "quote": "<input id=\"password\" name=\"password\" type=\"password\" required"
+    },
+    {
+      "url": "https://dash.geocod.io/register",
+      "date": "2026-11-02",
+      "proved": "the sign-up form has a terms checkbox",
+      "capture": "sha256:5d6c138bf54be5b994abb018a0006b01ccb8d22377410badef57459144fcac87",
+      "quote": "<input id=\"terms_of_use\" name=\"terms_of_use\" type=\"checkbox\""
+    },
+    {
+      "url": "probe:https://api.geocod.io/v2/geocode?q=1109+N+Highland+St%2C+Arlington+VA",
+      "date": "2026-11-02",
+      "proved": "a keyless geocode answers HTTP 403",
+      "capture": "sha256:14654fe057758ddd72754679416b07cff3ac572ca5c6521d4e8651fcbb750de1",
+      "quote": "\"status\": 403"
+    },
+    {
+      "url": "probe:https://api.geocod.io/v2/geocode?q=1109+N+Highland+St%2C+Arlington+VA#body",
+      "date": "2026-11-02",
+      "proved": "the keyless geocode is refused with Invalid API key",
+      "capture": "sha256:5edb4e59ee7da8c3721d1e21425a0bc057d54f4ec404b016b6f98d8a73c7ace1",
+      "quote": "Invalid API key"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-11-02T00:23:41.926Z",
+  "notes": "Free requests: 2,500 lookups a day on Pay-As-You-Go. Rate limit: 1,000 lookups a minute. Bulk path: batch requests of up to 10,000 lookups, CSV lists and spreadsheet upload, all billed as lookups.",
+  "extras": {
+    "free_requests": "2,500 lookups a day on Pay-As-You-Go (US, Canada, Mexico)",
+    "rate_limit": "1,000 lookups a minute on Pay-As-You-Go",
+    "bulk_path": "batch API of up to 10,000 lookups, lists API for CSV, TSV or Excel files, and spreadsheet upload in the dashboard"
+  }
+}

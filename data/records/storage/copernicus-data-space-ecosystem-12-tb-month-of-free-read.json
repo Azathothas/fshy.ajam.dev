@@ -6,8 +6,8 @@
   "category": "academic",
   "free_tier": {
     "stated": "12 TB per rolling 30 days of download via S3/OData/STAC for a Copernicus General User, 20 MB/s per connection, 4 concurrent connections, 2,000 requests/min, empty-account registration. After the transfer limit is hit, bandwidth drops to 1 MB/s and 1 concurrent connection until the 30-day total falls back under the limit. Data Workspace adds 0.1 TB/month of deferred-access transfer and 25 processed products/month. JupyterLab gives 10 GB of persistent scratch, 30-day idle expiry.",
-    "unit": "objects",
-    "metered_on": "unstated",
+    "unit": "TB",
+    "metered_on": "downloaded-bytes",
     "source_url": "https://documentation.dataspace.copernicus.eu/Quotas.html",
     "read_on": "2026-10-21",
     "notes": null
@@ -35,6 +35,11 @@
   "chaining": "Per account, and the 30-day rolling window means 12 TB/month sustained without cycling accounts. Creodias resells the same platform with paid extensions.",
   "limits": [
     {
+      "kind": "volume-quota",
+      "value": "12 TB of downloads per rolling 30 days",
+      "source": "https://documentation.dataspace.copernicus.eu/Quotas.html"
+    },
+    {
       "kind": "per-ip-shaping",
       "value": "20 MB/s",
       "source": "https://documentation.dataspace.copernicus.eu/Quotas.html"
@@ -43,17 +48,22 @@
       "kind": "per-ip-shaping",
       "value": "4 concurrent connections",
       "source": "https://documentation.dataspace.copernicus.eu/Quotas.html"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "1 MB/s and 1 concurrent connection after the 12 TB limit",
+      "source": "https://documentation.dataspace.copernicus.eu/Quotas.html"
     }
   ],
   "limits_note": "Read-only EO products. No user-owned bucket: the S3 endpoint serves the mission archive. Registration is open to anyone with an email and is self-service.",
   "identity_cost": {
     "kind": "email",
-    "detail": "email",
+    "detail": "registration form (required fields not itemised on the page) with email verification",
     "country": null
   },
   "reliability_note": "CloudFerro-operated for ESA; the 1 MB/s throttle after the cap is a hard cliff, not a soft degrade.",
   "confidence": "reported",
-  "confidence_note": null,
+  "confidence_note": "the vendor pages of the 2026-11-03 evidence rows were read and captured (https://documentation.dataspace.copernicus.eu/Quotas.html, https://documentation.dataspace.copernicus.eu/Registration.html); a field that decides the verdict is not cited by those captures, so the rung stays reported",
   "evidence": [
     {
       "url": "https://documentation.dataspace.copernicus.eu/Quotas.html",
@@ -74,10 +84,66 @@
       "url": "https://forum.dataspace.copernicus.eu/t/update-increased-monthly-transfer-limit-from-6tb-to-12tb-for-cdse-users/752",
       "date": "2026-10-21",
       "proved": "6 TB -> 12 TB increase confirmed"
+    },
+    {
+      "url": "https://documentation.dataspace.copernicus.eu/Quotas.html",
+      "date": "2026-11-03",
+      "proved": "a Copernicus General User has a monthly transfer limit of 12 TB on S3, OData and STAC",
+      "capture": "sha256:6b0f7ee93c56024d7b9b43bec0f6e13f6c7b318cddbf9877c841312b41a64944",
+      "quote": "| Monthly transfer limit (TB) (IAD¹)¹⁰ | 12 | - | - | - | - |"
+    },
+    {
+      "url": "https://documentation.dataspace.copernicus.eu/Quotas.html",
+      "date": "2026-11-03",
+      "proved": "the transfer limit is metered on downloaded volume over a rolling 30 days per account",
+      "capture": "sha256:6b0f7ee93c56024d7b9b43bec0f6e13f6c7b318cddbf9877c841312b41a64944",
+      "quote": "The total volume of downloads from the Copernicus Data Space Ecosystem for each user account is summed up for the last 30 days."
+    },
+    {
+      "url": "https://documentation.dataspace.copernicus.eu/Quotas.html",
+      "date": "2026-11-03",
+      "proved": "above the limit the rate drops to 1 MB/s and 1 connection",
+      "capture": "sha256:6b0f7ee93c56024d7b9b43bec0f6e13f6c7b318cddbf9877c841312b41a64944",
+      "quote": "¹⁰ After reaching this monthly transfer limit, the maximum bandwidth drops to 1MB/s and the number of concurrent connections drops to 1."
+    },
+    {
+      "url": "https://documentation.dataspace.copernicus.eu/Registration.html",
+      "date": "2026-11-03",
+      "proved": "registration is a form followed by an email verification",
+      "capture": "sha256:2285f29441ab61fa6b1890f580ee1af278874e7ef934735dba515682639b17d9",
+      "quote": "Upon registration, you will be prompted to verify your email address by receiving a verification email."
+    },
+    {
+      "url": "https://documentation.dataspace.copernicus.eu/Quotas.html",
+      "date": "2026-11-03",
+      "proved": "20 MB/s per connection",
+      "capture": "sha256:6b0f7ee93c56024d7b9b43bec0f6e13f6c7b318cddbf9877c841312b41a64944",
+      "quote": "| Bandwidth limit per connection (MB/s) (IAD¹) | 20 | - | - | - | - |"
+    },
+    {
+      "url": "https://documentation.dataspace.copernicus.eu/Quotas.html",
+      "date": "2026-11-03",
+      "proved": "4 concurrent connections",
+      "capture": "sha256:6b0f7ee93c56024d7b9b43bec0f6e13f6c7b318cddbf9877c841312b41a64944",
+      "quote": "| Number of concurrent connections limit (IAD¹) | 4 | - | - | - | - |"
+    },
+    {
+      "url": "https://documentation.dataspace.copernicus.eu/Quotas.html",
+      "date": "2026-11-03",
+      "proved": "above the monthly limit the bandwidth drops to 1 MB/s and 1 connection",
+      "capture": "sha256:6b0f7ee93c56024d7b9b43bec0f6e13f6c7b318cddbf9877c841312b41a64944",
+      "quote": "¹⁰ After reaching this monthly transfer limit, the maximum bandwidth drops to 1MB/s and the number of concurrent connections drops to 1."
+    },
+    {
+      "url": "https://documentation.dataspace.copernicus.eu/Quotas.html",
+      "date": "2026-11-03",
+      "proved": "downloads are summed per user account over the last 30 days",
+      "capture": "sha256:6b0f7ee93c56024d7b9b43bec0f6e13f6c7b318cddbf9877c841312b41a64944",
+      "quote": "The total volume of downloads from the Copernicus Data Space Ecosystem for each user account is summed up for the last 30 days."
     }
   ],
   "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
+  "verified_at": "2026-11-03T15:34:57.981Z",
   "notes": "12 TB per rolling 30 days of download via S3/OData/STAC for a Copernicus General User, 20 MB/s per connection, 4 concurrent connections, 2,000 requests/min, empty-account registration. After the transfer limit is hit, bandwidth drops to 1 MB/s and 1 concurrent connection until the 30-day total falls back under the limit. Data Workspace adds 0.1 TB/month of deferred-access transfer and 25 processed products/month. JupyterLab gives 10 GB of persistent scratch, 30-day idle expiry.",
   "extras": {
     "dead_end": {
@@ -87,6 +153,6 @@
       "first_recorded": "2026-10-21"
     }
   },
-  "binding": "per-ip-shaping",
-  "binding_note": null
+  "binding": "volume-quota",
+  "binding_note": "downloads are metered per account over a rolling 30 days; above 12 TB the rate drops to 1 MB/s and 1 connection, which is about 0.086 TB per day"
 }

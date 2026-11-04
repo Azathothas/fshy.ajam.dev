@@ -34,7 +34,7 @@
   "interface": [
     "rest"
   ],
-  "interface_detail": "HTTPS GET to api.opencagedata.com/geocode/v1/json (also xml and geojson) with the key in the key parameter; a request without a key answers HTTP 401 missing API key, and the documented test key answers HTTP 200",
+  "interface_detail": "HTTPS GET to api.opencagedata.com/geocode/v1/json (also xml and geojson) with the key in the key parameter; a request without a key answers HTTP 401 missing API key, and the documented test key answers HTTP 200; responses to free trial and one-time plan keys carry the quota in a rate element and in the X-RateLimit-Limit, X-RateLimit-Remaining and X-RateLimit-Reset headers, which subscription responses do not carry",
   "endpoint": "https://api.opencagedata.com/geocode/v1/json",
   "tooling": "any HTTP client; vendor tutorials for Node.js, PHP, Python and Ruby include parallel request scripts, and a command line tool geocodes CSV files",
   "chaining": "2,500 storable geocodes a day with no card, so a slow job of about 2,500 addresses a day can build a permanent table; a one-off batch beyond that is the EUR 20 one-time plan of 10,000 requests, or the Geoapify free plan (data-apis/geoapify) at 3,000 a day with a batch endpoint. Bulk path: no bulk path; one location per request and no data download",
@@ -233,12 +233,76 @@
       "proved": "the documented test key gets HTTP 200 and an empty result set from the live endpoint",
       "capture": "sha256:cfee6e3b6475e0d7b664cd49339037de78f5bcf531c04d20bb59e38a928010e2",
       "quote": "\"status\":{\"code\":200,\"message\":\"OK\"}"
+    },
+    {
+      "url": "https://opencagedata.com/api",
+      "date": "2026-11-02",
+      "proved": "the X-RateLimit-Limit header is the account's total requests over the period, 24 hours for free trials",
+      "capture": "sha256:62260c3f7104e114af4baf65053e315f1537220ca278d735525d3e11fc92efe8",
+      "quote": "| `limit` | `X-RateLimit-Limit` | total number of API requests your account is limited to over given time period (24 hours for free trials) |"
+    },
+    {
+      "url": "https://opencagedata.com/api",
+      "date": "2026-11-02",
+      "proved": "subscription responses carry neither the rate element nor the X-RateLimit headers",
+      "capture": "sha256:62260c3f7104e114af4baf65053e315f1537220ca278d735525d3e11fc92efe8",
+      "quote": "Note: Responses to subscription customers do NOT contain the `rate` section of the response or `X-Ratelimit` HTTP headers, because they do not face hard limits."
+    },
+    {
+      "url": "https://opencagedata.com/api",
+      "date": "2026-11-02",
+      "proved": "free trial and one-time plan keys face hard limits, so their responses carry the rate headers",
+      "capture": "sha256:62260c3f7104e114af4baf65053e315f1537220ca278d735525d3e11fc92efe8",
+      "quote": "Free trial and one-time plan customers face hard limits. Subscription customers do not."
+    },
+    {
+      "url": "https://opencagedata.com/api",
+      "date": "2026-11-02",
+      "proved": "the documented example of the rate element shows a limit of 2500",
+      "capture": "sha256:62260c3f7104e114af4baf65053e315f1537220ca278d735525d3e11fc92efe8",
+      "quote": "\"limit\" : 2500,"
+    },
+    {
+      "url": "https://opencagedata.com/api",
+      "date": "2026-11-02",
+      "proved": "the daily count resets at 24:00 UTC",
+      "capture": "sha256:62260c3f7104e114af4baf65053e315f1537220ca278d735525d3e11fc92efe8",
+      "quote": "Daily counts reset at 24:00 UTC."
+    },
+    {
+      "url": "https://opencagedata.com/api",
+      "date": "2026-11-02",
+      "proved": "past the hard limit the API answers HTTP 402",
+      "capture": "sha256:62260c3f7104e114af4baf65053e315f1537220ca278d735525d3e11fc92efe8",
+      "quote": "If you send a request after you have reached your hard limit you will receive a `402 - quota exceeded` response"
+    },
+    {
+      "url": "https://opencagedata.com/api",
+      "date": "2026-11-02",
+      "proved": "the free trial rate is 1 request per second",
+      "capture": "sha256:62260c3f7104e114af4baf65053e315f1537220ca278d735525d3e11fc92efe8",
+      "quote": "Free trial accounts are limited to one request per second."
+    },
+    {
+      "url": "https://opencagedata.com/api",
+      "date": "2026-11-02",
+      "proved": "above the free trial rate the API may answer HTTP 429",
+      "capture": "sha256:62260c3f7104e114af4baf65053e315f1537220ca278d735525d3e11fc92efe8",
+      "quote": "If you exceed the request per second rate you may see a `429 - too many requests` response."
+    },
+    {
+      "url": "https://opencagedata.com/api",
+      "date": "2026-11-02",
+      "proved": "the free trial is capped at 2,500 requests a day",
+      "capture": "sha256:62260c3f7104e114af4baf65053e315f1537220ca278d735525d3e11fc92efe8",
+      "quote": "Free trial accounts have a hard limit of 2,500 requests per day for testing purposes."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T00:48:53.808Z",
+  "verified_at": "2026-11-03T00:27:11.229Z",
   "notes": "Bulk path: no bulk path; one location per request, spreadsheet uploads of 100 rows on the free trial, and no data download. The vendor labels the free amount a trial for testing; it has no end date.",
   "extras": {
     "bulk_path": "no bulk path"
-  }
+  },
+  "limits_note": "unverified: the X-RateLimit-Limit header of a live free trial key was not read, since it needs a free trial account; the API page documents it as the total requests the account is limited to over 24 hours for free trials, and its example shows 2500"
 }

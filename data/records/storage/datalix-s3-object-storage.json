@@ -23,9 +23,9 @@
     "notes": "not stated"
   },
   "egress": {
-    "terms": "\"Ingress ist kostenlos und unbegrenzt. Egress enthaelt 10 TB pro 1 TB Storage.\" — i.e. an included ratio of 10 TB egress per 1 TB booked storage, not truly unmetered. At 20 TB booked that is 200 TB/month included.",
+    "terms": "Ingress is free and unlimited; egress includes 10 TB per 1 TB of booked storage. Egress beyond that ratio has no published price.",
     "metered": true,
-    "free_allowance": "200 TB per month"
+    "free_allowance": "10 TB per 1 TB of booked storage"
   },
   "interface": [
     "s3-compatible",
@@ -35,16 +35,22 @@
   "interface_detail": "S3 API, IAM-enabled, multi-redundant in Frankfurt",
   "tooling": "Any S3 SDK / rclone / AWS CLI (vendor states full S3 compatibility)",
   "chaining": "Direct S3 origin; put Cloudflare in front to make even the included 200 TB/month irrelevant.",
-  "limits": [],
-  "limits_note": "`request-rate`/ratio cap: egress beyond the 10:1 allowance has no published price — unverified. Prepaid billing only. Endpoint not published on the page; s3.datalix.de does not resolve (DNS NXDOMAIN), so the endpoint must be taken from the customer panel.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "100 TB per account",
+      "source": "https://datalix.de/s3-kompatibler-objectstorage-mieten"
+    }
+  ],
+  "limits_note": "Prepaid, TB-based. Egress beyond the 10:1 allowance has no published price. The product page publishes no S3 endpoint hostname, so the endpoint comes from the customer panel.",
   "identity_cost": {
-    "kind": "card",
-    "detail": "card",
+    "kind": "email",
+    "detail": "username, email address and password at registration; ordering needs a password-protected customer account and prepayment, paid by card, PayPal, SEPA, bank transfer or cryptocurrency",
     "country": null
   },
   "reliability_note": "Small single-datacenter German host (~TB-scale customer base). No public status page found; treat as single-region.",
-  "confidence": "reported",
-  "confidence_note": null,
+  "confidence": "documented",
+  "confidence_note": "the vendor product page states the price, the account capacity, the per-bucket object count and the egress ratio directly",
   "evidence": [
     {
       "url": "https://datalix.de/s3-kompatibler-objectstorage-mieten",
@@ -52,18 +58,62 @@
       "proved": "\"3,95 EUR pro TB\", \"Monatlicher Prepaid Preis 3,95 EUR\", \"Inklusiver Egress 10 TB\", \"Egress enthaelt 10 TB pro 1 TB Storage\", \"100 TB max. pro Account\", \"30 Mio. Objekte je Bucket\", FAQ: \"Preis: 3,95 EUR pro TB\" / \"Egress enthaelt 10 TB pro 1 TB Storage\""
     },
     {
-      "url": null,
-      "date": "2026-10-21",
-      "proved": "... — datalix.de surfaced as \"S3-kompatibler Object Storage mieten ab 3,95EUR/TB\", independent confirmation of the headline rate"
+      "url": "https://datalix.eu/tos",
+      "date": "2026-11-01",
+      "proved": "an order needs an account; the registration form asks for username, email and password only",
+      "capture": "sha256:7090e5757058c430d97659d2e5c780a6f1aa53ba6690e6650337c99c7a392b31",
+      "quote": "The conclusion of a contract requires the creation of a password-protected customer account."
+    },
+    {
+      "url": "https://datalix.de/s3-kompatibler-objectstorage-mieten",
+      "date": "2026-11-01",
+      "proved": "the booked-storage price is EUR 3.95 per TB, capped at 100 TB",
+      "capture": "sha256:314efc616ba6da4a4aa7b63811af86c01a48ff5809e748ab5d742f44365b21ce",
+      "quote": "Preis: 3,95 EUR pro TB, bis maximal 100 TB."
+    },
+    {
+      "url": "https://datalix.de/s3-kompatibler-objectstorage-mieten",
+      "date": "2026-11-01",
+      "proved": "the account-level capacity ceiling is 100 TB",
+      "capture": "sha256:314efc616ba6da4a4aa7b63811af86c01a48ff5809e748ab5d742f44365b21ce",
+      "quote": "Bis zu 100 TB pro Account"
+    },
+    {
+      "url": "https://datalix.de/s3-kompatibler-objectstorage-mieten",
+      "date": "2026-11-01",
+      "proved": "the per-bucket object count ceiling is 30 million",
+      "capture": "sha256:314efc616ba6da4a4aa7b63811af86c01a48ff5809e748ab5d742f44365b21ce",
+      "quote": "Bis zu 30 Mio. Objekte pro Bucket."
+    },
+    {
+      "url": "https://datalix.de/s3-kompatibler-objectstorage-mieten",
+      "date": "2026-11-01",
+      "proved": "ingress is free and unlimited; egress is a 10:1 ratio to booked storage",
+      "capture": "sha256:314efc616ba6da4a4aa7b63811af86c01a48ff5809e748ab5d742f44365b21ce",
+      "quote": "Ingress ist kostenlos und unbegrenzt. Egress enthält 10 TB pro 1 TB Storage."
+    },
+    {
+      "url": "https://datalix.de/s3-kompatibler-objectstorage-mieten",
+      "date": "2026-11-01",
+      "proved": "the included egress is stated as a per-terabyte ratio",
+      "capture": "sha256:314efc616ba6da4a4aa7b63811af86c01a48ff5809e748ab5d742f44365b21ce",
+      "quote": "10 TB Egress pro 1 TB Storage inklusive."
+    },
+    {
+      "url": "https://datalix.de/s3-kompatibler-objectstorage-mieten",
+      "date": "2026-11-01",
+      "proved": "the account capacity ceiling is 100 TB",
+      "capture": "sha256:314efc616ba6da4a4aa7b63811af86c01a48ff5809e748ab5d742f44365b21ce",
+      "quote": "Bis zu 100 TB pro Account"
     }
   ],
   "verdict": "qualifies",
-  "verified_at": "2026-10-21T00:00:00.000Z",
-  "price_per_tb_month": "$4.44/TB at 5 TB (EUR 19.75 = $22.19) and $4.44/TB at 20 TB (EUR 79.00 = $88.75). Cheapest true S3 object storage in this survey.",
+  "verified_at": "2026-11-01T18:05:06.745Z",
+  "price_per_tb_month": "EUR 3.95 per TB per month, prepaid, up to 100 TB per account; no volume discount is published.",
   "notes": "EUR 3.95 per TB, prepaid, up to 100 TB per account, 30 million objects per bucket",
   "extras": {
     "price_verbatim": "$4.44/TB at 5 TB (EUR 19.75 = $22.19) and $4.44/TB at 20 TB (EUR 79.00 = $88.75). Cheapest true S3 object storage in this survey."
   },
-  "binding": "none",
-  "binding_note": null
+  "binding": "volume-quota",
+  "binding_note": "the 100 TB per account cap ends the booking; up to 30 million objects fit in one bucket, and no per-object size cap is stated"
 }

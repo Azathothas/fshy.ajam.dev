@@ -1,0 +1,213 @@
+{
+  "topic": "ci-cd-runners",
+  "slug": "cloudflare-artifacts",
+  "provider": "Cloudflare Artifacts",
+  "url": "https://developers.cloudflare.com/artifacts/",
+  "category": "CI runner control plane",
+  "tier": "Workers Paid",
+  "free_tier": {
+    "stated": "none on Workers Free: Artifacts is unavailable there. Workers Paid (USD 5 a month minimum) includes the first 10,000 operations and the first 1 GB of storage each month, then USD 0.15 per additional 1,000 operations and USD 0.50 per additional GB-month; billing for both starts on 2026-11-12",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://developers.cloudflare.com/artifacts/platform/pricing/",
+    "read_on": "2026-11-02",
+    "notes": "the Paid allowance is 10,000 operations and 1 GB-month of storage a month, inside a plan that costs USD 5 a month; the pricing table names no Workers Free allowance"
+  },
+  "per_object_cap": {
+    "stated": "32 MiB per file, 64 MiB per push, 50,000 objects per push",
+    "bytes": null,
+    "source_url": "https://developers.cloudflare.com/artifacts/platform/limits/"
+  },
+  "retention": {
+    "stated": "repositories remain stored until they are explicitly deleted",
+    "days": null,
+    "source_url": "https://developers.cloudflare.com/artifacts/platform/pricing/"
+  },
+  "egress": {
+    "terms": "unverified: the Artifacts pricing page lists two billed dimensions, operations and storage, and states nothing about egress",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://developers.cloudflare.com/artifacts/platform/pricing/"
+  },
+  "interface": [
+    "git",
+    "rest"
+  ],
+  "interface_detail": "a Workers binding, a REST API and the Git smart-HTTP protocol over one repository; any standard Git client clones and pushes to the repository's remote URL with a short-lived repository token; Workers Builds can build and deploy a Worker from a repository",
+  "endpoint": "https://artifacts.cloudflare.net/v1/api/namespaces/<NAMESPACE>/repos",
+  "tooling": "a standard Git client, the Cloudflare REST API with an API token, or the Artifacts binding in a Worker; ArtifactFS is also documented for filesystem access",
+  "chaining": "source hosting for Workers Builds on the same account: a push to the production branch builds and deploys the Worker, other branches create Worker Previews. No runner of its own: it stores code and does not execute jobs. GitHub or GitLab hosting comes first for a free account",
+  "limits": [
+    {
+      "value": "not available on Workers Free; Workers Paid (USD 5 a month minimum) is required",
+      "kind": "write-gated",
+      "source": "https://developers.cloudflare.com/artifacts/"
+    },
+    {
+      "value": "1 GB per repository for repos created on or after 2026-09-29, 10 GB for earlier repos; 1 TB per account, raisable on request; repositories and namespaces unlimited",
+      "kind": "volume-quota",
+      "source": "https://developers.cloudflare.com/artifacts/platform/limits/"
+    },
+    {
+      "value": "32 MiB per file; 64 MiB and 50,000 objects per push",
+      "kind": "per-object-cap",
+      "source": "https://developers.cloudflare.com/artifacts/platform/limits/"
+    },
+    {
+      "value": "2,000 Git requests per 10 seconds per artifact; 2,000 control-plane requests per 10 seconds per namespace",
+      "kind": "request-rate",
+      "source": "https://developers.cloudflare.com/artifacts/platform/limits/"
+    }
+  ],
+  "limits_note": "the account ceiling of 1 TB and the per-repository ceiling apply on top of the billed 1 GB included; the per-repository ceiling was 10 GB before 2026-09-29",
+  "binding": "write-gated",
+  "binding_note": "the service is not available on the Workers Free plan; a Workers Paid subscription, which needs a payment method, is required before any repository can be created",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "sign-up needs an email address and a password; Workers Paid needs a primary payment method (card, PayPal or a wallet) on the billing profile",
+    "country": null
+  },
+  "reliability_note": "Artifacts is in open beta (announced 2026-10-01); billing was first announced for 2026-10-14 and the pricing page now says 2026-11-12",
+  "confidence": "documented",
+  "confidence_note": "every value is quoted from Cloudflare's Artifacts documentation pages read on 2026-11-02; no repository was created, the dashboard sign-up and plan upgrade were not passed, and egress terms for Artifacts are unverified",
+  "evidence": [
+    {
+      "proved": "Artifacts needs Workers Paid and is not available on Workers Free",
+      "quote": "Artifacts requires a Workers Paid plan. Usage is not available on Workers Free.",
+      "url": "https://developers.cloudflare.com/artifacts/",
+      "capture": "sha256:a5ddb463b5373b4ac434bfe6b88f42de7d7023d4855b20f7c07d64ef10347959",
+      "date": "2026-11-02"
+    },
+    {
+      "proved": "the Workers Free column is Unavailable for operations",
+      "quote": "| Operations (1,000 operations) | Unavailable | First 10,000 per month + $0.15 per additional 1,000 operations |",
+      "url": "https://developers.cloudflare.com/artifacts/platform/pricing/",
+      "capture": "sha256:4e62bdefa58dd0bf46ad2b8e3fd3502b2ddccfd98cccf18dcb2d2215ad6b37fe",
+      "date": "2026-11-02"
+    },
+    {
+      "proved": "the Workers Free column is Unavailable for storage; Paid includes 1 GB then USD 0.50 per GB-month",
+      "quote": "| Storage (GB-mo) | Unavailable | First 1 GB per month + $0.50 per additional GB-mo |",
+      "url": "https://developers.cloudflare.com/artifacts/platform/pricing/",
+      "capture": "sha256:4e62bdefa58dd0bf46ad2b8e3fd3502b2ddccfd98cccf18dcb2d2215ad6b37fe",
+      "date": "2026-11-02"
+    },
+    {
+      "proved": "billing for operations and storage starts on 2026-11-12",
+      "quote": "Cloudflare will begin billing for Artifacts operations and storage on November 12, 2026.",
+      "url": "https://developers.cloudflare.com/artifacts/platform/pricing/",
+      "capture": "sha256:4e62bdefa58dd0bf46ad2b8e3fd3502b2ddccfd98cccf18dcb2d2215ad6b37fe",
+      "date": "2026-11-02"
+    },
+    {
+      "proved": "pricing has two dimensions only, operations and storage",
+      "quote": "Artifacts pricing is billed on two dimensions:",
+      "url": "https://developers.cloudflare.com/artifacts/platform/pricing/",
+      "capture": "sha256:4e62bdefa58dd0bf46ad2b8e3fd3502b2ddccfd98cccf18dcb2d2215ad6b37fe",
+      "date": "2026-11-02"
+    },
+    {
+      "proved": "repositories are kept until deleted",
+      "quote": "Repos remain stored until you explicitly delete them.",
+      "url": "https://developers.cloudflare.com/artifacts/platform/pricing/",
+      "capture": "sha256:4e62bdefa58dd0bf46ad2b8e3fd3502b2ddccfd98cccf18dcb2d2215ad6b37fe",
+      "date": "2026-11-02"
+    },
+    {
+      "proved": "per-repository storage limit is 1 GB for new repos, 10 GB for older ones",
+      "quote": "| Maximum storage per repository | 1 GB for repos created on or after 2026-09-29. Repos created earlier have a 10 GB limit.",
+      "url": "https://developers.cloudflare.com/artifacts/platform/limits/",
+      "capture": "sha256:bb9340ad653892d311e52690f1c288e0fd713818afd36b634f3f6d2370a97615",
+      "date": "2026-11-02"
+    },
+    {
+      "proved": "account storage ceiling is 1 TB, raisable on request",
+      "quote": "| Maximum storage per account | 1 TB (can be raised on request) |",
+      "url": "https://developers.cloudflare.com/artifacts/platform/limits/",
+      "capture": "sha256:bb9340ad653892d311e52690f1c288e0fd713818afd36b634f3f6d2370a97615",
+      "date": "2026-11-02"
+    },
+    {
+      "proved": "the number of repositories is unlimited",
+      "quote": "| Maximum number of repositories | Unlimited |",
+      "url": "https://developers.cloudflare.com/artifacts/platform/limits/",
+      "capture": "sha256:bb9340ad653892d311e52690f1c288e0fd713818afd36b634f3f6d2370a97615",
+      "date": "2026-11-02"
+    },
+    {
+      "proved": "file size cap is 32 MiB",
+      "quote": "| Maximum file size | 32 MiB per file.",
+      "url": "https://developers.cloudflare.com/artifacts/platform/limits/",
+      "capture": "sha256:bb9340ad653892d311e52690f1c288e0fd713818afd36b634f3f6d2370a97615",
+      "date": "2026-11-02"
+    },
+    {
+      "proved": "push size cap is 64 MiB",
+      "quote": "| Maximum push size | 64 MiB per push. Includes all data sent in the push.",
+      "url": "https://developers.cloudflare.com/artifacts/platform/limits/",
+      "capture": "sha256:bb9340ad653892d311e52690f1c288e0fd713818afd36b634f3f6d2370a97615",
+      "date": "2026-11-02"
+    },
+    {
+      "proved": "objects per push cap is 50,000",
+      "quote": "| Maximum objects per push | 50,000 objects, such as file versions, folders, and commits. |",
+      "url": "https://developers.cloudflare.com/artifacts/platform/limits/",
+      "capture": "sha256:bb9340ad653892d311e52690f1c288e0fd713818afd36b634f3f6d2370a97615",
+      "date": "2026-11-02"
+    },
+    {
+      "proved": "Git request rate per artifact",
+      "quote": "| Git request rate, per artifact | 2,000 requests per 10 seconds per artifact |",
+      "url": "https://developers.cloudflare.com/artifacts/platform/limits/",
+      "capture": "sha256:bb9340ad653892d311e52690f1c288e0fd713818afd36b634f3f6d2370a97615",
+      "date": "2026-11-02"
+    },
+    {
+      "proved": "control-plane request rate per namespace",
+      "quote": "| Control-plane request rate | 2,000 requests per 10 seconds per Artifacts namespace |",
+      "url": "https://developers.cloudflare.com/artifacts/platform/limits/",
+      "capture": "sha256:bb9340ad653892d311e52690f1c288e0fd713818afd36b634f3f6d2370a97615",
+      "date": "2026-11-02"
+    },
+    {
+      "proved": "older repositories keep 10 GB",
+      "quote": "Repos created before September 29, 2026, will retain their 10 GB storage limit.",
+      "url": "https://developers.cloudflare.com/changelog/post/2026-09-29-repository-size-limit/",
+      "capture": "sha256:cefaf779026a02d24a4cff40142382421c5c0e4d297d482ffba96436066afe03",
+      "date": "2026-11-02"
+    },
+    {
+      "proved": "Artifacts is in open beta and available on Workers Paid",
+      "quote": "Artifacts is available for customers on the Workers Paid plan.",
+      "url": "https://developers.cloudflare.com/artifacts/platform/changelog/",
+      "capture": "sha256:6c494db254434f6c8d73d3500a21ed8665ff1d07c5325af08ad4810f3e29e969",
+      "date": "2026-11-02"
+    },
+    {
+      "proved": "Workers Paid costs a minimum of USD 5 a month per account",
+      "quote": "The Workers Paid plan includes Workers, Pages Functions, Workers KV, Hyperdrive, and Durable Objects usage for a minimum charge of $5 USD per month for an account.",
+      "url": "https://developers.cloudflare.com/workers/platform/pricing/",
+      "capture": "sha256:9d31eb8daa4dc748c605d2fcf63773aa89d227483a57cc0d989128d353cf2a18",
+      "date": "2026-11-02"
+    },
+    {
+      "proved": "buying a Cloudflare product needs a primary payment method",
+      "quote": "A primary payment method is required to purchase Cloudflare products and services.",
+      "url": "https://developers.cloudflare.com/billing/get-started/create-billing-profile/",
+      "capture": "sha256:5ce86720b4ddb72032ffe13a60d5c93647cb26a752f272f2d6a3cacfd6a7b023",
+      "date": "2026-11-02"
+    },
+    {
+      "proved": "sign-up asks for an email and a password",
+      "quote": "Enter your Email and Password.",
+      "url": "https://developers.cloudflare.com/fundamentals/account/create-account/",
+      "capture": "sha256:0165fdf250cc1338d7e7a94dd78c7adc2df6f592133ad72dfcf0651a080c5543",
+      "date": "2026-11-02"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-11-02T15:23:42.470Z",
+  "price_per_tb_month": null,
+  "notes": "Not usable on Workers Free: the docs state usage is unavailable there, so the free-account answer is no. On Workers Paid it is Git-compatible storage with 1 GB of storage and 10,000 operations included each month; its CI relevance is as a source repository for Workers Builds. Per-repository storage was 10 GB for repos created before 2026-09-29 and is 1 GB after."
+}

@@ -11,7 +11,7 @@
     "metered_on": "request-count",
     "source_url": "https://docs.tomtom.com/pricing",
     "read_on": "2026-10-31",
-    "notes": "the free use is the evaluation part of a Freemium account, which the FAQ says may be used for commercial applications; Freemium accounts are single-user"
+    "notes": "the free use is the evaluation part of a Freemium account, which the FAQ says may be used for commercial applications; Freemium accounts are single-user; the free monthly allowance has no time limit, resets at the start of every billing cycle and is shared across the whole account, so several API keys draw from one pool"
   },
   "per_object_cap": {
     "stated": "Batch Search takes up to 100 items a synchronous request and 10000 an asynchronous one; asynchronous results can be downloaded for 14 days",
@@ -33,10 +33,10 @@
   "interface": [
     "rest"
   ],
-  "interface_detail": "HTTPS to api.tomtom.com (for example /search/2/geocode/QUERY.json) with an API key created in MyTomTom; a keyless geocode answered HTTP 401 'You are missing valid authentication credentials'; requests over a free limit answer HTTP 429. Batch Search takes Geocode, Structured Geocode and Reverse Geocode items",
+  "interface_detail": "HTTPS to api.tomtom.com (for example /search/2/geocode/QUERY.json) with an API key created in MyTomTom; a keyless geocode answered HTTP 401 'You are missing valid authentication credentials'; the platform FAQ says API requests return 429 when free usage limits are exceeded, while the Geocode docs list 'Rate or volume limit exceeded' under 403 and give 429 for over QPS only, so the status of a request over the monthly free limit is unverified: behind a sign-up. Batch Search takes Geocode, Structured Geocode and Reverse Geocode items",
   "endpoint": "https://api.tomtom.com/search/2/geocode/",
   "tooling": "any HTTP client; Maps SDK for JavaScript and mobile SDKs",
-  "chaining": "20K geocodes, 20K reverse geocodes and 20K routes a month with no card, at 5 queries a second; Bulk path: asynchronous Batch Search of up to 10000 geocode items a request, whose count against the free monthly amounts is unverified",
+  "chaining": "20K geocodes, 20K reverse geocodes and 20K routes a month with no card, at 5 queries a second; Bulk path: asynchronous Batch Search of up to 10000 geocode items a request, billed per underlying request, not per call (20 requests sent to a batch endpoint are billed as 20 transactions); which monthly free pool an item draws from is unverified: behind a sign-up",
   "limits": [
     {
       "kind": "volume-quota",
@@ -63,12 +63,12 @@
   "binding_note": "5 queries a second would pass a monthly 20K within the first day, so the monthly count is met first",
   "identity_cost": {
     "kind": "email",
-    "detail": "a MyTomTom account registered and confirmed by email; no credit card. The other fields of the registration form are unverified: the sign-in host refused automated reads with HTTP 403",
+    "detail": "a MyTomTom account registered and confirmed by email; no credit card. The Register / sign in button of my.tomtom.com opens a hosted sign-in page whose first screen offers 'No account? Create one'; the other fields of the registration form are unverified: behind a sign-up",
     "country": null
   },
-  "reliability_note": "requests over a free limit answer HTTP 429; access made available for evaluation can be terminated at any time without notice; one evaluation subscription plan per account",
+  "reliability_note": "the platform FAQ says API requests return 429 when free usage limits are exceeded, and the Geocode docs list rate or volume limit exceeded under 403; which status the monthly free limit answers is unverified: behind a sign-up; access made available for evaluation can be terminated at any time without notice; one evaluation subscription plan per account",
   "confidence": "documented",
-  "confidence_note": "the pricing page, the terms, the QPS limits page, the platform FAQ, the Batch Search docs and the MyTomTom account docs were quoted on 2026-10-31; a keyless geocode answered HTTP 401. The registration form and the batch billing answer of the pricing FAQ were not readable; an account would show both and a keyed request would move it to measured.",
+  "confidence_note": "the pricing page and its FAQ script, the terms, the QPS limits page, the platform FAQ, the Batch Search docs and the MyTomTom account docs were quoted on 2026-11-02; a keyless geocode answered HTTP 401. The registration form beyond the first screen of its sign-in page is behind a sign-up; an account would show it and a keyed request would move the record to measured.",
   "evidence": [
     {
       "url": "https://docs.tomtom.com/pricing",
@@ -300,12 +300,96 @@
       "proved": "the geocode endpoint refuses a request with no key",
       "capture": "sha256:a179ef208db57158f7ed63bd4e6b6f3e4bdceb8a4b20f34fce69bf3e33117528",
       "quote": "\"message\":\"You are missing valid authentication credentials\""
+    },
+    {
+      "url": "https://docs.tomtom.com/_astro/SectionFAQV2.B4a-TVNA.js",
+      "date": "2026-11-02",
+      "proved": "the FAQ of the TomTom pricing page, served in its FAQ script, says a batch endpoint is billed per underlying request, not per call",
+      "capture": "sha256:446bac85741a08cb322edee56294d307178966a7395d6841595e6b22c51bd120",
+      "quote": "Calls to a batch endpoint are billed per underlying request, not per call. Send 20 requests to a batch endpoint, and you're billed for 20 transactions."
+    },
+    {
+      "url": "https://docs.tomtom.com/_astro/SectionFAQV2.B4a-TVNA.js",
+      "date": "2026-11-02",
+      "proved": "the FAQ of the TomTom pricing page says a batch endpoint is billed per underlying request, not per call",
+      "capture": "sha256:446bac85741a08cb322edee56294d307178966a7395d6841595e6b22c51bd120",
+      "quote": "Calls to a batch endpoint are billed per underlying request, not per call. Send 20 requests to a batch endpoint, and you're billed for 20 transactions."
+    },
+    {
+      "url": "https://docs.tomtom.com/_astro/SectionFAQV2.B4a-TVNA.js",
+      "date": "2026-11-02",
+      "proved": "the pricing FAQ says the free tier has no time limit, resets each billing cycle and is shared across the account",
+      "capture": "sha256:446bac85741a08cb322edee56294d307178966a7395d6841595e6b22c51bd120",
+      "quote": "Free means free — no time limit, no credit card required. Your monthly allowance resets at the start of every billing cycle ... Your free monthly allowance is shared across your whole account"
+    },
+    {
+      "url": "https://oauth.my.tomtom.com/authorize?client_id=https%3A%2F%2Fmy.tomtom.com&code_challenge=wq0XvEshXPJOMk0B5lXxIL4h50lI4U38sbD5nMoODRw&code_challenge_method=S256&redirect_uri=https%3A%2F%2Fmy.tomtom.com%2Fapi%2Fauth%2Fredirect&response_type=code&state=kckASOmEXWT9qRN0N3k5_Ad3w0T2EvdALFMlJqoxn6U&tenant=2f2390d9-89d1-43f3-81ca-d569b5848305",
+      "date": "2026-11-02",
+      "proved": "the sign-in page behind the Register / sign in button of my.tomtom.com shows 'No account? Create one' on its first screen",
+      "capture": "sha256:9f554b126108d554f817e021878d06d5281c2c2a6d020be6d3a4a1cd6b541b16",
+      "quote": "No account? Create one"
+    },
+    {
+      "url": "https://docs.tomtom.com/_astro/SectionFAQV2.B4a-TVNA.js",
+      "date": "2026-11-02",
+      "proved": "the batch billing answer of the pricing FAQ is readable in the FAQ script of the pricing page",
+      "capture": "sha256:446bac85741a08cb322edee56294d307178966a7395d6841595e6b22c51bd120",
+      "quote": "Calls to a batch endpoint are billed per underlying request, not per call. Send 20 requests to a batch endpoint, and you're billed for 20 transactions."
+    },
+    {
+      "url": "https://docs.tomtom.com/pricing",
+      "date": "2026-11-02",
+      "proved": "Geocoding and Routing are each free for 20K requests a month",
+      "capture": "sha256:f6d9b9b9823cdfc42d8bcbcec7025f69380e380715ef809e984d81e036af17f0",
+      "quote": "Convert addresses into precise geographic coordinates. TomTom Maps TomTom Orbis Maps 20K 1M 5M 10M Free20K monthly ... Calculate optimal routes with traffic, vehicle settings and waypoints. TomTom Maps TomTom Orbis Maps 20K 1M 5M 10M Free20K monthly"
+    },
+    {
+      "url": "https://docs.tomtom.com/platform/documentation/status-and-support/migrating-to-mytomtom",
+      "date": "2026-11-02",
+      "proved": "a MyTomTom account is registered with an email address",
+      "capture": "sha256:f732c9b5aeb2aef6bb73d150c5afc4f58a41a528de0dcde809db5465b0f078cc",
+      "quote": "Register with the same email address as your Developer Portal account"
+    },
+    {
+      "url": "https://docs.tomtom.com/legal/terms-and-conditions",
+      "date": "2026-11-02",
+      "proved": "client caching is limited to the cache-control maximum age",
+      "capture": "sha256:1ccda04c2f2657c37c8fb714509bd35d3cb3fa4e4ffa757fcdf5096da743a1e2",
+      "quote": null
+    },
+    {
+      "url": "probe:https://api.tomtom.com/search/2/geocode/Zurich.json#body",
+      "date": "2026-11-02",
+      "proved": "a keyless geocode request is refused with a missing-credentials message",
+      "capture": "sha256:a179ef208db57158f7ed63bd4e6b6f3e4bdceb8a4b20f34fce69bf3e33117528",
+      "quote": "\"message\":\"You are missing valid authentication credentials\""
+    },
+    {
+      "url": "https://docs.tomtom.com/geocoding-api/documentation/tomtom-maps/v1/geocode/",
+      "date": "2026-11-03",
+      "proved": "the Geocode docs list rate or volume limit exceeded under 403",
+      "capture": "sha256:ebc2f087ea49706c3d56e7b77bb5df2cd56c8f3509b4b59e0d6d18752c47196b",
+      "quote": null
+    },
+    {
+      "url": "https://docs.tomtom.com/platform/documentation/status-and-support/faqs",
+      "date": "2026-11-03",
+      "proved": "the platform FAQ answers 'what happens if I exceed free usage limits' with 429",
+      "capture": "sha256:f3dfed3e88b0de46285b6874d6d2ba8b41d84a75ac9c141b0a507a4cc534cd8c",
+      "quote": "When limits are exceeded, API requests return `429`."
+    },
+    {
+      "url": "https://docs.tomtom.com/geocoding-api/documentation/tomtom-maps/v1/geocode/",
+      "date": "2026-11-03",
+      "proved": "the Geocode docs give 429 only for exceeding queries per second",
+      "capture": "sha256:ebc2f087ea49706c3d56e7b77bb5df2cd56c8f3509b4b59e0d6d18752c47196b",
+      "quote": "| `429` | Too Many Requests: The API Key is over QPS (Queries per second). |"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T10:04:03.987Z",
-  "notes": "Bulk path: Batch Search, up to 10000 geocode items an asynchronous request (results kept 14 days); how batch items count against the free monthly amounts is unverified. Not listed on free-for.dev.",
+  "verified_at": "2026-11-03T01:13:19.928Z",
+  "notes": "Bulk path: Batch Search, up to 10000 geocode items an asynchronous request (results kept 14 days), billed per underlying request, not per call; which monthly free pool an item draws from is unverified: behind a sign-up. Not listed on free-for.dev.",
   "extras": {
-    "bulk_path": "asynchronous Batch Search up to 10000 items a request; its count against the free monthly amounts is unverified"
+    "bulk_path": "asynchronous Batch Search up to 10000 items a request, billed per underlying request, not per call; which monthly free pool an item draws from is unverified: behind a sign-up"
   }
 }

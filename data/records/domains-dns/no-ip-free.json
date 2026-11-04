@@ -1,0 +1,249 @@
+{
+  "topic": "domains-dns",
+  "slug": "no-ip-free",
+  "provider": "No-IP",
+  "url": "https://www.noip.com/free",
+  "category": "free dynamic DNS hostname",
+  "tier": "Free Dynamic DNS",
+  "free_tier": {
+    "stated": "1 hostname on a No-IP shared domain, no credit card; the hostname must be confirmed every 30 days or it is deleted",
+    "unit": "objects",
+    "source_url": "https://www.noip.com/free",
+    "read_on": "2026-11-03",
+    "metered_on": "object-count"
+  },
+  "per_object_cap": {
+    "stated": "1 hostname on the free plan, on one of 30+ No-IP shared domains; the zone belongs to No-IP, so the user holds no record count of its own; hostnames may be type A, AAAA or Port 80 Redirect",
+    "bytes": null,
+    "source_url": "https://www.noip.com/free"
+  },
+  "retention": {
+    "stated": "a free hostname is active for 23 days, may be confirmed in the next 7 days, stops resolving when it expires, sits 14 more days in redemption and is then deleted and open to anyone; an update from a client does not confirm it",
+    "days": 30,
+    "source_url": "https://www.noip.com/support/knowledgebase/confirm-my-hostname-free-account-support-question-day",
+    "notes": "confirmation is a web login or an e-mailed link"
+  },
+  "egress": {
+    "terms": "no DNS query cap published on the pages read",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.noip.com/free"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "a dyndns2-style HTTP update request, GET https://dynupdate.no-ip.com/nic/update?hostname=HOST&myip=IP with HTTP Basic auth (the account e-mail address and password), on port 443 over HTTPS or on ports 80 and 8245 over HTTP; the response is a text code such as good, nochg or badauth; the pages read list a RESTful API only under the contact-sales Branded Remote Access plan",
+  "tooling": "the free No-IP Dynamic Update Client for Windows, macOS and Linux, any dyndns2-compatible client or router, and curl from cron; confirmation itself is a web or e-mail action with no documented API",
+  "chaining": "a name for a changing address and nothing else on the free plan; the domains are No-IP's, so the name cannot be a zone of its own, and the 30-day confirmation has to be done by hand",
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "confirm every 30 days: active 23 days, 7-day confirmation window, 14-day redemption, then deletion",
+      "source": "https://www.noip.com/support/knowledgebase/confirm-my-hostname-free-account-support-question-day"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "1 hostname on the free plan",
+      "source": "https://www.noip.com/free"
+    }
+  ],
+  "binding": "retention-clamped",
+  "binding_note": "the 30-day manual confirmation is what decides; an update client keeps the address current but does not renew the hostname",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "the sign-up form asks for an e-mail address and a password and a terms checkbox that states one free account; the free page says no credit card is required (https://www.noip.com/sign-up, https://www.noip.com/free); no phone field in the captured form text",
+    "country": null
+  },
+  "reliability_note": "a free hostname silently stops resolving if the 30-day confirmation is missed; the update endpoint answers HTTP 401 with the body badauth for a request without credentials; a client without an approved User-Agent can be rate-limited or blocked, and the badagent and abuse codes tell a client to stop updating",
+  "confidence": "documented",
+  "confidence_note": "the free-plan page, the confirmation knowledge-base page, the FAQ, the sign-up page and the update protocol pages were read and quoted; the unauthenticated update endpoint was probed once and answered 401 badauth",
+  "evidence": [
+    {
+      "url": "https://www.noip.com/free",
+      "date": "2026-11-03",
+      "proved": "the free plan lists 1 hostname",
+      "capture": "sha256:b831197726766f7013fae7ea2a4e76a584182eef9bb06ad3822c877a22d55d15",
+      "quote": "1 Hostname"
+    },
+    {
+      "url": "https://www.noip.com/free",
+      "date": "2026-11-03",
+      "proved": "no credit card is required for the free plan",
+      "capture": "sha256:b831197726766f7013fae7ea2a4e76a584182eef9bb06ad3822c877a22d55d15",
+      "quote": "When we say free, we actually mean free - no credit card required, ever."
+    },
+    {
+      "url": "https://www.noip.com/support/knowledgebase/confirm-my-hostname-free-account-support-question-day",
+      "date": "2026-11-03",
+      "proved": "a free hostname must be confirmed every 30 days",
+      "capture": "sha256:e5404f7962279e4a7449a46276e2cc110f9c88105734202368b48db80e7ed82a",
+      "quote": "Free hostnames require confirmation every 30 days to remain active in your account."
+    },
+    {
+      "url": "https://www.noip.com/support/knowledgebase/confirm-my-hostname-free-account-support-question-day",
+      "date": "2026-11-03",
+      "proved": "the confirmation window opens after 23 days and lasts 7 days",
+      "capture": "sha256:e5404f7962279e4a7449a46276e2cc110f9c88105734202368b48db80e7ed82a",
+      "quote": "After 23 days the hostname will enter a “Confirmation” period where it will be eligible to be confirmed for the next 7 days."
+    },
+    {
+      "url": "https://www.noip.com/support/knowledgebase/confirm-my-hostname-free-account-support-question-day",
+      "date": "2026-11-03",
+      "proved": "after the 14-day redemption the hostname is deleted and anyone can claim it",
+      "capture": "sha256:e5404f7962279e4a7449a46276e2cc110f9c88105734202368b48db80e7ed82a",
+      "quote": "After 14 days the hostname will be deleted and be available for you or anyone else to claim."
+    },
+    {
+      "url": "https://www.noip.com/support/knowledgebase/i-installed-your-update-client-but-my-hostnames-are-not-being-kept-up-to-date-with-my-current-ip-address",
+      "date": "2026-11-03",
+      "proved": "an IP update does not confirm a free hostname",
+      "capture": "sha256:43d2e9475228f17a9425cfb4c6ab7a7e19cf7d0f318bf46b040fbbd8fec3cfb6",
+      "quote": "Please note that updates on your hostname do not confirm them."
+    },
+    {
+      "url": "https://www.noip.com/faqs",
+      "date": "2026-11-03",
+      "proved": "free hostnames are created on 30+ shared domains",
+      "capture": "sha256:af457843929cd2d33892e1ae674898e7625d604785d20f4e1a7f76f1828dd520",
+      "quote": "Hostname creation is available on 30+ domains with Free Dynamic DNS and 50+ premium domains with Enhanced or Pro plans."
+    },
+    {
+      "url": "https://www.noip.com/faqs",
+      "date": "2026-11-03",
+      "proved": "free plans offer limited hostname and domain options",
+      "capture": "sha256:af457843929cd2d33892e1ae674898e7625d604785d20f4e1a7f76f1828dd520",
+      "quote": "Offer limited hostname and domain options"
+    },
+    {
+      "url": "https://www.noip.com/integrate/request",
+      "date": "2026-11-03",
+      "proved": "the update is an HTTP request to dynupdate.no-ip.com/nic/update",
+      "capture": "sha256:8b968a0058e7095b13513e5229f7853539af1936680650f20d420286f3ec1a10",
+      "quote": "Dynamic updates are performed by making an HTTP request to one of the following URLs:"
+    },
+    {
+      "url": "https://www.noip.com/integrate/request",
+      "date": "2026-11-03",
+      "proved": "the hostnames updated may be A, AAAA or Port 80 Redirect",
+      "capture": "sha256:8b968a0058e7095b13513e5229f7853539af1936680650f20d420286f3ec1a10",
+      "quote": "Hostnames may be of type A, AAAA, or Port 80 Redirect."
+    },
+    {
+      "url": "https://www.noip.com/integrate/request",
+      "date": "2026-11-03",
+      "proved": "the update credential is the account e-mail address and password",
+      "capture": "sha256:8b968a0058e7095b13513e5229f7853539af1936680650f20d420286f3ec1a10",
+      "quote": "No-IP uses an email address as the username."
+    },
+    {
+      "url": "https://www.noip.com/integrate/request",
+      "date": "2026-11-03",
+      "proved": "a client without an approved User-Agent risks being rate-limited or blocked",
+      "capture": "sha256:8b968a0058e7095b13513e5229f7853539af1936680650f20d420286f3ec1a10",
+      "quote": "Clients that do not supply a certified and approved User-Agent risk being rate-limited or blocked from the system."
+    },
+    {
+      "url": "https://www.noip.com/integrate/response",
+      "date": "2026-11-03",
+      "proved": "badauth is the response code for a bad username and password",
+      "capture": "sha256:bfb7cc79ee06ccd2afdb211ac1a002503dc2fbf9a37b9a2245fb628778271a2b",
+      "quote": "| badauth | Error | Invalid username password combination. |"
+    },
+    {
+      "url": "https://www.noip.com/sign-up",
+      "date": "2026-11-03",
+      "proved": "the sign-up form carries a terms checkbox stating one free account",
+      "capture": "sha256:af49673549b447a8fcb35add31d9df93136df52b3858357f256490dfc420975e",
+      "quote": "I also agree that I will only create one free account."
+    },
+    {
+      "url": "probe:https://dynupdate.no-ip.com/nic/update",
+      "date": "2026-11-03",
+      "proved": "the update endpoint is live and answers HTTP 401 without credentials",
+      "capture": "sha256:5491abcb5accaf340650a7888be0b591dddf0787af7380a4e9e4d69c5ffdc1c2",
+      "quote": "\"status\": 401"
+    },
+    {
+      "url": "probe:body-noip",
+      "date": "2026-11-03",
+      "proved": "the body of that unauthenticated answer is the text code badauth",
+      "capture": "sha256:129513079a33740dc75b859502965c7aa2c05cdcf016d9228b96fe6dfdbbe796",
+      "quote": "badauth"
+    },
+    {
+      "url": "https://www.noip.com/pricing",
+      "date": "2026-11-03",
+      "proved": "the paid Enhanced Dynamic DNS plan with 5 hostnames is USD 2.50 a month billed annually",
+      "capture": "sha256:7df75a9349531442c8e24c73014591e4deb52f885b915e762f3da7d283fc697a",
+      "quote": "$2.50/mo When billed annually"
+    },
+    {
+      "url": "https://www.noip.com/pricing",
+      "date": "2026-11-03",
+      "proved": "the paid Enhanced plan lists hostnames that never expire",
+      "capture": "sha256:7df75a9349531442c8e24c73014591e4deb52f885b915e762f3da7d283fc697a",
+      "quote": "Hostnames Never Expire"
+    },
+    {
+      "url": "https://www.noip.com/remote-access",
+      "date": "2026-11-03",
+      "proved": "a RESTful API is listed under the contact-sales Branded Remote Access plan",
+      "capture": "sha256:00ac13442ed927e701f01c793e6794656a59a2c75b943c5dc2640d5889cc8aab",
+      "quote": "RESTful API"
+    },
+    {
+      "url": "https://www.noip.com/free",
+      "date": "2026-11-03",
+      "proved": "free dynamic DNS is the entry level service on names such as yourname.no-ip.info",
+      "capture": "sha256:b831197726766f7013fae7ea2a4e76a584182eef9bb06ad3822c877a22d55d15",
+      "quote": "No-IP Free Dynamic DNS is our entry level service."
+    },
+    {
+      "url": "https://www.noip.com/free",
+      "date": "2026-11-03",
+      "proved": "no card is required for the free plan",
+      "capture": "sha256:b831197726766f7013fae7ea2a4e76a584182eef9bb06ad3822c877a22d55d15",
+      "quote": "When we say free, we actually mean free - no credit card required, ever."
+    },
+    {
+      "url": "https://www.noip.com/support/knowledgebase/how-many-hostnames-can-i-have",
+      "date": "2026-11-03",
+      "proved": "a free account has 1 hostname",
+      "capture": "sha256:5ead6eccd54641c34e130d412a3c4b24aba4a78e66279a535e20d2c536696e2d",
+      "quote": "1 Hostname"
+    },
+    {
+      "url": "https://www.noip.com/support/knowledgebase/confirm-my-hostname-free-account-support-question-day",
+      "date": "2026-11-03",
+      "proved": "free hostnames need confirmation every 30 days",
+      "capture": "sha256:e5404f7962279e4a7449a46276e2cc110f9c88105734202368b48db80e7ed82a",
+      "quote": "Free hostnames require confirmation every 30 days to remain active in your account."
+    },
+    {
+      "url": "https://www.noip.com/support/knowledgebase/confirm-my-hostname-free-account-support-question-day",
+      "date": "2026-11-03",
+      "proved": "an unconfirmed hostname is deleted after the Redemption period and anyone can claim it",
+      "capture": "sha256:e5404f7962279e4a7449a46276e2cc110f9c88105734202368b48db80e7ed82a",
+      "quote": "After 14 days the hostname will be deleted and be available for you or anyone else to claim."
+    },
+    {
+      "url": "https://publicsuffix.org/list/public_suffix_list.dat",
+      "date": "2026-11-03",
+      "proved": "No-IP.com's suffixes (no-ip.info, no-ip.org and others) are entries of the private section of the Public Suffix List",
+      "capture": "sha256:617d1b276660e5a01209d7b58159450e400cf636634a7a9c2cfd50a1c6675d01",
+      "quote": "// No-IP.com : https://noip.com/"
+    },
+    {
+      "url": "https://letsencrypt.org/docs/rate-limits/",
+      "date": "2026-11-03",
+      "proved": "Let's Encrypt finds the registered domain with the Public Suffix List",
+      "capture": "sha256:b5eee1fee7260f24a875dbca422432161e1e6e37041c64df017d7057af897c00",
+      "quote": "We use the [Public Suffix List](https://publicsuffix.org/) to identify registered domains."
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-11-03T16:43:07.606Z",
+  "price_per_tb_month": null,
+  "notes": "Free confirmation interval: 30 days (23 active, 7 to confirm, then 14 in redemption). The paid Enhanced plan, USD 2.50 a month billed annually for 5 hostnames, lists hostnames that never expire."
+}

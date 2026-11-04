@@ -11,7 +11,7 @@
     "metered_on": "request-count",
     "source_url": "https://open-platform.theguardian.com/access/",
     "read_on": "2026-10-31",
-    "notes": "The 500 a day is per API key and expires at the close of each day. One key is issued for each website that uses the content. The archive dates back to 1999. A commercial key has a custom throttle and quota, priced by usage."
+    "notes": "The 500 a day is per API key and expires at the close of each day. One key is issued for each website that uses the content. The archive dates back to 1999. A commercial key has a custom throttle and quota, priced by usage. The access page listed 12 calls a second and 5,000 calls a day before a later change to 1 and 500."
   },
   "per_object_cap": {
     "stated": "page-size 1 to 50 items a call",
@@ -46,7 +46,7 @@
     },
     {
       "kind": "request-rate",
-      "value": "1 call a second per developer key",
+      "value": "1 call a second per developer key (60 calls a minute)",
       "source": "https://open-platform.theguardian.com/access/"
     },
     {
@@ -64,12 +64,12 @@
   "binding_note": "500 calls a day is met first; the 24-hour hold limit governs any local copy.",
   "identity_cost": {
     "kind": "email",
-    "detail": "The developer-key form asks for a name, an email entered twice, an educational institution or company name, a reason (student project, academic research, non-commercial app development, other), a short description of use, whether content will be displayed, a product name, optional product and company URLs, and acceptance of the terms; the key is sent to the email. No card or phone field. Whether the institution or company name is checked is unverified.",
+    "detail": "The developer-key form asks for a name, an email entered twice, an educational institution or company name, a reason (student project, academic research, non-commercial app development, other), a short description of use, whether content will be displayed, a product name, optional product and company URLs, and acceptance of the terms; a Google reCAPTCHA is shown when Register is pressed, and the key is sent to the email. The institution or company name is a required free-text field of at most 200 characters with no list or pattern. No card or phone field. The Open Platform front page offers the developer key as free instant access, the key tool's repository describes self-serve key management, and the commercial key is a request that the team follows up. Posts on the vendor's support forum describe an email with a verification link sent after the form, a link that can be invalid or expired, a refusal to register again with an address already in use, and a key registered to a free-mail address; a course page describes a confirmation email followed by a second email with the key. Whether the institution or company name is checked after the form is sent is unverified: behind a sign-up. How soon the key email arrives is unverified: behind a sign-up.",
     "country": null
   },
   "reliability_note": "Keys can be cancelled or suspended at any time without notice. A call with the demo key test answered HTTP 401 on 2026-10-31.",
   "confidence": "documented",
-  "confidence_note": "Quota, rate, hold limit and form fields are read from first-party pages; a keyless call answered HTTP 401 'No API key found in request' and the demo key test answered HTTP 401 'Unauthorized', so no call returned content.",
+  "confidence_note": "Quota, rate, hold limit and form fields are read from first-party pages, and staff replies on the vendor's support forum give the daily and per-minute limits of a developer key; a keyless call answered HTTP 401 'No API key found in request' and the demo key test answered HTTP 401 'Unauthorized', so no call returned content and the enforced rate is unmeasured. Key issuance rests on the form and on user posts, not on a completed registration. A call with an issued key, reading its rate-limit response headers, would move the limits to measured.",
   "evidence": [
     {
       "url": "https://open-platform.theguardian.com/access/",
@@ -224,9 +224,136 @@
       "proved": "the test key answer is Unauthorized",
       "capture": "sha256:86e3d95d7db736f2d840de200f4cbaf926def686ede2470bb3a9d4926bba517e",
       "quote": "\"message\": \"Unauthorized\""
+    },
+    {
+      "url": "https://bonobo.capi.gutools.co.uk/register/developer",
+      "date": "2026-11-02",
+      "proved": "the institution or company name is a required free-text input of at most 200 characters, with no list or pattern",
+      "capture": "sha256:d1db89e31ba6840b7d8efd0f5373e6a1538e8984fe67d339883dc7611bd50a08",
+      "quote": "<input type=\"text\" id=\"companyName\" name=\"companyName\" value=\"\" maxlength=\"200\" required=\"true\" class=\"form-control\" tabIndex=\"4\">"
+    },
+    {
+      "url": "https://bonobo.capi.gutools.co.uk/assets/javascripts/handleRecaptcha.js",
+      "date": "2026-11-02",
+      "proved": "the Register button reveals a Google reCAPTCHA row on the developer-key form",
+      "capture": "sha256:038b0307f4249f16fac11a80c7d842d497dc8b246cbdf913fbb7b51804fa1be7",
+      "quote": "// and we're going to display (unhide) the recaptcha UI row when the button is clicked."
+    },
+    {
+      "url": "https://www.theguardian.com/open-platform/open-platform",
+      "date": "2026-11-02",
+      "proved": "the Open Platform front page offers the developer key as free instant access",
+      "capture": "sha256:4015d2b3cff26bd18d9690b3df0cc80067550a87e129c3cfbb5de182d33138e8",
+      "quote": "Free instant access for developers"
+    },
+    {
+      "url": "https://www.theguardian.com/open-platform/open-platform",
+      "date": "2026-11-02",
+      "proved": "the commercial key is a request that the Guardian team follows up, unlike the developer key",
+      "capture": "sha256:4015d2b3cff26bd18d9690b3df0cc80067550a87e129c3cfbb5de182d33138e8",
+      "quote": "Request a commercial key and our team will be in touch to discuss your needs."
+    },
+    {
+      "url": "https://web.archive.org/web/20220622000628/https://github.com/guardian/bonobo",
+      "date": "2026-11-02",
+      "proved": "the key tool's own repository, as archived on 2022-06-22, describes self-serve key management behind the registration form",
+      "capture": "sha256:5b5b764941f8417f3044001e6138950144970da0935a47f3686de3df4e8cc711",
+      "quote": "Self serve key management for Kong"
+    },
+    {
+      "url": "https://groups.google.com/g/guardian-api-talk/c/QF1BY5zlntM",
+      "date": "2026-11-02",
+      "proved": "a forum user reports, on 2026-08-11, an email asking to verify the address after registering for a developer key",
+      "capture": "sha256:5a930a8df1bea16207d016cef3053b896720649f46fee8fd5315efd998c2e2f8",
+      "quote": "I registered for an API key and received the email asking me to verify my email address."
+    },
+    {
+      "url": "https://groups.google.com/g/guardian-api-talk/c/QF1BY5zlntM",
+      "date": "2026-11-02",
+      "proved": "a forum user reports that registering again with an address that already registered is refused as already in use",
+      "capture": "sha256:5a930a8df1bea16207d016cef3053b896720649f46fee8fd5315efd998c2e2f8",
+      "quote": "When I try to register again using the same email address, I'm told that the email address is already in use, so I'm unable to register again."
+    },
+    {
+      "url": "https://groups.google.com/g/guardian-api-talk/c/l5hap0JHMf0",
+      "date": "2026-11-02",
+      "proved": "a forum user reports a verification link that answered that it was invalid or had expired",
+      "capture": "sha256:e1bd760c857e10ad9a51a312be4fa37f73775b258c0a1eac7069224f261fe8a7",
+      "quote": "I received the email verification link, but on following it gives the message \"Sorry! Your email verification link is either invalid or has expired."
+    },
+    {
+      "url": "https://uclspp.github.io/PUBL0099/seminars/seminar5.html",
+      "date": "2026-11-02",
+      "proved": "a university course page says a confirmation email comes first and a second email carries the API key",
+      "capture": "sha256:3e9d2ccd10703d4212a1620c77147726ccb0084943fbb9dbff75ddb784d30465",
+      "quote": "You should receive an email asking you to confirm your UCL email address, and then a second email which contains your API key."
+    },
+    {
+      "url": "https://groups.google.com/g/guardian-api-talk/c/Jjv6mFOCRSI",
+      "date": "2026-11-02",
+      "proved": "a forum user holds a Guardian Open Platform API key registered to a Gmail address, so a free-mail address is accepted",
+      "capture": "sha256:63744e4b84c89585715788cba24c02ba7f133928a425f9b7391006e064179792",
+      "quote": "API key associated with this gmail account please:"
+    },
+    {
+      "url": "https://github.com/sonicaghi/bonobo/blob/master/app/controllers/DeveloperForm.scala",
+      "date": "2026-11-02",
+      "proved": "in a November 2015 third-party copy of the key tool's source, the developer form only requires the company name to be non-empty text",
+      "capture": "sha256:d1e9ea13239d9c3ff026b3e4de4b2e80d96cf819d246f6e7cbb4d3b13b7c04e2",
+      "quote": "\"companyName\" -> nonEmptyText,"
+    },
+    {
+      "url": "https://groups.google.com/g/guardian-api-talk/c/GKOH4GQ3W0U",
+      "date": "2026-11-02",
+      "proved": "a Guardian staff reply of 2025-06-30 gives 60 requests per minute for a developer key whose daily limit was raised",
+      "capture": "sha256:61179bb12f42f2e100d2bddb756c3e88ef59f80ee4199b3f7c8e1193ccd969a7",
+      "quote": "We've temporarily increased your daily rate limit to 5,000. Your requests per minute remain at 60."
+    },
+    {
+      "url": "https://groups.google.com/g/guardian-api-talk/c/tp0VfMcamcY",
+      "date": "2026-11-02",
+      "proved": "a Guardian staff reply of 2023-01-31 says the response headers of a developer key carry its total and remaining limits per day and per minute",
+      "capture": "sha256:07f6525e44cd252b01519edcbbbb10da39818b7a1e9a15189d38c563077ae6e1",
+      "quote": "When querying the API, the response headers will include your total rate limits (per day and per minute) as well as your remaining limits (per day and per minute)."
+    },
+    {
+      "url": "https://github.com/guardian/open-platform-site/commit/7e8ced93770ad13409822c44de4d78952c641d41",
+      "date": "2026-11-02",
+      "proved": "a commit to the access page source replaced the lines of 12 calls per second and 5,000 calls per day with 1 call per second and 500 calls per day",
+      "capture": "sha256:e83b908b4db2da174ef43f62d387d7a94fba9a151118659eebb5bca90cf330c2",
+      "quote": "<li><p>Up to 12 calls per second</p></li>"
+    },
+    {
+      "url": "https://groups.google.com/g/guardian-api-talk/c/ycQQjQkYG1A",
+      "date": "2026-11-02",
+      "proved": "a Guardian staff reply of 2024-09-17 says a key with no use within 90 days is deleted",
+      "capture": "sha256:474f75b70ab6100c3ae2e16ba3b91a445189d5b56574b5af0b0b3cdcb56df908",
+      "quote": "Keys do get deleted if no use is detected within 90 days so if you are not using it it will automatically be removed in due time."
+    },
+    {
+      "url": "probe:https://content.guardianapis.com/search?q=news&page-size=1&api-key=test",
+      "date": "2026-11-02",
+      "proved": "the demo key test still answered HTTP 401 on 2026-11-02, so no call with a key returned content",
+      "capture": "sha256:5cb88bcc6a12b31462fa15ca0d870d472b90778d06a2b4ec55c2f75415dae0ff",
+      "quote": "\"status\": 401"
+    },
+    {
+      "url": "https://groups.google.com/g/guardian-api-talk/c/0wQo0zETrgI",
+      "date": "2026-11-02",
+      "proved": "a Guardian staff reply of 2026-06-12 gives 500 a day as the standard daily limit of a developer key",
+      "capture": "sha256:d7c478a6b7c3ffcfafa631c5f362cb5d089ba0cc31ca9bd032c06a01eb581c34",
+      "quote": "We've updated the daily limit on your API key, as requested. We shall revert the key back to 500/day at the end of the month."
+    },
+    {
+      "url": "https://open-platform.theguardian.com/access/",
+      "date": "2026-11-02",
+      "proved": "the access page still lists 500 calls a day for the developer key",
+      "capture": "sha256:52ab31421b93c31c015ced26e22fed4862edc8516436b1e2f6110e4864f0e18a",
+      "quote": "Up to 500 calls per day"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T06:24:18.866Z",
-  "notes": "Bulk path: none; the Content API is the only route, paged through /search and /next."
+  "verified_at": "2026-11-03T00:28:44.305Z",
+  "notes": "Bulk path: none; the Content API is the only route, paged through /search and /next.",
+  "limits_note": "A developer key with no use for 90 days is deleted."
 }

@@ -1,0 +1,182 @@
+{
+  "topic": "domains-dns",
+  "slug": "google-trust-services",
+  "provider": "Google Trust Services",
+  "url": "https://docs.cloud.google.com/certificate-manager/docs/public-ca",
+  "category": "certificate authority",
+  "tier": "Public CA (Certificate Manager)",
+  "free_tier": {
+    "stated": "certificates from the Public CA ACME endpoint are free; the quota is 100 new orders per hour per Google Cloud project, with wildcard names over the DNS challenge",
+    "unit": "requests",
+    "source_url": "https://docs.cloud.google.com/certificate-manager/docs/public-ca-tutorial",
+    "read_on": "2026-11-03",
+    "metered_on": "request-count"
+  },
+  "per_object_cap": {
+    "stated": "no certificate size cap stated on the pages read; the quotas are on requests and not on objects",
+    "bytes": null,
+    "source_url": "https://docs.cloud.google.com/certificate-manager/docs/public-ca-tutorial"
+  },
+  "retention": {
+    "stated": "certificates are good for up to 90 days by default and a client may ask for as little as 1 day; the ACME account has no expiry, and an EAB secret must be used within 7 days",
+    "days": 90,
+    "source_url": "https://cloud.google.com/blog/products/identity-security/automate-public-certificate-lifecycle-management-via--acme-client-api"
+  },
+  "egress": {
+    "terms": "no charge",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://docs.cloud.google.com/certificate-manager/docs/public-ca-tutorial"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "ACME v2 at https://dv.acme-v02.api.pki.goog/directory (staging at https://dv.acme-v02.test-api.pki.goog/directory) with external account binding required; the EAB key is made with the Public CA API or gcloud publicca external-account-keys create",
+  "tooling": "certbot, acme.sh, any ACME client that supports EAB, the gcloud CLI for the EAB key",
+  "chaining": "a free ACME CA run by a different operator than Let's Encrypt and ZeroSSL, with wildcard names over DNS-01 and certificates down to 1 day; the cost is a Google Cloud project that must be linked to a Cloud Billing account",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "100 new orders per hour per Google Cloud project, shared by all ACME accounts in that project",
+      "source": "https://cloud.google.com/certificate-manager/docs/quotas"
+    },
+    {
+      "kind": "request-rate",
+      "value": "25 new accounts per minute and 100 per hour",
+      "source": "https://cloud.google.com/certificate-manager/docs/quotas"
+    },
+    {
+      "kind": "write-gated",
+      "value": "an EAB secret is valid 7 days and registers one ACME account only",
+      "source": "https://docs.cloud.google.com/certificate-manager/docs/public-ca-tutorial"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "certificates are good for up to 90 days",
+      "source": "https://cloud.google.com/blog/products/identity-security/automate-public-certificate-lifecycle-management-via--acme-client-api"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "100 new orders per hour per project bounds issuance, far above one user's need; the billing link on the project is the gate that decides who can use it",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "a Google Cloud project is required, and the Cloud Billing page says a project not linked to an active Cloud Billing account cannot use Google Cloud services even when they are free; that account is tied to a Google payments profile and a payment method; the Public CA tutorial lists no billing step, so whether the Public CA API can be enabled with no payment method on file is unverified: behind a sign-up (https://docs.cloud.google.com/billing/docs/how-to/create-billing-account, https://docs.cloud.google.com/ruby/docs/reference/google-cloud-security-public_ca/latest)",
+    "country": null
+  },
+  "reliability_note": "the ACME service does not support retrying a challenge, so a client requests a new authorization after a failed validation; no outage history was read",
+  "confidence": "documented",
+  "confidence_note": "the Public CA tutorial, concepts page, quota page, Google blog and ACME divergence page were captured and quoted; the production directory answered 200 with externalAccountRequired true. The card requirement is read from the billing page and a client-library quick start and was not seen at a sign-up.",
+  "evidence": [
+    {
+      "url": "https://docs.cloud.google.com/certificate-manager/docs/public-ca-tutorial",
+      "date": "2026-11-03",
+      "capture": "sha256:419077766ca6e2cb326b0fec7e7261b37f86ed91abf4b6ed39e9fe62a05443f0",
+      "quote": "There is no charge for requesting certificates from Public CA.",
+      "proved": "Public CA certificates are free"
+    },
+    {
+      "url": "https://cloud.google.com/certificate-manager/docs/quotas",
+      "date": "2026-11-03",
+      "capture": "sha256:b965a9ed8fbe449a9db04b5155be5e62282cf6eff7da3e6b5a83e1a08bb14076",
+      "quote": "| Request a certificate (`newOrder`) | 100 per hour | Maximum number of new certificate requests |",
+      "proved": "100 new orders per hour"
+    },
+    {
+      "url": "https://cloud.google.com/certificate-manager/docs/quotas",
+      "date": "2026-11-03",
+      "capture": "sha256:b965a9ed8fbe449a9db04b5155be5e62282cf6eff7da3e6b5a83e1a08bb14076",
+      "quote": "| Create an ACME account (`newAccount`) | 25 per minute, 100 per hour | Maximum number of account creation requests |",
+      "proved": "account creation quota"
+    },
+    {
+      "url": "https://cloud.google.com/certificate-manager/docs/quotas",
+      "date": "2026-11-03",
+      "capture": "sha256:b965a9ed8fbe449a9db04b5155be5e62282cf6eff7da3e6b5a83e1a08bb14076",
+      "quote": "Certificate Manager applies quotas at the Google Cloud project level.",
+      "proved": "quotas are per project and shared by ACME accounts"
+    },
+    {
+      "url": "https://cloud.google.com/certificate-manager/docs/public-ca",
+      "date": "2026-11-03",
+      "capture": "sha256:1c5d54fc3a98a6cc11cfa10dd6b02b69aedcb28f3d6c7aa81e7a76645f3da0a6",
+      "quote": "if you validate `*.myorg.example.com` using the DNS challenge, then",
+      "proved": "wildcard names are validated by the DNS challenge"
+    },
+    {
+      "url": "https://developers.google.com/public-key-infrastructure/updates/september2025-acme-best-practices",
+      "date": "2026-11-03",
+      "capture": "sha256:10363716054ed8980006d4c49d4610419e9ce7bb0afb10c2afaebd353dbe22e0",
+      "quote": "wildcard certificates can only be obtained using DNS ACME challenges.",
+      "proved": "wildcards need DNS-01"
+    },
+    {
+      "url": "https://cloud.google.com/blog/products/identity-security/automate-public-certificate-lifecycle-management-via--acme-client-api",
+      "date": "2026-11-03",
+      "capture": "sha256:d02061bee58fdf9470312de950e8cce5574f209a1833df9352eaa3081744b7f5",
+      "quote": "By default all certificates issued by Google Trust Services are good for up to 90 days",
+      "proved": "validity up to 90 days, shorter on request"
+    },
+    {
+      "url": "https://docs.cloud.google.com/certificate-manager/docs/public-ca-tutorial",
+      "date": "2026-11-03",
+      "capture": "sha256:419077766ca6e2cb326b0fec7e7261b37f86ed91abf4b6ed39e9fe62a05443f0",
+      "quote": "You must use an EAB secret within 7 days of obtaining it.",
+      "proved": "the EAB secret expires in 7 days"
+    },
+    {
+      "url": "https://docs.cloud.google.com/certificate-manager/docs/public-ca-tutorial",
+      "date": "2026-11-03",
+      "capture": "sha256:419077766ca6e2cb326b0fec7e7261b37f86ed91abf4b6ed39e9fe62a05443f0",
+      "quote": "You can only register one ACME account with an EAB secret.",
+      "proved": "one account per EAB secret"
+    },
+    {
+      "url": "https://developers.google.com/public-key-infrastructure/faq/get-a-certificate",
+      "date": "2026-11-03",
+      "capture": "sha256:6f7d655dc472e104afddc86823c96cb15f7ceee4bfe146bc3505a8ec26d13b0a",
+      "quote": "All Google Cloud users can get certificates from Google Trust Services.",
+      "proved": "access is through a Google Cloud account"
+    },
+    {
+      "url": "https://docs.cloud.google.com/billing/docs/how-to/create-billing-account",
+      "date": "2026-11-03",
+      "capture": "sha256:633392c4fda5bba726343405548ca0106304023e204f54ab1ecacaaf508f3cc5",
+      "quote": "Projects that are not linked to an active Cloud Billing account can't use Google Cloud or Google Maps Platform services.",
+      "proved": "a project needs an active billing account, free services included"
+    },
+    {
+      "url": "https://docs.cloud.google.com/billing/docs/how-to/create-billing-account",
+      "date": "2026-11-03",
+      "capture": "sha256:633392c4fda5bba726343405548ca0106304023e204f54ab1ecacaaf508f3cc5",
+      "quote": "You can choose an existing Google payments profile, or create a new payments profile.",
+      "proved": "a billing account is tied to a Google payments profile"
+    },
+    {
+      "url": "https://docs.cloud.google.com/ruby/docs/reference/google-cloud-security-public_ca/latest",
+      "date": "2026-11-03",
+      "capture": "sha256:53076e454d4997ec1f4934a22467f13d899386df6cc5f704573bf463b7332217",
+      "quote": "Enable billing for your project.",
+      "proved": "the Public CA client library lists enabling billing as a prerequisite"
+    },
+    {
+      "url": "https://developers.google.com/public-key-infrastructure/faq/acme-divergences",
+      "date": "2026-11-03",
+      "capture": "sha256:361e081f718f531ac4f3b6319548fb66001b5ff46a30681a5367b384fbb39dc8",
+      "quote": "Retrying challenges is not supported.",
+      "proved": "a failed challenge is not retried"
+    },
+    {
+      "url": "probe:https://dv.acme-v02.api.pki.goog/directory",
+      "date": "2026-11-03",
+      "capture": "sha256:c50804673116997d94144ffc9f1122a3e38831fa87d9069dd1d95b0072e931fd",
+      "quote": "\"externalAccountRequired\":true",
+      "proved": "the production ACME directory is live (HTTP 200, 739 bytes) and requires external account binding"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-11-03T16:43:09.557Z",
+  "price_per_tb_month": null,
+  "notes": "The 90-day figure is the default for the ACME endpoint. Certificate Manager's own Google-managed certificates are moving to 45 days, which is a different path from a client using ACME directly."
+}

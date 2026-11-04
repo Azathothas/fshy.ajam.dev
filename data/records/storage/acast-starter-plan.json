@@ -6,14 +6,14 @@
   "category": "media",
   "free_tier": {
     "stated": "1 show, 5 episodes on Free — 'unlimited episodes when you make your show available in Acast's advertising marketplace'. So free capacity is 5 episodes unless you opt into ad monetisation, in which case episodes are unlimited but storage is still bounded by the 150 MB file cap.",
-    "unit": "unlimited",
-    "metered_on": "stored-bytes",
+    "unit": "objects",
+    "metered_on": "object-count",
     "source_url": "https://www.acast.com/en/pricing",
     "read_on": "2026-10-21",
     "notes": null
   },
   "per_object_cap": {
-    "stated": "not stated",
+    "stated": "150 MB per episode file: Acast sets the internal limit to 150MB, in line with Apple's 150MB cellular download limit; MP3 and M4A only",
     "source_url": "https://www.acast.com/en/pricing",
     "notes": "not stated"
   },
@@ -32,7 +32,18 @@
   "interface_detail": "wrapper-only",
   "tooling": "Dashboard only; no public upload API.",
   "chaining": "5 episodes x 150 MB = 750 MB per free account in the honest reading; N accounts. Not interesting at scale.",
-  "limits": [],
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "5 episodes per show on Starter (free); unlimited episodes only when the show is available in Acast's advertising marketplace",
+      "source": "https://www.acast.com/en/pricing"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "150 MB per episode file, MP3 or M4A only, re-encoded at 128kbps",
+      "source": "https://learn.acast.com/en/articles/3505536-which-audio-file-format-should-i-use-for-my-podcast"
+    }
+  ],
   "limits_note": "150 MB hard per-episode cap — 'Acast sets the internal limit to 150MB also', and going over produces an 'episode unavailable' error on listener devices because Apple caps cellular downloads at 150 MB. MP3 or M4A only (no WAV/FLAC).",
   "identity_cost": {
     "kind": "email",
@@ -40,8 +51,8 @@
     "country": null
   },
   "reliability_note": "Re-encodes to 128 kbps: 'Acast will encode your uploaded files at 128kbps, which will not impair the perceived quality for your listeners.' Two independent caps (150 MB, 5 episodes) plus a 128k transcode make this the weakest of the majors.",
-  "confidence": "reported",
-  "confidence_note": null,
+  "confidence": "documented",
+  "confidence_note": "The 2026-11-03 evidence rows read https://www.acast.com/en/pricing (episode count on Starter, unlimited only through the advertising marketplace, Essential price) and https://learn.acast.com/en/articles/ (which-audio-file-format-should-i-use-for-my-podcast) (150MB internal limit, re-encode of uploads). Every field that decides the verdict cites those captures; the identity requirement was not read.",
   "evidence": [
     {
       "url": "https://www.acast.com/en/pricing",
@@ -52,11 +63,67 @@
       "url": "https://learn.acast.com/en/articles/3505536-which-audio-file-format-should-i-use-for-my-podcast",
       "date": "2026-10-21",
       "proved": "'Acast will encode your uploaded files at 128kbps'; 'Acast sets the internal limit to 150MB also'; 'MP3 and M4A files are the only audio filetypes that are supported'"
+    },
+    {
+      "url": "https://www.acast.com/en/pricing",
+      "date": "2026-11-03",
+      "proved": "the Starter plan includes 5 episodes, so the free allowance is counted in episodes",
+      "capture": "sha256:ab74721c19c036332db0e5bc178d855abf1ae4cf6f6f71c16c46f08239e641a4",
+      "quote": "5 Episodes"
+    },
+    {
+      "url": "https://www.acast.com/en/pricing",
+      "date": "2026-11-03",
+      "proved": "episodes beyond 5 depend on the advertising marketplace, so the meter is the episode count",
+      "capture": "sha256:ab74721c19c036332db0e5bc178d855abf1ae4cf6f6f71c16c46f08239e641a4",
+      "quote": "Get unlimited episodes when you make your show available in Acast's advertising marketplace."
+    },
+    {
+      "url": "https://learn.acast.com/en/articles/3505536-which-audio-file-format-should-i-use-for-my-podcast",
+      "date": "2026-11-03",
+      "proved": "Acast enforces a 150MB internal limit per file",
+      "capture": "sha256:d758bf96652fecb2b36217fd54238bc87c56a94ea2d327cd725f68f306b6bfb6",
+      "quote": "Acast sets the internal limit to 150MB also."
+    },
+    {
+      "url": "https://www.acast.com/en/pricing",
+      "date": "2026-11-03",
+      "proved": "Starter is limited to 5 episodes",
+      "capture": "sha256:ab74721c19c036332db0e5bc178d855abf1ae4cf6f6f71c16c46f08239e641a4",
+      "quote": "5 Episodes"
+    },
+    {
+      "url": "https://www.acast.com/en/pricing",
+      "date": "2026-11-03",
+      "proved": "Essential, the cheapest paid plan, is listed at $14.99 per month with unlimited episodes",
+      "capture": "sha256:ab74721c19c036332db0e5bc178d855abf1ae4cf6f6f71c16c46f08239e641a4",
+      "quote": "$14.99"
+    },
+    {
+      "url": "https://learn.acast.com/en/articles/3505536-which-audio-file-format-should-i-use-for-my-podcast",
+      "date": "2026-11-03",
+      "proved": "uploads are re-encoded at 128kbps",
+      "capture": "sha256:d758bf96652fecb2b36217fd54238bc87c56a94ea2d327cd725f68f306b6bfb6",
+      "quote": "Acast will encode your uploaded files at 128kbps, which will not impair the perceived quality for your listeners."
+    },
+    {
+      "url": "https://www.acast.com/en/pricing",
+      "date": "2026-11-03",
+      "proved": "the Starter plan is free with 5 episodes and unlimited episodes only through the advertising marketplace",
+      "capture": "sha256:ab74721c19c036332db0e5bc178d855abf1ae4cf6f6f71c16c46f08239e641a4",
+      "quote": "Get unlimited episodes when you make your show available in Acast's advertising marketplace."
+    },
+    {
+      "url": "https://learn.acast.com/en/articles/3505536-which-audio-file-format-should-i-use-for-my-podcast",
+      "date": "2026-11-04",
+      "proved": "Acast enforces a 150MB internal limit per file",
+      "capture": "sha256:d758bf96652fecb2b36217fd54238bc87c56a94ea2d327cd725f68f306b6bfb6",
+      "quote": "Acast sets the internal limit to 150MB also."
     }
   ],
   "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
-  "notes": "1 show, 5 episodes on Free — 'unlimited episodes when you make your show available in Acast's advertising marketplace'. So free capacity is 5 episodes unless you opt into ad monetisation, in which case episodes are unlimited but storage is still bounded by the 150 MB file cap.",
+  "verified_at": "2026-11-04T00:31:28.056Z",
+  "notes": "Starter: Free, 1 show, 5 episodes ('Get unlimited episodes when you make your show available in Acast's advertising marketplace'). Paid: Essential $14.99 / Month with unlimited episodes (the page's Monthly or Yearly toggle state is not visible in the captured text).",
   "extras": {
     "dead_end": {
       "failure_class": "quota",
@@ -65,6 +132,6 @@
       "first_recorded": "2026-10-21"
     }
   },
-  "binding": "none",
-  "binding_note": null
+  "binding": "volume-quota",
+  "binding_note": "5 episodes per show on the free Starter plan; lifting the episode count needs the advertising marketplace or a paid plan"
 }

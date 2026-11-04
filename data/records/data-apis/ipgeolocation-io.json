@@ -46,7 +46,7 @@
     "detail": "full name, email address and a password of 12 or more characters, or GitHub (Google sign-in is offered); no credit card",
     "country": null
   },
-  "reliability_note": "the free plan has no overage, so requests past the daily credits are refused",
+  "reliability_note": "the free plan has no overage: past 1,000 API credits a day the API answers HTTP 429 until the allowance resets at 00:00 UTC, and no rate limit applies per second or per minute",
   "confidence": "documented",
   "confidence_note": "the pricing page and the signup form were quoted on 2026-10-30; no keyed lookup was made, so no value is measured.",
   "evidence": [
@@ -133,13 +133,43 @@
       "proved": "the password is 12 to 64 characters",
       "capture": "sha256:3e739383d5560628fe16b7e0ef68403dcdd95fb3c000d77c85a340109d8bca1a",
       "quote": "Use 12–64 characters."
+    },
+    {
+      "url": "https://ipgeolocation.io/help/whats-in-the-free-plan",
+      "date": "2026-11-02",
+      "proved": "the free plan resets its 1,000 daily API credits at 00:00 UTC, has no limit per second or per minute, and answers HTTP 429 until the reset with no overage",
+      "capture": "sha256:18555bb83c54d58c2775b4361c7f55ce510a836d2b1694788801cb9e1e900dc6",
+      "quote": "| When credits run out | HTTP 429 Too Many Requests until the reset; no overage charges |"
+    },
+    {
+      "url": "https://ipgeolocation.io/help/how-ipgeolocation-io-credits-work",
+      "date": "2026-11-02",
+      "proved": "every successful response carries an X-Credits-Charged header, and a request with no API key answers HTTP 401 and uses no credits",
+      "capture": "sha256:5cb6acfc61570713df000bd354e5322a3dcc7a8f3212b6cc12a323539301fee4",
+      "quote": "Every successful response includes an `X-Credits-Charged` header showing the number of credits deducted."
+    },
+    {
+      "url": "probe:https://api.ipgeolocation.io/v3/ipgeo?ip=8.8.8.8",
+      "date": "2026-11-02",
+      "proved": "a lookup with no API key answered HTTP 401 with a JSON message, so a keyed answer and its headers show only after sign-up",
+      "capture": "sha256:5a142872ba31aa814bf27943bc0aafe88bf6dea4015bb4bc4c09ddd390916950",
+      "quote": "\"status\": 401"
+    },
+    {
+      "url": "https://ipgeolocation.io/pricing.html",
+      "date": "2026-11-02",
+      "proved": "the Developer plan gives 1,000 credits a day for life with no credit card and no overage, and a standard IP lookup uses 1 credit",
+      "capture": "sha256:ad742a06a99766ebf955a97aa9fe8ddc2da594b535a367996ef6e79c3f000264",
+      "quote": "The free Developer plan gives you 1,000 credits a day for life, with no credit card."
     }
   ],
   "verdict": "qualifies",
-  "verified_at": "2026-10-31T06:24:05.368Z",
+  "verified_at": "2026-11-03T00:27:33.117Z",
   "notes": "Free requests: 1,000 credits a day, 1 per standard lookup. Rate limit: none published; requests past the credits are refused. Bulk path: none on the free plan.",
   "extras": {
     "bulk_path": "none on the free plan",
     "free_requests": "1,000 a day"
-  }
+  },
+  "interface_detail": "every successful response carries an X-Credits-Charged header with the credits billed; a request with no API key answers HTTP 401 and costs nothing",
+  "limits_note": "unverified: behind a sign-up: the full set of response headers of a keyed lookup"
 }

@@ -10,13 +10,13 @@
     "unit": "credits",
     "metered_on": "request-count",
     "source_url": "https://newsdata.io/pricing",
-    "read_on": "2026-10-31",
-    "notes": "Most calls cost 1 credit; an Archive call costs 5 credits and a Count call 50. Credits are deducted only for requests that are processed and return results. On the free plan the crypto and market endpoints cover the last 7 days with a 12-hour delay. The next plan up is Basic at USD 199.99 a month for 20,000 credits a month."
+    "read_on": "2026-11-02",
+    "notes": "Most calls cost 1 credit; an Archive call costs 5 credits and a Count call 50. The pricing page says credits are deducted only for requests that are processed and return results, while the vendor's reference says a call that matches nothing still costs its credits. On the free plan the crypto and market endpoints cover the last 7 days with a 12-hour delay. The next plan up is Basic at USD 199.99 a month for 20,000 credits a month."
   },
   "per_object_cap": {
     "stated": "1 to 10 articles a request on the free plan",
     "bytes": null,
-    "notes": ""
+    "notes": "The documentation gives 10 as the default and the largest page size on the free plan, size accepts 1 to 10, and a larger size answers HTTP 422. Unverified: behind a sign-up: how many articles a free call returns in practice."
   },
   "retention": {
     "stated": "the latest endpoint reaches the past 48 hours, with a 12-hour delay on the free plan",
@@ -34,7 +34,7 @@
   "interface": [
     "rest"
   ],
-  "interface_detail": "REST over HTTPS, every endpoint a GET returning JSON; the key goes in the apikey parameter or the X-ACCESS-KEY header. The free plan also lists real-time streaming API access.",
+  "interface_detail": "REST over HTTPS returning JSON; every endpoint is a GET except the WebSocket register call (POST) and the WebSocket delete call (DELETE); the key goes in the apikey parameter or the X-ACCESS-KEY header. The free plan also lists real-time streaming API access.",
   "endpoint": "https://newsdata.io/api/1/latest",
   "tooling": "any HTTP client",
   "chaining": "The free topical datasets on GitHub (CSV and JSON) are a no-key bulk start; the API adds the past 48 hours at 200 credits a day.",
@@ -46,20 +46,25 @@
     },
     {
       "kind": "request-rate",
-      "value": "30 credits every 15 minutes on the free plan",
-      "source": "https://newsdata.io/blog/newsdata-rate-limit"
+      "value": "30 requests every 15 minutes on the free plan, counted per account; a request over the limit answers HTTP 429 with the code RateLimitExceeded",
+      "source": "https://newsdata.io/llms-full.txt"
     },
     {
       "kind": "per-object-cap",
       "value": "1 to 10 articles a request on the free plan",
       "source": "https://newsdata.io/openapi.json"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "rapid bursts of requests from a single IP address are limited separately from the 15-minute limit and answer HTTP 429 with the code TooManyRequests; the burst size is not stated",
+      "source": "https://newsdata.io/llms-full.txt"
     }
   ],
   "binding": "request-rate",
-  "binding_note": "200 credits a day is the ceiling, and 30 credits every 15 minutes paces how fast it can be spent.",
+  "binding_note": "200 credits a day is the ceiling, and 30 requests every 15 minutes paces how fast it can be spent.",
   "identity_cost": {
     "kind": "email",
-    "detail": "The sign-up form asks for a full name, an email, a password and a purpose, or Google sign-in; a phone number field carries no required mark. No card for the free plan.",
+    "detail": "The sign-up form asks for a full name, an email and a password, each marked required, and offers an optional purpose and an optional phone number, or Google sign-in; the form's script checks a phone number only when one is entered and leaves it out of the sign-up request when the field is empty, and the request carries a reCAPTCHA response. Verifying the email address activates the account. No card for the free plan. Unverified: behind a sign-up: whether the sign-up server accepts a request with no phone number.",
     "country": null
   },
   "reliability_note": "Over the 15-minute rate limit the API answers Rate Limit Exceeded and no data comes back for 15 minutes; a keyless call answered HTTP 401 with Retry-After 900.",
@@ -282,9 +287,206 @@
       "proved": "the keyless answer points to the free sign-up",
       "capture": "sha256:172a63a9bc25c9dddc7c38f94cdd00782523d877663303d9cdc17598b63ad142",
       "quote": "The API key is missing. Please sign up to receive your free API key at: https://newsdata.io/register"
+    },
+    {
+      "url": "https://newsdata.io/llms-full.txt",
+      "date": "2026-11-02",
+      "proved": "the free plan allows 30 requests every 15 minutes, counted per account in requests and not credits, and exceeding it returns 429 RateLimitExceeded",
+      "capture": "sha256:3f67ebb81478bc330bb81dbfad8e18acbb60fa53a2991a6ecb0e35f64e1ce6d2",
+      "quote": "Counted per account in requests (not credits) over a moving 15-minute window: 30 requests on Free, 1,800 on paid plans; custom plans can have their own limit. Exceeding it returns 429 `RateLimitExceeded`."
+    },
+    {
+      "url": "https://newsdata.io/llms-full.txt",
+      "date": "2026-11-02",
+      "proved": "bursts from one IP address are limited apart from the 15-minute limit and answer 429 TooManyRequests",
+      "capture": "sha256:3f67ebb81478bc330bb81dbfad8e18acbb60fa53a2991a6ecb0e35f64e1ce6d2",
+      "quote": "Rapid bursts from a single IP address are limited separately and return 429 `TooManyRequests`."
+    },
+    {
+      "url": "https://newsdata.io/documentation/api-rate-limit",
+      "date": "2026-11-02",
+      "proved": "the rate-limit documentation page words the free plan's limit as 30 credits every 15 minutes",
+      "capture": "sha256:8d0e1d3ffc8aeff85d9840090e4b01992452118c737bb32c7ffc2c7dbd958ebe",
+      "quote": "30 credits every 15 minutes"
+    },
+    {
+      "url": "https://newsdata.io/llms-full.txt",
+      "date": "2026-11-02",
+      "proved": "the reference's plan table lists the free rate limit as 30 requests per 15 minutes",
+      "capture": "sha256:3f67ebb81478bc330bb81dbfad8e18acbb60fa53a2991a6ecb0e35f64e1ce6d2",
+      "quote": "| Rate limit (requests per 15 minutes) | 30 | 1,800 | 1,800 | 1,800 |"
+    },
+    {
+      "url": "https://newsdata.io/llms-full.txt",
+      "date": "2026-11-02",
+      "proved": "size takes 1 to the plan maximum, 10 on Free, a larger value returns 422, and the default is the plan maximum",
+      "capture": "sha256:3f67ebb81478bc330bb81dbfad8e18acbb60fa53a2991a6ecb0e35f64e1ce6d2",
+      "quote": "`size`: number of articles per page, from 1 to the plan maximum (50 on paid plans, 10 on Free; larger values return 422). Default: the plan maximum."
+    },
+    {
+      "url": "https://a.newsdata.io/_next/static/chunks/0l-4gjwum9_j2.js",
+      "date": "2026-11-02",
+      "proved": "the sign-up script reports an invalid phone number only when the phone field holds a number, so an empty field passes its check",
+      "capture": "sha256:40b23d269cb8fafdea181914c1c83628e60e7c81080e5efe4a8e9949af179e2d",
+      "quote": "if(eF){let e=(0,L.parsePhoneNumber)(eF);if(e?.nationalNumber&&!(0,L.isValidPhoneNumber)(eF))return void eJ(\"Invalid phone number\")}"
+    },
+    {
+      "url": "https://newsdata.io/pricing",
+      "date": "2026-11-02",
+      "proved": "the free plan lists 200 API credits per day, the past 48 hours of news, a 12-hour delay and 1 to 10 articles per credit",
+      "capture": "sha256:02579bf02d070a17abaf6e6654c747f6b2db80a8e0173c42aaf093d9adaf8780",
+      "quote": "200 API credits per day Access to past 48 hours News Data Real-time Streaming API Access Data delayed by 12 hours 1 - 10* articles per credit"
+    },
+    {
+      "url": "https://newsdata.io/llms-full.txt",
+      "date": "2026-11-02",
+      "proved": "the reference says a call's cost does not depend on how many results come back, and a call that matches nothing still costs its credits",
+      "capture": "sha256:3f67ebb81478bc330bb81dbfad8e18acbb60fa53a2991a6ecb0e35f64e1ce6d2",
+      "quote": "The cost does not depend on `size` or on how many results come back (a call that matches nothing still costs its credits)."
+    },
+    {
+      "url": "https://newsdata.io/openapi.json",
+      "date": "2026-11-02",
+      "proved": "the API is REST returning JSON, every read endpoint is a GET, and the two WebSocket management endpoints use POST and DELETE",
+      "capture": "sha256:4b84e54f20c11be22e959e2fa9c0a327e4cb3c03eb028a0a540814645e7c0dc9",
+      "quote": "REST API returning JSON. Every read endpoint is `GET`; the two state-changing WebSocket management endpoints use `POST` (`/1/websocket/register`) and `DELETE` (`/1/websocket/delete`)."
+    },
+    {
+      "url": "https://newsdata.io/documentation/api-rate-limit",
+      "date": "2026-11-02",
+      "proved": "over the limit the API returns a Rate Limit Exceeded error and serves no further request until the limit resets after 15 minutes",
+      "capture": "sha256:8d0e1d3ffc8aeff85d9840090e4b01992452118c737bb32c7ffc2c7dbd958ebe",
+      "quote": "If you exceed the rate limit for your plan, the API will return a \"Rate Limit Exceeded\" error and you will not be able to make any further requests until the rate limit resets after 15 minutes."
+    },
+    {
+      "url": "https://newsdata.io/documentation/api-rate-limit",
+      "date": "2026-11-02",
+      "proved": "the rate-limit answer carries HTTP status 429",
+      "capture": "sha256:8d0e1d3ffc8aeff85d9840090e4b01992452118c737bb32c7ffc2c7dbd958ebe",
+      "quote": "When the threshold is reached, the API responds with a 429 status code:"
+    },
+    {
+      "url": "https://newsdata.io/llms.txt",
+      "date": "2026-11-02",
+      "proved": "the short index states the free limit as 30 requests per 15 minutes",
+      "capture": "sha256:ad2018c5d531d373c9e0419dccb51f0af44c1da60522363c1505a9eb5a0d95f9",
+      "quote": "Rate limit: 30 requests per 15 minutes on Free, 1,800 on paid plans."
+    },
+    {
+      "url": "https://newsdata.io/openapi.json",
+      "date": "2026-11-02",
+      "proved": "the X-RateLimit-Remaining response header reports the requests left in the current 15-minute window",
+      "capture": "sha256:4b84e54f20c11be22e959e2fa9c0a327e4cb3c03eb028a0a540814645e7c0dc9",
+      "quote": "Requests remaining in the current 15-minute rate-limit window."
+    },
+    {
+      "url": "https://newsdata.io/documentation/api-pagination",
+      "date": "2026-11-02",
+      "proved": "a free request returns 10 articles a page by default and size accepts 1 to 10",
+      "capture": "sha256:cd050b925bb4f27d344d4ca94d05870f22e367df2be88fbe7d483eb486f55f43",
+      "quote": "The default page size for all free tier requests. This can be customized between 1-10 only."
+    },
+    {
+      "url": "https://newsdata.io/documentation/api-credit-limits",
+      "date": "2026-11-02",
+      "proved": "the credit-limit table lists 10 as the maximum results of a free credit",
+      "capture": "sha256:7de163dd6e472bd0eab854aa0160c39119cd3d1edf2846310da45435bb77a287",
+      "quote": "| FREE | 200/day | 10 |"
+    },
+    {
+      "url": "https://newsdata.io/llms-full.txt",
+      "date": "2026-11-02",
+      "proved": "the reference's plan table lists 10 articles per request on the free plan",
+      "capture": "sha256:3f67ebb81478bc330bb81dbfad8e18acbb60fa53a2991a6ecb0e35f64e1ce6d2",
+      "quote": "| Articles per request (maximum `size`) | 10 | 50 | 50 | 50 |"
+    },
+    {
+      "url": "https://newsdata.io/register",
+      "date": "2026-11-02",
+      "proved": "the sign-up page promises up to 10 articles per request",
+      "capture": "sha256:1c85bc7d22e1405a7b849d0fc0e7bd56b581228778b913e85026496221147803",
+      "quote": "Fetch up to 10 articles per request"
+    },
+    {
+      "url": "https://newsdata.io/openapi.json",
+      "date": "2026-11-02",
+      "proved": "size is 1 to 10 on the free plan and defaults to the plan's maximum",
+      "capture": "sha256:4b84e54f20c11be22e959e2fa9c0a327e4cb3c03eb028a0a540814645e7c0dc9",
+      "quote": "Number of articles per page: 1 to 50 on paid plans, 1 to 10 on the free plan. Defaults to your plan's maximum."
+    },
+    {
+      "url": "https://newsdata.io/register",
+      "date": "2026-11-02",
+      "proved": "the Full Name label of the sign-up form carries the required mark",
+      "capture": "sha256:ba21be74602a1d7e306fd8278efb9b95bc864b24d7172a3bfa684b492d7d766f",
+      "quote": "<p class=\"MuiTypography-root MuiTypography-body1 mui-dy3jo0\">Full Name<!-- -->*</p>"
+    },
+    {
+      "url": "https://newsdata.io/register",
+      "date": "2026-11-02",
+      "proved": "the Email label of the sign-up form carries the required mark",
+      "capture": "sha256:ba21be74602a1d7e306fd8278efb9b95bc864b24d7172a3bfa684b492d7d766f",
+      "quote": "<p class=\"MuiTypography-root MuiTypography-body1 mui-dy3jo0\">Email<!-- -->*</p>"
+    },
+    {
+      "url": "https://newsdata.io/register",
+      "date": "2026-11-02",
+      "proved": "the Phone Number label of the sign-up form carries no required mark",
+      "capture": "sha256:ba21be74602a1d7e306fd8278efb9b95bc864b24d7172a3bfa684b492d7d766f",
+      "quote": "<p class=\"MuiTypography-root MuiTypography-body1 mui-dy3jo0\">Phone Number</p>"
+    },
+    {
+      "url": "https://newsdata.io/register",
+      "date": "2026-11-02",
+      "proved": "the Purpose label of the sign-up form carries no required mark",
+      "capture": "sha256:ba21be74602a1d7e306fd8278efb9b95bc864b24d7172a3bfa684b492d7d766f",
+      "quote": "<p class=\"MuiTypography-root MuiTypography-body1 mui-dy3jo0\">Purpose</p>"
+    },
+    {
+      "url": "https://a.newsdata.io/_next/static/chunks/0l-4gjwum9_j2.js",
+      "date": "2026-11-02",
+      "proved": "the sign-up request adds purpose and phone_no only when they are filled in",
+      "capture": "sha256:40b23d269cb8fafdea181914c1c83628e60e7c81080e5efe4a8e9949af179e2d",
+      "quote": "...eM&&{purpose:String(eM.id)},...eF&&(0,L.parsePhoneNumber)(eF)?.nationalNumber&&{phone_no:eF}}"
+    },
+    {
+      "url": "https://a.newsdata.io/_next/static/chunks/0l-4gjwum9_j2.js",
+      "date": "2026-11-02",
+      "proved": "the sign-up request carries a recaptcha_response value",
+      "capture": "sha256:40b23d269cb8fafdea181914c1c83628e60e7c81080e5efe4a8e9949af179e2d",
+      "quote": "recaptcha_response:t"
+    },
+    {
+      "url": "https://newsdata.io/documentation/get-api-key",
+      "date": "2026-11-02",
+      "proved": "after signing up the email address is verified to activate the account",
+      "capture": "sha256:3471258a618b081a52d14919b2c16a507c407837e18bb3eb22c02f2b94f8164a",
+      "quote": "After signing up, verify your email address to activate your account."
+    },
+    {
+      "url": "https://newsdata.io/free-news-api",
+      "date": "2026-11-02",
+      "proved": "the free key comes after signing up and verifying the email, with no payment info",
+      "capture": "sha256:ee3f534c955c53d695050ab908358f42098f8bc6377b02870646cde5190c82a3",
+      "quote": "Sign up at NewsData.io, verify your email, and your API key is generated instantly on your dashboard - no payment info required."
+    },
+    {
+      "url": "probe:https://newsdata.io/api/1/latest?q=test",
+      "date": "2026-11-02",
+      "proved": "a keyless call to the latest endpoint answered HTTP 401 on 2026-11-02",
+      "capture": "sha256:395be07ddd627a032047b2b2afe6a04def46b08cbb9b393162f20ad15d9ebd10",
+      "quote": "\"status\": 401"
+    },
+    {
+      "url": "probe:https://newsdata.io/api/1/latest?q=test",
+      "date": "2026-11-02",
+      "proved": "the keyless answer carries Retry-After 900",
+      "capture": "sha256:395be07ddd627a032047b2b2afe6a04def46b08cbb9b393162f20ad15d9ebd10",
+      "quote": "\"retry-after\": \"900\""
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T06:24:18.866Z",
-  "notes": "Bulk path: free topical news datasets (CSV and JSON archives) download from GitHub with no account; a historical export is priced on request."
+  "verified_at": "2026-11-03T00:28:42.693Z",
+  "notes": "Bulk path: free topical news datasets (CSV and JSON archives) download from GitHub with no account; a historical export is priced on request.",
+  "limits_note": "The rate-limit documentation page and the rate-limit blog post word the free limit as 30 credits every 15 minutes with no further request served until it resets, while the vendor's reference counts requests, not credits, over a moving 15-minute window. Responses carry an X-RateLimit-Remaining header with the requests left in the current 15-minute window. Unverified: behind a sign-up: whether a live request past the 30 allowed answers 429 RateLimitExceeded, whether a request that returns no results counts toward the limit, and whether the window is fixed or moving."
 }

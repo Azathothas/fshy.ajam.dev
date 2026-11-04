@@ -20,7 +20,7 @@
     "notes": ""
   },
   "retention": {
-    "stated": "not applicable: a query API with no stored objects",
+    "stated": "not applicable",
     "days": null,
     "notes": ""
   },
@@ -46,8 +46,8 @@
     },
     {
       "kind": "request-rate",
-      "value": "5 requests per second (documentation as archived on 2026-01-13)",
-      "source": "https://web.archive.org/web/20260113090605/https://marketstack.com/documentation"
+      "value": "5 requests per second",
+      "source": "https://docs.apilayer.com/marketstack/docs/getting-started"
     },
     {
       "kind": "per-object-cap",
@@ -63,9 +63,9 @@
     "detail": "The free signup form asks for a first name, last name, email and password, and under Billing Details an address, postal code, country and city (state optional); no card field was seen on the free form. Card payment is named for paid plans.",
     "country": null
   },
-  "reliability_note": "Past the monthly volume the API answers HTTP 429 too_many_requests, and past the rate it answers 429 rate_limit_reached.",
+  "reliability_note": "Past the monthly volume the API answers HTTP 429 too_many_requests, and past 5 requests per second it answers 429 rate_limit_reached; API errors are not counted toward the monthly quota; an error answer is a JSON object with an error member holding a code and a message.",
   "confidence": "documented",
-  "confidence_note": "The free quota, history and signup fields are documented on the pricing, FAQ and signup pages; the 5 per second rate is from the documentation as archived on 2026-01-13, because the current documentation pages read did not state it. A probe measured that a call with no key answers HTTP 401. The monthly cut-off needs a free key to measure.",
+  "confidence_note": "The free quota, history and signup fields are documented on the pricing, FAQ and signup pages; the 5 per second rate is stated on the current Getting Started page of the APILayer documentation. A probe measured that a call with no key answers HTTP 401. The monthly cut-off answer, its body and its reset moment need a free key to measure (unverified: behind a sign-up).",
   "evidence": [
     {
       "url": "https://marketstack.com/pricing",
@@ -241,14 +241,92 @@
       "proved": "the plans above Basic carry 15+ years of history",
       "capture": "sha256:67665382a9a938ff3a29cb764b539d4b3e37cee86fadc819b2ac005c3b727062",
       "quote": "- 15+ Years History"
+    },
+    {
+      "url": "https://docs.apilayer.com/marketstack/docs/getting-started",
+      "date": "2026-11-02",
+      "proved": "the current Getting Started page states 5 requests per second",
+      "capture": "sha256:fc2d30ee1be8b095705abe217beb093f34b1d59260cae8606b9a603c56a976d3",
+      "quote": "The API allows up to 5 requests per second. Exceeding this returns a `429` status code. Monthly request quotas depend on your plan."
+    },
+    {
+      "url": "https://docs.apilayer.com/marketstack/docs/getting-started",
+      "date": "2026-11-02",
+      "proved": "the monthly quota cut-off answers 429 too_many_requests",
+      "capture": "sha256:fc2d30ee1be8b095705abe217beb093f34b1d59260cae8606b9a603c56a976d3",
+      "quote": "| 429 | `too_many_requests` | Monthly request quota exceeded |"
+    },
+    {
+      "url": "https://marketstack.com/faq",
+      "date": "2026-11-02",
+      "proved": "error answers do not count toward the monthly quota",
+      "capture": "sha256:1c1ee5e9f0fb3d014986adc5e0c64013bcb9c8a1f5d3ecbc8d87bda1d0574f8d",
+      "quote": "API errors are not counted towards your monthly quota."
+    },
+    {
+      "url": "probe:https://api.marketstack.com/v2/eod?symbols=AAPL",
+      "date": "2026-11-02",
+      "proved": "a call with no key answers a JSON error object with a code",
+      "capture": "sha256:5dbfe11774badd4884a3660444bf3482ec2b758a66f23acf1a37b320de5d84c3",
+      "quote": "\"code\": \"missing_access_key\""
+    },
+    {
+      "url": "https://docs.apilayer.com/marketstack/docs/getting-started",
+      "date": "2026-11-02",
+      "proved": "the rate cut-off answers 429 rate_limit_reached",
+      "capture": "sha256:fc2d30ee1be8b095705abe217beb093f34b1d59260cae8606b9a603c56a976d3",
+      "quote": "| 429 | `rate_limit_reached` | Rate limit (5 req/sec) exceeded |"
+    },
+    {
+      "url": "https://docs.apilayer.com/marketstack/docs/getting-started",
+      "date": "2026-11-02",
+      "proved": "the current documentation states 5 requests per second",
+      "capture": "sha256:fc2d30ee1be8b095705abe217beb093f34b1d59260cae8606b9a603c56a976d3",
+      "quote": "The API allows up to 5 requests per second. Exceeding this returns a `429` status code. Monthly request quotas depend on your plan."
+    },
+    {
+      "url": "https://marketstack.com/contact",
+      "date": "2026-11-02",
+      "proved": "the contact page gives a 5% overdraft and a cut-off at 120%",
+      "capture": "sha256:82b09187db1680a7552f1381dcab517350b13120fa5230baccd7be9863d9902d",
+      "quote": "our system allows for a maximum overdraft of 5% beyond your quota limit. If 120% of your quota are reached, API access will be disabled, unless overage billing is enabled on your account."
+    },
+    {
+      "url": "https://marketstack.com/faq",
+      "date": "2026-11-02",
+      "proved": "the FAQ says overage fees apply after 100% of the allowance",
+      "capture": "sha256:1c1ee5e9f0fb3d014986adc5e0c64013bcb9c8a1f5d3ecbc8d87bda1d0574f8d",
+      "quote": "After reaching 100% of the allowance, overages fees will apply"
+    },
+    {
+      "url": "https://marketstack.com/pricing",
+      "date": "2026-11-02",
+      "proved": "the Free plan allows 100 requests a month",
+      "capture": "sha256:67665382a9a938ff3a29cb764b539d4b3e37cee86fadc819b2ac005c3b727062",
+      "quote": "- 100 Requests / mo"
+    },
+    {
+      "url": "https://marketstack.com/pricing",
+      "date": "2026-11-02",
+      "proved": "the Free plan has 1 year of history",
+      "capture": "sha256:67665382a9a938ff3a29cb764b539d4b3e37cee86fadc819b2ac005c3b727062",
+      "quote": "- 1 Year History"
+    },
+    {
+      "url": "https://docs.apilayer.com/marketstack/docs/getting-started",
+      "date": "2026-11-02",
+      "proved": "the 5 requests per second rate is on the current page",
+      "capture": "sha256:fc2d30ee1be8b095705abe217beb093f34b1d59260cae8606b9a603c56a976d3",
+      "quote": "The API allows up to 5 requests per second. Exceeding this returns a `429` status code. Monthly request quotas depend on your plan."
     }
   ],
   "verdict": "fails-quota",
-  "verified_at": "2026-10-31T10:04:07.279Z",
+  "verified_at": "2026-11-03T00:28:53.394Z",
   "notes": "A working free key, but 100 requests a month with each symbol counted and 1 year of end-of-day history is too small for a data workload; the same US prices come from Tiingo, whose free plan is 1000 requests a day with 30+ years of history.",
   "extras": {
     "bulk_path": "no bulk path",
     "history_depth": "1 year on the free plan; 10 years on Basic; 15+ years on Professional and Business",
-    "quota_wording_conflict": "apilayer.com/products/marketstack shows 100 Total Requests on the plan card and 100 per month in its FAQ"
+    "quota_wording_conflict": "apilayer.com/products/marketstack shows 100 Total Requests on the plan card and 100 per month in its FAQ",
+    "cutoff_wording_conflict": "marketstack.com/contact says the system allows a maximum overdraft of 5% beyond the quota limit and disables API access at 120% unless overage billing is enabled; marketstack.com/faq says overage fees apply after 100% of the allowance; which applies to a Free key, which lists no overage, is unverified: behind a sign-up"
   }
 }

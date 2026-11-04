@@ -49,7 +49,7 @@
   "binding_note": "the TPU quota is granted 'on a temporary basis' with a time box reported at 30 to 60 days and extendable only on request, so the grant expires while the applicant is still arranging a card; a reported USD 126,720 of on-demand v3 capacity disappears at day 60, and one accepted applicant watched a v5e/v6e grant sit idle waiting on billing verification.",
   "identity_cost": {
     "kind": "card",
-    "detail": "two gates, and the second is the real one. The application takes a free-text affiliation field and no institution check - the program's creator says an academic affiliation is not required, and a vocational-school applicant and a first-time applicant both describe filling the field by hand. But the quota lands on a Google Cloud project, and getting a project to the point where it can create a TPU VM requires GCP billing verification, which requires a card. The best evidence is a 2026-04 post from an accepted applicant: 'The TPU Research Cloud (TRC) team was awesome enough to grant me a v5e/v6e cluster quota, but I'm totally stuck on the infrastructure side. Since I'm a student in Bangladesh with a $0 budget and no international credit card, I can't pass the billing verification to actually spin up the TPU-VMs or the GCS buckets I need.' So the door is a card, not a degree.",
+    "detail": "two gates, and the second is the real one. The application takes a free-text affiliation field and no institution check - the program's creator says an academic affiliation is not required, and a vocational-school applicant and a first-time applicant both describe filling the field by hand. But the quota lands on a Google Cloud project, and getting a project to the point where it can create a TPU VM requires GCP billing verification, which requires a card. The best evidence is a 2026-04 post from an accepted applicant: 'The TPU Research Cloud (TRC) team was awesome enough to grant me a v5e/v6e cluster quota, but I'm totally stuck on the infrastructure side. Since I'm a student in Bangladesh with a $0 budget and no international credit card, I can't pass the billing verification to actually spin up the TPU-VMs or the GCS buckets I need.' So the door is a card, not a degree, and the card obeys Google's billing rules: an authorisation request with 'a value between $0.00 and $1.00 USD' that 'is a hold, not an actual charge', prepaid cards not accepted, virtual cards possibly refused.",
     "country": null
   },
   "reliability_note": "no reliability event recorded",
@@ -134,10 +134,38 @@
       "url": "https://discuss.google.dev/t/student-researcher-blocked-have-trc-tpu-quota-but-no-credit-card-for-gcp-billing-verification/349193",
       "date": "2026-10-22",
       "proved": null
+    },
+    {
+      "url": "https://cloud.google.com/free/docs/free-cloud-features",
+      "date": "2026-11-02",
+      "proved": "the authorisation at signup withdraws nothing",
+      "capture": "sha256:885a38c2b738a7e9ac34bffbae919db1163c80786856ff5f689da3a3bfe0b095",
+      "quote": "No funds are withdrawn by Google."
+    },
+    {
+      "url": "https://cloud.google.com/free/docs/free-cloud-features",
+      "date": "2026-11-02",
+      "proved": "the card demanded by billing verification carries the published hold",
+      "capture": "sha256:885a38c2b738a7e9ac34bffbae919db1163c80786856ff5f689da3a3bfe0b095",
+      "quote": "The hold often appears as a pending transaction from Google, with a value between $0.00 and $1.00 USD."
+    },
+    {
+      "url": "https://cloud.google.com/billing/docs/how-to/payment-methods",
+      "date": "2026-11-02",
+      "proved": "prepaid cards are refused for a Google Cloud billing account",
+      "capture": "sha256:c9d96879efdd96efc7305484add62bd3cd08c188b27467b585329ff5896c529c",
+      "quote": "Prepaid cards aren't accepted for payment."
+    },
+    {
+      "url": "https://cloud.google.com/billing/docs/how-to/payment-methods",
+      "date": "2026-11-02",
+      "proved": "the accepted card classes for the billing account",
+      "capture": "sha256:c9d96879efdd96efc7305484add62bd3cd08c188b27467b585329ff5896c529c",
+      "quote": "Debit cards that require two-factor authentication aren't accepted for payment."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-22T00:00:00.000Z",
+  "verified_at": "2026-11-02T02:17:36.634Z",
   "notes": "The affiliation gate that people assume exists does not: the program's own creator says so, and both the About and FAQ pages are silent on institutions. What does gate it is a GCP billing account, because the TPU attaches to a project. A 2026-04 post from an applicant who was actually granted v5e/v6e quota is the proof - they could not provision anything without a card. Three facts now stand on quoted evidence. The shape, from an activation email quoted verbatim by an accepted applicant: 5 on-demand v3-8 hosts, 5 on-demand v2-8 hosts and 100 preemptible v2-8 hosts, free for 60 days. The value, by arithmetic over the vendor's own per-chip-hour list price: USD 126,720 of on-demand v3 capacity, preemptible quota excluded. The time box, which is the weakest-evidenced field: the vendor says only 'temporary'; applicant reports give 30 days (three sources), 60 days (two sources), and one month extended to three on request (one source). Treat 30 to 60 days as the working range. Still open: the quota a new grant is actually set to in 2026. Every quoted shape predates the v3 decommission, and the v6e report gives a slice type without a count. No page read settles that; only the activation email does. The program is live as of this read: its publications page carries September 2026 entries. The one recorded is the better-evidenced.",
   "extras": {
     "facets": {
@@ -151,6 +179,17 @@
         "tpu_generation": "v4/v5e/v6e as of 2025-10; v2 and v3 were the grant generations through 2023 and v3 was decommissioned",
         "tpu_slice_shape": "per-applicant quota, not a fixed shape. A quoted activation email grants '5 on-demand Cloud TPU v3-8 device(s) in zone europe-west4-a', '100 preemptible Cloud TPU v2-8 device(s) in zone us-central1-f' and '5 on-demand Cloud TPU v2-8 device(s) in zone us-central1-f' - that is 40 v3 chips on demand, 40 v2 chips on demand and 800 v2 chips preemptible. A 2025 grant reports moving to v6e-64 through the Queued Resource API."
       }
+    },
+    "payment_methods": {
+      "card_at_signup": "yes, for the Google Cloud billing account the quota lands on",
+      "debit": "accepted-with-condition",
+      "prepaid": "refused",
+      "virtual": "may be refused",
+      "hold_amount": "USD 0.00 to USD 1.00",
+      "hold_detail": "the TPU quota is free, but the project must pass Google Cloud billing verification first, and Google submits an authorisation request that 'is a hold, not an actual charge' with 'a value between $0.00 and $1.00 USD'. The host VM and the GCS bucket are billed normally. Prepaid cards are refused and virtual cards may be refused.",
+      "identity": "the programme takes a free-text affiliation and no institution check; the card is demanded by Google Cloud billing verification, not by the programme",
+      "source_url": "https://cloud.google.com/free/docs/free-cloud-features",
+      "read_on": "2026-11-02"
     }
   }
 }

@@ -20,6 +20,11 @@
       "kind": "request-rate",
       "value": "unpublished at BlockRun. The free route fails with FREE_MODEL_FAILED carrying debug 'NVIDIA API error: 429 Too Many Requests', so the observed ceiling belongs to BlockRun's own upstream key",
       "source": "probe:https://blockrun.ai/api/v1/chat/completions, 2026-10-22"
+    },
+    {
+      "kind": "request-rate",
+      "value": "30 requests per minute (burst) and 300 requests per hour (sustained) per source IP on free chat models; over the limit the answer is 429 FREE_TIER_RATE_LIMITED",
+      "source": "https://blockrun.ai/docs/api-reference/rate-limits"
     }
   ],
   "slug": "blockrun",
@@ -136,10 +141,31 @@
       "proved": "the free-route limit is a per-IP request-rate limit, so the limit kind request-rate stands",
       "capture": "sha256:ba788bc524f7f0c096e6f5599a022a32f41226246bf61875c5f1a74226e5ca01",
       "quote": "30 requests per minute (burst) and 300 requests per hour (sustained)"
+    },
+    {
+      "url": "https://blockrun.ai/docs/api-reference/rate-limits",
+      "date": "2026-11-04",
+      "proved": "the vendor publishes a per-IP free-tier limit of 30 per minute and 300 per hour",
+      "capture": "sha256:041d612f47f75550fdcb581e18c7b754b72d150dc46f0ff7073de28565ae8475",
+      "quote": "30 requests per minute (burst) and 300 requests per hour (sustained)"
+    },
+    {
+      "url": "https://blockrun.ai/docs/api-reference/errors",
+      "date": "2026-11-04",
+      "proved": "the error catalogue names FREE_TIER_RATE_LIMITED as the per-IP free-tier 429 at 30 per minute and 300 per hour",
+      "capture": "sha256:3c7ba5fc030c1986488e0129271d3177eeb4f22f11d31a819fb645f94124c807",
+      "quote": "| `FREE_TIER_RATE_LIMITED` | 429 | Per-IP free-tier limit (30/min, 300/hour) |"
+    },
+    {
+      "url": "https://blockrun.ai/docs/api-reference/rate-limits",
+      "date": "2026-11-04",
+      "proved": "the free route is still limited per source IP by request rate",
+      "capture": "sha256:041d612f47f75550fdcb581e18c7b754b72d150dc46f0ff7073de28565ae8475",
+      "quote": "30 requests per minute (burst) and 300 requests per hour (sustained)"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-28T09:47:48.921Z",
+  "verified_at": "2026-11-04T05:39:11.781Z",
   "notes": "The relay category's clearest instance. An error body that names a different vendor's API is the cheapest available tell, and the echoed model string is the second. A caller that does not compare the echoed model receives a plausible answer from a model it did not choose.",
   "binding": "request-rate",
   "binding_note": "the upstream NVIDIA 429 binds, and it arrives inside a 200-style error body rather than as a 429 status, so a client cannot see it by status code"

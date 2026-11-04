@@ -13,7 +13,7 @@
     "notes": null
   },
   "per_object_cap": {
-    "stated": "not stated",
+    "stated": "each table cell is limited to 1kb",
     "source_url": "https://docs.tableland.xyz/fundamentals/limits",
     "notes": "not stated"
   },
@@ -33,16 +33,22 @@
   "interface_detail": "rest",
   "tooling": "Studio web app + Studio CLI + JS SDK, and a documented SQL API. Clean for structured data; irrelevant for blobs. Their own docs recommend pushing large media to IPFS and storing only the CID in a table — which is an admission that the network is a pointer store.",
   "chaining": "Tables are creatable per project and per team, so the multiplier is tables × 500k rows. Even at 10,000 tables this is a metadata tier, not a byte tier.",
-  "limits": [],
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "each table cell is limited to 1kb; 500000 rows and 24 columns per table",
+      "source": "https://raw.githubusercontent.com/tablelandnetwork/docs/main/docs/fundamentals/limits.md"
+    }
+  ],
   "limits_note": "fails-quota categorically. Still described as open beta with 'temporary limits while the production mainnet is further researched', so even the row cap is provisional.",
   "identity_cost": {
     "kind": "email",
     "detail": "email",
     "country": null
   },
-  "reliability_note": "Beta-network limits explicitly flagged as temporary. Do not build a chunk index on a limit that a mainnet launch can change.",
-  "confidence": "reported",
-  "confidence_note": null,
+  "reliability_note": "As read on 2026-11-03, tableland.xyz and docs.tableland.xyz answer HTTP 302 to textile.io and then HTTP 302 to the 2026-10-30 post announcing the wind-down of Recall Labs. Beta-network limits were explicitly flagged as temporary. Do not build a chunk index on a limit that a mainnet launch can change.",
+  "confidence": "documented",
+  "confidence_note": "re-read on 2026-11-03: the vendor docs limits page https://raw.githubusercontent.com/tablelandnetwork/docs/main/docs/fundamentals/limits.md (row, column and cell limits, not a file storage solution) and the Recall Labs wind-down post on x.com (RecallLabs_) that tableland.xyz and docs.tableland.xyz redirect to; identity, tooling and retention were not read",
   "evidence": [
     {
       "url": "https://raw.githubusercontent.com/tablelandnetwork/docs/main/docs/fundamentals/limits.md",
@@ -58,10 +64,59 @@
       "url": "https://docs.tableland.xyz/playbooks/integrations/ipfs",
       "date": "2026-10-21",
       "proved": "surfaced: 'Tableland naturally imposes limits on the size of data you can store in a table. If you need to store larger pieces media, you can use IPFS to store the data and then reference unique Content Identifiers in a table.' Their own recommended alternative route concedes the point."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tablelandnetwork/docs/main/docs/fundamentals/limits.md",
+      "date": "2026-11-03",
+      "proved": "each table cell is capped at 1kb",
+      "capture": "sha256:3de2af041bd64971a7ea2ca2ee46166f26434ed7885bce85336a1c5eb2606bc8",
+      "quote": "Each cell limit is 1kb."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tablelandnetwork/docs/main/docs/fundamentals/limits.md",
+      "date": "2026-11-03",
+      "proved": "the docs say the network is not file storage",
+      "capture": "sha256:3de2af041bd64971a7ea2ca2ee46166f26434ed7885bce85336a1c5eb2606bc8",
+      "quote": "Tableland is _not a file storage_ solution."
+    },
+    {
+      "url": "https://x.com/RecallLabs_/status/2116235386582426069",
+      "date": "2026-11-03",
+      "proved": "the company that built the network announced its wind-down on 2026-10-30",
+      "capture": "sha256:56d5fded2755e82d1ab2cb5f223ed6877abb4e539960ade67b329079375a68cc",
+      "quote": "We’ve made the decision to wind down Recall Labs."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tablelandnetwork/docs/main/docs/fundamentals/limits.md",
+      "date": "2026-11-03",
+      "proved": "the per-table row limit is 500000",
+      "capture": "sha256:3de2af041bd64971a7ea2ca2ee46166f26434ed7885bce85336a1c5eb2606bc8",
+      "quote": "| Rows       | 500000   |"
+    },
+    {
+      "url": "probe:tableland.xyz",
+      "date": "2026-11-03",
+      "proved": "tableland.xyz redirects (HTTP 302 twice, via textile.io) to the Recall Labs post",
+      "capture": "sha256:bbe5d9c808f06daa52ca656a8b9b27faeeee81dd3fc88fb1cd1f113f062ef76b",
+      "quote": "\"final_url\": \"https://x.com/RecallLabs_/status/2116235386582426069\""
+    },
+    {
+      "url": "probe:docs.tableland.xyz",
+      "date": "2026-11-03",
+      "proved": "docs.tableland.xyz redirects (HTTP 302 twice, via textile.io) to the same post",
+      "capture": "sha256:e63caeec7e844fd0362ad7951e0173f771e3dae43705b4de36697204d61051f7",
+      "quote": "\"final_url\": \"https://x.com/RecallLabs_/status/2116235386582426069\""
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tablelandnetwork/docs/main/docs/fundamentals/limits.md",
+      "date": "2026-11-04",
+      "proved": "each table cell is capped at 1kb",
+      "capture": "sha256:3de2af041bd64971a7ea2ca2ee46166f26434ed7885bce85336a1c5eb2606bc8",
+      "quote": "Each cell limit is 1kb."
     }
   ],
   "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
+  "verified_at": "2026-11-04T01:24:43.358Z",
   "notes": "500,000 rows and 24 columns per table. That is the entire quota — it is a SQL-over-SQLite network, not an object store. Byte capacity is implied by row content and is not published as a number, but 500k rows × 24 columns cannot reach 500 GB under any encoding.",
   "extras": {
     "dead_end": {
@@ -71,6 +126,6 @@
       "first_recorded": "2026-10-21"
     }
   },
-  "binding": "none",
-  "binding_note": null
+  "binding": "per-object-cap",
+  "binding_note": "each cell holds at most 1kb and each table at most 500000 rows by 24 columns; the docs state it is not a file storage solution"
 }

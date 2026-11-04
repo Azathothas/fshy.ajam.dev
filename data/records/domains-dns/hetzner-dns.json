@@ -1,0 +1,254 @@
+{
+  "topic": "domains-dns",
+  "slug": "hetzner-dns",
+  "provider": "Hetzner DNS",
+  "url": "https://www.hetzner.com/dns-console",
+  "category": "managed authoritative DNS",
+  "tier": "DNS in Hetzner Console",
+  "free_tier": {
+    "stated": "DNS zones and records are managed in Hetzner Console and the API for free; up to 25 zones by default, up to 500 records per zone and 50 records per RRset; a domain you own is required",
+    "unit": "objects",
+    "source_url": "https://www.hetzner.com/dns-console",
+    "read_on": "2026-11-03",
+    "metered_on": "object-count"
+  },
+  "per_object_cap": {
+    "stated": "up to 500 records per zone and 50 records per RRset, the 500 raisable on a justified demand; up to 25 zones by default",
+    "bytes": null,
+    "source_url": "https://docs.hetzner.com/dns-console/dns/general/dns-overview/"
+  },
+  "retention": {
+    "stated": "a zone that is not delegated to the Hetzner name servers for more than 28 days is deleted automatically; nothing else is stated about inactivity",
+    "days": 28,
+    "source_url": "https://docs.hetzner.com/networking/dns/faq/general"
+  },
+  "egress": {
+    "terms": "no DNS query cap published on the pages read",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://docs.hetzner.com/dns-console/dns/general/dns-overview/"
+  },
+  "interface": [
+    "rest",
+    "cli"
+  ],
+  "interface_detail": "the Hetzner Cloud API at https://api.hetzner.cloud/v1/ with an Authorization Bearer project token: POST /zones creates a zone, and POST /zones/{id_or_name}/rrsets/{rr_name}/{rr_type}/actions/set_records replaces the records of a record set; there is no dyndns2 or HTTP-GET update URL, so a dynamic update is an API call with a token; the default rate limit is 3600 requests per hour per project; zone names must be a registrable domain under a public suffix, not a subdomain",
+  "tooling": "curl, the hcloud CLI (hcloud zone create), BIND zone-file import, and AXFR secondary zones against an external primary",
+  "chaining": "a zone can also run as a secondary that copies a primary elsewhere by AXFR, and a zone can be shared across projects for managed certificates and load balancers; it cannot hold a name that is not a domain you own",
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "up to 500 records per zone, 50 records per RRset, 25 zones by default",
+      "source": "https://docs.hetzner.com/dns-console/dns/general/dns-overview/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "3600 API requests per hour per project, refilling 1 request per second",
+      "source": "https://docs.hetzner.cloud/reference/cloud"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "a zone not delegated to Hetzner name servers for more than 28 days is deleted",
+      "source": "https://docs.hetzner.com/networking/dns/faq/general"
+    }
+  ],
+  "binding": "per-object-cap",
+  "binding_note": "the owned-domain requirement and the 25-zone default decide; the record cap is not binding for a personal set of names",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "an account needs a valid e-mail address, personal or business contact information and a billing address, with a phone number optional; Hetzner may ask an account to verify before it processes an order, by a government ID copy or by a credit-card prepayment; unverified: whether creating a DNS zone triggers that verification (https://docs.hetzner.com/general/billing-and-account-management/account-getting-started/, https://docs.hetzner.com/general/security-and-identify/fraud-prevention-faq/)",
+    "country": null
+  },
+  "reliability_note": "an undelegated zone is deleted after 28 days, and a new account can be asked for an ID copy or a card prepayment before it can order",
+  "confidence": "documented",
+  "confidence_note": "the DNS Console page, the DNS overview and limits page, the creating-a-zone page, the DNS FAQ, the Cloud API reference and the account pages were read and quoted; the API was probed once without a token and answered 401. The 25-zone default is on the marketing page and the 500-record limit on the docs page",
+  "evidence": [
+    {
+      "url": "https://www.hetzner.com/dns-console",
+      "date": "2026-11-03",
+      "proved": "zones and records can be listed, added, modified and removed for free in Hetzner Console and the API",
+      "capture": "sha256:b2c836b387047697ea65ad694f7b62528e6bf09d6e92de8cfff32b531231bb39",
+      "quote": "With our Hetzner Console and API, you can list, add, modify or remove zones and records for free."
+    },
+    {
+      "url": "https://www.hetzner.com/dns-console",
+      "date": "2026-11-03",
+      "proved": "the default zone limit is 25",
+      "capture": "sha256:b2c836b387047697ea65ad694f7b62528e6bf09d6e92de8cfff32b531231bb39",
+      "quote": "By default, you can add up to 25 zones."
+    },
+    {
+      "url": "https://www.hetzner.com/dns-console",
+      "date": "2026-11-03",
+      "proved": "every Console feature is also available through a REST API",
+      "capture": "sha256:b2c836b387047697ea65ad694f7b62528e6bf09d6e92de8cfff32b531231bb39",
+      "quote": "All of Hetzner Console's features are also available via our developer-friendly REST-API."
+    },
+    {
+      "url": "https://www.hetzner.com/dns-console",
+      "date": "2026-11-03",
+      "proved": "an hcloud CLI command creates a zone",
+      "capture": "sha256:b2c836b387047697ea65ad694f7b62528e6bf09d6e92de8cfff32b531231bb39",
+      "quote": "hcloud zone create --name example.com --mode primary"
+    },
+    {
+      "url": "https://docs.hetzner.com/dns-console/dns/general/dns-overview/",
+      "date": "2026-11-03",
+      "proved": "DNS zones carry no charge",
+      "capture": "sha256:114285b0b5741b86f2d266bbfeea2edbdf3fa35bfa7ce456a1172339182b24c3",
+      "quote": "We do not charge for our DNS zones."
+    },
+    {
+      "url": "https://docs.hetzner.com/dns-console/dns/general/dns-overview/",
+      "date": "2026-11-03",
+      "proved": "the limit is up to 500 records per zone, which can be increased on a justified demand",
+      "capture": "sha256:114285b0b5741b86f2d266bbfeea2edbdf3fa35bfa7ce456a1172339182b24c3",
+      "quote": "Up to 500 records per zone"
+    },
+    {
+      "url": "https://docs.hetzner.com/dns-console/dns/general/dns-overview/",
+      "date": "2026-11-03",
+      "proved": "the limit is up to 50 records per RRset",
+      "capture": "sha256:114285b0b5741b86f2d266bbfeea2edbdf3fa35bfa7ce456a1172339182b24c3",
+      "quote": "Up to 50 records per RRset"
+    },
+    {
+      "url": "https://docs.hetzner.com/dns-console/dns/general/dns-overview/",
+      "date": "2026-11-03",
+      "proved": "limits marked with an asterisk, the 500 records per zone among them, can be increased on a justified demand",
+      "capture": "sha256:114285b0b5741b86f2d266bbfeea2edbdf3fa35bfa7ce456a1172339182b24c3",
+      "quote": "Limits marked with * [can be increased](https://console.hetzner.com/limits) if there is a justified demand."
+    },
+    {
+      "url": "https://docs.hetzner.cloud/reference/cloud",
+      "date": "2026-11-03",
+      "proved": "the remaining API requests refill by 1 every second",
+      "capture": "sha256:39f0b61e3fbd13107e8bb9fbb80c16a48505d3a9f08e3a6d105356cf04893de6",
+      "quote": "the number of remaining requests will increase by 1 every second"
+    },
+    {
+      "url": "https://www.hetzner.com/dns-console",
+      "date": "2026-11-03",
+      "proved": "the API authenticates with a Bearer token",
+      "capture": "sha256:b2c836b387047697ea65ad694f7b62528e6bf09d6e92de8cfff32b531231bb39",
+      "quote": "-H \"Authorization: Bearer $API_TOKEN\""
+    },
+    {
+      "url": "https://www.hetzner.com/dns-console",
+      "date": "2026-11-03",
+      "proved": "a zone is created with a POST to the zones endpoint of api.hetzner.cloud",
+      "capture": "sha256:b2c836b387047697ea65ad694f7b62528e6bf09d6e92de8cfff32b531231bb39",
+      "quote": "\"https://api.hetzner.cloud/v1/zones\""
+    },
+    {
+      "url": "https://docs.hetzner.com/networking/dns/getting-started/creating-a-zone",
+      "date": "2026-11-03",
+      "proved": "records can be imported from a BIND-compatible zone file",
+      "capture": "sha256:acf19b12a93a64dc7e1daea912b95ffe593de9f6eecf67fcc455b118099271e9",
+      "quote": "You can import records via a BIND-compatible zone file."
+    },
+    {
+      "url": "https://docs.hetzner.com/networking/dns/getting-started/creating-a-zone",
+      "date": "2026-11-03",
+      "proved": "a secondary zone pulls a full copy from an external primary by AXFR",
+      "capture": "sha256:acf19b12a93a64dc7e1daea912b95ffe593de9f6eecf67fcc455b118099271e9",
+      "quote": "The secondary zone periodically sends AXFR requests"
+    },
+    {
+      "url": "https://docs.hetzner.com/networking/dns/getting-started/creating-a-zone",
+      "date": "2026-11-03",
+      "proved": "a zone can be shared with other projects",
+      "capture": "sha256:acf19b12a93a64dc7e1daea912b95ffe593de9f6eecf67fcc455b118099271e9",
+      "quote": "share zone with other projects"
+    },
+    {
+      "url": "https://docs.hetzner.com/dns-console/dns/general/dns-overview/",
+      "date": "2026-11-03",
+      "proved": "a domain the user owns is required",
+      "capture": "sha256:114285b0b5741b86f2d266bbfeea2edbdf3fa35bfa7ce456a1172339182b24c3",
+      "quote": "To use our DNS, you have to own a domain."
+    },
+    {
+      "url": "https://docs.hetzner.com/dns-console/dns/general/dns-overview/",
+      "date": "2026-11-03",
+      "proved": "the minimum TTL is 60 seconds",
+      "capture": "sha256:114285b0b5741b86f2d266bbfeea2edbdf3fa35bfa7ce456a1172339182b24c3",
+      "quote": "At least 60 seconds as TTL value"
+    },
+    {
+      "url": "https://docs.hetzner.cloud/reference/cloud",
+      "date": "2026-11-03",
+      "proved": "the default API rate limit is 3600 requests per hour per project",
+      "capture": "sha256:39f0b61e3fbd13107e8bb9fbb80c16a48505d3a9f08e3a6d105356cf04893de6",
+      "quote": "The default limit is 3600 requests per hour and per Project."
+    },
+    {
+      "url": "https://docs.hetzner.cloud/reference/cloud",
+      "date": "2026-11-03",
+      "proved": "the zones API does not accept subdomains as zone names",
+      "capture": "sha256:39f0b61e3fbd13107e8bb9fbb80c16a48505d3a9f08e3a6d105356cf04893de6",
+      "quote": "Subdomains are not supported."
+    },
+    {
+      "url": "https://docs.hetzner.cloud/reference/cloud",
+      "date": "2026-11-03",
+      "proved": "an rrset action set_records replaces the records of a record set",
+      "capture": "sha256:39f0b61e3fbd13107e8bb9fbb80c16a48505d3a9f08e3a6d105356cf04893de6",
+      "quote": "[post/zones/{id\\_or\\_name}/rrsets/{rr\\_name}/{rr\\_type}/actions/set\\_records]"
+    },
+    {
+      "url": "https://docs.hetzner.com/networking/dns/faq/general",
+      "date": "2026-11-03",
+      "proved": "a zone not delegated to Hetzner name servers for more than 28 days is deleted",
+      "capture": "sha256:6f42e7a4a7e30a21a45a5b9cec800507a4cec5229c7891c5628110e8238926c7",
+      "quote": "Zones that are not properly delegated to Hetzner’s name servers for more than 28 days will be automatically deleted."
+    },
+    {
+      "url": "https://docs.hetzner.com/networking/dns/getting-started/creating-a-zone",
+      "date": "2026-11-03",
+      "proved": "an empty zone holds only NS and SOA records after creation",
+      "capture": "sha256:acf19b12a93a64dc7e1daea912b95ffe593de9f6eecf67fcc455b118099271e9",
+      "quote": "Create an empty zone | The new zone only has NS records and a SOA record that point to Hetzner name servers."
+    },
+    {
+      "url": "https://docs.hetzner.com/general/billing-and-account-management/account-getting-started/",
+      "date": "2026-11-03",
+      "proved": "registration needs a billing address, and a phone number is optional",
+      "capture": "sha256:d3e5aa5349963c39e4f56aeb9f2c5f0308880968904d946c8e7ea5b8c5b8ae18",
+      "quote": "optionally, a phone number for advanced verification"
+    },
+    {
+      "url": "https://docs.hetzner.com/general/security-and-identify/fraud-prevention-faq/",
+      "date": "2026-11-03",
+      "proved": "an account may be asked to verify before an order is processed",
+      "capture": "sha256:8f8bb169af727cac3b39ab390075e8c31bae86ecf6e3e05a15d69005c929ca83",
+      "quote": "As part of our fraud prevention measures, we may ask you to verify your account before we process an order."
+    },
+    {
+      "url": "https://docs.hetzner.com/general/security-and-identify/fraud-prevention-faq/",
+      "date": "2026-11-03",
+      "proved": "verification is by a government-issued ID copy or by a credit-card prepayment",
+      "capture": "sha256:8f8bb169af727cac3b39ab390075e8c31bae86ecf6e3e05a15d69005c929ca83",
+      "quote": "Verification via ID document:"
+    },
+    {
+      "url": "probe:https://api.hetzner.cloud/v1/zones",
+      "date": "2026-11-03",
+      "proved": "the zones endpoint is live and answers HTTP 401 without a token",
+      "capture": "sha256:d24dc09eaeb3559a9e9516616dac478330b438416d35d912d2ace1f8fb582097",
+      "quote": "\"status\": 401"
+    },
+    {
+      "url": "probe:body-hetzner",
+      "date": "2026-11-03",
+      "proved": "the 401 body says a token is required",
+      "capture": "sha256:60acfddf7e31f740e190bc89b6ec1ac8053d6d9345e45b193056e6d3453fd221",
+      "quote": "token is required"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-11-03T16:43:07.606Z",
+  "price_per_tb_month": null,
+  "notes": "Confirmation interval: none for a delegated zone; the only inactivity rule found is the 28-day deletion of a zone that is not delegated to Hetzner name servers. It is authoritative DNS for a domain the user already owns, not a free subdomain or a dynamic DNS hostname service."
+}

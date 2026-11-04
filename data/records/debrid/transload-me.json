@@ -4,7 +4,7 @@
   "provider": "Transload.me",
   "url": "https://transload.me/",
   "category": "Russian-language multi-host link straightener (debrid)",
-  "tier": "prepaid traffic, from 10 GB",
+  "tier": "prepaid traffic, billed per downloaded GB",
   "free_tier": {
     "stated": "'Мы дарим 150 мб тестового трафика на все файлообменники' on the home page; a second block on the same page says 'Зарегистрируйтесь и получите 100 MB тестового трафика'. No recurring free allowance.",
     "unit": "MB",
@@ -26,41 +26,41 @@
     "notes": "unstated"
   },
   "egress": {
-    "terms": "Speed is described as a floor, not a ceiling: 'Мы предоставим высокую скорость скачивания, свыше 1 МБ/сек.' Traffic is bought in GB.",
+    "terms": "Speed is stated as 'свыше 1 МБ/сек' on the home page and 'up to 5 Mbit/sec' on each per-host page. Traffic is prepaid and billed per downloaded GB ('Payment is made for each downloaded 1 GB of traffic'); the balance has no validity limit.",
     "metered": true,
     "free_allowance": "100-150 MB trial",
-    "price_per_tb": null,
+    "price_per_tb": "USD 300 per TB (USD 0.30 per GB on the turbobit.net page)",
     "source_url": "https://transload.me/"
   },
   "interface": [
     "unknown"
   ],
-  "interface_detail": "Web form: paste a link, the service fetches it. 'Загрузка в один клик'. No API, CLI or mount is documented on the pages read.",
-  "tooling": "Browser only as documented. The output is a download served by transload.me, so a download manager can take it, but nothing is published about link lifetime or resume.",
+  "interface_detail": "Web form: paste a link, the service fetches it ('Загрузка в один клик'). The account terms state a full API for each account ('каждому аккаунту предоставляется полноценное API'); its protocol and documentation were not found.",
+  "tooling": "Browser form, plus an account API stated in the terms. Generated links are valid for up to 24 hours ('Созданные ссылки имеют срок действия до 24 часов со времени генерации'), and the output is a download served by transload.me, so a download manager can take it.",
   "chaining": "A cheap per-GB top-up for the handful of hosts a seedbox cannot reach; not a substitute for a full debrid because the host list is 28 names and the speed floor is 1 MB/s.",
   "limits": [
     {
       "kind": "per-ip-shaping",
-      "value": "download speed stated as 'свыше 1 МБ/сек' (above 1 MB/s), no upper bound published",
+      "value": "home page: 'свыше 1 МБ/сек' (above 1 MB/s); each per-host page: 'Download speed up to 5 Mbit/sec'",
       "source": "https://transload.me/"
     },
     {
       "kind": "volume-quota",
-      "value": "prepaid GB, minimum purchase 10 GB",
-      "source": "https://skladchina-ua.com/threads/povtor-gigabajty-trafika-na-24-fajloobmennika-za-kopejki.276384/"
+      "value": "prepaid balance billed per downloaded GB (USD 0.30 per GB on the turbobit.net page); the balance has no validity limit; bonus discounts of up to 50% on large deposits",
+      "source": "https://transload.me/en/premium/turbobit.net"
     }
   ],
   "limits_note": "28 hosts are named in the service picker (1fichier, ddownload, elfile, elitefile, emload, file.al, fileaxa, fileboom, filedot, filextras, gigapeta, hitfile, isra.cloud, jumploads, katfile, keep2share, kshared, mega.nz, nitroflare, prefiles, rapidgator, rg.to, terabytez, tezfiles, turbobit, upstore, wdupload, world-files). The marketing block still lists 18-20 legacy hosts including Uploaded and Letitbit.",
   "binding": "per-ip-shaping",
-  "binding_note": "At 1 TiB a month the 1 MB/s floor is the constraint that decides: 1 MB/s sustained is about 2.6 TB/month, so a full 1 TiB month is reachable only if the floor is the real rate for the whole month. The GB balance is the second constraint and is prepaid.",
+  "binding_note": "The home page promises 'свыше 1 МБ/сек' while each per-host page states 'Download speed up to 5 Mbit/sec' (0.625 MB/s); the two figures disagree, so the sustained speed that decides a month of transfer is unverified. The prepaid GB balance at USD 0.30 per GB is the second constraint.",
   "identity_cost": {
     "kind": "email",
-    "detail": "'Регистрация займёт всего 10 секунд'; the register page asks for an account, and the trial traffic is attached to it.",
+    "detail": "The register form takes an e-mail address and a password behind a reCAPTCHA; the terms state 'Для работы с сервисом от пользователя требуется только электронная почта'.",
     "country": null
   },
-  "reliability_note": "The price page returns an empty body to every reader tried (three paths: /ru/?p=tariffs, /ru/?p=price, /ru/?p=price&t=1), so the tariff can only be learned after login; a 2024 group-buy thread states the price moves with the euro rate.",
-  "confidence": "reported",
-  "confidence_note": "The host list, the trial size and the 1 MB/s floor are documented from the live page. The price is a third-party group-buy post from 2024-12-29 and the vendor's own price page could not be rendered, so the record is reported. Logging in and reading the tariff would raise it to documented. Evidence dates normalised to the read date on 2026-10-23; a source that carries its own date keeps it in the proved field.",
+  "reliability_note": "The /ru/?p=price tariff page returns an empty body to the readers tried; the per-host pages under /en/premium/ carry the per-GB price. The third-party group-buy thread that carried an earlier RUB price answers 'Запитана тема не знайдена' (topic not found) on 2026-11-03.",
+  "confidence": "documented",
+  "confidence_note": "The host list, the per-GB price, the speed statements and the account terms are vendor-stated pages read on 2026-11-03. The registration trial credit is unverified: its text was not on the home page as served that day, and the vendor tariff page at /ru/?p=price returns an empty body.",
   "evidence": [
     {
       "url": "https://transload.me/",
@@ -76,10 +76,80 @@
       "url": "https://transload.me/ru/?p=price&t=1",
       "date": "2026-10-23",
       "proved": "the vendor price page answers 200 with a zero-length body and cannot be read without a session; recorded as the failed route, not as a price"
+    },
+    {
+      "url": "https://transload.me/en/premium/turbobit.net",
+      "date": "2026-11-03",
+      "proved": "billing is per downloaded GB, with no subscription",
+      "capture": "sha256:a5a7703b73944f3c1e67507f580224a6296c1d0fe1884c8fee1bec58b661c83e",
+      "quote": "Payment is made for each downloaded 1 GB of traffic."
+    },
+    {
+      "url": "https://transload.me/en/premium/turbobit.net",
+      "date": "2026-11-03",
+      "proved": "the vendor's per-host page prices a downloaded GB of turbobit.net at 0.30 USD",
+      "capture": "sha256:a5a7703b73944f3c1e67507f580224a6296c1d0fe1884c8fee1bec58b661c83e",
+      "quote": "The cost of downloading fromTurbobit.net will be only 0.30$ for 1 GB."
+    },
+    {
+      "url": "https://transload.me/en/premium/turbobit.net",
+      "date": "2026-11-03",
+      "proved": "the per-host page states a download speed of up to 5 Mbit/sec",
+      "capture": "sha256:a5a7703b73944f3c1e67507f580224a6296c1d0fe1884c8fee1bec58b661c83e",
+      "quote": "Download speed up to 5 Mbit/sec."
+    },
+    {
+      "url": "https://transload.me/ru/?p=register",
+      "date": "2026-11-03",
+      "proved": "the account terms state that each account gets a full API",
+      "capture": "sha256:ab963da3df240d7b84757d2c358d26ff7b2a896d10db37f9c4c6a8ea56fa2bd2",
+      "quote": "каждому аккаунту предоставляется полноценное API"
+    },
+    {
+      "url": "https://transload.me/ru/?p=register",
+      "date": "2026-11-03",
+      "proved": "generated links are valid for up to 24 hours",
+      "capture": "sha256:ab963da3df240d7b84757d2c358d26ff7b2a896d10db37f9c4c6a8ea56fa2bd2",
+      "quote": "Созданные ссылки имеют срок действия до 24 часов со времени генерации."
+    },
+    {
+      "url": "https://transload.me/ru/?p=register",
+      "date": "2026-11-03",
+      "proved": "the account terms state that only an e-mail address is required",
+      "capture": "sha256:ab963da3df240d7b84757d2c358d26ff7b2a896d10db37f9c4c6a8ea56fa2bd2",
+      "quote": "Для работы с сервисом от пользователя требуется только электронная почта"
+    },
+    {
+      "url": "https://transload.me/ru/?p=register",
+      "date": "2026-11-03",
+      "proved": "the terms state that daily service traffic limits may apply to some hosts",
+      "capture": "sha256:ab963da3df240d7b84757d2c358d26ff7b2a896d10db37f9c4c6a8ea56fa2bd2",
+      "quote": "На некоторые файлообменники могут быть наложены общие сервисные суточные лимиты по трафику"
+    },
+    {
+      "url": "https://skladchina-ua.com/threads/povtor-gigabajty-trafika-na-24-fajloobmennika-za-kopejki.276384/",
+      "date": "2026-11-03",
+      "proved": "the third-party thread that carried the RUB price answers 'topic not found' with HTTP 404",
+      "capture": "sha256:cee86d1e314fd9dcab3eddb3a998b2fe7c2604d8e4f61a0280cc204279b7592a",
+      "quote": "Запитана тема не знайдена."
+    },
+    {
+      "url": "https://transload.me/en/premium/mega.nz",
+      "date": "2026-11-03",
+      "proved": "the per-host page prices a downloaded GB of mega.nz at 0.20 USD",
+      "capture": "sha256:9bc538da7b8b4a116f8d573b528e6468ba6dcade3fe05cc4cdded37f36a3f5e8",
+      "quote": "Download from Mega.nz for 0.20 USD/1Gb."
+    },
+    {
+      "url": "https://transload.me/",
+      "date": "2026-11-03",
+      "proved": "the home page promises a download speed above 1 MB/s",
+      "capture": "sha256:e10206ec390c75b96c7e558a9a22a68db9bf94b6d504a74baa354b8b8c4076f5",
+      "quote": "Мы предоставим высокую скорость скачивания, свыше 1 МБ/сек."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-23T02:12:17.604Z",
-  "price_per_tb_month": "RUB 4400 per TB at the 2024-12-29 reported rate (RUB 4.40/GB), unverified for 2026",
+  "verified_at": "2026-11-03T11:28:53.662Z",
+  "price_per_tb_month": "USD 300 per TB at the vendor's USD 0.30 per GB (turbobit.net page; mega.nz is USD 0.20 per GB), prepaid, no subscription; bonus discounts on large deposits",
   "notes": "One of very few RU-language multi-hosters still answering in 2026. The caveat is the price: the vendor hides it behind login and the only public figure is 20 months old. The 1 MB/s floor is the number to judge it by, not the host count."
 }

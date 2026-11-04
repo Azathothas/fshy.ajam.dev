@@ -5,7 +5,7 @@
   "url": "https://privatebin.info/directory/",
   "category": "anonymous-dump",
   "free_tier": {
-    "stated": "10 MB per document by default (sizelimit = 10000000 in upstream conf.sample.php); ~30+ listed public instances, some with file upload enabled. No account, no quota.",
+    "stated": "10 Megabytes (sizelimit = 10485760 bytes) per document or comment by default, set by each instance's operator; file upload is off by default (fileupload = false).",
     "unit": "unlimited",
     "metered_on": "unstated",
     "source_url": "https://raw.githubusercontent.com/PrivateBin/PrivateBin/master/cfg/conf.sample.php",
@@ -13,12 +13,13 @@
     "notes": null
   },
   "per_object_cap": {
-    "stated": "not stated",
+    "stated": "10 Megabytes per document or comment by default (sizelimit = 10485760 bytes); each instance's operator may change it.",
     "source_url": "https://raw.githubusercontent.com/PrivateBin/PrivateBin/master/cfg/conf.sample.php",
-    "notes": "not stated"
+    "notes": "not stated",
+    "bytes": 10485760
   },
   "retention": {
-    "stated": "not stated",
+    "stated": "Expiry is chosen per paste from options set by the instance operator: 5min (300 s), 10min, 1hour, 1day, 1week, 1month (30 days), 1year, and never (0, no expiry).",
     "source_url": "https://raw.githubusercontent.com/PrivateBin/PrivateBin/master/cfg/conf.sample.php",
     "notes": "not stated"
   },
@@ -32,7 +33,13 @@
   "interface_detail": "rest",
   "tooling": "Encrypted JSON POST to the instance root with X-Requested-With: JSONHttpRequest; official JS client plus community CLIs. github.com/PrivateBin/PrivateBin (8690 stars). Instances are independently operated.",
   "chaining": "N instances x 10 MB, and each instance is a separate operator with separate rate policy — so this is the one pastebin class where horizontal sharding across operators is native. Still only ~50 instances, so the aggregate is single-digit GB per round.",
-  "limits": [],
+  "limits": [
+    {
+      "kind": "per-object-cap",
+      "value": "10485760 bytes per document or comment by default (sizelimit)",
+      "source": "https://raw.githubusercontent.com/PrivateBin/PrivateBin/master/cfg/conf.sample.php"
+    }
+  ],
   "limits_note": "10 MB per paste by default (per-instance override); file upload is disabled by default (fileupload = false) and about half the directory shows no file-upload support; burn-after-reading and expiry are server-configurable.",
   "identity_cost": {
     "kind": "anonymous",
@@ -40,8 +47,8 @@
     "country": null
   },
   "reliability_note": "Instances are volunteer-run with visible uptime as low as 47-49% in the directory, so shard redundancy is mandatory. Content is client-side encrypted, so the operator cannot dedupe or scan — and cannot recover your key either.",
-  "confidence": "reported",
-  "confidence_note": null,
+  "confidence": "documented",
+  "confidence_note": "vendor pages captured 2026-11-03: https://raw.githubusercontent.com/PrivateBin/PrivateBin/master/cfg/conf.sample.php, https://privatebin.info/directory/; every field that decides the verdict cites one of these captures",
   "evidence": [
     {
       "url": "https://privatebin.info/directory/",
@@ -57,11 +64,39 @@
       "url": "https://privatebin.net/?jsonld",
       "date": "2026-10-21",
       "proved": "probe: GET -> 200; https://bin.disroot.org/?jsonld -> 200; https://privatebin.cc/?jsonld -> 200 (three instances live)"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/PrivateBin/PrivateBin/master/cfg/conf.sample.php",
+      "date": "2026-11-03",
+      "proved": "the default size limit is 10 Megabytes per document or comment, sizelimit = 10485760 bytes",
+      "capture": "sha256:a7bc94662f89b498b05782909d9313ef59c4b0bcde9dbb8a514d17e0751f92c8",
+      "quote": "; size limit per document or comment in bytes, defaults to 10 Megabytes\nsizelimit = 10485760"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/PrivateBin/PrivateBin/master/cfg/conf.sample.php",
+      "date": "2026-11-03",
+      "proved": "the expiry options run from 5min to 1year and include never = 0",
+      "capture": "sha256:a7bc94662f89b498b05782909d9313ef59c4b0bcde9dbb8a514d17e0751f92c8",
+      "quote": "5min = 300\n10min = 600\n1hour = 3600\n1day = 86400\n1week = 604800; Well this is not exactly one month, it's 30 days:\n1month = 2592000\n1year = 31536000\nnever = 0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/PrivateBin/PrivateBin/master/cfg/conf.sample.php",
+      "date": "2026-11-03",
+      "proved": "file upload is disabled by default (fileupload = false)",
+      "capture": "sha256:a7bc94662f89b498b05782909d9313ef59c4b0bcde9dbb8a514d17e0751f92c8",
+      "quote": "; enable or disable the file upload feature, defaults to false\nfileupload = false"
+    },
+    {
+      "url": "https://privatebin.info/directory/",
+      "date": "2026-11-03",
+      "proved": "the public directory lists each instance with version, HTTPS, file upload support, uptime and country",
+      "capture": "sha256:d06f6ab71faa80b8fc3ed1b6caa0e30d6bb399156408b56cc428a456f810d411",
+      "quote": "| Address | Version | HTTPS | HTTPS enforced | recommended CSP | Observatory Rating | File upload | Uptime | Country |"
     }
   ],
   "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
-  "notes": "10 MB per document by default (sizelimit = 10000000 in upstream conf.sample.php); ~30+ listed public instances, some with file upload enabled. No account, no quota.",
+  "verified_at": "2026-11-03T15:03:57.980Z",
+  "notes": "10 Megabytes (sizelimit = 10485760 bytes) per document or comment by default, set by each instance's operator.",
   "extras": {
     "dead_end": {
       "failure_class": "quota",
@@ -70,6 +105,6 @@
       "first_recorded": "2026-10-21"
     }
   },
-  "binding": "none",
-  "binding_note": null
+  "binding": "per-object-cap",
+  "binding_note": "each document or comment is capped at 10485760 bytes by default; there is no per-account quota because there are no accounts to meter, and each instance sets its own cap"
 }

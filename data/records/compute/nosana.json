@@ -49,7 +49,7 @@
   "binding_note": "Two gates fail before the money does: the grant is not self-serve at a stated amount, since the current route is an early-access list with activation 'within a few days' and the June 2026 route is payment-method verification; then supply fails, because the site reports 0 of 16 hosts on the USD 0.048 RTX 3060 and 2 of 39 on the USD 0.192 RTX 3090.",
   "identity_cost": {
     "kind": "card",
-    "detail": "two routes with different costs. On the current route a payment method must be verified: the June 2026 post states 'You can verify a payment method to claim free credits or top up your balance'. On the early-access route there is no payment at all, quoted 'No commitment. No payment.', with credits activated within a few days. The live site states only 'Claim free credits when you log in with email'. No authorisation amount is stated, and whether debit or prepaid is accepted is not stated",
+    "detail": "two routes with different costs. On the current route a payment method must be verified: the June 2026 post states 'You can verify a payment method to claim free credits or top up your balance'. On the early-access route there is no payment at all, quoted 'No commitment. No payment.', with credits activated within a few days. The live site states only 'Claim free credits when you log in with email'. No hold amount and no card-type rule is published; cards are attached through a Stripe SetupIntent, which creates no charge.",
     "country": null
   },
   "reliability_note": "no reliability event recorded",
@@ -114,10 +114,66 @@
       "url": "https://redlib.vanillax.me/r/Nosana_AI",
       "date": "2026-10-22",
       "proved": null
+    },
+    {
+      "url": "https://learn.nosana.com/api/payments.html",
+      "date": "2026-11-02",
+      "proved": "card payment methods are held by Stripe, which sets the verification flow",
+      "capture": "sha256:799fa7dad5390a7ddeb09a432e967c87bcecd0b4c15d22cd542ab6098252126b",
+      "quote": "The Payments API manages payment methods and credit purchases, backed by Stripe."
+    },
+    {
+      "url": "https://learn.nosana.com/api/payments.html",
+      "date": "2026-11-02",
+      "proved": "the card rail is Stripe's",
+      "capture": "sha256:799fa7dad5390a7ddeb09a432e967c87bcecd0b4c15d22cd542ab6098252126b",
+      "quote": "backed by Stripe"
+    },
+    {
+      "url": "https://docs.stripe.com/payments/setup-intents",
+      "date": "2026-11-02",
+      "proved": "a SetupIntent attaches a card and charges nothing",
+      "capture": "sha256:3dc3d518464e636a0175ce8acca5ddc7780a690d9ad6be985ddb94ddb484fa6c",
+      "quote": "It’s similar to a payment, but no charge is created."
+    },
+    {
+      "url": "https://learn.nosana.com/api/payments.html",
+      "date": "2026-11-02",
+      "proved": "the payment rail is unchanged",
+      "capture": "sha256:799fa7dad5390a7ddeb09a432e967c87bcecd0b4c15d22cd542ab6098252126b",
+      "quote": "The Payments API manages payment methods and credit purchases, backed by Stripe."
+    },
+    {
+      "url": "https://nosana.com/",
+      "date": "2026-11-02",
+      "proved": "Credit: USD 50, announced at https://nosana.com/blog/the-new-nosana-experience-is-now-live/ ('claim $50 in free GPU credits'). Rate: the GPU table lists the NVIDIA 3060 at USD 0.048 per hour, the lowest rate in the table. 50 / 0.048 = 1,041.67 GPU-hours, rounded to 1,042.",
+      "capture": "sha256:170bb7df213e319d2197d2fa493a8c534dea96e5ff3a6457e5f141e7d372e6c2",
+      "quote": "NVIDIA 3060 $0.048/h"
+    },
+    {
+      "url": "https://nosana.com/blog/the-new-nosana-experience-is-now-live/",
+      "date": "2026-11-02",
+      "proved": "The 2026-03-13 post announces USD 50 in free GPU credits claimable on the Nosana website.",
+      "capture": "sha256:ff43bc50748dfd58a516169ee7ebe078bb64672d9954c47889377e6d0a32bbc4",
+      "quote": "claim $50 in free GPU credits instantly on the Nosana website"
+    },
+    {
+      "url": "https://nosana.com/",
+      "date": "2026-11-02",
+      "proved": "The GPU table lists the NVIDIA 3060 at $0.048/h with availability 0 / 15 hosts.",
+      "capture": "sha256:170bb7df213e319d2197d2fa493a8c534dea96e5ff3a6457e5f141e7d372e6c2",
+      "quote": "NVIDIA 3060 $0.048/h 0 / 15 hosts"
+    },
+    {
+      "url": "https://nosana.com/",
+      "date": "2026-11-02",
+      "proved": "The home page describes Nosana as an open-source GPU cloud.",
+      "capture": "sha256:170bb7df213e319d2197d2fa493a8c534dea96e5ff3a6457e5f141e7d372e6c2",
+      "quote": "An open-source GPU cloud built for AI and high-performance workloads"
     }
   ],
   "verdict": "trial-only",
-  "verified_at": "2026-10-22T00:00:00.000Z",
+  "verified_at": "2026-11-02T09:23:30.180Z",
   "notes": "The June 2026 post puts the same grant behind payment-method verification, so the identity cost is card on that route and the email route has no published amount. The division is correct (50 / 0.048 = 1,042 GPU-hours) and it is not reachable. Not established: any credit expiry term. The docs state none; no page was found that states one. Also not established: whether credits cover storage or egress separately, since Nosana bills compute from the balance and does not publish a separate storage line. No third-party account of spending a Nosana credit was found. The one recorded is the better-evidenced.",
   "extras": {
     "facets": {
@@ -129,6 +185,19 @@
         "gpu_class": "RTX 3090 at USD 0.192 per GPU-hour, the only card with host capacity",
         "gpu_count": 1
       }
-    }
+    },
+    "payment_methods": {
+      "card_at_signup": "only on the credit-claim route",
+      "debit": "not published: https://learn.nosana.com/api/payments.html",
+      "prepaid": "not published: https://learn.nosana.com/api/payments.html",
+      "virtual": "not published: https://learn.nosana.com/api/payments.html",
+      "hold_amount": "not published",
+      "hold_detail": "payment methods are attached through a Stripe SetupIntent ('payments.addMethod(request)' posts to '/payments/setup-intent'), which Stripe documents as creating no charge: 'It’s similar to a payment, but no charge is created.' Credits are bought in advance and consumed by deployments, so a card is charged at the purchase rather than per job. No hold amount and no card-type rule is published.",
+      "identity": "email or a wallet; a payment method is verified on the credit-claim route",
+      "source_url": "https://learn.nosana.com/api/payments.html",
+      "read_on": "2026-11-02"
+    },
+    "credit_gpu_hours_ceiling": 1042,
+    "credit_gpu_hours_ceiling_note": "Rate-card ceiling, not capacity: it assumes the NVIDIA 3060 at USD 0.048 per hour can be rented, and the site's availability column lists that card at 0 / 15 hosts on 2026-11-02."
   }
 }

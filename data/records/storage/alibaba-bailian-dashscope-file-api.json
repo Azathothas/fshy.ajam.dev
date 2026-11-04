@@ -5,7 +5,7 @@
   "url": "https://help.aliyun.com/zh/model-studio/openai-file-interface",
   "category": "Chinese LLM platform /v1/files",
   "free_tier": {
-    "stated": "100 GB total per workspace; 10,000 files; NO expiry ('暂时没有有效期限制' — no validity-period limit for now). Per-file: 150 MB for purpose=file-extract, 500 MB for purpose=batch, 300 MB for fine-tune, 50 MB for the newer Agent Studio endpoint.",
+    "stated": "100 GB total per workspace and 10,000 files, with no stated expiry: '百炼存储空间支持的最大文件数为10000个，总大小不超过100 GB，暂时没有有效期限制。' Per file: 150 MB for purpose=file-extract and 500 MB for purpose=batch.",
     "unit": "objects",
     "metered_on": "unstated",
     "source_url": "https://help.aliyun.com/zh/model-studio/openai-file-interface",
@@ -48,7 +48,7 @@
   "limits_note": "per-object-cap 150 MB (file-extract) / 500 MB (batch). 100 GB workspace byte cap and 10,000-file count cap, whichever hits first. Files enter a safety-review status (`checking` -> `available`/`rejected`) before they can be referenced.",
   "identity_cost": {
     "kind": "any-phone",
-    "detail": "any-phone",
+    "detail": "an email address plus a mobile number from outside the Chinese mainland, for security verification, on the international site; real-name verification is required only to use Chinese-mainland resources or to apply for a credit line, and whether a card is asked for was not read.",
     "country": null
   },
   "reliability_note": "TWO CONTRADICTORY READ PATHS depending on which generation of the API you use. The NEW Agent Studio `GET /files/{file_id}/content` documents 'only files with downloadable=true can be downloaded; files uploaded directly or copied into a session sandbox are downloadable=false and return 400' — a read gate. The file-list example on the same doc set literally shows `\"downloadable\": false` on a directly uploaded CSV. But the LEGACY `GET /api/v1/files/{file_id}` returns a signed OSS `url` in the metadata, which is a real read path. The docs say the legacy interface is 'mainly for compatibility with historical scenarios', so its survival is not guaranteed — probe the legacy path before relying on it. Alibaba Cloud international registration is email + mobile (any-phone); Chinese-mainland identity verification (passport/driver's licence) is only required for products deployed in mainland China.",
@@ -89,10 +89,31 @@
       "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/files",
       "date": "2026-10-21",
       "proved": "PROBE: curl -D - -> 401, content-length 228; https://dashscope-intl.aliyuncs.com/api/v1/files/abc/content -> 401, 109 bytes; https://maas.qwencloudapi.com/compatible-mode/v1/files -> 401, 228 — all three live"
+    },
+    {
+      "url": "https://www.alibabacloud.com/help/en/account/aliyun-vs-alibaba-cloud",
+      "date": "2026-11-01",
+      "proved": "the international site registers with an email address and a mobile number from outside the Chinese mainland",
+      "capture": "sha256:93a46222b5dfbd4250e93409aab9ab71046f8e0b31170aa6f9ce604ef62add4f",
+      "quote": "Requires an email address for registration, plus a mobile number from outside the Chinese mainland (including Hong Kong (China), Macao (China), and Taiwan (China)) for security verification."
+    },
+    {
+      "url": "https://help.aliyun.com/zh/model-studio/openai-file-interface",
+      "date": "2026-11-01",
+      "proved": "the workspace holds 10,000 files totalling 100 GB with no stated validity period",
+      "capture": "sha256:d2595b6e67a40546a868709c806860f060eea661eb13e06d3c2dcb483ee54391",
+      "quote": "百炼存储空间支持的最大文件数为10000个，总大小不超过100 GB，暂时没有有效期限制。当文件数量或总大小达到任一上限时，新的文件上传请求将会失败。"
+    },
+    {
+      "url": "https://help.aliyun.com/zh/model-studio/openai-file-interface",
+      "date": "2026-11-01",
+      "proved": "the 150 MB per-file ceiling for file-extract is unchanged",
+      "capture": "sha256:d2595b6e67a40546a868709c806860f060eea661eb13e06d3c2dcb483ee54391",
+      "quote": "将purpose指定为`file-extract`，文件格式支持文本文件（ TXT、DOCX、PDF、XLSX、EPUB、MOBI、MD、CSV、JSON），图片文件（BMP、PNG、JPG/JPEG、GIF和PDF扫描件），单个文件最大为 150 MB。"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-21T00:00:00.000Z",
+  "verified_at": "2026-11-01T18:05:08.101Z",
   "notes": "100 GB total per workspace; 10,000 files; NO expiry ('暂时没有有效期限制' — no validity-period limit for now). Per-file: 150 MB for purpose=file-extract, 500 MB for purpose=batch, 300 MB for fine-tune, 50 MB for the newer Agent Studio endpoint.",
   "extras": {},
   "binding": "per-object-cap",

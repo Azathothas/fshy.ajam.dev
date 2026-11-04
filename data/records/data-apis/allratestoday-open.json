@@ -1,0 +1,213 @@
+{
+  "topic": "data-apis",
+  "slug": "allratestoday-open",
+  "provider": "AllRatesToday (open keyless endpoints)",
+  "url": "https://allratestoday.com/open-api/",
+  "category": "currency exchange rate API and central-bank rate datasets, keyless",
+  "tier": "Open keyless",
+  "free_tier": {
+    "stated": "No key and no account: the ECB reference table re-based to any of 30 currencies once a day, and the latest table of each central bank and tax authority; 120 requests a minute per IP address.",
+    "unit": "unlimited",
+    "metered_on": "none",
+    "source_url": "https://allratestoday.com/open-api/",
+    "read_on": "2026-11-02",
+    "notes": "The ECB endpoint is /api/open/latest/{BASE}; the central-bank tables are /api/open/central-bank/{code}, with csv, xml and xlsx output. A table for a past date, a date range and the calendars need a key. A public page that shows the rates carries a visible link to AllRatesToday; back-end use needs no link. The keyless central-bank tables are for development, evaluation, personal projects and internal tooling. A machine caller may also issue itself a trial key with one POST: 100 lifetime calls, valid 7 days, no email and no captcha, 3 keys per IP address a day."
+  },
+  "per_object_cap": {
+    "stated": "not stated",
+    "bytes": null,
+    "source_url": "https://allratestoday.com/open-api/",
+    "notes": ""
+  },
+  "retention": {
+    "stated": "not applicable: a query API and a dataset with no stored objects",
+    "days": null,
+    "notes": ""
+  },
+  "egress": {
+    "terms": "not metered in bytes; the per-IP request rate bounds what a caller can pull",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://allratestoday.com/open-api/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "GET https://allratestoday.com/api/open/latest/USD returns JSON with CORS enabled; the central-bank tables and the GitHub dataset also give csv",
+  "endpoint": "https://allratestoday.com/api/open/latest/USD",
+  "tooling": "curl or any HTTP client; a browser can call the ECB endpoint directly",
+  "chaining": "Daily ECB reference rates for invoices and reports with no sign-up. For a bulk history, the GitHub dataset holds one CSV file per source and year.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "120 requests a minute per IP address, then HTTP 429 with Retry-After",
+      "source": "https://allratestoday.com/open-api/"
+    },
+    {
+      "kind": "retention-clamped",
+      "value": "latest table only on the keyless endpoints; a past date or a range needs a key",
+      "source": "https://allratestoday.com/open-api/"
+    }
+  ],
+  "limits_note": "Currency coverage: 30 currencies in the ECB table. The site also lists a Hugging Face dataset and a Kaggle dataset.",
+  "binding": "request-rate",
+  "binding_note": "The 120 a minute per IP address bounds a burst, but the table changes once a day, so the daily refresh and the latest-only rule bind in practice.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No key and no account for the open endpoints and the GitHub dataset. The agent trial key needs one POST with no email and no captcha.",
+    "country": null
+  },
+  "reliability_note": "Over the per-IP rate the endpoint answers HTTP 429 with Retry-After. The ECB table changes once a day, and the page asks for at most one request an hour per server.",
+  "confidence": "documented",
+  "confidence_note": "Rate, coverage and licence are quoted from first-party pages. One keyless GET of the ECB endpoint answered HTTP 200 with the ECB table; the 429 cut-off was not measured.",
+  "evidence": [
+    {
+      "url": "https://allratestoday.com/open-api/",
+      "date": "2026-11-02",
+      "proved": "the open endpoint needs no key and no account",
+      "capture": "sha256:f1f47af8ee8b3d658ef711158e6675c4937b8e476c7c33f004a0bbce84f990b2",
+      "quote": "No API key, no account. Nothing to register, nothing to rotate."
+    },
+    {
+      "url": "https://allratestoday.com/open-api/",
+      "date": "2026-11-02",
+      "proved": "the open endpoint is limited to 120 requests a minute per IP address",
+      "capture": "sha256:f1f47af8ee8b3d658ef711158e6675c4937b8e476c7c33f004a0bbce84f990b2",
+      "quote": "Rate limited per IP (120 requests a minute; over that returns `429` with `Retry-After`)."
+    },
+    {
+      "url": "https://allratestoday.com/open-api/",
+      "date": "2026-11-02",
+      "proved": "the table has 30 currencies",
+      "capture": "sha256:f1f47af8ee8b3d658ef711158e6675c4937b8e476c7c33f004a0bbce84f990b2",
+      "quote": "Swap `USD` for any of the 30 currencies in the European Central Bank table."
+    },
+    {
+      "url": "https://allratestoday.com/open-api/",
+      "date": "2026-11-02",
+      "proved": "the table updates once a day and the ECB endpoint is free",
+      "capture": "sha256:f1f47af8ee8b3d658ef711158e6675c4937b8e476c7c33f004a0bbce84f990b2",
+      "quote": "Updated once a day after the 16:00 CET fixing."
+    },
+    {
+      "url": "https://allratestoday.com/open-api/",
+      "date": "2026-11-02",
+      "proved": "past dates and ranges need a key",
+      "capture": "sha256:f1f47af8ee8b3d658ef711158e6675c4937b8e476c7c33f004a0bbce84f990b2",
+      "quote": "Latest only. A table for a past date, a date range, cross-bank comparison and publication calendars are keyed"
+    },
+    {
+      "url": "https://allratestoday.com/open-api/",
+      "date": "2026-11-02",
+      "proved": null,
+      "capture": "sha256:f1f47af8ee8b3d658ef711158e6675c4937b8e476c7c33f004a0bbce84f990b2",
+      "quote": "Back-end use needs no link: invoicing, accounting and ERP syncs, reports, scheduled jobs"
+    },
+    {
+      "url": "https://allratestoday.com/open-api/",
+      "date": "2026-11-02",
+      "proved": "the keyless central-bank tables are for non-production use",
+      "capture": "sha256:f1f47af8ee8b3d658ef711158e6675c4937b8e476c7c33f004a0bbce84f990b2",
+      "quote": null
+    },
+    {
+      "url": "https://allratestoday.com/llms.txt",
+      "date": "2026-11-02",
+      "proved": "an agent can issue itself a trial key with no email and no captcha",
+      "capture": "sha256:a57613320ea00f7f39129a39de6450ddbbde808cecff4dc92b189d118067a324",
+      "quote": "returns a trial key instantly: 100 lifetime calls, valid 7 days, no email, no captcha."
+    },
+    {
+      "url": "https://allratestoday.com/llms.txt",
+      "date": "2026-11-02",
+      "proved": "trial keys are capped at 3 per IP address a day",
+      "capture": "sha256:a57613320ea00f7f39129a39de6450ddbbde808cecff4dc92b189d118067a324",
+      "quote": "Capped at 3 keys per IP per day."
+    },
+    {
+      "url": "https://github.com/AllRates-Today/central-bank-exchange-rates",
+      "date": "2026-11-02",
+      "proved": "the GitHub dataset needs no key and no sign-up",
+      "capture": "sha256:d09f1d12eebe02dd8e7658e0f9b59c1b5bbf11d3f38c27c91485c36bb361c25a",
+      "quote": "No API key, no sign-up."
+    },
+    {
+      "url": "https://github.com/AllRates-Today/central-bank-exchange-rates",
+      "date": "2026-11-02",
+      "proved": "the dataset holds one history CSV per source and year",
+      "capture": "sha256:d09f1d12eebe02dd8e7658e0f9b59c1b5bbf11d3f38c27c91485c36bb361c25a",
+      "quote": "| `data/<source>/history/<YYYY>.csv` | Long-form history, one row per date, pair and rate type."
+    },
+    {
+      "url": "https://github.com/AllRates-Today/central-bank-exchange-rates",
+      "date": "2026-11-02",
+      "proved": "the oldest series starts in 1914",
+      "capture": "sha256:d09f1d12eebe02dd8e7658e0f9b59c1b5bbf11d3f38c27c91485c36bb361c25a",
+      "quote": "the oldest series (SNB) starts in 1914"
+    },
+    {
+      "url": "https://github.com/AllRates-Today/central-bank-exchange-rates",
+      "date": "2026-11-02",
+      "proved": null,
+      "capture": "sha256:d09f1d12eebe02dd8e7658e0f9b59c1b5bbf11d3f38c27c91485c36bb361c25a",
+      "quote": null
+    },
+    {
+      "url": "https://github.com/AllRates-Today/central-bank-exchange-rates",
+      "date": "2026-11-02",
+      "proved": "the ECB history in the dataset reaches back to 1999",
+      "capture": "sha256:d09f1d12eebe02dd8e7658e0f9b59c1b5bbf11d3f38c27c91485c36bb361c25a",
+      "quote": "history/ CSV back to 1999"
+    },
+    {
+      "url": "https://allratestoday.com/llms.txt",
+      "date": "2026-11-02",
+      "proved": "the site lists a Hugging Face dataset",
+      "capture": "sha256:a57613320ea00f7f39129a39de6450ddbbde808cecff4dc92b189d118067a324",
+      "quote": "[Hugging Face](https://huggingface.co/datasets/AllRatesToday/central-bank-exchange-rates): central bank exchange rate dataset"
+    },
+    {
+      "url": "https://allratestoday.com/llms.txt",
+      "date": "2026-11-02",
+      "proved": "the site lists a Kaggle dataset",
+      "capture": "sha256:a57613320ea00f7f39129a39de6450ddbbde808cecff4dc92b189d118067a324",
+      "quote": "[Kaggle](https://www.kaggle.com/datasets/allratestoday/central-bank-exchange-rates): central bank exchange rate dataset"
+    },
+    {
+      "url": "https://allratestoday.com/open-api/",
+      "date": "2026-11-02",
+      "proved": "the page asks for at most one request an hour per server",
+      "capture": "sha256:f1f47af8ee8b3d658ef711158e6675c4937b8e476c7c33f004a0bbce84f990b2",
+      "quote": "one request an hour per server is plenty"
+    },
+    {
+      "url": "https://allratestoday.com/open-api/",
+      "date": "2026-11-02",
+      "proved": "the ECB endpoint has CORS enabled",
+      "capture": "sha256:f1f47af8ee8b3d658ef711158e6675c4937b8e476c7c33f004a0bbce84f990b2",
+      "quote": "CORS enabled"
+    },
+    {
+      "url": "probe:https://allratestoday.com/api/open/latest/USD",
+      "date": "2026-11-03",
+      "proved": "a keyless GET of the ECB endpoint answered HTTP 200",
+      "capture": "sha256:4d54a41a43a2cbe97886fd8b9500072ebf594069be6478384745aa590934e27e",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:https://allratestoday.com/api/open/latest/USD",
+      "date": "2026-11-03",
+      "proved": "the body of the keyless answer is the ECB reference table",
+      "capture": "sha256:86715145865f7a398b699755f52a9c0236bdb0cd049dff4f1f3e10dbf6100b52",
+      "quote": "\"source\":\"European Central Bank reference rates, served by AllRatesToday\""
+    }
+  ],
+  "verdict": "qualifies",
+  "verified_at": "2026-11-03T00:02:00.000Z",
+  "notes": "Free requests: no count, no key. Rate limit: 120 a minute per IP address. Bulk path: the GitHub dataset of per-source CSV history.",
+  "extras": {
+    "bulk_path": "GitHub dataset AllRates-Today/central-bank-exchange-rates: per-source latest.json and history/<YYYY>.csv, no key",
+    "free_requests": "no count; 120 a minute per IP address"
+  }
+}

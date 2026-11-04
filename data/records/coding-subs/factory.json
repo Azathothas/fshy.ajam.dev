@@ -1,0 +1,324 @@
+{
+  "topic": "coding-subs",
+  "slug": "factory",
+  "provider": "Factory",
+  "url": "https://factory.com/pricing",
+  "category": "coding subscription",
+  "free_tier": {
+    "stated": "no free plan: the individual plans are Pro at USD 20, Plus at USD 100 and Max at USD 200 a month; Droid Core (a free open-weight model pool) and BYOK (free up to an allowance) are features of those paid plans, and the trial terms are unverified: not published on the pages read",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://docs.factory.com/pricing/individuals.md",
+    "read_on": "2026-11-02",
+    "notes": "the docs mention free accounts and trial states (a free account cannot launch Environment sessions) but publish no free allowance or trial length"
+  },
+  "per_object_cap": {
+    "stated": "not applicable: a coding subscription meters usage, not objects"
+  },
+  "retention": {
+    "stated": "not applicable"
+  },
+  "egress": {
+    "terms": "not applicable",
+    "metered": false
+  },
+  "interface": [
+    "cli",
+    "rest"
+  ],
+  "interface_detail": "the Droid CLI is a terminal UI, and `droid exec` is its headless mode: one-shot, read-only by default, `--auto low|medium|high` allows edits and commands, `-o json|stream-json|stream-jsonrpc` gives structured output, `-s ID` continues a session and `FACTORY_API_KEY` authenticates it. A Factory Public API at api.factory.ai and Droid SDKs for TypeScript and Python are also documented",
+  "tooling": "the user installs the Droid CLI (`curl -fsSL https://app.factory.ai/cli | sh`, Homebrew cask droid, `irm https://app.factory.ai/cli/windows | iex` or `npm install -g droid`), or the Factory App desktop client; a Factory API key generated in account settings drives `droid exec` in CI. The vendor serves the models; BYOK custom models are set in ~/.factory/settings.json",
+  "chaining": "a paid, vendor-served agent whose first wall is the rolling Standard Usage allowance: after it Droid Core keeps working on open-weight models under its own limits, prepaid Extra Usage (USD 10 minimum, no expiry) extends it, and BYOK keys for any OpenAI- or Anthropic-compatible endpoint in inference/ run free up to an unstated allowance",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "three independent rolling windows of 5 hours, 7 days and 30 days on every individual plan, each starting when Droid is first used; a request needs headroom in all three; no request or token count is published for any window",
+      "source": "https://docs.factory.com/pricing/individuals.md"
+    },
+    {
+      "kind": "request-rate",
+      "value": "Plus (USD 100 a month) is stated as about 5x the usage of Pro (USD 20) and Max (USD 200) as about 10x; Teams gives each seat Pro rate limits",
+      "source": "https://factory.com/pricing"
+    },
+    {
+      "kind": "request-rate",
+      "value": "after Standard Usage runs out the Droid Core open-weight pool has its own separate rate limits; Standard Usage does not roll over month to month, while purchased Extra Usage does",
+      "source": "https://docs.factory.com/pricing/individuals.md"
+    }
+  ],
+  "limits_note": "the docs publish the window lengths and the plan multipliers (about 5x and about 10x Pro) but no request, token or credit count per window; the figure appears only in Settings > Usage or the /limits command, behind a sign-up. Missions share the same windows and need Extra Usage enabled",
+  "binding": "request-rate",
+  "binding_note": "the unquantified Pro rolling windows are the first wall; Droid Core and Extra Usage only move it",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "paid signup collects card or bank payment details inside the onboarding flow, and payments that need 3D Secure authentication are not supported; sign-in methods (email, Google, GitHub), any phone requirement and any trial terms are unverified: behind a sign-up, the sign-in app does not render without a script",
+    "country": null
+  },
+  "reliability_note": "when a window is exhausted the current request finishes and later requests return a Rate Limit error; Standard Usage does not roll over; the docs list five deprecated Droid Core models (DeepSeek V4 Flash 0731, DeepSeek V4 Pro, MiniMax M2.7, Kimi K2.5, GLM-5.1) that will be removed",
+  "confidence": "documented",
+  "confidence_note": "prices, windows, Droid Core, BYOK, headless mode and the payment step are quoted from first-party pages read on 2026-11-02; the per-window quota, the BYOK allowance, trial terms and sign-in methods are unverified because they sit behind a sign-up. The pricing page FAQ answers are collapsed and were not read",
+  "evidence": [
+    {
+      "url": "https://docs.factory.ai/pricing",
+      "date": "2026-11-02",
+      "capture": "sha256:9bf899577f63263f42a3100e2edefb0bed44730fbadd83eace15dda3e7c2958c",
+      "quote": "Pro · $20/mo",
+      "proved": "the cheapest individual plan is Pro at USD 20 a month"
+    },
+    {
+      "url": "https://docs.factory.ai/pricing",
+      "date": "2026-11-02",
+      "capture": "sha256:9bf899577f63263f42a3100e2edefb0bed44730fbadd83eace15dda3e7c2958c",
+      "quote": "Plus · $100/mo",
+      "proved": "Plus is USD 100 a month"
+    },
+    {
+      "url": "https://docs.factory.ai/pricing",
+      "date": "2026-11-02",
+      "capture": "sha256:9bf899577f63263f42a3100e2edefb0bed44730fbadd83eace15dda3e7c2958c",
+      "quote": "Max · $200/mo",
+      "proved": "Max is USD 200 a month"
+    },
+    {
+      "url": "https://factory.com/pricing",
+      "date": "2026-11-02",
+      "capture": "sha256:0c8f18e59e988ea415b676a479718aec1102be3ea6ea5474f346d698a489407a",
+      "quote": "## $60/mo",
+      "proved": "Teams is USD 60 a month per team"
+    },
+    {
+      "url": "https://factory.com/pricing",
+      "date": "2026-11-02",
+      "capture": "sha256:0c8f18e59e988ea415b676a479718aec1102be3ea6ea5474f346d698a489407a",
+      "quote": "per team, plus $40/mo per seat",
+      "proved": "Teams adds USD 40 a month per seat"
+    },
+    {
+      "url": "https://factory.com/pricing",
+      "date": "2026-11-02",
+      "capture": "sha256:0c8f18e59e988ea415b676a479718aec1102be3ea6ea5474f346d698a489407a",
+      "quote": "Up to 10 seats with centralized billing",
+      "proved": "Teams is capped at 10 seats with shared billing"
+    },
+    {
+      "url": "https://factory.com/pricing",
+      "date": "2026-11-02",
+      "capture": "sha256:0c8f18e59e988ea415b676a479718aec1102be3ea6ea5474f346d698a489407a",
+      "quote": "~5x the usage of Pro",
+      "proved": "Plus carries about 5x the usage of Pro"
+    },
+    {
+      "url": "https://factory.com/pricing",
+      "date": "2026-11-02",
+      "capture": "sha256:0c8f18e59e988ea415b676a479718aec1102be3ea6ea5474f346d698a489407a",
+      "quote": "~10x the usage of Pro",
+      "proved": "Max carries about 10x the usage of Pro"
+    },
+    {
+      "url": "https://docs.factory.com/pricing/organizations.md",
+      "date": "2026-11-02",
+      "capture": "sha256:1431ec6fee433698573a9791a274fa8d3453b8f6a5b0b4d20a10edb294d910e1",
+      "quote": "On Teams plans, each seat includes Pro Rate Limits. Billing is centralized and paid month-to-month.",
+      "proved": "a Teams seat has Pro rate limits and billing is month to month"
+    },
+    {
+      "url": "https://docs.factory.ai/pricing",
+      "date": "2026-11-02",
+      "capture": "sha256:9bf899577f63263f42a3100e2edefb0bed44730fbadd83eace15dda3e7c2958c",
+      "quote": "Rate Limits: three rolling windows, 5-hour, 7-day, and 30-day. Each runs independently.",
+      "proved": "individual usage is governed by three independent rolling windows of 5 hours, 7 days and 30 days"
+    },
+    {
+      "url": "https://docs.factory.com/pricing/individuals.md",
+      "date": "2026-11-02",
+      "capture": "sha256:370b476a0f8e1d8f9e876bae9a2d6602aff01660ebbe4a5655d770c390d1cd89",
+      "quote": "Each starts ticking when you first use Droid and resets after the window elapses.",
+      "proved": "each window starts at first use and resets when it elapses"
+    },
+    {
+      "url": "https://docs.factory.com/pricing/individuals.md",
+      "date": "2026-11-02",
+      "capture": "sha256:370b476a0f8e1d8f9e876bae9a2d6602aff01660ebbe4a5655d770c390d1cd89",
+      "quote": "You need headroom in all three to send a request.",
+      "proved": "a request needs headroom in the 5-hour, 7-day and 30-day windows together"
+    },
+    {
+      "url": "https://docs.factory.com/pricing/individuals.md",
+      "date": "2026-11-02",
+      "capture": "sha256:370b476a0f8e1d8f9e876bae9a2d6602aff01660ebbe4a5655d770c390d1cd89",
+      "quote": "The current request finishes, then subsequent requests receive a Rate Limit error in the CLI or Factory App.",
+      "proved": "an exhausted window ends in a Rate Limit error after the current request"
+    },
+    {
+      "url": "https://docs.factory.com/pricing/individuals.md",
+      "date": "2026-11-02",
+      "capture": "sha256:370b476a0f8e1d8f9e876bae9a2d6602aff01660ebbe4a5655d770c390d1cd89",
+      "quote": "No. Standard Usage does not roll over month to month. Extra Usage that you purchase does roll over.",
+      "proved": "Standard Usage does not roll over and purchased Extra Usage does"
+    },
+    {
+      "url": "https://docs.factory.ai/pricing",
+      "date": "2026-11-02",
+      "capture": "sha256:9bf899577f63263f42a3100e2edefb0bed44730fbadd83eace15dda3e7c2958c",
+      "quote": "Droid Core: free open-weight model pool with separate Rate Limits after Standard Usage runs out.",
+      "proved": "Droid Core is a free open-weight model pool with its own rate limits once Standard Usage is spent"
+    },
+    {
+      "url": "https://docs.factory.com/pricing/individuals.md",
+      "date": "2026-11-02",
+      "capture": "sha256:370b476a0f8e1d8f9e876bae9a2d6602aff01660ebbe4a5655d770c390d1cd89",
+      "quote": "No. It uses the same Standard Usage billing, restricted to the Core model pool so you can keep working after premium-model Rate Limits are exhausted.",
+      "proved": "the FAQ states Droid Core is billed as Standard Usage restricted to the Core pool, with no extra charge, so it is a fallback of the paid plan and not a free account"
+    },
+    {
+      "url": "https://docs.factory.com/models.md",
+      "date": "2026-11-02",
+      "capture": "sha256:4d5fcd534672c30566988c4489ac9be97c55e74b376e9e00c54bb686c3f39b7f",
+      "quote": "## Droid Core (Open Models)",
+      "proved": "the models page has a Droid Core section of open models"
+    },
+    {
+      "url": "https://docs.factory.com/models.md",
+      "date": "2026-11-02",
+      "capture": "sha256:4d5fcd534672c30566988c4489ac9be97c55e74b376e9e00c54bb686c3f39b7f",
+      "quote": "| GLM-5.3-Flash | `glm-5.3-flash` | 0.06× | `low`, `high` (default), `max` |",
+      "proved": "GLM-5.3-Flash is in the Droid Core pool at a 0.06x multiplier"
+    },
+    {
+      "url": "https://docs.factory.com/models.md",
+      "date": "2026-11-02",
+      "capture": "sha256:4d5fcd534672c30566988c4489ac9be97c55e74b376e9e00c54bb686c3f39b7f",
+      "quote": "| Kimi K3 | `kimi-k3` | 1.2× | `off`, `low`, `high` (default), `max` |",
+      "proved": "Kimi K3 is in the Droid Core pool at a 1.2x multiplier"
+    },
+    {
+      "url": "https://docs.factory.ai/pricing",
+      "date": "2026-11-02",
+      "capture": "sha256:9bf899577f63263f42a3100e2edefb0bed44730fbadd83eace15dda3e7c2958c",
+      "quote": "Extra Usage: prepaid credits, $10 minimum, no expiration.",
+      "proved": "Extra Usage is prepaid with a USD 10 minimum and no expiry"
+    },
+    {
+      "url": "https://docs.factory.ai/pricing",
+      "date": "2026-11-02",
+      "capture": "sha256:9bf899577f63263f42a3100e2edefb0bed44730fbadd83eace15dda3e7c2958c",
+      "quote": "Missions use the same rolling Rate Limits as regular sessions and require Extra Usage to be enabled.",
+      "proved": "Missions share the rolling windows and need Extra Usage enabled"
+    },
+    {
+      "url": "https://docs.factory.ai/pricing",
+      "date": "2026-11-02",
+      "capture": "sha256:9bf899577f63263f42a3100e2edefb0bed44730fbadd83eace15dda3e7c2958c",
+      "quote": "BYOK is free up to an allowance on all Individual plans. After that, usage is charged according to your specific plan.",
+      "proved": "BYOK is free up to an allowance, whose size the page does not state, and charged against the plan beyond it"
+    },
+    {
+      "url": "https://docs.factory.com/model-independence/byok.md",
+      "date": "2026-11-02",
+      "capture": "sha256:c694a58bc236db1bfa80a601a92cdb02604702a88dfaa18f2099867d009ae6ca",
+      "quote": "Your API keys remain local and are not uploaded to Factory servers.",
+      "proved": "BYOK keys stay in the local settings file"
+    },
+    {
+      "url": "https://docs.factory.com/droid-exec/overview.md",
+      "date": "2026-11-02",
+      "capture": "sha256:f1374c35f4a5a276a5bcbd55785c3ad46c774ec4ccaefaae6e1f4b85fb641c15",
+      "quote": "Droid Exec is Factory's headless execution mode designed for automation workflows.",
+      "proved": "the Droid CLI has a headless mode, `droid exec`"
+    },
+    {
+      "url": "https://docs.factory.com/droid-exec/overview.md",
+      "date": "2026-11-02",
+      "capture": "sha256:f1374c35f4a5a276a5bcbd55785c3ad46c774ec4ccaefaae6e1f4b85fb641c15",
+      "quote": "By default the run is read-only: Droid can read files and run read-only commands, but can't edit anything.",
+      "proved": "headless runs are read-only unless --auto is given"
+    },
+    {
+      "url": "https://docs.factory.com/droid-exec/overview.md",
+      "date": "2026-11-02",
+      "capture": "sha256:f1374c35f4a5a276a5bcbd55785c3ad46c774ec4ccaefaae6e1f4b85fb641c15",
+      "quote": "-o, --output-format <format>   text|json|stream-json|stream-jsonrpc|acp",
+      "proved": "headless output formats include json and stream-json"
+    },
+    {
+      "url": "https://docs.factory.com/droid-exec/overview.md",
+      "date": "2026-11-02",
+      "capture": "sha256:f1374c35f4a5a276a5bcbd55785c3ad46c774ec4ccaefaae6e1f4b85fb641c15",
+      "quote": "export FACTORY_API_KEY=fk-...",
+      "proved": "headless runs authenticate with a Factory API key in FACTORY_API_KEY"
+    },
+    {
+      "url": "https://docs.factory.com/welcome/index.md",
+      "date": "2026-11-02",
+      "capture": "sha256:dc31c2e3c66c4d47e8849585f620c089cf4f404b105695c9728d95cdc8ff08b1",
+      "quote": "npm: `npm install -g droid`",
+      "proved": "the Droid CLI installs from npm, a shell script, Homebrew or a Windows script"
+    },
+    {
+      "url": "https://docs.factory.com/llms.txt",
+      "date": "2026-11-02",
+      "capture": "sha256:bd05f83c595497ba7d76ebbd9e48eda288375af3438e2c48bb7e05120f322729",
+      "quote": "Machine-readable contract for the Factory Public API at api.factory.ai",
+      "proved": "a Factory Public API exists at api.factory.ai"
+    },
+    {
+      "url": "https://docs.factory.com/llms.txt",
+      "date": "2026-11-02",
+      "capture": "sha256:bd05f83c595497ba7d76ebbd9e48eda288375af3438e2c48bb7e05120f322729",
+      "quote": "Use the Factory Droid SDK for TypeScript to build custom agents, workflows, and product integrations.",
+      "proved": "a Droid SDK for TypeScript is documented"
+    },
+    {
+      "url": "https://docs.factory.com/droid-cli/quickstart.md",
+      "date": "2026-11-02",
+      "capture": "sha256:80da5ee021a172a098698a4addee5aecfef9da51c4cfe51dda2b8e96154f5e86",
+      "quote": "If prompted, sign in via your browser to connect to Factory's development agent.",
+      "proved": "the CLI signs in through a browser; the sign-in methods are not stated"
+    },
+    {
+      "url": "https://docs.factory.com/changelog/release-notes.md",
+      "date": "2026-11-02",
+      "capture": "sha256:0f094ad82e5191d830750a540d37c20fb0e9a6196dd57a052671ad533f035f4e",
+      "quote": "Paid signup now collects card or bank payment details directly in the onboarding flow (app)",
+      "proved": "paid sign-up collects card or bank payment details during onboarding"
+    },
+    {
+      "url": "https://docs.factory.com/changelog/release-notes.md",
+      "date": "2026-11-02",
+      "capture": "sha256:0f094ad82e5191d830750a540d37c20fb0e9a6196dd57a052671ad533f035f4e",
+      "quote": "Payment steps now state that payments requiring 3D Secure authentication are not supported (app)",
+      "proved": "the payment step does not support 3D Secure payments"
+    },
+    {
+      "url": "https://docs.factory.com/changelog/release-notes.md",
+      "date": "2026-11-02",
+      "capture": "sha256:0f094ad82e5191d830750a540d37c20fb0e9a6196dd57a052671ad533f035f4e",
+      "quote": "Free trial onboarding** - Fixed a free trial onboarding issue (Factory App)",
+      "proved": "a free-trial onboarding flow existed in the app in the May 1, 2026 release notes; no current page states its terms"
+    },
+    {
+      "url": "https://docs.factory.com/environments/prerequisites.md",
+      "date": "2026-11-02",
+      "capture": "sha256:36385fd1d0a627c0e7cef75ea65426cacc9b4fbdde61ffe4fdf1894777d44900",
+      "quote": "Free accounts cannot launch Environment sessions; trial, ended, or overdue subscription states can also block managed compute.",
+      "proved": "free and trial account states exist and cannot launch managed-compute Environments"
+    },
+    {
+      "url": "https://factory.com/pricing",
+      "date": "2026-11-02",
+      "capture": "sha256:0c8f18e59e988ea415b676a479718aec1102be3ea6ea5474f346d698a489407a",
+      "quote": "Droid Computers — access to Factory-managed cloud computers for remote Droids",
+      "proved": "the pricing page lists managed Droid Computers under Plus, while the docs list them under Pro"
+    },
+    {
+      "url": "https://docs.factory.ai/pricing",
+      "date": "2026-11-02",
+      "capture": "sha256:9bf899577f63263f42a3100e2edefb0bed44730fbadd83eace15dda3e7c2958c",
+      "quote": "Managed Droid Computers for remote runs",
+      "proved": "the individual-plans doc lists managed Droid Computers under Pro"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-11-02T15:23:27.683Z",
+  "notes": "The Droid coding agent (Factory App, Droid CLI, Droid SDK) sold on individual plans Pro USD 20, Plus USD 100 and Max USD 200 a month, and Teams at USD 60 a month plus USD 40 a seat for up to 10 seats. No free plan is on the pricing page; Droid Core and BYOK work only inside a paid plan, and the trial terms are unverified. The same offer is also filed in compute as compute/factory for its managed Droid Computers. The documentation moved from docs.factory.ai to docs.factory.com."
+}

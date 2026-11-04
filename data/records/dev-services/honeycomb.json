@@ -14,8 +14,10 @@
     "notes": "The allowance counts events and metrics data points, which no single unit of the vocabulary names. Each span of a trace counts as one event, so a trace of 150 spans is 150 events. Pro starts at USD 150 per month for up to 750M events."
   },
   "per_object_cap": {
-    "stated": "unverified: the event size limit is on the Events API page, which was not read",
-    "bytes": null
+    "stated": "An event may have 2,000 fields and must be less than 1 MB of uncompressed JSON, and a string field is at most 64KB; the single-event endpoint limits its request body to 1MB raw (potentially compressed)",
+    "bytes": null,
+    "source_url": "https://docs.honeycomb.io/api/events/create-an-event",
+    "notes": "A request sent through the OpenTelemetry Collector is limited to 15MB."
   },
   "retention": {
     "stated": "Events and logs: 60-day fixed retention. Time-series metrics datasets: 13-month fixed retention by default.",
@@ -32,7 +34,7 @@
   "interface": [
     "rest"
   ],
-  "interface_detail": "Events and management API under /1/ and /2/ at https://api.honeycomb.io (US) or https://api.eu1.honeycomb.io (EU), keyed by API keys, plus OpenTelemetry ingest. The Query Data API is listed among Enterprise features. api.honeycomb.io answered 401 to /1/auth without a key.",
+  "interface_detail": "Events and management API under /1/ and /2/ at https://api.honeycomb.io (US) or https://api.eu1.honeycomb.io (EU), keyed by API keys, plus OTLP ingest at the same hosts over gRPC, HTTP/protobuf and HTTP/JSON. A hosted MCP server at https://mcp.honeycomb.io/mcp (US) or https://mcp.eu1.honeycomb.io/mcp (EU) authenticates with OAuth or an API key and is available on every plan, including free. The Query Data API is listed among Enterprise features. api.honeycomb.io answered 401 to /1/auth without a key.",
   "endpoint": "https://api.honeycomb.io",
   "tooling": "OpenTelemetry SDKs and collectors, the Honeycomb MCP server, and any HTTP client with an API key",
   "chaining": "A trace and event store for free compute services instrumented with OpenTelemetry, 20M spans or events a month kept 60 days.",
@@ -222,9 +224,93 @@
       "proved": "the API host answers 401 without a key",
       "capture": "sha256:841c1fbe56c4bec67f95c501ed2675b829018d9d9f130a0da4bf42d096c33048",
       "quote": "\"status\": 401"
+    },
+    {
+      "url": "https://docs.honeycomb.io/api/events/create-an-event",
+      "date": "2026-11-01",
+      "proved": "an event has at most 2,000 fields and must be under 1 MB of uncompressed JSON",
+      "capture": "sha256:b23e3274be120256c38cd584d76436b3c8215cdd9567e251be4f3483e8c63af7",
+      "quote": "2,000 fields per event. The entire event must be less than 1 MB of uncompressed JSON."
+    },
+    {
+      "url": "https://docs.honeycomb.io/api/events/create-an-event",
+      "date": "2026-11-01",
+      "proved": "a string field is at most 64KB",
+      "capture": "sha256:b23e3274be120256c38cd584d76436b3c8215cdd9567e251be4f3483e8c63af7",
+      "quote": "String Fields: Each string field has a maximum length of 64KB."
+    },
+    {
+      "url": "https://docs.honeycomb.io/send-data/opentelemetry/collector",
+      "date": "2026-11-01",
+      "proved": "a request sent to Honeycomb through the OpenTelemetry Collector is limited to 15MB",
+      "capture": "sha256:9a4b677c85d9529c3290d878fcfcde339de56f659ac5cedffd0f59c14df40c58",
+      "quote": "The request size limit is 15MB."
+    },
+    {
+      "url": "https://docs.honeycomb.io/send-data/opentelemetry",
+      "date": "2026-11-01",
+      "proved": "Honeycomb accepts OTLP over gRPC, HTTP/protobuf and HTTP/JSON",
+      "capture": "sha256:72b7b30bf5d94b5baa5e6b00b3482ef56c124a94121df53a418127f528d18990",
+      "quote": "Honeycomb supports receiving telemetry data via OpenTelemetry's native protocol, OTLP, over gRPC, HTTP/protobuf, and HTTP/JSON."
+    },
+    {
+      "url": "https://docs.honeycomb.io/api/events/create-an-event",
+      "date": "2026-11-01",
+      "proved": "the single-event endpoint limits its request body to 1MB raw (potentially compressed)",
+      "capture": "sha256:b23e3274be120256c38cd584d76436b3c8215cdd9567e251be4f3483e8c63af7",
+      "quote": "The request body is limited to raw (potentially compressed) size of 1MB."
+    },
+    {
+      "url": "https://docs.honeycomb.io/api/events/create-events",
+      "date": "2026-11-01",
+      "proved": "one batch request carries one or more events, so the event count is not a request count",
+      "capture": "sha256:08fa3159127eb0b035933c8f545a4ade5f1e3dc182d26a3d33cbdeea3c31cf28",
+      "quote": "The array should contain one or more JSON objects representing Events."
+    },
+    {
+      "url": "https://docs.honeycomb.io/send-data/opentelemetry",
+      "date": "2026-11-01",
+      "proved": "the OTLP endpoint of the US region is api.honeycomb.io",
+      "capture": "sha256:72b7b30bf5d94b5baa5e6b00b3482ef56c124a94121df53a418127f528d18990",
+      "quote": "export OTEL_EXPORTER_OTLP_ENDPOINT=https://api.honeycomb.io:443 # US"
+    },
+    {
+      "url": "https://docs.honeycomb.io/send-data/opentelemetry",
+      "date": "2026-11-01",
+      "proved": "the OTLP endpoint of the EU region is api.eu1.honeycomb.io",
+      "capture": "sha256:72b7b30bf5d94b5baa5e6b00b3482ef56c124a94121df53a418127f528d18990",
+      "quote": "#export OTEL_EXPORTER_OTLP_ENDPOINT=https://api.eu1.honeycomb.io:443 # EU"
+    },
+    {
+      "url": "https://docs.honeycomb.io/integrations/mcp/configuration-guide",
+      "date": "2026-11-01",
+      "proved": "the US MCP server is at https://mcp.honeycomb.io/mcp and authenticates with OAuth",
+      "capture": "sha256:b9b0efe54925e3079c1fded18f7f1a5dc7e22b96e84a6c55cb466eb030df2eb6",
+      "quote": "Add the Honeycomb MCP server at https://mcp.honeycomb.io/mcp and authenticate with OAuth."
+    },
+    {
+      "url": "https://docs.honeycomb.io/integrations/mcp/configuration-guide",
+      "date": "2026-11-01",
+      "proved": "the EU MCP server is at https://mcp.eu1.honeycomb.io/mcp and authenticates with OAuth",
+      "capture": "sha256:b9b0efe54925e3079c1fded18f7f1a5dc7e22b96e84a6c55cb466eb030df2eb6",
+      "quote": "Add the Honeycomb MCP server at https://mcp.eu1.honeycomb.io/mcp and authenticate with OAuth."
+    },
+    {
+      "url": "https://docs.honeycomb.io/integrations/mcp/configuration-guide",
+      "date": "2026-11-01",
+      "proved": "the MCP server can also authenticate with an API key",
+      "capture": "sha256:b9b0efe54925e3079c1fded18f7f1a5dc7e22b96e84a6c55cb466eb030df2eb6",
+      "quote": "This guide covers the fastest way to connect, manual configuration for specific clients, and authentication with an API key."
+    },
+    {
+      "url": "https://www.honeycomb.io/blog/hosted-mcp-now-available",
+      "date": "2026-11-01",
+      "proved": "the hosted MCP server is available on every Honeycomb plan, including free, at no charge",
+      "capture": "sha256:b482c93515ae621fe9a097a6f3b0258438608685b2aacff8cee6ce2060d442f7",
+      "quote": "Hosted MCP is available on AWS AI Agents marketplace and for all Honeycomb plans (including our free plan!) at no charge."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T00:42:59.132Z",
+  "verified_at": "2026-11-02T00:37:34.245Z",
   "notes": "The free plan counts events, not bytes, and keeps them 60 days, the longest event retention of the free observability tiers at Better Stack (3 days), Axiom (30 days) and New Relic (at least 8 days)."
 }

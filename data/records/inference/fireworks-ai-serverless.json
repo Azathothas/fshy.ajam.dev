@@ -1,0 +1,135 @@
+{
+  "topic": "inference",
+  "slug": "fireworks-ai-serverless",
+  "provider": "Fireworks AI",
+  "url": "https://docs.fireworks.ai/guides/quotas_usage/account-quotas",
+  "category": "inference API, prepaid credits",
+  "tier": "Serverless Inference",
+  "free_tier": {
+    "stated": "no free token allowance is advertised: serverless inference is prepaid, with credits bought after a payment method is added. Without a payment method or credits the account is held to 10 requests per minute account-wide; a $1 starter credit is mentioned in the credits FAQ, but whether a new account still receives one is unverified: behind a sign-up.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://fireworks.ai/pricing",
+    "read_on": "2026-11-03",
+    "notes": "the pricing page of 2026-11-03 prints no signup credit; the credits FAQ still carries a '$1 starter credit' heading"
+  },
+  "per_object_cap": {
+    "stated": "not applicable"
+  },
+  "retention": {
+    "stated": "not applicable"
+  },
+  "egress": {
+    "terms": null,
+    "metered": false
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "OpenAI-compatible chat completions at https://api.fireworks.ai/inference/v1; an Anthropic-compatible endpoint at https://api.fireworks.ai/inference is also documented; documented, not…",
+  "endpoint": "https://api.fireworks.ai/inference/v1/chat/completions",
+  "tooling": "the Fireworks Python SDK, the OpenAI SDK or the Anthropic SDK pointed at the Fireworks base URL, or curl; the firectl CLI shows quotas ('firectl quota list')",
+  "chaining": "hosted lanes only: the same prepaid balance pays for serverless, on-demand deployments and training; the 6,000 RPM cap is one envelope shared by all of them",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "10 requests per minute account-wide while the account has no payment method or no credits; 6,000 requests per minute maximum with a payment method and active credits. The cap is fixed, shared by every model and every API, and requests above it are rejected (for example HTTP 429).",
+      "source": "https://docs.fireworks.ai/guides/quotas_usage/account-quotas"
+    },
+    {
+      "kind": "request-rate",
+      "value": "serverless token limits are per model and adaptive (total prompt, uncached prompt and generated tokens per minute); the published ceilings are the Tier 3 maximum, and tiers below Tier 3 have lower, unpublished ceilings",
+      "source": "https://docs.fireworks.ai/serverless/rate-limits"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "a monthly spend limit can be set; when usage reaches 100% of it all API requests pause until it is raised",
+      "source": "https://docs.fireworks.ai/guides/quotas_usage/account-quotas"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "the account-wide request cap binds first: 10 RPM without a payment method or credits, 6,000 RPM with both; tokens are paid from prepaid credits, not granted free.",
+  "identity_cost": {
+    "kind": "card",
+    "detail": "an email address or a Google, GitHub or LinkedIn sign-in creates the account, but the 10 RPM state ends only after a valid payment method and billing address are added and credits are bought; an account that finishes its $1 starter credit with no payment method is suspended. Whether the sign-up asks for a phone number is unverified: behind a sign-up. Debit and prepaid card acceptance are not stated.",
+    "country": null
+  },
+  "reliability_note": "an account that finishes its $1 starter credit with no payment method is suspended until one is added; with credits exhausted and Auto Reload off, usage pauses until credits are added.",
+  "confidence": "documented",
+  "confidence_note": "the 10 RPM and 6,000 RPM request limits, the prepaid-credits model and the payment-method requirement are quoted from vendor pages; the starter credit and the sign-up steps after the first are unverified: behind a sign-up.",
+  "evidence": [
+    {
+      "url": "https://docs.fireworks.ai/guides/quotas_usage/account-quotas",
+      "date": "2026-11-03",
+      "capture": "sha256:21bc2e111d6e20861d0424ffb8a7771c921b82917dd3e599600b8d82b6b95ddd",
+      "quote": "| No payment method or no credits | 10 RPM |",
+      "proved": "an account with no payment method or no credits is held to 10 requests per minute, account-wide"
+    },
+    {
+      "url": "https://docs.fireworks.ai/guides/quotas_usage/account-quotas",
+      "date": "2026-11-03",
+      "capture": "sha256:21bc2e111d6e20861d0424ffb8a7771c921b82917dd3e599600b8d82b6b95ddd",
+      "quote": "| Payment method and active credits | 6,000 RPM (maximum) |",
+      "proved": "an account with a payment method and active credits is held to a 6,000 requests per minute maximum"
+    },
+    {
+      "url": "https://docs.fireworks.ai/guides/quotas_usage/account-quotas",
+      "date": "2026-11-03",
+      "capture": "sha256:21bc2e111d6e20861d0424ffb8a7771c921b82917dd3e599600b8d82b6b95ddd",
+      "quote": "The 6,000 RPM cap applies account-wide—it is not a separate serverless-only limit—and it is a fixed ceiling, not adaptive.",
+      "proved": "the 6,000 RPM ceiling is one fixed account-wide cap, not a serverless-only or adaptive limit"
+    },
+    {
+      "url": "https://fireworks.ai/pricing",
+      "date": "2026-11-03",
+      "capture": "sha256:0c8107d7814eb4579bbfbc2db7220d830252700a7f600cc1a7f0866f23bb905a",
+      "quote": "Pay per token with pre-paid, usage-based billing. Simply add a payment method to buy credits, and usage is then deducted from your balance.",
+      "proved": "serverless inference is prepaid: a payment method is added first, credits are bought, and usage is deducted from the balance"
+    },
+    {
+      "url": "https://docs.fireworks.ai/faq-new/billing-pricing/how-does-billing-and-credit-usage-work",
+      "date": "2026-11-03",
+      "capture": "sha256:7e9145c0a2626e5a37dcc61cb0aea069a73a17d52f4ed6fba2f7b7505b9c3acb",
+      "quote": "Add a valid payment method and billing address, then purchase credits.",
+      "proved": "credits are bought after a valid payment method and billing address are added"
+    },
+    {
+      "url": "https://docs.fireworks.ai/faq-new/billing-pricing/what-happens-when-i-finish-my-1-dollar-credit",
+      "date": "2026-11-03",
+      "capture": "sha256:38f6247142c0de8258659a1eae1079a35b347a3fb562b85e4367a0a6811b3d07",
+      "quote": "Without payment method: Your account will be suspended until you add a payment method.",
+      "proved": "an account that finishes its $1 starter credit with no payment method is suspended until one is added"
+    },
+    {
+      "url": "https://app.fireworks.ai/signup",
+      "date": "2026-11-03",
+      "capture": "sha256:a24d1f5200d9ecaead20d3fce7e651b0effffc5d837547e87a836bc54b367d7a",
+      "quote": "Sign up with Google Sign up with GitHub Sign up with LinkedIn",
+      "proved": "the account-creation form offers an email address or a Google, GitHub or LinkedIn sign-in at its first step"
+    },
+    {
+      "url": "https://docs.fireworks.ai/getting-started/quickstart",
+      "date": "2026-11-03",
+      "capture": "sha256:88b9a6394b84df8b3ccf5f6535e5a024a8453e109f901bc9a6af4eccef6740a4",
+      "quote": "base_url=\"https://api.fireworks.ai/inference/v1\"",
+      "proved": "the serverless endpoint is an OpenAI-compatible base URL"
+    },
+    {
+      "url": "https://docs.fireworks.ai/serverless/rate-limits",
+      "date": "2026-11-03",
+      "capture": "sha256:0e8f28092fc14c3340ec77d035c7b071ee55dd308363fd25a111e48a97c69e39",
+      "quote": "The table shows the maximum ceilings, available at Tier 3 and above. Tiers below Tier 3 have lower ceilings.",
+      "proved": "the published per-model serverless token ceilings are the Tier 3 maximum; lower tiers have lower unpublished ceilings"
+    },
+    {
+      "url": "https://docs.fireworks.ai/guides/quotas_usage/account-quotas",
+      "date": "2026-11-03",
+      "capture": "sha256:21bc2e111d6e20861d0424ffb8a7771c921b82917dd3e599600b8d82b6b95ddd",
+      "quote": "When usage reaches 100% of the limit, all API requests pause automatically across serverless inference, deployments, and training.",
+      "proved": "a monthly spend limit pauses all API requests when reached"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-11-03T01:04:08.892Z",
+  "notes": "per-token prices (USD per 1M tokens) are published on the serverless pricing page; the 10 RPM lane is not a usable free tier, because no free credit is advertised and an account with no payment method that spends its starter credit is suspended."
+}

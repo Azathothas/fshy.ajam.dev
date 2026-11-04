@@ -14,8 +14,10 @@
     "notes": "A user counts as retained only after signing in again more than 24 hours after sign-up. Above 50,000 retained users on Hobby a one-month grace period applies before an upgrade is needed. Hobby also includes 1,000 API key creations and 100,000 verifications, 2,500 M2M token creations and 100,000 verifications a month, 100 monthly retained organizations per app with up to 20 members each, and 10,000 protection checks a month. SMS codes and multi-factor authentication are not on Hobby. A development instance is capped at 100 users and delivers at most 20 SMS messages and 100 emails a month."
   },
   "per_object_cap": {
-    "stated": "unverified: no size limit for user metadata is stated on the pages read",
-    "bytes": null
+    "stated": "user metadata (public, private and unsafe) is limited to 8KB maximum; custom claims copied into the session token should stay under 1.2KB",
+    "bytes": null,
+    "source_url": "https://clerk.com/docs/guides/users/extending",
+    "notes": "The session token is stored in a cookie that most browsers cap at 4KB; after Clerk's default claims the cookie supports up to 1.2KB of custom claims."
   },
   "retention": {
     "stated": "Application Logs are kept 1 day on Hobby (7 days on Pro, 30 days on Business)",
@@ -33,7 +35,7 @@
   "interface": [
     "rest"
   ],
-  "interface_detail": "Frontend API for sign-in and sign-up from the browser, rate limited per IP address; Backend API for administrative tasks, called with a secret key at https://api.clerk.com/v1 (a GET /v1/users without a key answered 401); webhooks for data sync.",
+  "interface_detail": "Frontend API for sign-in and sign-up from the browser, rate limited per IP address; Backend API for administrative tasks, called with a secret key at https://api.clerk.com/v1 (a GET /v1/users without a key answered 401); webhooks for data sync; an OAuth 2.0 authorization server and OpenID Connect identity provider on the instance's Frontend API URL (metadata at /.well-known/oauth-authorization-server, user information at /oauth/userinfo).",
   "endpoint": "https://api.clerk.com/v1",
   "tooling": "Clerk SDKs and prebuilt sign-in components, the clerk CLI (npx clerk@latest), or any HTTP client against the Backend API with a secret key.",
   "chaining": "Login and user store for a web app on free hosting; leaving the 100-user development instance needs a domain with DNS records, which pairs with a cheap or free name from domains-dns.",
@@ -67,6 +69,11 @@
       "kind": "retention-clamped",
       "value": "Application Logs kept 1 day",
       "source": "https://clerk.com/pricing"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "user metadata (public, private and unsafe) 8KB maximum",
+      "source": "https://clerk.com/docs/guides/users/extending"
     }
   ],
   "limits_note": "Dashboard seats are capped at 3 on Hobby; the vocabulary has no kind for a seat count.",
@@ -74,7 +81,7 @@
   "binding_note": "Without a domain the app stays on a development instance, capped at 100 users and 100 emails a month; with a domain, the 50,000 retained users per app is the ceiling.",
   "identity_cost": {
     "kind": "email",
-    "detail": "The sign-up form asks for an email address and a password, or a GitHub or Google sign-in, and states no credit card is required. A production instance also needs a domain with DNS records.",
+    "detail": "The sign-up form asks for an email address and a password, or a GitHub or Google sign-in, and states no credit card is required. The Clerk CLI needs no account to start: signed out, npx clerk@latest init provisions a claimable application, writes dev keys to .env.local, and signing in later claims it. A production instance also needs a domain with DNS records. Whether a later step of the dashboard sign-up asks for a phone number is unverified: behind a sign-up.",
     "country": null
   },
   "reliability_note": "A rate-limited request answers 429 with a Retry-After header; Hobby email support covers billing, registration and abuse queries only.",
@@ -318,9 +325,65 @@
       "proved": "api.clerk.com/v1/users answers 401 without a key",
       "capture": "sha256:028e621a0c9e176aa5b46896a70c20defc2c91c696a9e1e22fa59abe5bd0af58",
       "quote": "\"status\": 401"
+    },
+    {
+      "url": "https://clerk.com/docs/guides/users/extending",
+      "date": "2026-11-01",
+      "proved": "Clerk limits metadata to 8KB maximum and recommends keeping a metadata custom claim in the session token under 1.2KB",
+      "capture": "sha256:979ccdf39eacdf69c9fb104b326babf48233337acfc941dcf88a1b575a27424e",
+      "quote": "Metadata is limited to 8KB maximum. If you're storing metadata as a custom claim in the session token, it's highly recommended to keep it under 1.2KB."
+    },
+    {
+      "url": "https://clerk.com/docs/guides/users/extending",
+      "date": "2026-11-01",
+      "proved": "the session token cookie is capped at 4KB by most browsers and supports up to 1.2KB of custom claims",
+      "capture": "sha256:979ccdf39eacdf69c9fb104b326babf48233337acfc941dcf88a1b575a27424e",
+      "quote": "Clerk stores the session token in a cookie, and most browsers cap cookie size at [4KB](https://datatracker.ietf.org/doc/html/rfc2109#section-6.3). After accounting for the size of Clerk's default claims, the cookie can support up to 1.2KB of custom claims."
+    },
+    {
+      "url": "https://clerk.com/docs/nextjs/getting-started/quickstart",
+      "date": "2026-11-01",
+      "proved": "the Clerk CLI sets up an application without a Clerk account",
+      "capture": "sha256:c1381e0da66b5e4a6a8ebe15430ed68a80c7a0b6d1247f77d4bc99ffd8498b8b",
+      "quote": "`npx -y clerk@latest init` needs no Clerk account."
+    },
+    {
+      "url": "https://clerk.com/docs/nextjs/getting-started/quickstart",
+      "date": "2026-11-01",
+      "proved": "signed out, init provisions a claimable application with dev keys, and signing in later claims it",
+      "capture": "sha256:c1381e0da66b5e4a6a8ebe15430ed68a80c7a0b6d1247f77d4bc99ffd8498b8b",
+      "quote": "Signed out, it provisions a claimable application, writes dev keys to `.env.local`, and configures the SDK, provider, middleware, and auth routes. Signing in later claims it."
+    },
+    {
+      "url": "https://clerk.com/docs/guides/configure/auth-strategies/oauth/single-sign-on",
+      "date": "2026-11-01",
+      "proved": "Clerk acts as an OAuth 2.0 authorization server and, for OIDC clients, as their identity provider",
+      "capture": "sha256:98a58d3f07cd38c6e41ba7de1ec1644a01715908fc58646ebf2791690804b1ee",
+      "quote": "Clerk can act as an OAuth 2.0 authorization server for third-party clients. When those clients use OIDC for sign-in, Clerk also acts as their IdP, allowing users to authenticate with their Clerk credentials."
+    },
+    {
+      "url": "https://clerk.com/docs/guides/configure/auth-strategies/oauth/single-sign-on",
+      "date": "2026-11-01",
+      "proved": "an OAuth access token retrieves user information from the /oauth/userinfo endpoint of the Frontend API URL",
+      "capture": "sha256:98a58d3f07cd38c6e41ba7de1ec1644a01715908fc58646ebf2791690804b1ee",
+      "quote": "you can retrieve additional user information from Clerk's [`/oauth/userinfo`]"
+    },
+    {
+      "url": "https://clerk.com/docs/guides/configure/auth-strategies/oauth/how-clerk-implements-oauth",
+      "date": "2026-11-01",
+      "proved": "authorization server metadata is served at /.well-known/oauth-authorization-server on the Frontend API URL",
+      "capture": "sha256:5909e9d31f963523b919664b61b19e451f6cfc2a4b1e98629456e90fc1d5f99b",
+      "quote": "You can easily retrieve this metadata by loading your Clerk Frontend API URL with `/.well-known/oauth-authorization-server` appended to it."
+    },
+    {
+      "url": "https://dashboard.clerk.com/sign-up",
+      "date": "2026-11-01",
+      "proved": "the dashboard sign-up page asks for GitHub, Google, or an email address and a password, and states no credit card is required",
+      "capture": "sha256:ce618148a329d5a13315dae0c828938dd630270c84c8dc342ed96742474b7d1e",
+      "quote": "# Create your account\n\nNo credit card required.\n\nGitHubGoogle\n\nor\n\nEmail address\n\nPassword"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T06:23:28.112Z",
+  "verified_at": "2026-11-02T00:37:55.408Z",
   "notes": "A development instance passes its session token in the querystring, which Clerk states is not secure enough for production use. Pro is USD 25 a month (USD 20 billed annually) and charges USD 0.02 a month per retained user above 50,000 per app."
 }

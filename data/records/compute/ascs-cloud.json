@@ -48,12 +48,12 @@
     },
     {
       "kind": "write-gated",
-      "value": "a stock window the vendor sets: the served markup marks the free plan out of stock until 2026-10-29 with the order button disabled, and the page's script re-enables the button after that time; the matching server-side setting (FREE_MICRO_OUT_OF_STOCK_UNTIL) is not published",
+      "value": "a stock window the vendor sets: the served markup marks the free plan out of stock until 2026-10-29 and the page's script re-enables the order button after that time, but the vendor's public catalog (updated 2026-11-01T02:02:30.000Z) lists the plan i5-3470-micro-free with stockStatus out_of_stock, and the page's catalog script disables the button of a card whose plan the catalog marks out_of_stock; the server-side setting (FREE_MICRO_OUT_OF_STOCK_UNTIL) is not published, and whether an order is accepted is behind a sign-in",
       "source": "https://cloud.ascsonoway.com/vps-micro/"
     }
   ],
   "binding": "write-gated",
-  "binding_note": "the free plan is gated by a stock window the vendor sets and has moved (a markup comment reads 2026-10-21, the notice and the script read 2026-10-29); after 2026-10-29 the page's script offers 'Claim Free Server', and whether the server accepts a free order is behind a sign-in",
+  "binding_note": "the free plan is gated by a stock window the vendor sets and has moved (a markup comment reads 2026-10-21, the notice and the script read 2026-10-29); after 2026-10-29 the page's script offers 'Claim Free Server', but the vendor's public catalog (updated 2026-11-01T02:02:30.000Z) lists the plan as out_of_stock and the page's catalog script re-disables the button of such a plan; whether the server accepts a free order is behind a sign-in",
   "identity_cost": {
     "kind": "email",
     "detail": "The register form asks for a full name, an email, a password and a Terms checkbox, with Google and Discord sign-in offered as alternatives; an order placed while signed out is sent to that sign-in page. The page's checkout script handles a free order with no payment step ('The free instance is never charged.') and sends it to card payment only when the +$4/mo Shared IPv4 (NAT) add-on is chosen. No phone and no document appears on any page read.",
@@ -61,7 +61,7 @@
   },
   "reliability_note": "the vendor's home page states '99.8%+' uptime for its services, and the free plan card states 'No formal uptime agreement.'; the free plan has been out of stock for stretches the vendor…",
   "confidence": "documented",
-  "confidence_note": "the shape, the price of zero and the stock window are quoted from the vendor's plan page and its inline script read on 2026-10-30; the traffic allowance is not published, and whether the server accepts a free order is behind a sign-in, so nothing was measured",
+  "confidence_note": "the shape, the price of zero and the stock window are quoted from the vendor's plan page, its inline script and its public catalog response (stockStatus out_of_stock, updated 2026-11-01T02:02:30.000Z), read on 2026-11-03; the traffic allowance is not published, and whether the server accepts a free order is behind a sign-in, so nothing was measured",
   "evidence": [
     {
       "url": "https://cloud.ascsonoway.com/vps-micro/",
@@ -169,12 +169,75 @@
       "proved": "an account needs a name, an email and a password; no phone or card field",
       "capture": "sha256:63407320186d6cc5e21cf09c955a5731f8f00ee0072c1374e6b28a5f9965ef91",
       "quote": "if (!name || !email || !password) { alert('Please fill in all fields.'); return; }"
+    },
+    {
+      "url": "https://cloud.ascsonoway.com/api/catalog",
+      "date": "2026-11-03",
+      "proved": "the vendor's public catalog lists the free i5 3470 micro plan as out_of_stock after the 2026-10-29 restock time",
+      "capture": "sha256:82a94e79f256782be20f22a177ca336a7bf164dae3e314bfdb673944b6a7d94f",
+      "quote": "\"id\":\"i5-3470-micro-free\",\"name\":\"i5 3470 Micro Free\",\"description\":\"Free - 1 vCPU, 256MB RAM, 16GB SSD\",\"monthlyPrice\":null,\"yearlyPrice\":null,\"currency\":\"CAD\",\"appliesTo\":[],\"addonIds\":[],\"excludePreinstallers\":[],\"appliesToNodes\":[],\"status\":\"active\",\"stockStatus\":\"out_of_stock\""
+    },
+    {
+      "url": "https://cloud.ascsonoway.com/vps-micro/",
+      "date": "2026-11-03",
+      "proved": "the served markup still shows the out-of-stock notice on 2026-11-03",
+      "capture": "sha256:c61f85728db8ec30eb4ece1c53de2a0ce3a347511f861f439e8a94b0d4529df8",
+      "quote": "Currently out of stock until Thursday, October 29."
+    },
+    {
+      "url": "https://cloud.ascsonoway.com/js/catalog-pricing.js?v=5",
+      "date": "2026-11-03",
+      "proved": "the page's catalog script treats a plan whose stockStatus is out_of_stock as blocked",
+      "capture": "sha256:8701af842b08ff1df8f9cd362e23e0671986e64433e4c6f28fd64cac2ee0edb0",
+      "quote": "const blocked = !!serviceOutOfStock || plan.stockStatus === 'out_of_stock';"
+    },
+    {
+      "url": "https://cloud.ascsonoway.com/js/catalog-pricing.js?v=5",
+      "date": "2026-11-03",
+      "proved": "a blocked card's button is disabled and relabelled 'Out of stock'",
+      "capture": "sha256:8701af842b08ff1df8f9cd362e23e0671986e64433e4c6f28fd64cac2ee0edb0",
+      "quote": "button.textContent = serviceOutOfStock ? 'Unavailable' : 'Out of stock';"
+    },
+    {
+      "url": "https://cloud.ascsonoway.com/vps-micro/",
+      "date": "2026-11-03",
+      "proved": "the free card's data-plan equals the catalog plan name, so the catalog script manages it",
+      "capture": "sha256:c61f85728db8ec30eb4ece1c53de2a0ce3a347511f861f439e8a94b0d4529df8",
+      "quote": "<div class=\"pricing-card featured free-nat-card\" data-plan=\"i5 3470 Micro Free\" data-price=\"free\" data-stripe=\"\">"
+    },
+    {
+      "url": "https://cloud.ascsonoway.com/vps-micro/",
+      "date": "2026-11-03",
+      "proved": "the page loads the catalog script for the micro-instances service",
+      "capture": "sha256:c61f85728db8ec30eb4ece1c53de2a0ce3a347511f861f439e8a94b0d4529df8",
+      "quote": "<script src=\"/js/catalog-pricing.js?v=5\" data-catalog-service=\"micro-instances\" defer></script>"
+    },
+    {
+      "url": "https://cloud.ascsonoway.com/vps-micro/",
+      "date": "2026-11-03",
+      "proved": "the page still carries the 2026-10-29 restock constant and still names the unpublished server-side setting",
+      "capture": "sha256:c61f85728db8ec30eb4ece1c53de2a0ce3a347511f861f439e8a94b0d4529df8",
+      "quote": "var restock = 1793270400000; // 2026-10-29; keep in sync with FREE_MICRO_OUT_OF_STOCK_UNTIL in server.js"
+    },
+    {
+      "url": "https://cloud.ascsonoway.com/api/catalog",
+      "date": "2026-11-03",
+      "proved": "the catalog response was last updated 2026-11-01, after the restock time",
+      "capture": "sha256:82a94e79f256782be20f22a177ca336a7bf164dae3e314bfdb673944b6a7d94f",
+      "quote": "\"version\":1,\"updatedAt\":\"2026-11-01T02:02:30.000Z\""
+    },
+    {
+      "url": "https://cloud.ascsonoway.com/vps-micro/",
+      "date": "2026-11-03",
+      "proved": "the free plan card lists 512MB RAM",
+      "capture": "sha256:c61f85728db8ec30eb4ece1c53de2a0ce3a347511f861f439e8a94b0d4529df8",
+      "quote": "<li><span class=\"check\">&#10003;</span> 512MB RAM</li>"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-30T17:54:18.844Z",
+  "verified_at": "2026-11-03T01:36:05.658Z",
   "price_per_tb_month": null,
-  "notes": "The vendor's blog announcement and its live plan card disagree on the free shape: the blog says 2 vCPU and 2 GB, the card says 1 vCPU and 512 MB. The card is the page served at the point of sale, so the record uses the card and the disagreement is written down rather than resolved. The free plan is gated by a stock window the vendor sets and has moved (a markup comment reads 2026-10-21, the notice and script read 2026-10-29); the page's script re-opens the order button after 2026-10-29. The checkout script handles a free order with no payment step unless the paid shared IPv4 add-on is chosen. Not established: the traffic allowance, and whether the server accepts a free order after the stock window.",
+  "notes": "The vendor's blog announcement and its live plan card disagree on the free shape: the blog says 2 vCPU and 2 GB, the card says 1 vCPU and 512 MB. The card is the page served at the point of sale, so the record uses the card and the disagreement is written down rather than resolved. The free plan is gated by a stock window the vendor sets and has moved (a markup comment reads 2026-10-21, the notice and script read 2026-10-29); the page's script re-opens the order button after 2026-10-29. The checkout script handles a free order with no payment step unless the paid shared IPv4 add-on is chosen. The vendor's public catalog (updated 2026-11-01T02:02:30.000Z) lists the plan as out_of_stock after that time, and the page's catalog script disables the button of such a plan. Not established: the traffic allowance, and whether the server's order endpoint accepts a free order, which is behind a sign-in.",
   "extras": {
     "shape": {
       "vcpu": 1,
@@ -204,12 +267,12 @@
       "note": "30-day free period, renewed by hand to confirm active use"
     },
     "stock_state": {
-      "as_read": "2026-10-30",
-      "state": "served markup out of stock; the page's script re-opens the order button after the restock time",
+      "as_read": "2026-11-03",
+      "state": "served markup out of stock; the page's script re-opens the order button after 2026-10-29, but the vendor's public catalog (updated 2026-11-01T02:02:30.000Z) lists the plan as out_of_stock and the page's catalog script disables the button of such a plan",
       "restock_stated": "2026-10-29",
       "restock_epoch_ms": 1793270400000,
       "earlier_window_end": "2026-10-21"
     },
-    "shape_conflict": "the blog announcement of 2026-08-18 states 2 vCPU and 2 GB; the live plan card states 1 vCPU and 512 MB"
+    "shape_conflict": "the blog announcement of 2026-08-18 states 2 vCPU and 2 GB; the live plan card states 1 vCPU and 512 MB; the vendor's public catalog describes the i5 3470 free plan as 1 vCPU, 256MB RAM, 16GB SSD"
   }
 }

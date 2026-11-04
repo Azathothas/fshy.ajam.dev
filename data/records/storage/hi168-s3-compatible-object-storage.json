@@ -5,7 +5,7 @@
   "url": "https://www.hi168.com",
   "category": "cloud-drive",
   "free_tier": {
-    "stated": "500 GB on registration, 1 TB after real-name verification (实名). Forum dealers advertised it as '免费领取1T超大对象存储' in Jan 2026; by 2026-01-19 nodeloc reported '新用户注册只有5G了，仅做留档' — i.e. the grant was already being clawed back.",
+    "stated": "500 GB on registration without real-name verification and 1 TB with it (实名), as posted in January 2026; the same thread notes that new signups get only 5 GB.",
     "unit": "TB",
     "metered_on": "unstated",
     "source_url": "https://www.appinn.com/1tb-free-s3-hi168/",
@@ -32,7 +32,7 @@
     "cli"
   ],
   "interface_detail": "s3",
-  "tooling": "Real S3 endpoint with AccessKey/SecretKey issued from the '存储管理' app inside their cloud desktop; works with rclone s3, s3cmd, aws-cli, OpenClaw. No named first-party client.",
+  "tooling": "S3 endpoint https://s3.hi168.com with an AccessKey and SecretKey issued from the 存储管理 app inside their cloud desktop; path-style addressing must be forced (OpenList lists no files otherwise); works with rclone s3, s3cmd, aws-cli, OpenClaw. No named first-party client.",
   "chaining": "1 TB per account after real-name. Bucket count per account unverified (the article shows bucket creation, count not stated). The only way the total grows is another account, and each one costs a 实名 identity — so this does NOT multiply for a user.",
   "limits": [
     {
@@ -44,12 +44,12 @@
   "limits_note": "per-object-cap unknown; throughput is the binding limit (2–4 MB/s up). Public bucket support unclear.",
   "identity_cost": {
     "kind": "national-id",
-    "detail": "national-id",
+    "detail": "registration asks for a mobile phone number (reported on a blog dated 2026-01-27); 1 TB needs real-name verification (实名) and 500 GB does not",
     "country": null
   },
-  "reliability_note": "Quota already cut once (500 GB→1 TB deal shrank to 5 GB for new users within ~2 months of the Jan 2026 hype cycle). Domain intermittently timed out from outside CN.",
+  "reliability_note": "On 2026-11-03 the home page shows a maintenance notice that suspends Hi168 services. A direct probe of https://www.hi168.com timed out while a brokered read returned that notice, and the S3 endpoint s3.hi168.com failed certificate verification (tls_untrusted).",
   "confidence": "reported",
-  "confidence_note": null,
+  "confidence_note": "the 2026-11-03 evidence rows read https://www.nodeloc.com/t/topic/75399, the blog.xiaohack.org tutorial tag page and https://www.appinn.com/1tb-free-s3-hi168/ (third-party posts), the vendor home page https://www.hi168.com (a maintenance notice that suspends the service) and probes of s3.hi168.com and www.hi168.com; no vendor page states the quota, so the quota rests on third-party reports",
   "evidence": [
     {
       "url": "https://www.appinn.com/1tb-free-s3-hi168/",
@@ -65,10 +65,73 @@
       "url": "https://linux.do/t/topic/1521675",
       "date": "2026-10-21",
       "proved": "a linux.do user recalls '有一个h168?还是啥的 国内的…免费 1T s3存储'"
+    },
+    {
+      "url": "https://www.nodeloc.com/t/topic/75399",
+      "date": "2026-11-03",
+      "proved": "the thread states 1 TB after real-name verification and 500 GB without it",
+      "capture": "sha256:2f3e07623580f23b6e3097f898b8b9f9008ec4488402cf3dcc012566c9542276",
+      "quote": "实名以后可以有1T的空间，不实名就是500G"
+    },
+    {
+      "url": "https://www.nodeloc.com/t/topic/75399",
+      "date": "2026-11-03",
+      "proved": "the thread notes that new signups get only 5 GB",
+      "capture": "sha256:2f3e07623580f23b6e3097f898b8b9f9008ec4488402cf3dcc012566c9542276",
+      "quote": "注：目前新用户注册只有5G了，仅做留档"
+    },
+    {
+      "url": "https://www.hi168.com",
+      "date": "2026-11-03",
+      "proved": "the home page announces a system maintenance that suspends Hi168 services",
+      "capture": "sha256:b04ad637551fcd46c5252349b91e60a9ec43bbee1bf0e0763240a28cae2e491e",
+      "quote": "维护期间暂停Hi168相关服务"
+    },
+    {
+      "url": "probe:s3.hi168.com",
+      "date": "2026-11-03",
+      "proved": "a probe of the S3 endpoint ended in tls_untrusted",
+      "capture": "sha256:bd6a18bcdbd2602ee814392069fd178ca60d039d0c96f180e861717ed4b8e288",
+      "quote": "\"error\": \"tls_untrusted\""
+    },
+    {
+      "url": "probe:www.hi168.com",
+      "date": "2026-11-03",
+      "proved": "a direct probe of the home page timed out",
+      "capture": "sha256:6c85d7178ddc3043f251d96446267c7f3d7745d064606c1aa900c5edf572553a",
+      "quote": "\"error\": \"timeout\""
+    },
+    {
+      "url": "https://www.nodeloc.com/t/topic/75399",
+      "date": "2026-11-03",
+      "proved": "path-style addressing must be forced for the S3 endpoint",
+      "capture": "sha256:2f3e07623580f23b6e3097f898b8b9f9008ec4488402cf3dcc012566c9542276",
+      "quote": "openlist挂载时要打开强制路径样式，否则会无法列出文件"
+    },
+    {
+      "url": "https://blog.xiaohack.org/tag/%E6%95%99%E7%A8%8B/",
+      "date": "2026-11-03",
+      "proved": "registration needs a mobile phone number",
+      "capture": "sha256:fc56b41d2cad91312305fed3a5e037382efba734dab7726518b41ecab1044f86",
+      "quote": "第一步：填写信息注册（需要手机号）"
+    },
+    {
+      "url": "https://www.appinn.com/1tb-free-s3-hi168/",
+      "date": "2026-11-03",
+      "proved": "tested 2 to 4 MB/s upload and about 1 MB/s download in daytime",
+      "capture": "sha256:92b6dbb9c6299d0c022d0f5d918f6041bb80295756a9f29761a13867c98a311a",
+      "quote": "上传在2～4MB/s 左右，下载 1MB/s 左右"
+    },
+    {
+      "url": "https://www.nodeloc.com/t/topic/75399",
+      "date": "2026-11-03",
+      "proved": "the 2026-01-19 thread still states the 5 GB figure for new signups",
+      "capture": "sha256:2f3e07623580f23b6e3097f898b8b9f9008ec4488402cf3dcc012566c9542276",
+      "quote": "注：目前新用户注册只有5G了，仅做留档"
     }
   ],
   "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
+  "verified_at": "2026-11-03T15:04:18.959Z",
   "notes": "500 GB on registration, 1 TB after real-name verification (实名). Forum dealers advertised it as '免费领取1T超大对象存储' in Jan 2026; by 2026-01-19 nodeloc reported '新用户注册只有5G了，仅做留档' — i.e. the grant was already being clawed back.",
   "extras": {
     "dead_end": {

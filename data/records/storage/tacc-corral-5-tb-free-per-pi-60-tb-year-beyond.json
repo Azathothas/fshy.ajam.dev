@@ -10,15 +10,15 @@
     "metered_on": "stored-bytes",
     "source_url": "https://docs.tacc.utexas.edu/hpc/corral/",
     "read_on": "2026-10-21",
-    "notes": null
+    "notes": "Priced beyond 5 TB at $60/TB/year: a 10 TiB allocation costs $360 per year and a 20 TiB allocation $1020 per year after the free 5 TB, for a PI at a US based institution, if allocations are whole TB."
   },
   "per_object_cap": {
-    "stated": "not stated",
+    "stated": "No limitation on the size of files; by default 1 million files per 5TB allocated (200,000 files per allocated terabyte).",
     "source_url": "https://docs.tacc.utexas.edu/hpc/corral/",
     "notes": "not stated"
   },
   "retention": {
-    "stated": "not stated",
+    "stated": "Files are never purged by automated processes; each allocation lasts one year and must be renewed. After expiry data is typically retained for 6 months, but may be deleted at any time at the discretion of the system administrators unless an allocation request is pending.",
     "source_url": "https://docs.tacc.utexas.edu/hpc/corral/",
     "notes": "not stated"
   },
@@ -29,21 +29,33 @@
   "interface": [
     "sftp",
     "scp",
-    "rsync"
+    "rsync",
+    "s3-compatible"
   ],
   "interface_detail": "sftp",
-  "tooling": "POSIX with rsync/scp; TACC allocation portal.",
+  "tooling": "scp and SFTP (Cyberduck documented) to data.tacc.utexas.edu; an S3 version 4 compatible endpoint is available only by request for allocations of at least 25TB, not for protected data; TACC allocation portal. rsync is not named on the page.",
   "chaining": "5 TB free × UT System PIs, then linear $60/TB/yr. The file-count rule is the real limiter: 'There is also a limit of 200,000 files per allocated terabyte' — at 5 TB that is 1 million files.",
-  "limits": [],
-  "limits_note": "per-object-cap: n/a. 200,000 files per allocated TB is a hard per-file-count cap that punishes the many-small-objects pattern. Retention: persistent, backed to tape. Gate: US-based institution for PI status ('Users from non-US institutions are not eligible for PI status'), and the free 5 TB is UT-System-specific.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "first 5TB for each PI on one project is free for UT System institutions; larger allocations cost $60/TB/year",
+      "source": "https://docs.tacc.utexas.edu/hpc/corral/"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "limit of 200,000 files per allocated terabyte (1 million files per 5TB)",
+      "source": "https://docs.tacc.utexas.edu/hpc/corral/"
+    }
+  ],
+  "limits_note": "5TB free for each PI on one project (UT System institutions), $60/TB/year beyond; a hard cap of 200,000 files per allocated terabyte. Allocations last one year. S3 access needs an allocation of at least 25TB.",
   "identity_cost": {
     "kind": "institution",
-    "detail": null,
+    "detail": "PI status needs a faculty, staff or postdoctoral position at a US based institution; users from non-US institutions are not eligible for PI status but may be invited to a project by a US based PI",
     "country": null
   },
-  "reliability_note": "Free 5 TB applies only to UT System institutions; everyone else pays $60/TB/yr, so this is a 5 TB niche tier, not a free archive.",
-  "confidence": "reported",
-  "confidence_note": null,
+  "reliability_note": "The free 5 TB applies to UT System institutions only, and PI status needs a US based institution; storage beyond 5 TB costs $60/TB/year. Each allocation lasts one year and must be renewed, so this is a 5 TB niche tier, not a free archive.",
+  "confidence": "documented",
+  "confidence_note": "re-read on 2026-11-03: the vendor pages https://docs.tacc.utexas.edu/hpc/corral/ (free 5TB, $60 per TB per year beyond, file count limit, one-year allocations, S3 by request, scp transfer) and https://tacc.utexas.edu/use-tacc/allocations/ (PI eligibility at US based institutions)",
   "evidence": [
     {
       "url": "https://docs.tacc.utexas.edu/hpc/corral/",
@@ -54,10 +66,122 @@
       "url": "https://tacc.utexas.edu/use-tacc/allocations/",
       "date": "2026-10-21",
       "proved": "'Users from non-US institutions are not eligible for PI status'"
+    },
+    {
+      "url": "https://docs.tacc.utexas.edu/hpc/corral/",
+      "date": "2026-11-03",
+      "proved": "storage beyond 5TB costs $60/TB/year",
+      "capture": "sha256:41a6b0852e64c54f1e0ee8e357e47228a5b8ee649f83db80c0c83a595b75cf48",
+      "quote": "For storage needs larger than 5TB, and for multiple project allocations, access to Corral is available at a cost of $60/TB/year."
+    },
+    {
+      "url": "https://docs.tacc.utexas.edu/hpc/corral/",
+      "date": "2026-11-03",
+      "proved": "file size is not limited on Corral",
+      "capture": "sha256:41a6b0852e64c54f1e0ee8e357e47228a5b8ee649f83db80c0c83a595b75cf48",
+      "quote": "There are no limitations on the size of files stored on Corral"
+    },
+    {
+      "url": "https://docs.tacc.utexas.edu/hpc/corral/",
+      "date": "2026-11-03",
+      "proved": "allocations last one year and files are never purged automatically",
+      "capture": "sha256:41a6b0852e64c54f1e0ee8e357e47228a5b8ee649f83db80c0c83a595b75cf48",
+      "quote": "Files on Corral are never \"purged\" using automated processes, however each allocation lasts for only one year and must be renewed at the end of that year."
+    },
+    {
+      "url": "https://docs.tacc.utexas.edu/hpc/corral/",
+      "date": "2026-11-03",
+      "proved": "data is typically retained 6 months after an allocation expires",
+      "capture": "sha256:41a6b0852e64c54f1e0ee8e357e47228a5b8ee649f83db80c0c83a595b75cf48",
+      "quote": "Once an allocation has expired, data will typically be retained for 6 months after the expiration of the allocation, however data may be deleted at any time at the discretion of the system administrators unless there is an allocation request pending."
+    },
+    {
+      "url": "https://docs.tacc.utexas.edu/hpc/corral/",
+      "date": "2026-11-03",
+      "proved": "an S3 version 4 compatible interface exists by request",
+      "capture": "sha256:41a6b0852e64c54f1e0ee8e357e47228a5b8ee649f83db80c0c83a595b75cf48",
+      "quote": "Corral can provide a cloud storage interface compatible with the S3 version 4 API, available only by request."
+    },
+    {
+      "url": "https://docs.tacc.utexas.edu/hpc/corral/",
+      "date": "2026-11-03",
+      "proved": "a dedicated S3 service needs an allocation of at least 25TB",
+      "capture": "sha256:41a6b0852e64c54f1e0ee8e357e47228a5b8ee649f83db80c0c83a595b75cf48",
+      "quote": "Due to resource requirements, you must have an allocation size of at least 25TB to request a dedicated S3 service."
+    },
+    {
+      "url": "https://docs.tacc.utexas.edu/hpc/corral/",
+      "date": "2026-11-03",
+      "proved": "data transfer uses the scp utility to a login node",
+      "capture": "sha256:41a6b0852e64c54f1e0ee8e357e47228a5b8ee649f83db80c0c83a595b75cf48",
+      "quote": "Data transfer from any Unix/Linux system can be accomplished using the `scp` utility to copy data to and from the login node."
+    },
+    {
+      "url": "https://docs.tacc.utexas.edu/hpc/corral/",
+      "date": "2026-11-03",
+      "proved": "the first 5TB for each PI is free for UT System institutions",
+      "capture": "sha256:41a6b0852e64c54f1e0ee8e357e47228a5b8ee649f83db80c0c83a595b75cf48",
+      "quote": "The first 5TB of storage for each PI, on one project, is available to researchers at all UT System institutions at no cost."
+    },
+    {
+      "url": "https://docs.tacc.utexas.edu/hpc/corral/",
+      "date": "2026-11-03",
+      "proved": "the file count is limited to 200,000 files per allocated terabyte",
+      "capture": "sha256:41a6b0852e64c54f1e0ee8e357e47228a5b8ee649f83db80c0c83a595b75cf48",
+      "quote": "There is also a limit of 200,000 files per allocated terabyte imposed on all Corral allocations"
+    },
+    {
+      "url": "https://docs.tacc.utexas.edu/hpc/corral/",
+      "date": "2026-11-03",
+      "proved": "the free allocation is 5TB for each PI",
+      "capture": "sha256:41a6b0852e64c54f1e0ee8e357e47228a5b8ee649f83db80c0c83a595b75cf48",
+      "quote": "The first 5TB of storage for each PI, on one project, is available to researchers at all UT System institutions at no cost."
+    },
+    {
+      "url": "https://docs.tacc.utexas.edu/hpc/corral/",
+      "date": "2026-11-03",
+      "proved": "the file count is limited per allocated terabyte",
+      "capture": "sha256:41a6b0852e64c54f1e0ee8e357e47228a5b8ee649f83db80c0c83a595b75cf48",
+      "quote": "There is also a limit of 200,000 files per allocated terabyte imposed on all Corral allocations"
+    },
+    {
+      "url": "https://tacc.utexas.edu/use-tacc/allocations/",
+      "date": "2026-11-03",
+      "proved": "faculty, staff and postdoctoral researchers at US based institutions can request PI status",
+      "capture": "sha256:19da6b80939814833658addc286cef797ff0aa651f13c853a36ef3c9838dc3f6",
+      "quote": "Faculty, staff, and postdoctoral researchers at US based institutions are eligible to request PI status."
+    },
+    {
+      "url": "https://tacc.utexas.edu/use-tacc/allocations/",
+      "date": "2026-11-03",
+      "proved": "users from non-US institutions are not eligible for PI status",
+      "capture": "sha256:19da6b80939814833658addc286cef797ff0aa651f13c853a36ef3c9838dc3f6",
+      "quote": "Users from non-US institutions are not eligible for PI status, but may be invited to work on a project by a US based PI."
+    },
+    {
+      "url": "https://docs.tacc.utexas.edu/hpc/corral/",
+      "date": "2026-11-03",
+      "proved": "allocations last one year and must be renewed",
+      "capture": "sha256:41a6b0852e64c54f1e0ee8e357e47228a5b8ee649f83db80c0c83a595b75cf48",
+      "quote": "Files on Corral are never \"purged\" using automated processes, however each allocation lasts for only one year and must be renewed at the end of that year."
+    },
+    {
+      "url": "https://docs.tacc.utexas.edu/hpc/corral/",
+      "date": "2026-11-03",
+      "proved": "the first 5TB for each PI is still free for UT System institutions",
+      "capture": "sha256:41a6b0852e64c54f1e0ee8e357e47228a5b8ee649f83db80c0c83a595b75cf48",
+      "quote": "The first 5TB of storage for each PI, on one project, is available to researchers at all UT System institutions at no cost."
+    },
+    {
+      "url": "https://docs.tacc.utexas.edu/hpc/corral/",
+      "date": "2026-11-04",
+      "proved": "the first 5TB per PI is free for UT System institutions",
+      "capture": "sha256:41a6b0852e64c54f1e0ee8e357e47228a5b8ee649f83db80c0c83a595b75cf48",
+      "quote": "The first 5TB of storage for each PI, on one project, is available to researchers at all UT System institutions at no cost."
     }
   ],
   "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
+  "verified_at": "2026-11-04T01:24:43.359Z",
   "notes": "'The first 5TB of storage for each PI, on one project, is available to researchers at all UT System institutions at no cost. For storage needs larger than 5TB, and for multiple project allocations, access to Corral is available at a cost of $60/TB/year.' 40 PB online + tape replica.",
   "extras": {
     "dead_end": {
@@ -67,6 +191,6 @@
       "first_recorded": "2026-10-21"
     }
   },
-  "binding": "none",
-  "binding_note": null
+  "binding": "volume-quota",
+  "binding_note": "the free allocation is 5TB for each PI and every allocation carries a cap of 200,000 files per allocated terabyte; beyond 5TB the price is $60/TB/year"
 }

@@ -5,7 +5,7 @@
   "url": "https://sendbird.com/pricing",
   "category": "messaging",
   "free_tier": {
-    "stated": "Pricing page advertises 'Message storage: Unlimited' on the free tier — a number that is immediately contradicted by the retention row on the same page.",
+    "stated": "Free trial plan: up to 1,000 MAUs, unlimited messages per month and 'Unlimited' message storage, but messages are retained for six months; no credit card required",
     "unit": "unlimited",
     "metered_on": "stored-bytes",
     "source_url": "https://sendbird.com/pricing",
@@ -33,26 +33,72 @@
   "interface_detail": "rest",
   "tooling": "sendbird-platform-api + the Chat SDKs (JS/iOS/Android/Flutter). Solid SDK, wrong product shape for a filesystem.",
   "chaining": "Does not chain: unlimited storage is real only inside a 6-month sliding window, so total held bytes are bounded by write rate x 182 days.",
-  "limits": [],
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "messages are retained for 6 months on the free trial plan; extended retention is an Enterprise feature",
+      "source": "https://sendbird.com/pricing"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "up to 1,000 MAUs and up to 20 peak concurrent connections",
+      "source": "https://sendbird.com/pricing"
+    }
+  ],
   "limits_note": "6-MONTH RETENTION, stated twice on the pricing page. 'Unlimited' message storage is therefore a rate allowance, not a capacity. Extended retention is an Enterprise (paid) feature — the exact upsell that tells you retention is the metered axis.",
   "identity_cost": {
     "kind": "country-phone",
-    "detail": null,
+    "detail": "unverified: the sign-up form fields were not readable; the pricing page states 'No credit card required' for the free trial",
     "country": null
   },
   "reliability_note": "Silent 6-month truncation on the free tier; the 'Unlimited' label on the same page as '6 months' is the single clearest example of the unlimited-that-isn't trap.",
-  "confidence": "reported",
-  "confidence_note": null,
+  "confidence": "documented",
+  "confidence_note": "The 2026-11-03 evidence rows read https://sendbird.com/pricing for the 1,000 MAU free trial limit, six-month message retention, no credit card required and the Starter price. The retention clamp and quota that decide the fails-quota verdict cite vendor captures; the sign-up form fields are unverified.",
   "evidence": [
     {
       "url": "https://sendbird.com/pricing",
       "date": "2026-10-21",
       "proved": "read live: 'Message storage ... Please note messages will be retained for a period of six months. Extended message retention is available on Enterprise plan.'; and separately 'Message retention 6 months' and 'Message storage ... Unlimited'"
+    },
+    {
+      "url": "https://sendbird.com/pricing",
+      "date": "2026-11-03",
+      "proved": "the free trial plan is limited to 1,000 monthly active chat users",
+      "capture": "sha256:ac1532cdb7a453b22ca950ebb734679a1047e4286a971c58c5594bda16405f9f",
+      "quote": "- MAUs Monthly Active Chat Users Up to 1,000"
+    },
+    {
+      "url": "https://sendbird.com/pricing",
+      "date": "2026-11-03",
+      "proved": "messages are retained for six months",
+      "capture": "sha256:ac1532cdb7a453b22ca950ebb734679a1047e4286a971c58c5594bda16405f9f",
+      "quote": "Please note messages will be retained for a period of six months. Extended message retention is available on Enterprise plan."
+    },
+    {
+      "url": "https://sendbird.com/pricing",
+      "date": "2026-11-03",
+      "proved": "the free trial plan needs no credit card",
+      "capture": "sha256:ac1532cdb7a453b22ca950ebb734679a1047e4286a971c58c5594bda16405f9f",
+      "quote": "- No credit card required"
+    },
+    {
+      "url": "https://sendbird.com/pricing",
+      "date": "2026-11-03",
+      "proved": "Starter is $349 per month billed annually or $399 per month billed monthly",
+      "capture": "sha256:ac1532cdb7a453b22ca950ebb734679a1047e4286a971c58c5594bda16405f9f",
+      "quote": "Starter 5K Get started with chat $349 /month Billed annually, or $399/month billed monthly"
+    },
+    {
+      "url": "https://sendbird.com/pricing",
+      "date": "2026-11-03",
+      "proved": "the retention window is 6 months",
+      "capture": "sha256:ac1532cdb7a453b22ca950ebb734679a1047e4286a971c58c5594bda16405f9f",
+      "quote": "- Message retention 6 months"
     }
   ],
   "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
-  "notes": "Pricing page advertises 'Message storage: Unlimited' on the free tier — a number that is immediately contradicted by the retention row on the same page.",
+  "verified_at": "2026-11-03T15:03:54.247Z",
+  "notes": "Free trial plan: up to 1,000 MAUs, 6-month message retention. Paid: Starter $349 /month billed annually, or $399/month billed monthly; Pro $499 /month billed annually, or $599/month billed monthly; Enterprise on request.",
   "extras": {
     "dead_end": {
       "failure_class": "retention",
@@ -61,6 +107,6 @@
       "first_recorded": "2026-10-21"
     }
   },
-  "binding": "none",
-  "binding_note": null
+  "binding": "retention-clamped",
+  "binding_note": "'Unlimited' message storage is clamped by a 6-month retention window, so held bytes are bounded by the write rate over six months"
 }

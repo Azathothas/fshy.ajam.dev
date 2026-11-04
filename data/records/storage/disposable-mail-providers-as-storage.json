@@ -19,8 +19,8 @@
     "notes": "not recorded"
   },
   "retention": {
-    "stated": "not recorded",
-    "days": null,
+    "stated": "mail.tm stores incoming messages for 7 days",
+    "days": 7,
     "source_url": null,
     "notes": null
   },
@@ -34,16 +34,22 @@
   "interface_detail": null,
   "tooling": "not recorded",
   "chaining": "not recorded",
-  "limits": [],
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "mail.tm stores incoming messages for 7 days",
+      "source": "https://mail.tm/en/faq/"
+    }
+  ],
   "limits_note": null,
   "identity_cost": {
     "kind": "anonymous",
     "detail": "mail.tm: no API key and no sign-up; an inbox account is created by one API request with an address and a password",
     "country": null
   },
-  "reliability_note": "api.mail.tm/domains answers HTTP 200 with an active receiving domain",
-  "confidence": "reported",
-  "confidence_note": null,
+  "reliability_note": "api.mail.tm/domains answers HTTP 200 with one active receiving domain (fldubai.com, replacing maxxspace.com); api.guerrillamail.com answers HTTP 200 with a JSON session; www.1secmail.com fails TLS verification (certificate not valid for the hostname), so its API could not be read",
+  "confidence": "documented",
+  "confidence_note": "mail.tm and Guerrilla Mail retention is read from their own pages; API reachability is probed; the mail.tm per-account quota value and the 1secmail API are unverified",
   "evidence": [
     {
       "url": null,
@@ -91,10 +97,66 @@
       "proved": "the mail.tm API lists an active receiving domain",
       "capture": "sha256:83c389a9c60c3bd2b115dc82472440e76547822c00e432c44da076ef774148e9",
       "quote": "\"domain\":\"maxxspace.com\",\"isActive\":true"
+    },
+    {
+      "url": "probe:https://api.mail.tm/domains",
+      "date": "2026-11-03",
+      "proved": "api.mail.tm/domains answered HTTP 200",
+      "capture": "sha256:8cad7809e7bf5f3732790a18d06d3df233f1d1eaefe1993861a0644fb6b266e7",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "https://mail.tm/en/faq/",
+      "date": "2026-11-03",
+      "proved": "mail.tm stores incoming messages for 7 days",
+      "capture": "sha256:edfb9fcdc3862ebe4a8a19aab535c3fd720dc6a902b5cfeb2416f8888b2a4e43",
+      "quote": "We store messages for 7 days only. Sorry, we can't keep them indefinitely."
+    },
+    {
+      "url": "probe:https://api.mail.tm/domains",
+      "date": "2026-11-03",
+      "proved": "the mail.tm API listed an active receiving domain on 2026-11-03",
+      "capture": "sha256:05f79f484b362b3d6aff069f0b2b1625981011197230dcda6e5e938b5a2723c4",
+      "quote": "\"domain\":\"fldubai.com\",\"isActive\":true"
+    },
+    {
+      "url": "probe:https://api.guerrillamail.com/ajax.php",
+      "date": "2026-11-03",
+      "proved": "api.guerrillamail.com get_email_address answered HTTP 200",
+      "capture": "sha256:bde1b6d5eda0fdd58f0aa4bb6702da0e7c7e25c521ad612c164804dac8370975",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:https://www.1secmail.com/",
+      "date": "2026-11-03",
+      "proved": "www.1secmail.com presented a TLS certificate not valid for its hostname",
+      "capture": "sha256:22aeac248118986032e5180ef369b2ee6f40b7defa662301ced0c22323ebaa68",
+      "quote": "Hostname mismatch, certificate is not valid for 'www.1secmail.com'."
+    },
+    {
+      "url": "probe:https://www.1secmail.com/api/v1/",
+      "date": "2026-11-03",
+      "proved": "the 1secmail API URL failed TLS verification and returned no status",
+      "capture": "sha256:051af894a56dde4ecc71e0192d0549a044bc03ef8fd1205e93908cd2135b1721",
+      "quote": "\"error\": \"tls_untrusted\""
+    },
+    {
+      "url": "https://www.guerrillamail.com/GuerrillaMailAPI.html",
+      "date": "2026-11-03",
+      "proved": "Guerrilla Mail emails expire after 60 minutes",
+      "capture": "sha256:9e3299d37982cdf86f5a7fc287d36884fc91bc0596d047406cddd0543f7e460c",
+      "quote": "Emails expire after 60 minutes"
+    },
+    {
+      "url": "probe:https://api.guerrillamail.com/ajax.php",
+      "date": "2026-11-03",
+      "proved": "the Guerrilla Mail API returned a new inbox address on a guerrillamailblock.com domain, with a creation timestamp, as JSON",
+      "capture": "sha256:8f48661cfcfdb6d3d3454927a22b19a3d35eb14ad69f79f3d69b1cc253ac4234",
+      "quote": "@guerrillamailblock.com\",\"email_timestamp\":1793668516"
     }
   ],
-  "verdict": "dead",
-  "verified_at": "2026-10-30T18:09:47.044Z",
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-11-03T01:28:33.737Z",
   "notes": null,
   "extras": {
     "dead_end": {
@@ -104,6 +166,6 @@
       "first_recorded": "2026-10-21"
     }
   },
-  "binding": "none",
-  "binding_note": null
+  "binding": "retention-clamped",
+  "binding_note": "mail.tm stores incoming messages for 7 days, so held bytes do not persist; the per-account byte quota is an integer returned only for a created account and is unverified here"
 }

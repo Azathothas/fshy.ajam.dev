@@ -5,7 +5,7 @@
   "url": "https://deepstorage.dev",
   "category": "cloud-drive",
   "free_tier": {
-    "stated": "Free: 2 TB. Community (join their Telegram channel): storage becomes 'Unlimited, while you are in the channel'. Both have no per-file size limit.",
+    "stated": "Free: 2 TB of storage and 50 GB of new uploads a month. Community (free while in their Telegram channel): unlimited storage and 200 GB of new uploads a month. Paid plans start at $9 a month and add the API.",
     "unit": "TB",
     "metered_on": "stored-bytes",
     "source_url": "https://deepstorage.dev/pricing",
@@ -13,7 +13,7 @@
     "notes": null
   },
   "per_object_cap": {
-    "stated": "not stated",
+    "stated": "No per-file size limit for uploads from the browser, saves from a link, torrents or cloud imports; imports from video sites stop at 2 GB a video and files sent through the Telegram bot are limited by Telegram.",
     "source_url": "https://deepstorage.dev/pricing",
     "notes": "not stated"
   },
@@ -30,18 +30,24 @@
     "rest"
   ],
   "interface_detail": "rest",
-  "tooling": "No public API on free/Community ('API: No' in the plan table); API access starts at Pro $9. Bulk paths on free are torrent import and URL/cloud-drive import, both credit-metered.",
+  "tooling": "No API on Free or Community ('API No' in the plan table). Pro is $9 a month ($90 for 12 months) with unlimited storage, 2 TB of uploads a month and the API; Max is $50 a month ($500 for 12 months) with unlimited storage and unlimited monthly uploads. Bulk paths on Free are torrent import and URL or cloud-drive import, both credit-metered.",
   "chaining": "Unlimited storage behind a single free action (join a Telegram channel) is the cleanest free-tier gate. Chain = 1 account with unlimited storage, but only 200 GB of new uploads per month on Community, so accumulation is slow rather than blocked.",
-  "limits": [],
-  "limits_note": "Free 2 TB / 200 GB monthly uploads (Community) / 1 upload at a time / 500 files per torrent. Credits: 50 on signup, +200 once for linking Telegram; torrent add 2, cloud import 1, zip extract 2, copy 10. Storage is re-checked — leaving the channel drops you to 2 TB and blocks new uploads above it, without deleting anything.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "new uploads: 50 GB a month on Free and 200 GB a month on Community; Community storage is unlimited only while the account is in the Telegram channel, otherwise the cap is 2 TB",
+      "source": "https://deepstorage.dev/pricing"
+    }
+  ],
+  "limits_note": "Free: 2 TB, 50 GB of uploads a month, 1 upload at a time, 100 files per torrent. Community: unlimited storage, 200 GB of uploads a month, 1 upload at a time, 500 files per torrent. Credits: 50 to start, plus 200 once for linking Telegram and joining the channel; torrent add 2, cloud import 1, zip extract 2, copy 10. Leaving the channel returns the account to Free; nothing is deleted and new uploads stop while the account holds more than 2 TB.",
   "identity_cost": {
     "kind": "email",
-    "detail": null,
+    "detail": "Sign up with Google, GitHub or an e-mail address; no credit card is needed. Unlimited storage also needs a linked Telegram account and membership of the Telegram channel.",
     "country": null
   },
-  "reliability_note": "The unlimited tier is revocable by leaving a Telegram channel, and the real throttle is 200 GB/month of new bytes, so a 20 TiB cold archive would take ~8 years to fill. Signup is gated: createAcc returns 400 'Verification required. Please verify your identity first.'",
-  "confidence": "reported",
-  "confidence_note": null,
+  "reliability_note": "The unlimited tier lasts only while the account is in the Telegram channel; leaving returns it to Free (2 TB) and new uploads stop while the account holds more than 2 TB, with nothing deleted. At 200 GB of new uploads a month, 20 TiB needs about 110 months. The API is not on Free or Community. A POST to /createAcc answered HTTP 400 'Verification required. Please verify your identity first.' on 2026-10-21.",
+  "confidence": "documented",
+  "confidence_note": "https://deepstorage.dev/pricing and https://deepstorage.dev/, re-read on 2026-11-03, state the Free row (2 TB, 50 GB of monthly uploads), the Community row (unlimited while in the channel, 200 GB of monthly uploads), that leaving the channel returns the account to Free, and sign-up by Google, GitHub or e-mail with no card.",
   "evidence": [
     {
       "url": "https://deepstorage.dev/pricing",
@@ -57,10 +63,122 @@
       "url": "https://deepstorage.dev/createAcc",
       "date": "2026-10-21",
       "proved": "probe: POST -> 400 text/plain 'Verification required. Please verify your identity first.' (aiohttp origin)"
+    },
+    {
+      "url": "https://deepstorage.dev/pricing",
+      "date": "2026-11-03",
+      "proved": "the Community row lists unlimited storage while in the channel and 200 GB of monthly uploads",
+      "capture": "sha256:470033ea96907a84a8b0441d6d71a50cd361fbbe7813b7083745d352e57df66d",
+      "quote": "Unlimited, while you are in the channel | 200 GB | 1 | 500 | 1 | No | 200 to start"
+    },
+    {
+      "url": "https://deepstorage.dev/pricing",
+      "date": "2026-11-03",
+      "proved": "the Free row lists 2 TB of storage, 50 GB of monthly uploads and no API",
+      "capture": "sha256:470033ea96907a84a8b0441d6d71a50cd361fbbe7813b7083745d352e57df66d",
+      "quote": "$0 | $0 | 2 TB | 50 GB | 1 | 100 | 1 | No | 50 to start"
+    },
+    {
+      "url": "https://deepstorage.dev/",
+      "date": "2026-11-03",
+      "proved": "the site states no file size limit for browser, link, torrent and cloud imports",
+      "capture": "sha256:1a3541ded33375e3edb98f08f69fb94b84c2dff816105134533f0fcaa45b6cb8",
+      "quote": "Not for uploads from your browser, saves from a link, torrents or cloud imports."
+    },
+    {
+      "url": "https://deepstorage.dev/pricing",
+      "date": "2026-11-03",
+      "proved": "Community lists 200 GB of monthly uploads",
+      "capture": "sha256:470033ea96907a84a8b0441d6d71a50cd361fbbe7813b7083745d352e57df66d",
+      "quote": "Unlimited, while you are in the channel | 200 GB | 1 | 500 | 1 | No | 200 to start"
+    },
+    {
+      "url": "https://deepstorage.dev/pricing",
+      "date": "2026-11-03",
+      "proved": "leaving the channel returns the account to Free",
+      "capture": "sha256:470033ea96907a84a8b0441d6d71a50cd361fbbe7813b7083745d352e57df66d",
+      "quote": "We re-check membership, and if you leave, the account returns to Free."
+    },
+    {
+      "url": "https://deepstorage.dev/pricing",
+      "date": "2026-11-03",
+      "proved": "the plan table lists the monthly uploads, uploads at once, files per torrent and starting credits",
+      "capture": "sha256:470033ea96907a84a8b0441d6d71a50cd361fbbe7813b7083745d352e57df66d",
+      "quote": "Unlimited, while you are in the channel | 200 GB | 1 | 500 | 1 | No | 200 to start"
+    },
+    {
+      "url": "https://deepstorage.dev/pricing",
+      "date": "2026-11-03",
+      "proved": "new uploads are capped at 200 GB a month on Community",
+      "capture": "sha256:470033ea96907a84a8b0441d6d71a50cd361fbbe7813b7083745d352e57df66d",
+      "quote": "Unlimited, while you are in the channel | 200 GB | 1 | 500 | 1 | No | 200 to start"
+    },
+    {
+      "url": "https://deepstorage.dev/pricing",
+      "date": "2026-11-03",
+      "proved": "membership of the channel is re-checked and leaving returns the account to Free",
+      "capture": "sha256:470033ea96907a84a8b0441d6d71a50cd361fbbe7813b7083745d352e57df66d",
+      "quote": "We re-check membership, and if you leave, the account returns to Free."
+    },
+    {
+      "url": "https://deepstorage.dev/pricing",
+      "date": "2026-11-03",
+      "proved": "the Pro row lists $9 a month, $90 for 12 months, unlimited storage, 2 TB of monthly uploads and the API",
+      "capture": "sha256:470033ea96907a84a8b0441d6d71a50cd361fbbe7813b7083745d352e57df66d",
+      "quote": "| Pro | $9 | $90 | Unlimited | 2 TB | 3 | 5,000 | 3 | Yes | Unlimited |"
+    },
+    {
+      "url": "https://deepstorage.dev/pricing",
+      "date": "2026-11-03",
+      "proved": "the Max row lists $50 a month, unlimited storage and unlimited monthly uploads",
+      "capture": "sha256:470033ea96907a84a8b0441d6d71a50cd361fbbe7813b7083745d352e57df66d",
+      "quote": "| Max | $50 | $500 | Unlimited | Unlimited | 6 | 20,000 | 3 | Yes | Unlimited |"
+    },
+    {
+      "url": "https://deepstorage.dev/",
+      "date": "2026-11-03",
+      "proved": "the site states sign-up by Google, GitHub or e-mail with no credit card",
+      "capture": "sha256:1a3541ded33375e3edb98f08f69fb94b84c2dff816105134533f0fcaa45b6cb8",
+      "quote": "Sign up with Google, GitHub or your email. No credit card and no trial: your account is ready in seconds."
+    },
+    {
+      "url": "https://deepstorage.dev/pricing",
+      "date": "2026-11-03",
+      "proved": "the plan table still lists Free 2 TB and Community unlimited storage",
+      "capture": "sha256:470033ea96907a84a8b0441d6d71a50cd361fbbe7813b7083745d352e57df66d",
+      "quote": "Unlimited, while you are in the channel | 200 GB | 1 | 500 | 1 | No | 200 to start"
+    },
+    {
+      "url": "https://deepstorage.dev/pricing",
+      "date": "2026-11-04",
+      "proved": "the Free row lists 2 TB of storage, 50 GB of monthly uploads and no API",
+      "capture": "sha256:a82eb0cafe9cc895f87fd39dca83fd218d250a8a608fd1ab413a53bcb4d95669",
+      "quote": "| FreeWhere every account starts. | $0 | $0 | 2 TB | 50 GB | 1 | 100 | 1 | No | 50 to start | [Create an account](https://deepstorage.dev/browse-files) |"
+    },
+    {
+      "url": "https://deepstorage.dev/pricing",
+      "date": "2026-11-04",
+      "proved": "the Community row lists unlimited storage while in the channel and 200 GB of monthly uploads",
+      "capture": "sha256:a82eb0cafe9cc895f87fd39dca83fd218d250a8a608fd1ab413a53bcb4d95669",
+      "quote": "| CommunityFree while you are in our Telegram channel. | $0 | $0 | Unlimited, while you are in the channel | 200 GB | 1 | 500 | 1 | No | 200 to start | [Link Telegram](https://deepstorage.dev/browse-files) |"
+    },
+    {
+      "url": "https://deepstorage.dev/pricing",
+      "date": "2026-11-04",
+      "proved": "leaving the channel returns the account to Free",
+      "capture": "sha256:a82eb0cafe9cc895f87fd39dca83fd218d250a8a608fd1ab413a53bcb4d95669",
+      "quote": "We re-check membership, and if you leave, the account returns to Free."
+    },
+    {
+      "url": "https://deepstorage.dev/",
+      "date": "2026-11-04",
+      "proved": "sign-up by Google, GitHub or e-mail with no credit card",
+      "capture": "sha256:1a3541ded33375e3edb98f08f69fb94b84c2dff816105134533f0fcaa45b6cb8",
+      "quote": "Sign up with Google, GitHub or your email. No credit card and no trial: your account is ready in seconds."
     }
   ],
   "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
+  "verified_at": "2026-11-04T01:24:11.231Z",
   "notes": "Free: 2 TB. Community (join their Telegram channel): storage becomes 'Unlimited, while you are in the channel'. Both have no per-file size limit.",
   "extras": {
     "dead_end": {
@@ -70,6 +188,6 @@
       "first_recorded": "2026-10-21"
     }
   },
-  "binding": "none",
-  "binding_note": null
+  "binding": "volume-quota",
+  "binding_note": "new-upload volume is capped at 200 GB a month on Community (50 GB on Free), so filling a large archive takes years even though stored bytes are unlimited"
 }

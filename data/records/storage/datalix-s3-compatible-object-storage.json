@@ -5,27 +5,27 @@
   "url": "https://datalix.eu/rent-s3-compatible-objectstorage",
   "category": "S3-compatible object storage, TB-prepaid",
   "free_tier": {
-    "stated": "1 TB – 100 TB per account, 30 M objects per bucket",
+    "stated": "1 TB to 100 TB of booked storage per account, up to 30 million objects per bucket",
     "unit": "TB",
     "metered_on": "unstated",
     "source_url": "https://datalix.eu/rent-s3-compatible-objectstorage",
     "read_on": "2026-10-21",
-    "notes": null
+    "notes": "1 TB is the minimum of the page's booked-storage control (min 1, max 100, step 1) and the 100 TB ceiling is stated in the specification block; the smallest configuration the order page offers is 1 TB"
   },
   "per_object_cap": {
-    "stated": "not stated",
+    "stated": "No largest single object is stated. The order page states a 100 TB maximum size per bucket and 30 million files per bucket; the product page states a 100 TB maximum capacity per account and up to 30 million objects per bucket. Neither page states a per-object size limit.",
     "source_url": "https://datalix.eu/rent-s3-compatible-objectstorage",
-    "notes": "not stated"
+    "notes": "the product page states 100 TB of capacity per account and 30 million objects per bucket; the order page states a 100 TB maximum size per bucket and 30 million files per bucket; neither page states a largest-single-object figure"
   },
   "retention": {
-    "stated": "not stated",
-    "source_url": "https://datalix.eu/rent-s3-compatible-objectstorage",
-    "notes": "not stated"
+    "stated": "Data is kept for the paid term; on expiry the service is suspended and the associated data and content are permanently deleted after a grace period of three days.",
+    "source_url": "https://datalix.eu/tos",
+    "notes": "the grace period runs from the end of the paid term, not from inactivity; the terms state no retention rule for data inside a running term"
   },
   "egress": {
-    "terms": "Egress beyond the 10:1 ratio is not priced on the page.",
+    "terms": "Ingress is free and unlimited; egress includes 10 TB per 1 TB of booked storage, so the included volume scales with the booking. Egress beyond that ratio has no published price.",
     "metered": true,
-    "free_allowance": "200 TB per month"
+    "free_allowance": "10 TB per 1 TB of booked storage"
   },
   "interface": [
     "s3-compatible",
@@ -37,26 +37,21 @@
   "chaining": "native S3 → Cloudflare in front → presigned URLs; no wrapper needed",
   "limits": [
     {
-      "kind": "per-object-cap",
-      "value": "100 TB account cap",
+      "kind": "volume-quota",
+      "value": "100 TB per account",
       "source": "https://datalix.eu/rent-s3-compatible-objectstorage"
     }
   ],
-  "limits_note": "Prepaid / TB-based (not pay-as-you-go) — you pay for booked capacity even if empty. 100 TB account cap.",
+  "limits_note": "Prepaid, TB-based: the booked capacity is paid for whether or not it is used. 100 TB per account and 30 million objects per bucket. The product page publishes no S3 endpoint hostname, so the endpoint comes from the customer panel.",
   "identity_cost": {
     "kind": "email",
-    "detail": "email",
+    "detail": "registration takes a username, an email address and a password; ordering needs a password-protected customer account and prepayment, and the terms allow card, PayPal, SEPA, bank transfer or cryptocurrency",
     "country": null
   },
   "reliability_note": "Small German host (AS203446), Equinix FRA-05/07/08. Payment methods verified on their KVM page: PayPal, credit card, Sofort, Giropay, EPS, Paysafecard, Przelewy24, Bitcoin, Litecoin, Alipay, Monero, bank transfer. Best payment friction profile of any EU host here for a non-EU buyer.",
   "confidence": "documented",
-  "confidence_note": "The page states the number in the record; the claim is documented, not measured.",
+  "confidence_note": "the product page, its German edition, the terms and the order configuration were read and quoted; free tier, limits, egress, identity, retention and interface each cite a capture",
   "evidence": [
-    {
-      "url": "https://datalix.de/object-storage",
-      "date": "2026-10-22",
-      "proved": "the product page answers. Re-read https://datalix.de/object-storage: HTTP 404, 64382 bytes, sha256 87c09ce4fc67418f. Quoted: <!DOCTYPE html> <html lang=\"de\" class=\"scroll-smooth white\"> <head> <title>Datalix - 404 Seite nicht gefunden</title> <meta charset=\"UTF-8\"> <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"> <meta name=\"viewport\" content=\"width=device-width"
-    },
     {
       "url": "https://datalix.eu/rent-s3-compatible-objectstorage",
       "date": "2026-10-21",
@@ -71,12 +66,215 @@
       "url": "https://datalix.eu/rent-storage-kvm-server",
       "date": "2026-10-21",
       "proved": "payment method list including Bitcoin/Monero/Alipay; 'When the traffic limit of your server is reached, the speed of your server will be limited to 10 MB/s (80Mbit/s)' (KVM products only — soft throttle, not a hard cut)"
+    },
+    {
+      "url": "https://datalix.eu/rent-s3-compatible-objectstorage",
+      "date": "2026-11-01",
+      "proved": "the booked-storage price is EUR 3.95 per TB, capped at 100 TB",
+      "capture": "sha256:e5bbd3fed3a9c2d4c13b50efc6b7ee7178302b19fe1a41a3e4332cc6fc86d313",
+      "quote": "Price: 3.95 EUR per TB, up to 100 TB."
+    },
+    {
+      "url": "https://datalix.eu/rent-s3-compatible-objectstorage",
+      "date": "2026-11-01",
+      "proved": "the account-level capacity ceiling is 100 TB",
+      "capture": "sha256:e5bbd3fed3a9c2d4c13b50efc6b7ee7178302b19fe1a41a3e4332cc6fc86d313",
+      "quote": "Up to 100 TB per account"
+    },
+    {
+      "url": "https://datalix.eu/rent-s3-compatible-objectstorage",
+      "date": "2026-11-01",
+      "proved": "the per-bucket object count ceiling is 30 million",
+      "capture": "sha256:e5bbd3fed3a9c2d4c13b50efc6b7ee7178302b19fe1a41a3e4332cc6fc86d313",
+      "quote": "Up to 30 million objects per bucket."
+    },
+    {
+      "url": "https://datalix.eu/rent-s3-compatible-objectstorage",
+      "date": "2026-11-01",
+      "proved": "the included egress is a 10:1 ratio to booked storage, not a fixed volume",
+      "capture": "sha256:e5bbd3fed3a9c2d4c13b50efc6b7ee7178302b19fe1a41a3e4332cc6fc86d313",
+      "quote": "Egress includes 10 TB per 1 TB of storage."
+    },
+    {
+      "url": "https://datalix.eu/tos",
+      "date": "2026-11-01",
+      "proved": "an order cannot be placed without an account, and the registration form asks only for username, email and password",
+      "capture": "sha256:7090e5757058c430d97659d2e5c780a6f1aa53ba6690e6650337c99c7a392b31",
+      "quote": "The conclusion of a contract requires the creation of a password-protected customer account."
+    },
+    {
+      "url": "https://datalix.eu/rent-s3-compatible-objectstorage",
+      "date": "2026-11-01",
+      "proved": "ingress is free and unlimited, so only egress is metered",
+      "capture": "sha256:e5bbd3fed3a9c2d4c13b50efc6b7ee7178302b19fe1a41a3e4332cc6fc86d313",
+      "quote": "Ingress is free and unlimited."
+    },
+    {
+      "url": "https://datalix.eu/rent-s3-compatible-objectstorage",
+      "date": "2026-11-01",
+      "proved": "the interface is an S3-compatible API",
+      "capture": "sha256:e5bbd3fed3a9c2d4c13b50efc6b7ee7178302b19fe1a41a3e4332cc6fc86d313",
+      "quote": "S3 compatible API"
+    },
+    {
+      "url": "https://datalix.eu/rent-s3-compatible-objectstorage",
+      "date": "2026-11-01",
+      "proved": "the booked-storage control runs from 1 TB to 100 TB in 1 TB steps, so the 1 TB lower bound is published and not inferred",
+      "capture": "sha256:37cf83ae87e4b34a6499c74d7695278bc1f0533da72f113208343e695944e444",
+      "quote": "<input type=\"range\" id=\"objectstorage-storage-range\" min=\"1\" max=\"100\" step=\"1\" value=\"1\" class=\"dx-range\" oninput=\"updateObjectStorageCalculator()\">"
+    },
+    {
+      "url": "https://datalix.eu/cp/order/config/7/5be0094e-d0ff-43ab-baf6-3fa4f7155fef",
+      "date": "2026-11-01",
+      "proved": "the smallest configuration the order page presents is one terabyte",
+      "capture": "sha256:072b3d29bc17b3071b31767395209fa30688e8d456b6bffd12f1aab4cb93256e",
+      "quote": "Storage - 1 TB"
+    },
+    {
+      "url": "https://datalix.eu/rent-s3-compatible-objectstorage",
+      "date": "2026-11-01",
+      "proved": "the account-level capacity ceiling is 100 TB, the upper bound of the range",
+      "capture": "sha256:e5bbd3fed3a9c2d4c13b50efc6b7ee7178302b19fe1a41a3e4332cc6fc86d313",
+      "quote": "Up to 100 TB per account"
+    },
+    {
+      "url": "https://datalix.eu/tos",
+      "date": "2026-11-01",
+      "proved": "the terms state the deletion timeline after the paid term ends, so retention is stated and not a gap",
+      "capture": "sha256:7090e5757058c430d97659d2e5c780a6f1aa53ba6690e6650337c99c7a392b31",
+      "quote": "If the service is not actively renewed in time, it ends upon expiry of the period paid for. The Provider suspends the service upon expiry of the period; the associated data and content are subsequently permanently deleted after the expiry of a grace period of three days."
+    },
+    {
+      "url": "https://datalix.eu/tos",
+      "date": "2026-11-01",
+      "proved": "the retention clause is in the terms, so the field names that page as its source",
+      "capture": "sha256:7090e5757058c430d97659d2e5c780a6f1aa53ba6690e6650337c99c7a392b31",
+      "quote": "the associated data and content are subsequently permanently deleted after the expiry of a grace period of three days"
+    },
+    {
+      "url": "https://datalix.eu/tos",
+      "date": "2026-11-01",
+      "proved": "the deletion timeline is triggered by the end of the paid term",
+      "capture": "sha256:7090e5757058c430d97659d2e5c780a6f1aa53ba6690e6650337c99c7a392b31",
+      "quote": "If the service is not actively renewed in time, it ends upon expiry of the period paid for."
+    },
+    {
+      "url": "https://datalix.eu/rent-s3-compatible-objectstorage",
+      "date": "2026-11-01",
+      "proved": null,
+      "capture": "sha256:37cf83ae87e4b34a6499c74d7695278bc1f0533da72f113208343e695944e444",
+      "quote": "<input type=\"range\" id=\"objectstorage-storage-range\" min=\"1\" max=\"100\" step=\"1\" value=\"1\" class=\"dx-range\" oninput=\"updateObjectStorageCalculator()\">"
+    },
+    {
+      "url": "https://datalix.eu/cp/order/config/7/5be0094e-d0ff-43ab-baf6-3fa4f7155fef",
+      "date": "2026-11-01",
+      "proved": "the order page states the per-bucket object count the two readings share",
+      "capture": "sha256:072b3d29bc17b3071b31767395209fa30688e8d456b6bffd12f1aab4cb93256e",
+      "quote": "30 million files max. per bucket"
+    },
+    {
+      "url": "https://datalix.eu/rent-s3-compatible-objectstorage",
+      "date": "2026-11-01",
+      "proved": "the product page was served and read, so the earlier note about a 404 no longer describes the source",
+      "capture": "sha256:e5bbd3fed3a9c2d4c13b50efc6b7ee7178302b19fe1a41a3e4332cc6fc86d313",
+      "quote": "You only pay for booked storage."
+    },
+    {
+      "url": "https://datalix.eu/rent-s3-compatible-objectstorage",
+      "date": "2026-11-01",
+      "proved": null,
+      "capture": "sha256:e5bbd3fed3a9c2d4c13b50efc6b7ee7178302b19fe1a41a3e4332cc6fc86d313",
+      "quote": "Price: 3.95 EUR per TB, up to 100 TB."
+    },
+    {
+      "url": "https://datalix.eu/rent-s3-compatible-objectstorage",
+      "date": "2026-11-01",
+      "proved": "the product page still states the booked-storage price and the 100 TB account ceiling the record carries",
+      "capture": "sha256:e5bbd3fed3a9c2d4c13b50efc6b7ee7178302b19fe1a41a3e4332cc6fc86d313",
+      "quote": "Price: 3.95 EUR per TB, up to 100 TB."
+    },
+    {
+      "url": "https://datalix.de/s3-kompatibler-objectstorage-mieten",
+      "date": "2026-11-01",
+      "proved": "the German edition carries the same booked-storage control, 1 TB to 100 TB, so the lower bound is published in both languages",
+      "capture": "sha256:89e244e88f5c1ddb033ad4217f411e3dfeb4ed23345f89bda0741d2930d422f6",
+      "quote": "<input type=\"range\" id=\"objectstorage-storage-range\" min=\"1\" max=\"100\" step=\"1\" value=\"1\" class=\"dx-range\" oninput=\"updateObjectStorageCalculator()\">"
+    },
+    {
+      "url": "https://datalix.de/s3-kompatibler-objectstorage-mieten",
+      "date": "2026-11-01",
+      "proved": "the German edition states the same 100 TB per account ceiling",
+      "capture": "sha256:89e244e88f5c1ddb033ad4217f411e3dfeb4ed23345f89bda0741d2930d422f6",
+      "quote": "Bis zu 100 TB pro Account"
+    },
+    {
+      "url": "https://datalix.eu/cp/order/config/7/5be0094e-d0ff-43ab-baf6-3fa4f7155fef",
+      "date": "2026-11-01",
+      "proved": "the order page states the per-bucket capacity ceiling as 100 TB alongside the 30 million object count",
+      "capture": "sha256:072b3d29bc17b3071b31767395209fa30688e8d456b6bffd12f1aab4cb93256e",
+      "quote": "100 TB Maximum size per Bucket"
+    },
+    {
+      "url": "https://datalix.eu/cp/order/config/7/5be0094e-d0ff-43ab-baf6-3fa4f7155fef",
+      "date": "2026-11-01",
+      "proved": "the cap the order page states is a per-bucket capacity, not a per-object size",
+      "capture": "sha256:072b3d29bc17b3071b31767395209fa30688e8d456b6bffd12f1aab4cb93256e",
+      "quote": "100 TB Maximum size per Bucket"
+    },
+    {
+      "url": "https://datalix.eu/rent-s3-compatible-objectstorage",
+      "date": "2026-11-01",
+      "proved": "the page gives an object count per bucket and no per-object size",
+      "capture": "sha256:e5bbd3fed3a9c2d4c13b50efc6b7ee7178302b19fe1a41a3e4332cc6fc86d313",
+      "quote": "Up to 30 million objects per bucket."
+    },
+    {
+      "url": "https://datalix.eu/rent-s3-compatible-objectstorage",
+      "date": "2026-11-01",
+      "proved": "the pricing page states the prepaid booked-capacity model the field describes",
+      "capture": "sha256:e5bbd3fed3a9c2d4c13b50efc6b7ee7178302b19fe1a41a3e4332cc6fc86d313",
+      "quote": "You only pay for booked storage."
+    },
+    {
+      "url": "https://datalix.eu/cp/order/config/7/5be0094e-d0ff-43ab-baf6-3fa4f7155fef",
+      "date": "2026-11-01",
+      "proved": "the order page states a 100 TB ceiling on the size of a bucket, which is a bucket capacity and not an object size",
+      "capture": "sha256:072b3d29bc17b3071b31767395209fa30688e8d456b6bffd12f1aab4cb93256e",
+      "quote": "100 TB Maximum size per Bucket"
+    },
+    {
+      "url": "https://datalix.eu/rent-s3-compatible-objectstorage",
+      "date": "2026-11-01",
+      "proved": "the product page states the 100 TB capacity ceiling per account, not per bucket, so it does not carry the per-bucket figure the order page states",
+      "capture": "sha256:e5bbd3fed3a9c2d4c13b50efc6b7ee7178302b19fe1a41a3e4332cc6fc86d313",
+      "quote": "Up to 100 TB per account"
+    },
+    {
+      "url": "https://datalix.eu/cp/order/config/7/5be0094e-d0ff-43ab-baf6-3fa4f7155fef",
+      "date": "2026-11-01",
+      "proved": "the order page states the per-bucket file count that the field names",
+      "capture": "sha256:072b3d29bc17b3071b31767395209fa30688e8d456b6bffd12f1aab4cb93256e",
+      "quote": "30 million files max. per bucket"
+    },
+    {
+      "url": "https://datalix.eu/rent-s3-compatible-objectstorage",
+      "date": "2026-11-01",
+      "proved": "the product page states the per-bucket object count and states its 100 TB ceiling per account, so the note no longer attributes a per-bucket capacity to both pages",
+      "capture": "sha256:e5bbd3fed3a9c2d4c13b50efc6b7ee7178302b19fe1a41a3e4332cc6fc86d313",
+      "quote": "Up to 30 million objects per bucket."
+    },
+    {
+      "url": "https://datalix.eu/rent-s3-compatible-objectstorage",
+      "date": "2026-11-01",
+      "proved": "the product page is live and still states the 100 TB account ceiling, the 30 million objects per bucket, free ingress and the 10 TB egress per 1 TB of booked storage",
+      "capture": "sha256:e5bbd3fed3a9c2d4c13b50efc6b7ee7178302b19fe1a41a3e4332cc6fc86d313",
+      "quote": "Up to 100 TB per account"
     }
   ],
   "verdict": "qualifies",
-  "verified_at": "2026-10-22T00:00:00.000Z",
-  "price_per_tb_month": "€3.95/TB/mo flat at every tier (5 TB = €19.75, 20 TB = €79.00) ≈ $4.58/TB. No volume discount. Cheapest genuine S3-API option in the EU with a sane egress ratio.",
-  "notes": "1 TB – 100 TB per account, 30 M objects per bucket",
+  "verified_at": "2026-11-01T22:11:43.693Z",
+  "price_per_tb_month": "EUR 3.95 per TB per month, prepaid, at every booked size from 1 TB to 100 TB; the page publishes no volume discount and no other rate.",
+  "notes": "1 TB to 100 TB of booked storage per account, up to 30 million objects per bucket",
   "extras": {
     "price_verbatim": "€3.95/TB/mo flat at every tier (5 TB = €19.75, 20 TB = €79.00) ≈ $4.58/TB. No volume discount. Cheapest genuine S3-API option in the EU with a sane egress ratio.",
     "verified": [
@@ -93,6 +291,6 @@
       }
     ]
   },
-  "binding": "per-object-cap",
-  "binding_note": null
+  "binding": "volume-quota",
+  "binding_note": "the 100 TB per account cap ends the booking; the per-bucket object count (30 million) is the other ceiling, and the page states no per-object size cap"
 }

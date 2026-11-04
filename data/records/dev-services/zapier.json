@@ -32,10 +32,10 @@
     "source_url": "https://zapier.com/pricing"
   },
   "interface": [
-    "unknown"
+    "cli"
   ],
-  "interface_detail": "Zapier MCP, a hosted MCP server that gives AI tools access to app actions, is on every plan and each call uses tasks; webhooks are on Pro and above. The vocabulary has no MCP term, so the list holds unknown.",
-  "tooling": "an MCP client against Zapier MCP; the web editor for Zaps",
+  "interface_detail": "Zapier MCP takes the Model Context Protocol over Streamable HTTP only at one endpoint, with OAuth from the MCP client or a connection token; the TypeScript SDK and its CLI give programmatic access to 9,000+ app integrations. The interface vocabulary has no MCP or SDK term, so the list holds cli, which names the SDK CLI only.",
+  "tooling": "an MCP client against Zapier MCP; the Zapier TypeScript SDK and its CLI",
   "chaining": "Moves data between hosted app accounts on a 15-minute poll within 100 tasks a month, so it fits low-volume glue between SaaS accounts, not a scheduler or a compute host.",
   "limits": [
     {
@@ -52,6 +52,16 @@
       "kind": "retention-clamped",
       "value": "at most 60 days of Zap run data, up to 10,000 runs",
       "source": "https://help.zapier.com/hc/en-us/articles/8496291148685-View-and-manage-your-Zap-history"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "2 tasks per successful Zapier MCP tool call, from the plan's task allowance; a failed call uses none",
+      "source": "https://docs.zapier.com/mcp/overview/usage"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "1 task per Zapier SDK action, fetch call or inbox-lease trigger outside Zapier, billed from December 1, 2026",
+      "source": "https://help.zapier.com/hc/en-us/articles/49965546559117-How-Next-Gen-Zaps-and-the-Zapier-SDK-are-billed"
     }
   ],
   "limits_note": "Free Zaps are two-step (one trigger, one action). Code steps get 1 second of included runtime per step on Free. Copilot has a daily message limit on Free.",
@@ -177,9 +187,108 @@
       "proved": "Zap content and run metadata are kept 7 days in logs and 29-69 days in the account",
       "capture": "sha256:dcb28a2247fb1d5d39dc8657c09986274a2e975e7cb050199f6d5602b9cae673",
       "quote": "7 days in logs. 29-69 days in your Zapier account."
+    },
+    {
+      "url": "https://docs.zapier.com/mcp/overview/how-connections-work",
+      "date": "2026-11-01",
+      "proved": "MCP clients connect to Zapier MCP at https://mcp.zapier.com/api/v1/connect",
+      "capture": "sha256:ad698800cd0fb601c43d69a1aecb1ed87106e494e8e3236618225c0ca9c5fe26",
+      "quote": "| Authorization header (preferred) | `Authorization: Bearer YOUR_CONNECTION_TOKEN` sent to `https://mcp.zapier.com/api/v1/connect` |"
+    },
+    {
+      "url": "https://docs.zapier.com/mcp/overview/usage",
+      "date": "2026-11-01",
+      "proved": "a successful Zapier MCP tool call uses 2 tasks at a fixed rate and a failed call uses 0",
+      "capture": "sha256:446f4dce3b10e350e42d7d80333980f7de3fe8b81bd84115759ecb95ec65ed15",
+      "quote": "| Tasks per successful tool call | 2 (fixed rate) | ... | Tasks per failed tool call | 0 |"
+    },
+    {
+      "url": "https://help.zapier.com/hc/en-us/articles/49965546559117-How-Next-Gen-Zaps-and-the-Zapier-SDK-are-billed",
+      "date": "2026-11-01",
+      "proved": "SDK actions, fetch calls and inbox-lease triggers outside Zapier use 1 task each once billing starts on December 1, 2026",
+      "capture": "sha256:f51db836988fd22b9716e686d0ecb2a9764b289d397aa6b76d786876d6bf40d4",
+      "quote": "Billing for Next Gen Zaps and the Zapier SDK starts at 12 pm ET (17:00 UTC) on December 1, 2026. ... | Outside Zapier, such as on your own servers, in scripts, or in cron jobs | SDK actions, fetch calls, and inbox-lease triggers | 1 task each |"
+    },
+    {
+      "url": "https://docs.zapier.com/llms.txt",
+      "date": "2026-11-02",
+      "proved": "the vendor lists a TypeScript SDK and a CLI for programmatic access to its 9,000+ app integrations",
+      "capture": "sha256:93c711d4f96403f37481e88fb392ab70b00b48595811f3081deb93968c29a0a3",
+      "quote": "The TypeScript SDK and CLI for coding agents and developers who need programmatic access to Zapier's 9,000+ app integrations."
+    },
+    {
+      "url": "https://docs.zapier.com/llms.txt",
+      "date": "2026-11-02",
+      "proved": "Zapier MCP has one endpoint, takes Streamable HTTP only and authenticates by OAuth in the MCP client or by a connection token",
+      "capture": "sha256:93c711d4f96403f37481e88fb392ab70b00b48595811f3081deb93968c29a0a3",
+      "quote": "- [How Zapier MCP connections work](https://docs.zapier.com/mcp/overview/how-connections-work.md): One endpoint, Streamable HTTP only, and the two auth paths: OAuth inside the MCP client, or a connection token."
+    },
+    {
+      "url": "https://docs.zapier.com/mcp/overview/how-connections-work",
+      "date": "2026-11-01",
+      "proved": "Zapier MCP supports only the Streamable HTTP transport",
+      "capture": "sha256:ad698800cd0fb601c43d69a1aecb1ed87106e494e8e3236618225c0ca9c5fe26",
+      "quote": "Zapier MCP supports the Model Context Protocol over Streamable HTTP only."
+    },
+    {
+      "url": "https://docs.zapier.com/sdk/quickstart",
+      "date": "2026-11-01",
+      "proved": "the Zapier SDK needs a Zapier account, and a free-tier account works",
+      "capture": "sha256:892746fa98acab3b0a8643488ea7c05f5851d52bed6af69371f32e3575069bbc",
+      "quote": "* A [Zapier account](https://zapier.com/sign-up) (free tier works). Or create one using the CLI in Step 3"
+    },
+    {
+      "url": "https://docs.zapier.com/sdk",
+      "date": "2026-11-01",
+      "proved": "the Zapier SDK is free in open beta until billing starts on December 1, 2026",
+      "capture": "sha256:1becf1a31328aa639d1a0e765a6764c0418b36c0379b3d7cddc61c6295159d7b",
+      "quote": "In open beta, free until billing starts on December 1, 2026."
+    },
+    {
+      "url": "https://help.zapier.com/hc/en-us/articles/8496197192461-Get-started-with-your-free-Zapier-trial",
+      "date": "2026-11-01",
+      "proved": "a new Zapier account needs no payment method for its trial and does not auto-upgrade when the trial ends",
+      "capture": "sha256:734e0080223a7db888b6b9002b48c3df89394d50e973ddda52b2944782f71db0",
+      "quote": "No payment method is required, and your account will not auto-upgrade when the trial ends."
+    },
+    {
+      "url": "https://community.zapier.com/general-discussion-13/how-can-i-create-a-test-account-46000",
+      "date": "2026-11-01",
+      "proved": "a Zapier Staff reply dated 2024-12-11 says any accessible email address, not already linked to a Zapier account, can be used to create a test account",
+      "capture": "sha256:c59b3656199d2681289412bc783bbaefba5312783a7f788618ad175f3eff90de",
+      "quote": "Yes, you can use any accessible email address to create a test account, as long as it's not already linked to an existing Zapier account."
+    },
+    {
+      "url": "https://ozenguner.com/2023/05/01/product-on-trial-1-zapier/",
+      "date": "2026-11-01",
+      "proved": "a third-party review dated 2023-05-01 reports signing up for Zapier with a Gmail account, without saying whether through the work-email field or Google sign-in; the current form is not tested",
+      "capture": "sha256:9872b2959d2c17db7a66cb701d831fce7b53b23470bdd75b859238da83ae729c",
+      "quote": "I was able to sign up with a Gmail account."
+    },
+    {
+      "url": "https://lascabritas.substack.com/p/decoding-zapiers-activation-flow",
+      "date": "2026-11-01",
+      "proved": "a third-party review dated 2023-11-23 reports signing up for Zapier with a personal email address on the email form; the current form is not tested",
+      "capture": "sha256:0647a744d2409594264da04ec1cafd7edaa8cc951792203b7d50b468ddf0bbc5",
+      "quote": "But I tried to sign up with a personal one, and it works."
+    },
+    {
+      "url": "https://zapier.com/pricing",
+      "date": "2026-11-01",
+      "proved": "the free plan has 100 tasks a month, two-step Zaps and basic access to MCP",
+      "capture": "sha256:c09f8efc28c528317ac9af318736b9974440b0bc54a00c8900b814871d80ebc0",
+      "quote": "| Free | Trying automation solo | 100 tasks/mo; unlimited Zap workflows/Tables/Forms; two-step Zap workflows; Copilot (daily limit); basic access to AI products (Agents, Chatbots, MCP) |"
+    },
+    {
+      "url": "https://zapier.com/sign-up",
+      "date": "2026-11-01",
+      "proved": "the sign-up form asks for a work email",
+      "capture": "sha256:3fd0501e358f4aba21ed16ca00c6fc2af54c76557e6945d5eba2549a5bf5fa22",
+      "quote": "Work email"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T00:43:02.028Z",
-  "extras": {}
+  "verified_at": "2026-11-02T00:37:46.631Z",
+  "extras": {},
+  "endpoint": "https://mcp.zapier.com/api/v1/connect"
 }

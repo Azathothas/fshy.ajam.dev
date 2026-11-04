@@ -6,7 +6,7 @@
   "category": "news event dataset and search API",
   "tier": "free",
   "free_tier": {
-    "stated": "Every dataset free for unlimited and unrestricted use, with no fee and no key: Event, Mentions and GKG CSV files every 15 minutes, the DOC 2.0 search API over a rolling 3 months, and the same tables in Google BigQuery.",
+    "stated": "Every dataset free for unlimited and unrestricted use, with no fee: Event, Mentions and GKG CSV files every 15 minutes and the DOC 2.0 search API over a rolling 3 months, both with no key, and the same tables in Google BigQuery, which needs a Google sign-in.",
     "unit": "unlimited",
     "metered_on": "none",
     "source_url": "https://www.gdeltproject.org/about.html",
@@ -48,18 +48,23 @@
       "kind": "per-object-cap",
       "value": "DOC 2.0 API: 250 results a request at most, 75 by default",
       "source": "https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "BigQuery route: 1 TiB of processed query data each month in the BigQuery sandbox, which needs a Google Account and a Google Cloud project but no credit card or billing account",
+      "source": "https://docs.cloud.google.com/bigquery/docs/sandbox"
     }
   ],
   "binding": "request-rate",
   "binding_note": "The DOC 2.0 API throttle is the only limit met; the bulk files carry no stated limit, so a reader that polls the files meets none.",
   "identity_cost": {
     "kind": "anonymous",
-    "detail": "No account and no key: the bulk files and the DOC 2.0 API take plain GET requests, and a 15-minute export zip downloaded with no credentials. The identity cost of the BigQuery route is unverified.",
+    "detail": "No account and no key: the bulk files and the DOC 2.0 API take plain GET requests, and an export zip downloaded with no credentials. The BigQuery route is not anonymous: a call to the BigQuery REST API for a GDELT table with no credential answers HTTP 401 with a Bearer challenge for accounts.google.com, so it needs a Google sign-in. The sandbox terms of that route are in the volume-quota limit row.",
     "country": null
   },
-  "reliability_note": "The DOC 2.0 API answered HTTP 429 to every call on 2026-10-30, from a residential ISP address and from a cloud fetch egress, with calls minutes apart; the bulk files answered 200.",
+  "reliability_note": "The DOC 2.0 API answered HTTP 429 to every call on 2026-10-30, from a residential ISP address and from a cloud fetch egress, with calls minutes apart. On 2026-11-02, in two series of calls hours apart, it answered HTTP 429 again to calls with different queries, from a residential ISP address under two user agents and from a cloud fetch egress; the only HTTP 200 answers were a 2-byte {} body, for two query URLs, from the residential address, and no call returned an article list. The bulk files answered 200 on both days.",
   "confidence": "measured",
-  "confidence_note": "A 15-minute export zip listed in lastupdate.txt downloaded with no account, 106145 bytes, the size the listing gives; the DOC 2.0 API was probed and answered 429 each time. The DOC 2.0 API ceiling stays unmeasured until a call answers 200.",
+  "confidence_note": "The newest export zip listed in lastupdate.txt downloaded with no account on 2026-10-30 and on 2026-11-02, at the size the listing gives each time (106145 bytes, then 82391 bytes); the DOC 2.0 API was probed on both days and answered 429 to every call except the calls that answered 200 with a 2-byte {} body. The DOC 2.0 API ceiling stays unmeasured until a call returns articles.",
   "evidence": [
     {
       "url": "https://www.gdeltproject.org/about.html",
@@ -186,9 +191,205 @@
       "proved": "the DOC 2.0 API answered 429 to a cloud fetch egress as well",
       "capture": "sha256:06e659071390a914f4649753d68de8cae3ad837d32b88dc4958e05db56913f13",
       "quote": "HTTP/1.1 429 Too Many Requests"
+    },
+    {
+      "url": "probe:https://api.gdeltproject.org/api/v2/doc/doc#20261102-429-a",
+      "date": "2026-11-02",
+      "proved": "a DOC 2.0 API call of 2026-11-02 from a residential ISP address answered HTTP 429",
+      "capture": "sha256:30214500098515134a7379ee8484e1a3e799b2a66e4fe8fd99433f4ff574e66f",
+      "quote": "\"status\": 429"
+    },
+    {
+      "url": "probe:https://data.gdeltproject.org/gdeltv2/20261102104500.export.CSV.zip",
+      "date": "2026-11-02",
+      "proved": "the newest export zip listed in lastupdate.txt downloaded with no account at 82391 bytes, the size the listing gives",
+      "capture": "sha256:370b5d195511673f68bb342bad0bf879e06461d849e8ced499fbe44027d0d170",
+      "quote": "\"bytes\": 82391"
+    },
+    {
+      "url": "probe:https://bigquery.googleapis.com/bigquery/v2/projects/gdelt-bq/datasets/gdeltv2/tables/events",
+      "date": "2026-11-02",
+      "proved": "the BigQuery REST API answers HTTP 401 with a Bearer challenge for accounts.google.com to a call for a GDELT table with no credential",
+      "capture": "sha256:a2aaa17919da70a5c07c47fee592cefed01a82c5c20d8907f0f84c762e79d8ba",
+      "quote": "\"www-authenticate\": \"Bearer realm=\\\"https://accounts.google.com/\\\"\""
+    },
+    {
+      "url": "probe:https://bigquery.googleapis.com/bigquery/v2/projects/gdelt-bq/datasets/gdeltv2/tables/events#body",
+      "date": "2026-11-02",
+      "proved": "the BigQuery REST API asks for an OAuth 2 access token or a login cookie on a call for a GDELT table",
+      "capture": "sha256:c824a0e3ee7d8a5a473050edea064c944921173877c965742929c9cab8baece5",
+      "quote": "Request is missing required authentication credential. Expected OAuth 2 access token, login cookie or other valid authentication credential."
+    },
+    {
+      "url": "https://docs.cloud.google.com/bigquery/docs/sandbox",
+      "date": "2026-11-02",
+      "proved": "the BigQuery sandbox gives 1 TiB of processed query data each month",
+      "capture": "sha256:c6276cf2d30174969ad1b8ca123ac2f3a79a77da0ae4991f233d4e72535377de",
+      "quote": "You are granted the same free compute limit as the BigQuery [free tier](https://cloud.google.com/bigquery/pricing#free-usage-tier) of 1 TiB of processed query data each month."
+    },
+    {
+      "url": "https://docs.cloud.google.com/bigquery/docs/sandbox",
+      "date": "2026-11-02",
+      "proved": "the BigQuery sandbox, which can query a public dataset, needs no credit card and no billing account",
+      "capture": "sha256:c6276cf2d30174969ad1b8ca123ac2f3a79a77da0ae4991f233d4e72535377de",
+      "quote": "The BigQuery sandbox lets you experience BigQuery without providing a credit card or creating a billing account for your project."
+    },
+    {
+      "url": "https://docs.cloud.google.com/bigquery/docs/sandbox",
+      "date": "2026-11-02",
+      "proved": "the BigQuery sandbox asks for a Google Account, an existing one or a new one",
+      "capture": "sha256:c6276cf2d30174969ad1b8ca123ac2f3a79a77da0ae4991f233d4e72535377de",
+      "quote": "Authenticate with your Google Account, or create a new one."
+    },
+    {
+      "url": "https://docs.cloud.google.com/bigquery/public-data",
+      "date": "2026-11-02",
+      "proved": "querying a BigQuery public dataset needs a project and no billing for the first terabyte of queries a month",
+      "capture": "sha256:d536e3cf9b281b8ee1dbe835ea805f02622436f4a14e9e823669f82cc1c00184",
+      "quote": "To get started using a BigQuery public dataset, you must create or select a project. The first terabyte of data processed per month is free, so you can start querying public datasets without enabling billing."
+    },
+    {
+      "url": "https://support.google.com/accounts/answer/27441",
+      "date": "2026-11-02",
+      "proved": "a Google Account can be created with an existing non-Gmail email address",
+      "capture": "sha256:530c8b26d7fee00a70b06fecd1c4ca96727dadbfaff3a8e4dd5321de670cd5a0",
+      "quote": "You don't need to have a Gmail address to create a Google Account. You can also use a non-Gmail email address to create one instead."
+    },
+    {
+      "url": "https://support.google.com/accounts/answer/27441",
+      "date": "2026-11-02",
+      "proved": "a phone number is optional in the Google Account sign-up steps",
+      "capture": "sha256:530c8b26d7fee00a70b06fecd1c4ca96727dadbfaff3a8e4dd5321de670cd5a0",
+      "quote": "Optional: Add and verify a phone number for your account."
+    },
+    {
+      "url": "https://blog.gdeltproject.org/google-bigquery-gkg-2-0-sample-queries/",
+      "date": "2026-11-02",
+      "proved": "the GDELT tables in BigQuery are queried after a Google BigQuery account is created; the GKG table is gdelt-bq:gdeltv2.gkg",
+      "capture": "sha256:a20eae0c54a85036f71f972f4130a69c445dece697bc86d6e5d8456fdc191c88",
+      "quote": "Once you've created a Google BigQuery account, browse on over to the [GKG table in BigQuery](https://bigquery.cloud.google.com/table/gdelt-bq:gdeltv2.gkg)"
+    },
+    {
+      "url": "probe:https://bigquery.googleapis.com/bigquery/v2/projects/gdelt-bq/datasets/gdeltv2/tables/events#body",
+      "date": "2026-11-02",
+      "proved": "the BigQuery REST API answers a call for a GDELT table with no credential with HTTP 401 and asks for an OAuth 2 access token or a login cookie",
+      "capture": "sha256:c824a0e3ee7d8a5a473050edea064c944921173877c965742929c9cab8baece5",
+      "quote": "Request is missing required authentication credential. Expected OAuth 2 access token, login cookie or other valid authentication credential."
+    },
+    {
+      "url": "probe:https://api.gdeltproject.org/api/v2/doc/doc#20261102-empty",
+      "date": "2026-11-02",
+      "proved": "a DOC 2.0 API call of 2026-11-02 from a residential ISP address answered HTTP 200 with a 2-byte body",
+      "capture": "sha256:2d81e68d90c380eb949c94c13d75e3ba37acd7b4f850f1ff3aa1f26c2406470a",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:https://api.gdeltproject.org/api/v2/doc/doc#20261102-empty",
+      "date": "2026-11-02",
+      "proved": "the 2-byte body of that HTTP 200 answer has the SHA-256 of {}, an empty JSON object, and is not an article list",
+      "capture": "sha256:2d81e68d90c380eb949c94c13d75e3ba37acd7b4f850f1ff3aa1f26c2406470a",
+      "quote": "\"sha256\": \"44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a\""
+    },
+    {
+      "url": "probe:https://api.gdeltproject.org/api/v2/doc/doc#20261102-empty-repeat",
+      "date": "2026-11-02",
+      "proved": "the same query URL answered HTTP 200 with a 2-byte body again when repeated minutes later from the same residential ISP address",
+      "capture": "sha256:795be6835653c962a768b506eae10749198e6375503f13307f5d530f455f4018",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:https://api.gdeltproject.org/api/v2/doc/doc#20261102-empty-2",
+      "date": "2026-11-02",
+      "proved": "a second query URL, a phrase query over three days, answered HTTP 200 with a 2-byte body hours after the first series",
+      "capture": "sha256:552c86fe9a531040567c952d525f5d027753d60a6524e78562fd7ece7c02bcff",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "probe:https://api.gdeltproject.org/api/v2/doc/doc#20261102-empty-2",
+      "date": "2026-11-02",
+      "proved": "the 2-byte body of that answer has the SHA-256 of {}, an empty JSON object, and is not an article list",
+      "capture": "sha256:552c86fe9a531040567c952d525f5d027753d60a6524e78562fd7ece7c02bcff",
+      "quote": "\"sha256\": \"44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a\""
+    },
+    {
+      "url": "probe:https://api.gdeltproject.org/api/v2/doc/doc#20261102-429-later",
+      "date": "2026-11-02",
+      "proved": "the DOC 2.0 API answered HTTP 429 again to a residential ISP address hours after the first series",
+      "capture": "sha256:f54d30178b8b56f68ed86b7f3fc100421da6d22b18cc200df4bd392eac3238d6",
+      "quote": "\"status\": 429"
+    },
+    {
+      "url": "https://api.gdeltproject.org/api/v2/doc/doc?query=election&mode=artlist&maxrecords=6&format=json",
+      "date": "2026-11-02",
+      "proved": "the DOC 2.0 API answered HTTP 429 to a cloud fetch egress hours after the first series",
+      "capture": "sha256:2265fae2dfa92245735547a51ec6d6186fc40be7414e11f8398be96b78dc72c7",
+      "quote": "HTTP/1.1 429 Too Many Requests"
+    },
+    {
+      "url": "probe:https://api.gdeltproject.org/api/v2/doc/doc#20261102-429-curl-agent",
+      "date": "2026-11-02",
+      "proved": "the DOC 2.0 API answered HTTP 429 to a call with a curl user agent from a residential ISP address",
+      "capture": "sha256:9ebeea7726537622474443059e4f9129d03ec6450f8b11093418502794813701",
+      "quote": "\"status\": 429"
+    },
+    {
+      "url": "probe:https://api.gdeltproject.org/api/v2/doc/doc#20261102-429-repeat",
+      "date": "2026-11-02",
+      "proved": "the query URL that had answered HTTP 200 with {} answered HTTP 429 when repeated from the same residential ISP address",
+      "capture": "sha256:4a0603ea53f961e57f85016f1ffe09ad89aac28bfa425aec66b3ae6d44879b85",
+      "quote": "\"status\": 429"
+    },
+    {
+      "url": "probe:https://api.gdeltproject.org/api/v2/doc/doc#20261102-429-body",
+      "date": "2026-11-02",
+      "proved": "the 429 body still asks for at most one request every 5 seconds",
+      "capture": "sha256:44c03f8dd984184218c90dc7e64aed9e6e2d8b17426feb5aa7933b3c44df64c6",
+      "quote": "Please limit requests to one every 5 seconds"
+    },
+    {
+      "url": "https://api.gdeltproject.org/api/v2/doc/doc?query=weather&mode=artlist&maxrecords=3&timespan=1d&format=json",
+      "date": "2026-11-02",
+      "proved": "the DOC 2.0 API answered HTTP 429 to a cloud fetch egress for the query URL that answered 200 with {} to a residential ISP address within seconds",
+      "capture": "sha256:230d947295492452fc3e69476f3fc21f933844466300b4d45d2539979ff9ef2a",
+      "quote": "HTTP/1.1 429 Too Many Requests"
+    },
+    {
+      "url": "https://github.com/apitube/gdelt-apitube-migration-kit",
+      "date": "2026-11-02",
+      "proved": "a third party reports that on 27 July 2026 the DOC 2.0 API let 1 request of 7 through at 6-second spacing, 4 of 12 at 16 seconds and 3 of 8 at 60 seconds",
+      "capture": "sha256:8ddae92cd8bd27080b95943822e62298fd5be167dd8c1bb9b3e1d0c035557aef",
+      "quote": "Measured on 27 July 2026, that is optimistic. At a 6-second interval 1 request of 7 got through. At 16 seconds, 4 of 12. At 60 seconds, 3 of 8."
+    },
+    {
+      "url": "probe:https://data.gdeltproject.org/gdeltv2/lastupdate.txt#20261102",
+      "date": "2026-11-02",
+      "proved": "lastupdate.txt, read with no account, lists the newest export zip at 82391 bytes",
+      "capture": "sha256:280980a4528f67f14068b67c6a327bb5d8e67d29bad5e90ecd0bc578e051dd31",
+      "quote": "82391 1bd5e7589b55f4e253d4712712039bff http://data.gdeltproject.org/gdeltv2/20261102104500.export.CSV.zip"
+    },
+    {
+      "url": "probe:https://data.gdeltproject.org/gdeltv2/lastupdate.txt#20261102-record",
+      "date": "2026-11-02",
+      "proved": "lastupdate.txt answers HTTP 200 with no account",
+      "capture": "sha256:43b97dbbe46f3930058f5118016b384651a921236443b5bbba94e410a39fcb41",
+      "quote": "\"status\": 200"
+    },
+    {
+      "url": "https://www.gdeltproject.org/data.html",
+      "date": "2026-11-02",
+      "proved": "the GDELT data page states that all GDELT datasets are available in Google BigQuery, updated every 15 minutes",
+      "capture": "sha256:7df09965f022d3352d3e904f5e8cd1e76ea3ac5629344894d82168d9371334f7",
+      "quote": "all GDELT datasets are available in [Google BigQuery](http://googlecloudplatform.blogspot.com/2014/05/worlds-largest-event-dataset-now-publicly-available-in-google-bigquery.html), with live datasets updated every 15 minutes."
+    },
+    {
+      "url": "https://www.gdeltproject.org/about.html",
+      "date": "2026-11-02",
+      "proved": "every GDELT dataset is free for unlimited and unrestricted use",
+      "capture": "sha256:707cf9cc747d4c8dc4b690ae151e4b50a1ca7d97cf81b1e5afe8cb4ca4e9e7bf",
+      "quote": "all datasets released by the GDELT Project are available for unlimited and unrestricted use for any academic, commercial, or governmental use of any kind without fee."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-30T12:52:13.090Z",
+  "verified_at": "2026-11-03T00:28:06.702Z",
   "notes": "Bulk path: data.gdeltproject.org/gdeltv2/masterfilelist.txt lists every 15-minute file since February 19, 2015, and lastupdate.txt the newest; the same tables sit in Google BigQuery."
 }

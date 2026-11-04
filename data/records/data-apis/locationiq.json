@@ -11,7 +11,7 @@
     "metered_on": "request-count",
     "source_url": "https://locationiq.com/pricing",
     "read_on": "2026-10-31",
-    "notes": "the next plan, Developer, is USD 100 a month for 25,000 requests a day at 20 requests a second; the terms call the free account a trial that may be charged for later"
+    "notes": "the next plan, Developer, is USD 100 a month for 25,000 requests a day at 20 requests a second; the terms call the free account a trial that may be charged for later; a routing request is counted like the other APIs, one successful response consuming one request"
   },
   "per_object_cap": {
     "stated": "no batch endpoint: one address or coordinate a request; bulk work is sent as concurrent requests within the plan's per-second rate",
@@ -58,10 +58,10 @@
   "binding_note": "2 requests a second and 60 a minute allow more than 5000 requests in a day, so the daily quota is met first",
   "identity_cost": {
     "kind": "email",
-    "detail": "an account at my.locationiq.com with a work email, a full name and a use case, or Google sign-in; the form has no card field. Whether a free-mail address passes as a work email is…",
+    "detail": "an account at my.locationiq.com with a work email, a full name and a use case, or Google sign-in; the form has no card field and carries a Google reCAPTCHA check. Whether a free-mail address passes as a work email is unverified: behind a sign-up (the email field is a required email-type input)",
     "country": null
   },
-  "reliability_note": "a request over the per-second, per-minute or daily limit answers HTTP 429; the free account is described as a trial that may be charged for later",
+  "reliability_note": "a request over the per-second, per-minute or daily limit answers HTTP 429; the free account is described as a trial that may be charged for later; an IP address that makes several sign-ups in a short time can be blocked with Error 1006 Access Denied",
   "confidence": "documented",
   "confidence_note": "the pricing page, the terms, the geocoding page, the errors and authentication docs and the sign-up page were quoted on 2026-10-31; a keyless search answered HTTP 401. No account was opened, so no keyed request was made; one would move it to measured.",
   "evidence": [
@@ -232,10 +232,66 @@
       "proved": "the search endpoint refuses a request with no valid key",
       "capture": "sha256:b4b42b7bb0a7e0c0958f53a398246bc2199ccdaa515a8fdc38f63b7263648108",
       "quote": "{\"error\":\"Invalid key\"}"
+    },
+    {
+      "url": "https://my.locationiq.com/register",
+      "date": "2026-11-02",
+      "proved": "the sign-up form has a required email-type input and a reCAPTCHA widget",
+      "capture": "sha256:5d18f485f428005ab2ffe3de3e0e82c9b6dcfbd2bb4570b612a25b9b9f3c9a90",
+      "quote": "type=\"email\" name=\"SignupForm[email]\" id=\"SignupForm_email\" required ... <div class=\"g-recaptcha\""
+    },
+    {
+      "url": "https://help.locationiq.com/support/solutions/articles/36000216101-how-are-requests-counted-under-routing-api-",
+      "date": "2026-11-02",
+      "proved": "a routing request counts like any other: 1 successful response is 1 request consumed",
+      "capture": "sha256:1e28a2462e4066c4f1f936267a8bc8a36a5b1f425505f2b209afadcad5b6f9d0",
+      "quote": "Our routing API calculates the request like the other APIs. 1 successful response = 1 request consumed"
+    },
+    {
+      "url": "https://help.locationiq.com/support/solutions/articles/36000216091-what-is-the-meaning-of-the-error-1006-access-denied-",
+      "date": "2026-11-02",
+      "proved": "several sign-ups from one IP address in a short time can be blocked with Error 1006 Access Denied",
+      "capture": "sha256:7f50694efc1948a3032a9ed52194e3a8ab49ae1e6d0690049ca186aa7a55a987",
+      "quote": "This might mean that your IP address got blocked due to multiple signups in a small period of time."
+    },
+    {
+      "url": "https://docs.locationiq.com/docs/locationiq-access-token",
+      "date": "2026-11-02",
+      "proved": "registration sends a verification link to the email address given",
+      "capture": "sha256:b8c16f7361d46ff153490c61412387209ff7f2607604479651c143b7fead219e",
+      "quote": "Check your email inbox for a verification link sent to the provided email address during registration."
+    },
+    {
+      "url": "https://locationiq.com/pricing",
+      "date": "2026-11-02",
+      "proved": "the Free plan gives 5000 requests a day",
+      "capture": "sha256:111b6310a2be4cd6d86a985d610a1b991c7ebe811c0af56943277221f49f9090",
+      "quote": "5000 requests /day"
+    },
+    {
+      "url": "https://my.locationiq.com/register",
+      "date": "2026-11-02",
+      "proved": "the sign-up form asks for an email",
+      "capture": "sha256:5d18f485f428005ab2ffe3de3e0e82c9b6dcfbd2bb4570b612a25b9b9f3c9a90",
+      "quote": "<label class=\"ui-label\" for=\"SignupForm_email\">Work email</label>"
+    },
+    {
+      "url": "https://locationiq.com/tos",
+      "date": "2026-11-02",
+      "proved": "a free account may cache request-response pairs for up to 48 hours",
+      "capture": "sha256:ee0abea76758fab101869f3fa146b50c6a6fa74d6037f628ce5a6fcb86d6d622",
+      "quote": null
+    },
+    {
+      "url": "probe:https://us1.locationiq.com/v1/search?q=Zurich&format=json#body",
+      "date": "2026-11-02",
+      "proved": "a keyless search request is refused with an invalid-key error",
+      "capture": "sha256:b4b42b7bb0a7e0c0958f53a398246bc2199ccdaa515a8fdc38f63b7263648108",
+      "quote": "{\"error\":\"Invalid key\"}"
     }
   ],
   "verdict": "qualifies",
-  "verified_at": "2026-10-31T10:04:03.987Z",
+  "verified_at": "2026-11-03T00:28:26.711Z",
   "notes": "Bulk path: none; no batch endpoint, so addresses go as concurrent single requests at up to 2 a second.",
   "extras": {
     "bulk_path": "none: no batch endpoint; concurrent single requests within 2 a second"

@@ -5,10 +5,10 @@
   "url": "https://freedns.afraid.org/",
   "category": "shared-registry subdomains and managed DNS",
   "free_tier": {
-    "stated": "unlimited domains per account with 20 free subdomains on each, plus 5 free hostnames on a shared registry of 23,097 domains",
+    "stated": "unlimited domains per account with 20 free subdomains on each, plus 5 free hostnames on a shared registry of 23,087 domains",
     "unit": "unlimited",
     "source_url": "https://freedns.afraid.org/signup/features/",
-    "read_on": "2026-10-30",
+    "read_on": "2026-11-02",
     "metered_on": "object-count"
   },
   "per_object_cap": {
@@ -31,7 +31,7 @@
   "interface": [
     "unknown"
   ],
-  "interface_detail": "no general record-management API is documented, and the /api/ page is behind a login; the free plan's programmatic path is the dynamic-update URL https://sync.afraid.org/u/<token>/ (https://v6.sync.afraid.org/u/<token>/ for IPv6), which changes the address of an existing record; other record edits, TXT included, are POSTs to https://freedns.afraid.org/subdomain/save.php with a logged-in session cookie",
+  "interface_detail": "no general record-management API is documented, and the /api/ page is behind a login, so its content is unverified: behind a sign-up; the site's client list says a client that sends a SHA1 hash of the user name and password can fetch the needed update URL itself; the free plan's programmatic path is the dynamic-update URL https://sync.afraid.org/u/<token>/ (https://v6.sync.afraid.org/u/<token>/ for IPv6), which changes the address of an existing record; other record edits, TXT included, are POSTs to https://freedns.afraid.org/subdomain/save.php with a logged-in session cookie; the interface term for the update URL would be dyndns, which the vocabulary lacks, so interface carries unknown",
   "tooling": "curl against sync.afraid.org/u/<token>/; DD-WRT and router integrations",
   "chaining": "a free hostname that resolves without owning a domain, which is the only thing here that does",
   "limits": [
@@ -224,10 +224,94 @@
       "proved": "the values of limits[0] and limits[1] are unchanged on the features page and the FAQ",
       "capture": "sha256:2e69e05013470539531a6cd60e591d619812a4463d11edb675b22f6cd8fe4e7d",
       "quote": "20 free subdomains included on each of your own domains"
+    },
+    {
+      "url": "https://freedns.afraid.org/scripts/freedns.clients.php",
+      "date": "2026-11-02",
+      "proved": "the site's own client list says a client that sends a SHA1 hash of the user name and password can fetch the needed update URL itself",
+      "capture": "sha256:a120d48942ee720f50e18535765dbef93d32a15c4bcd8615c666b54d22141a61",
+      "quote": "Gargoyle supports SHA1 hashing of username/password, so the client can fetch the needed update url dynamically (users need not supply the key needed to do the update)."
+    },
+    {
+      "url": "https://freedns.afraid.org/api/",
+      "date": "2026-11-02",
+      "proved": "a request for the /api/ page without a session lands on the sign-in page, so the page content is behind a login",
+      "capture": "sha256:523269e5231645c2e93013712cddaebad711d02f80b5f0a2d352d5c4b71d1b06",
+      "quote": "Keep getting thrown back here? Enable cookies."
+    },
+    {
+      "url": "probe:https://freedns.afraid.org/api/?action=getdyndns&sha=0000000000000000000000000000000000000000",
+      "date": "2026-11-02",
+      "proved": "the /api/ endpoint ?action=getdyndns with a sha key, which third-party clients call to list update URLs, answers HTTP 200 with the text ERROR: Could not authenticate. to a placeholder key of forty zeros",
+      "capture": "sha256:2907b7616e2de83d5a58ebeb7b757b4f30a8ad536ff72e26be0ce87979d60148",
+      "quote": "ERROR: Could not authenticate."
+    },
+    {
+      "url": "https://github.com/ddclient/ddclient/issues/180",
+      "date": "2026-11-02",
+      "proved": "third party: a ddclient issue ties the /api/ page to the v1 update protocol, which takes one request to get the update URL of a host and one to perform the update",
+      "capture": "sha256:d4a5a3f6106cb5f22095b9c134f95abc261cbdc6f05f660f36ec15c0493345cc",
+      "quote": "The [v1 update protocol](https://freedns.afraid.org/api/) is used, which requires two requests: one to get the update URL for the desired host and another to actually perform the update."
+    },
+    {
+      "url": "https://github.com/ekkis/afraid-dyndns",
+      "date": "2026-11-02",
+      "proved": "third party: a client's README says the signed-in /api/ page offers Available API Interfaces links whose sha parameter is the account key",
+      "capture": "sha256:fccc0d3026beac50c230ee84f1579442321db5e70e0642d43f07b14b955aa352",
+      "quote": "log into afraid.org and visit: http://freedns.afraid.org/api/ then click on either of the \"Available API Interfaces\" links and take the value of the \"sha\" parameter (it's a long string) from the url."
+    },
+    {
+      "url": "https://beigebox.co.uk/programming/freedns-management-tool/",
+      "date": "2026-11-02",
+      "proved": "third party: a script's comment places the API page under the Dynamic DNS menu as a Programmer's XML API with two interfaces, XML and ASCII",
+      "capture": "sha256:cc4828f494dbfbe45388bd8c1acf97de7345806182f8c8f869b6189b9f10599f",
+      "quote": "Dynamic DNS > Programmer's XML API > Available API Interfaces : XML | ASCII"
+    },
+    {
+      "url": "https://github.com/acmesh-official/acme.sh/wiki/dnsapi",
+      "date": "2026-11-02",
+      "proved": "third party: the acme.sh maintainers say FreeDNS provides no API to update DNS records other than the IPv4 and IPv6 dynamic DNS addresses",
+      "capture": "sha256:6451e746adf77b6173b87f9b3dc391f77e3c074989ee3b42762f5ac68446cfec",
+      "quote": "does not provide an API to update DNS records (other than IPv4 and IPv6 dynamic DNS addresses)"
+    },
+    {
+      "url": "https://freedns.afraid.org/signup/features/",
+      "date": "2026-11-02",
+      "proved": "the features page counts 23,087 domains in the shared registry pool",
+      "capture": "sha256:9df6de6eb5f711aef47074aad66020ada3c2efb529367e2bd8c4586813557169",
+      "quote": "currently 23,087 domains in the shared pool"
+    },
+    {
+      "url": "https://freedns.afraid.org/signup/features/",
+      "date": "2026-11-02",
+      "proved": "an account may host any number of owned domains",
+      "capture": "sha256:9df6de6eb5f711aef47074aad66020ada3c2efb529367e2bd8c4586813557169",
+      "quote": "Unlimited number of domains per account (yes really)"
+    },
+    {
+      "url": "https://freedns.afraid.org/signup/features/",
+      "date": "2026-11-02",
+      "proved": "a free account gets 5 hostnames on the shared registry",
+      "capture": "sha256:9df6de6eb5f711aef47074aad66020ada3c2efb529367e2bd8c4586813557169",
+      "quote": "Comes with 5 free hostnames that work in the [shared domain registry]"
+    },
+    {
+      "url": "https://freedns.afraid.org/signup/features/",
+      "date": "2026-11-02",
+      "proved": "each domain the user owns gets 20 free subdomains",
+      "capture": "sha256:9df6de6eb5f711aef47074aad66020ada3c2efb529367e2bd8c4586813557169",
+      "quote": "20 free subdomains included on each of your own domains"
+    },
+    {
+      "url": "https://freedns.afraid.org/signup/moreinfo/",
+      "date": "2026-11-02",
+      "proved": "the vendor describes the update path as a fetchable URL that auto-updates the network address, available in the Dynamic DNS section",
+      "capture": "sha256:5bedaaeb1d196740356389dee453cd8d674dba3a7ae3891cc1451afa7a79e2bb",
+      "quote": "a special fetchable URL to auto-update the network address in FreeDNS is available in the 'Dynamic DNS' section for those whose IP address changes at random."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T01:02:49.781Z",
+  "verified_at": "2026-11-02T10:17:37.729Z",
   "price_per_tb_month": null,
   "notes": "The name is not yours and the owner can withdraw consent. It is a dynamic-DNS tool with a social dependency, not a name."
 }

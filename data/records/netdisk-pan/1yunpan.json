@@ -13,8 +13,8 @@
     "notes": "the pricing block reads '100GB Storage +400GB via check-in' and the check-in panel says 'up to 500GB free'"
   },
   "per_object_cap": {
-    "stated": "Not published",
-    "bytes": null,
+    "stated": "32212254720 bytes (30 GiB) per upload, as the site's published config.json sets limit.upload_allow_max_size",
+    "bytes": 32212254720,
     "source_url": "https://www.1yunpan.com/"
   },
   "retention": {
@@ -50,10 +50,10 @@
   ],
   "identity_cost": {
     "kind": "email",
-    "detail": "an email address and an emailed six-digit code; the register form has username, password, confirm, email, email_code and an agreement checkbox with no phone or mobile input present",
+    "detail": "an email address at one of a fixed list of domains (including gmail.com, qq.com, icloud.com, 163.com and yahoo.com) and an emailed six-digit code; the register form has username, password, confirm, email, email_code and an agreement checkbox with no phone or mobile input present",
     "country": null
   },
-  "reliability_note": "Reads are real: a 1,326,142,372-byte MP4 came back byte-exact against Content-Length with Range honoured, and a ranged GET returned 206 with a correct Content-Range. The 400 GB is streak-gated, so an account that stops logging in loses headroom",
+  "reliability_note": "Reads are real: a 1,326,142,372-byte MP4 came back byte-exact against Content-Length with Range honoured, and a ranged GET returned 206 with a correct Content-Range. The site notice states that files uploaded between 2026-10-05_22:00:00 and 2026-10-30_23:59:59 are temporarily not downloadable and that file upload is temporarily stopped, and config.json sets upload.temporarily_disabled to true. The 400 GB is streak-gated, so an account that stops logging in loses headroom",
   "confidence": "reported",
   "evidence": [
     {
@@ -85,10 +85,73 @@
       "url": "https://www.1yunpan.com/register",
       "date": "2026-10-21",
       "proved": "the form DOM has username, password, confirm, email, email_code and 2FA support, and zero phone or mobile inputs"
+    },
+    {
+      "url": "probe:https://www.1yunpan.com/config.json",
+      "date": "2026-11-03",
+      "proved": "the site config sets the per-upload size limit to 32212254720 bytes",
+      "capture": "sha256:6ce2e8085f6efcb6680948e05ef4cd11edc846997f85dc9948a0f5210d19570d",
+      "quote": "\"upload_allow_max_size\": 32212254720"
+    },
+    {
+      "url": "probe:https://www.1yunpan.com/config.json",
+      "date": "2026-11-03",
+      "proved": "the config disables registration with any email domain and carries an email_whitelist of permitted domains",
+      "capture": "sha256:6ce2e8085f6efcb6680948e05ef4cd11edc846997f85dc9948a0f5210d19570d",
+      "quote": "\"allow_all_email_to_register\": 0,"
+    },
+    {
+      "url": "https://www.1yunpan.com/",
+      "date": "2026-11-03",
+      "proved": "the front page carries a notice that files uploaded in a stated window are temporarily not downloadable, older files are unaffected, and file upload is temporarily stopped",
+      "capture": "sha256:ba040c4c5957d054c511d27c79634b26062899734df270bc6760b45649a73604",
+      "quote": "技术故障导致 2026-10-05_22:00:00 至 2026-10-30_23:59:59 期间上传的文件暂时无法下载，技术人员正在维护系统并从冷备份中恢复，我们会尽快恢复文件的正常下载。对于 2026-10-05:20:00:00 以前上传的文件均可正常下载未受影响。系统目前暂时停止文件上传功能。"
+    },
+    {
+      "url": "probe:https://www.1yunpan.com/config.json",
+      "date": "2026-11-03",
+      "proved": "the config the web app loads sets upload.temporarily_disabled to true",
+      "capture": "sha256:6ce2e8085f6efcb6680948e05ef4cd11edc846997f85dc9948a0f5210d19570d",
+      "quote": "\"temporarily_disabled\": true,"
+    },
+    {
+      "url": "probe:https://id5mjj37zbn85c.1yunpan.com/Videos/test.mp4#head",
+      "date": "2026-11-03",
+      "proved": "a HEAD on the demo MP4 answers HTTP 200 with Content-Length 1326142372",
+      "capture": "sha256:da84e4fbf59e71966245c47f355e5a175e03077211cf150a630a5f19f257c8cc",
+      "quote": "\"content-length\": \"1326142372\""
+    },
+    {
+      "url": "probe:https://id5mjj37zbn85c.1yunpan.com/Videos/test.mp4#range",
+      "date": "2026-11-03",
+      "proved": "a ranged GET returns the matching Content-Range, so Range is honoured on the direct host",
+      "capture": "sha256:1da5e49ad74c30c1fe7d4115f6729ff103ae67da1c292d1ba45f6223db94ece7",
+      "quote": "\"content_range\": \"bytes 1000000-1000255/1326142372\""
+    },
+    {
+      "url": "probe:https://s3.1yunpan.com/",
+      "date": "2026-11-03",
+      "proved": "the S3 endpoint answers an S3-shaped XML error body to an unauthenticated GET of the root",
+      "capture": "sha256:d8a819a2a379f435a64e66d22fc3da77424bdfec19ba321be0deb450c663c239",
+      "quote": "<Message>Invalid path</Message>"
+    },
+    {
+      "url": "https://www.1yunpan.com/",
+      "date": "2026-11-03",
+      "proved": "the front-page Starter plan lists 1 TB of monthly bandwidth",
+      "capture": "sha256:8db69290d523f57ce63a5017f1035788ad618ef51cce49c294e25acefa49caec",
+      "quote": "1TB Monthly Bandwidth"
+    },
+    {
+      "url": "https://www.1yunpan.com/",
+      "date": "2026-11-03",
+      "proved": "the front-page Starter plan still lists 100 GB of storage plus 400 GB via check-in",
+      "capture": "sha256:8db69290d523f57ce63a5017f1035788ad618ef51cce49c294e25acefa49caec",
+      "quote": "100GB Storage +400GB via check-in"
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-21T00:00:00.000Z",
+  "verified_at": "2026-11-04T00:20:59.760Z",
   "price_per_tb_month": "Pro at CNY 29/month is 1 TB storage and 10 TB/month; the free tier is not purchasable and has no per-terabyte price",
   "binding": "per-ip-shaping",
   "binding_note": "One 1 TiB refill would exhaust a month in a single morning.",

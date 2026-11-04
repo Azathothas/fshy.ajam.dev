@@ -1,0 +1,161 @@
+{
+  "topic": "compute",
+  "slug": "gpu-ai",
+  "provider": "gpu.ai",
+  "tier": "on-demand",
+  "url": "https://gpu.ai/",
+  "category": "GPU cloud",
+  "free_tier": {
+    "stated": "no free tier: a GPU marketplace that routes each launch to the cheapest connected provider, billed per second. Live cheapest rows from its public pricing API on 2026-11-03: H100 SXM $3.99 an hour (1 GPU, us-east, 4 available); A100 80 GB $1.07 an hour (ca-central, 2 available), $1.23 (us-central) and $1.25 (us-east); L40S $0.80 an hour (us-central, 92 available) and $1.09 (eu-west). The same API call returned no RTX 4090 or L4 row with units available that day.",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://api.gpu.ai/v1/pricing",
+    "read_on": "2026-11-03"
+  },
+  "per_object_cap": {
+    "stated": "not applicable: the unit is a GPU-hour, not an object",
+    "bytes": null,
+    "source_url": "https://gpu.ai/docs/guides/gpu-instances"
+  },
+  "retention": {
+    "stated": "not stated in the pages read",
+    "days": null,
+    "source_url": "https://gpu.ai/docs/guides/gpu-instances"
+  },
+  "egress": {
+    "terms": "not stated in the pages read",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://gpu.ai/docs/guides/gpu-instances"
+  },
+  "interface": [
+    "rest",
+    "cli",
+    "ssh"
+  ],
+  "interface_detail": "a REST API at api.gpu.ai/v1, a gpu CLI, Python and TypeScript SDKs and an MCP server; instances are reached over SSH. The catalog and pricing endpoints need no key.",
+  "tooling": "REST API (bearer key), the gpu CLI, official Python and TypeScript SDKs and an MCP server; an instance is created with POST /v1/instances and reached over SSH. Each pricing row carries deployment_type vm or container, a tier of on_demand or spot, and an available count.",
+  "chaining": "the pricing endpoint is public and priced live, so it can be polled without an account to find the cheapest A100 80 GB, L40S or H100 row before launching.",
+  "limits": [
+    {
+      "kind": "volume-quota",
+      "value": "rows are per offering with an available count (for example 92 L40S units in us-central, 2 A100 80 GB in ca-central); capacity is pooled from other providers and a row with zero units is omitted by default",
+      "source": "https://api.gpu.ai/v1/pricing"
+    }
+  ],
+  "limits_note": "capacity is aggregated from several providers, so the available count of a row changes between reads; the docs state the on-demand server can be shared with other tenants (each on their own GPU)",
+  "binding": "volume-quota",
+  "binding_note": "each row has a small available count, so the live stock of a given GPU in a given region is the binding number, not a time cap",
+  "identity_cost": {
+    "kind": "email",
+    "detail": "unverified: the getting-started guide says to create an account and add credit, and a deposit page shows both card deposits and USDC deposits on five chains, so a stablecoin balance is an alternative to a card. The same guide says that during private beta the browser login is internal-only and a key must be requested from the team. No signup form was read, so email is the assumed minimum and card, phone and company checks are not established.",
+    "country": null
+  },
+  "reliability_note": "unverified: the docs page is versioned V1 May 2026 and its samples were last checked against a demo environment on 2026-08-06; no status page or incident history was read",
+  "confidence": "documented",
+  "confidence_note": "the prices are read from the vendor's own public pricing API on 2026-11-03; RTX 4090 and L4 appear only in the price index (reported)",
+  "evidence": [
+    {
+      "url": "https://api.gpu.ai/v1/pricing?include_unavailable=false&limit=200",
+      "date": "2026-11-03",
+      "proved": "the vendor's own pricing API lists an H100 SXM at $3.99 an hour, 1 GPU, us-east, 4 available",
+      "capture": "sha256:2d4c746f001f4b26850709032c81bb844a642edd80dba8457caa88a404fc8b1e",
+      "quote": "\"gpu_type\":\"h100_sxm\",\"gpu_count\":1,\"cpu_cores\":27,\"ram_gb\":287,\"storage_gb\":0,\"region\":\"us-east\",\"tier\":\"on_demand\",\"price_per_hour\":3.99,\"available\":4"
+    },
+    {
+      "url": "https://api.gpu.ai/v1/pricing?include_unavailable=false&limit=200",
+      "date": "2026-11-03",
+      "proved": "the vendor's own pricing API lists an A100 80 GB at $1.07 an hour in ca-central, 2 available",
+      "capture": "sha256:2d4c746f001f4b26850709032c81bb844a642edd80dba8457caa88a404fc8b1e",
+      "quote": "\"gpu_type\":\"a100_80gb\",\"gpu_count\":1,\"cpu_cores\":28,\"ram_gb\":120,\"storage_gb\":100,\"region\":\"ca-central\",\"tier\":\"on_demand\",\"price_per_hour\":1.07,\"available\":2"
+    },
+    {
+      "url": "https://api.gpu.ai/v1/pricing?include_unavailable=false&limit=200",
+      "date": "2026-11-03",
+      "proved": "the vendor's own pricing API lists an L40S at $0.80 an hour in us-central, 92 available",
+      "capture": "sha256:2d4c746f001f4b26850709032c81bb844a642edd80dba8457caa88a404fc8b1e",
+      "quote": "\"gpu_type\":\"l40s\",\"gpu_count\":1,\"cpu_cores\":12,\"ram_gb\":72,\"storage_gb\":625,\"region\":\"us-central\",\"tier\":\"on_demand\",\"price_per_hour\":0.8,\"available\":92"
+    },
+    {
+      "url": "https://computeprices.com/providers/gpu",
+      "date": "2026-11-03",
+      "proved": "the price index lists an RTX 4090 at $0.89 an hour",
+      "capture": "sha256:08731e5b6fb101a8b17e0aba129c1b295ddc67e97d8d0b34a2fe99bb4ad4dd17",
+      "quote": "| [RTX 4090](https://computeprices.com/providers/gpu/gpus/rtx4090)1× | $0.89/hr |"
+    },
+    {
+      "url": "https://computeprices.com/providers/gpu",
+      "date": "2026-11-03",
+      "proved": "the price index lists an L4 at $0.59 an hour",
+      "capture": "sha256:08731e5b6fb101a8b17e0aba129c1b295ddc67e97d8d0b34a2fe99bb4ad4dd17",
+      "quote": "| [L4](https://computeprices.com/providers/gpu/gpus/l4)1× | $0.59/hr |"
+    },
+    {
+      "url": "https://gpu.ai/docs/guides/getting-started",
+      "date": "2026-11-03",
+      "proved": "the first steps are an account and prepaid credit",
+      "capture": "sha256:190d291883286744e17a7f4a2810301bc083836c95c1be0ce5c77c81e2e47553",
+      "quote": "Create an account, add credit, and launch your first cloud GPU on GPU.ai in minutes."
+    },
+    {
+      "url": "https://gpu.ai/docs/guides/getting-started",
+      "date": "2026-11-03",
+      "proved": "during the private beta a key is requested from the team",
+      "capture": "sha256:190d291883286744e17a7f4a2810301bc083836c95c1be0ce5c77c81e2e47553",
+      "quote": "internal-only; request a `gpuai_live_*` key from the team and export it as"
+    },
+    {
+      "url": "https://gpu.ai/docs/guides/getting-started",
+      "date": "2026-11-03",
+      "proved": "the catalog and pricing endpoints are public and need no key",
+      "capture": "sha256:190d291883286744e17a7f4a2810301bc083836c95c1be0ce5c77c81e2e47553",
+      "quote": "Read-only catalog endpoints (`/v1/gpu-types`, `/v1/pricing`) need no key at all"
+    },
+    {
+      "url": "https://gpu.ai/docs/guides/stablecoin-deposits",
+      "date": "2026-11-03",
+      "proved": "balance can be funded by crypto deposits as well as card deposits",
+      "capture": "sha256:f1bdca27a0139812ecb04222b62e2db036b797aee030af76a60c33d0cb5953e6",
+      "quote": "crypto deposits qualify exactly like card deposits"
+    },
+    {
+      "url": "https://gpu.ai/docs/guides/gpu-instances",
+      "date": "2026-11-03",
+      "proved": "an instance bills by the second from boot until terminated",
+      "capture": "sha256:fad187a81c3a720b40bdb67bda6768bb02f55af037fe0d15bcff1c4b1a95111e",
+      "quote": "A created instance bills by the second from the moment it boots until you terminate it."
+    },
+    {
+      "url": "https://gpu.ai/pricing",
+      "date": "2026-11-03",
+      "proved": "an on-demand GPU is dedicated to the renter, but the physical host is shared with other tenants",
+      "capture": "sha256:3487f27395a99c32dfd8c3704a4e3aeeddfeb8326344dee937e6163b69e6dafd",
+      "quote": "The physical server it sits in, however, is shared with other tenants (each on their own GPU)"
+    },
+    {
+      "url": "https://gpu.ai/docs",
+      "date": "2026-11-03",
+      "proved": "the access surface is a REST API, SDKs and a CLI",
+      "capture": "sha256:93bc7d392364decaa04758d36b5e5c5f5840396446dd62a043a244662c6f9400",
+      "quote": "A REST API, official Python and TypeScript SDKs, a CLI, and a marketplace of GPU providers, wired through a single binary."
+    },
+    {
+      "url": "https://gpu.ai/docs",
+      "date": "2026-11-03",
+      "proved": "the docs list an MCP server for coding agents",
+      "capture": "sha256:93bc7d392364decaa04758d36b5e5c5f5840396446dd62a043a244662c6f9400",
+      "quote": "Connect Claude Code, Claude Desktop, or Cursor straight to GPU.ai."
+    },
+    {
+      "url": "https://gpu.ai/",
+      "date": "2026-11-03",
+      "proved": "the vendor aggregates capacity from other clouds",
+      "capture": "sha256:e456eaa524578c42b60f3fef70a5fe0e8ff31839d6bbf33937ec4b6a65adbbdf",
+      "quote": "provider-agnostic: the same console, CLI and API across every cloud we aggregate"
+    }
+  ],
+  "verdict": "paid-only",
+  "verified_at": "2026-11-03T07:36:21.683Z",
+  "notes": "the same vendor also sells serverless token-metered inference and reserved multi-node clusters by quote; this record prices the on-demand GPU rows."
+}

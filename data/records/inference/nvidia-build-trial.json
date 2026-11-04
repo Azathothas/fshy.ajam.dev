@@ -32,14 +32,14 @@
     "metered_on": "request-count",
     "source_url": "https://build.nvidia.com/search",
     "read_on": "2026-10-28",
-    "notes": "the FAQ states only the per-minute figure, up to 40 requests per minute for most models; it states no per-day request figure"
+    "notes": "the FAQ states only the per-minute figure, up to 40 requests per minute for most models; it states no per-day request figure; the site's runtime copy file names 'Up to 40 rpm' and '10,000 requests per day' and the dashboard rate-limit chip renders only the per-minute value; the phone verification dialog lists 'Unlimited API requests without daily limits' as a benefit of verifying; whether a daily cap applies to an unverified account and not to a verified one is unverified: behind a sign-up"
   },
   "identity_cost": {
     "kind": "any-phone",
-    "detail": "an NVIDIA account (email) plus a one-time password sent to a phone number before an API key can be generated; the phone form refuses numbers located in AF, BD, BY, CU, IR, KZ, KG, KP, PK, RU, SY, TJ, TZ and UZ; no card required",
+    "detail": "an NVIDIA account (email) plus a one-time password sent to a phone number before an API key can be generated; the phone form refuses numbers located in AF, BD, BY, CU, IR, KZ, KG, KP, PK, RU, SY, TJ, TZ and UZ; no card required; the phone form is shown only to an organization owner whose account is unverified, and a member who is not the owner counts as set up without it, but a member still needs the organization's API key permission (canGenerateAPIKey), otherwise the dialog shows 'API Access Restricted by your Organization' with a choice of another account or the account admin; whether the key service enforces the OTP for a member is unverified: behind a sign-up",
     "country": null
   },
-  "reliability_note": "the phone one-time-password step fails for some numbers with 'invalid' or 'exceeded limits' errors; NVIDIA's pinned forum post of 2026-02-17 states verification on build.nvidia.com has been challenging and routes failures to help@build.nvidia.com",
+  "reliability_note": "the phone one-time-password step fails for some numbers with 'invalid' or 'exceeded limits' errors; NVIDIA's pinned forum post of 2026-02-17 states verification on build.nvidia.com has been challenging and routes failures to help@build.nvidia.com; the phone form validates a number with libphonenumber isValid only and drops the listed locations, and it offers a Phone Call channel after three SMS resends when the runtime flag killswitches/otp/phone.enabled is true (read true on 2026-11-03), while the WhatsApp and WeChat channels are off (flags read false on 2026-11-03); whether the OTP service accepts VoIP or virtual numbers, and whether a call is delivered where SMS fails, is unverified: behind a sign-up",
   "confidence": "documented",
   "confidence_note": "the 40 requests per minute figure and the no per-token billing statement are quoted from the build.nvidia.com FAQ; the no-credit-card statement is quoted from build.nvidia.com/llms.txt",
   "evidence": [
@@ -145,10 +145,171 @@
       "proved": "the FAQ still states the free tier is rate limited to up to 40 RPM for most models with no per-token billing",
       "capture": "sha256:d1111121052fb3d53a300b17c0e4ac89055687721c86b4a98845bb9a5e9d4618",
       "quote": "The free tier runs on rate limits - up to 40 requests per minute (RPM) for most models, with no per-token billing. Your personal rate limit is shown in the top-right of the dashboard."
+    },
+    {
+      "url": "https://build.nvidia.com/_next/static/chunks/30k3_pgjfqlvh.js",
+      "date": "2026-11-03",
+      "proved": "the phone form adds a Phone Call channel only when the voice flag c and the attempt counter h (smsAttempts >= 3) are both true",
+      "capture": "sha256:6d5d865e2f1b12b3ceae5ec70f0c97e8ea897b2b75f97547d2fe688668f94748",
+      "quote": "h=u>=3,m=(0,q.default)([{value:\"sms\",children:\"SMS\"},c&&h&&{value:\"voice\",children:\"Phone Call\"}"
+    },
+    {
+      "url": "https://build.nvidia.com/api/runtime/content/copy.yaml",
+      "date": "2026-11-03",
+      "proved": "the site's runtime copy file still carries both a per-minute and a per-day figure",
+      "capture": "sha256:01075318402eebbda76ea97f7be76214d29baf66fe9c57e9eeabd5021adeb818",
+      "quote": "{\"rateLimits\":{\"requestsPerMinute\":\"Up to 40 rpm\",\"requestsPerDay\":\"10,000 requests per day\""
+    },
+    {
+      "url": "https://build.nvidia.com/_next/static/chunks/1_3acgk-ajkbl.js",
+      "date": "2026-11-03",
+      "proved": "the account set-up step is complete for a logged-in, unblocked account that is verified or is not the organization owner",
+      "capture": "sha256:f202b8842c4de757584f5d8307eb7b09827591ebbe5080bd8e7e74e0c69e6e92",
+      "quote": "isComplete:(n=!!o,a=c.isOrgOwner,s=!!f?.user.verified,r=!!f?.user.blocked,!!n&&!r&&(!!s||!a))"
+    },
+    {
+      "url": "https://build.nvidia.com/search",
+      "date": "2026-11-03",
+      "proved": "the FAQ still states up to 40 requests per minute for most models with no per-token billing",
+      "capture": "sha256:4651c19ddcda438f87fb7b05a360485ba146ff4295c74747caaeebb9fd45eb55",
+      "quote": "The free tier runs on rate limits - up to 40 requests per minute (RPM) for most models, with no per-token billing."
+    },
+    {
+      "url": "https://build.nvidia.com/_next/static/chunks/30k3_pgjfqlvh.js",
+      "date": "2026-11-03",
+      "proved": "the Send Code button is disabled only when the number fails the parse and validity functions or its location is on the unsupported list",
+      "capture": "sha256:6d5d865e2f1b12b3ceae5ec70f0c97e8ea897b2b75f97547d2fe688668f94748",
+      "quote": "disabled:!!(!((l=r?function(){return ry(ep,arguments)}(r):null)&&function(){return ry(ev,arguments)}(r))||!s||s.includes(l?.country??\"\"))"
+    },
+    {
+      "url": "https://build.nvidia.com/_next/static/chunks/30k3_pgjfqlvh.js",
+      "date": "2026-11-03",
+      "proved": "the form's validity function is the libphonenumber isValid check, a numbering-plan test with no VoIP exclusion in the form",
+      "capture": "sha256:6d5d865e2f1b12b3ceae5ec70f0c97e8ea897b2b75f97547d2fe688668f94748",
+      "quote": "function ev(){var t=Y(arguments),e=t.text,n=t.options,r=t.metadata,i=eh(e,n=eg(eg({},n),{},{extract:!1}),r);return i&&i.isValid()||!1}"
+    },
+    {
+      "url": "https://build.nvidia.com/_next/static/chunks/30k3_pgjfqlvh.js",
+      "date": "2026-11-03",
+      "proved": "each SMS resend from the code-entry step increments the counter that unlocks the Phone Call channel",
+      "capture": "sha256:6d5d865e2f1b12b3ceae5ec70f0c97e8ea897b2b75f97547d2fe688668f94748",
+      "quote": "handleSendCode:()=>{\"sms\"===s&&A(t=>t+1),G()}"
+    },
+    {
+      "url": "https://build.nvidia.com/_next/static/chunks/30k3_pgjfqlvh.js",
+      "date": "2026-11-03",
+      "proved": "the phone verification dialog lists unlimited API requests without daily limits as a benefit of verifying",
+      "capture": "sha256:6d5d865e2f1b12b3ceae5ec70f0c97e8ea897b2b75f97547d2fe688668f94748",
+      "quote": "Unlimited API requests without daily limits"
+    },
+    {
+      "url": "https://build.nvidia.com/api/runtime/killswitches/otp/phone.enabled",
+      "date": "2026-11-03",
+      "proved": "the runtime flag that gates the Phone Call channel read true on 2026-11-03",
+      "capture": "sha256:749484de0eda8cf2b309fa5b1ca8588b19709e4c9d0ef95c1cb163bfe9eeacfc",
+      "quote": "true"
+    },
+    {
+      "url": "https://build.nvidia.com/api/runtime/killswitches/otp/whatsapp.enabled",
+      "date": "2026-11-03",
+      "proved": "the runtime flag that gates the WhatsApp channel read false on 2026-11-03",
+      "capture": "sha256:21dbd7dfc1748b53e00452f20f4fd1e0aa58cb5be1a8ae0a46eaf8506d9af6fb",
+      "quote": "false"
+    },
+    {
+      "url": "https://build.nvidia.com/api/runtime/killswitches/otp/wechat.enabled",
+      "date": "2026-11-03",
+      "proved": "the runtime flag that gates the WeChat channel read false on 2026-11-03",
+      "capture": "sha256:82163331664548df493f0eb120b3fcf34b3e7a0857e3db683921d1e7a5af759a",
+      "quote": "false"
+    },
+    {
+      "url": "https://build.nvidia.com/deepseek-ai/deepseek-v4.1-flash",
+      "date": "2026-11-03",
+      "proved": "the served model page embeds the runtime copy data that names 10,000 requests per day",
+      "capture": "sha256:278e0a855a351ebca5210e4e38af19fdf5ba8510e4d0ec5067bda20ad7343147",
+      "quote": "10,000 requests per day"
+    },
+    {
+      "url": "https://build.nvidia.com/_next/static/chunks/1_3acgk-ajkbl.js",
+      "date": "2026-11-03",
+      "proved": "the dashboard rate-limit chip renders the per-minute key of the copy file only",
+      "capture": "sha256:f202b8842c4de757584f5d8307eb7b09827591ebbe5080bd8e7e74e0c69e6e92",
+      "quote": "rateLimitKey:\"requestsPerMinute\""
+    },
+    {
+      "url": "https://build.nvidia.com/_next/static/chunks/0bz4psqrhk1gy.js",
+      "date": "2026-11-03",
+      "proved": "the Generate API Key dialog shows the phone form only to an organization owner whose account is unverified",
+      "capture": "sha256:71d04e62bc7e96b6aa5c54f2411f07d73737423fc3d5ca310322bb3c55d8eaec",
+      "quote": "N.isOrgOwner&&E?.user?.verified===!1?(0,t.jsx)(a.f,{handleVerificationSuccess:()=>_(!0),onClose:()=>_(!1),open:P,size:O})"
+    },
+    {
+      "url": "https://build.nvidia.com/_next/static/chunks/2xv_0hdneb8vt.js",
+      "date": "2026-11-03",
+      "proved": "a user without API permission in the current organization sees an organization-restricted notice in the key dialog",
+      "capture": "sha256:5b1777a3e72949219638a0acab187bd760a87b2b2b3d1f0acade2620245f0268",
+      "quote": "API Access Restricted by your Organization."
+    },
+    {
+      "url": "https://build.nvidia.com/_next/static/chunks/2xv_0hdneb8vt.js",
+      "date": "2026-11-03",
+      "proved": "the restricted notice offers choosing another account or contacting the account admin",
+      "capture": "sha256:5b1777a3e72949219638a0acab187bd760a87b2b2b3d1f0acade2620245f0268",
+      "quote": "Select another account or contact the account admin to request API access."
+    },
+    {
+      "url": "https://build.nvidia.com/_next/static/chunks/2ifqamf77-4t0.js",
+      "date": "2026-11-03",
+      "proved": "key generation is allowed by a per-organization role check and a not-blocked flag, with no verified test",
+      "capture": "sha256:2e1ab7a20384b3156656bf4f1bd647bfcfe97526f269ec15a1d5c3afad0763f7",
+      "quote": "canGenerateAPIKey:c(r.I)&&!u?.blocked"
+    },
+    {
+      "url": "https://build.nvidia.com/api/runtime/config/otp-unsupported-countries.yaml",
+      "date": "2026-11-03",
+      "proved": "the unsupported-location list read names the same 14 country codes",
+      "capture": "sha256:59915a70806da7873b6a45b3862a3326d6d78cb0d189092bcb407ef3eb208825",
+      "quote": "[\"AF\",\"BD\",\"BY\",\"CU\",\"IR\",\"KZ\",\"KG\",\"KP\",\"PK\",\"RU\",\"SY\",\"TJ\",\"TZ\",\"UZ\"]"
+    },
+    {
+      "url": "https://forums.developer.nvidia.com/t/google-voice-number-not-accepted-for-nvidia-verification-api-key-issue/364746",
+      "date": "2026-11-03",
+      "proved": "a user post of 2026-03-25 reports a Google Voice number was not accepted by the phone form (reported; no vendor answer on the page)",
+      "capture": "sha256:9292384e461bcb2e1e54643bdf934079ac55ccb0154605fee6b15bb90b38a2bb",
+      "quote": "my Google Voice number is not accepted during phone verification"
+    },
+    {
+      "url": "https://forums.developer.nvidia.com/t/phone-verification-blocked-on-first-attempt-edge-local-rate-limited-backend-429-while-sms-success/363923",
+      "date": "2026-11-03",
+      "proved": "a user post of 2026-03-18 reports the OTP generate call passes an edge reputation service before the SMS is sent (reported)",
+      "capture": "sha256:fa8ef74ec09ad1f653ff1fc5f6360c1cda5219f43ae742cf987edb493c530e3d",
+      "quote": "Network inspection reveals the block originates at the edge reputation service"
+    },
+    {
+      "url": "https://gotsms.org/en/check/nvidia",
+      "date": "2026-11-03",
+      "proved": "a reseller of SMS numbers claims virtual numbers are mostly rejected, with no method published (reported, commercial source)",
+      "capture": "sha256:6518c6dfcdd918949ae1cbba43ebdcd83bf4aa4e44e60bbf0ee2d7372404c4a9",
+      "quote": "Virtual/VoIP number acceptance:~6% (rejected on sight)"
+    },
+    {
+      "url": "https://dev.to/alaminnna/how-i-bypassed-nvidias-phone-verification-to-access-70-free-ai-models-from-bangladesh-24l0",
+      "date": "2026-11-03",
+      "proved": "a third-party write-up claims the key-creation API call returned a key for an owner account without a phone check (reported, not reproduced)",
+      "capture": "sha256:d3f847dedf396474c4f4ad9f83a4e1e3183d2ebf308317ee80528f15fc065c11",
+      "quote": "But the API endpoint that actually creates the key does not check your phone number."
+    },
+    {
+      "url": "https://forums.developer.nvidia.com/t/not-able-to-generate-apikeys/376584",
+      "date": "2026-11-03",
+      "proved": "a user post of 2026-07-11 reports the API Keys page message shown to an account without the organization's API key permission (reported)",
+      "capture": "sha256:c69adc6b6f06ad59d241334fe98ee81fa6776877bcff4873c09fea387d7f1f28",
+      "quote": "You do not have permissions to create API Keys in this Organization. Switch Orgs or contact your admin."
     }
   ],
   "verdict": "trial-only",
-  "verified_at": "2026-10-31T00:12:48.095Z",
+  "verified_at": "2026-11-03T01:29:20.039Z",
   "notes": "Free tier: up to 40 requests per minute (RPM) for most models and no per-token billing; the account's own limit is shown in the dashboard.",
   "binding": "request-rate"
 }

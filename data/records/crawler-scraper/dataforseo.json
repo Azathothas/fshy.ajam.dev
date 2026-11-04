@@ -7,14 +7,14 @@
   "verdict": "trial-only",
   "confidence": "documented",
   "confidence_note": "the USD 1 trial credit, the USD 50 minimum top-up, the per-SERP prices and the rate limit are quoted from first-party pages; the phone requirement is read from the signup application's own plan table; no keyed call was made",
-  "verified_at": "2026-10-30T10:46:44.796Z",
+  "verified_at": "2026-11-02T01:02:11.861Z",
   "free_tier": {
     "stated": "USD 1 trial credit for new accounts; about 500 live Google SERPs at USD 0.002, or more in the Standard queue at USD 0.0006 a SERP",
     "unit": "credits",
     "metered_on": "request-count",
     "source_url": "https://dataforseo.com/pricing",
     "read_on": "2026-10-30",
-    "notes": "Paid use needs a minimum top-up of USD 50; the balance does not expire. A free Sandbox returns sample responses without spending credit."
+    "notes": "Paid use needs a minimum top-up of USD 50, taken by card, PayPal or Amazon Pay; the balance does not expire. A free Sandbox returns sample responses without spending credit."
   },
   "per_object_cap": {
     "stated": "not applicable: the unit is a SERP of up to 10 organic results",
@@ -59,7 +59,7 @@
   "limits_note": "",
   "identity_cost": {
     "kind": "any-phone",
-    "detail": "a personal-email account is listed without the no-phone-verification feature, so it takes phone verification; a business-email account is listed with no phone verification; paid top-ups take a card, PayPal or Amazon Pay; unverified whether the phone must be from a given country",
+    "detail": "a personal-email address takes a phone number at signup, and the phone fields of the signup form and of the dashboard's phone verification leave out Russia, Belarus, Iran and Cuba (ru, by, ir, cu); a business-email address takes no phone number, and the form gives a company-domain address as the business example and gmail.com, outlook.com, yahoo.com and similar as personal; the dashboard says adding funds bypasses phone verification; unverified: whether the server accepts a given custom domain as business, and whether it refuses numbers of other countries",
     "country": null
   },
   "reliability_note": "a keyless call answered 401 with status_code 40100; no throttle or ban event recorded",
@@ -134,6 +134,97 @@
       "proved": "a keyless call answered 401",
       "capture": "sha256:08c970d9cb960d054b36b3ef905189ca7e658907b7de2217f63af62e5180cdd6",
       "quote": "\"status_code\":40100,\"status_message\":\"You are not Authorized to Access this Resource."
+    },
+    {
+      "url": "https://dataforseo.com/pricing",
+      "date": "2026-11-01",
+      "proved": "the minimum top-up is USD 50 and takes cards, PayPal or Amazon Pay; the balance does not expire; the Sandbox returns sample responses",
+      "capture": "sha256:188119e4bc8323d58a4b622f04b21259846118875273553bbff10cef81318ed2",
+      "quote": "The minimum account top-up is $50. ... DataForSEO accepts credit and debit cards, PayPal, and Amazon Pay. ... Funds added to your DataForSEO account do not expire. ... The Sandbox provides sample responses for testing"
+    },
+    {
+      "url": "https://app.dataforseo.com/main-UHWRC3G2.js",
+      "date": "2026-11-01",
+      "proved": "the signup phone field preselects a country by geo-IP lookup and sets excludeCountries to ru, by, ir and cu with no onlyCountries option, so every other country stays selectable",
+      "capture": "sha256:c95566cc3ab7cb55ce2cca80fc39172cc39e49c5f6608afaebf29e37502e4f2a",
+      "quote": "initialCountry:`auto`,geoIpLookup:(e,i)=>{this.geoIp.countryCode().then(n=>n?e(n):i())},excludeCountries:[`ru`,`by`,`ir`,`cu`],separateDialCode:!0,containerClass:`dfs-theme-light`}"
+    },
+    {
+      "url": "https://app.dataforseo.com/main-UHWRC3G2.js",
+      "date": "2026-11-01",
+      "proved": "the dashboard's phone verification field leaves out the same four countries",
+      "capture": "sha256:c95566cc3ab7cb55ce2cca80fc39172cc39e49c5f6608afaebf29e37502e4f2a",
+      "quote": "excludeCountries:[`ru`,`by`,`ir`,`cu`],separateDialCode:!0,dropdownContainer:this.dropdownInBody()?this.document.body:null"
+    },
+    {
+      "url": "https://app.dataforseo.com/main-UHWRC3G2.js",
+      "date": "2026-11-01",
+      "proved": "the dashboard's phone verification is an SMS code sent to the number entered",
+      "capture": "sha256:c95566cc3ab7cb55ce2cca80fc39172cc39e49c5f6608afaebf29e37502e4f2a",
+      "quote": "Enter your phone number to receive a quick SMS code."
+    },
+    {
+      "url": "https://app.dataforseo.com/main-UHWRC3G2.js",
+      "date": "2026-11-01",
+      "proved": "the dashboard tells an account whose phone verification is unavailable to add funds, so the server can mark phone verification unavailable per account",
+      "capture": "sha256:c95566cc3ab7cb55ce2cca80fc39172cc39e49c5f6608afaebf29e37502e4f2a",
+      "quote": "Phone verification is not available for your account at this time. To continue using our services, please add funds to your balance."
+    },
+    {
+      "url": "https://app.dataforseo.com/main-UHWRC3G2.js",
+      "date": "2026-11-01",
+      "proved": "the signup refuses a temporary or disposable address",
+      "capture": "sha256:c95566cc3ab7cb55ce2cca80fc39172cc39e49c5f6608afaebf29e37502e4f2a",
+      "quote": "We detected a temporary or disposable email address. DataForSEO accounts require a real, permanent email to ensure account security, prevent abuse, and deliver billing and API notifications reliably."
+    },
+    {
+      "url": "https://app.dataforseo.com/main-UHWRC3G2.js",
+      "date": "2026-11-01",
+      "proved": "the signup form takes the class of an address (disposable, business or personal) from a server check and selects the business or personal plan from the answer",
+      "capture": "sha256:c95566cc3ab7cb55ce2cca80fc39172cc39e49c5f6608afaebf29e37502e4f2a",
+      "quote": "handleEmailCheckResult(e){if(this.emailCheckResult=e,!!e){if(e.is_disposable){this.showDisposableModal=!0;return}e.is_business?this.selectPlan(`business`):e.is_personal&&this.selectPlan(`personal`)}}"
+    },
+    {
+      "url": "https://app.dataforseo.com/chunk-Bl0ntuNZ.js",
+      "date": "2026-11-01",
+      "proved": "the class of an address comes from a POST to the signup's check_email endpoint; no page states the rule it applies",
+      "capture": "sha256:e62a8b8c6cc7961935285e8f973e78433c176df3f104255c9d9b57bf92567a49",
+      "quote": "checkEmail(t){return this.httpClient.post(`white_label_url/api/auth/check_email`,{email:t}).pipe(U(r=>r.data))}"
+    },
+    {
+      "url": "https://app.dataforseo.com/main-UHWRC3G2.js",
+      "date": "2026-11-01",
+      "proved": "the signup code sets the business-email trial credit constant to 1 and selects the business plan by default, matching the page's USD 1 trial credits for both plans",
+      "capture": "sha256:c95566cc3ab7cb55ce2cca80fc39172cc39e49c5f6608afaebf29e37502e4f2a",
+      "quote": "this.BUSINESS_BONUS_AMOUNT=1,this.selectedPlan=ie$1(`business`)"
+    },
+    {
+      "url": "https://www.linkedin.com/posts/dataforseo_you-no-longer-need-a-business-email-to-try-activity-7447282523333746688-95WK",
+      "date": "2026-11-01",
+      "proved": "the vendor's own post offers sign-up with a personal address or with a business address from a company, and lists higher rate limits and no phone verification as business-email benefits",
+      "capture": "sha256:e61a118a56dc7cd7b89b158a972cc693f93e00392927e1a1e047b2b9db2efef1",
+      "quote": "You can now sign up with any personal email address (like Gmail) or a business email from your company. ... Higher rate limits ... No phone verification"
+    },
+    {
+      "url": "https://docs.dataforseo.com/v3/appendix/errors/",
+      "date": "2026-11-01",
+      "proved": "API calls answer 40104 until the account is verified by email and/or phone",
+      "capture": "sha256:5290f1a2bd864e4705c6a3fce19e3dae11d39aca74a79ef4f548ac3b0a8589f5",
+      "quote": "email and/or phone verification is required for new users; to use DataForSEO APIs, you have to complete the account verification process in the User Panel"
+    },
+    {
+      "url": "https://meikuio.com/dataforseo-review/",
+      "date": "2026-11-01",
+      "proved": null,
+      "capture": "sha256:e3da9ee9f9534010e409a532b5fa7e5e2415df82d7774ae3e24be2a16bc8d15f",
+      "quote": "A personal email works but asks for phone verification; a business-domain email skips it."
+    },
+    {
+      "url": "https://app.dataforseo.com/main-UHWRC3G2.js",
+      "date": "2026-11-01",
+      "proved": "the signup and dashboard phone fields exclude ru, by, ir and cu (Russia, Belarus, Iran, Cuba); the personal plan cannot be submitted without a phone number; the business plan lists no phone verification; the form's personal-address examples are gmail.com, outlook.com, yahoo.com; adding funds bypasses phone verification",
+      "capture": "sha256:c95566cc3ab7cb55ce2cca80fc39172cc39e49c5f6608afaebf29e37502e4f2a",
+      "quote": "excludeCountries:[`ru`,`by`,`ir`,`cu`],separateDialCode:!0 ... selectedPlan()===`personal`&&!this.enteredPhone ... `No phone verification`,available:!0 ... gmail.com, outlook.com, yahoo.com and similar ... Add funds to your account to bypass phone verification entirely."
     }
   ],
   "notes": "The trial credit buys about 500 live SERPs or more queued ones; the Standard queue averages about 5 minutes with a 45-minute target. A business email skips the phone step and carries higher rate limits."

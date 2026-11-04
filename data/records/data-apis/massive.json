@@ -20,7 +20,7 @@
     "notes": ""
   },
   "retention": {
-    "stated": "not applicable: a query API with no stored objects",
+    "stated": "not applicable",
     "days": null,
     "notes": ""
   },
@@ -46,7 +46,7 @@
       "source": "https://massive.com/knowledge-base/article/what-is-the-request-limit-for-massives-restful-apis"
     }
   ],
-  "limits_note": "History depth on Stocks Basic is 2 years, end-of-day; no limits[] kind names a history window. Bulk path: flat files over S3 from Stocks Starter (USD 29/month) up; no bulk path on Basic.",
+  "limits_note": "History depth on Stocks Basic is 2 years, end-of-day; no limits[] kind names a history window, and the term it needs is history-window. Bulk path: flat files over S3 from Stocks Starter (USD 29/month) up; no bulk path on Basic.",
   "binding": "request-rate",
   "binding_note": "5 requests a minute is the only numeric limit on Basic; the 2-year window bounds what those requests reach.",
   "identity_cost": {
@@ -260,14 +260,68 @@
       "proved": "api.polygon.io returns the same missing-key error as api.massive.com",
       "capture": "sha256:58f12784547b61c43fd0d260977dad8546daf4784ba614aeae13ba152f7678f6",
       "quote": "\"error\":\"API Key was not provided\""
+    },
+    {
+      "url": "https://massive.com/knowledge-base/article/what-is-the-request-limit-for-massives-restful-apis",
+      "date": "2026-11-02",
+      "proved": "the knowledge base says the over-limit JSON error comes with HTTP 429 when an asset class is on its Basic tier",
+      "capture": "sha256:7904df426060db8470f48dd8341cf17f561d4dba5a251ebbc0f23bbf0359288f",
+      "quote": "{\"status\":\"ERROR\",\"error\":\"You've exceeded the maximum requests per minute, please wait or upgrade your subscription to continue. https://massive.com/pricing\"} with HTTP 429 means this request's asset class is on its Basic tier."
+    },
+    {
+      "url": "https://massive.com/knowledge-base/article/what-is-the-request-limit-for-massives-restful-apis",
+      "date": "2026-11-02",
+      "proved": "the knowledge base prints this JSON error as the body that comes with HTTP 429",
+      "capture": "sha256:7904df426060db8470f48dd8341cf17f561d4dba5a251ebbc0f23bbf0359288f",
+      "quote": "{\"status\":\"ERROR\",\"error\":\"You've exceeded the maximum requests per minute, please wait or upgrade your subscription to continue. https://massive.com/pricing\"} with HTTP 429 means this request's asset class is on its Basic tier."
+    },
+    {
+      "url": "https://massive.com/knowledge-base/article/what-is-the-request-limit-for-massives-restful-apis",
+      "date": "2026-11-02",
+      "proved": "the 429 response carries a request_id",
+      "capture": "sha256:7904df426060db8470f48dd8341cf17f561d4dba5a251ebbc0f23bbf0359288f",
+      "quote": "start a chat at [massive.com/contact](https://massive.com/contact) with the request_id from the 429 response."
+    },
+    {
+      "url": "https://massive.com/pricing?product=stocks",
+      "date": "2026-11-02",
+      "proved": "Stocks Basic reaches 2 years of historical data at end-of-day recency, a history window that no limits[] kind names",
+      "capture": "sha256:e23fe8f388e28bec8ff1b11e4335d97d495a986c8bf05b62a5f2063e3420ed2f",
+      "quote": "Stocks Basic Great for trying our APIs $0/month [Sign up](https://massive.com/dashboard) - All US Stocks Tickers - 5 API Calls / Minute - 2 Years Historical Data - 100% Market Coverage - End of Day Data"
+    },
+    {
+      "url": "https://massive.com/knowledge-base/article/what-is-the-request-limit-for-massives-restful-apis",
+      "date": "2026-11-02",
+      "proved": "the knowledge base gives the 5-per-minute limit and names no reset instant",
+      "capture": "sha256:7904df426060db8470f48dd8341cf17f561d4dba5a251ebbc0f23bbf0359288f",
+      "quote": "Every asset class you have not subscribed to sits on its free Basic tier, which allows 5 requests a minute, and every asset class you pay for has no request limit."
+    },
+    {
+      "url": "https://massive.com/pricing?product=stocks",
+      "date": "2026-11-02",
+      "proved": "Stocks Basic is USD 0 a month with 5 API calls a minute, 2 years of historical data and end-of-day data",
+      "capture": "sha256:e23fe8f388e28bec8ff1b11e4335d97d495a986c8bf05b62a5f2063e3420ed2f",
+      "quote": "Stocks Basic Great for trying our APIs $0/month [Sign up](https://massive.com/dashboard) - All US Stocks Tickers - 5 API Calls / Minute - 2 Years Historical Data - 100% Market Coverage - End of Day Data"
+    },
+    {
+      "url": "https://massive.com/knowledge-base/article/what-is-the-request-limit-for-massives-restful-apis",
+      "date": "2026-11-02",
+      "proved": "each asset class not subscribed to sits on a free Basic tier of 5 requests a minute; paid classes have no request limit",
+      "capture": "sha256:7904df426060db8470f48dd8341cf17f561d4dba5a251ebbc0f23bbf0359288f",
+      "quote": "Every asset class you have not subscribed to sits on its free Basic tier, which allows 5 requests a minute, and every asset class you pay for has no request limit."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-30T12:52:12.830Z",
+  "verified_at": "2026-11-03T00:27:51.445Z",
   "notes": "The free tier is a sampler: 5 calls a minute per asset class, end-of-day, two years back. The value of the provider is the paid flat files, which are the only bulk path among the four market data records.",
   "extras": {
     "bulk_path": "flat files (S3-compatible, files.massive.com, bucket flatfiles) on paid tiers only; no bulk path on Basic",
     "history_depth": "2 years, end-of-day, on Stocks Basic",
-    "renamed_from": "Polygon.io"
+    "renamed_from": "Polygon.io",
+    "cutoff": {
+      "http_status": "429",
+      "body": "{\"status\":\"ERROR\",\"error\":\"You've exceeded the maximum requests per minute, please wait or upgrade your subscription to continue. https://massive.com/pricing\"}; the 429 response also carries a request_id",
+      "reset": "unverified: behind a sign-up: no Massive page says how the 5-per-minute window resets, and a Basic key is needed to observe it"
+    }
   }
 }

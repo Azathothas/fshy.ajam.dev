@@ -77,10 +77,59 @@
       "url": "https://zh.wikipedia.org/zh-cn/中国大陆网盘列表",
       "date": "2026-10-21",
       "proved": "夸克网盘, 300G free, shaped at 1.7M/s"
+    },
+    {
+      "url": "https://github.com/OpenListTeam/OpenList/blob/main/drivers/quark_uc_tv/meta.go",
+      "date": "2026-11-03",
+      "proved": "the driver config still sets NoUpload for the TV client",
+      "capture": "sha256:1b53ae8374929577d825b743246187cfea6572ccf23c7b82ae0a3c1a171749fb",
+      "quote": "NoUpload: true,"
+    },
+    {
+      "url": "https://github.com/OpenListTeam/OpenList/blob/main/drivers/quark_uc_tv/meta.go",
+      "date": "2026-11-03",
+      "proved": "the driver still hard-codes the Quark TV API endpoint",
+      "capture": "sha256:1b53ae8374929577d825b743246187cfea6572ccf23c7b82ae0a3c1a171749fb",
+      "quote": "api: \"https://open-api-drive.quark.cn\","
+    },
+    {
+      "url": "https://github.com/OpenListTeam/OpenList/blob/main/drivers/quark_uc_tv/meta.go",
+      "date": "2026-11-03",
+      "proved": "the driver still hard-codes the UC TV API endpoint",
+      "capture": "sha256:1b53ae8374929577d825b743246187cfea6572ccf23c7b82ae0a3c1a171749fb",
+      "quote": "api: \"https://open-api-drive.uc.cn\","
+    },
+    {
+      "url": "https://zh.wikipedia.org/zh-cn/中国大陆网盘列表",
+      "date": "2026-11-03",
+      "proved": "the table row still reads 300G free, no upload limit and a 1.7M/s download limit",
+      "capture": "sha256:87cfd4212b0eaf2bb73b16353c13f114920639a0b2df7d9e3a6465f3bf0ce870",
+      "quote": "| 夸克网盘 | 300G | 无 |  | 有 | 1.7M/s | 是 | 是 |"
+    },
+    {
+      "url": "probe:GET https://open-api-drive.quark.cn/1/clouddrive/config?pr=ucpro&fr=pc",
+      "date": "2026-11-03",
+      "proved": "the endpoint is live and answers a body of 65 bytes that wants a signed timestamp",
+      "capture": "sha256:c0d00823aa7af0c4e39c2e2154fb0ffa6deb7e1de99b20e6355108433e695198",
+      "quote": "\"error_info\":\"_timestamp格式错误\""
+    },
+    {
+      "url": "probe:GET https://drive-pc.quark.cn/1/clouddrive/member?pr=ucpro&fr=pc",
+      "date": "2026-11-03",
+      "proved": "the member endpoint answers 401 to an anonymous caller",
+      "capture": "sha256:b99e6cd7295296e1ab591e98363decec77baa2636c251a2e114dbd47897bfd52",
+      "quote": "\"message\":\"require login [guest]\""
+    },
+    {
+      "url": "https://pan.quark.cn/",
+      "date": "2026-11-03",
+      "proved": "the vendor page still offers a TV client download",
+      "capture": "sha256:26325190f535f5a7af4a740f6a05059969c0d82777fbdda632628587fac11e2a",
+      "quote": "下载 TV 端"
     }
   ],
   "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
+  "verified_at": "2026-11-04T00:20:53.785Z",
   "binding": "write-gated",
   "binding_note": "300 GB free, and the TV client cannot write at all, so the direction that fails is the write side: it is a download-and-stream path with no upload, which makes it a serving helper and not a store.",
   "notes": "The canonical inverse of the public-instance problem. There an instance advertises a write it refuses; here a client is documented as read-only by design. Both are cases where the API's write surface must be read from the driver's own flags and not from the marketing page.",

@@ -1,0 +1,312 @@
+{
+  "topic": "dev-services",
+  "slug": "cron-job-org-chronos",
+  "provider": "cron-job.org chronos daemon (self-hosted)",
+  "url": "https://github.com/pschlan/cron-job.org",
+  "category": "self-hosted HTTP cron scheduler (open-source chronos daemon and its console stack)",
+  "tier": "chronos (open source)",
+  "free_tier": {
+    "stated": "Open-source scheduler software published on GitHub under the GNU General Public License version 2: chronos, cron-job.org's cron job execution daemon, with the repository's MySQL schema, PHP API and web frontend, which the Docker Compose example starts together on a machine the user runs",
+    "unit": "none",
+    "metered_on": "none",
+    "source_url": "https://github.com/pschlan/cron-job.org",
+    "read_on": "2026-11-01",
+    "notes": "The hosted cron-job.org service (dev-services/cron-job-org) runs this daemon and comes first, with the other hosted HTTP cron scheduler dev-services/easycron."
+  },
+  "per_object_cap": {
+    "stated": "a job's request body is at most 8192 bytes by default (request_max_size in the sample chronos.cfg)",
+    "bytes": null,
+    "source_url": "https://raw.githubusercontent.com/pschlan/cron-job.org/master/chronos/chronos.cfg",
+    "notes": "a default in the sample configuration, which the user edits"
+  },
+  "retention": {
+    "stated": "job results are stored in per-user, per-day SQLite databases (joblog-%m-%d.db), and old entries are removed by deleting the corresponding day's databases, so retention is whatever the user keeps",
+    "days": null,
+    "source_url": "https://github.com/pschlan/cron-job.org"
+  },
+  "egress": {
+    "terms": "not set by the software: chronos fetches the jobs' URLs from the machine the user runs it on, so the network terms of that host apply; the sample configuration blocks 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16, 100.64.0.0/10 and 127.0.0.0/8 as job and webhook targets",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://raw.githubusercontent.com/pschlan/cron-job.org/master/chronos/chronos.cfg"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "the PHP API in the repository registers REST routes (GET and PUT /jobs, PATCH and DELETE /jobs/{jobId}) that take an API key as a bearer token; it also serves the web console and the status page UI, and needs a web server (cron-job.org uses nginx with php-fpm)",
+  "tooling": "the user installs and runs the chronos daemon on a rented or free machine: build chronos from source (a C++14 compiler, cmake and the development files that the README lists), import the MySQL schema from the database folder, edit chronos.cfg and run ./chronos; or start the repository's Docker Compose example, which runs chronos with MySQL, Redis, the PHP API and the web frontend; the web console and the PHP REST API.",
+  "chaining": "Last resort after the hosted HTTP cron schedulers (the hosted cron-job.org service in dev-services/cron-job-org, which runs this daemon, and dev-services/easycron): chronos calls an HTTP endpoint every minute from a machine that the user installs and keeps running.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "chronos checks the MySQL database every minute to collect the jobs to execute",
+      "source": "https://github.com/pschlan/cron-job.org"
+    },
+    {
+      "kind": "request-rate",
+      "value": "2 threads per scheduling unit and 2048 parallel requests per thread by default (num_threads, parallel_requests)",
+      "source": "https://raw.githubusercontent.com/pschlan/cron-job.org/master/chronos/chronos.cfg"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "8192 bytes of request body by default (request_max_size)",
+      "source": "https://raw.githubusercontent.com/pschlan/cron-job.org/master/chronos/chronos.cfg"
+    }
+  ],
+  "limits_note": "A request times out after 30 seconds (request_timeout), and a job is disabled automatically after 15 subsequent failures by default (max_failures); the daemon needs a raised open-file limit (ulimit -n 65536 or similar).",
+  "binding": "request-rate",
+  "binding_note": "The daemon collects jobs from the database once a minute, which sets the schedule step; the machine and the 2048 parallel requests per thread bound how many run at once.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account with cron-job.org is needed: the example environment is set up with the user's own secrets in .env and runs its own MySQL databases, and it needs an SMTP server that relays for the machine's address to send its outgoing emails.",
+    "country": null
+  },
+  "reliability_note": "The Docker environment in the repository is an example and development environment that is not tailored for production usage, especially with regard to security; chronos is optimized for performance rather than data integrity, so the job history is most likely lost when the server crashes or loses power.",
+  "confidence": "documented",
+  "confidence_note": "Structure, build and run steps, sample defaults and the REST routes are read in the repository's README, sample configuration and PHP API source; the daemon and the stack were not built or run.",
+  "evidence": [
+    {
+      "url": "https://github.com/pschlan/cron-job.org",
+      "date": "2026-11-01",
+      "proved": "chronos is cron-job.org's execution daemon, which fetches the jobs",
+      "capture": "sha256:67f8bae119f1e0c4891552841b58c136dbc92eadbb4799b91a19c757567285cb",
+      "quote": "is cron-job.org's cron job execution daemon and is responsible for fetching the jobs."
+    },
+    {
+      "url": "https://github.com/pschlan/cron-job.org",
+      "date": "2026-11-01",
+      "proved": "chronos checks the MySQL database every minute to collect the jobs to execute",
+      "capture": "sha256:67f8bae119f1e0c4891552841b58c136dbc92eadbb4799b91a19c757567285cb",
+      "quote": "chronos checks the MySQL database every minute to collect all jobs to execute."
+    },
+    {
+      "url": "https://github.com/pschlan/cron-job.org",
+      "date": "2026-11-01",
+      "proved": "the repository holds the MySQL database structure",
+      "capture": "sha256:67f8bae119f1e0c4891552841b58c136dbc92eadbb4799b91a19c757567285cb",
+      "quote": "`database` contains the MySQL database structure."
+    },
+    {
+      "url": "https://github.com/pschlan/cron-job.org",
+      "date": "2026-11-01",
+      "proved": "the repository holds the web interface",
+      "capture": "sha256:67f8bae119f1e0c4891552841b58c136dbc92eadbb4799b91a19c757567285cb",
+      "quote": "`frontend` contains the web interface"
+    },
+    {
+      "url": "https://github.com/pschlan/cron-job.org",
+      "date": "2026-11-01",
+      "proved": "building chronos needs development files of several libraries, which the README lists",
+      "capture": "sha256:67f8bae119f1e0c4891552841b58c136dbc92eadbb4799b91a19c757567285cb",
+      "quote": "In order to build chronos, you need development files of:"
+    },
+    {
+      "url": "https://github.com/pschlan/cron-job.org",
+      "date": "2026-11-01",
+      "proved": "running chronos needs the MySQL schema imported from the database folder",
+      "capture": "sha256:67f8bae119f1e0c4891552841b58c136dbc92eadbb4799b91a19c757567285cb",
+      "quote": "Ensure you've imported the DB scheme from the `database` folder"
+    },
+    {
+      "url": "https://github.com/pschlan/cron-job.org",
+      "date": "2026-11-01",
+      "proved": "chronos is started as ./chronos with a configuration file",
+      "capture": "sha256:67f8bae119f1e0c4891552841b58c136dbc92eadbb4799b91a19c757567285cb",
+      "quote": "Execute `./chronos /path/to/chronos.cfg`"
+    },
+    {
+      "url": "https://github.com/pschlan/cron-job.org",
+      "date": "2026-11-01",
+      "proved": "building chronos needs a C++14 compiler and cmake",
+      "capture": "sha256:67f8bae119f1e0c4891552841b58c136dbc92eadbb4799b91a19c757567285cb",
+      "quote": "To build, you need a C++14 compiler and cmake."
+    },
+    {
+      "url": "https://github.com/pschlan/cron-job.org",
+      "date": "2026-11-01",
+      "proved": "a Docker Compose example starts most of the cron-job.org system",
+      "capture": "sha256:67f8bae119f1e0c4891552841b58c136dbc92eadbb4799b91a19c757567285cb",
+      "quote": "To quickly start an example environment of most of the cron-job.org system, you can use `docker-compose`:"
+    },
+    {
+      "url": "https://github.com/pschlan/cron-job.org",
+      "date": "2026-11-01",
+      "proved": "the Docker environment is an example and development environment, not tailored for production",
+      "capture": "sha256:67f8bae119f1e0c4891552841b58c136dbc92eadbb4799b91a19c757567285cb",
+      "quote": "The Docker environment contained in this repo is intended as an example / development environment and is not tailored for production usage, especially with regard to security."
+    },
+    {
+      "url": "https://github.com/pschlan/cron-job.org",
+      "date": "2026-11-01",
+      "proved": "the example runs a master MySQL database",
+      "capture": "sha256:67f8bae119f1e0c4891552841b58c136dbc92eadbb4799b91a19c757567285cb",
+      "quote": "`mysql-master` for the master service database which also stores users, groups, job -> node associations etc."
+    },
+    {
+      "url": "https://github.com/pschlan/cron-job.org",
+      "date": "2026-11-01",
+      "proved": "the example runs Redis as a cache for rate limiting",
+      "capture": "sha256:67f8bae119f1e0c4891552841b58c136dbc92eadbb4799b91a19c757567285cb",
+      "quote": "`redis` used as a cache for certain features like rate limiting."
+    },
+    {
+      "url": "https://github.com/pschlan/cron-job.org",
+      "date": "2026-11-01",
+      "proved": "the example runs the PHP API backend with php-fpm",
+      "capture": "sha256:67f8bae119f1e0c4891552841b58c136dbc92eadbb4799b91a19c757567285cb",
+      "quote": "`api` for the PHP-based API backend used by the frontend. Uses php-fpm."
+    },
+    {
+      "url": "https://github.com/pschlan/cron-job.org",
+      "date": "2026-11-01",
+      "proved": "the example runs chronos in a combined master and node service mode",
+      "capture": "sha256:67f8bae119f1e0c4891552841b58c136dbc92eadbb4799b91a19c757567285cb",
+      "quote": "`chronos` which runs chronos in a combined master and node service mode."
+    },
+    {
+      "url": "https://github.com/pschlan/cron-job.org",
+      "date": "2026-11-01",
+      "proved": "the example needs secrets in .env and an SMTP server",
+      "capture": "sha256:67f8bae119f1e0c4891552841b58c136dbc92eadbb4799b91a19c757567285cb",
+      "quote": "As an absolute minimum, fill the `*_SECRET` variables with randomly generated secrets and specify a SMTP server in `SMTP_SERVER`."
+    },
+    {
+      "url": "https://github.com/pschlan/cron-job.org",
+      "date": "2026-11-01",
+      "proved": "the SMTP session is unauthenticated, so the server must relay for the machine's address",
+      "capture": "sha256:67f8bae119f1e0c4891552841b58c136dbc92eadbb4799b91a19c757567285cb",
+      "quote": "No authentication is used for the SMTP session, so ensure that the SMTP server is allowing relaying for your machine's IP address."
+    },
+    {
+      "url": "https://github.com/pschlan/cron-job.org",
+      "date": "2026-11-01",
+      "proved": "the API is PHP behind a web server and serves the console and the status page UI",
+      "capture": "sha256:67f8bae119f1e0c4891552841b58c136dbc92eadbb4799b91a19c757567285cb",
+      "quote": "The API is written in PHP and needs to be hosted on a webserver (cron-job.org uses nginx with php-fpm). It is used by the console and the status page UI."
+    },
+    {
+      "url": "https://github.com/pschlan/cron-job.org",
+      "date": "2026-11-01",
+      "proved": "job results are kept in per-user per-day SQLite databases that are cleaned up by deleting a day's databases",
+      "capture": "sha256:67f8bae119f1e0c4891552841b58c136dbc92eadbb4799b91a19c757567285cb",
+      "quote": "chronos stores the results in per-user per-day SQLite databases. Cleaning up old entries is as easy as deleting the corresponding day's databases."
+    },
+    {
+      "url": "https://github.com/pschlan/cron-job.org",
+      "date": "2026-11-01",
+      "proved": "the software favours performance over data integrity, so job history is most likely lost on a crash or power outage",
+      "capture": "sha256:67f8bae119f1e0c4891552841b58c136dbc92eadbb4799b91a19c757567285cb",
+      "quote": "The whole software is optimized on performance rather than on data integrity, i.e. when your server crashes or you have a power outage / hardware defect, the job history is most likely lost."
+    },
+    {
+      "url": "https://github.com/pschlan/cron-job.org",
+      "date": "2026-11-01",
+      "proved": "the open-file limit must be raised before chronos runs",
+      "capture": "sha256:67f8bae119f1e0c4891552841b58c136dbc92eadbb4799b91a19c757567285cb",
+      "quote": "Before running chronos, ensure that the limit of open files/sockets is not set too low. You might want to run `ulimit -n 65536` or similar first."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pschlan/cron-job.org/master/chronos/chronos.cfg",
+      "date": "2026-11-01",
+      "proved": "the sample configuration sets 2 threads per scheduling unit",
+      "capture": "sha256:29c258c35eca9496154f5523e361783d80b0c0902c9a0975614a5c8fcbf0986f",
+      "quote": "# Number of threads per scheduling unit num_threads = 2"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pschlan/cron-job.org/master/chronos/chronos.cfg",
+      "date": "2026-11-01",
+      "proved": "the sample configuration sets 2048 parallel requests per thread",
+      "capture": "sha256:29c258c35eca9496154f5523e361783d80b0c0902c9a0975614a5c8fcbf0986f",
+      "quote": "# Number of parallel requests per thread parallel_requests = 2048"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pschlan/cron-job.org/master/chronos/chronos.cfg",
+      "date": "2026-11-01",
+      "proved": "the sample configuration times a request out after 30 seconds",
+      "capture": "sha256:29c258c35eca9496154f5523e361783d80b0c0902c9a0975614a5c8fcbf0986f",
+      "quote": "# Timeout (in seconds) for requests request_timeout = 30"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pschlan/cron-job.org/master/chronos/chronos.cfg",
+      "date": "2026-11-01",
+      "proved": "the sample configuration caps the request body at 8192 bytes",
+      "capture": "sha256:29c258c35eca9496154f5523e361783d80b0c0902c9a0975614a5c8fcbf0986f",
+      "quote": "# Maximum size (in bytes) of request body request_max_size = 8192"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pschlan/cron-job.org/master/chronos/chronos.cfg",
+      "date": "2026-11-01",
+      "proved": "the sample configuration disables a job after 15 subsequent failures",
+      "capture": "sha256:29c258c35eca9496154f5523e361783d80b0c0902c9a0975614a5c8fcbf0986f",
+      "quote": "# Maximum count of subsequent failures before job gets disabled automatically max_failures = 15"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pschlan/cron-job.org/master/chronos/chronos.cfg",
+      "date": "2026-11-01",
+      "proved": "the sample configuration blocks private, loopback and link-local ranges as job and webhook targets",
+      "capture": "sha256:29c258c35eca9496154f5523e361783d80b0c0902c9a0975614a5c8fcbf0986f",
+      "quote": "# Blocked IP ranges for cron jobs and webhook notifications blocked_subnets = 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 169.254.0.0/16 100.64.0.0/10 127.0.0.0/8"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pschlan/cron-job.org/master/chronos/chronos.cfg",
+      "date": "2026-11-01",
+      "proved": "job logs are written to per-day SQLite files named joblog-%m-%d.db",
+      "capture": "sha256:29c258c35eca9496154f5523e361783d80b0c0902c9a0975614a5c8fcbf0986f",
+      "quote": "# Scheme for job log databases, %m will be replaced by the month, %d by the month day user_db_file_name_scheme = joblog-%m-%d.db"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pschlan/cron-job.org/master/.env.example",
+      "date": "2026-11-01",
+      "proved": "the SMTP server of the example environment sends the stack's outgoing emails",
+      "capture": "sha256:9a9223c9b64bc551f7bd9c3b233b6043b9b22a00b8d37fbf8ee51d2213829b78",
+      "quote": "SMTP server to be used to send outgoing emails"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pschlan/cron-job.org/master/LICENSE",
+      "date": "2026-11-01",
+      "proved": "the repository is licensed under the GNU General Public License version 2",
+      "capture": "sha256:db296f2f7f35bca3a174efb0eb392b3b17bd94b341851429a3dff411b1c2fc73",
+      "quote": "GNU GENERAL PUBLIC LICENSE Version 2, June 1991"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pschlan/cron-job.org/master/api/index.php",
+      "date": "2026-11-01",
+      "proved": "the PHP API registers GET /jobs",
+      "capture": "sha256:bca5f29849d3a86cd30fbe3cae3ebefdeb6d9b2cb88f410feb6dcd63c287d9f9",
+      "quote": "$dispatcher->registerURI('GET', '/jobs', 'GetJobs');"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pschlan/cron-job.org/master/api/index.php",
+      "date": "2026-11-01",
+      "proved": "the PHP API registers PUT /jobs to create a job",
+      "capture": "sha256:bca5f29849d3a86cd30fbe3cae3ebefdeb6d9b2cb88f410feb6dcd63c287d9f9",
+      "quote": "$dispatcher->registerURI('PUT', '/jobs', 'CreateJob');"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pschlan/cron-job.org/master/api/index.php",
+      "date": "2026-11-01",
+      "proved": "the PHP API registers PATCH /jobs/{jobId} to update a job",
+      "capture": "sha256:bca5f29849d3a86cd30fbe3cae3ebefdeb6d9b2cb88f410feb6dcd63c287d9f9",
+      "quote": "$dispatcher->registerURI('PATCH', '/jobs/(?<jobId>[0-9]+)', 'PatchJob');"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pschlan/cron-job.org/master/api/index.php",
+      "date": "2026-11-01",
+      "proved": "the PHP API registers DELETE /jobs/{jobId} to delete a job",
+      "capture": "sha256:bca5f29849d3a86cd30fbe3cae3ebefdeb6d9b2cb88f410feb6dcd63c287d9f9",
+      "quote": "$dispatcher->registerURI('DELETE', '/jobs/(?<jobId>[0-9]+)', 'DeleteJob');"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pschlan/cron-job.org/master/api/lib/RESTDispatcher.php",
+      "date": "2026-11-01",
+      "proved": "the REST dispatcher takes the API key from a bearer Authorization header",
+      "capture": "sha256:c5d414bba1e7251a2457d49b1134b8a7df6759a7af7d387eaec64a9fcf62d78c",
+      "quote": "if (substr(strtolower($_SERVER['HTTP_AUTHORIZATION']), 0, 7) !== 'bearer ') {"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-11-01T18:13:27.751Z",
+  "notes": "Self-hosted software and the last resort: the hosted offers come first (the hosted service dev-services/cron-job-org, which runs this daemon, and dev-services/easycron). This record is no duplicate of dev-services/cron-job-org: it is the open-source chronos daemon and its console stack that the user installs and runs.",
+  "self_hosted": true
+}

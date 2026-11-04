@@ -5,9 +5,9 @@
   "url": "https://ncar-hpc-docs.readthedocs.io/en/latest/storage-systems/glade/",
   "category": "rejected-provider",
   "free_tier": {
-    "stated": "Work is 2 TB per user and Scratch is 30 TB but PURGED at 180 days; Campaign Storage is the only large tier and it is allocation-request-gated for university projects. The 30 TB scratch is…",
-    "unit": "none",
-    "metered_on": "none",
+    "stated": "Per-user quotas for account holders: Home 50 GB, Work 2 TB (not purged), Scratch 30 TB and 10 million files (purged after 180 days). Campaign Storage has no default quota and is allocated per project on request.",
+    "unit": "TB",
+    "metered_on": "stored-bytes",
     "source_url": "https://ncar-hpc-docs.readthedocs.io/en/latest/storage-systems/glade/",
     "read_on": "2026-10-21",
     "notes": null
@@ -19,7 +19,7 @@
     "notes": "not recorded"
   },
   "retention": {
-    "stated": "not recorded",
+    "stated": "Scratch is purged after 180 days; Work is not purged; Campaign Storage is medium-term, typically three to five years.",
     "days": null,
     "source_url": "https://ncar-hpc-docs.readthedocs.io/en/latest/storage-systems/glade/",
     "notes": null
@@ -32,27 +32,113 @@
     "unknown"
   ],
   "interface_detail": null,
-  "tooling": "not recorded",
+  "tooling": "Globus web and command-line transfers to the NSF NCAR Campaign Storage collection; /glade paths on the Derecho and Casper clusters",
   "chaining": "not recorded",
-  "limits": [],
-  "limits_note": null,
+  "limits": [
+    {
+      "kind": "retention-clamped",
+      "value": "Scratch 30 TB per user, purged after 180 days",
+      "source": "https://ncar-hpc-docs.readthedocs.io/en/latest/storage-systems/glade/"
+    },
+    {
+      "kind": "volume-quota",
+      "value": "Work 2 TB per user",
+      "source": "https://ncar-hpc-docs.readthedocs.io/en/latest/storage-systems/glade/"
+    },
+    {
+      "kind": "write-gated",
+      "value": "Campaign Storage only by project allocation request",
+      "source": "https://ncar-hpc-docs.readthedocs.io/en/latest/storage-systems/glade/"
+    }
+  ],
+  "limits_note": "Home 50 GB, Work 2 TB, Scratch 30 TB with a 10 million file limit and a 180 day purge; Campaign Storage by allocation request.",
   "identity_cost": {
-    "kind": "email",
-    "detail": null,
+    "kind": "institution",
+    "detail": "eligible U.S. post-secondary institution or non-profit research organization; unsponsored requests need a letter from an advisor or department head",
     "country": null
   },
-  "reliability_note": "Work is 2 TB per user and Scratch is 30 TB but PURGED at 180 days; Campaign Storage is the only large tier and it is allocation-request-gated for university projects. The 30 TB scratch is…",
-  "confidence": "reported",
-  "confidence_note": null,
+  "reliability_note": "University Campaign Storage requests are prioritised, not guaranteed; the documentation says NSF NCAR is not currently funded to provide long-term data storage services to the university community.",
+  "confidence": "documented",
+  "confidence_note": "documented: the work and scratch quotas and the scratch purge were read on 2026-11-03 at https://ncar-hpc-docs.readthedocs.io/en/latest/storage-systems/glade/, the eligible-institution and advisor-letter requirements at https://ncar-hpc-docs.readthedocs.io/en/latest/allocations/university-allocations/, and the campaign storage terms at https://ncar-hpc-docs.readthedocs.io/en/stable/storage-systems/glade/campaign/.",
   "evidence": [
     {
       "url": "https://ncar-hpc-docs.readthedocs.io/en/latest/storage-systems/glade/",
       "date": "2026-10-21",
       "proved": "Work is 2 TB per user and Scratch is 30 TB but PURGED at 180 days; Campaign Storage is the only large tier and it is allocation-request-gated for university projects. The 30 TB scratch is…"
+    },
+    {
+      "url": "https://ncar-hpc-docs.readthedocs.io/en/latest/storage-systems/glade/",
+      "date": "2026-11-03",
+      "proved": "scratch is 30 TB and 10 million files per user and is purged after 180 days",
+      "capture": "sha256:b78409d1c78590156c7c058a6d19d4d7050bb85047ae88513d8c7e9f486a26ba",
+      "quote": "| Scratch:<br> /glade/derecho/scratch/\\<username> | 30TB / 10M | No | PURGED<br> 180 days | Temporary space."
+    },
+    {
+      "url": "https://ncar-hpc-docs.readthedocs.io/en/latest/storage-systems/glade/",
+      "date": "2026-11-03",
+      "proved": "work is 2 TB per user and not purged",
+      "capture": "sha256:b78409d1c78590156c7c058a6d19d4d7050bb85047ae88513d8c7e9f486a26ba",
+      "quote": "| Work:<br> /glade/work/\\<username> | 2 TB | No | Not purged | User work space."
+    },
+    {
+      "url": "https://ncar-hpc-docs.readthedocs.io/en/latest/allocations/university-allocations/",
+      "date": "2026-11-03",
+      "proved": "access is limited to eligible institutions",
+      "capture": "sha256:8796a1bfbeb2454dd0e23a619e7b7494aa2915c0e10abaf9c29311e5d22163a2",
+      "quote": "Eligible institutions encompass 2- and 4-year colleges and universities, including community colleges, predominantly undergraduate-serving institutions, and non-profit research organizations."
+    },
+    {
+      "url": "https://ncar-hpc-docs.readthedocs.io/en/latest/allocations/university-allocations/",
+      "date": "2026-11-03",
+      "proved": "unsponsored requests need an advisor or department-head letter",
+      "capture": "sha256:8796a1bfbeb2454dd0e23a619e7b7494aa2915c0e10abaf9c29311e5d22163a2",
+      "quote": "They must provide a letter from their advisor or department head commenting on the quality of the proposed research and affirming that funds are not within the scope of a funded grant."
+    },
+    {
+      "url": "https://ncar-hpc-docs.readthedocs.io/en/stable/storage-systems/glade/campaign/",
+      "date": "2026-11-03",
+      "proved": "campaign requests are prioritised, not guaranteed",
+      "capture": "sha256:1ac83eeb97f2deb5224ac781e4403e60bc4d02d13888cd3b890c98ff320d4be2",
+      "quote": "Because NSF NCAR is not currently funded to provide long-term data storage services to the university community, university users' requests for these allocations are prioritized based on the following factors."
+    },
+    {
+      "url": "https://ncar-hpc-docs.readthedocs.io/en/stable/storage-systems/glade/campaign/",
+      "date": "2026-11-03",
+      "proved": "campaign storage is reached through Globus",
+      "capture": "sha256:1ac83eeb97f2deb5224ac781e4403e60bc4d02d13888cd3b890c98ff320d4be2",
+      "quote": "- through the Globus web and command-line interfaces"
+    },
+    {
+      "url": "https://ncar-hpc-docs.readthedocs.io/en/latest/storage-systems/glade/",
+      "date": "2026-11-03",
+      "proved": "campaign storage is allocated per project on request",
+      "capture": "sha256:b78409d1c78590156c7c058a6d19d4d7050bb85047ae88513d8c7e9f486a26ba",
+      "quote": "| Campaign Storage:<br> /glade/campaign | N/A | No | Not purged | Project space allocations (via allocation request) |"
+    },
+    {
+      "url": "https://ncar-hpc-docs.readthedocs.io/en/stable/storage-systems/glade/campaign/",
+      "date": "2026-11-03",
+      "proved": "campaign storage is medium-term",
+      "capture": "sha256:1ac83eeb97f2deb5224ac781e4403e60bc4d02d13888cd3b890c98ff320d4be2",
+      "quote": "Campaign Storage is designed to provide medium-term storage for project data, typically for three to five years."
+    },
+    {
+      "url": "https://ncar-hpc-docs.readthedocs.io/en/stable/storage-systems/glade/campaign/",
+      "date": "2026-11-03",
+      "proved": "university campaign requests go through the allocation system as supplements to a project allocation",
+      "capture": "sha256:1ac83eeb97f2deb5224ac781e4403e60bc4d02d13888cd3b890c98ff320d4be2",
+      "quote": "University users can request Campaign Storage space through the NSF NCAR Resource Allocation System as supplements to their project allocations."
+    },
+    {
+      "url": "https://ncar-hpc-docs.readthedocs.io/en/latest/allocations/university-allocations/",
+      "date": "2026-11-04",
+      "proved": "an unsponsored request needs a letter from the advisor or department head",
+      "capture": "sha256:8796a1bfbeb2454dd0e23a619e7b7494aa2915c0e10abaf9c29311e5d22163a2",
+      "quote": "- A letter from the individual’s advisor or department head must affirm the quality of the proposed research and that the work is not within the scope of a funded grant."
     }
   ],
-  "verdict": "fails-quota",
-  "verified_at": "2026-10-21T00:00:00.000Z",
+  "verdict": "fails-identity",
+  "verified_at": "2026-11-04T01:24:31.181Z",
   "notes": "Work is 2 TB per user and Scratch is 30 TB but PURGED at 180 days; Campaign Storage is the only large tier and it is allocation-request-gated for university projects. The 30 TB scratch is…",
   "extras": {
     "dead_end": {
@@ -63,5 +149,5 @@
     }
   },
   "binding": "none",
-  "binding_note": null
+  "binding_note": "access needs a project allocation at an eligible institution; scratch is then clamped by a purge"
 }

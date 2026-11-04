@@ -25,17 +25,19 @@
     "notes": null
   },
   "egress": {
-    "terms": "not stated",
-    "metered": false,
-    "free_allowance": null,
-    "price_per_tb": null,
+    "terms": "Free plan: 100 GiB of egress a month, then USD 0.02 per GiB; ingress is free. Separately, a machine's upload is capped at about 50 Mbit/s per VM.",
+    "metered": true,
+    "free_allowance": "100 GiB a month on the Free plan (Pro 1 TiB, Builder 5 TiB, Team 50 TiB)",
+    "price_per_tb": "USD 0.02 per GiB beyond the allowance (USD 20.48 per TiB)",
     "source_url": "https://instabox.sh/changelog"
   },
   "interface": [
-    "rest"
+    "rest",
+    "cli",
+    "ssh"
   ],
-  "interface_detail": "inferred from the tooling the provider documents; not probed",
-  "tooling": "not stated",
+  "interface_detail": "HTTP API with an API key, the instabox CLI, SSH through a gateway (certificate or SSH token), a TypeScript SDK (@insforge/instabox-sdk), an MCP server and a web dashboard",
+  "tooling": "the instabox CLI and the TypeScript SDK @insforge/instabox-sdk (npm), authenticated with an API key (INSTABOX_API_KEY)",
   "chaining": "One 4 vCPU / 8 GiB machine with persistent files and snapshots is a place to hold a working set between sessions, which a notebook that resets does not give.",
   "limits": [
     {
@@ -45,7 +47,7 @@
     },
     {
       "kind": "volume-quota",
-      "value": "one machine a month on the free plan, in 2 vCPU / 4 GiB or 4 vCPU / 8 GiB sizes",
+      "value": "one machine on the free plan, 4 vCPU / 8 GiB, the only size",
       "source": "https://instabox.sh/changelog"
     },
     {
@@ -99,10 +101,45 @@
       "url": "https://www.nodeseek.com/post-997124-1",
       "date": "2026-10-20",
       "proved": "reported, translated: 4 vCPU / 8 GB RAM, a full Linux environment with root, Docker support, one machine per account, paused after 30 minutes idle with session state kept, and an invite code from a waitlist of up to about 48 hours"
+    },
+    {
+      "url": "https://instabox.sh/docs/limits.md",
+      "date": "2026-11-04",
+      "proved": "the free plan includes 100 GiB of egress a month, then USD 0.02 per GiB",
+      "capture": "sha256:91f8ebecd50c8f6b346eb21045aabde8bb78bf5becb7e1d38325d9475a33a88b",
+      "quote": "| Egress | Free: 100 GiB, Pro: 1 TiB, Builder: 5 TiB, Team: 50 TiB a month, then $0.02 per GiB |"
+    },
+    {
+      "url": "https://instabox.sh/docs/keys-sdk.md",
+      "date": "2026-11-04",
+      "proved": "the TypeScript SDK, HTTP, the CLI and SSH are access interfaces; the dashboard is the console",
+      "capture": "sha256:7da86e2bc7a933d45c9014163d76a782464776afd4f35080ba238b7b5ce85686",
+      "quote": "Code uses an API key (`ibk_...`): the TypeScript SDK, plain HTTP, the CLI and SSH all accept one."
+    },
+    {
+      "url": "https://instabox.sh/docs/limits.md",
+      "date": "2026-11-04",
+      "proved": "per-VM upload cap, separate from the monthly egress allowance",
+      "capture": "sha256:91f8ebecd50c8f6b346eb21045aabde8bb78bf5becb7e1d38325d9475a33a88b",
+      "quote": "What a machine sends is capped at about 50 Mbit/s (~6 MB/s), with little or no burst"
+    },
+    {
+      "url": "https://instabox.sh/docs/limits.md",
+      "date": "2026-11-04",
+      "proved": "the free plan has a single machine size",
+      "capture": "sha256:91f8ebecd50c8f6b346eb21045aabde8bb78bf5becb7e1d38325d9475a33a88b",
+      "quote": "| Machine size | 4 vCPU / 8 GiB by default, the only size on the free plan."
+    },
+    {
+      "url": "https://instabox.sh/docs/keys-sdk.md",
+      "date": "2026-11-04",
+      "proved": "SDK, CLI, HTTP and SSH are documented clients",
+      "capture": "sha256:7da86e2bc7a933d45c9014163d76a782464776afd4f35080ba238b7b5ce85686",
+      "quote": "Code uses an API key (`ibk_...`): the TypeScript SDK, plain HTTP, the CLI and SSH all accept one."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-22T00:00:00.000Z",
+  "verified_at": "2026-11-04T05:43:14.343Z",
   "notes": "Two corrections in one record. The count moved from 5 to 1, and the 8 GiB size is not reliably creatable even on the free plan: the Japanese review reports the 8 GiB option refused at creation time. What is not established is whether the invite waitlist is still the entry route now that the product has paid plans; the changelog describes a dashboard billing page and does not mention the waitlist. The changelog of 2026-10-20 states the plan table directly: one free 4 vCPU / 8 GiB machine a month, never billed, with the five-machine grant retained only for accounts created before that date and only until 2026-12-01.",
   "extras": {
     "facets": {

@@ -8,18 +8,19 @@
     "stated": "Free plan: \"Free — $0/month with $1 of monthly usage credits.\" A new account starts on the Free Trial, \"$5 in credits for 30 days\", and reverts to Free when the 30 days pass or the $5 is spent; the $1 does not roll over.",
     "unit": "credits",
     "source_url": "https://railway.com/pricing",
-    "read_on": "2026-10-30",
-    "metered_on": "none"
+    "read_on": "2026-11-02",
+    "metered_on": "none",
+    "notes": "metered on spend: the USD 1 monthly credit is drawn down by CPU, memory and disk usage billed per second and by outgoing bandwidth billed per GB"
   },
   "per_object_cap": {
-    "stated": "no storage cap on Free; the USD 1 a month is the ceiling",
+    "stated": "500 MB maximum volume size on Free, with 1 vCPU and 0.5 GB of RAM per service; the USD 1 a month of credit is the total ceiling",
     "bytes": null
   },
   "retention": {
-    "stated": "services stay deployed until deleted; the credit is what runs out",
+    "stated": "a Trial account's stateful volumes are deleted 30 days after its credits expire unless the account upgrades; the plans FAQ gives 30 days after expiry for the Free or Trial plan; unverified: what counts as expiry for a Free plan",
     "days": 30,
     "source_url": "https://railway.com/pricing",
-    "notes": "the trial credit covers 30 days, and the recurring USD 1 is not a database budget"
+    "notes": "the trial credit covers 30 days; a service stopped for a usage limit, exhausted trial credits or a failed payment keeps its attached volume"
   },
   "egress": {
     "terms": "usage is billed against the credit balance",
@@ -34,21 +35,21 @@
   ],
   "interface_detail": "the Postgres wire protocol on a private network; a GraphQL API and the railway CLI",
   "tooling": "psql, the railway CLI",
-  "chaining": "no path on a zero budget: USD 1 a month is one small always-on container and nothing else",
+  "chaining": "the next step above the Free plan is the Hobby plan at USD 5 a month, which includes USD 5 of usage",
   "limits": [
     {
-      "kind": "request-rate",
+      "kind": "volume-quota",
       "value": "USD 1 per month of usage after the 30-day trial credit",
       "source": "https://railway.com/pricing"
     }
   ],
-  "binding": "request-rate",
+  "binding": "volume-quota",
   "identity_cost": {
     "kind": "email",
     "detail": "sign-in with GitHub, Google or an email address; no card for the Free Trial or the Free plan it reverts to; a verified GitHub account gives the Full Trial, otherwise the Limited Trial restricts outbound network access",
     "country": null
   },
-  "reliability_note": "no reliability event recorded",
+  "reliability_note": "a Trial account's stateful volumes are deleted 30 days after its credits expire unless the account upgrades",
   "confidence": "documented",
   "confidence_note": "the pricing page was read.",
   "evidence": [
@@ -98,10 +99,123 @@
       "proved": "the plans reference states the Free plan's $1 of free credit per month",
       "capture": "sha256:6bd4f11e5abbd59b3edbf962fb70e33fed86682e2b8b5d0190adedeb6fabbd17",
       "quote": "For running small apps with $1 of free credit per month"
+    },
+    {
+      "url": "https://docs.railway.com/pricing/free-trial",
+      "date": "2026-11-02",
+      "proved": "the one-time $5 trial reverts to the Free plan, which gives $1 of credit every month",
+      "capture": "sha256:5692ce75daa79cbc25bf9e09c644b2cff31426210043730a9c090426050a9c90",
+      "quote": "After 30 days passes or $5 is spent, the free trial reverts to the [Free](/pricing/plans#plans) plan, which provides $1 of free credit per month."
+    },
+    {
+      "url": "https://railway.com/pricing",
+      "date": "2026-11-02",
+      "proved": "the Free plan is $0 a month with $1 of usage credits every month",
+      "capture": "sha256:a447bf6dcec0e33ac832501bea8da08c08de6207b329144aae1db9e4200d2c8a",
+      "quote": "Free — $0/month with $1 of monthly usage credits. Up to 1 vCPU / 0.5 GB per service, 1 replica, and 3-day log history."
+    },
+    {
+      "url": "https://railway.com/pricing",
+      "date": "2026-11-02",
+      "proved": "memory is billed at $10 per GB per month",
+      "capture": "sha256:a447bf6dcec0e33ac832501bea8da08c08de6207b329144aae1db9e4200d2c8a",
+      "quote": "| Memory | $0.00000386 per GB/s | $10 per GB |"
+    },
+    {
+      "url": "https://railway.com/pricing",
+      "date": "2026-11-02",
+      "proved": "platform limits table, Free row: 1 project, 3 services, 1 member, 500 MB maximum volume size, 0 custom domains, 1 concurrent build",
+      "capture": "sha256:a447bf6dcec0e33ac832501bea8da08c08de6207b329144aae1db9e4200d2c8a",
+      "quote": "| Free | 1 | 3 | 1 | 500 MB | 0 | 1 |"
+    },
+    {
+      "url": "https://docs.railway.com/pricing/free-trial",
+      "date": "2026-11-02",
+      "proved": "a Trial account's stateful volumes are deleted 30 days after its credits expire unless the account upgrades",
+      "capture": "sha256:5692ce75daa79cbc25bf9e09c644b2cff31426210043730a9c090426050a9c90",
+      "quote": "Railway deletes stateful volumes created by Trial accounts 30 days after the expiration of your credits. To retain your data, upgrade your account after the Trial period."
+    },
+    {
+      "url": "https://docs.railway.com/pricing/faqs",
+      "date": "2026-11-02",
+      "proved": "a service stopped for a usage limit, exhausted trial credits or a failed payment keeps its attached volume",
+      "capture": "sha256:295c311e3c64c9575449b5a5a09c0597dec1b5d1bd4a6729c50e194b2b196e34",
+      "quote": "Note: Although Railway will remove your deployment for any of the above reasons, Railway will not remove the [volume](/overview/the-basics#volumes) attached to the service."
+    },
+    {
+      "url": "https://railway.com/pricing",
+      "date": "2026-11-02",
+      "proved": "the Hobby plan is $5 a month with $5 of included usage",
+      "capture": "sha256:a447bf6dcec0e33ac832501bea8da08c08de6207b329144aae1db9e4200d2c8a",
+      "quote": "| Hobby | $5 | $5/month | 48 vCPU / 48 GB | 6 | 7 days |"
+    },
+    {
+      "url": "https://docs.railway.com/deployments/serverless",
+      "date": "2026-11-02",
+      "proved": "a service with Serverless enabled sleeps between 5 and 10 minutes after its last outbound traffic",
+      "capture": "sha256:d67ce170697c3e0a7d4262da320b1979712f15303a82a3974f232f6ecfa84fb8",
+      "quote": "Once a service stops sending packets it is considered inactive after 5 minutes. Inactivity is sampled on an interval rather than measured continuously, so in practice a service sleeps somewhere between 5 and 10 minutes after its last outbound traffic."
+    },
+    {
+      "url": "https://railway.com/pricing",
+      "date": "2026-11-02",
+      "proved": "usage is billed on CPU, memory and disk per second and on outgoing bandwidth per GB",
+      "capture": "sha256:a447bf6dcec0e33ac832501bea8da08c08de6207b329144aae1db9e4200d2c8a",
+      "quote": "Railway charges per-second for the CPU, memory, and disk your services actually use. No overprovisioning, no idle markup, no surprises. Outgoing bandwidth and object storage are billed per GB."
+    },
+    {
+      "url": "https://blog.railway.com/p/free-plan",
+      "date": "2026-11-02",
+      "proved": "the vendor's own post (dated 2025-08-27) says the $1 monthly credit follows the trial every month and is enough to run a small app",
+      "capture": "sha256:00a5c678429e54555d97696a95ad8ed00b6745057e52b540d8c60010f3e88418",
+      "quote": "After $5 or 30 days, we will fund your account with $1 of non-rollover credits each month. This is enough to run a small app for free in perpetuity."
+    },
+    {
+      "url": "https://docs.railway.com/pricing/free-trial",
+      "date": "2026-11-02",
+      "proved": "the $1 monthly credit does not roll over",
+      "capture": "sha256:5692ce75daa79cbc25bf9e09c644b2cff31426210043730a9c090426050a9c90",
+      "quote": "The credit does not roll over month to month."
+    },
+    {
+      "url": "https://docs.railway.com/reference/pricing/plans",
+      "date": "2026-11-02",
+      "proved": "the plans FAQ gives 30 days after expiry as the volume deletion time for the Free or Trial plan",
+      "capture": "sha256:6bd4f11e5abbd59b3edbf962fb70e33fed86682e2b8b5d0190adedeb6fabbd17",
+      "quote": "| Free or Trial plan | 30 days after expiry |"
+    },
+    {
+      "url": "https://docs.railway.com/pricing/faqs",
+      "date": "2026-11-02",
+      "proved": "the pricing FAQ answers yes to trying Railway without a credit card, with a one-time $5 grant",
+      "capture": "sha256:295c311e3c64c9575449b5a5a09c0597dec1b5d1bd4a6729c50e194b2b196e34",
+      "quote": "Can I try Railway without a credit-card? Yes. As a new Railway user, you can sign up for a [Free Trial](/pricing/free-trial). You will receive a one-time grant of $5 to use on resources."
+    },
+    {
+      "url": "https://railway.com/login",
+      "date": "2026-11-02",
+      "proved": "the login page offers GitHub, Google and email sign-in",
+      "capture": "sha256:725ccaea03216341ca79184230f9064e1be3a53ae2f7f2a6fa40429ed3e705eb",
+      "quote": "Continue with GitHub Continue with Google Log in using email"
+    },
+    {
+      "url": "https://docs.railway.com/deployments/serverless",
+      "date": "2026-11-02",
+      "proved": "a slept service is woken by traffic from the internet or from another service of the project over the private network",
+      "capture": "sha256:d67ce170697c3e0a7d4262da320b1979712f15303a82a3974f232f6ecfa84fb8",
+      "quote": "A service is woken when it receives traffic from the internet or from another service in the same project through the [private network](/networking/private-networking)."
+    },
+    {
+      "url": "https://docs.railway.com/deployments/serverless",
+      "date": "2026-11-02",
+      "proved": "the first request to a slept service may return a 502",
+      "capture": "sha256:d67ce170697c3e0a7d4262da320b1979712f15303a82a3974f232f6ecfa84fb8",
+      "quote": "The first request sent to a slept service may return a 502 Bad Gateway response."
     }
   ],
-  "verdict": "trial-only",
-  "verified_at": "2026-10-30T11:08:14.556Z",
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-11-02T00:44:00.367Z",
   "price_per_tb_month": null,
-  "notes": "The '$5 free' is a 30-day trial. After it, USD 1 a month buys about one small container."
+  "notes": "a service with Serverless enabled sleeps between 5 and 10 minutes after its last outbound traffic and is woken by inbound traffic from the internet or the project's private network, which can lower the usage billed; the first request to a slept service may return a 502",
+  "binding_note": "the USD 1 a month of credit runs out first: at USD 10 per GB-month of memory it pays for 0.1 GB-month of memory, before any CPU, volume or egress charge, and it does not roll over"
 }

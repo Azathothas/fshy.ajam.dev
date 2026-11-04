@@ -1,0 +1,177 @@
+{
+  "topic": "data-apis",
+  "slug": "chronicling-america",
+  "provider": "Chronicling America (Library of Congress)",
+  "url": "https://www.loc.gov/apis/json-and-yaml/",
+  "category": "historic newspaper API and bulk OCR",
+  "tier": "Free (no key)",
+  "free_tier": {
+    "stated": "Free with no API key or authentication: the loc.gov JSON/YAML API at 20 requests per minute, and bulk OCR downloads of every digitized newspaper batch as one tar.bz2 file each.",
+    "unit": "requests",
+    "metered_on": "request-count",
+    "source_url": "https://www.loc.gov/apis/json-and-yaml/working-within-limits/",
+    "read_on": "2026-11-02",
+    "notes": "Going over the rate blocks the caller for 1 hour. Text services allow 150 requests per minute. Under heavy load the limits drop and a 429 or a CAPTCHA page can appear below the stated rate. The collection holds over 21 million newspaper pages."
+  },
+  "per_object_cap": {
+    "stated": "one tar.bz2 of OCR text per batch; the batch fu_eleven_ver02 is 56026786 bytes",
+    "bytes": null,
+    "source_url": "https://www.loc.gov/collections/chronicling-america/datasets/",
+    "notes": "The JSON API pages at up to 1,000 items a page (recommended) and at most 100,000 items a query."
+  },
+  "retention": {
+    "stated": "not applicable: a permanent collection of newspaper pages published through 1963",
+    "days": null,
+    "notes": "",
+    "source_url": "https://www.loc.gov/collections/chronicling-america/about-this-collection/"
+  },
+  "egress": {
+    "terms": "bulk OCR files download from chroniclingamerica.loc.gov/data/ocr with no stated transfer price or quota; ranged reads are honoured",
+    "metered": false,
+    "free_allowance": null,
+    "price_per_tb": null,
+    "source_url": "https://www.loc.gov/collections/chronicling-america/datasets/"
+  },
+  "interface": [
+    "rest"
+  ],
+  "interface_detail": "JSON or YAML over HTTPS from www.loc.gov by adding fo=json to collection, search, item and resource URLs; text, image (IIIF) and streaming microservices; bulk OCR as tar.bz2 files with a sha256 checksum each, listed in a CSV, a TXT and a JSON version of the datasets table",
+  "endpoint": "https://www.loc.gov/collections/chronicling-america/?fo=json",
+  "tooling": "any HTTP client; the Library publishes Jupyter notebooks for the Chronicling America collection",
+  "chaining": "Page-level OCR text and metadata of historic US newspapers: facet or date-slice a query to stay under 100,000 items, or take the bulk OCR tarballs and skip the API.",
+  "limits": [
+    {
+      "kind": "request-rate",
+      "value": "20 requests per minute on the JSON/YAML API, 1 hour block if exceeded",
+      "source": "https://www.loc.gov/apis/json-and-yaml/working-within-limits/"
+    },
+    {
+      "kind": "request-rate",
+      "value": "150 requests per minute on text services, 1 hour block if exceeded",
+      "source": "https://www.loc.gov/apis/json-and-yaml/working-within-limits/"
+    },
+    {
+      "kind": "per-object-cap",
+      "value": "100,000 items per query; 1,000 items per page recommended",
+      "source": "https://www.loc.gov/apis/json-and-yaml/working-within-limits/"
+    },
+    {
+      "kind": "per-ip-shaping",
+      "value": "a bot challenge: a keyless GET to the collection JSON endpoint answered HTTP 403 with a Cloudflare challenge page from a residential ISP address",
+      "source": "probe:https://www.loc.gov/collections/chronicling-america/?fo=json&at=pagination&c=1"
+    }
+  ],
+  "binding": "request-rate",
+  "binding_note": "20 requests a minute is the documented ceiling, and the Cloudflare challenge on the JSON endpoints can bind first for a plain script; the bulk OCR files carry no stated limit.",
+  "identity_cost": {
+    "kind": "anonymous",
+    "detail": "No account and no key for the API; the bulk OCR files and a ranged read of one answered with no credentials.",
+    "country": null
+  },
+  "reliability_note": "A keyless GET of the collection JSON from a residential ISP address answered HTTP 403 with a Cloudflare 'Just a moment' challenge, while the documentation page answered 200 and the bulk OCR host answered 200 and 206; the same JSON was readable through a cached page-reader path. The limits fall under heavy load.",
+  "confidence": "documented",
+  "confidence_note": "Limits, paging caps and the no-key statement are read from first-party pages; the bulk file size and range support were measured, and the JSON endpoints were blocked by a challenge to a direct script, so the API throughput is not measured.",
+  "evidence": [
+    {
+      "url": "https://www.loc.gov/apis/json-and-yaml/working-within-limits/",
+      "date": "2026-11-02",
+      "proved": "the API needs no key or authentication",
+      "capture": "sha256:f97ce9eb99b2ac3e058e9757888529909a7f67dd4aed3e60a4042ea6e4b2a185",
+      "quote": "The API is accessible to the public with no API key or authentication required."
+    },
+    {
+      "url": "https://www.loc.gov/apis/json-and-yaml/working-within-limits/",
+      "date": "2026-11-02",
+      "proved": "the JSON/YAML API allows 20 requests per minute",
+      "capture": "sha256:f97ce9eb99b2ac3e058e9757888529909a7f67dd4aed3e60a4042ea6e4b2a185",
+      "quote": "| Requests per minute | 20 |"
+    },
+    {
+      "url": "https://www.loc.gov/apis/json-and-yaml/working-within-limits/",
+      "date": "2026-11-02",
+      "proved": "exceeding the rate blocks the caller for 1 hour",
+      "capture": "sha256:f97ce9eb99b2ac3e058e9757888529909a7f67dd4aed3e60a4042ea6e4b2a185",
+      "quote": "| Time blocked, if rate is exceeded | 1 hour |"
+    },
+    {
+      "url": "https://www.loc.gov/apis/json-and-yaml/working-within-limits/",
+      "date": "2026-11-02",
+      "proved": "under heavy load the limits drop and 429 or CAPTCHA answers appear below the stated rates",
+      "capture": "sha256:f97ce9eb99b2ac3e058e9757888529909a7f67dd4aed3e60a4042ea6e4b2a185",
+      "quote": "rate limits may decrease and users may encounter 429 status codes or HTML pages with CAPTCHAs even when operating below the rates listed below."
+    },
+    {
+      "url": "https://www.loc.gov/apis/json-and-yaml/working-within-limits/",
+      "date": "2026-11-02",
+      "proved": "a query is capped at 100,000 items",
+      "capture": "sha256:f97ce9eb99b2ac3e058e9757888529909a7f67dd4aed3e60a4042ea6e4b2a185",
+      "quote": "| Maximum items per query (Paging Limits) | 100,000 items per query |"
+    },
+    {
+      "url": "https://www.loc.gov/apis/json-and-yaml/working-within-limits/",
+      "date": "2026-11-02",
+      "proved": "1,000 items per page is the recommended maximum",
+      "capture": "sha256:f97ce9eb99b2ac3e058e9757888529909a7f67dd4aed3e60a4042ea6e4b2a185",
+      "quote": "| Maximum items per page (Recommended for most queries) | 1,000 items per page | `?fo=json&at=results&c=1000&sp=1` |"
+    },
+    {
+      "url": "https://www.loc.gov/collections/chronicling-america/datasets/",
+      "date": "2026-11-02",
+      "proved": "bulk OCR data is offered for research and external services",
+      "capture": "sha256:a5c5c0534dc218b92ca0eb250698b60696ace6be9091c3abc69e524877418b31",
+      "quote": "The Library of Congress also provides bulk access to the Optical Character Recognition (OCR) data for research and external services."
+    },
+    {
+      "url": "https://www.loc.gov/collections/chronicling-america/datasets/",
+      "date": "2026-11-02",
+      "proved": "a batch row lists its tar.bz2, a sha256 checksum and its size",
+      "capture": "sha256:a5c5c0534dc218b92ca0eb250698b60696ace6be9091c3abc69e524877418b31",
+      "quote": "| fu_eleven_ver02 | 675 | 2026-09-24T16:43:16-04:00 | fu_eleven_ver02.tar.bz2 Checksum(sha256): f547144b56208253548135d24127a9c2fee8c30c255b07e51417a31eb6d1b91a Size: 53.4 MB | 2026-10-05T16:52:42.586285+00:00 |"
+    },
+    {
+      "url": "https://www.loc.gov/ndnp/migration/",
+      "date": "2026-11-02",
+      "proved": "computational users keep bulk OCR and are pointed to the loc.gov API",
+      "capture": "sha256:252a308b902e68a756e08a9a285a7d64edc85fecc1c67a7d7f16bf1f47781259",
+      "quote": "Digital Humanities scholars and researchers who access the collection via computational methods will continue to have access to bulk OCR downloads but should transition to using the LoC.gov API at [loc.gov/apis](http://loc.gov/apis)."
+    },
+    {
+      "url": "https://www.loc.gov/ndnp/migration/",
+      "date": "2026-11-02",
+      "proved": "the collection holds over 21 million newspaper pages",
+      "capture": "sha256:252a308b902e68a756e08a9a285a7d64edc85fecc1c67a7d7f16bf1f47781259",
+      "quote": "the site saw the growth of the collection to include over 21 million newspaper pages from every state, the District of Columbia, Puerto Rico, and the U.S. Virgin Islands as part of the National Digital Newspaper Program (NDNP)."
+    },
+    {
+      "url": "https://www.loc.gov/collections/chronicling-america/about-this-collection/rights-and-access/",
+      "date": "2026-11-02",
+      "proved": "the newspapers are in the public domain or have no known restriction",
+      "capture": "sha256:f68c72748a03c01c8d38390b961509f1366db6a4a4302a7c9d106c7cbabf02b7",
+      "quote": null
+    },
+    {
+      "url": "probe:https://chroniclingamerica.loc.gov/data/ocr/fu_eleven_ver02.tar.bz2",
+      "date": "2026-11-02",
+      "proved": "a HEAD of one bulk OCR file answered HTTP 200 with its size and no credentials",
+      "capture": "sha256:86d5081bd2867faa178bea5087246cef47d048596e24d84ac5f777b5927b4971",
+      "quote": "\"declared_bytes\": 56026786"
+    },
+    {
+      "url": "probe:https://chroniclingamerica.loc.gov/data/ocr/fu_eleven_ver02.tar.bz2",
+      "date": "2026-11-02",
+      "proved": "a ranged read of the first 1,024 bytes answered HTTP 206 of 56026786 bytes",
+      "capture": "sha256:792a3a78063ce6e6edfbeaeae988c8d1105ec7fea4ab905f498b5293d240367c",
+      "quote": "\"content_range\": \"bytes 0-1023/56026786\""
+    },
+    {
+      "url": "probe:https://www.loc.gov/collections/chronicling-america/?fo=json&at=pagination&c=1",
+      "date": "2026-11-02",
+      "proved": "a keyless GET of the collection JSON answered HTTP 403 with a Cloudflare challenge page",
+      "capture": "sha256:4cbff6dcd7ee6d997554c7bd4ebed0680dfa2af19e29a6b77c5a2b35b2002969",
+      "quote": "\"status\": 403"
+    }
+  ],
+  "verdict": "qualifies-with-caveat",
+  "verified_at": "2026-11-02T00:23:50.592Z",
+  "notes": "Storage: no storage limit is stated; the bulk OCR files are meant to be downloaded and kept. Bulk path: tar.bz2 OCR files, one per batch, at chroniclingamerica.loc.gov/data/ocr, each with a sha256 checksum, listed in the datasets table (CSV, TXT and JSON versions); the JSON API is the route for metadata and for slices of a query. This is the read API; the deposit question has its own record in storage."
+}

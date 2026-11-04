@@ -20,7 +20,7 @@
     "notes": ""
   },
   "retention": {
-    "stated": "not applicable: a query API with no stored objects",
+    "stated": "not applicable",
     "days": null,
     "notes": ""
   },
@@ -60,7 +60,7 @@
   },
   "reliability_note": "A call past the rate answers HTTP 429; bandwidth is counted over a trailing 30 days rather than reset on a date.",
   "confidence": "documented",
-  "confidence_note": "The daily calls, bandwidth, symbol scope and signup fields are documented on the pricing, FAQ and register pages. A probe measured that the demo key is refused with HTTP 401. The 250-call cut-off needs a free key to measure.",
+  "confidence_note": "The daily calls, bandwidth, symbol scope and signup fields are documented on the pricing, FAQ and register pages. A probe measured that the demo key is refused with HTTP 401. The 429 status is documented; the daily-limit body, its reset moment and the symbols that answer outside the sample set need a free key to measure (unverified: behind a sign-up).",
   "evidence": [
     {
       "url": "https://site.financialmodelingprep.com/pricing-plans",
@@ -229,14 +229,87 @@
       "proved": "the API refuses the demo key and points to a free key",
       "capture": "sha256:06715a4a9ad6e58abdf7284732fae1e3869278264d8972e7edd5b65c680b3e77",
       "quote": "Invalid API KEY. Feel free to create a Free API Key"
+    },
+    {
+      "url": "https://site.financialmodelingprep.com/faqs",
+      "date": "2026-11-02",
+      "proved": "bandwidth is a rolling 30-day limit with no restore date",
+      "capture": "sha256:ded413479feac1de2f0f312b27f6617898263d921fb3a28bc0a720b6a967d404",
+      "quote": "The usage limit for the API is a rolling 30-day limit that updates daily. There is not a specific date that the limit is restored."
+    },
+    {
+      "url": "https://site.financialmodelingprep.com/developer/docs/changelog",
+      "date": "2026-11-02",
+      "proved": "keys over the bandwidth limit are restricted",
+      "capture": "sha256:971011997873238d98d7f56ce5b9a318f27896799f106a055fd4b198f791b2f2",
+      "quote": "API Keys over the bandwidth limit are now restricted due to high data transfer and downloads."
+    },
+    {
+      "url": "https://site.financialmodelingprep.com/how-to/five-key-steps-to-integrate-fmp-apis-without-writing-a-single-line-of-code",
+      "date": "2026-11-02",
+      "proved": "the 250 daily requests reset daily",
+      "capture": "sha256:0ded4b20200a4800579d4d51fb0023942d6a730061e966c7f2be8ca962b1411d",
+      "quote": "The free API key gives you 250 requests per day, which is often enough for personal or small-scale use. This resets daily."
+    },
+    {
+      "url": "https://site.financialmodelingprep.com/developer/docs/quickstart",
+      "date": "2026-11-02",
+      "proved": "HTTP 429 is the rate-limit answer",
+      "capture": "sha256:b22c347eac43777bce993ae0731a7ae8c38a822edb5b8ff2ea2c8b16a4bdd4c2",
+      "quote": "Too many requests (rate limit exceeded)"
+    },
+    {
+      "url": "https://site.financialmodelingprep.com/faqs",
+      "date": "2026-11-02",
+      "proved": "a request with many symbols or dates counts as one call",
+      "capture": "sha256:ded413479feac1de2f0f312b27f6617898263d921fb3a28bc0a720b6a967d404",
+      "quote": "One request counts as one API call. A request can include a range of dates, data, and symbols, and when the request is made, it counts as one call"
+    },
+    {
+      "url": "https://github.com/JerBouma/FinanceToolkit/discussions/171",
+      "date": "2026-11-02",
+      "proved": "a key over the bandwidth limit received this message",
+      "capture": "sha256:e27320b8145c5c44edfb34576347346e88fd31fa8d5bc8f85e85ebad1512e09c",
+      "quote": "Bandwidth Limit Reach . Please upgrade your plan or visit our documentation for more details at https://site.financialmodelingprep.com/"
+    },
+    {
+      "url": "https://pypi.org/pypi/parsimony-fmp/json",
+      "date": "2026-11-02",
+      "proved": "a third party reports 403 or 402 for a plan restriction",
+      "capture": "sha256:6cf893520d908aefcfc28dd3fa95cbd42e6f2bf8bf59fb0fcefc621ad07038ac",
+      "quote": "a plan or legacy restriction returns 403 (FMP also uses 402)"
+    },
+    {
+      "url": "https://pypi.org/pypi/parsimony-fmp/json",
+      "date": "2026-11-02",
+      "proved": "the sample symbol list is not published",
+      "capture": "sha256:6cf893520d908aefcfc28dd3fa95cbd42e6f2bf8bf59fb0fcefc621ad07038ac",
+      "quote": "the list is not published"
+    },
+    {
+      "url": "https://pypi.org/pypi/parsimony-fmp/json",
+      "date": "2026-11-02",
+      "proved": "an unknown symbol answers 200 with an empty list",
+      "capture": "sha256:6cf893520d908aefcfc28dd3fa95cbd42e6f2bf8bf59fb0fcefc621ad07038ac",
+      "quote": "An unknown symbol returns HTTP 200 with `[]`"
+    },
+    {
+      "url": "https://site.financialmodelingprep.com/faqs",
+      "date": "2026-11-02",
+      "proved": "the free plan is unchanged: 250 requests a day",
+      "capture": "sha256:ded413479feac1de2f0f312b27f6617898263d921fb3a28bc0a720b6a967d404",
+      "quote": "We offer a free plan that will allow users to make up to 250 market data API requests per day, for example you can access up to 5 years of annual statements for US companies."
     }
   ],
   "verdict": "qualifies-with-caveat",
-  "verified_at": "2026-10-31T10:04:07.279Z",
+  "verified_at": "2026-11-03T00:28:53.393Z",
   "notes": "250 calls a day with no card, but the free plan reaches many endpoints only for a sample of large symbols, and history stops at 5 years; bulk delivery is paid.",
   "extras": {
     "bulk_path": "bulk endpoints on the Ultimate plan only (paid); no bulk path on Basic",
     "history_depth": "5 years on Basic and Starter; 30+ years on Premium and Ultimate",
-    "symbol_scope": "many Basic endpoints limited to AAPL, TSLA, AMZN and 84 more, or to US exchanges"
+    "symbol_scope": "many Basic endpoints limited to AAPL, TSLA, AMZN and 84 more, or to US exchanges",
+    "cutoff_resets": "The 250 daily requests reset daily; bandwidth is a rolling 30-day limit that updates daily with no specific restore date, and keys over the bandwidth limit are restricted.",
+    "cutoff_body_reported": "Bandwidth limit, as shown in a third-party discussion: {\"Error Message\": \"Bandwidth Limit Reach . Please upgrade your plan or visit our documentation for more details at https://site.financialmodelingprep.com/\"}; the status and the daily-limit body are not in the source",
+    "symbol_outside_sample_reported": "A client package README, checked against a live Basic key on 2026-07-23, says: the 87-symbol sample list is not published; a plan restriction answers HTTP 403 (402 also occurs); an unknown symbol answers HTTP 200 with an empty list"
   }
 }
